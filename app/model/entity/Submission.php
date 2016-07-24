@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use GuzzleHttp\Client;
+use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use App\Exception\SubmissionFailedException;
 
@@ -20,10 +21,10 @@ use ZMQSocketException;
  */
 class Submission implements JsonSerializable
 {
-    use \Kdyby\Doctrine\Entities\MagicAccessors;
+    use MagicAccessors;
 
-    const REMOTE_FILE_SERVER_URL = 'http://195.113.17.8:9999';
-    const ZMQ_SERVER_URL = 'tcp://195.113.17.8:9658';
+    const REMOTE_FILE_SERVER_URL = 'http://195.113.17.8:9999'; // @todo place in a configuration file
+    const ZMQ_SERVER_URL = 'tcp://195.113.17.8:9658'; // @todo place in a configuration file
 
     /**
      * @ORM\Id
@@ -52,6 +53,7 @@ class Submission implements JsonSerializable
     protected $resultsUrl;
 
     /**
+     * @var ExerciseAssignment
      * @ORM\ManyToOne(targetEntity="ExerciseAssignment")
      * @ORM\JoinColumn(name="exercise_assignment_id", referencedColumnName="id")
      */
@@ -98,6 +100,9 @@ class Submission implements JsonSerializable
       $this->evaluation = $evaluation;
     }
 
+    /**
+     * @return array
+     */
     public function jsonSerialize() {
       return [
         'id' => $this->id,
@@ -107,13 +112,17 @@ class Submission implements JsonSerializable
         'submittedAt' => $this->submittedAt
       ];
     }
-  
+
     /**
      * The name of the user
-     * @param  string $name   Name of the exercise
-     * @return User
+     * @param string $note
+     * @param ExerciseAssignment $assignment
+     * @param User $user
+     * @param array $files
+     * @return Submission
+     * @internal param string $name Name of the exercise
      */
-    public static function createSubmission($note, ExerciseAssignment $assignment, User $user, array $files) {
+    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, array $files) {
         $entity = new Submission;
         $entity->exerciseAssignment = $assignment;
         $entity->user = $user;
@@ -133,6 +142,10 @@ class Submission implements JsonSerializable
         return $entity;
     }
 
+    /**
+     * @return bool
+     * @throws SubmissionFailedException
+     */
     public function submit() {
       $files = $this->prepareFilesForSendingToRemoteServer($this, $this->files);
       $remotePaths = $this->sendFilesToRemoteFileServer($this->id, $files);
@@ -144,7 +157,12 @@ class Submission implements JsonSerializable
       return $this->startEvaluation($this->id, $remotePaths->archive_path, $remotePaths->result_path);
     }
 
-    private function prepareFilesForSendingToRemoteServer($submission, $files) {
+    /**
+     * @param Submission $submission
+     * @param array $files
+     * @return array
+     */
+    private function prepareFilesForSendingToRemoteServer(Submission $submission, array $files) {
       $filesToSubmit = array_map(function ($file) {
         return [
           'name' => $file->name,
@@ -163,6 +181,12 @@ class Submission implements JsonSerializable
       return $filesToSubmit;
     }
 
+    /**
+     * @param $submissionId
+     * @param $files
+     * @return mixed
+     * @throws SubmissionFailedException
+     */
     private function sendFilesToRemoteFileServer($submissionId, $files) {
       try {
         $client = new Client([ 'base_uri' => self::REMOTE_FILE_SERVER_URL ]);
@@ -179,12 +203,16 @@ class Submission implements JsonSerializable
     }
 
     /**
-     * @param string
-     * @param string
-     * @param string
-     * @return bool     Evaluation has been started on remote server when returns TRUE.
+     * @param $submissionId
+     * @param $archiveRemotePath
+     * @param $resultRemotePath
+     * @return bool Evaluation has been started on remote server when returns TRUE.
+     * @throws SubmissionFailedException
+     * @internal param $string
+     * @internal param $string
+     * @internal param $string
      */
-    private function startEvaluation($submissionId, $archiveRemotePath, $resultRemotePath) {
+    private function startEvaluation(string $submissionId, string $archiveRemotePath, string $resultRemotePath) {
       try {
         $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
         $queue->connect(self::ZMQ_SERVER_URL);
