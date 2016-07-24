@@ -38,6 +38,7 @@ class RouterFactory {
     $router[] = new Route("$prefix", "ExerciseAssignments:");
     $router[] = new Route("$prefix/<id>", 'ExerciseAssignments:detail');
     $router[] = new Route("$prefix/<id>/users/<userId>/submissions", 'ExerciseAssignments:submissions');
+    $router[] = new Route("$prefix/<id>/submit", 'ExerciseAssignments:submit');
   }
 
   private static function createGroupsRoutes($router, $prefix) {
@@ -49,7 +50,7 @@ class RouterFactory {
 
   private static function createSubmissionRoutes($router, $prefix) {
     $router[] = new Route("$prefix", "Submissions:");
-    $router[] = new Route("$prefix/<id>", 'Submissions:detail');
+    $router[] = new Route("$prefix/<id>", 'Submissions:evaluation');
   }
 
   private static function createUploadedFilesRoutes($router, $prefix) {

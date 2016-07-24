@@ -3,8 +3,14 @@
 namespace App\V1Module\Presenters;
 
 use App\Exception\NotFoundException;
+use App\Exception\ForbiddenRequestException;
+use App\Exception\BadRequestException;
+use App\Exception\SubmissionFailedException;
+
+use App\Model\Entity\Submission;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
+use App\Model\Repository\UploadedFiles;
 
 class ExerciseAssignmentsPresenter extends BasePresenter {
 
@@ -14,16 +20,21 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @var Submissions */
   private $submissions;
 
+  /** @var UploadedFiles */
+  private $files;
+
   /**
-   * @param ExerciseAssignments $assignments  ExerciseAssignments repository
-   * @param Submissions         $submissions  Submissions repository
+   * @param Submissions $submissions  Submissions repository
+   * @param ExerciseAssignments $assignments  Assignments repository
+   * @param UploadedFiles $files  Uploaded files repository
    */
-  public function __construct(ExerciseAssignments $assignments, Submissions $submissions) {
-    $this->assignments = $assignments;
+  public function __construct(Submissions $submissions, ExerciseAssignments $assignments, UploadedFiles $files) {
     $this->submissions = $submissions;
+    $this->assignments = $assignments;
+    $this->files = $files;
   }
 
-  protected function findExerciseOrThrow(string $id) {
+  protected function findAssignmentOrFail(string $id) {
     $assignment = $this->assignments->get($id);
     if (!$assignment) {
       throw new NotFoundException;
@@ -37,24 +48,69 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $this->sendJson($assignments);
+    $this->sendSuccessResponse($assignments);
   }
 
   /**
    * @GET
    */
   public function actionDetail(string $id) {
-    $assignment = $this->findExerciseOrThrow($id);
-    $this->sendJson($assignment);
+    $assignment = $this->findAssignmentOrFail($id);
+    $this->sendSuccessResponse($assignment);
   }
 
   /**
    * @GET
    */
   public function actionSubmissions(string $id, string $userId) {
-    $assignment = $this->findExerciseOrThrow($id);
+    $assignment = $this->findAssignmentOrFail($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
-    $this->sendJson($submissions);
+    $this->sendSuccessResponse($submissions);
+  }
+
+  /**
+   * @POST
+   */
+  public function actionSubmit(string $id) {
+    $assignment = $this->findAssignmentOrFail($id);
+    $user = $this->findUserOrThrow('me');
+
+    // if (!$assignment->canAccessAsStudent($user)) {
+    //   throw new ForbiddenRequestException;
+    // }
+
+    // validate input parameters
+    $params = $this->getHttpRequest()->getPost();
+    $requiredParams = [ 'note', 'files' ];
+    foreach ($requiredParams as $param) {
+      if (isset($params[$param]) === FALSE) { 
+        throw new BadRequestException("Missing required parameter $param");
+      }
+    }
+
+    // collect the array of already uploaded files
+    $files = $this->files->findAllById($params['files']);
+
+    // prepare a record in the database
+    $submission = Submission::createSubmission($params['note'], $assignment, $user, $files);    
+
+    // persist all the data in the database
+    $this->submissions->persist($submission);
+    foreach ($files as $file) {
+      $this->files->persist($file);
+    }
+
+    // send the data to the evaluation server
+    if($submission->submit() === TRUE) { // true does not mean the solution is OK, just that the evaluation server accepted it and started evaluating it
+      $this->submissions->persist($submission);
+      $this->files->flush();
+      $this->sendSuccessResponse([
+        'submission' => $submission,
+        'webSocketChannel' => $submission->id
+      ]);
+    } else {
+      throw new SubmissionFailedException;
+    }
   }
 
 }

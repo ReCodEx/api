@@ -5,101 +5,136 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
+use DateTime;
 
 /**
  * @ORM\Entity
  */
 class ExerciseAssignment implements JsonSerializable
 {
-    use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
-    protected $id;
+  /**
+    * @ORM\Id
+    * @ORM\Column(type="guid")
+    * @ORM\GeneratedValue(strategy="UUID")
+    */
+  protected $id;
 
-    public function getId() {
-      return $this->id;
+  public function getId() {
+    return $this->id;
+  }
+
+  /**
+    * @ORM\Column(type="string")
+    */
+  protected $name;
+
+  /**
+    * @ORM\Column(type="string")
+    */
+  protected $jobConfigFilePath;
+
+  /**
+    * @ORM\Column(type="datetime")
+    */
+  protected $firstDeadline;
+
+  /**
+    * @ORM\Column(type="datetime")
+    */
+  protected $secondDeadline;
+
+  /**
+    * @ORM\Column(type="smallint")
+    */
+  protected $maxPointsBeforeFirstDeadline;
+
+  /**
+    * @ORM\Column(type="smallint")
+    */
+  protected $maxPointsBeforeSecondDeadline;
+
+  public function getMaxPoints(DateTime $time) {
+    if ($time < $this->firstDeadline) {
+      return $this->maxPointsBeforeFirstDeadline;
+    } else if ($time < $this->secondDeadline) {
+      return $this->maxPointsBeforeSecondDeadline;
+    } else {
+      return 0;
+    }
+  }
+
+  /**
+    * @ORM\Column(type="text")
+    */
+  protected $description;
+
+  public function getDescription() {
+    // @todo: this must be translatable
+
+    $description = $this->description;
+    $parent = $this->exercise;
+    while ($description === NULL && $parent !== NULL) {
+      $description = $parent->description;
+      $parent = $parent->exercise;
     }
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    protected $name;
+    return $description;
+  }
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $firstDeadline;
+  /**
+    * @ORM\ManyToOne(targetEntity="Exercise")
+    * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
+    */
+  protected $exercise;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $secondDeadline;
+  public function getExercise() {
+    return $this->exercise;
+  }
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    protected $description;
+  /**
+    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
+    * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
+    */
+  protected $group;
 
-    public function getDescription() {
-      // @todo: this must be translatable
+  /**
+    * Can a specific user access this assignment as student?
+    */
+  public function canAccessAsStudent(User $user) {
+    return $this->group->isStudentOf($user);
+  }
 
-      $description = $this->description;
-      $parent = $this->exercise;
-      while ($description === NULL && $parent !== NULL) {
-        $description = $parent->description;
-        $parent = $parent->exercise;
-      }
+  public function jsonSerialize() {
+    return [
+      'id' => $this->id,
+      'name' => $this->name,
+      'description' => $this->getDescription(),
+      'exercise' => $this->exercise,
+      'group' => $this->group,
+      'deadline' => [
+        'first' => $this->firstDeadline,
+        'second' => $this->secondDeadline
+      ]
+    ];
+  }
 
-      return $description;
-    }
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise")
-     * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
-     */
-    protected $exercise;
-
-    public function getExercise() {
-        return $this->exercise;
-    }
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
-     * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
-     */
-    protected $group;
-
-    public function jsonSerialize() {
-      return [
-        'id' => $this->id,
-        'name' => $this->name,
-        'description' => $this->getDescription(),
-        'exercise' => $this->exercise,
-        'group' => $this->group,
-        'deadline' => [
-          'first' => $this->firstDeadline,
-          'second' => $this->secondDeadline
-        ]
-      ];
-    }
-  
-    /**
-     * The name of the user
-     * @param  string $name   Name of the exercise
-     * @return User
-     */
-    public static function createExerciseAssignment($name, $description, $firstDeadline, $secondDeadline, Exercise $exercise, Group $group) {
-        $entity = new ExerciseAssignment;
-        $entity->name = $name;
-        $entity->description = $description;
-        $entity->exercise = $exercise;
-        $entity->group = $group;
-        $entity->firstDeadline = $firstDeadline;
-        $entity->secondDeadline = $secondDeadline;
-        return $entity;
-    }
+  /**
+    * The name of the user
+    * @param  string $name   Name of the exercise
+    * @return ExerciseAssignment
+    */
+  public static function createExerciseAssignment($name, $description, $firstDeadline, $maxPointsBeforeFirstDeadline, $secondDeadline, $maxPointsBeforeSecondDeadline, Exercise $exercise, Group $group) {
+    $entity = new ExerciseAssignment;
+    $entity->name = $name;
+    $entity->description = $description;
+    $entity->exercise = $exercise;
+    $entity->group = $group;
+    $entity->firstDeadline = $firstDeadline;
+    $entity->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
+    $entity->secondDeadline = $secondDeadline;
+    $entity->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
+    return $entity;
+  }
 }

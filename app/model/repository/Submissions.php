@@ -33,8 +33,14 @@ class Submissions extends Nette\Object {
         return $this->submissions->findOneById($id);
     }
 
-    public function persist(Submission $submission) {
-        // @todo validate the submission
+    public function persist(Submission $submission, $autoFlush = TRUE) {
         $this->em->persist($submission);
+        if ($autoFlush) {
+          $this->flush();
+        }
+    }
+
+    public function flush() {
+      $this->em->flush();
     }
 }

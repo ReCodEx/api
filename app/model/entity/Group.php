@@ -34,6 +34,10 @@ class Group implements JsonSerializable
     public function getStudents() {
         return $this->students;
     }
+
+    public function isStudentOf(User $user) {
+      return $this->students->contains($user);
+    }
     
     /**
      * @ORM\ManyToMany(targetEntity="User", mappedBy="supervisorOf")
@@ -42,6 +46,14 @@ class Group implements JsonSerializable
     
     public function getSupervisors() {
         return $this->supervisors;
+    }
+
+    public function isSupervisorOf(User $user) {
+      return $this->supervisors->contains($user);
+    }
+
+    public function isMemberOf(User $user) {
+      return $this->isStudentOf($user) || $this->isSupervisorOf($user);
     }
     
     /**

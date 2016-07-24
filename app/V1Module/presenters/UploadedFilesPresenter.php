@@ -22,9 +22,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @POST
    */
   public function actionUpload() {
-    // $userId = $this->user->id;
-    $userId = '1fe2255e-50e2-11e6-beb8-9e71128cae77'; // @todo remove
-    $user = $this->findUserOrThrow($userId);
+    $user = $this->findUserOrThrow('me');
     $files = $this->getHttpRequest()->getFiles();
     if (count($files) === 0) {
       throw new BadRequestException('No file was uploaded');
@@ -37,7 +35,7 @@ class UploadedFilesPresenter extends BasePresenter {
     if ($uploadedFile !== FALSE) {
       $this->uploadedFiles->persist($uploadedFile);
       $this->uploadedFiles->flush();
-      $this->sendJson($uploadedFile);
+      $this->sendSuccessResponse($uploadedFile);
     } else {
       throw new CannotReceiveUploadedFileException($file->getSanitizedName());
     }

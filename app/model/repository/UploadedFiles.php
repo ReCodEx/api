@@ -22,6 +22,10 @@ class UploadedFiles extends Nette\Object {
     return $this->uploadedFiles->findAll();
   }
 
+  public function findAllById($ids) {
+    return $this->uploadedFiles->findBy([ 'id' => $ids ]);
+  }
+
   public function get($id) {
     return $this->uploadedFiles->findOneById($id);
   }

@@ -52,6 +52,12 @@ class UploadedFile implements JsonSerializable
       return $this->user;
     }
 
+    /**
+     * @ORM\ManyToOne(targetEntity="Submission")
+     * @ORM\JoinColumn(name="submission_id", referencedColumnName="id")
+     */
+    protected $submission;
+
     public function jsonSerialize() {
       return [
         'id' => $this->id,

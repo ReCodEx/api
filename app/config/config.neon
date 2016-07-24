@@ -6,7 +6,7 @@ parameters:
 
 
 application:
-  errorPresenter: Error
+  errorPresenter: V1:ApiError
   mapping:
     *: App\*Module\Presenters\*Presenter
 
@@ -28,6 +28,7 @@ services:
   - App\Model\Repository\ExerciseAssignments()
   - App\Model\Repository\Groups()
   - App\Model\Repository\Submissions()
+  - App\Model\Repository\SubmissionEvaluations()
   - App\Model\Repository\UploadedFiles()
   - App\Model\Repository\Users()
 

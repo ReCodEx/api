@@ -11,7 +11,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $users = $this->users->findAll();
-    $this->sendJson($users);
+    $this->sendSuccessResponse($users);
   }
 
   /**
@@ -19,7 +19,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $user = $this->findUserOrThrow($id);
-    $this->sendJson($user);
+    $this->sendSuccessResponse($user);
   }
 
   /**
@@ -27,7 +27,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $user = $this->findUserOrThrow($id);
-    $this->sendJson($user->getGroups()->toArray());
+    $this->sendSuccessResponse($user->getGroups()->toArray());
   }
 
   /**
@@ -35,7 +35,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionExercises(string $id) {
     $user = $this->findUserOrThrow($id);
-    $this->sendJson($user->getUsersExercises()->toArray());
+    $this->sendSuccessResponse($user->getUsersExercises()->toArray());
   }
 
 }
