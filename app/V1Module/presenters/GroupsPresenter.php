@@ -3,6 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Groups;
+use App\Exception\BadRequestException;
+use App\Exception\NotFoundException;
 
 class GroupsPresenter extends BasePresenter {
 
@@ -19,23 +21,31 @@ class GroupsPresenter extends BasePresenter {
   protected function findGroupOrThrow($id) {
     $group = $this->groups->get($id);
     if (!$group) {
-      // @todo report 404 error
-      throw new Exception;
+      throw new NotFoundException;
     }
 
     return $group;
   }
 
-  public function actionGetAll() {
+  /**
+   * @GET
+   */
+  public function actionDefault() {
     $groups = $this->groups->findAll();
     $this->sendJson($groups);
   }
 
+  /**
+   * @GET
+   */
   public function actionDetail(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendJson($group);
   }
 
+  /**
+   * @GET
+   */
   public function actionMembers(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendJson([
@@ -44,6 +54,9 @@ class GroupsPresenter extends BasePresenter {
     ]);
   }
 
+  /**
+   * @GET
+   */
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendJson($group->getAssignments()->toArray());

@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exception\NotFoundException;
 use App\Model\Repository\Exercises;
 
 class ExercisesPresenter extends BasePresenter {
@@ -19,18 +20,23 @@ class ExercisesPresenter extends BasePresenter {
   protected function findExerciseOrThrow(string $id) {
     $exercise = $this->exercises->get($id);
     if (!$exercise) {
-      // @todo report a 404 error
-      throw new Exception;
+      throw new NotFoundException;
     }
 
     return $exercise;
   }
 
-  public function actionGetAll() {
+  /**
+   * @GET
+   */
+  public function actionDefault() {
     $exercises = $this->exercises->findAll();
     $this->sendJson($exercises);
   }
 
+  /**
+   * @GET
+   */
   public function actionDetail(string $id) {
     $exercise = $this->findExerciseOrThrow($id);
     $this->sendJson($exercise);

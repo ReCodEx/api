@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exception\NotFoundException;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 
@@ -25,23 +26,31 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   protected function findExerciseOrThrow(string $id) {
     $assignment = $this->assignments->get($id);
     if (!$assignment) {
-      // @todo report a 404 error
-      throw new Exception;
+      throw new NotFoundException;
     }
 
     return $assignment;
   }
 
-  public function actionGetAll() {
+  /**
+   * @GET
+   */
+  public function actionDefault() {
     $assignments = $this->assignments->findAll();
     $this->sendJson($assignments);
   }
 
+  /**
+   * @GET
+   */
   public function actionDetail(string $id) {
     $assignment = $this->findExerciseOrThrow($id);
     $this->sendJson($assignment);
   }
 
+  /**
+   * @GET
+   */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->findExerciseOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);

@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Submissions;
+use App\Exception\NotFoundException;
 
 class SubmissionsPresenter extends BasePresenter {
 
@@ -19,18 +20,23 @@ class SubmissionsPresenter extends BasePresenter {
   protected function findSubmissionOrThrow(string $id) {
     $submission = $this->submissions->get($id);
     if (!$submission) {
-      // @todo report a 404 error
-      throw new Exception;
+      throw new NotFoundException;
     }
 
     return $submission;
   }
 
-  public function actionGetAll() {
+  /**
+   * @GET
+   */
+  public function actionDefault() {
     $submissions = $this->submissions->findAll();
     $this->sendJson($submissions);
   }
 
+  /**
+   * @GET
+   */
   public function actionDetail(string $id) {
     $submission = $this->findSubmissionOrThrow($id);
     $this->sendJson($submission);
