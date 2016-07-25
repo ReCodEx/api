@@ -34,7 +34,8 @@
 		"dg/adminer-custom": "^1.6",
 		"kdyby/doctrine": "^3.1",
 		"guzzlehttp/guzzle": "~6.0",
-		"symfony/yaml": "^3.1"
+		"symfony/yaml": "^3.1",
+		"firebase/php-jwt": "^4.0"
 	},
 	"require-dev": {
 		"nette/tester": "^1.6"

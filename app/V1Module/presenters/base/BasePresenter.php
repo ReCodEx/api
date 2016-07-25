@@ -12,6 +12,7 @@ use App\Exception\NotImplementedException;
 use App\Authentication\AccessManager;
 use App\Model\Repository\Users;
 
+use Nette\Security\Identity;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
@@ -31,7 +32,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
 
-    // checks, if the action has allowed method annotation
     try {
       $presenterReflection = new Reflection\ClassType(get_class($this));
       $actionMethodName = $this->formatActionMethod($this->getAction());
@@ -40,6 +40,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new NotImplementedException;
     }
 
+    // checks, if the action has allowed method annotation
     $this->restrictHttpMethod($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
@@ -66,7 +67,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($reflection->hasAnnotation('LoggedIn')
         || $reflection->hasAnnotation('Role')) {
       $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
-      $this->user->login(new Identity($user->getId(), $user->getRole())); // @todo: replace the hard-coded roles
+      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
 
       if ($reflection->hasAnnotation('Role')
         && !$this->user->isInRole($reflection->getAnnotation('Role'))) {

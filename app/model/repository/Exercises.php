@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
+use App\Model\Entity\Exercise;
 
 class Exercises extends Nette\Object {
 
@@ -24,8 +25,7 @@ class Exercises extends Nette\Object {
         return $this->exercises->findOneById($id);
     }
 
-    public function persist(Exercises $exercise) {
-        // @todo validate the exercise
+    public function persist(Exercise $exercise) {
         $this->em->persist($exercise);
     }
 }

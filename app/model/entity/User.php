@@ -55,6 +55,13 @@ class User implements JsonSerializable
     protected $isVerified;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isAllowed;
+
+    public function isAllowed() { return $this->isAllowed; }
+
+    /**
      * @ORM\ManyToMany(targetEntity="Group", inversedBy="students")
      * @ORM\JoinTable(name="group_student")
      */

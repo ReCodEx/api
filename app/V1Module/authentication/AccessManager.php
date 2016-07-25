@@ -12,6 +12,13 @@ use App\Exception\ForbiddenRequestException;
 use Nette\Http\Request;
 use Nette\Utils\Strings;
 
+use Firebase\JWT\JWT;
+use DomainException;
+use UnexpectedValueException;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
+use Firebase\JWT\BeforeValidException;
+
 class AccessManager {
 
   /** @var Users  Users repository */
@@ -31,14 +38,30 @@ class AccessManager {
       throw new NoAccessTokenException;
     }
 
-    // @todo validate the token 
-    if (FALSE) {
+    JWT::$leeway = 60; // @todo load this from config!!
+
+    try {
+      $decodedToken = JWT::decode($token, $this->getSecretVerificationKey(), $this->getAllowedAlgs());
+    } catch (DomainException $e) {
+      throw new InvalidAccessTokenException($token);
+    } catch (UnexpectedValueException $e) {
+      throw new InvalidAccessTokenException($token);
+    } catch (DomainException $e) {
+      throw new InvalidAccessTokenException($token);
+    } catch (ExpiredException $e) {
+      throw new InvalidAccessTokenException($token);
+    } catch (SignatureInvalidException $e) {
+      throw new ForbiddenRequestException();
+    } catch (BeforeValidException $e) {
       throw new InvalidAccessTokenException($token);
     }
 
-    // @todo find the user in the repository and return him, if any
-    $user = NULL;
-    if (!$user) {
+    if (!isset($decodedToken->sub) || !isset($decodedToken->sub->id)) {
+      throw new InvalidAccessTokenException($token);
+    }
+
+    $user = $this->users->get($decodedToken->sub->id);
+    if (!$user || $user->isAllowed() === FALSE) {
       throw new ForbiddenRequestException;
     }
 
@@ -49,9 +72,31 @@ class AccessManager {
    * @param   User
    * @return  string
    */
-  public function issueToken(User $user) {
-    // @todo create a token for this user
-    return '';
+  public function issueToken(User $user) {    
+    $tokenPayload = [
+      'iss' => 'https://recodex.projekty.ms.mff.cuni.cz', // @todo load this from config!!
+      'aud' => 'https://recodex.projekty.ms.mff.cuni.cz', // @todo load this from config!!
+      'iat' => time(),
+      'nbf' => time(),
+      'exp' => time() + 1*24*60*60, // @todo load this from config!!
+      'sub' => $user
+    ];
+
+    return JWT::encode($tokenPayload, $this->getSecretVerificationKey(), $this->getAlg());
+  }
+
+  private function getSecretVerificationKey() {
+    return 'recodex-123'; // @todo make this secure using environment variables - it must not appear on GitHub...
+  }
+
+  private function getAllowedAlgs() {
+    // allowed algs must be separated from the used algs - if the algorithm is changed in the future,
+    // we must accept the older algorithm until all the old tokens expire
+    return [ 'HS256' ]; // @todo load this from config!!
+  }
+
+  private function getAlg() {
+    return 'HS256'; // @todo load this from config!!
   }
 
   /**

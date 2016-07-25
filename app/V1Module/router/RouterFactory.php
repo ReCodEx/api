@@ -18,6 +18,7 @@ class RouterFactory {
 
     $prefix = 'v1';
     $router[] = new Route($prefix, 'Default:default');
+    $router[] = new Route("$prefix/login", 'Login:default');
 
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
