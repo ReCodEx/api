@@ -78,10 +78,17 @@ class User implements JsonSerializable
      * @ORM\OneToMany(targetEntity="Exercise", mappedBy="author")
      */
     protected $exercises;
-
+    
     public function getUsersExercises() {
       return $this->exercises;
     }
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Role")
+     */
+    protected $role;
+
+    public function getRole() { return $this->role; }
 
     public function jsonSerialize() {
       return [
@@ -93,7 +100,9 @@ class User implements JsonSerializable
           'lastName' => $this->lastName,
           'degreesAfterName' => $this->degreesAfterName,
         ],
-        'email' => $this->email
+        'email' => $this->email,
+        'isVerified' => $this->isVerified,
+        'role' => $this->role
       ];
     }
   
