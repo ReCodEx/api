@@ -22,6 +22,7 @@ extensions:
 
 services:
   router: App\RouterFactory::createRouter
+  - App\Authentication\AccessManager
 
   # models - repositories
   - App\Model\Repository\Exercises()
