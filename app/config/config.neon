@@ -28,6 +28,7 @@ services:
   - App\Model\Repository\Exercises()
   - App\Model\Repository\ExerciseAssignments()
   - App\Model\Repository\Groups()
+  - App\Model\Repository\Instances()
   - App\Model\Repository\Submissions()
   - App\Model\Repository\SubmissionEvaluations()
   - App\Model\Repository\UploadedFiles()

@@ -22,6 +22,7 @@ class RouterFactory {
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
+    self::createInstancesRoutes($router, "$prefix/instances");
     self::createSubmissionRoutes($router, "$prefix/submissions");
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
@@ -45,7 +46,15 @@ class RouterFactory {
     $router[] = new Route("$prefix", "Groups:");
     $router[] = new Route("$prefix/<id>", 'Groups:detail');
     $router[] = new Route("$prefix/<id>/members", 'Groups:members');
+    $router[] = new Route("$prefix/<id>/students", 'Groups:students');
+    $router[] = new Route("$prefix/<id>/supervisors", 'Groups:supervisors');
     $router[] = new Route("$prefix/<id>/assignments", 'Groups:assignments');
+  }
+
+  private static function createInstancesRoutes($router, $prefix) {
+    $router[] = new Route("$prefix", "Instances:");
+    $router[] = new Route("$prefix/<id>", 'Instances:detail');
+    $router[] = new Route("$prefix/<id>/groups", 'Instances:groups');
   }
 
   private static function createSubmissionRoutes($router, $prefix) {

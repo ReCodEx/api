@@ -32,7 +32,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $groups = $this->groups->findAll();
-    $this->sendJson($groups);
+    $this->sendSuccessResponse($groups);
   }
 
   /**
@@ -40,7 +40,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $group = $this->findGroupOrThrow($id);
-    $this->sendJson($group);
+    $this->sendSuccessResponse($group);
   }
 
   /**
@@ -48,7 +48,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionMembers(string $id) {
     $group = $this->findGroupOrThrow($id);
-    $this->sendJson([
+    $this->sendSuccessResponse([
       'supervisors' => $group->getSupervisors()->toArray(),
       'students' => $group->getStudents()->toArray()
     ]);
@@ -57,9 +57,25 @@ class GroupsPresenter extends BasePresenter {
   /**
    * @GET
    */
+  public function actionSupervisors(string $id) {
+    $group = $this->findGroupOrThrow($id);
+    $this->sendSuccessResponse($group->getSupervisors()->toArray());
+  }
+
+  /**
+   * @GET
+   */
+  public function actionStudents(string $id) {
+    $group = $this->findGroupOrThrow($id);
+    $this->sendSuccessResponse($group->getStudents()->toArray());
+  }
+
+  /**
+   * @GET
+   */
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
-    $this->sendJson($group->getAssignments()->toArray());
+    $this->sendSuccessResponse($group->getAssignments()->toArray());
   }
 
 }
