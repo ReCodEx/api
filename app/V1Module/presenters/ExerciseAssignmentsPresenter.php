@@ -75,10 +75,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $assignment = $this->findAssignmentOrFail($id);
     $user = $this->findUserOrThrow('me');
 
-    // if (!$assignment->canAccessAsStudent($user)) {
-    //   throw new ForbiddenRequestException;
-    // }
-
     // validate input parameters
     $params = $this->getHttpRequest()->getPost();
     $requiredParams = [ 'note', 'files' ];
@@ -92,7 +88,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $files = $this->files->findAllById($params['files']);
 
     // prepare a record in the database
-    $submission = Submission::createSubmission($params['note'], $assignment, $user, $files);    
+    $submission = Submission::createSubmission($params['note'], $assignment, $user, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);

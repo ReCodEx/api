@@ -30,12 +30,12 @@ class SubmissionsPresenter extends BasePresenter {
     $this->evaluations = $evaluations;
   }
 
-    /**
-     * @param string $id
-     * @return mixed
-     * @throws NotFoundException
-     */
-    protected function findSubmissionOrThrow(string $id) {
+  /**
+   * @param string $id
+   * @return mixed
+   * @throws NotFoundException
+   */
+  protected function findSubmissionOrThrow(string $id) {
     $submission = $this->submissions->get($id);
     if (!$submission) {
       throw new NotFoundException("Submission $id");
@@ -52,11 +52,11 @@ class SubmissionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submissions);
   }
 
-    /**
-     * @GET
-     * @param string $id
-     * @throws NotFoundException
-     */
+  /**
+   * @GET
+   * @param string $id
+   * @throws NotFoundException
+   */
   public function actionEvaluation(string $id) {
     $submission = $this->findSubmissionOrThrow($id);
     $evaluation = $submission->getEvaluation();

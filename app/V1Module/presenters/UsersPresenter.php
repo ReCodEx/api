@@ -27,7 +27,10 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $user = $this->findUserOrThrow($id);
-    $this->sendSuccessResponse($user->getGroups()->toArray());
+    $this->sendSuccessResponse([
+      'supervisor' => $user->getGroupsAsSupervisor()->toArray(),
+      'student' => $user->getGroupsAsStudent()->toArray()
+    ]);
   }
 
   /**

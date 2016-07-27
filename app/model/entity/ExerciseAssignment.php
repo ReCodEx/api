@@ -45,6 +45,10 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $secondDeadline;
 
+  public function isAfterDeadline() {
+    return $this->secondDeadline < new \DateTime; 
+  }
+
   /**
     * @ORM\Column(type="smallint")
     */
@@ -98,6 +102,10 @@ class ExerciseAssignment implements JsonSerializable
     * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
     */
   protected $group;
+
+  public function canReceiveSubmissions() {
+    return $this->group->hasValidLicence();
+  }
 
   /**
     * Can a specific user access this assignment as student?

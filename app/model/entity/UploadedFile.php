@@ -62,8 +62,8 @@ class UploadedFile implements JsonSerializable
       return [
         'id' => $this->id,
         'name' => $this->name,
-        'file_size' => $this->fileSize,
-        'uploaded_at' => $this->uploadedAt,
+        'size' => $this->fileSize,
+        'uploadedAt' => $this->uploadedAt,
         'user' => $this->user
       ];
     }

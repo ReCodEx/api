@@ -27,6 +27,8 @@ class Group implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $name;
+
+  public function getName() { return $this->name; }
     
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")

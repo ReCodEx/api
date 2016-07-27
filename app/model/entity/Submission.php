@@ -117,29 +117,48 @@ class Submission implements JsonSerializable
      * The name of the user
      * @param string $note
      * @param ExerciseAssignment $assignment
-     * @param User $user
+     * @param User $user          The user who submits the solution
+     * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
      * @param array $files
      * @return Submission
      * @internal param string $name Name of the exercise
      */
-    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, array $files) {
-        $entity = new Submission;
-        $entity->exerciseAssignment = $assignment;
-        $entity->user = $user;
-        $entity->note = $note;
-        $entity->submittedAt = new \DateTime;
-        $entity->files = new ArrayCollection;
-        foreach ($files as $file) {
-          if ($file->submission !== NULL) {
-            // the file was already used before
-            // @todo Should it fail at this moment??
-          }
+    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, array $files) {
+      // the 'user' must be a student and the 'loggedInUser' must be either this student, or a supervisor of this group
+      if ($assignment->canAccessAsStudent($user) === FALSE
+        || ($user->getId() === $loggedInUser->getId()
+            && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
+        throw new ForbiddenRequestException("{$user->getName()} cannot submit solutions for this assignment.");
+      }
 
-          $entity->files->add($file);
-          $file->submission = $entity;
+      if ($assignment->canReceiveSubmissions() === FALSE) {
+        // @todo Throw some more meaningful error (HTTP 402 - payment required)
+        throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.");
+      }
+
+      if ($assignment->isAfterDeadline() === TRUE
+        && $assignment->isSupervisorOf($loggedInUser) === FALSE) { // supervisors can force-submit even after the deadline 
+        throw new ForbiddenRequestException('It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.');
+      }
+
+      // now that the conditions for submission are validated, here comes the easy part:
+      $entity = new Submission;
+      $entity->exerciseAssignment = $assignment;
+      $entity->user = $user;
+      $entity->note = $note;
+      $entity->submittedAt = new \DateTime;
+      $entity->files = new ArrayCollection;
+      foreach ($files as $file) {
+        if ($file->submission !== NULL) {
+          // the file was already used before and that is not allowed
+          throw new BadRequestException("The file {$file->getId()} was already used in a different submission. If you want to use this file, reupload it to the server.");
         }
 
-        return $entity;
+        $entity->files->add($file);
+        $file->submission = $entity;
+      }
+
+      return $entity;
     }
 
     /**

@@ -109,7 +109,11 @@ class User implements JsonSerializable
         ],
         'email' => $this->email,
         'isVerified' => $this->isVerified,
-        'role' => $this->role
+        'role' => $this->role,
+        'groups' => [
+          'studentOf' => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsStudent()->toArray()),
+          'supervisorOf' => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsSupervisor()->toArray())
+        ]
       ];
     }
   

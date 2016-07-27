@@ -23,7 +23,10 @@ class LoginPresenter extends BasePresenter {
       throw new WrongCredentialsException;
     }
 
-    $this->sendSuccessResponse($this->accessManager->issueToken($user));
+    $this->sendSuccessResponse([
+      'accessToken' => $this->accessManager->issueToken($user),
+      'user' => $user
+    ]);
   }
 
 }

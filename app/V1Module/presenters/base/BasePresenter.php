@@ -32,6 +32,11 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
 
+    // take care of preflight requests - terminate them right away with a 200 response
+    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
+      $this->terminate();
+    }
+
     try {
       $presenterReflection = new Reflection\ClassType(get_class($this));
       $actionMethodName = $this->formatActionMethod($this->getAction());
@@ -40,7 +45,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new NotImplementedException;
     }
 
-    // checks, if the action has allowed method annotation
     $this->restrictHttpMethod($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
@@ -51,7 +55,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @param   \Reflector         $reflection Information about current action
    * @throws  WrongHttpMeethodException
    */
-  protected function restrictHttpMethod(\Reflector $reflection) {
+  private function restrictHttpMethod(\Reflector $reflection) {
     $httpMethod = $this->getHttpRequest()->getMethod();
     if ($reflection->hasAnnotation(strtoupper($httpMethod)) === FALSE) {
       throw new WrongHttpMethodException($httpMethod);
@@ -63,7 +67,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @param   \Reflector         $reflection Information about current action
    * @throws  ForbiddenRequestException
    */
-  protected function restrictUnauthorizedAccess(\Reflector $reflection) {
+  private function restrictUnauthorizedAccess(\Reflector $reflection) {
     if ($reflection->hasAnnotation('LoggedIn')
         || $reflection->hasAnnotation('Role')) {
       $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());

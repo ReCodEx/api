@@ -27,6 +27,8 @@ class Instance implements JsonSerializable
    */
   protected $name;
 
+  public function getName() { return $this->name; }
+
   /**
    * @ORM\Column(type="string")
    */

@@ -9,6 +9,9 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
 
+/**
+ * @LoggedIn
+ */
 class UploadedFilesPresenter extends BasePresenter {
 
   private $uploadedFiles;
