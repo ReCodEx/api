@@ -4,7 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exception\WrongCredentialsException;
 use App\Model\Repository\Logins;
-use App\Authentication\AccessManager;
+use App\Security\AccessManager;
 
 class LoginPresenter extends BasePresenter {
 

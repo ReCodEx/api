@@ -8,8 +8,10 @@ use App\Exception\BadRequestException;
 use App\Exception\ForbiddenRequestException;
 use App\Exception\WrongHttpMethodException;
 use App\Exception\NotImplementedException;
+use App\Exception\InternalServerErrorException;
 
-use App\Authentication\AccessManager;
+use App\Security\AccessManager;
+use App\Security\Authorizator;
 use App\Model\Repository\Users;
 
 use Nette\Security\Identity;
@@ -25,6 +27,9 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   /** @inject @var AccessManager */
   public $accessManager;
+
+  /** @inject @var Authorizator */
+  public $authorizator;
  
   /** @inject @var Application */
   public $application;
@@ -32,11 +37,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
-
-    // take care of preflight requests - terminate them right away with a 200 response
-    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
-      $this->terminate();
-    }
+    $this->tryLogin();
 
     try {
       $presenterReflection = new Reflection\ClassType(get_class($this));
@@ -46,10 +47,27 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new NotImplementedException;
     }
 
-    $this->restrictHttpMethod($actionReflection);
     $this->validateRequiredParams($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
+
+    // take care of preflight requests - terminate them right away with a 200 response
+    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
+      $this->terminate();
+    }
+
+    // now we can restrict HTTP methods other than OPTIONS
+    $this->restrictHttpMethod($actionReflection);
+  }
+
+  private function tryLogin() {
+    // try {
+      $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
+      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
+      $this->user->setAuthorizator($this->authorizator);
+    // } catch (\Exception $e) {
+    //   // silent error
+    // }
   }
 
   /**
@@ -81,8 +99,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
           $this->validateQueryField($name, $validationRule);
         
         default:
-          // throw new Inte()
-          break;
+          throw new InternalServerErrorException("Unknown parameter type '$type'");
       }
     }
   }
@@ -112,24 +129,30 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   private function validateValue($param, $value, $validationRule) {
     if (Validators::is($value, $validationRule)) {
       throw new InvalidArgumentException($param, "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators");
-    }    
+    }
   }
 
   /**
-   * Restricts access to certain actions for logged in users in certain roles
+   * Restricts access to certain actions according to ACL
    * @param   \Reflector         $reflection Information about current action
    * @throws  ForbiddenRequestException
    */
   private function restrictUnauthorizedAccess(\Reflector $reflection) {
-    if ($reflection->hasAnnotation('LoggedIn')
-        || $reflection->hasAnnotation('Role')) {
-      $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
-      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
+    if ($reflection->hasAnnotation('LoggedIn') && !$this->user->isLoggedIn()) {
+      throw new ForbiddenRequestException('You must be logged in - you probably didn\'t provide a valid access token in the HTTP request.');
+    }
+        
+    if ($reflection->hasAnnotation('Role')
+      && !$this->user->isInRole($reflection->getAnnotation('Role'))) {
+        throw new ForbiddenRequestException('You do not have sufficient rights to perform this action.');
+    }
 
-      if ($reflection->hasAnnotation('Role')
-        && !$this->user->isInRole($reflection->getAnnotation('Role'))) {
-          throw new ForbiddenRequestException('You do not have sufficient rights to perform this action.');
+    if ($reflection->hasAnnotation('UserIsAllowed')) {
+      foreach ($reflection->getAnnotation('UserIsAllowed') as $resource => $action) {
+        if ($this->user->isAllowed($resource, $action) === FALSE) {
+          throw new ForbiddenRequestException('You are not allowed to perform this action.');
         }
+      }
     }
   }
 

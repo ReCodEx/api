@@ -15,26 +15,32 @@ class Permission implements JsonSerializable
 
   /**
    * @ORM\Id
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="integer")
+   * @ORM\GeneratedValue(strategy="AUTO")
    */
   protected $id;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Role")
+   * @ORM\ManyToOne(targetEntity="Role", inversedBy="permissions")
    */
   protected $role;
 
   public function getRoleId() { return $this->role->getId(); }
 
   /**
-   * @ORM\ManyToOne(targetEntity="Resource")
+   * @ORM\ManyToOne(targetEntity="Resource", inversedBy="permissions")
    */
   protected $resource;
 
   public function getResourceId() { return $this->resource->getId(); }
 
   /**
-   * @ORM\Column(type="bool")
+   * @ORM\Column(type="string")
+   */
+  protected $action;
+
+  /**
+   * @ORM\Column(type="boolean")
    */
   protected $isAllowed;
 
@@ -42,9 +48,9 @@ class Permission implements JsonSerializable
 
   public function jsonSerialize() {
     return [
-      "id" => $this->id,
       "role" => $this->role,
       "resource" => $this->resource,
+      "action" => $this->action,
       "isAllowed" => $this->isAllowed
     ];
   }

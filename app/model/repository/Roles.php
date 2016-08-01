@@ -22,6 +22,10 @@ class Roles extends Nette\Object {
         return $this->roles->findAll();
     }
 
+    public function findLowestLevelRoles() {
+        return $this->roles->findBy([ 'parentRole' => NULL ]);
+    }
+
     public function get($id) {
         return $this->roles->findOneById($id);
     }

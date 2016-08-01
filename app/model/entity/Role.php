@@ -26,7 +26,13 @@ class Role implements JsonSerializable
    */
   protected $parentRole;
 
-  public funtion getParentRoleId() { $this->parentRole->getId(); }
+  public function getParentRole() {
+    return $this->parentRole;
+  }
+
+  public function getParentRoleId() {
+    return $this->parentRole === NULL ? NULL : $this->parentRole->getId();
+  }
 
   /**
    * @ORM\OneToMany(targetEntity="Role", mappedBy="parentRole")
@@ -34,7 +40,7 @@ class Role implements JsonSerializable
   protected $childRoles;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Permission", inversedBy="role")
+   * @ORM\OneToMany(targetEntity="Permission", mappedBy="role")
    */
   protected $permissions;
 

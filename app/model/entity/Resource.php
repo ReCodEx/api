@@ -20,20 +20,12 @@ class Resource implements JsonSerializable
   protected $id;
 
   /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
-
-  /**
-   * @ORM\ManyToOne(targetEntity="Permission", inversedBy="role")
+   * @ORM\OneToMany(targetEntity="Permission", mappedBy="resource")
    */
   protected $permissions;
 
   public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "name" => $this->name
-    ];
+    return $this->id;
   }
 
 }

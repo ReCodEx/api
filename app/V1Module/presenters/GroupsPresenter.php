@@ -24,7 +24,7 @@ class GroupsPresenter extends BasePresenter {
   protected function findGroupOrThrow($id) {
     $group = $this->groups->get($id);
     if (!$group) {
-      throw new NotFoundException;
+      throw new NotFoundException("Group $id");
     }
 
     return $group;
@@ -32,6 +32,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-all")
    */
   public function actionDefault() {
     $groups = $this->groups->findAll();

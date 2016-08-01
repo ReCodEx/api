@@ -4,6 +4,9 @@ namespace App\V1Module\Presenters;
 
 class DefaultPresenter extends BasePresenter {
 
+  /**
+   * @GET
+   */
   public function actionDefault() {
     $this->sendJson([
       'project' => 'ReCodEx API', 

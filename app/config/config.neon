@@ -22,7 +22,8 @@ extensions:
 
 services:
   router: App\RouterFactory::createRouter
-  - App\Authentication\AccessManager
+  - App\Security\AccessManager
+  - App\Security\Authorizator
 
   # models - repositories
   - App\Model\Repository\Exercises()
@@ -38,15 +39,9 @@ services:
   - App\Model\Repository\UploadedFiles()
   - App\Model\Repository\Users()
 
-security:
-  authorizator: App\Security\Authorizator # @todo Is this gonna work??  
-
 doctrine:
   user: 'root'
   password: ''
   dbname: 'recodex-api'
   metadata:
     App: %appDir%
-
-includes:
-  - acl.neon
