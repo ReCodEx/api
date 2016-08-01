@@ -9,6 +9,7 @@ use GuzzleHttp\Client;
 use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use App\Exception\SubmissionFailedException;
+use App\Exception\ForbiddenRequestException;
 
 use GuzzleHttp\Exception\RequestException;
 use ZMQ;
@@ -126,8 +127,9 @@ class Submission implements JsonSerializable
     public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, array $files) {
       // the 'user' must be a student and the 'loggedInUser' must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE
-        || ($user->getId() === $loggedInUser->getId()
-            && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
+        ) {
+        // || ($user->getId() === $loggedInUser->getId() // @todo fix this mess
+        //     && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
         throw new ForbiddenRequestException("{$user->getName()} cannot submit solutions for this assignment.");
       }
 
@@ -181,7 +183,7 @@ class Submission implements JsonSerializable
      * @param array $files
      * @return array
      */
-    private function prepareFilesForSendingToRemoteServer(Submission $submission, array $files) {
+    private function prepareFilesForSendingToRemoteServer(Submission $submission, $files) {
       $filesToSubmit = array_map(function ($file) {
         return [
           'name' => $file->name,
@@ -190,6 +192,8 @@ class Submission implements JsonSerializable
         ];
       }, $files->toArray());
       
+      // @todo: insert the ID in the YML
+
       $jobConfigFile = [
         'name' => 'job-config.yml',
         'filename' => 'job-config.yml',

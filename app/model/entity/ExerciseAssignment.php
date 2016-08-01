@@ -104,7 +104,9 @@ class ExerciseAssignment implements JsonSerializable
   protected $group;
 
   public function canReceiveSubmissions() {
-    return $this->group->hasValidLicence();
+    // return $this->group->hasValidLicence(); // @todo WTF?!! $group->getInstance() always returns NULL...
+    // @todo check the deadline
+    return TRUE;
   }
 
   /**
@@ -112,6 +114,13 @@ class ExerciseAssignment implements JsonSerializable
     */
   public function canAccessAsStudent(User $user) {
     return $this->group->isStudentOf($user);
+  }
+
+  /**
+    * Can a specific user access this assignment as supervisor?
+    */
+  public function canAccessAsSupervisor(User $user) {
+    return $this->group->isSupervisorOf($user);
   }
 
   public function jsonSerialize() {
@@ -122,8 +131,8 @@ class ExerciseAssignment implements JsonSerializable
       'exercise' => $this->exercise,
       'group' => $this->group,
       'deadline' => [
-        'first' => $this->firstDeadline,
-        'second' => $this->secondDeadline
+        'first' => $this->firstDeadline->getTimestamp(),
+        'second' => $this->secondDeadline->getTimestamp()
       ]
     ];
   }

@@ -29,7 +29,12 @@ class Group implements JsonSerializable
   protected $name;
 
   public function getName() { return $this->name; }
-    
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $description;
+
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
    */
@@ -106,11 +111,13 @@ class Group implements JsonSerializable
     return [
       'id' => $this->id,
       'name' => $this->name,
+      'description' => $this->description,
       'supervisors' => $this->supervisors->toArray(),
       'hasValidLicence' => $this->hasValidLicence(),
       'instanceId' => $instance ? $instance->getId() : NULL,
       'parentGroupId' => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      'childGroups' => $this->childGroups->toArray()
+      'childGroups' => $this->childGroups->toArray(),
+      'assignments' => array_map(function ($assignment) { return $assignment->getId(); }, $this->getAssignments()->toArray())
     ];
   }
 

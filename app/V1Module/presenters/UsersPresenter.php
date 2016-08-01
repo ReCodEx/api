@@ -4,6 +4,9 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Users;
 
+/**
+ * @LoggedIn
+ */
 class UsersPresenter extends BasePresenter {
 
   /**

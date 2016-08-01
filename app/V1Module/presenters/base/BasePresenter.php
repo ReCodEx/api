@@ -98,6 +98,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
+    // @todo set HTTP response code
     $this->sendJson([
       'success' => TRUE,
       'code' => $code,

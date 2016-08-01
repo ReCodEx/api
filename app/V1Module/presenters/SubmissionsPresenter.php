@@ -13,6 +13,9 @@ use App\Exception\NotFoundException;
 use App\Exception\BadRequestException;
 use App\Exception\SubmissionEvaluationFailedException;
 
+/**
+ * @LoggedIn
+ */
 class SubmissionsPresenter extends BasePresenter {
 
   /** @var Submissions */

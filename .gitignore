@@ -6,3 +6,4 @@ vendor/*
 !web.config
 app/config/config.local.neon
 .idea
+uploaded_data/*

@@ -12,6 +12,9 @@ use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
 
+/**
+ * @LoggedIn
+ */
 class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /** @var ExerciseAssignments */
@@ -73,7 +76,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionSubmit(string $id) {
     $assignment = $this->findAssignmentOrFail($id);
-    $user = $this->findUserOrThrow('me');
 
     // validate input parameters
     $params = $this->getHttpRequest()->getPost();
@@ -84,11 +86,18 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       }
     }
 
+    $loggedInUser = $this->findUserOrThrow('me');
+    if (isset($params['userId'])) {
+      $user = $this->findUserOrThrow($params['userId']);
+    } else {
+      $user = $loggedInUser;
+    }
+
     // collect the array of already uploaded files
     $files = $this->files->findAllById($params['files']);
 
     // prepare a record in the database
-    $submission = Submission::createSubmission($params['note'], $assignment, $user, $files);
+    $submission = Submission::createSubmission($params['note'], $assignment, $user, $loggedInUser, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);
@@ -102,7 +111,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $this->files->flush();
       $this->sendSuccessResponse([
         'submission' => $submission,
-        'webSocketChannel' => $submission->id
+        // 'webSocketChannel' => $submission->id
+        'webSocketChannel' => 'hippoes'
       ]);
     } else {
       throw new SubmissionFailedException;

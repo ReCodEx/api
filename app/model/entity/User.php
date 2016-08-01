@@ -39,6 +39,10 @@ class User implements JsonSerializable
      */
     protected $lastName;
 
+    public function getName() {
+      return trim("{$this->degreesBeforeName} {$this->firstName} {$this->lastName} {$this->degreesAfterName}");
+    }
+
     /**
      * @ORM\Column(type="string")
      */
@@ -100,7 +104,7 @@ class User implements JsonSerializable
     public function jsonSerialize() {
       return [
         'id' => $this->id,
-        'fullName' => trim("{$this->degreesBeforeName} {$this->firstName} {$this->lastName} {$this->degreesAfterName}"),
+        'fullName' => $this->getName(),
         'name' => [
           'degreesBeforeName' => $this->degreesBeforeName,
           'firstName' => $this->firstName,

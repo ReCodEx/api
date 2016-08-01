@@ -5,6 +5,9 @@ namespace App\V1Module\Presenters;
 use App\Exception\NotFoundException;
 use App\Model\Repository\Exercises;
 
+/**
+ * @LoggedIn
+ */
 class ExercisesPresenter extends BasePresenter {
 
   /** @var Exercises */

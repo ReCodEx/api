@@ -6,6 +6,9 @@ use App\Model\Repository\Groups;
 use App\Exception\BadRequestException;
 use App\Exception\NotFoundException;
 
+/**
+ * @LoggedIn
+ */
 class GroupsPresenter extends BasePresenter {
 
   /** @var Groups */
