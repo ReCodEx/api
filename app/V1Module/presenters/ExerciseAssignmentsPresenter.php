@@ -73,31 +73,26 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @RequiredField(type="post", name="note")
+   * @RequiredField(type="post", name="files")
    */
   public function actionSubmit(string $id) {
     $assignment = $this->findAssignmentOrFail($id);
-
-    // validate input parameters
-    $params = $this->getHttpRequest()->getPost();
-    $requiredParams = [ 'note', 'files' ];
-    foreach ($requiredParams as $param) {
-      if (isset($params[$param]) === FALSE) { 
-        throw new BadRequestException("Missing required parameter $param");
-      }
-    }
+    $req = $this->getHttpRequest();
 
     $loggedInUser = $this->findUserOrThrow('me');
-    if (isset($params['userId'])) {
-      $user = $this->findUserOrThrow($params['userId']);
+    $userId = $req->getPost('userId');
+    if ($userId !== NULL) {
+      $user = $this->findUserOrThrow($userId);
     } else {
       $user = $loggedInUser;
     }
 
     // collect the array of already uploaded files
-    $files = $this->files->findAllById($params['files']);
+    $files = $this->files->findAllById($req->getPost('files'));
 
     // prepare a record in the database
-    $submission = Submission::createSubmission($params['note'], $assignment, $user, $loggedInUser, $files);
+    $submission = Submission::createSubmission($req->getPost('note'), $assignment, $user, $loggedInUser, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);

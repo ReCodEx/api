@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Authentication;
+namespace App\Security;
 
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
