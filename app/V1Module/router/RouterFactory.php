@@ -69,6 +69,7 @@ class RouterFactory {
 
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new Route("$prefix", "Users:");
+    $router[] = new Route("$prefix/create-account", "Users:createAccount");
     $router[] = new Route("$prefix/<id>", 'Users:detail');
     $router[] = new Route("$prefix/<id>/groups", 'Users:groups');
     $router[] = new Route("$prefix/<id>/exercises", 'Users:exercises');

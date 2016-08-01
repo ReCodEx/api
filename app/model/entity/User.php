@@ -119,17 +119,28 @@ class User implements JsonSerializable
   
     /**
      * The name of the user
-     * @param  string $name   Name of the user
-     * @param  Avatar $avatar User's avatar of choice
+     * @param  string $name   Name of the user     
+     * @param  string $email  Email address of the user     
      * @return User
      */
-    public static function createAnonymousUser($name) {
+    public static function createUser(
+      string $email,
+      string $firstName,
+      string $lastName,
+      string $degreesBeforeName,
+      string $degreesAfterName,
+      Role   $role
+    ) {
         $user = new User;
-        $user->name = $name;
-        $user->email = NULL;
+        $user->firstName = $firstName;
+        $user->lastName = $lastName;
+        $user->degreesBeforeName = $degreesBeforeName;
+        $user->degreesAfterName = $degreesAfterName;
+        $user->email = $email;
         $user->isVerified = FALSE;
         $user->groups = new ArrayCollection;
         $user->exercises = new ArrayCollection;
+        $user->role = $role;
         return $user;
     }
 }

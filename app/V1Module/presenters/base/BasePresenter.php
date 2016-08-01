@@ -16,6 +16,7 @@ use Nette\Security\Identity;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
+use Nette\Utils\Arrays;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
   
@@ -46,6 +47,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     $this->restrictHttpMethod($actionReflection);
+    $this->validateRequiredParams($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
   }
@@ -60,6 +62,57 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($reflection->hasAnnotation(strtoupper($httpMethod)) === FALSE) {
       throw new WrongHttpMethodException($httpMethod);
     }
+  }
+
+  private function validateRequiredParams(\Reflector $reflection) {
+    $annotations = $reflection->getAnnotations();
+    $requiredFields = Arrays::get($annotations, 'RequiredField', []);
+
+    foreach ($requiredFields as $field) {
+      $type = strtolower(Arrays::get($field, 'type'));
+      $name = Arrays::get($field, 'name');
+      $validationRule = Arrays::get($field, 'validation', NULL);
+
+      switch ($type) {
+        case 'post':
+          $this->validatePostField($name, $validationRule);
+          break;
+        case 'query':
+          $this->validateQueryField($name, $validationRule);
+        
+        default:
+          // throw new Inte()
+          break;
+      }
+    }
+  }
+
+  private function validatePostField($name, $validationRule = NULL) {
+    $value = $this->getHttpRequest()->getPost($param);
+    if ($value === NULL) { 
+      throw new BadRequestException("Missing required POST field $param");
+    }
+
+    if ($validationRule !== NULL) {
+      $this->validateValue($param, $value, $validationRule);      
+    }
+  }
+
+  private function validateQueryField($name, $validationRule = NULL) {
+    $value = $this->getHttpRequest()->getQuery($param);
+    if ($value === NULL) { 
+      throw new BadRequestException("Missing required query field $param");
+    }
+
+    if ($validationRule !== NULL) {
+      $this->validateValue($value, $validationRule);   
+    }
+  }
+
+  private function validateValue($param, $value, $validationRule) {
+    if (Validators::is($value, $validationRule)) {
+      throw new InvalidArgumentException($param, "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators");
+    }    
   }
 
   /**

@@ -3,7 +3,10 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Exception\InvalidArgumentException;
+
 use Nette\Security\Passwords;
+use Nette\Utils\Validators;
 
 /**
  * @ORM\Entity
@@ -54,6 +57,18 @@ class Login
     }
 
     return FALSE;
+  }
+
+  public static function createLogin(User $user, string $email, string $password) {
+    if (Validators::isEmail($email) === FALSE) {
+      throw new InvalidArgumentException('email', 'Username must be a valid email address.');
+    }
+
+    $login = new Login;
+    $login->username = $email;
+    $login->passwordHash = self::hashPassword($password);
+    $login->user = $user;
+    return $login;
   }
 
 }

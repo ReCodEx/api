@@ -30,10 +30,16 @@ services:
   - App\Model\Repository\Groups()
   - App\Model\Repository\Instances()
   - App\Model\Repository\Logins()
+  - App\Model\Repository\Permissions()
+  - App\Model\Repository\Resources()
+  - App\Model\Repository\Roles()
   - App\Model\Repository\Submissions()
   - App\Model\Repository\SubmissionEvaluations()
   - App\Model\Repository\UploadedFiles()
   - App\Model\Repository\Users()
+
+security:
+  authorizator: App\Security\Authorizator # @todo Is this gonna work??  
 
 doctrine:
   user: 'root'
@@ -41,3 +47,6 @@ doctrine:
   dbname: 'recodex-api'
   metadata:
     App: %appDir%
+
+includes:
+  - acl.neon

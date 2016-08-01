@@ -70,19 +70,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @RequiredField(type="post", name="note")
+   * @RequiredField(type="post", name="files")
    */
   public function actionSubmit(string $id) {
     $assignment = $this->findAssignmentOrFail($id);
     $user = $this->findUserOrThrow('me');
-
-    // validate input parameters
-    $params = $this->getHttpRequest()->getPost();
-    $requiredParams = [ 'note', 'files' ];
-    foreach ($requiredParams as $param) {
-      if (isset($params[$param]) === FALSE) { 
-        throw new BadRequestException("Missing required parameter $param");
-      }
-    }
 
     // collect the array of already uploaded files
     $files = $this->files->findAllById($params['files']);
