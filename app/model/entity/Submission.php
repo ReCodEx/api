@@ -8,7 +8,10 @@ use JsonSerializable;
 use GuzzleHttp\Client;
 use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
+use Nette\Utils\Arrays;
+
 use App\Exception\SubmissionFailedException;
+use App\Exception\MalformedJobConfigException;
 use App\Exception\ForbiddenRequestException;
 
 use GuzzleHttp\Exception\RequestException;
@@ -16,6 +19,7 @@ use ZMQ;
 use ZMQSocket;
 use ZMQContext;
 use ZMQSocketException;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
@@ -99,6 +103,16 @@ class Submission implements JsonSerializable
 
     public function setEvaluation(SubmissionEvaluation $evaluation) {
       $this->evaluation = $evaluation;
+    }
+
+    /** @var null|int This value is not persisted to the database - it is loaded when the job config YML file is examined. */
+    private $tasksCount = NULL;
+
+    /**
+     * @return null|int
+     */
+    public function getTasksCount() {
+      return $this->tasksCount;
     }
 
     /**
@@ -192,16 +206,47 @@ class Submission implements JsonSerializable
         ];
       }, $files->toArray());
       
-      // @todo: insert the ID in the YML
-
+      $jobConfigYml = $this->getJobConfig($submission);
       $jobConfigFile = [
         'name' => 'job-config.yml',
         'filename' => 'job-config.yml',
-        'contents' => fopen($submission->exerciseAssignment->jobConfigFilePath, 'r')
+        'contents' => $jobConfigYml
       ];
 
       array_push($filesToSubmit, $jobConfigFile);
       return $filesToSubmit;
+    }
+
+    /**
+     * @param Submission $submission  The submission entity
+     * @throws MalformedJobConfigException
+     * @return string
+     */
+    private function getJobConfig(Submission $submission): string {
+      $configFileName = realpath($submission->exerciseAssignment->getJobConfigFilePath());
+      if ($configFileName === FALSE) {
+        throw new MalformedJobConfigException('The configuration file does not exist on the server.');
+      }
+
+      $jobConfig = file_get_contents($configFileName);
+      if ($jobConfig === FALSE) {
+        throw new MalformedJobConfigException('Cannot open the configuration file for reading.');
+      }
+
+      try {
+        $parsedConfig = Yaml::parse($jobConfig);
+      } catch (ParseException $e) {
+        throw new MalformedJobConfigException('Assignment configuration file is not a valid YAML file and it cannot be parsed.');
+      }
+
+      // update the job-id field 
+      $parsedConfig['submission']['job-id'] = $submission->getId();
+
+      // count the number of tasks - so we can calculate the progress
+      // of evaluation in the browser
+      $this->tasksCount = count($parsedConfig['tasks']); 
+
+      return YAML::dump($parsedConfig);
     }
 
     /**

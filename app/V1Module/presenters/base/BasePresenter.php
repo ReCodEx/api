@@ -37,6 +37,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
+
+    // take care of preflight requests - terminate them right away with a 200 response
+    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
+      $this->terminate();
+    }
+
     $this->tryLogin();
 
     try {
@@ -51,23 +57,18 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
 
-    // take care of preflight requests - terminate them right away with a 200 response
-    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
-      $this->terminate();
-    }
-
     // now we can restrict HTTP methods other than OPTIONS
     $this->restrictHttpMethod($actionReflection);
   }
 
   private function tryLogin() {
-    // try {
+    try {
       $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
       $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
       $this->user->setAuthorizator($this->authorizator);
-    // } catch (\Exception $e) {
-    //   // silent error
-    // }
+    } catch (\Exception $e) {
+      // silent error
+    }
   }
 
   /**
@@ -87,9 +88,9 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $requiredFields = Arrays::get($annotations, 'RequiredField', []);
 
     foreach ($requiredFields as $field) {
-      $type = strtolower(Arrays::get($field, 'type'));
-      $name = Arrays::get($field, 'name');
-      $validationRule = Arrays::get($field, 'validation', NULL);
+      $type = strtolower($field->type);
+      $name = $field->name;
+      $validationRule = isset($field->validation) ? $field->validation : NULL;
 
       switch ($type) {
         case 'post':
@@ -104,7 +105,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private function validatePostField($name, $validationRule = NULL) {
+  private function validatePostField($param, $validationRule = NULL) {
     $value = $this->getHttpRequest()->getPost($param);
     if ($value === NULL) { 
       throw new BadRequestException("Missing required POST field $param");
@@ -115,7 +116,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private function validateQueryField($name, $validationRule = NULL) {
+  private function validateQueryField($param, $validationRule = NULL) {
     $value = $this->getHttpRequest()->getQuery($param);
     if ($value === NULL) { 
       throw new BadRequestException("Missing required query field $param");

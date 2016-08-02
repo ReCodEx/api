@@ -35,6 +35,8 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $jobConfigFilePath;
 
+  public function getJobConfigFilePath() { return $this->jobConfigFilePath; }
+
   /**
     * @ORM\Column(type="datetime")
     */
@@ -128,7 +130,6 @@ class ExerciseAssignment implements JsonSerializable
       'id' => $this->id,
       'name' => $this->name,
       'description' => $this->getDescription(),
-      'exercise' => $this->exercise,
       'group' => $this->group,
       'deadline' => [
         'first' => $this->firstDeadline->getTimestamp(),

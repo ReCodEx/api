@@ -106,8 +106,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $this->files->flush();
       $this->sendSuccessResponse([
         'submission' => $submission,
-        // 'webSocketChannel' => $submission->id
-        'webSocketChannel' => 'hippoes'
+        'webSocketChannel' => [
+          'id' => $submission->getId(),
+          'expectedTasksCount' => $submission->getTasksCount()
+        ],
       ]);
     } else {
       throw new SubmissionFailedException;
