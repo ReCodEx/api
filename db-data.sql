@@ -5,6 +5,9 @@ SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
+CREATE DATABASE `recodex-api` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `recodex-api`;
+
 DROP TABLE IF EXISTS `exercise`;
 CREATE TABLE `exercise` (
   `id` varchar(36) NOT NULL,
@@ -38,18 +41,20 @@ CREATE TABLE `exercise_assignment` (
   `max_points_before_first_deadline` smallint(6) NOT NULL,
   `second_deadline` timestamp NOT NULL,
   `max_points_before_second_deadline` smallint(6) NOT NULL,
+  `submissions_count_limit` smallint(6) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `group_id` (`group_id`),
   CONSTRAINT `exercise_assignment_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `exercise_assignment` (`id`, `group_id`, `exercise_id`, `name`, `job_config_file_path`, `description`, `first_deadline`, `max_points_before_first_deadline`, `second_deadline`, `max_points_before_second_deadline`) VALUES
-('25f248c4-50e8-11e6-beb8-9e71128cae77',	'5c38c32a-50e5-11e6-beb8-9e71128cae77',	'ce1f2a4a-50e7-11e6-beb8-9e71128cae77',	'Hrošíci pro dlouhé letní večery',	'C:\\Users\\simon-desktop\\Documents\\Github\\recodex\\api\\exercises\\hrosi-ohradka\\submit\\job-config.yml',	NULL,	'2016-08-23 15:17:40',	10,	'2016-08-31 21:59:59',	7);
+INSERT INTO `exercise_assignment` (`id`, `group_id`, `exercise_id`, `name`, `job_config_file_path`, `description`, `first_deadline`, `max_points_before_first_deadline`, `second_deadline`, `max_points_before_second_deadline`, `submissions_count_limit`) VALUES
+('25f248c4-50e8-11e6-beb8-9e71128cae77',	'5c38c32a-50e5-11e6-beb8-9e71128cae77',	'ce1f2a4a-50e7-11e6-beb8-9e71128cae77',	'Hrošíci pro dlouhé letní večery',	'C:\\Users\\simon-desktop\\Documents\\Github\\recodex\\api\\exercises\\hrosi-ohradka\\submit\\job-config.yml',	NULL,	'2016-08-04 15:08:30',	10,	'2016-08-31 21:59:59',	7,	10);
 
 DROP TABLE IF EXISTS `group`;
 CREATE TABLE `group` (
   `id` varchar(36) NOT NULL,
   `name` varchar(50) NOT NULL,
+  `description` text NOT NULL,
   `parent_group_id` varchar(36) DEFAULT NULL,
   `instance_id` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -59,10 +64,10 @@ CREATE TABLE `group` (
   CONSTRAINT `group_ibfk_2` FOREIGN KEY (`instance_id`) REFERENCES `instance` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `group` (`id`, `name`, `parent_group_id`, `instance_id`) VALUES
-('50ebf7ee-50e5-11e6-beb8-9e71128cae77',	'Programování I',	'de171b8f-ea15-42aa-8b5a-6ff2164beccb',	NULL),
-('5c38c32a-50e5-11e6-beb8-9e71128cae77',	'Programování II',	'de171b8f-ea15-42aa-8b5a-6ff2164beccb',	NULL),
-('de171b8f-ea15-42aa-8b5a-6ff2164beccb',	'Akademický rok 2016/2017',	NULL,	'91f4882f-30f3-4bc8-87d2-def0e2716c94');
+INSERT INTO `group` (`id`, `name`, `description`, `parent_group_id`, `instance_id`) VALUES
+('50ebf7ee-50e5-11e6-beb8-9e71128cae77',	'Programování I',	'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mauris urna, congue ac neque ac, semper ullamcorper est. In eget magna ornare, elementum lectus eu, condimentum est. Vestibulum luctus massa justo, hendrerit consectetur mauris dapibus sed. Integer tristique risus quis diam ultricies commodo sed vestibulum nunc. Phasellus in rhoncus sapien. Curabitur pellentesque sed lectus sed volutpat. Morbi a vulputate orci, vitae gravida elit. In hac habitasse platea dictumst. In rutrum, ex et pellentesque maximus, turpis sapien iaculis tellus, ac placerat est purus eu ex. Cras malesuada justo rhoncus neque tristique porta. Sed vel libero eget ipsum sollicitudin gravida. Integer in commodo turpis. Aliquam sed dictum lectus. Nullam venenatis quis turpis id posuere.\n\nCras sit amet maximus mauris. Donec at tincidunt urna. Aenean vel ipsum at nulla rutrum dictum sit amet non odio. Nulla sagittis, ipsum in imperdiet laoreet, erat nisi laoreet urna, eget volutpat ligula felis vitae nulla. Praesent accumsan fermentum diam at sagittis. Nulla at pellentesque libero. Vivamus sit amet ante neque. Vestibulum dapibus leo quis malesuada volutpat. In pellentesque nec mi eu finibus.',	'de171b8f-ea15-42aa-8b5a-6ff2164beccb',	NULL),
+('5c38c32a-50e5-11e6-beb8-9e71128cae77',	'Programování II',	'Nullam dignissim risus non arcu bibendum fermentum. Integer dictum leo porta, fermentum velit nec, viverra ante. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse tempus, enim eu pretium lobortis, dolor lectus maximus nibh, sit amet accumsan nisi dui sit amet dolor. Vivamus tincidunt, ex et vestibulum accumsan, eros augue aliquam nunc, fringilla pretium orci tortor ultricies lectus. Quisque molestie accumsan accumsan. Morbi sit amet enim sed ex bibendum sagittis. Praesent consequat ante a tortor vulputate, eget vestibulum quam ullamcorper. Proin semper mauris augue, nec mattis augue pellentesque ac. Sed at lacus a nibh tempus consectetur.\n\nPhasellus molestie nulla massa, id eleifend urna aliquam vel. In elementum est ac magna ullamcorper, vel aliquam lacus sollicitudin. Aliquam placerat diam quis enim ullamcorper, ac pretium ipsum dignissim. Morbi vitae feugiat leo, vel interdum augue. Phasellus finibus ullamcorper metus, at lobortis odio suscipit sit amet. Aenean vel risus vel lacus faucibus malesuada in at augue. Quisque interdum nisi id felis sodales, sed egestas turpis blandit. Nam convallis nec enim gravida ornare. Vivamus in nulla enim. Etiam tempus faucibus purus, ut convallis ligula porttitor laoreet.\n\nDuis rhoncus pulvinar mi molestie venenatis. Maecenas eget turpis accumsan, sodales leo eget, fermentum nulla. Duis in turpis facilisis, aliquam erat quis, faucibus nulla. Sed tortor libero, euismod in dapibus ut, lacinia eget lorem. Phasellus ornare vel justo at fermentum. Ut mauris eros, malesuada quis metus vitae, vehicula laoreet ex. Integer ac ipsum mattis, sagittis est sit amet, congue odio. Donec in erat quis massa tincidunt vehicula. Nunc sed mauris sit amet dolor consequat placerat. Proin ut turpis in sapien elementum cursus at vel orci.\n\n',	'de171b8f-ea15-42aa-8b5a-6ff2164beccb',	NULL),
+('de171b8f-ea15-42aa-8b5a-6ff2164beccb',	'Akademický rok 2016/2017',	'',	NULL,	'91f4882f-30f3-4bc8-87d2-def0e2716c94');
 
 DROP TABLE IF EXISTS `group_student`;
 CREATE TABLE `group_student` (
@@ -124,6 +129,45 @@ CREATE TABLE `licence` (
 INSERT INTO `licence` (`id`, `name`, `instance_id`, `is_valid`, `valid_until`, `note`) VALUES
 ('7f5d2fc6-f7f2-4ae4-a6dd-81dfe5157555',	'Výuka na MFF UK na ak. rok 2016/2017',	'91f4882f-30f3-4bc8-87d2-def0e2716c94',	1,	'2017-09-30 21:59:59',	'');
 
+DROP TABLE IF EXISTS `login`;
+CREATE TABLE `login` (
+  `id` varchar(36) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `password_hash` varchar(100) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `login_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `login` (`id`, `username`, `password_hash`, `user_id`) VALUES
+('',	'rozsival',	'$2y$11$IIWzr6G15c1d5MrYCXarbOOBEjUZj3RXWFOvaCOENLPqW9BVWvZZG',	'1fe2255e-50e2-11e6-beb8-9e71128cae77'),
+('ba77aa8b-5a4f-11e6-9175-180373206d10',	'simon@rozsival.com',	'$2y$11$iNV1hYhAJioBq2.PIukcIORbHuFua9xjYDKE0J0kOLSWjp2B8DXSG',	'ba7644cb-5a4f-11e6-9175-180373206d10');
+
+DROP TABLE IF EXISTS `permission`;
+CREATE TABLE `permission` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `role_id` varchar(50) NOT NULL,
+  `resource_id` varchar(50) NOT NULL,
+  `action` varchar(50) NOT NULL,
+  `is_allowed` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `role_id` (`role_id`),
+  KEY `resource_id` (`resource_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+INSERT INTO `permission` (`id`, `role_id`, `resource_id`, `action`, `is_allowed`) VALUES
+(1,	'admin',	'groups',	'view-all',	1);
+
+DROP TABLE IF EXISTS `resource`;
+CREATE TABLE `resource` (
+  `id` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `resource` (`id`) VALUES
+('groups');
+
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role` (
   `id` varchar(50) NOT NULL,
@@ -157,9 +201,6 @@ CREATE TABLE `submission` (
   CONSTRAINT `submission_ibfk_3` FOREIGN KEY (`submission_evaluation_id`) REFERENCES `submission_evaluation` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `submission` (`id`, `exercise_assignment_id`, `submission_evaluation_id`, `user_id`, `note`, `results_url`, `submitted_at`) VALUES
-('8b306e67-51b5-11e6-a145-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	NULL,	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'bind them!!',	'http://195.113.17.8:9999/results/8b306e67-51b5-11e6-a145-180373206d10.zip',	'2016-07-24 15:44:44'),
-('c95f9b6a-51bf-11e6-a145-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	'6cfb0e40-51c1-11e6-a145-180373206d10',	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'bind them!!',	'http://195.113.17.8:9999/results/c95f9b6a-51bf-11e6-a145-180373206d10.zip',	'2016-07-24 16:58:04');
 
 DROP TABLE IF EXISTS `submission_evaluation`;
 CREATE TABLE `submission_evaluation` (
@@ -174,8 +215,6 @@ CREATE TABLE `submission_evaluation` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `submission_evaluation` (`id`, `score`, `points`, `evaluated_at`, `result_yml`, `is_valid`, `is_correct`, `evaluation_failed`) VALUES
-('6cfb0e40-51c1-11e6-a145-180373206d10',	0,	0,	'2016-07-24 17:09:48',	'job-id: c95f9b6a-51bf-11e6-a145-180373206d10\nresults:\n  - task-id: compilation\n    status: OK\n    sandbox_results:\n      wall-time: 0.097\n      time: 0.037\n      memory: 5904\n      exitsig: 0\n      exitcode: 0\n      status: OK\n      max-rss: 19696\n      killed: false\n      message: \"\"\n  - task-id: fetch_test_1\n    status: OK\n  - status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      memory: 128\n      wall-time: 0.079\n      max-rss: 1444\n      status: OK\n      message: \"\"\n      exitsig: 0\n      killed: false\n    task-id: evaluation_test_1\n  - status: OK\n    task-id: fetch_test_solution_1\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      status: OK\n      memory: 128\n      max-rss: 1320\n      time: 0\n      wall-time: 0.075\n      exitcode: 0\n      message: \"\"\n    task-id: judging_test_1\n    status: OK\n  - task-id: rm_junk_test_1\n    status: OK\n  - status: OK\n    task-id: fetch_test_2\n  - sandbox_results:\n      wall-time: 0.051\n      memory: 128\n      killed: false\n      status: OK\n      time: 0\n      message: \"\"\n      exitcode: 0\n      max-rss: 1444\n      exitsig: 0\n    status: OK\n    task-id: evaluation_test_2\n  - task-id: fetch_test_solution_2\n    status: OK\n  - sandbox_results:\n      wall-time: 0.035\n      message: \"\"\n      exitcode: 0\n      time: 0\n      exitsig: 0\n      killed: false\n      max-rss: 1320\n      memory: 128\n      status: OK\n    task-id: judging_test_2\n    status: OK\n  - task-id: rm_junk_test_2\n    status: OK\n  - task-id: fetch_test_3\n    status: OK\n  - task-id: evaluation_test_3\n    status: OK\n    sandbox_results:\n      max-rss: 1444\n      memory: 128\n      status: OK\n      message: \"\"\n      exitsig: 0\n      killed: false\n      exitcode: 0\n      time: 0\n      wall-time: 0.1\n  - task-id: fetch_test_solution_3\n    status: OK\n  - task-id: judging_test_3\n    status: OK\n    sandbox_results:\n      exitsig: 0\n      killed: false\n      max-rss: 1320\n      status: OK\n      time: 0\n      wall-time: 0.079\n      memory: 128\n      exitcode: 0\n      message: \"\"\n  - task-id: rm_junk_test_3\n    status: OK\n  - task-id: fetch_test_4\n    status: OK\n  - sandbox_results:\n      time: 0.002\n      wall-time: 0.095\n      memory: 252\n      exitsig: 0\n      killed: false\n      max-rss: 1528\n      status: OK\n      message: \"\"\n      exitcode: 0\n    task-id: evaluation_test_4\n    status: OK\n  - status: OK\n    task-id: fetch_test_solution_4\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      memory: 128\n      max-rss: 1320\n      status: OK\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.095\n    task-id: judging_test_4\n    status: OK\n  - status: OK\n    task-id: rm_junk_test_4\n  - task-id: fetch_test_5\n    status: OK\n  - status: OK\n    task-id: evaluation_test_5\n    sandbox_results:\n      exitcode: 0\n      time: 0.021\n      wall-time: 0.1\n      max-rss: 2032\n      status: OK\n      exitsig: 0\n      memory: 892\n      killed: false\n      message: \"\"\n  - task-id: fetch_test_solution_5\n    status: OK\n  - task-id: judging_test_5\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.095\n      memory: 128\n      max-rss: 1320\n      status: OK\n      exitsig: 0\n      killed: false\n      message: \"\"\n  - task-id: rm_junk_test_5\n    status: OK\n  - task-id: fetch_test_6\n    status: OK\n  - sandbox_results:\n      message: \"\"\n      max-rss: 4260\n      status: OK\n      exitsig: 0\n      killed: false\n      exitcode: 0\n      wall-time: 0.191\n      memory: 3324\n      time: 0.092\n    task-id: evaluation_test_6\n    status: OK\n  - task-id: fetch_test_solution_6\n    status: OK\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.095\n      memory: 128\n      max-rss: 1320\n      status: OK\n    task-id: judging_test_6\n    status: OK\n  - task-id: rm_junk_test_6\n    status: OK',	1,	0,	0);
 
 DROP TABLE IF EXISTS `uploaded_file`;
 CREATE TABLE `uploaded_file` (
@@ -192,8 +231,6 @@ CREATE TABLE `uploaded_file` (
   CONSTRAINT `uploaded_file_ibfk_4` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `uploaded_file` (`id`, `name`, `file_path`, `file_size`, `uploaded_at`, `user_id`, `submission_id`) VALUES
-('aad6f548-51b1-11e6-a145-180373206d10',	'solution.c',	'C:\\Users\\simon-desktop\\Documents\\Github\\recodex\\api\\uploaded_data/user_1fe2255e-50e2-11e6-beb8-9e71128cae77/solution_5794dbebd4d8c.c',	2433,	'2016-07-24 15:16:59',	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'c95f9b6a-51bf-11e6-a145-180373206d10');
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
@@ -205,13 +242,15 @@ CREATE TABLE `user` (
   `email` varchar(50) NOT NULL,
   `role_id` varchar(50) NOT NULL,
   `is_verified` tinyint(1) NOT NULL DEFAULT '0',
+  `is_allowed` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
   KEY `role_id` (`role_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `user` (`id`, `degrees_before_name`, `first_name`, `last_name`, `degrees_after_name`, `email`, `role_id`, `is_verified`) VALUES
-('1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Bc.',	'Šimon',	'Rozsíval',	'',	'simon.rozsival@gmail.com',	'student',	1);
+INSERT INTO `user` (`id`, `degrees_before_name`, `first_name`, `last_name`, `degrees_after_name`, `email`, `role_id`, `is_verified`, `is_allowed`) VALUES
+('1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Bc.',	'Šimon',	'Rozsíval',	'',	'simon.rozsival@gmail.com',	'superadmin',	1,	1),
+('ba7644cb-5a4f-11e6-9175-180373206d10',	'',	'Simon',	'Rozsival',	'',	'simon@rozsival.com',	'student',	0,	1);
 
--- 2016-07-25 09:56:08
+-- 2016-08-04 18:16:48
