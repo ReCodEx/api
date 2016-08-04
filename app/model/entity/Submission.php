@@ -121,10 +121,11 @@ class Submission implements JsonSerializable
     public function jsonSerialize() {
       return [
         'id' => $this->id,
-        'user' => $this->getUser(),
+        'userId' => $this->getUser()->getId(),
         'note' => $this->note,
-        'exerciseAssignment' => $this->getExerciseAssignment(),
-        'submittedAt' => $this->submittedAt
+        'exerciseAssignmentId' => $this->getExerciseAssignment()->getId(),
+        'submittedAt' => $this->submittedAt->getTimestamp(),
+        'evaluation' => $this->getEvaluation()
       ];
     }
 

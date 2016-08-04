@@ -7,6 +7,7 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\Submission;
+use App\Model\Entity\ExerciseAssignment;
 
 class Submissions extends Nette\Object {
 

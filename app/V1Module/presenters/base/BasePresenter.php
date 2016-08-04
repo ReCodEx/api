@@ -37,12 +37,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
-
-    // take care of preflight requests - terminate them right away with a 200 response
-    if ($this->getHttpRequest()->isMethod('OPTIONS')) {
-      $this->terminate();
-    }
-
     $this->tryLogin();
 
     try {

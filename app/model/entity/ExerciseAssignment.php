@@ -130,7 +130,7 @@ class ExerciseAssignment implements JsonSerializable
       'id' => $this->id,
       'name' => $this->name,
       'description' => $this->getDescription(),
-      'group' => $this->group,
+      'groupId' => $this->group->getId(),
       'deadline' => [
         'first' => $this->firstDeadline->getTimestamp(),
         'second' => $this->secondDeadline->getTimestamp()

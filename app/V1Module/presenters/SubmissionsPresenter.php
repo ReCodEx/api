@@ -74,10 +74,7 @@ class SubmissionsPresenter extends BasePresenter {
       }
     }
 
-    $this->sendSuccessResponse([
-      'submission' => $submission,
-      'evaluation' => $evaluation
-    ]);
+    $this->sendSuccessResponse($submission);
   }
 
 }

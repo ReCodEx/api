@@ -71,9 +71,10 @@ class SubmissionEvaluation implements JsonSerializable
   public function jsonSerialize() {
     return [
       'id' => $this->id,
-      'evaluatedAt' => $this->evaluatedAt,
+      'evaluatedAt' => $this->evaluatedAt->getTimestamp(),
       'score' => $this->score,
       'points' => $this->points,
+      'maxPoints' => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
       'isValid' => $this->isValid,
       'isCorrect' => $this->isCorrect,
       'evaluationFailed' => $this->evaluationFailed
