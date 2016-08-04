@@ -108,7 +108,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     if ($validationRule !== NULL) {
-      $this->validateValue($param, $value, $validationRule);      
+      $this->validateValue($param, $value, $validationRule);
     }
   }
 
@@ -119,12 +119,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     if ($validationRule !== NULL) {
-      $this->validateValue($value, $validationRule);   
+      $this->validateValue($value, $validationRule);
     }
   }
 
   private function validateValue($param, $value, $validationRule) {
-    if (Validators::is($value, $validationRule)) {
+    if (Validators::is($value, $validationRule) === FALSE) {
       throw new InvalidArgumentException($param, "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators");
     }
   }
