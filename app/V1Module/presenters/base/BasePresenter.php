@@ -8,6 +8,7 @@ use App\Exception\BadRequestException;
 use App\Exception\ForbiddenRequestException;
 use App\Exception\WrongHttpMethodException;
 use App\Exception\NotImplementedException;
+use App\Exception\InvalidArgumentException;
 use App\Exception\InternalServerErrorException;
 
 use App\Security\AccessManager;
@@ -19,6 +20,7 @@ use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
+use Nette\Utils\Validators;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
   
