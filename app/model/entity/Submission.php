@@ -138,7 +138,9 @@ class Submission implements JsonSerializable
         'note' => $this->note,
         'exerciseAssignmentId' => $this->getExerciseAssignment()->getId(),
         'submittedAt' => $this->submittedAt->getTimestamp(),
-        'evaluationStatus' => $this->getEvaluationStatus()
+        'evaluationStatus' => $this->getEvaluationStatus(),
+        "evaluation" => $this->getEvaluation(),
+        "files" => $this->getFiles()->toArray()
       ];
     }
 

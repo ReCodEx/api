@@ -31,6 +31,11 @@ class ExerciseAssignment implements JsonSerializable
   protected $name;
 
   /**
+    * @ORM\Column(type="smallint")
+    */
+  protected $submissionsCountLimit;
+
+  /**
     * @ORM\Column(type="string")
     */
   protected $jobConfigFilePath;
@@ -134,7 +139,9 @@ class ExerciseAssignment implements JsonSerializable
       'deadline' => [
         'first' => $this->firstDeadline->getTimestamp(),
         'second' => $this->secondDeadline->getTimestamp()
-      ]
+      ],
+      'submissionsCountLimit' => $this->submissionsCountLimit,
+      'canReceiveSubmissions' => $this->canReceiveSubmissions()
     ];
   }
 

@@ -11,9 +11,8 @@ use App\Model\Repository\Logins;
 use App\Model\Entity\Role;
 use App\Model\Repository\Roles;
 
-/**
- * @LoggedIn
- */
+use App\Exception\BadRequestException;
+
 class UsersPresenter extends BasePresenter {
 
   /** @inject @var Logins */
@@ -24,6 +23,7 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(users="list")
    */
   public function actionDefault() {
     $users = $this->users->findAll();
@@ -35,12 +35,18 @@ class UsersPresenter extends BasePresenter {
    * @RequiredField(type="post", name="email", validation="email")
    * @RequiredField(type="post", name="firstName", validation="string:2..")
    * @RequiredField(type="post", name="lastName", validation="string:2..")
-   * @RequiredField(type="post", name="password", validation="string:8..")
+   * @RequiredField(type="post", name="password", validation="string:8..", msg="Password must be at least 8 characters long.")
    */
   public function actionCreateAccount() {
     $req = $this->getHttpRequest();
 
-    $roleId = $req->get('role', 'student');
+    // check if the email is free
+    $email = $req->getPost('email');
+    if ($this->users->getByEmail($email) !== NULL) {
+      throw new BadRequestException('This email address is already taken.');
+    }
+
+    $roleId = $req->getPost('role', 'student');
     $role = $this->roles->get($roleId);
     if (!$role) {
       throw new BadRequestException("Role '$roleId' does not exist.");
@@ -52,21 +58,26 @@ class UsersPresenter extends BasePresenter {
     }
 
     $user = User::createUser(
-      $req->get('email'),
-      $req->get('firstName'),
-      $req->get('lastName'),
-      $req->get('degreesBeforeName', ''),
-      $req->get('degreesAfterName', ''),
+      $email,
+      $req->getPost('firstName'),
+      $req->getPost('lastName'),
+      $req->getPost('degreesBeforeName', ''),
+      $req->getPost('degreesAfterName', ''),
       $role
     );
-    $login = Login::createLogin($user, $req->get('email'), $req->get('password'));
+    $login = Login::createLogin($user, $email, $req->getPost('password'));
 
     $this->users->persist($user);
     $this->logins->persist($login);
+
+    // successful!
+    $this->sendSuccessResponse($user);
   }
 
   /**
    * @GET
+   * @LoggedIn
+   * @todo: Check if this user can access THAT user 
    */
   public function actionDetail(string $id) {
     $user = $this->findUserOrThrow($id);
@@ -75,6 +86,8 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @LoggedIn
+   * @todo: Check if this user can access THAT information
    */
   public function actionGroups(string $id) {
     $user = $this->findUserOrThrow($id);
@@ -86,6 +99,8 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @LoggedIn
+   * @todo: Check if this user can access THAT information
    */
   public function actionExercises(string $id) {
     $user = $this->findUserOrThrow($id);

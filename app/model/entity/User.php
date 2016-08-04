@@ -142,7 +142,9 @@ class User implements JsonSerializable
         $user->degreesAfterName = $degreesAfterName;
         $user->email = $email;
         $user->isVerified = FALSE;
-        $user->groups = new ArrayCollection;
+        $user->isAllowed = TRUE;
+        $user->studentOf = new ArrayCollection;
+        $user->supervisorOf = new ArrayCollection;
         $user->exercises = new ArrayCollection;
         $user->role = $role;
         return $user;

@@ -11,37 +11,42 @@ use App\Model\Entity\ExerciseAssignment;
 
 class Submissions extends Nette\Object {
 
-    private $em;
-    private $submissions;
+  private $em;
+  private $submissions;
 
-    public function __construct(EntityManager $em) {
-        $this->em = $em;
-        $this->submissions = $em->getRepository('App\Model\Entity\Submission');
-    }
+  public function __construct(EntityManager $em) {
+    $this->em = $em;
+    $this->submissions = $em->getRepository('App\Model\Entity\Submission');
+  }
 
-    public function findAll() {
-        return $this->submissions->findAll();
-    }
+  public function findAll() {
+    return $this->submissions->findAll();
+  }
 
-    public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
-      return $this->submissions->findBy([
+  public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
+    return $this->submissions->findBy(
+      [
         'user' => $userId,
         'exerciseAssignment' => $assignment
-      ]);
-    }
+      ],
+      [
+        'submittedAt' => 'DESC'
+      ]
+    );
+  }
 
-    public function get($id) {
-        return $this->submissions->findOneById($id);
-    }
+  public function get($id) {
+    return $this->submissions->findOneById($id);
+  }
 
-    public function persist(Submission $submission, $autoFlush = TRUE) {
-        $this->em->persist($submission);
-        if ($autoFlush) {
-          $this->flush();
-        }
+  public function persist(Submission $submission, $autoFlush = TRUE) {
+    $this->em->persist($submission);
+    if ($autoFlush) {
+      $this->flush();
     }
+  }
 
-    public function flush() {
-      $this->em->flush();
-    }
+  public function flush() {
+    $this->em->flush();
+  }
 }

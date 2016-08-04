@@ -34,8 +34,15 @@ class Logins extends Nette\Object {
     return NULL;
   }
 
-  public function persist(Login $login) {
+  public function persist(Login $login, $autoFlush = TRUE) {
     $this->em->persist($login);
+    if ($autoFlush) {
+      $this->flush();
+    }
+  }
+
+  public function flush() {
+    $this->em->flush();
   }
 
 }
