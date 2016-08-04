@@ -105,6 +105,19 @@ class Submission implements JsonSerializable
       $this->evaluation = $evaluation;
     }
 
+    public function getEvaluationStatus() {
+      $eval = $this->getEvaluation();
+      if ($eval === NULL) {
+        return 'work-in-progress';
+      } elseif ($eval->isValid() === FALSE) {
+        return 'evaluation-failed';
+      } elseif ($eval->isCorrect() === TRUE) {
+        return 'done';
+      } else {
+        return 'failed';
+      }
+    }
+
     /** @var null|int This value is not persisted to the database - it is loaded when the job config YML file is examined. */
     private $tasksCount = NULL;
 
@@ -125,7 +138,7 @@ class Submission implements JsonSerializable
         'note' => $this->note,
         'exerciseAssignmentId' => $this->getExerciseAssignment()->getId(),
         'submittedAt' => $this->submittedAt->getTimestamp(),
-        'evaluation' => $this->getEvaluation()
+        'evaluationStatus' => $this->getEvaluationStatus()
       ];
     }
 
