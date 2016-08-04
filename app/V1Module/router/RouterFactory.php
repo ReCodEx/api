@@ -65,6 +65,8 @@ class RouterFactory {
 
   private static function createUploadedFilesRoutes($router, $prefix) {
     $router[] = new Route("$prefix/upload", 'UploadedFiles:upload');
+    $router[] = new Route("$prefix/<id>", 'UploadedFiles:detail');
+    $router[] = new Route("$prefix/<id>/content", 'UploadedFiles:content');
   }
 
   private static function createUsersRoutes($router, $prefix) {

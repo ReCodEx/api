@@ -32,6 +32,10 @@ class UploadedFile implements JsonSerializable
      */
     protected $filePath;
     
+    public function getContent() {
+      return file_get_contents($this->filePath);
+    }
+
     /**
      * @ORM\Column(type="datetime")
      */
@@ -64,7 +68,8 @@ class UploadedFile implements JsonSerializable
         'name' => $this->name,
         'size' => $this->fileSize,
         'uploadedAt' => $this->uploadedAt->getTimestamp(),
-        'userId' => $this->user->getId()
+        'userId' => $this->user->getId(),
+        'content' => $this->getContent()
       ];
     }
 

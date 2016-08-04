@@ -21,6 +21,34 @@ class UploadedFilesPresenter extends BasePresenter {
     $this->uploadedFiles = $files;
   }
 
+  protected function findFileOrThrow($id) {
+    $file = $this->uploadedFiles->get($id);
+    if (!$file) {
+      throw new NotFoundException("File $id");
+    }
+
+    return $file;
+  }
+
+  /**
+   * @GET
+   * @todo: Check if this user can access the file
+   */
+  public function actionDetail(string $id) {
+    $file = $this->findFileOrThrow($id);
+    $this->sendSuccessResponse($file);
+  }
+
+  /**
+   * @GET
+   * @todo: Check if this user can access the file
+   */
+  public function actionContent(string $id) {
+    $file = $this->findFileOrThrow($id);
+    $this->sendSuccessResponse($file->getContent());
+  }
+
+
   /**
    * @POST
    */
