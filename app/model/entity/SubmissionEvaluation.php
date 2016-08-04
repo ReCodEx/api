@@ -52,11 +52,13 @@ class SubmissionEvaluation implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
+  public function isValid() { return $this->isValid; }
 
   /**
    * @ORM\Column(type="boolean")
    */
   protected $isCorrect;
+  public function isCorrect() { return $this->isCorrect; }
 
   /**
    * @ORM\Column(type="boolean")
@@ -100,8 +102,8 @@ class SubmissionEvaluation implements JsonSerializable
     if ($yml === FALSE) {
       $evaluationFailed = TRUE;
     } else {
-      $score = self::getScore($submission->getExerciseAssignment(), $yml);
-      $isCorrect = self::isCorrect($score, $yml);
+      $score = self::computeScore($submission->getExerciseAssignment(), $yml);
+      $isCorrect = self::isSufficientScore($score, $yml);
       $points = $isCorrect ? $score * $submission->getMaxPoints() : 0;
     }
     
@@ -166,11 +168,14 @@ class SubmissionEvaluation implements JsonSerializable
     return $yml;
   }
 
-  private static function getScore(ExerciseAssignment $assignment, array $result) {
+  // @todo Unit test this !!
+  public static function computeScore(ExerciseAssignment $assignment, array $result) {
+    // @todo
     return 0;
   }
 
-  private static function isCorrect(float $score, array $result) {
+  public static function isSufficientScore(float $score, array $result) {
+    // @todo
     return FALSE;
   }
 
