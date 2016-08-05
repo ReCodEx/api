@@ -89,6 +89,10 @@ class SubmissionEvaluation implements JsonSerializable
    * @return SubmissionEvaluation
    */
   public static function loadEvaluation(Submission $submission) {
+    if (!$submission->resultsUrl) {
+      throw new SubmissionEvaluationFailedException('The results archive cannot be located.');
+    }
+
     // download the results ZIP file from the server
     $zipFileContent = self::downloadResults($submission->resultsUrl);
     $resultYmlContent = self::getResultYmlContent($zipFileContent);
