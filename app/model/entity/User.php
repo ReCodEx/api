@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
+use forxer\Gravatar\Gravatar;
 
 /**
  * @ORM\Entity
@@ -52,6 +53,11 @@ class User implements JsonSerializable
      * @ORM\Column(type="string")
      */
     protected $email;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $avatarUrl;
 
     /**
      * @ORM\Column(type="boolean")
@@ -111,7 +117,7 @@ class User implements JsonSerializable
           'lastName' => $this->lastName,
           'degreesAfterName' => $this->degreesAfterName,
         ],
-        'email' => $this->email,
+        'avatarUrl' => $this->avatarUrl,
         'isVerified' => $this->isVerified,
         'role' => $this->role,
         'groups' => [
@@ -141,6 +147,7 @@ class User implements JsonSerializable
         $user->degreesBeforeName = $degreesBeforeName;
         $user->degreesAfterName = $degreesAfterName;
         $user->email = $email;
+        $user->avatarUrl = Gravatar::image($email, 45, 'retro', 'g', 'jpg', true, false);
         $user->isVerified = FALSE;
         $user->isAllowed = TRUE;
         $user->studentOf = new ArrayCollection;
