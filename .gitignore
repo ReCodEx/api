@@ -7,3 +7,4 @@ vendor/*
 app/config/config.local.neon
 .idea
 uploaded_data/*
+composer.lock
