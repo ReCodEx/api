@@ -113,6 +113,7 @@ class Group implements JsonSerializable
       'name' => $this->name,
       'description' => $this->description,
       'supervisors' => $this->supervisors->toArray(),
+      'students' => $this->students->toArray(),
       'hasValidLicence' => $this->hasValidLicence(),
       'instanceId' => $instance ? $instance->getId() : NULL,
       'parentGroupId' => $this->parentGroup ? $this->parentGroup->getId() : NULL,
