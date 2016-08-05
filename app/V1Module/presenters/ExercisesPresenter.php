@@ -34,7 +34,7 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $exercises = $this->exercises->findAll();
-    $this->sendJson($exercises);
+    $this->sendSuccessResponse($exercises);
   }
 
   /**
@@ -42,7 +42,7 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $exercise = $this->findExerciseOrThrow($id);
-    $this->sendJson($exercise);
+    $this->sendSuccessResponse($exercise);
   }
 
 }

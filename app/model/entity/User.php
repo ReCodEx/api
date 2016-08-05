@@ -59,6 +59,8 @@ class User implements JsonSerializable
      */
     protected $avatarUrl;
 
+    public function getAvatarUrl() { return $this->avatarUrl; }
+
     /**
      * @ORM\Column(type="boolean")
      */

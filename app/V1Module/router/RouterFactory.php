@@ -20,6 +20,7 @@ class RouterFactory {
     $router[] = new Route($prefix, 'Default:default');
     $router[] = new Route("$prefix/login", 'Login:default');
 
+    self::createCommentsRoutes($router, "$prefix/comments");
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
@@ -29,6 +30,11 @@ class RouterFactory {
     self::createUsersRoutes($router, "$prefix/users");
 
     return $router;
+  }
+
+  private static function createCommentsRoutes($router, $prefix) {
+    $router[] = new Route("$prefix/<id>", "Comments:default");
+    $router[] = new Route("$prefix/<id>/add", "Comments:addComment");
   }
 
   private static function createExercisesRoutes($router, $prefix) {
