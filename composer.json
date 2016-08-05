@@ -39,7 +39,7 @@
 		"forxer/gravatar": "^1.3"
 	},
 	"require-dev": {
-		"nette/tester": "^1.6"
+		"nette/tester": "^1.7"
 	},
 	"minimum-stability": "dev"
 }
