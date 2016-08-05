@@ -31,6 +31,11 @@ class Comment implements JsonSerializable
   protected $user;
 
   /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isPrivate;
+
+  /**
     * @ORM\Column(type="datetime")
     */
   protected $postedAt;
@@ -50,16 +55,18 @@ class Comment implements JsonSerializable
         "avatarUrl" => $this->user->getAvatarUrl()
       ],
       "postedAt" => $this->postedAt->getTimestamp(),
+      "isPrivate" => $this->isPrivate,
       "text" => $this->text
     ];
   }
 
-  public static function createComment(CommentThread $thread, User $user, $text) {
+  public static function createComment(CommentThread $thread, User $user, $text, $isPrivate = FALSE) {
     $comment = new Comment;
     $comment->commentThread = $thread;
     $comment->user = $user;
     $comment->postedAt = new \DateTime;
     $comment->text = $text;
+    $comment->isPrivate = $isPrivate;
     $thread->addComment($comment);
     return $comment;
   }

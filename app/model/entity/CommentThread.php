@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 
 /**
@@ -29,7 +30,15 @@ class CommentThread implements JsonSerializable
     $this->comments->add($comment);
   }
 
+  public function filterPublic(User $currentUser) {
+    $publicComments = Criteria::create()
+      ->where(Criteria::expr()->eq('isPrivate', false))
+      ->orWhere(Criteria::expr()->eq('user', $currentUser));
+    $this->comments = $this->comments->matching($publicComments);
+  }
+
   public function jsonSerialize() {
+
     return [
       "id" => $this->id,
       "comments" => $this->comments->toArray()
