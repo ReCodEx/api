@@ -1,0 +1,17 @@
+array(
+	'A' => array(
+		'status' => 'OK',
+		'score' => 100,
+		'stats' => array(
+			'exitcode' => 0,
+			'max-rss' => 19696,
+			'memory' => 6032,
+			'wall-time' => 0.092,
+			'exitsig' => 0,
+			'message' => '',
+			'status' => 'OK',
+			'time' => 0.037,
+			'killed' => FALSE,
+		),
+	),
+)

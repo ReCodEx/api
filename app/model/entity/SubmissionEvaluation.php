@@ -21,6 +21,8 @@ class SubmissionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+  const MAX_SCORE = 100;
+
   /**
    * @ORM\Id
    * @ORM\Column(type="guid")
