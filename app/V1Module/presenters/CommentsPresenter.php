@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exception\NotFoundException;
+use App\Exception\ForbiddenRequestException;
 
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
@@ -58,6 +59,24 @@ class CommentsPresenter extends BasePresenter {
     
     $this->comments->persistComment($comment);
     $this->comments->persistThread($thread);
+    $this->comments->flush();
+
+    $this->sendSuccessResponse($comment);
+  }
+
+  /**
+   * @POST
+   */
+  public function actionTogglePrivate(string $id) {
+    $user = $this->findUserOrThrow("me");
+    $comment = $this->comments->findUsersComment($user, $id);
+    
+    if (!$comment) {
+      throw new ForbiddenRequestException("This comment does not exist or you cannot access it.");
+    }
+
+    $comment->togglePrivate();
+    $this->comments->persistComment($comment);
     $this->comments->flush();
 
     $this->sendSuccessResponse($comment);

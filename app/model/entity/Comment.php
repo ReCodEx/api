@@ -36,6 +36,13 @@ class Comment implements JsonSerializable
   protected $isPrivate;
 
   /**
+   * @return void
+   */
+  public function togglePrivate() {
+    $this->isPrivate = !$this->isPrivate;
+  }
+
+  /**
     * @ORM\Column(type="datetime")
     */
   protected $postedAt;

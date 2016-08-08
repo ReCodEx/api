@@ -87,11 +87,11 @@ class ResultsTransform {
   }
 
   /**
-   * Extract
-   * @param  [type] $result [description]
-   * @return [type]         [description]
+   * Extract score from the judge output or the status of the task. 
+   * @param  array $result Sandbox results
+   * @return float         The score
    */
-  public static function extractScore($result) {
+  public static function extractScore(array $result): float {
     return isset($result[self::FIELD_JUDGE_OUTPUT]) && !empty($result[self::FIELD_JUDGE_OUTPUT])
             ? min(1, max(0, floatval(strtok($result[self::FIELD_JUDGE_OUTPUT], " ")))) // @todo: Make sure this is correctly named
             : ($result[self::FIELD_STATUS] === self::STATUS_OK ? 1 : 0);
@@ -99,7 +99,7 @@ class ResultsTransform {
 
   /**
    * Remove unnecessary fields of the task and remove all unnecessary tasks from the array
-   * @param  array  $jobConfig [description]
+   * @param  array  $jobConfig Parsed job config YAML
    * @return array
    */
   public static function simplifyConfig(array $jobConfig): array {
