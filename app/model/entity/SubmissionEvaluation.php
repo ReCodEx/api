@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Exception\NotFoundException;
-use App\Model\Helpers\ResultsTransform;
+use App\Model\Helpers\ResultsTransform as RT;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,8 +23,6 @@ use Symfony\Component\Yaml\Yaml;
 class SubmissionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
-
-  const MAX_SCORE = 100;
 
   /**
    * @ORM\Id
@@ -76,7 +74,7 @@ class SubmissionEvaluation implements JsonSerializable
   protected $resultYml;
 
   /**
-   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation")
+   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation", cascade={"persist"})
    */
   protected $testResults;
 
@@ -124,9 +122,24 @@ class SubmissionEvaluation implements JsonSerializable
     $evaluation = self::createSubmissionEvaluation($submission, $evaluationFailed, $resultYmlContent);
 
     if (!$evaluationFailed) {
-      $testsResults = ResultsTransform::transformLowLevelInformation($jobConfig, $tasksResults);
+      $testsResults = RT::transformLowLevelInformation($jobConfig, $tasksResults);
       foreach ($testsResults as $name => $result) {
-        $testResult = TestResult::createTestResult($evaluation, $name, $result["score"], $result["status"], $result["stats"], $result["limits"]);
+        if (!isset($result[RT::FIELD_LIMITS]) || !isset($result[RT::FIELD_LIMITS][$submission->getHardwareGroup()])) {
+          // @todo what to do? is there any sort of default limits?
+        }
+
+        $limits = $result[RT::FIELD_LIMITS][$submission->getHardwareGroup()];
+        $judgeOutput = isset($result[RT::FIELD_JUDGE_OUTPUT]) && !empty($result[RT::FIELD_JUDGE_OUTPUT]) ? $result[RT::FIELD_JUDGE_OUTPUT] : "";
+        $testResult = TestResult::createTestResult(
+          $evaluation,
+          $name,
+          $result[RT::FIELD_STATUS],
+          $result[RT::FIELD_SCORE],
+          $judgeOutput,
+          $result[RT::FIELD_STATS],
+          $limits
+        );
+        $evaluation->testResults->add($testResult);
       }
 
       $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
@@ -134,7 +147,7 @@ class SubmissionEvaluation implements JsonSerializable
       $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
     }
 
-    return $evaluation;    
+    return $evaluation;
   }
 
   /**
@@ -151,6 +164,7 @@ class SubmissionEvaluation implements JsonSerializable
     $entity->resultYml = $resultYmlContent;
     $entity->submission = $submission;
     $submission->setEvaluation($entity);
+    $entity->testResults = new ArrayCollection;
 
     return $entity;
   }
@@ -181,6 +195,9 @@ class SubmissionEvaluation implements JsonSerializable
     }
 
     $yml = $zip->getFromName("result/result.yml");
+    if ($yml === FALSE) {
+      throw new SubmissionEvaluationFailedException("Results YAML file is missing in the archive received from remote FS.");
+    }
 
     // a bit of a cleanup
     $zip->close();

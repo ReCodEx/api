@@ -88,11 +88,14 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $user = $loggedInUser;
     }
 
+    // @todo: somehow get from somewhere (the assignment?)
+    $hwGroup = "group1";
+
     // collect the array of already uploaded files
     $files = $this->files->findAllById($req->getPost("files"));
 
     // prepare a record in the database
-    $submission = Submission::createSubmission($req->getPost("note"), $assignment, $user, $loggedInUser, $files);
+    $submission = Submission::createSubmission($req->getPost("note"), $assignment, $user, $loggedInUser, $hwGroup, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);

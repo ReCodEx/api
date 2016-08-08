@@ -31,6 +31,7 @@ class Submission implements JsonSerializable
 
     const REMOTE_FILE_SERVER_URL = "http://195.113.17.8:9999"; // @todo place in a configuration file
     const ZMQ_SERVER_URL = "tcp://195.113.17.8:9658"; // @todo place in a configuration file
+    const RESPONSE_ACCEPT = "accept";
 
     /**
      * @ORM\Id
@@ -54,7 +55,7 @@ class Submission implements JsonSerializable
     protected $note;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string")
      */
     protected $resultsUrl;
 
@@ -65,13 +66,14 @@ class Submission implements JsonSerializable
      */
     protected $exerciseAssignment;
 
-    public function getExerciseAssignment() {
-        return $this->exerciseAssignment;
-    }
-
     public function getMaxPoints() {
       return $this->exerciseAssignment->getMaxPoints($this->submittedAt);
     }
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $hardwareGroup;
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
@@ -151,11 +153,11 @@ class Submission implements JsonSerializable
      * @param ExerciseAssignment $assignment
      * @param User $user          The user who submits the solution
      * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
+     * @param string $hardwareGroup
      * @param array $files
      * @return Submission
-     * @internal param string $name Name of the exercise
      */
-    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, array $files) {
+    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE
         ) {
@@ -179,6 +181,7 @@ class Submission implements JsonSerializable
       $entity->exerciseAssignment = $assignment;
       $entity->user = $user;
       $entity->note = $note;
+      $entity->hardwareGroup = $hardwareGroup;
       $entity->submittedAt = new \DateTime;
       $entity->files = new ArrayCollection;
       foreach ($files as $file) {
@@ -304,14 +307,14 @@ class Submission implements JsonSerializable
         $queue->sendmulti([
           "eval",
           $submissionId,
-          "hwgroup=group1",
+          "hwgroup={$this->hardwareGroup}",
           "",
           self::REMOTE_FILE_SERVER_URL . $archiveRemotePath,
           self::REMOTE_FILE_SERVER_URL . $resultRemotePath
         ]);
 
         $response = $queue->recv();
-        return $response === "accept";
+        return $response === self::RESPONSE_ACCEPT;
       } catch (ZMQSocketException $e) {
         throw new SubmissionFailedException("Communication with backend broker failed.");
       }
