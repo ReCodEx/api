@@ -283,4 +283,22 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`id`, `degrees_before_name`, `first_name`, `last_name`, `degrees_after_name`, `email`, `avatar_url`, `role_id`, `is_verified`, `is_allowed`) VALUES
 ('1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Bc.',	'Šimon',	'Rozsíval',	'',	'simon.rozsival@gmail.com',	'https://secure.gravatar.com/avatar/f4b93e0b37f67b925e733fcf2c020810?d=retro&r=g&s=200',	'superadmin',	1,	1);
 
+DROP TABLE IF EXISTS `test_result`;
+CREATE TABLE `test_result` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `test_name` varchar(30) NOT NULL,
+  `submission_evaluation_id` varchar(36) NOT NULL,
+  `score` float NOT NULL,
+  `memory_exceeded` tinyint(1) NOT NULL,
+  `used_memory_ratio` float NOT NULL,
+  `time_exceeded` tinyint(1) NOT NULL,
+  `used_time_ratio` float NOT NULL,
+  `exit_code` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `stats` varchar(100) NOT NULL,
+  `judge_output` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `submission_evaluation_id` (`submission_evaluation_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 -- 2016-08-05 21:22:49

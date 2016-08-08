@@ -36,6 +36,7 @@ class ResultsTransform {
       switch ($task["type"]) {
         case self::TYPE_EXECUTION:
           $test["stats"] = $result["sandbox_results"];
+          $test["limits"] = $task["limits"];
           break;
         case self::TYPE_EVALUATION:
           $test["score"] = self::extractScore($result);
@@ -88,11 +89,21 @@ class ResultsTransform {
     $tasks = array_map(
       function ($task) {
         if (isset($task["test-id"])) {
-          return [
+          $importantData = [
             "test-id" => $task["test-id"],
             "task-id" => $task["task-id"],
             "type"    => $task["type"]
           ];
+
+          if ($importantData["type"] === self::TYPE_EXECUTION) {
+            if (!isset($task["sandbox"]) || !isset($task["sandbox"]["limits"])) {
+              // @todo throw an exception
+            }
+
+            $importantData["limits"] = $task["sandbox"]["limits"];
+          }
+
+          return $importantData;
         }
 
         // this task is not related to any test

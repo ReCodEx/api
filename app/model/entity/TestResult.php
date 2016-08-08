@@ -32,7 +32,7 @@ class TestResult implements JsonSerializable
   protected $submissionEvaluation;
 
   /**
-   * @ORM\Column(type="integer")
+   * @ORM\Column(type="float")
    */
   protected $score;
 
@@ -42,19 +42,24 @@ class TestResult implements JsonSerializable
   protected $memoryExceeded;
   
   /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedMemoryRatio;
+
+  /**
     * @ORM\Column(type="boolean")
     */
   protected $timeExceeded;
+  
+  /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedTimeRatio;
 
   /**
     * @ORM\Column(type="boolean")
     */
   protected $exitCode;
-  
-  /**
-    * @ORM\Column(type="boolean")
-    */
-  protected $hasPassed;
   
   /**
     * @ORM\Column(type="string")
@@ -66,6 +71,11 @@ class TestResult implements JsonSerializable
    */
   protected $stats;
 
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $judgeOutput;
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -73,24 +83,40 @@ class TestResult implements JsonSerializable
       "submissionEvaluationId" => $this->submissionEvaluation->getId(),
       "memoryExceeded" => $this->memoryExceeded,
       "timeExceeded" => $this->timeExceeded,
-      "hasPassed" => $this->hasPassed,
       "message" => $this->message
     ];
   }
 
-  public static function createTestResult(SubmissionEvaluation $evaluation, string $name, int $score, string $status, array $stats) {
+  public static function createTestResult(
+    SubmissionEvaluation $evaluation,
+    string $name,
+    string $status,
+    string $judgeOutput,
+    array $stats,
+    array $limits
+  ) {
     $result = new TestResult;
     $result->submissionEvaluation = $evaluation;
     $result->name = $name;
-    $result->score = $score;
+    $result->score = static::getScore($judgeOutput);
     $result->exitCode = $stats["exitcode"];
-    $result->memoryExceeded = FALSE; // @todo
-    $result->timeExceeded = FALSE; // @todo
-    $result->hasPassed = $status === "OK";
+    $result->usedMemoryRatio = floatval($stats["memory"]) / floatval($limits["memory"]);
+    $result->memoryExceeded = $result->usedMemoryRatio > 1;
+    $result->usedMemoryRatio = floatval($stats["time"]) / floatval($limits["time"]);
+    $result->timeExceeded = $result->usedTimeRatio > 1;
     $result->message = $stats["msg"];
+    $result->judgeOutput = $judgeOutput;
     $result->stats = Json::encode($stats);
     $evaluation->getTestResults()->add($result);
     return $result;
+  }
+
+  private static function getScore(string $judgeOutput): float {
+    if (empty($judgeOutput)) {
+      return 0;
+    }
+
+    return min(1, max(0, floatval(strtok($judgeOutput, " "))));
   }
 
 }

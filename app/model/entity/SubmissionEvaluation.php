@@ -110,40 +110,29 @@ class SubmissionEvaluation implements JsonSerializable
     } catch (ClientException $e) {
       throw new NotFoundException('Results are not available (yet).');
     }
-    $resultYmlContent = self::getResultYmlContent($zipFileContent);
-  
-    $evaluationFailed = FALSE;
-    $score = NULL;
-    $points = NULL;
-    $isCorrect = NULL;
-
-    // parse the YAML
-    $jobConfig = $submission->getJobConfig();
+    
+    $jobConfig = $submission->getJobConfig(); // this handles errors well
+    
     try {
-      $tasksResults = Yaml::parse($resultYmlContent);      
-    } catch (\Exception $e) {
+      $resultYmlContent = self::getResultYmlContent($zipFileContent);  
+      $tasksResults = Yaml::parse($resultYmlContent);
+    } catch (\Exception $e) { // @todo: Catch specific exceptions (unzipping and parsing)
       throw new SubmissionEvaluationFailedException("The results received from the file server are malformed.");
     }
 
-    if ($tasksResults === FALSE) {
-      $evaluationFailed = TRUE;
-    }
-
+    $evaluationFailed = $tasksResults === FALSE;
     $evaluation = self::createSubmissionEvaluation($submission, $evaluationFailed, $resultYmlContent);
-    $testsResults = ResultsTransform::transformLowLevelInformation($jobConfig, $tasksResults);
-    foreach ($testsResults as $name => $result) {
-      $testResult = TestResult::createTestResult($evaluation, $name, $result["score"], $result["status"], $result["stats"]);
-      // @todo: does it need persisting at this point?
-    }
 
-    // @todo: rewrite this!!
-    // ------
-    // $evaluation->score = self::computeScore($evaluation->testResults, $jobConfig);
-    $evaluation->score = 0;
-    // $evaluation->isCorrect = self::isSufficientScore($evaluation->score, $jobConfig);
-    $evaluation->isCorrect = false;
-    // ------
-    $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+    if (!$evaluationFailed) {
+      $testsResults = ResultsTransform::transformLowLevelInformation($jobConfig, $tasksResults);
+      foreach ($testsResults as $name => $result) {
+        $testResult = TestResult::createTestResult($evaluation, $name, $result["score"], $result["status"], $result["stats"], $result["limits"]);
+      }
+
+      $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
+      $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
+      $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+    }
 
     return $evaluation;    
   }
@@ -200,13 +189,13 @@ class SubmissionEvaluation implements JsonSerializable
     return $yml;
   }
 
-  // @todo Unit test this !!
-  public static function computeScore(ArrayCollection $testResults, array $result) {
+  public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {
+    // @todo Unit test this !!
     // @todo
     return 0;
   }
 
-  public static function isSufficientScore(float $score, array $result) {
+  public static function isSufficientScore(ExerciseAssignment $assignment, float $score) {
     // @todo
     return FALSE;
   }

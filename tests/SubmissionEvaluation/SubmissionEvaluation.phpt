@@ -11,7 +11,12 @@ class TestSubmissionEvaluation extends Tester\TestCase
   static $jobConfig = [
     "tasks" => [
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
-      [ "task-id" => "Y", "test-id" => "A", "type" => "execution" ]
+      [
+        "task-id" => "Y", "test-id" => "A", "type" => "execution",
+        "sandbox" => [
+          "limits" => [ "memory" => 123, "time" => 456 ]
+        ]
+      ]
     ]
   ];
 
@@ -45,7 +50,10 @@ class TestSubmissionEvaluation extends Tester\TestCase
   public function testSimplifyJobConfig() {
     $expected = [
       [ "test-id" => "A", "task-id" => "X", "type" => "evaluation" ],
-      [ "test-id" => "A", "task-id" => "Y", "type" => "execution" ]
+      [
+        "test-id" => "A", "task-id" => "Y", "type" => "execution",
+        "limits" => [ "memory" => 123, "time" => 456 ]
+      ]
     ];
 
     $simplified = ResultsTransform::simplifyConfig(self::$jobConfig);
@@ -57,13 +65,16 @@ class TestSubmissionEvaluation extends Tester\TestCase
       "tasks" => [
         [ "task-id" => "X", "status"  => "OK" ],
         [ "task-id" => "Y", "test-id" => "A", "type" => "evaluation", "status" => "OK" ],
-        [ "task-id" => "Z", "test-id" => "B", "type" => "execution", "status" => "FAILED" ]
+        [
+          "task-id" => "Z", "test-id" => "B", "type" => "execution", "status" => "FAILED",
+          "sandbox" => [ "limits" => "..." ]
+        ]
       ]
     ];
 
     $expected = [
       [ "test-id" => "A", "task-id" => "Y", "type" => "evaluation" ],
-      [ "test-id" => "B", "task-id" => "Z", "type" => "execution" ]
+      [ "test-id" => "B", "task-id" => "Z", "type" => "execution", "limits" => "..." ]
     ];
 
     $simplified = ResultsTransform::simplifyConfig($input);
@@ -108,7 +119,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
     Assert::same("SKIPPED", ResultsTransform::extractStatus("SKIPPED", "SKIPPED"));
   }
 
-  public function testExtractStatusFAILED+_FAILED() {
+  public function testExtractStatusFAILED_FAILED() {
     Assert::same("FAILED", ResultsTransform::extractStatus("FAILED", "FAILED"));
   }
 
@@ -137,9 +148,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
   }
 
   public function testSimpleMapAndReduceResults() {
-
     $transformed = ResultsTransform::transformLowLevelInformation(self::$jobConfig, self::$results);
-
     $expected = [
       "A" => [
         "status"    => "OK",
@@ -154,7 +163,8 @@ class TestSubmissionEvaluation extends Tester\TestCase
           "status"    => "OK",
           "time"      => 0.037,
           "killed"    => false
-        ]
+        ],
+        "limits" => [ "memory" => 123, "time" => 456 ]
       ]
     ];
 
