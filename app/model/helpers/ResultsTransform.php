@@ -51,17 +51,17 @@ class ResultsTransform {
    * Determines the status of the test based on the previously reduced status of the test and the status of the next processed task result status.
    * @param   string $prevStatus    Current status
    * @param   string $resultStatus  Next status
-   * @return  string Status of the reduced test tasks' statuses
+   * @return  string Status of the reduced test tasks" statuses
    */
   public static function extractStatus(string $prevStatus, string $resultStatus): string {
     if ($prevStatus === "OK") {
-      return $resultStatus; // === 'OK' | 'SKIPPED' | 'FAILED'
+      return $resultStatus; // === "OK" | "SKIPPED" | "FAILED"
     } else if ($resultStatus === "OK") {
-      return $prevStatus; // === 'OK' | 'SKIPPED' | 'FAILED'
+      return $prevStatus; // === "OK" | "SKIPPED" | "FAILED"
     } else if ($prevStatus === "SKIPPED") {
-      return $resultStatus; // === 'SKIPPED' | 'FAILED'
+      return $resultStatus; // === "SKIPPED" | "FAILED"
     } else if ($resultStatus === "SKIPPED") {
-      return $prevStatus; // === 'SKIPPED' | 'FAILED'
+      return $prevStatus; // === "SKIPPED" | "FAILED"
     } else {
       return "FAILED";
     }

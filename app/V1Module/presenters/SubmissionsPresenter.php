@@ -70,7 +70,7 @@ class SubmissionsPresenter extends BasePresenter {
         $this->submissions->persist($submission); // save the new binding
       } catch (SubmissionEvaluationFailedException $e) {
         // the evaluation is probably not ready yet
-        throw new NotFoundException('Evaluation is not available yet.');
+        throw new NotFoundException("Evaluation is not available yet.");
       }
     }
 

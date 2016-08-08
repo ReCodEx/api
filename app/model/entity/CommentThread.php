@@ -32,8 +32,8 @@ class CommentThread implements JsonSerializable
 
   public function filterPublic(User $currentUser) {
     $publicComments = Criteria::create()
-      ->where(Criteria::expr()->eq('isPrivate', false))
-      ->orWhere(Criteria::expr()->eq('user', $currentUser));
+      ->where(Criteria::expr()->eq("isPrivate", false))
+      ->orWhere(Criteria::expr()->eq("user", $currentUser));
     $this->comments = $this->comments->matching($publicComments);
   }
 

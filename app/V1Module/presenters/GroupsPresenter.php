@@ -53,8 +53,8 @@ class GroupsPresenter extends BasePresenter {
   public function actionMembers(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendSuccessResponse([
-      'supervisors' => $group->getSupervisors()->toArray(),
-      'students' => $group->getStudents()->toArray()
+      "supervisors" => $group->getSupervisors()->toArray(),
+      "students" => $group->getStudents()->toArray()
     ]);
   }
 

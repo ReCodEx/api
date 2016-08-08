@@ -53,12 +53,12 @@ class UploadedFilesPresenter extends BasePresenter {
    * @POST
    */
   public function actionUpload() {
-    $user = $this->findUserOrThrow('me');
+    $user = $this->findUserOrThrow("me");
     $files = $this->getHttpRequest()->getFiles();
     if (count($files) === 0) {
-      throw new BadRequestException('No file was uploaded');
+      throw new BadRequestException("No file was uploaded");
     } elseif (count($files) > 1) {
-      throw new BadRequestException('Too many files were uploaded');
+      throw new BadRequestException("Too many files were uploaded");
     }
 
     $file = array_pop($files);

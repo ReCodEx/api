@@ -15,7 +15,7 @@ class Users extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->users = $em->getRepository('App\Model\Entity\User');
+    $this->users = $em->getRepository("App\Model\Entity\User");
   }
 
   public function findAll() {
@@ -27,7 +27,7 @@ class Users extends Nette\Object {
   }
 
   public function getByEmail(string $email) {
-    return $this->users->findOneBy([ 'email' => $email ]);
+    return $this->users->findOneBy([ "email" => $email ]);
   }
 
   public function persist(User $user, $autoFlush = TRUE) {

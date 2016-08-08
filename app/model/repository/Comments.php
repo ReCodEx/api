@@ -16,8 +16,8 @@ class Comments extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->comments = $em->getRepository('App\Model\Entity\Comment');
-    $this->threads = $em->getRepository('App\Model\Entity\CommentThread');
+    $this->comments = $em->getRepository("App\Model\Entity\Comment");
+    $this->threads = $em->getRepository("App\Model\Entity\CommentThread");
   }
 
   public function get($id) {

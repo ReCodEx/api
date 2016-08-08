@@ -108,7 +108,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
     Assert::same("SKIPPED", ResultsTransform::extractStatus("SKIPPED", "SKIPPED"));
   }
 
-  public function testExtractStatusFAILED_FAILED() {
+  public function testExtractStatusFAILED+_FAILED() {
     Assert::same("FAILED", ResultsTransform::extractStatus("FAILED", "FAILED"));
   }
 

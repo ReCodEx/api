@@ -3,13 +3,12 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\User;
-use App\Model\Repository\Users;
-
 use App\Model\Entity\Login;
-use App\Model\Repository\Logins;
-
 use App\Model\Entity\Role;
+use App\Model\Repository\Users;
+use App\Model\Repository\Logins;
 use App\Model\Repository\Roles;
+use App\Security\AccessManager;
 
 use App\Exception\BadRequestException;
 
@@ -17,6 +16,9 @@ class UsersPresenter extends BasePresenter {
 
   /** @inject @var Logins */
   public $logins;
+
+  /** @inject @var AccessManager */
+  public $accessManager;
 
   /** @inject @var Roles */
   public $roles;
@@ -41,37 +43,40 @@ class UsersPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
 
     // check if the email is free
-    $email = $req->getPost('email');
+    $email = $req->getPost("email");
     if ($this->users->getByEmail($email) !== NULL) {
-      throw new BadRequestException('This email address is already taken.');
+      throw new BadRequestException("This email address is already taken.");
     }
 
-    $roleId = $req->getPost('role', 'student');
+    $roleId = $req->getPost("role", "student");
     $role = $this->roles->get($roleId);
     if (!$role) {
       throw new BadRequestException("Role '$roleId' does not exist.");
     }
 
     if ($role->hasLimitedRights() === FALSE
-      && (!$this->user->isLoggedIn() || $this->user->isAllowed("role-$roleId", 'assign'))) {
+      && (!$this->user->isLoggedIn() || $this->user->isAllowed("role-$roleId", "assign"))) {
       throw new ForbiddenRequestException("You are not allowed to assign the new user role '$roleId'");
     }
 
     $user = User::createUser(
       $email,
-      $req->getPost('firstName'),
-      $req->getPost('lastName'),
-      $req->getPost('degreesBeforeName', ''),
-      $req->getPost('degreesAfterName', ''),
+      $req->getPost("firstName"),
+      $req->getPost("lastName"),
+      $req->getPost("degreesBeforeName", ""),
+      $req->getPost("degreesAfterName", ""),
       $role
     );
-    $login = Login::createLogin($user, $email, $req->getPost('password'));
+    $login = Login::createLogin($user, $email, $req->getPost("password"));
 
     $this->users->persist($user);
     $this->logins->persist($login);
 
     // successful!
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse([
+      "user" => $user,
+      "accessToken" => $this->accessManager->issueToken($user)
+    ]);
   }
 
   /**
@@ -92,8 +97,8 @@ class UsersPresenter extends BasePresenter {
   public function actionGroups(string $id) {
     $user = $this->findUserOrThrow($id);
     $this->sendSuccessResponse([
-      'supervisor' => $user->getGroupsAsSupervisor()->toArray(),
-      'student' => $user->getGroupsAsStudent()->toArray()
+      "supervisor" => $user->getGroupsAsSupervisor()->toArray(),
+      "student" => $user->getGroupsAsStudent()->toArray()
     ]);
   }
 

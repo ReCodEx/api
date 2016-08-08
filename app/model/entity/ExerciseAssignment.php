@@ -132,16 +132,16 @@ class ExerciseAssignment implements JsonSerializable
 
   public function jsonSerialize() {
     return [
-      'id' => $this->id,
-      'name' => $this->name,
-      'description' => $this->getDescription(),
-      'groupId' => $this->group->getId(),
-      'deadline' => [
-        'first' => $this->firstDeadline->getTimestamp(),
-        'second' => $this->secondDeadline->getTimestamp()
+      "id" => $this->id,
+      "name" => $this->name,
+      "description" => $this->getDescription(),
+      "groupId" => $this->group->getId(),
+      "deadline" => [
+        "first" => $this->firstDeadline->getTimestamp(),
+        "second" => $this->secondDeadline->getTimestamp()
       ],
-      'submissionsCountLimit' => $this->submissionsCountLimit,
-      'canReceiveSubmissions' => $this->canReceiveSubmissions()
+      "submissionsCountLimit" => $this->submissionsCountLimit,
+      "canReceiveSubmissions" => $this->canReceiveSubmissions()
     ];
   }
 

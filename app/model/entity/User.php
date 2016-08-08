@@ -111,20 +111,20 @@ class User implements JsonSerializable
 
     public function jsonSerialize() {
       return [
-        'id' => $this->id,
-        'fullName' => $this->getName(),
-        'name' => [
-          'degreesBeforeName' => $this->degreesBeforeName,
-          'firstName' => $this->firstName,
-          'lastName' => $this->lastName,
-          'degreesAfterName' => $this->degreesAfterName,
+        "id" => $this->id,
+        "fullName" => $this->getName(),
+        "name" => [
+          "degreesBeforeName" => $this->degreesBeforeName,
+          "firstName" => $this->firstName,
+          "lastName" => $this->lastName,
+          "degreesAfterName" => $this->degreesAfterName,
         ],
-        'avatarUrl' => $this->avatarUrl,
-        'isVerified' => $this->isVerified,
-        'role' => $this->role,
-        'groups' => [
-          'studentOf' => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsStudent()->toArray()),
-          'supervisorOf' => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsSupervisor()->toArray())
+        "avatarUrl" => $this->avatarUrl,
+        "isVerified" => $this->isVerified,
+        "role" => $this->role,
+        "groups" => [
+          "studentOf" => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsStudent()->toArray()),
+          "supervisorOf" => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsSupervisor()->toArray())
         ]
       ];
     }
@@ -149,7 +149,7 @@ class User implements JsonSerializable
         $user->degreesBeforeName = $degreesBeforeName;
         $user->degreesAfterName = $degreesAfterName;
         $user->email = $email;
-        $user->avatarUrl = Gravatar::image($email, 45, 'retro', 'g', 'jpg', true, false);
+        $user->avatarUrl = Gravatar::image($email, 45, "retro", "g", "jpg", true, false);
         $user->isVerified = FALSE;
         $user->isAllowed = TRUE;
         $user->studentOf = new ArrayCollection;

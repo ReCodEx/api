@@ -24,8 +24,8 @@ class LoginPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      'accessToken' => $this->accessManager->issueToken($user),
-      'user' => $user
+      "accessToken" => $this->accessManager->issueToken($user),
+      "user" => $user
     ]);
   }
 

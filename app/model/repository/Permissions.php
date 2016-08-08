@@ -15,7 +15,7 @@ class Permissions extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->permissions = $em->getRepository('App\Model\Entity\Permission');
+        $this->permissions = $em->getRepository("App\Model\Entity\Permission");
     }
 
     public function findAll() {

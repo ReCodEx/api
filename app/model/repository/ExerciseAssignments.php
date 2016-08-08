@@ -13,7 +13,7 @@ class ExerciseAssignments extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->assignments = $em->getRepository('App\Model\Entity\ExerciseAssignment');
+        $this->assignments = $em->getRepository("App\Model\Entity\ExerciseAssignment");
     }
 
     public function findAll() {

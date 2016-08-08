@@ -81,7 +81,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   private function validateRequiredParams(\Reflector $reflection) {
     $annotations = $reflection->getAnnotations();
-    $requiredFields = Arrays::get($annotations, 'RequiredField', []);
+    $requiredFields = Arrays::get($annotations, "RequiredField", []);
 
     foreach ($requiredFields as $field) {
       $type = strtolower($field->type);
@@ -90,10 +90,10 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       $msg = isset($field->msg) ? $field->msg : NULL;
 
       switch ($type) {
-        case 'post':
+        case "post":
           $this->validatePostField($name, $validationRule, $msg);
           break;
-        case 'query':
+        case "query":
           $this->validateQueryField($name, $validationRule, $msg);
         
         default:
@@ -139,26 +139,26 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @throws  ForbiddenRequestException
    */
   private function restrictUnauthorizedAccess(\Reflector $reflection) {
-    if ($reflection->hasAnnotation('LoggedIn') && !$this->user->isLoggedIn()) {
-      throw new ForbiddenRequestException('You must be logged in - you probably didn\'t provide a valid access token in the HTTP request.');
+    if ($reflection->hasAnnotation("LoggedIn") && !$this->user->isLoggedIn()) {
+      throw new ForbiddenRequestException("You must be logged in - you probably didn\"t provide a valid access token in the HTTP request.");
     }
         
-    if ($reflection->hasAnnotation('Role')
-      && !$this->user->isInRole($reflection->getAnnotation('Role'))) {
-        throw new ForbiddenRequestException('You do not have sufficient rights to perform this action.');
+    if ($reflection->hasAnnotation("Role")
+      && !$this->user->isInRole($reflection->getAnnotation("Role"))) {
+        throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
     }
 
-    if ($reflection->hasAnnotation('UserIsAllowed')) {
-      foreach ($reflection->getAnnotation('UserIsAllowed') as $resource => $action) {
+    if ($reflection->hasAnnotation("UserIsAllowed")) {
+      foreach ($reflection->getAnnotation("UserIsAllowed") as $resource => $action) {
         if ($this->user->isAllowed($resource, $action) === FALSE) {
-          throw new ForbiddenRequestException('You are not allowed to perform this action.');
+          throw new ForbiddenRequestException("You are not allowed to perform this action.");
         }
       }
     }
   }
 
   protected function findUserOrThrow(string $id) {
-    if ($id === 'me') {
+    if ($id === "me") {
       if (!$this->user->isLoggedIn()) {
         throw new ForbiddenRequestException; 
       }
@@ -177,9 +177,9 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
     // @todo set HTTP response code
     $this->sendJson([
-      'success' => TRUE,
-      'code' => $code,
-      'payload' => $payload
+      "success" => TRUE,
+      "code" => $code,
+      "payload" => $payload
     ]);
   }
 

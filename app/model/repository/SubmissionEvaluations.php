@@ -15,7 +15,7 @@ class SubmissionEvaluations extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->evaluations = $em->getRepository('App\Model\Entity\SubmissionEvaluation');
+        $this->evaluations = $em->getRepository("App\Model\Entity\SubmissionEvaluation");
     }
 
     public function findAll() {
