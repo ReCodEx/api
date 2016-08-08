@@ -42,6 +42,11 @@ class SubmissionEvaluation implements JsonSerializable
   protected $submission;
 
   /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $initFailed;
+
+  /**
    * @ORM\Column(type="float")
    */
   protected $score;
@@ -85,6 +90,7 @@ class SubmissionEvaluation implements JsonSerializable
       "score" => $this->score,
       "points" => $this->points,
       "maxPoints" => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
+      "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect,
       "evaluationFailed" => $this->evaluationFailed,
@@ -121,31 +127,43 @@ class SubmissionEvaluation implements JsonSerializable
     $evaluationFailed = $tasksResults === FALSE;
     $evaluation = self::createSubmissionEvaluation($submission, $evaluationFailed, $resultYmlContent);
 
-    if (!$evaluationFailed) {
-      $testsResults = RT::transformLowLevelInformation($jobConfig, $tasksResults);
-      foreach ($testsResults as $name => $result) {
-        if (!isset($result[RT::FIELD_LIMITS]) || !isset($result[RT::FIELD_LIMITS][$submission->getHardwareGroup()])) {
-          // @todo what to do? is there any sort of default limits?
-        }
+    // when the evaluation fails, there is no need (and no way of how) to analyze results of individual tests
+    if ($evaluationFailed) {
+      return $evaluation;
+    }
 
-        $limits = $result[RT::FIELD_LIMITS][$submission->getHardwareGroup()];
-        $judgeOutput = isset($result[RT::FIELD_JUDGE_OUTPUT]) && !empty($result[RT::FIELD_JUDGE_OUTPUT]) ? $result[RT::FIELD_JUDGE_OUTPUT] : "";
-        $testResult = TestResult::createTestResult(
-          $evaluation,
-          $name,
-          $result[RT::FIELD_STATUS],
-          $result[RT::FIELD_SCORE],
-          $judgeOutput,
-          $result[RT::FIELD_STATS],
-          $limits
-        );
-        $evaluation->testResults->add($testResult);
+    // determine whether the submission was compiled or initialised in any other way successfully
+    $evaluation->initFailed = self::allInitialisationStepsOK($tasksResults) === FALSE;
+    if ($evaluation->initFailed === TRUE) {
+      $evaluation->score = 0;
+      $evaluation->points = 0;
+      $evaluation->isCorrect = FALSE;
+      return $evaluation;
+    }
+
+    $testsResults = RT::transformLowLevelInformation($jobConfig, $tasksResults);
+    foreach ($testsResults as $name => $result) {
+      if (!isset($result[RT::FIELD_LIMITS]) || !isset($result[RT::FIELD_LIMITS][$submission->getHardwareGroup()])) {
+        // @todo what to do? is there any sort of default limits?
       }
 
-      $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
-      $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
-      $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+      $limits = $result[RT::FIELD_LIMITS][$submission->getHardwareGroup()];
+      $judgeOutput = isset($result[RT::FIELD_JUDGE_OUTPUT]) && !empty($result[RT::FIELD_JUDGE_OUTPUT]) ? $result[RT::FIELD_JUDGE_OUTPUT] : "";
+      $testResult = TestResult::createTestResult(
+        $evaluation,
+        $name,
+        $result[RT::FIELD_STATUS],
+        $result[RT::FIELD_SCORE],
+        $judgeOutput,
+        $result[RT::FIELD_STATS],
+        $limits
+      );
+      $evaluation->testResults->add($testResult);
     }
+
+    $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
+    $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
+    $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
 
     return $evaluation;
   }
@@ -204,6 +222,20 @@ class SubmissionEvaluation implements JsonSerializable
     unlink($tmpFile);
 
     return $yml;
+  }
+
+  /**
+   * Analyze whether the source code(s) was (were) compiled successfully or can be interpreted without any syntax and other simillar errors.
+   * @param array $tasksResults Results for each task
+   * @return bool All initialisation tasks finished with status OK
+   */
+  public static function allInitialisationStepsOK(array $tasksResults) {
+    return array_reduce($tasksResults, function ($carry, $task) {
+      return $carry &&
+        (isset($task[RT::FIELD_TYPE]) && $task[RT::FIELD_TYPE] === RT::TYPE_INITIATION)
+          ? $task[RT::FIELD_STATUS] === RT::STATUS_OK
+          : TRUE;
+    }, TRUE);
   }
 
   public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {

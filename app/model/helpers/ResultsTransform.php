@@ -9,6 +9,7 @@ use App\Model\Entity\SubmissionEvaluation;
  */
 class ResultsTransform {
     
+  const TYPE_INITIATION = "initiation";
   const TYPE_EXECUTION = "execution";
   const TYPE_EVALUATION = "evaluation";
 

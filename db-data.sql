@@ -180,6 +180,7 @@ CREATE TABLE `submission` (
 
 CREATE TABLE `submission_evaluation` (
   `id` varchar(36) NOT NULL,
+  `init_failed` tinyint(1) NOT NULL,
   `score` float NOT NULL,
   `points` int(11) NOT NULL,
   `evaluated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
