@@ -16,7 +16,7 @@ class Submissions extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->submissions = $em->getRepository('App\Model\Entity\Submission');
+    $this->submissions = $em->getRepository("App\Model\Entity\Submission");
   }
 
   public function findAll() {
@@ -26,11 +26,11 @@ class Submissions extends Nette\Object {
   public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
     return $this->submissions->findBy(
       [
-        'user' => $userId,
-        'exerciseAssignment' => $assignment
+        "user" => $userId,
+        "exerciseAssignment" => $assignment
       ],
       [
-        'submittedAt' => 'DESC'
+        "submittedAt" => "DESC"
       ]
     );
   }

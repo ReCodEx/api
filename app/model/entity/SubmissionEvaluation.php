@@ -3,6 +3,8 @@
 namespace App\Model\Entity;
 
 use App\Exception\SubmissionEvaluationFailedException;
+use App\Exception\NotFoundException;
+use App\Model\Helpers\ResultsTransform;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,6 +12,7 @@ use JsonSerializable;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
 
 use ZipArchive;
 use Symfony\Component\Yaml\Yaml;
@@ -20,6 +23,8 @@ use Symfony\Component\Yaml\Yaml;
 class SubmissionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
+
+  const MAX_SCORE = 100;
 
   /**
    * @ORM\Id
@@ -70,16 +75,22 @@ class SubmissionEvaluation implements JsonSerializable
    */
   protected $resultYml;
 
+  /**
+   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation")
+   */
+  protected $testResults;
+
   public function jsonSerialize() {
     return [
-      'id' => $this->id,
-      'evaluatedAt' => $this->evaluatedAt->getTimestamp(),
-      'score' => $this->score,
-      'points' => $this->points,
-      'maxPoints' => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
-      'isValid' => $this->isValid,
-      'isCorrect' => $this->isCorrect,
-      'evaluationFailed' => $this->evaluationFailed
+      "id" => $this->id,
+      "evaluatedAt" => $this->evaluatedAt->getTimestamp(),
+      "score" => $this->score,
+      "points" => $this->points,
+      "maxPoints" => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
+      "isValid" => $this->isValid,
+      "isCorrect" => $this->isCorrect,
+      "evaluationFailed" => $this->evaluationFailed,
+      "testResults" => $this->testResults->toArray()
     ];
   }
 
@@ -90,46 +101,51 @@ class SubmissionEvaluation implements JsonSerializable
    */
   public static function loadEvaluation(Submission $submission) {
     if (!$submission->resultsUrl) {
-      throw new SubmissionEvaluationFailedException('The results archive cannot be located.');
+      throw new SubmissionEvaluationFailedException("The results archive cannot be located.");
     }
 
     // download the results ZIP file from the server
-    $zipFileContent = self::downloadResults($submission->resultsUrl);
-    $resultYmlContent = self::getResultYmlContent($zipFileContent);
-    
-    $evaluationFailed = FALSE;
-    $score = NULL;
-    $points = NULL;
-    $isCorrect = NULL;
-
-    // parse the YML
-    $yml = Yaml::parse($resultYmlContent);
-    if ($yml === FALSE) {
-      $evaluationFailed = TRUE;
-    } else {
-      $score = self::computeScore($submission->getExerciseAssignment(), $yml);
-      $isCorrect = self::isSufficientScore($score, $yml);
-      $points = $isCorrect ? $score * $submission->getMaxPoints() : 0;
+    try {
+      $zipFileContent = self::downloadResults($submission->resultsUrl);
+    } catch (ClientException $e) {
+      throw new NotFoundException('Results are not available (yet).');
     }
     
-    return self::createSubmissionEvaluation($submission, $score, $points, $isCorrect, $evaluationFailed, $resultYmlContent);
+    $jobConfig = $submission->getJobConfig(); // this handles errors well
+    
+    try {
+      $resultYmlContent = self::getResultYmlContent($zipFileContent);  
+      $tasksResults = Yaml::parse($resultYmlContent);
+    } catch (\Exception $e) { // @todo: Catch specific exceptions (unzipping and parsing)
+      throw new SubmissionEvaluationFailedException("The results received from the file server are malformed.");
+    }
+
+    $evaluationFailed = $tasksResults === FALSE;
+    $evaluation = self::createSubmissionEvaluation($submission, $evaluationFailed, $resultYmlContent);
+
+    if (!$evaluationFailed) {
+      $testsResults = ResultsTransform::transformLowLevelInformation($jobConfig, $tasksResults);
+      foreach ($testsResults as $name => $result) {
+        $testResult = TestResult::createTestResult($evaluation, $name, $result["score"], $result["status"], $result["stats"], $result["limits"]);
+      }
+
+      $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
+      $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
+      $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+    }
+
+    return $evaluation;    
   }
 
   /**
    * Create an entity from the given values.
    * @param   Submission            $submission
-   * @param   float                 $score
-   * @param   int                   $points
-   * @param   bool                  $isCorrect
    * @param   bool                  $evaluationFailed
    * @return  SubmissionEvaluation
    */
-  public static function createSubmissionEvaluation(Submission $submission, float $score, int $points, bool $isCorrect, bool $evaluationFailed, string $resultYmlContent) {
+  public static function createSubmissionEvaluation(Submission $submission, bool $evaluationFailed, string $resultYmlContent) {
     $entity = new SubmissionEvaluation;
-    $entity->score = $score;
-    $entity->points = $points;
     $entity->evaluatedAt = new \DateTime;
-    $entity->isCorrect = $isCorrect;
     $entity->isValid = TRUE;
     $entity->evaluationFailed = FALSE;
     $entity->resultYml = $resultYmlContent;
@@ -146,7 +162,7 @@ class SubmissionEvaluation implements JsonSerializable
    */
   private static function downloadResults(string $url) {
     $client = new Client();
-    $response = $client->request('GET', $url);
+    $response = $client->request("GET", $url);
     return $response->getBody();
   }
 
@@ -157,14 +173,14 @@ class SubmissionEvaluation implements JsonSerializable
    */
   private static function getResultYmlContent($zipFileContent) {
     // the contents must be saved to a tmp file first
-    $tmpFile = tempnam(sys_get_temp_dir(), 'ReC');
+    $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
     file_put_contents($tmpFile, $zipFileContent);
     $zip = new ZipArchive;
     if (!$zip->open($tmpFile)) {
-      throw new SubmissionEvaluationFailedException('Cannot open results from remote file server.');
+      throw new SubmissionEvaluationFailedException("Cannot open results from remote file server.");
     }
 
-    $yml = $zip->getFromName('result/result.yml');
+    $yml = $zip->getFromName("result/result.yml");
 
     // a bit of a cleanup
     $zip->close();
@@ -173,13 +189,13 @@ class SubmissionEvaluation implements JsonSerializable
     return $yml;
   }
 
-  // @todo Unit test this !!
-  public static function computeScore(ExerciseAssignment $assignment, array $result) {
+  public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {
+    // @todo Unit test this !!
     // @todo
     return 0;
   }
 
-  public static function isSufficientScore(float $score, array $result) {
+  public static function isSufficientScore(ExerciseAssignment $assignment, float $score) {
     // @todo
     return FALSE;
   }

@@ -63,14 +63,14 @@ class Exercise implements JsonSerializable
 
     public function jsonSerialize() {
       return [
-        'id' => $this->id,
-        'name' => $this->name,
-        'version' => $this->version,
-        'author' => $this->author,
-        'forkedFrom' => $this->getForkedFrom(),
-        'description' => $this->description,
-        'createdAt' => $this->createdAt,
-        'updatedAt' => $this->updatedAt
+        "id" => $this->id,
+        "name" => $this->name,
+        "version" => $this->version,
+        "author" => $this->author,
+        "forkedFrom" => $this->getForkedFrom(),
+        "description" => $this->description,
+        "createdAt" => $this->createdAt,
+        "updatedAt" => $this->updatedAt
       ];
     }
   

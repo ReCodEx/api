@@ -15,7 +15,7 @@ class UploadedFiles extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->uploadedFiles = $em->getRepository('App\Model\Entity\UploadedFile');
+    $this->uploadedFiles = $em->getRepository("App\Model\Entity\UploadedFile");
   }
 
   public function findAll() {
@@ -23,7 +23,7 @@ class UploadedFiles extends Nette\Object {
   }
 
   public function findAllById($ids) {
-    return $this->uploadedFiles->findBy([ 'id' => $ids ]);
+    return $this->uploadedFiles->findBy([ "id" => $ids ]);
   }
 
   public function get($id) {

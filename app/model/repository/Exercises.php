@@ -14,7 +14,7 @@ class Exercises extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->exercises = $em->getRepository('App\Model\Entity\Exercise');
+        $this->exercises = $em->getRepository("App\Model\Entity\Exercise");
     }
 
     public function findAll() {

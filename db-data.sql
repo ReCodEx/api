@@ -8,6 +8,28 @@ SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 CREATE DATABASE `recodex-api` /*!40100 DEFAULT CHARACTER SET utf8 */;
 USE `recodex-api`;
 
+DROP TABLE IF EXISTS `comment`;
+CREATE TABLE `comment` (
+  `id` varchar(60) NOT NULL,
+  `comment_thread_id` varchar(60) NOT NULL,
+  `user_id` varchar(36) NOT NULL,
+  `posted_at` timestamp NOT NULL,
+  `text` text NOT NULL,
+  KEY `comment_thread_id` (`comment_thread_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `comment_thread`;
+CREATE TABLE `comment_thread` (
+  `id` varchar(60) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `comment_thread` (`id`) VALUES
+('abc'),
+('d0c11a7a-5b11-11e6-a34f-180373206d10');
+
 DROP TABLE IF EXISTS `exercise`;
 CREATE TABLE `exercise` (
   `id` varchar(36) NOT NULL,
@@ -48,7 +70,7 @@ CREATE TABLE `exercise_assignment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `exercise_assignment` (`id`, `group_id`, `exercise_id`, `name`, `job_config_file_path`, `description`, `first_deadline`, `max_points_before_first_deadline`, `second_deadline`, `max_points_before_second_deadline`, `submissions_count_limit`) VALUES
-('25f248c4-50e8-11e6-beb8-9e71128cae77',	'5c38c32a-50e5-11e6-beb8-9e71128cae77',	'ce1f2a4a-50e7-11e6-beb8-9e71128cae77',	'Hrošíci pro dlouhé letní večery',	'C:\\Users\\simon-desktop\\Documents\\Github\\recodex\\api\\exercises\\hrosi-ohradka\\submit\\job-config.yml',	NULL,	'2016-08-04 15:08:30',	10,	'2016-08-31 21:59:59',	7,	10);
+('25f248c4-50e8-11e6-beb8-9e71128cae77',	'5c38c32a-50e5-11e6-beb8-9e71128cae77',	'ce1f2a4a-50e7-11e6-beb8-9e71128cae77',	'Hrošíci pro dlouhé letní večery',	'C:\\Users\\simon-desktop\\Documents\\Github\\recodex\\exercises\\hrosi-ohradka\\submit\\job-config.yml',	NULL,	'2016-08-04 15:08:30',	10,	'2016-08-31 21:59:59',	7,	10);
 
 DROP TABLE IF EXISTS `group`;
 CREATE TABLE `group` (
@@ -141,8 +163,7 @@ CREATE TABLE `login` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `login` (`id`, `username`, `password_hash`, `user_id`) VALUES
-('',	'rozsival',	'$2y$11$IIWzr6G15c1d5MrYCXarbOOBEjUZj3RXWFOvaCOENLPqW9BVWvZZG',	'1fe2255e-50e2-11e6-beb8-9e71128cae77'),
-('ba77aa8b-5a4f-11e6-9175-180373206d10',	'simon@rozsival.com',	'$2y$11$iNV1hYhAJioBq2.PIukcIORbHuFua9xjYDKE0J0kOLSWjp2B8DXSG',	'ba7644cb-5a4f-11e6-9175-180373206d10');
+('',	'rozsival',	'$2y$11$IIWzr6G15c1d5MrYCXarbOOBEjUZj3RXWFOvaCOENLPqW9BVWvZZG',	'1fe2255e-50e2-11e6-beb8-9e71128cae77');
 
 DROP TABLE IF EXISTS `permission`;
 CREATE TABLE `permission` (
@@ -201,6 +222,12 @@ CREATE TABLE `submission` (
   CONSTRAINT `submission_ibfk_3` FOREIGN KEY (`submission_evaluation_id`) REFERENCES `submission_evaluation` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `submission` (`id`, `exercise_assignment_id`, `submission_evaluation_id`, `user_id`, `note`, `results_url`, `submitted_at`) VALUES
+('6923a3c2-5b01-11e6-a34f-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	NULL,	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'',	NULL,	'2016-08-05 11:40:27'),
+('97b0c8b9-5b11-11e6-a34f-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	NULL,	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'',	NULL,	'2016-08-05 13:36:17'),
+('afc22c0d-5ae7-11e6-a34f-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	'bfe52061-5ae7-11e6-a34f-180373206d10',	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Ratatat',	'http://195.113.17.8:9999/results/afc22c0d-5ae7-11e6-a34f-180373206d10.zip',	'2016-08-05 08:36:19'),
+('b326ac73-5b11-11e6-a34f-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	NULL,	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'',	NULL,	'2016-08-05 13:37:04'),
+('d0c11a7a-5b11-11e6-a34f-180373206d10',	'25f248c4-50e8-11e6-beb8-9e71128cae77',	'd4503c93-5b11-11e6-a34f-180373206d10',	'1fe2255e-50e2-11e6-beb8-9e71128cae77',	'',	'http://195.113.17.8:9999/results/d0c11a7a-5b11-11e6-a34f-180373206d10.zip',	'2016-08-05 13:37:53');
 
 DROP TABLE IF EXISTS `submission_evaluation`;
 CREATE TABLE `submission_evaluation` (
@@ -215,6 +242,9 @@ CREATE TABLE `submission_evaluation` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `submission_evaluation` (`id`, `score`, `points`, `evaluated_at`, `result_yml`, `is_valid`, `is_correct`, `evaluation_failed`) VALUES
+('bfe52061-5ae7-11e6-a34f-180373206d10',	0,	0,	'2016-08-05 08:36:46',	'results:\n  - status: OK\n    task-id: compilation\n    sandbox_results:\n      killed: false\n      memory: 6032\n      wall-time: 0.098\n      exitcode: 0\n      message: \"\"\n      exitsig: 0\n      time: 0.058\n      status: OK\n      max-rss: 19696\n  - status: OK\n    task-id: fetch_test_1\n  - sandbox_results:\n      message: \"\"\n      memory: 128\n      status: OK\n      exitsig: 0\n      killed: false\n      max-rss: 1444\n      exitcode: 0\n      time: 0\n      wall-time: 0.095\n    task-id: evaluation_test_1\n    status: OK\n  - task-id: fetch_test_solution_1\n    status: OK\n  - task-id: judging_test_1\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      memory: 128\n      max-rss: 1320\n      exitsig: 0\n      killed: false\n      message: \"\"\n      time: 0\n      status: OK\n      wall-time: 0.071\n  - task-id: rm_junk_test_1\n    status: OK\n  - task-id: fetch_test_2\n    status: OK\n  - sandbox_results:\n      killed: false\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.079\n      memory: 128\n      max-rss: 1444\n      status: OK\n      exitsig: 0\n    task-id: evaluation_test_2\n    status: OK\n  - task-id: fetch_test_solution_2\n    status: OK\n  - sandbox_results:\n      killed: false\n      message: \"\"\n      max-rss: 1320\n      status: OK\n      exitsig: 0\n      exitcode: 0\n      wall-time: 0.095\n      memory: 128\n      time: 0\n    task-id: judging_test_2\n    status: OK\n  - task-id: rm_junk_test_2\n    status: OK\n  - task-id: fetch_test_3\n    status: OK\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.083\n      memory: 128\n      max-rss: 1444\n      status: OK\n    task-id: evaluation_test_3\n    status: OK\n  - task-id: fetch_test_solution_3\n    status: OK\n  - task-id: judging_test_3\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.075\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n  - task-id: rm_junk_test_3\n    status: OK\n  - task-id: fetch_test_4\n    status: OK\n  - sandbox_results:\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n      exitcode: 0\n      time: 0.004\n      wall-time: 0.095\n      memory: 252\n      max-rss: 1528\n    task-id: evaluation_test_4\n    status: OK\n  - task-id: fetch_test_solution_4\n    status: OK\n  - task-id: judging_test_4\n    status: OK\n    sandbox_results:\n      time: 0\n      exitcode: 0\n      wall-time: 0.083\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n  - task-id: rm_junk_test_4\n    status: OK\n  - task-id: fetch_test_5\n    status: OK\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      message: \"\"\n      exitcode: 0\n      time: 0.021\n      wall-time: 0.087\n      memory: 892\n      max-rss: 2032\n      status: OK\n    task-id: evaluation_test_5\n    status: OK\n  - task-id: fetch_test_solution_5\n    status: OK\n  - sandbox_results:\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.083\n      memory: 128\n      max-rss: 1320\n    task-id: judging_test_5\n    status: OK\n  - task-id: rm_junk_test_5\n    status: OK\n  - task-id: fetch_test_6\n    status: OK\n  - sandbox_results:\n      exitcode: 0\n      wall-time: 0.167\n      memory: 3324\n      max-rss: 4260\n      status: OK\n      exitsig: 0\n      killed: false\n      message: \"\"\n      time: 0.092\n    task-id: evaluation_test_6\n    status: OK\n  - status: OK\n    task-id: fetch_test_solution_6\n  - task-id: judging_test_6\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.075\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n  - task-id: rm_junk_test_6\n    status: OK\njob-id: afc22c0d-5ae7-11e6-a34f-180373206d10',	1,	0,	0),
+('d4503c93-5b11-11e6-a34f-180373206d10',	0,	0,	'2016-08-05 13:37:59',	'job-id: d0c11a7a-5b11-11e6-a34f-180373206d10\nresults:\n  - sandbox_results:\n      exitcode: 0\n      max-rss: 19696\n      memory: 6032\n      wall-time: 0.092\n      exitsig: 0\n      message: \"\"\n      status: OK\n      time: 0.037\n      killed: false\n    task-id: compilation\n    status: OK\n  - task-id: fetch_test_1\n    status: OK\n  - sandbox_results:\n      wall-time: 0.091\n      time: 0\n      memory: 128\n      max-rss: 1444\n      exitsig: 0\n      status: OK\n      message: \"\"\n      killed: false\n      exitcode: 0\n    task-id: evaluation_test_1\n    status: OK\n  - task-id: fetch_test_solution_1\n    status: OK\n  - status: OK\n    task-id: judging_test_1\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      memory: 128\n      wall-time: 0.071\n      max-rss: 1320\n      status: OK\n      message: \"\"\n      exitsig: 0\n      killed: false\n  - task-id: rm_junk_test_1\n    status: OK\n  - task-id: fetch_test_2\n    status: OK\n  - sandbox_results:\n      message: \"\"\n      status: OK\n      exitsig: 0\n      killed: false\n      memory: 128\n      max-rss: 1444\n      exitcode: 0\n      time: 0\n      wall-time: 0.043\n    task-id: evaluation_test_2\n    status: OK\n  - task-id: fetch_test_solution_2\n    status: OK\n  - sandbox_results:\n      exitsig: 0\n      killed: false\n      message: \"\"\n      time: 0\n      max-rss: 1320\n      status: OK\n      exitcode: 0\n      wall-time: 0.095\n      memory: 128\n    task-id: judging_test_2\n    status: OK\n  - task-id: rm_junk_test_2\n    status: OK\n  - task-id: fetch_test_3\n    status: OK\n  - sandbox_results:\n      exitcode: 0\n      wall-time: 0.095\n      memory: 128\n      max-rss: 1444\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n      time: 0\n    task-id: evaluation_test_3\n    status: OK\n  - task-id: fetch_test_solution_3\n    status: OK\n  - sandbox_results:\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n      exitcode: 0\n      time: 0\n      wall-time: 0.063\n      max-rss: 1320\n      memory: 128\n    task-id: judging_test_3\n    status: OK\n  - task-id: rm_junk_test_3\n    status: OK\n  - task-id: fetch_test_4\n    status: OK\n  - task-id: evaluation_test_4\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0.002\n      wall-time: 0.083\n      memory: 252\n      max-rss: 1528\n      status: OK\n      exitsig: 0\n      killed: false\n      message: \"\"\n  - task-id: fetch_test_solution_4\n    status: OK\n  - task-id: judging_test_4\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.083\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n  - task-id: rm_junk_test_4\n    status: OK\n  - task-id: fetch_test_5\n    status: OK\n  - sandbox_results:\n      max-rss: 2032\n      status: OK\n      exitsig: 0\n      killed: false\n      message: \"\"\n      exitcode: 0\n      time: 0.021\n      wall-time: 0.091\n      memory: 892\n    task-id: evaluation_test_5\n    status: OK\n  - task-id: fetch_test_solution_5\n    status: OK\n  - sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.079\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n    task-id: judging_test_5\n    status: OK\n  - task-id: rm_junk_test_5\n    status: OK\n  - task-id: fetch_test_6\n    status: OK\n  - task-id: evaluation_test_6\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0.092\n      wall-time: 0.159\n      memory: 3324\n      max-rss: 4260\n      status: OK\n      exitsig: 0\n      killed: false\n      message: \"\"\n  - task-id: fetch_test_solution_6\n    status: OK\n  - task-id: judging_test_6\n    status: OK\n    sandbox_results:\n      exitcode: 0\n      time: 0\n      wall-time: 0.091\n      memory: 128\n      max-rss: 1320\n      status: OK\n      killed: false\n      exitsig: 0\n      message: \"\"\n  - task-id: rm_junk_test_6\n    status: OK',	1,	0,	0);
 
 DROP TABLE IF EXISTS `uploaded_file`;
 CREATE TABLE `uploaded_file` (
@@ -240,6 +270,7 @@ CREATE TABLE `user` (
   `last_name` varchar(50) NOT NULL,
   `degrees_after_name` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
+  `avatar_url` varchar(200) NOT NULL,
   `role_id` varchar(50) NOT NULL,
   `is_verified` tinyint(1) NOT NULL DEFAULT '0',
   `is_allowed` tinyint(1) NOT NULL,
@@ -249,8 +280,25 @@ CREATE TABLE `user` (
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `user` (`id`, `degrees_before_name`, `first_name`, `last_name`, `degrees_after_name`, `email`, `role_id`, `is_verified`, `is_allowed`) VALUES
-('1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Bc.',	'Šimon',	'Rozsíval',	'',	'simon.rozsival@gmail.com',	'superadmin',	1,	1),
-('ba7644cb-5a4f-11e6-9175-180373206d10',	'',	'Simon',	'Rozsival',	'',	'simon@rozsival.com',	'student',	0,	1);
+INSERT INTO `user` (`id`, `degrees_before_name`, `first_name`, `last_name`, `degrees_after_name`, `email`, `avatar_url`, `role_id`, `is_verified`, `is_allowed`) VALUES
+('1fe2255e-50e2-11e6-beb8-9e71128cae77',	'Bc.',	'Šimon',	'Rozsíval',	'',	'simon.rozsival@gmail.com',	'https://secure.gravatar.com/avatar/f4b93e0b37f67b925e733fcf2c020810?d=retro&r=g&s=200',	'superadmin',	1,	1);
 
--- 2016-08-04 18:16:48
+DROP TABLE IF EXISTS `test_result`;
+CREATE TABLE `test_result` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `test_name` varchar(30) NOT NULL,
+  `submission_evaluation_id` varchar(36) NOT NULL,
+  `score` float NOT NULL,
+  `memory_exceeded` tinyint(1) NOT NULL,
+  `used_memory_ratio` float NOT NULL,
+  `time_exceeded` tinyint(1) NOT NULL,
+  `used_time_ratio` float NOT NULL,
+  `exit_code` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `stats` varchar(100) NOT NULL,
+  `judge_output` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `submission_evaluation_id` (`submission_evaluation_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- 2016-08-05 21:22:49

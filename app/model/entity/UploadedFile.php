@@ -64,12 +64,12 @@ class UploadedFile implements JsonSerializable
 
     public function jsonSerialize() {
       return [
-        'id' => $this->id,
-        'name' => $this->name,
-        'size' => $this->fileSize,
-        'uploadedAt' => $this->uploadedAt->getTimestamp(),
-        'userId' => $this->user->getId(),
-        'content' => $this->getContent()
+        "id" => $this->id,
+        "name" => $this->name,
+        "size" => $this->fileSize,
+        "uploadedAt" => $this->uploadedAt->getTimestamp(),
+        "userId" => $this->user->getId(),
+        "content" => $this->getContent()
       ];
     }
 
@@ -88,8 +88,6 @@ class UploadedFile implements JsonSerializable
         $filePath = self::getFilePath($user->getId(), $file, $fsRoot);
         $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
       } catch (\Nette\InvalidStateException $e) {
-        echo "no privilidge: {$e->getMessage()}";
-        exit;
         return FALSE;
       }
 

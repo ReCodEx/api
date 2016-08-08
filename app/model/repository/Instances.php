@@ -13,7 +13,7 @@ class Instances extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->instances = $em->getRepository('App\Model\Entity\Instance');
+        $this->instances = $em->getRepository("App\Model\Entity\Instance");
     }
 
     public function findAll() {

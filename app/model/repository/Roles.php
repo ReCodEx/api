@@ -15,7 +15,7 @@ class Roles extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->roles = $em->getRepository('App\Model\Entity\Role');
+        $this->roles = $em->getRepository("App\Model\Entity\Role");
     }
 
     public function findAll() {
@@ -23,7 +23,7 @@ class Roles extends Nette\Object {
     }
 
     public function findLowestLevelRoles() {
-        return $this->roles->findBy([ 'parentRole' => NULL ]);
+        return $this->roles->findBy([ "parentRole" => NULL ]);
     }
 
     public function get($id) {

@@ -40,7 +40,7 @@ class Login
   protected $user;
 
   const HASHING_OPTIONS = [
-    'cost' => 11
+    "cost" => 11
   ];
 
   public static function hashPassword($password) {
@@ -61,7 +61,7 @@ class Login
 
   public static function createLogin(User $user, string $email, string $password) {
     if (Validators::isEmail($email) === FALSE) {
-      throw new InvalidArgumentException('email', 'Username must be a valid email address.');
+      throw new InvalidArgumentException("email", "Username must be a valid email address.");
     }
 
     $login = new Login;

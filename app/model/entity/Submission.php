@@ -10,9 +10,10 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use Nette\Utils\Arrays;
 
-use App\Exception\SubmissionFailedException;
-use App\Exception\MalformedJobConfigException;
+use App\Exception\BadRequestException;
 use App\Exception\ForbiddenRequestException;
+use App\Exception\MalformedJobConfigException;
+use App\Exception\SubmissionFailedException;
 
 use GuzzleHttp\Exception\RequestException;
 use ZMQ;
@@ -28,8 +29,8 @@ class Submission implements JsonSerializable
 {
     use MagicAccessors;
 
-    const REMOTE_FILE_SERVER_URL = 'http://195.113.17.8:9999'; // @todo place in a configuration file
-    const ZMQ_SERVER_URL = 'tcp://195.113.17.8:9658'; // @todo place in a configuration file
+    const REMOTE_FILE_SERVER_URL = "http://195.113.17.8:9999"; // @todo place in a configuration file
+    const ZMQ_SERVER_URL = "tcp://195.113.17.8:9658"; // @todo place in a configuration file
 
     /**
      * @ORM\Id
@@ -108,13 +109,13 @@ class Submission implements JsonSerializable
     public function getEvaluationStatus() {
       $eval = $this->getEvaluation();
       if ($eval === NULL) {
-        return 'work-in-progress';
+        return "work-in-progress";
       } elseif ($eval->isValid() === FALSE) {
-        return 'evaluation-failed';
+        return "evaluation-failed";
       } elseif ($eval->isCorrect() === TRUE) {
-        return 'done';
+        return "done";
       } else {
-        return 'failed';
+        return "failed";
       }
     }
 
@@ -133,12 +134,12 @@ class Submission implements JsonSerializable
      */
     public function jsonSerialize() {
       return [
-        'id' => $this->id,
-        'userId' => $this->getUser()->getId(),
-        'note' => $this->note,
-        'exerciseAssignmentId' => $this->getExerciseAssignment()->getId(),
-        'submittedAt' => $this->submittedAt->getTimestamp(),
-        'evaluationStatus' => $this->getEvaluationStatus(),
+        "id" => $this->id,
+        "userId" => $this->getUser()->getId(),
+        "note" => $this->note,
+        "exerciseAssignmentId" => $this->getExerciseAssignment()->getId(),
+        "submittedAt" => $this->submittedAt->getTimestamp(),
+        "evaluationStatus" => $this->getEvaluationStatus(),
         "evaluation" => $this->getEvaluation(),
         "files" => $this->getFiles()->toArray()
       ];
@@ -155,7 +156,7 @@ class Submission implements JsonSerializable
      * @internal param string $name Name of the exercise
      */
     public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, array $files) {
-      // the 'user' must be a student and the 'loggedInUser' must be either this student, or a supervisor of this group
+      // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE
         ) {
         // || ($user->getId() === $loggedInUser->getId() // @todo fix this mess
@@ -170,7 +171,7 @@ class Submission implements JsonSerializable
 
       if ($assignment->isAfterDeadline() === TRUE
         && $assignment->isSupervisorOf($loggedInUser) === FALSE) { // supervisors can force-submit even after the deadline 
-        throw new ForbiddenRequestException('It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.');
+        throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
       }
 
       // now that the conditions for submission are validated, here comes the easy part:
@@ -201,7 +202,7 @@ class Submission implements JsonSerializable
       $files = $this->prepareFilesForSendingToRemoteServer($this, $this->files);
       $remotePaths = $this->sendFilesToRemoteFileServer($this->id, $files);
       if (!isset($remotePaths->archive_path) || !isset($remotePaths->result_path)) {
-        throw new SubmissionFailedException('Remote file server broke the communication protocol');
+        throw new SubmissionFailedException("Remote file server broke the communication protocol");
       }
 
       $this->resultsUrl = self::REMOTE_FILE_SERVER_URL . $remotePaths->result_path;
@@ -216,17 +217,17 @@ class Submission implements JsonSerializable
     private function prepareFilesForSendingToRemoteServer(Submission $submission, $files) {
       $filesToSubmit = array_map(function ($file) {
         return [
-          'name' => $file->name,
-          'filename' => $file->name,
-          'contents' => fopen($file->filePath, 'r')
+          "name" => $file->name,
+          "filename" => $file->name,
+          "contents" => fopen($file->filePath, "r")
         ];
       }, $files->toArray());
       
-      $jobConfigYml = $this->getJobConfig($submission);
+      $jobConfigYml = YAML::dump($this->getJobConfig());
       $jobConfigFile = [
-        'name' => 'job-config.yml',
-        'filename' => 'job-config.yml',
-        'contents' => $jobConfigYml
+        "name" => "job-config.yml",
+        "filename" => "job-config.yml",
+        "contents" => $jobConfigYml
       ];
 
       array_push($filesToSubmit, $jobConfigFile);
@@ -236,33 +237,33 @@ class Submission implements JsonSerializable
     /**
      * @param Submission $submission  The submission entity
      * @throws MalformedJobConfigException
-     * @return string
+     * @return array Parsed YAML config with updated job-id
      */
-    private function getJobConfig(Submission $submission): string {
-      $configFileName = realpath($submission->exerciseAssignment->getJobConfigFilePath());
+    public function getJobConfig(): array {
+      $configFileName = realpath($this->exerciseAssignment->getJobConfigFilePath());
       if ($configFileName === FALSE) {
-        throw new MalformedJobConfigException('The configuration file does not exist on the server.');
+        throw new MalformedJobConfigException("The configuration file does not exist on the server.");
       }
 
       $jobConfig = file_get_contents($configFileName);
       if ($jobConfig === FALSE) {
-        throw new MalformedJobConfigException('Cannot open the configuration file for reading.');
+        throw new MalformedJobConfigException("Cannot open the configuration file for reading.");
       }
 
       try {
         $parsedConfig = Yaml::parse($jobConfig);
       } catch (ParseException $e) {
-        throw new MalformedJobConfigException('Assignment configuration file is not a valid YAML file and it cannot be parsed.');
+        throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
       }
 
       // update the job-id field 
-      $parsedConfig['submission']['job-id'] = $submission->getId();
+      $parsedConfig["submission"]["job-id"] = $this->getId();
 
       // count the number of tasks - so we can calculate the progress
       // of evaluation in the browser
-      $this->tasksCount = count($parsedConfig['tasks']); 
+      $this->tasksCount = count($parsedConfig["tasks"]); 
 
-      return YAML::dump($parsedConfig);
+      return $parsedConfig;
     }
 
     /**
@@ -273,16 +274,16 @@ class Submission implements JsonSerializable
      */
     private function sendFilesToRemoteFileServer($submissionId, $files) {
       try {
-        $client = new Client([ 'base_uri' => self::REMOTE_FILE_SERVER_URL ]);
-        $response = $client->request('POST', "/submissions/$submissionId", [ 'multipart' => $files ]);
+        $client = new Client([ "base_uri" => self::REMOTE_FILE_SERVER_URL ]);
+        $response = $client->request("POST", "/submissions/$submissionId", [ "multipart" => $files ]);
 
         if ($response->getStatusCode() === 200) {
           return Json::decode($response->getBody());
         } else {
-          throw new SubmissionFailedException('Remote file server is not working correctly');
+          throw new SubmissionFailedException("Remote file server is not working correctly");
         }
       } catch (RequestException $e) {
-        throw new SubmissionFailedException('Cannot connect to remote file server');
+        throw new SubmissionFailedException("Cannot connect to remote file server");
       }
     }
 
@@ -301,18 +302,18 @@ class Submission implements JsonSerializable
         $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
         $queue->connect(self::ZMQ_SERVER_URL);
         $queue->sendmulti([
-          'eval',
+          "eval",
           $submissionId,
-          'hwgroup=group1',
-          '',
+          "hwgroup=group1",
+          "",
           self::REMOTE_FILE_SERVER_URL . $archiveRemotePath,
           self::REMOTE_FILE_SERVER_URL . $resultRemotePath
         ]);
 
         $response = $queue->recv();
-        return $response === 'accept';
+        return $response === "accept";
       } catch (ZMQSocketException $e) {
-        throw new SubmissionFailedException('Communication with backend broker failed.');
+        throw new SubmissionFailedException("Communication with backend broker failed.");
       }
     }
 }

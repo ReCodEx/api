@@ -4,7 +4,7 @@ namespace App\Exception;
 
 use Nette\Http\IResponse;
 
-class CannotReceiveUploadedFileException extends ApiExcepiton {
+class CannotReceiveUploadedFileException extends ApiException {
 
   /**
    * @param string $name  Name of the file which cannot be received

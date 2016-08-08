@@ -74,29 +74,29 @@ class AccessManager {
    */
   public function issueToken(User $user) {    
     $tokenPayload = [
-      'iss' => 'https://recodex.projekty.ms.mff.cuni.cz', // @todo load this from config!!
-      'aud' => 'https://recodex.projekty.ms.mff.cuni.cz', // @todo load this from config!!
-      'iat' => time(),
-      'nbf' => time(),
-      'exp' => time() + 1*24*60*60, // @todo load this from config!!
-      'sub' => $user
+      "iss" => "https://recodex.projekty.ms.mff.cuni.cz", // @todo load this from config!!
+      "aud" => "https://recodex.projekty.ms.mff.cuni.cz", // @todo load this from config!!
+      "iat" => time(),
+      "nbf" => time(),
+      "exp" => time() + 1*24*60*60, // @todo load this from config!!
+      "sub" => $user
     ];
 
     return JWT::encode($tokenPayload, $this->getSecretVerificationKey(), $this->getAlg());
   }
 
   private function getSecretVerificationKey() {
-    return 'recodex-123'; // @todo make this secure using environment variables - it must not appear on GitHub...
+    return "recodex-123"; // @todo make this secure using environment variables - it must not appear on GitHub...
   }
 
   private function getAllowedAlgs() {
     // allowed algs must be separated from the used algs - if the algorithm is changed in the future,
     // we must accept the older algorithm until all the old tokens expire
-    return [ 'HS256' ]; // @todo load this from config!!
+    return [ "HS256" ]; // @todo load this from config!!
   }
 
   private function getAlg() {
-    return 'HS256'; // @todo load this from config!!
+    return "HS256"; // @todo load this from config!!
   }
 
   /**
@@ -107,8 +107,8 @@ class AccessManager {
     $accessToken = $request->getQuery("access_token");
     if($accessToken !== NULL) return $accessToken; // the token is specified in the URL
 
-    // if the token is not in the URL, try to find the 'Authorization' header with the bearer token
-    $authorizationHeader = $request->getHeader('Authorization', NULL);
+    // if the token is not in the URL, try to find the "Authorization" header with the bearer token
+    $authorizationHeader = $request->getHeader("Authorization", NULL);
     $parts = Strings::split($authorizationHeader, "/ /");
     if(count($parts) === 2) {
       list($bearer, $accessToken) = $parts;

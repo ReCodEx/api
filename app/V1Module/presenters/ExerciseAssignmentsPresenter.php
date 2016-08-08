@@ -80,8 +80,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $assignment = $this->findAssignmentOrFail($id);
     $req = $this->getHttpRequest();
 
-    $loggedInUser = $this->findUserOrThrow('me');
-    $userId = $req->getPost('userId');
+    $loggedInUser = $this->findUserOrThrow("me");
+    $userId = $req->getPost("userId");
     if ($userId !== NULL) {
       $user = $this->findUserOrThrow($userId);
     } else {
@@ -89,10 +89,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     }
 
     // collect the array of already uploaded files
-    $files = $this->files->findAllById($req->getPost('files'));
+    $files = $this->files->findAllById($req->getPost("files"));
 
     // prepare a record in the database
-    $submission = Submission::createSubmission($req->getPost('note'), $assignment, $user, $loggedInUser, $files);
+    $submission = Submission::createSubmission($req->getPost("note"), $assignment, $user, $loggedInUser, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);
@@ -105,10 +105,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $this->submissions->persist($submission);
       $this->files->flush();
       $this->sendSuccessResponse([
-        'submission' => $submission,
-        'webSocketChannel' => [
-          'id' => $submission->getId(),
-          'expectedTasksCount' => $submission->getTasksCount()
+        "submission" => $submission,
+        "webSocketChannel" => [
+          "id" => $submission->getId(),
+          "expectedTasksCount" => $submission->getTasksCount()
         ],
       ]);
     } else {

@@ -15,7 +15,7 @@ class Resources extends Nette\Object {
 
     public function __construct(EntityManager $em) {
         $this->em = $em;
-        $this->resources = $em->getRepository('App\Model\Entity\Resource');
+        $this->resources = $em->getRepository("App\Model\Entity\Resource");
     }
 
     public function findAll() {

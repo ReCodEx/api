@@ -109,15 +109,16 @@ class Group implements JsonSerializable
   public function jsonSerialize() {
     $instance = $this->getInstance();
     return [
-      'id' => $this->id,
-      'name' => $this->name,
-      'description' => $this->description,
-      'supervisors' => $this->supervisors->toArray(),
-      'hasValidLicence' => $this->hasValidLicence(),
-      'instanceId' => $instance ? $instance->getId() : NULL,
-      'parentGroupId' => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      'childGroups' => $this->childGroups->toArray(),
-      'assignments' => array_map(function ($assignment) { return $assignment->getId(); }, $this->getAssignments()->toArray())
+      "id" => $this->id,
+      "name" => $this->name,
+      "description" => $this->description,
+      "supervisors" => $this->supervisors->toArray(),
+      "students" => $this->students->toArray(),
+      "hasValidLicence" => $this->hasValidLicence(),
+      "instanceId" => $instance ? $instance->getId() : NULL,
+      "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
+      "childGroups" => $this->childGroups->toArray(),
+      "assignments" => array_map(function ($assignment) { return $assignment->getId(); }, $this->getAssignments()->toArray())
     ];
   }
 

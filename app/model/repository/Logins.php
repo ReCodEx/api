@@ -14,11 +14,11 @@ class Logins extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->logins = $em->getRepository('App\Model\Entity\Login');
+    $this->logins = $em->getRepository("App\Model\Entity\Login");
   }
 
   public function getUser($username, $password) {
-    $login = $this->logins->findOneBy([ 'username' => $username ]);
+    $login = $this->logins->findOneBy([ "username" => $username ]);
     if ($login) {
       $oldPwdHash = $login->getPasswordHash();
       if ($login->passwordsMatch($password)) {

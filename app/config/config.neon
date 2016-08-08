@@ -26,6 +26,7 @@ services:
   - App\Security\Authorizator
 
   # models - repositories
+  - App\Model\Repository\Comments()
   - App\Model\Repository\Exercises()
   - App\Model\Repository\ExerciseAssignments()
   - App\Model\Repository\Groups()

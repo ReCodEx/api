@@ -12,7 +12,7 @@ class Groups extends Nette\Object {
 
   public function __construct(EntityManager $em) {
     $this->em = $em;
-    $this->groups = $em->getRepository('App\Model\Entity\Group');
+    $this->groups = $em->getRepository("App\Model\Entity\Group");
   }
 
   public function findAll() {
