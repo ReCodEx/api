@@ -240,7 +240,8 @@ class SubmissionEvaluation implements JsonSerializable
   }
 
   public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {
-    return SimpleScoreCalculator::computeScore($assignment->getScoreConfig(), $testResults);
+    $calculator = new SimpleScoreCalculator();
+    return $calculator->computeScore($assignment->getScoreConfig(), $testResults);
   }
 
   public static function isSufficientScore(ExerciseAssignment $assignment, float $score) {
