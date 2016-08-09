@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Exception\NotFoundException;
 use App\Model\Helpers\ResultsTransform as RT;
+use App\Model\Helpers\SimpleScoreCalculator;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -239,9 +240,7 @@ class SubmissionEvaluation implements JsonSerializable
   }
 
   public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {
-    // @todo Unit test this !!
-    // @todo
-    return 0;
+    return SimpleScoreCalculator::computeScore($assignment->getScoreConfig(), $testResults);
   }
 
   public static function isSufficientScore(ExerciseAssignment $assignment, float $score) {

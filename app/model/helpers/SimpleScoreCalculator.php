@@ -13,6 +13,6 @@ class SimpleScoreCalculator {
    * Function that computes the resulting score from simple YML config and test results
    */
   public static function computeScore(string $scoreConfig, ArrayCollection $testResults) {
-
+    return 0;
   }
 }
