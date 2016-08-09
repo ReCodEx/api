@@ -43,6 +43,13 @@ class ExerciseAssignment implements JsonSerializable
   public function getJobConfigFilePath() { return $this->jobConfigFilePath; }
 
   /**
+    * @ORM\Column(type="text")
+    */
+  protected $scoreConfig;
+
+  public function getScoreConfig() { return $this->scoreConfig; }
+
+  /**
     * @ORM\Column(type="datetime")
     */
   protected $firstDeadline;
