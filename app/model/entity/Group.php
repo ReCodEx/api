@@ -81,7 +81,7 @@ class Group implements JsonSerializable
   }
   
   /**
-   * @ORM\OneToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User")
    */
   protected $admin;
   

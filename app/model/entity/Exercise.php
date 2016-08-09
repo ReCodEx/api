@@ -51,7 +51,7 @@ class Exercise implements JsonSerializable
     protected $difficulty;
 
     /**
-     * @ORM\OneToOne(targetEntity="Exercise")
+     * @ORM\ManyToOne(targetEntity="Exercise")
      * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
      */
     protected $exercise;

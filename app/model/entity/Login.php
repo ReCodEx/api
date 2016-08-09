@@ -35,7 +35,7 @@ class Login
   public function getPasswordHash() { return $this->passwordHash; }
 
   /**
-   * @ORM\OneToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User")
    */
   protected $user;
 

@@ -55,7 +55,7 @@ class Instance implements JsonSerializable
   protected $updatedAt;
 
   /**
-   * @ORM\OneToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User")
    */
   protected $admin;
 

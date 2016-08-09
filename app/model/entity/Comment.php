@@ -26,7 +26,7 @@ class Comment implements JsonSerializable
   protected $commentThread;
   
   /**
-   * @ORM\OneToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User")
    */
   protected $user;
 
