@@ -7,6 +7,7 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
+use App\Model\Entity\User;
 
 class Comments extends Nette\Object {
 
@@ -30,6 +31,10 @@ class Comments extends Nette\Object {
 
   public function persistThread(CommentThread $thread) {
     $this->em->persist($thread);
+  }
+
+  public function findUsersComment(User $user, string $id) {
+    return $this->comments->findOneBy([ "user" => $user, "id" => $id ]);
   }
 
   public function flush() {

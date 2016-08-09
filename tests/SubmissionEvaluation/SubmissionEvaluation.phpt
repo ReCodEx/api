@@ -13,8 +13,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
       [
         "task-id" => "Y", "test-id" => "A", "type" => "execution",
-        "sandbox" => [
-          "limits" => [ "memory" => 123, "time" => 456 ]
+        "sandbox" => ["limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
         ]
       ]
     ]
@@ -25,7 +24,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
       [
         "task-id" => "X",
         "status"   => "OK",
-        "score"   => SubmissionEvaluation::MAX_SCORE
+        "score"   => 1
       ],
       [
         "task-id" => "Y",
@@ -52,7 +51,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
       [ "test-id" => "A", "task-id" => "X", "type" => "evaluation" ],
       [
         "test-id" => "A", "task-id" => "Y", "type" => "execution",
-        "limits" => [ "memory" => 123, "time" => 456 ]
+        "limits" => [ "A" => ["hw-group-id" => "A", "memory" => 123, "time" => 456] ]
       ]
     ];
 
@@ -67,14 +66,14 @@ class TestSubmissionEvaluation extends Tester\TestCase
         [ "task-id" => "Y", "test-id" => "A", "type" => "evaluation", "status" => "OK" ],
         [
           "task-id" => "Z", "test-id" => "B", "type" => "execution", "status" => "FAILED",
-          "sandbox" => [ "limits" => "..." ]
+          "sandbox" => [ "limits" => [[ "hw-group-id" => "X" ]] ]
         ]
       ]
     ];
 
     $expected = [
       [ "test-id" => "A", "task-id" => "Y", "type" => "evaluation" ],
-      [ "test-id" => "B", "task-id" => "Z", "type" => "execution", "limits" => "..." ]
+      [ "test-id" => "B", "task-id" => "Z", "type" => "execution", "limits" => [ "X" => ["hw-group-id" => "X"] ] ]
     ];
 
     $simplified = ResultsTransform::simplifyConfig($input);
@@ -91,24 +90,24 @@ class TestSubmissionEvaluation extends Tester\TestCase
   }
 
   public function testExtractScoreSimple() {
-    $score = 123;
-    $result = [ "score" => $score ];
+    $score = 0.25;
+    $result = [ "judge_output" => "$score" ];
     Assert::same($score, ResultsTransform::extractScore($result));
   }
 
   public function testExtractScoreNoScore() {
     $result = [ "status" => "OK" ];
-    Assert::same(SubmissionEvaluation::MAX_SCORE, ResultsTransform::extractScore($result));
+    Assert::same(1.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractScoreNoScoreFailed() {
     $result = [ "status" => "FAILED" ];
-    Assert::same(0, ResultsTransform::extractScore($result));
+    Assert::same(0.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractScoreNoScoreSkipped() {
     $result = [ "status" => "SKIPPED" ];
-    Assert::same(0, ResultsTransform::extractScore($result));
+    Assert::same(0.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractStatusOK_OK() {
@@ -152,7 +151,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
     $expected = [
       "A" => [
         "status"    => "OK",
-        "score"     => SubmissionEvaluation::MAX_SCORE,
+        "score"     => 1.0,
         "stats"     => [
           "exitcode"  => 0,
           "max-rss"   => 19696,
@@ -164,7 +163,9 @@ class TestSubmissionEvaluation extends Tester\TestCase
           "time"      => 0.037,
           "killed"    => false
         ],
-        "limits" => [ "memory" => 123, "time" => 456 ]
+        "limits" => [
+            "A" => [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]
+        ]
       ]
     ];
 

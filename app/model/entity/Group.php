@@ -81,6 +81,11 @@ class Group implements JsonSerializable
   }
   
   /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $admin;
+  
+  /**
    * @ORM\ManyToMany(targetEntity="User", mappedBy="supervisorOf")
    */
   protected $supervisors;

@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Exception\NotFoundException;
-use App\Model\Helpers\ResultsTransform;
+use App\Model\Helpers\ResultsTransform as RT;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -24,8 +24,6 @@ class SubmissionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  const MAX_SCORE = 100;
-
   /**
    * @ORM\Id
    * @ORM\Column(type="guid")
@@ -42,6 +40,11 @@ class SubmissionEvaluation implements JsonSerializable
    * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
    */
   protected $submission;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $initFailed;
 
   /**
    * @ORM\Column(type="float")
@@ -76,7 +79,7 @@ class SubmissionEvaluation implements JsonSerializable
   protected $resultYml;
 
   /**
-   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation")
+   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation", cascade={"persist"})
    */
   protected $testResults;
 
@@ -87,6 +90,7 @@ class SubmissionEvaluation implements JsonSerializable
       "score" => $this->score,
       "points" => $this->points,
       "maxPoints" => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
+      "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect,
       "evaluationFailed" => $this->evaluationFailed,
@@ -123,18 +127,45 @@ class SubmissionEvaluation implements JsonSerializable
     $evaluationFailed = $tasksResults === FALSE;
     $evaluation = self::createSubmissionEvaluation($submission, $evaluationFailed, $resultYmlContent);
 
-    if (!$evaluationFailed) {
-      $testsResults = ResultsTransform::transformLowLevelInformation($jobConfig, $tasksResults);
-      foreach ($testsResults as $name => $result) {
-        $testResult = TestResult::createTestResult($evaluation, $name, $result["score"], $result["status"], $result["stats"], $result["limits"]);
-      }
-
-      $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
-      $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
-      $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+    // when the evaluation fails, there is no need (and no way of how) to analyze results of individual tests
+    if ($evaluationFailed) {
+      return $evaluation;
     }
 
-    return $evaluation;    
+    // determine whether the submission was compiled or initialised in any other way successfully
+    $evaluation->initFailed = self::allInitialisationStepsOK($tasksResults) === FALSE;
+    if ($evaluation->initFailed === TRUE) {
+      $evaluation->score = 0;
+      $evaluation->points = 0;
+      $evaluation->isCorrect = FALSE;
+      return $evaluation;
+    }
+
+    $testsResults = RT::transformLowLevelInformation($jobConfig, $tasksResults);
+    foreach ($testsResults as $name => $result) {
+      if (!isset($result[RT::FIELD_LIMITS]) || !isset($result[RT::FIELD_LIMITS][$submission->getHardwareGroup()])) {
+        // @todo what to do? is there any sort of default limits?
+      }
+
+      $limits = $result[RT::FIELD_LIMITS][$submission->getHardwareGroup()];
+      $judgeOutput = isset($result[RT::FIELD_JUDGE_OUTPUT]) && !empty($result[RT::FIELD_JUDGE_OUTPUT]) ? $result[RT::FIELD_JUDGE_OUTPUT] : "";
+      $testResult = TestResult::createTestResult(
+        $evaluation,
+        $name,
+        $result[RT::FIELD_STATUS],
+        $result[RT::FIELD_SCORE],
+        $judgeOutput,
+        $result[RT::FIELD_STATS],
+        $limits
+      );
+      $evaluation->testResults->add($testResult);
+    }
+
+    $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
+    $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
+    $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+
+    return $evaluation;
   }
 
   /**
@@ -151,6 +182,7 @@ class SubmissionEvaluation implements JsonSerializable
     $entity->resultYml = $resultYmlContent;
     $entity->submission = $submission;
     $submission->setEvaluation($entity);
+    $entity->testResults = new ArrayCollection;
 
     return $entity;
   }
@@ -181,12 +213,29 @@ class SubmissionEvaluation implements JsonSerializable
     }
 
     $yml = $zip->getFromName("result/result.yml");
+    if ($yml === FALSE) {
+      throw new SubmissionEvaluationFailedException("Results YAML file is missing in the archive received from remote FS.");
+    }
 
     // a bit of a cleanup
     $zip->close();
     unlink($tmpFile);
 
     return $yml;
+  }
+
+  /**
+   * Analyze whether the source code(s) was (were) compiled successfully or can be interpreted without any syntax and other simillar errors.
+   * @param array $tasksResults Results for each task
+   * @return bool All initialisation tasks finished with status OK
+   */
+  public static function allInitialisationStepsOK(array $tasksResults) {
+    return array_reduce($tasksResults, function ($carry, $task) {
+      return $carry &&
+        (isset($task[RT::FIELD_TYPE]) && $task[RT::FIELD_TYPE] === RT::TYPE_INITIATION)
+          ? $task[RT::FIELD_STATUS] === RT::STATUS_OK
+          : TRUE;
+    }, TRUE);
   }
 
   public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {

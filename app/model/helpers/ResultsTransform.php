@@ -9,8 +9,27 @@ use App\Model\Entity\SubmissionEvaluation;
  */
 class ResultsTransform {
     
+  const TYPE_INITIATION = "initiation";
   const TYPE_EXECUTION = "execution";
   const TYPE_EVALUATION = "evaluation";
+
+  const FIELD_JUDGE_OUTPUT = "judge_output";
+  const FIELD_STATUS = "status";
+  const FIELD_RESULTS = "results";
+  const FIELD_TEST_ID = "test-id";
+  const FIELD_TASK_ID = "task-id";
+  const FIELD_TYPE = "type";
+  const FIELD_STATS = "stats";
+  const FIELD_TASKS = "tasks";
+  const FIELD_SANDBOX = "sandbox";
+  const FIELD_SANDBOX_RESULTS = "sandbox_results";
+  const FIELD_LIMITS = "limits";
+  const FIELD_SCORE = "score";
+  const FIELD_HW_GROUP_ID = "hw-group-id";
+
+  const STATUS_OK = "OK";
+  const STATUS_FAILED = "FAILED";
+  const STATUS_SKIPPED = "SKIPPED";
 
   /**
    * Transforms the low-level information returned from the backend to a more reasonable data structure.
@@ -20,26 +39,26 @@ class ResultsTransform {
    */
   public static function transformLowLevelInformation(array $jobConfig, array $results): array {
     $simplifiedConfig = self::simplifyConfig($jobConfig);
-    $results = self::createAssocResults($results["results"]);
+    $results = self::createAssocResults($results[self::FIELD_RESULTS]);
 
     return array_reduce($simplifiedConfig, function ($carry, $task) use ($results) {
-      $testId = $task["test-id"];
-      $result = $results[$task["task-id"]];
+      $testId = $task[self::FIELD_TEST_ID];
+      $result = $results[$task[self::FIELD_TASK_ID]];
       $test = isset($carry[$testId])
         ? $carry[$testId]
-        : [ "status" => "OK" ];
+        : [ self::FIELD_STATUS => self::STATUS_OK ];
 
       // update status of the test
-      $test["status"] = self::extractStatus($test["status"], $result["status"]);
+      $test[self::FIELD_STATUS] = self::extractStatus($test[self::FIELD_STATUS], $result[self::FIELD_STATUS]);
 
       // update the additional infromation of the test
-      switch ($task["type"]) {
+      switch ($task[self::FIELD_TYPE]) {
         case self::TYPE_EXECUTION:
-          $test["stats"] = $result["sandbox_results"];
-          $test["limits"] = $task["limits"];
+          $test[self::FIELD_STATS] = $result[self::FIELD_SANDBOX_RESULTS];
+          $test[self::FIELD_LIMITS] = $task[self::FIELD_LIMITS];
           break;
         case self::TYPE_EVALUATION:
-          $test["score"] = self::extractScore($result);
+          $test[self::FIELD_SCORE] = self::extractScore($result);
           break;
       }
 
@@ -55,52 +74,55 @@ class ResultsTransform {
    * @return  string Status of the reduced test tasks" statuses
    */
   public static function extractStatus(string $prevStatus, string $resultStatus): string {
-    if ($prevStatus === "OK") {
+    if ($prevStatus === self::STATUS_OK) {
       return $resultStatus; // === "OK" | "SKIPPED" | "FAILED"
-    } else if ($resultStatus === "OK") {
+    } else if ($resultStatus === self::STATUS_OK) {
       return $prevStatus; // === "OK" | "SKIPPED" | "FAILED"
-    } else if ($prevStatus === "SKIPPED") {
+    } else if ($prevStatus === self::STATUS_SKIPPED) {
       return $resultStatus; // === "SKIPPED" | "FAILED"
-    } else if ($resultStatus === "SKIPPED") {
+    } else if ($resultStatus === self::STATUS_SKIPPED) {
       return $prevStatus; // === "SKIPPED" | "FAILED"
     } else {
-      return "FAILED";
+      return self::STATUS_FAILED;
     }
   }
 
   /**
-   * Extract
-   * @param  [type] $result [description]
-   * @return [type]         [description]
+   * Extract score from the judge output or the status of the task. 
+   * @param  array $result Sandbox results
+   * @return float         The score
    */
-  public static function extractScore($result) {
-    return isset($result["score"])
-            ? intval($result["score"])
-            : ($result["status"] === "OK" ? SubmissionEvaluation::MAX_SCORE : 0);
+  public static function extractScore(array $result): float {
+    return isset($result[self::FIELD_JUDGE_OUTPUT]) && !empty($result[self::FIELD_JUDGE_OUTPUT])
+            ? min(1, max(0, floatval(strtok($result[self::FIELD_JUDGE_OUTPUT], " ")))) // @todo: Make sure this is correctly named
+            : ($result[self::FIELD_STATUS] === self::STATUS_OK ? 1 : 0);
   }
 
   /**
    * Remove unnecessary fields of the task and remove all unnecessary tasks from the array
-   * @param  array  $jobConfig [description]
+   * @param  array  $jobConfig Parsed job config YAML
    * @return array
    */
   public static function simplifyConfig(array $jobConfig): array {
     // preserve only the necessary fields in necessary tasks
     $tasks = array_map(
       function ($task) {
-        if (isset($task["test-id"])) {
+        if (isset($task[self::FIELD_TEST_ID])) {
           $importantData = [
-            "test-id" => $task["test-id"],
-            "task-id" => $task["task-id"],
-            "type"    => $task["type"]
+            self::FIELD_TEST_ID => $task[self::FIELD_TEST_ID],
+            self::FIELD_TASK_ID => $task[self::FIELD_TASK_ID],
+            self::FIELD_TYPE    => $task[self::FIELD_TYPE]
           ];
 
-          if ($importantData["type"] === self::TYPE_EXECUTION) {
-            if (!isset($task["sandbox"]) || !isset($task["sandbox"]["limits"])) {
+          if ($importantData[self::FIELD_TYPE] === self::TYPE_EXECUTION) {
+            if (!isset($task[self::FIELD_SANDBOX]) || !isset($task[self::FIELD_SANDBOX][self::FIELD_LIMITS])) {
               // @todo throw an exception
             }
 
-            $importantData["limits"] = $task["sandbox"]["limits"];
+            $importantData[self::FIELD_LIMITS] = [];
+            foreach ($task[self::FIELD_SANDBOX][self::FIELD_LIMITS] as $hwGroupLimits) {
+              $importantData[self::FIELD_LIMITS][$hwGroupLimits[self::FIELD_HW_GROUP_ID]] = $hwGroupLimits;
+            }
           }
 
           return $importantData;
@@ -109,7 +131,7 @@ class ResultsTransform {
         // this task is not related to any test
         return NULL;
       },
-      $jobConfig["tasks"]
+      $jobConfig[self::FIELD_TASKS]
     );
 
     // remove unnecessary tasks
@@ -126,7 +148,7 @@ class ResultsTransform {
    */
   public static function createAssocResults(array $results): array {
     return array_reduce($results, function ($result, $task) {
-      $result[$task["task-id"]] = $task;
+      $result[$task[self::FIELD_TASK_ID]] = $task;
       return $result;
     }, []);
   }

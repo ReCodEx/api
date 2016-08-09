@@ -26,7 +26,7 @@ class Comment implements JsonSerializable
   protected $commentThread;
   
   /**
-   * @ORM\OneToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User")
    */
   protected $user;
 
@@ -34,6 +34,13 @@ class Comment implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isPrivate;
+
+  /**
+   * @return void
+   */
+  public function togglePrivate() {
+    $this->isPrivate = !$this->isPrivate;
+  }
 
   /**
     * @ORM\Column(type="datetime")

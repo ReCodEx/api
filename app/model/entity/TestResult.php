@@ -27,6 +27,11 @@ class TestResult implements JsonSerializable
   protected $testName;
 
   /**
+   * @ORM\Column(type="string")
+   */
+  protected $status;
+
+  /**
    * @ORM\ManyToOne(targetEntity="SubmissionEvaluation", inversedBy="testResults")
    */
   protected $submissionEvaluation;
@@ -81,6 +86,8 @@ class TestResult implements JsonSerializable
       "id" => $this->id,
       "testName" => $this->testName,
       "submissionEvaluationId" => $this->submissionEvaluation->getId(),
+      "status" => $this->status,
+      "score" => $this->score,
       "memoryExceeded" => $this->memoryExceeded,
       "timeExceeded" => $this->timeExceeded,
       "message" => $this->message
@@ -91,32 +98,25 @@ class TestResult implements JsonSerializable
     SubmissionEvaluation $evaluation,
     string $name,
     string $status,
+    float $score,
     string $judgeOutput,
     array $stats,
     array $limits
   ) {
     $result = new TestResult;
     $result->submissionEvaluation = $evaluation;
-    $result->name = $name;
-    $result->score = static::getScore($judgeOutput);
+    $result->testName = $name;
+    $result->status = $status;
+    $result->score = $score;
     $result->exitCode = $stats["exitcode"];
     $result->usedMemoryRatio = floatval($stats["memory"]) / floatval($limits["memory"]);
     $result->memoryExceeded = $result->usedMemoryRatio > 1;
-    $result->usedMemoryRatio = floatval($stats["time"]) / floatval($limits["time"]);
+    $result->usedTimeRatio = floatval($stats["time"]) / floatval($limits["time"]);
     $result->timeExceeded = $result->usedTimeRatio > 1;
-    $result->message = $stats["msg"];
+    $result->message = $stats["message"];
     $result->judgeOutput = $judgeOutput;
     $result->stats = Json::encode($stats);
-    $evaluation->getTestResults()->add($result);
     return $result;
-  }
-
-  private static function getScore(string $judgeOutput): float {
-    if (empty($judgeOutput)) {
-      return 0;
-    }
-
-    return min(1, max(0, floatval(strtok($judgeOutput, " "))));
   }
 
 }
