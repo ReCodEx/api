@@ -1,0 +1,5 @@
+doctrine:
+  host: localhost
+  user: recodex-api
+  password: recodex
+  dbname: recodex-api

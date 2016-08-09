@@ -1,25 +1,19 @@
-Nette Sandbox
+ReCodEx REST API
 =============
 
-This is a simple pre-packaged and pre-configured application using the [Nette](https://nette.org)
-that you can use as the starting point for your new applications.
-
-[Nette](https://nette.org) is a popular tool for PHP web development.
-It is designed to be the most usable and friendliest as possible. It focuses
-on security and performance and is definitely one of the safest PHP frameworks.
+A REST API that provides access to the evaluation backend by clients.
 
 
 Installation
 ------------
 
-The best way to install Web Project is using Composer. If you don't have Composer yet,
-download it following [the instructions](https://doc.nette.org/composer). Then use command:
-
-	composer create-project nette/sandbox path/to/install
-	cd path/to/install
-
-
-Make directories `temp/` and `log/` writable.
+1. Clone the git repository
+2. Run `composer install`
+3. Create a database and fill in the access information in 
+   `app/config/config.local.neon` (for an example, see 
+   `app/config/config.local.neon.example`)
+4. Setup the database schema by running `php www/index.php 
+   orm:schema-tool:update --force`
 
 
 Web Server Setup
