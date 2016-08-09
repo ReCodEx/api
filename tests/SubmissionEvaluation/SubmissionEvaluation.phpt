@@ -97,17 +97,17 @@ class TestSubmissionEvaluation extends Tester\TestCase
 
   public function testExtractScoreNoScore() {
     $result = [ "status" => "OK" ];
-    Assert::same(1, ResultsTransform::extractScore($result));
+    Assert::same(1.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractScoreNoScoreFailed() {
     $result = [ "status" => "FAILED" ];
-    Assert::same(0, ResultsTransform::extractScore($result));
+    Assert::same(0.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractScoreNoScoreSkipped() {
     $result = [ "status" => "SKIPPED" ];
-    Assert::same(0, ResultsTransform::extractScore($result));
+    Assert::same(0.0, ResultsTransform::extractScore($result));
   }
 
   public function testExtractStatusOK_OK() {
@@ -151,7 +151,7 @@ class TestSubmissionEvaluation extends Tester\TestCase
     $expected = [
       "A" => [
         "status"    => "OK",
-        "score"     => 1,
+        "score"     => 1.0,
         "stats"     => [
           "exitcode"  => 0,
           "max-rss"   => 19696,
