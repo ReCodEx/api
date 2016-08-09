@@ -46,6 +46,11 @@ class Exercise implements JsonSerializable
     protected $description;
 
     /**
+     * @ORM\Column(type="string")
+     */
+    protected $difficulty;
+
+    /**
      * @ORM\OneToOne(targetEntity="Exercise")
      * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
      */
@@ -69,6 +74,7 @@ class Exercise implements JsonSerializable
         "author" => $this->author,
         "forkedFrom" => $this->getForkedFrom(),
         "description" => $this->description,
+        "difficulty" => $this->difficulty,
         "createdAt" => $this->createdAt,
         "updatedAt" => $this->updatedAt
       ];
