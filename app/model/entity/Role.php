@@ -19,16 +19,10 @@ class Role implements JsonSerializable
    */
   protected $id;
 
-  public function getId() { return $this->id; }
-
   /**
    * @ORM\ManyToOne(targetEntity="Role", inversedBy="childRoles")
    */
   protected $parentRole;
-
-  public function getParentRole() {
-    return $this->parentRole;
-  }
 
   public function getParentRoleId() {
     return $this->parentRole === NULL ? NULL : $this->parentRole->getId();
