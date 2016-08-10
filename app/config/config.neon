@@ -3,6 +3,7 @@
 # https://nette.org/security-warning
 #
 parameters:
+  uploadDir: %appDir%/../uploaded_data
 
 
 application:
@@ -26,6 +27,7 @@ services:
   router: App\RouterFactory::createRouter
   - App\Security\AccessManager
   - App\Security\Authorizator
+  - App\UploadedFileStorage(%uploadDir%)
 
   # models - repositories
   - App\Model\Repository\Comments()

@@ -2,8 +2,8 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Nette\Http\FileUpload;
 
@@ -62,6 +62,21 @@ class UploadedFile implements JsonSerializable
      */
     protected $submission;
 
+    /**
+     * @param string $filePath Path where the file is stored
+     * @param string $name Name of the file
+     * @param DateTime $uploadedAt Time of the upload
+     * @param int $fileSize Size of the file
+     * @param User $user   The user who uploaded the file
+     */
+    public function __construct(string $filePath, string $name, DateTime $uploadedAt, int $fileSize, User $user) {
+      $this->filePath = $filePath;
+      $this->name = $name;
+      $this->uploadedAt = $uploadedAt;
+      $this->fileSize = $fileSize;
+      $this->user = $user;
+    }
+
     public function jsonSerialize() {
       return [
         "id" => $this->id,
@@ -71,33 +86,6 @@ class UploadedFile implements JsonSerializable
         "userId" => $this->user->getId(),
         "content" => $this->getContent()
       ];
-    }
-
-    /**
-     * @param FileUpload  $file   Uploaded file
-     * @param User        $user   The user who uploaded the file
-     * @param string      $fsRoot Root file system directory - file will be put here
-     * @return bool|UploadedFile
-     */
-    public static function upload(FileUpload $file, User $user, $fsRoot = UPLOAD_DIR) {
-      if (!$file->isOK()) {
-        return FALSE;
-      }
-
-      try {
-        $filePath = self::getFilePath($user->getId(), $file, $fsRoot);
-        $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
-      } catch (\Nette\InvalidStateException $e) {
-        return FALSE;
-      }
-
-      $uploadedFile = new UploadedFile;
-      $uploadedFile->filePath = $filePath;
-      $uploadedFile->name = $file->getSanitizedName();
-      $uploadedFile->uploadedAt = new \DateTime;
-      $uploadedFile->fileSize = $file->getSize();
-      $uploadedFile->user = $user;
-      return $uploadedFile;
     }
 
     protected static function getFilePath($userId, FileUpload $file, $fsRoot) {

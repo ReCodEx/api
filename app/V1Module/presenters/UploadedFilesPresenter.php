@@ -2,7 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\WrongHttpMethodException;
+use App;
+use App\Exception\NotFoundException;
 use App\Exception\CannotReceiveUploadedFileException;
 use App\Exception\BadRequestException;
 use App\Model\Entity\UploadedFile;
@@ -14,13 +15,23 @@ use App\Model\Repository\Users;
  */
 class UploadedFilesPresenter extends BasePresenter {
 
+  /** @var UploadedFiles */
   private $uploadedFiles;
 
-  public function __construct(Users $users, UploadedFiles $files) {
-    parent::__construct($users);
+  /** @var App\UploadedFileStorage */
+  private $fileStorage;
+
+  public function __construct(Users $users, UploadedFiles $files, App\UploadedFileStorage $fileStorage) {
+    parent::__construct();
     $this->uploadedFiles = $files;
+    $this->fileStorage = $fileStorage;
   }
 
+  /**
+   * @param $id
+   * @return UploadedFile
+   * @throws NotFoundException
+   */
   protected function findFileOrThrow($id) {
     $file = $this->uploadedFiles->get($id);
     if (!$file) {
@@ -62,8 +73,8 @@ class UploadedFilesPresenter extends BasePresenter {
     }
 
     $file = array_pop($files);
-    $uploadedFile = UploadedFile::upload($file, $user);
-    if ($uploadedFile !== FALSE) {
+    $uploadedFile = $this->fileStorage->store($file, $user);
+    if ($uploadedFile !== NULL) {
       $this->uploadedFiles->persist($uploadedFile);
       $this->uploadedFiles->flush();
       $this->sendSuccessResponse($uploadedFile);
