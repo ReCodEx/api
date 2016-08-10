@@ -5,6 +5,8 @@ namespace App\V1Module;
 use Nette;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
+use App\V1Module\Router\MethodRoute;
+use App\V1Module\Router\PreflightRoute;
 
 class RouterFactory {
 
@@ -18,7 +20,8 @@ class RouterFactory {
 
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
-    $router[] = new Route("$prefix/login", "Login:default");
+    $router[] = new PreflightRoute($prefix, "Default:preflight");
+    $router[] = new GetRoute("$prefix/login", "Login:default");
 
     self::createCommentsRoutes($router, "$prefix/comments");
     self::createExercisesRoutes($router, "$prefix/exercises");
@@ -33,55 +36,55 @@ class RouterFactory {
   }
 
   private static function createCommentsRoutes($router, $prefix) {
-    $router[] = new Route("$prefix/<id>", "Comments:default");
-    $router[] = new Route("$prefix/<id>/add", "Comments:addComment");
-    $router[] = new Route("$prefix/<id>/toggle", "Comments:togglePrivate");
+    $router[] = new GetRoute("$prefix/<id>", "Comments:default");
+    $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
+    $router[] = new PostRoute("$prefix/<id>/toggle", "Comments:togglePrivate");
   }
 
   private static function createExercisesRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "Exercises:");
-    $router[] = new Route("$prefix/<id>", "Exercises:detail");
+    $router[] = new GetRoute("$prefix", "Exercises:");
+    $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
   }
 
   private static function createExerciseAssignmentsRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "ExerciseAssignments:");
-    $router[] = new Route("$prefix/<id>", "ExerciseAssignments:detail");
-    $router[] = new Route("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
-    $router[] = new Route("$prefix/<id>/submit", "ExerciseAssignments:submit");
+    $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
+    $router[] = new GetRoute("$prefix/<id>", "ExerciseAssignments:detail");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
+    $router[] = new PostRoute("$prefix/<id>/submit", "ExerciseAssignments:submit");
   }
 
   private static function createGroupsRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "Groups:");
-    $router[] = new Route("$prefix/<id>", "Groups:detail");
-    $router[] = new Route("$prefix/<id>/members", "Groups:members");
-    $router[] = new Route("$prefix/<id>/students", "Groups:students");
-    $router[] = new Route("$prefix/<id>/supervisors", "Groups:supervisors");
-    $router[] = new Route("$prefix/<id>/assignments", "Groups:assignments");
+    $router[] = new GetRoute("$prefix", "Groups:");
+    $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
+    $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
+    $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
+    $router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
+    $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
   }
 
   private static function createInstancesRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "Instances:");
-    $router[] = new Route("$prefix/<id>", "Instances:detail");
-    $router[] = new Route("$prefix/<id>/groups", "Instances:groups");
+    $router[] = new GetRoute("$prefix", "Instances:");
+    $router[] = new GetRoute("$prefix/<id>", "Instances:detail");
+    $router[] = new GetRoute("$prefix/<id>/groups", "Instances:groups");
   }
 
   private static function createSubmissionRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "Submissions:");
-    $router[] = new Route("$prefix/<id>", "Submissions:evaluation");
+    $router[] = new GetRoute("$prefix", "Submissions:");
+    $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
   }
 
   private static function createUploadedFilesRoutes($router, $prefix) {
-    $router[] = new Route("$prefix/upload", "UploadedFiles:upload");
-    $router[] = new Route("$prefix/<id>", "UploadedFiles:detail");
-    $router[] = new Route("$prefix/<id>/content", "UploadedFiles:content");
+    $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
+    $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
+    $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
   }
 
   private static function createUsersRoutes($router, $prefix) {
-    $router[] = new Route("$prefix", "Users:");
-    $router[] = new Route("$prefix/create-account", "Users:createAccount");
-    $router[] = new Route("$prefix/<id>", "Users:detail");
-    $router[] = new Route("$prefix/<id>/groups", "Users:groups");
-    $router[] = new Route("$prefix/<id>/exercises", "Users:exercises");
+    $router[] = new GetRoute("$prefix", "Users:");
+    $router[] = new PostRoute("$prefix", "Users:createAccount");
+    $router[] = new GetRoute("$prefix/<id>", "Users:detail");
+    $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
+    $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
   }
 
 }

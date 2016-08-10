@@ -52,9 +52,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $this->validateRequiredParams($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
-
-    // now we can restrict HTTP methods other than OPTIONS
-    $this->restrictHttpMethod($actionReflection);
   }
 
   private function tryLogin() {
@@ -64,18 +61,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       $this->user->setAuthorizator($this->authorizator);
     } catch (\Exception $e) {
       // silent error
-    }
-  }
-
-  /**
-   * Restricts access to certain actions for given HTTP methods using annotations
-   * @param   \Reflector         $reflection Information about current action
-   * @throws  WrongHttpMeethodException
-   */
-  private function restrictHttpMethod(\Reflector $reflection) {
-    $httpMethod = $this->getHttpRequest()->getMethod();
-    if ($reflection->hasAnnotation(strtoupper($httpMethod)) === FALSE) {
-      throw new WrongHttpMethodException($httpMethod);
     }
   }
 
