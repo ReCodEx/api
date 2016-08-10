@@ -14,8 +14,11 @@ class SimpleScoreCalculator implements IScoreCalculator {
   
   /**
    * Function that computes the resulting score from simple YML config and test results score
+   * @param string            $scoreConfig   YAML config of the weights
+   * @param ArrayCollection   $testResults   Results of individual tests
+   * @return float
    */
-  public function computeScore(string $scoreConfig, ArrayCollection $testResults) {
+  public function computeScore(string $scoreConfig, ArrayCollection $testResults): float {
     // first validate both arguments
     if (!$this->isScoreConfigValid($scoreConfig, TRUE)) {
       return 0.0;
@@ -36,21 +39,27 @@ class SimpleScoreCalculator implements IScoreCalculator {
     }
     
     // now work out the score
-    $sum = 0;
+    $sum = 0.0;
+    $weightsSum = 0.0;
     foreach ($testResults as $result) {
-      $sum += $result->getScore() * $weights[$result->getTestName()];
+      $weight = $weights[$result->getTestName()];
+      $sum += $result->getScore() * $weight;
+      $weightsSum += $weight;
     }
 
-    return $sum / 1000.0;
+    return $sum / $weightsSum;
   }
 
+  /**
+   * @param string  $scoreConfig     YAML configuration of the weights
+   * @param bool    $throwExceptions Throw exceptions when the config is invalid
+   * @return bool
+   */
   public function isScoreConfigValid(string $scoreConfig, bool $throwExceptions = FALSE) {
     try {
       $config = Yaml::parse($scoreConfig);
 
       if (isset($config['testWeights']) && is_array($config['testWeights'])) {
-
-        $sum = 0;
         foreach ($config['testWeights'] as $value) {
           if (!is_integer($value)) {
             if ($throwExceptions) {
@@ -59,16 +68,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
               return FALSE;
             }
           }
-          $sum += $value;
         }
-        if ($sum !== 1000) {
-          if ($throwExceptions) {
-            throw new \InvalidArgumentException("The sum of the test weights must be 1000.");
-          } else {
-            return FALSE;
-          }
-        }
-
       } else {
         if ($throwExceptions) {
           throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
