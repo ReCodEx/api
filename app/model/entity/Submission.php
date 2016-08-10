@@ -121,6 +121,15 @@ class Submission implements JsonSerializable
       }
     }
 
+    public function getTotalPoints() {
+      $eval = $this->getEvaluation();
+      if (!$eval) {
+        return 0;
+      }
+
+      return $eval->getPoints() + $eval->getBonusPoints();
+    }
+
     /** @var null|int This value is not persisted to the database - it is loaded when the job config YML file is examined. */
     private $tasksCount = NULL;
 

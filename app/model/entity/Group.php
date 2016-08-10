@@ -111,6 +111,16 @@ class Group implements JsonSerializable
     return $this->assignments;
   }
 
+  public function getMaxPoints() {
+    return array_reduce(
+      $this->getAssignments()->toArray(),
+      function ($carry, $assignment) {
+        return $carry + $assignment->getMaxPoints();
+      },
+      0
+    );
+  }
+
   public function jsonSerialize() {
     $instance = $this->getInstance();
     return [

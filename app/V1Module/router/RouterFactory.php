@@ -61,6 +61,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
     $router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
+    $router[] = new GetRoute("$prefix/<groupId>/students-stats/<userId>", "Groups:studentsStats");
   }
 
   private static function createInstancesRoutes($router, $prefix) {

@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Groups;
 use App\Exception\BadRequestException;
+use App\Exception\ForbiddenRequestException;
 use App\Exception\NotFoundException;
 
 /**
@@ -80,6 +81,50 @@ class GroupsPresenter extends BasePresenter {
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendSuccessResponse($group->getAssignments()->toArray());
+  }
+
+  /** @GET */
+  public function actionStudentsStats(string $groupId, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($groupId);
+
+    if ($user->getId() !== $this->user->id
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot view these stats.");
+    }
+
+    if ($group->isStudentOf($user) === FALSE) {
+      throw new BadRequestException("User $userId is not student of $groupId");
+    }
+
+    $assignments = $group->getAssignments();
+    $completedAssignments = $assignments->filter(function($assignment) use ($user) {
+      return $assignment->getBestSolution($user) !== NULL;
+    });
+
+    $this->sendSuccessResponse([
+      "assignments" => [
+        "total" => $assignments->count(),
+        "completed" => $completedAssignments->count()
+      ],
+      "points" => [
+        "total" => $group->getMaxPoints(),
+        "gained" => array_reduce(
+          $completedAssignments->toArray(),
+          function ($carry, $assignment) use ($user) {
+            $best = $assignment->getBestSolution($user);
+            if ($best !== NULL) {
+              return $carry + $best->getTotalPoints();
+            }
+
+            return $carry;
+          },
+          0
+        )
+      ]
+    ]);
   }
 
 }
