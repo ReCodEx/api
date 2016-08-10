@@ -51,23 +51,23 @@ class SubmissionEvaluation implements JsonSerializable
    * @ORM\Column(type="float")
    */
   protected $score;
+  public function isCorrect() { return $this->score > 0; }
 
   /**
-   * @ORM\Column(type="smallint")
+   * @ORM\Column(type="integer")
    */
   protected $points;
+
+  /**
+   * @ORM\Column(type="integer")
+   */
+  protected $bonusPoints;
 
   /**
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
   public function isValid() { return $this->isValid; }
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isCorrect;
-  public function isCorrect() { return $this->isCorrect; }
 
   /**
    * @ORM\Column(type="boolean")
@@ -90,10 +90,11 @@ class SubmissionEvaluation implements JsonSerializable
       "evaluatedAt" => $this->evaluatedAt->getTimestamp(),
       "score" => $this->score,
       "points" => $this->points,
+      "bonusPoints" => $this->bonusPoints,
       "maxPoints" => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
-      "isCorrect" => $this->isCorrect,
+      "isCorrect" => $this->isCorrect(),
       "evaluationFailed" => $this->evaluationFailed,
       "testResults" => $this->testResults->toArray()
     ];
@@ -163,8 +164,7 @@ class SubmissionEvaluation implements JsonSerializable
     }
 
     $evaluation->score = self::computeScore($submission->getExerciseAssignment(), $evaluation->testResults);
-    $evaluation->isCorrect = self::isSufficientScore($submission->getExerciseAssignment(), $evaluation->score);
-    $evaluation->points = $evaluation->isCorrect ? $evaluation->score * $submission->getMaxPoints() : 0;
+    $evaluation->points = $evaluation->score * $submission->getMaxPoints();
 
     return $evaluation;
   }
@@ -239,14 +239,15 @@ class SubmissionEvaluation implements JsonSerializable
     }, TRUE);
   }
 
+  /**
+   * Calculate the score for the submitted solution based on the results of individual tests and the configuration of the assignment.
+   * @param ExerciseAssignment  $assignment   The assignment
+   * @param ArrayCollection     $testResults  The results
+   * @return float                            The calculated score of the submission
+   */
   public static function computeScore(ExerciseAssignment $assignment, ArrayCollection $testResults) {
     $calculator = new SimpleScoreCalculator();
     return $calculator->computeScore($assignment->getScoreConfig(), $testResults);
-  }
-
-  public static function isSufficientScore(ExerciseAssignment $assignment, float $score) {
-    // @todo
-    return FALSE;
   }
 
 }
