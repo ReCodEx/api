@@ -76,8 +76,6 @@ class SimpleScoreCalculator implements IScoreCalculator {
           return FALSE;
         }
       }
-
-      return $config;
     } catch (ParseException $e) {
       if ($throwExceptions) {
         throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");
