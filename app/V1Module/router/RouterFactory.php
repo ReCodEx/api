@@ -5,7 +5,8 @@ namespace App\V1Module;
 use Nette;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
-use App\V1Module\Router\MethodRoute;
+use App\V1Module\Router\GetRoute;
+use App\V1Module\Router\PostRoute;
 use App\V1Module\Router\PreflightRoute;
 
 class RouterFactory {
