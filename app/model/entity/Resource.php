@@ -24,6 +24,11 @@ class Resource implements JsonSerializable
    */
   protected $permissions;
 
+  public function __construct(string $name) {
+    $this->id = $name;
+    $this->permissions = new ArrayCollection;
+  }
+
   public function jsonSerialize() {
     return $this->id;
   }
