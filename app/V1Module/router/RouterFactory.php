@@ -39,7 +39,7 @@ class RouterFactory {
   private static function createCommentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "Comments:default");
     $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
-    $router[] = new PostRoute("$prefix/<id>/toggle", "Comments:togglePrivate");
+    $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/toggle", "Comments:togglePrivate");
   }
 
   private static function createExercisesRoutes($router, $prefix) {

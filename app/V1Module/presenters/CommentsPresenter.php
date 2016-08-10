@@ -67,11 +67,11 @@ class CommentsPresenter extends BasePresenter {
   /**
    * @POST
    */
-  public function actionTogglePrivate(string $id) {
+  public function actionTogglePrivate(string $threadId, string $commentId) {
     $user = $this->findUserOrThrow("me");
-    $comment = $this->comments->findUsersComment($user, $id);
+    $comment = $this->comments->findUsersComment($user, $commentId);
     
-    if (!$comment) {
+    if (!$comment || $comment->getCommentThread()->getId() !== $threadId) {
       throw new ForbiddenRequestException("This comment does not exist or you cannot access it.");
     }
 
