@@ -17,7 +17,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   d: 100
   e: 100
   f: 200";
-  private $testNames = ["a", "b", "c", "d", "e", "af"];
+  private $testNames = ["a", "b", "c", "d", "e", "f"];
 
   private function computeScore(array $scoreList, $scoreConfig = NULL) {
     if ($scoreConfig === NULL) {
