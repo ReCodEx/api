@@ -51,6 +51,11 @@ class Exercise implements JsonSerializable
     protected $difficulty;
 
     /**
+     * @ORM\Column(type="string")
+     */
+    protected $jobConfigFilePath;
+
+    /**
      * @ORM\ManyToOne(targetEntity="Exercise")
      * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
      */

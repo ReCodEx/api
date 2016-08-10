@@ -93,7 +93,7 @@ class ExerciseAssignment implements JsonSerializable
 
     $description = $this->description;
     $parent = $this->exercise;
-    while ($description === NULL && $parent !== NULL) {
+    while (empty($description) && $parent !== NULL) {
       $description = $parent->description;
       $parent = $parent->exercise;
     }
