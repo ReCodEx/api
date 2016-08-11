@@ -55,12 +55,16 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   private function tryLogin() {
+    $user = NULL;
     try {
       $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
-      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
-      $this->user->setAuthorizator($this->authorizator);
     } catch (\Exception $e) {
       // silent error
+    }
+
+    if ($user) {
+      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
+      $this->user->setAuthorizator($this->authorizator);
     }
   }
 
