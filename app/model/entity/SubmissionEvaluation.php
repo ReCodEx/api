@@ -59,7 +59,7 @@ class SubmissionEvaluation implements JsonSerializable
   protected $points;
 
   /**
-   * @ORM\Column(type="integer")
+   * @ORM\Column(type="integer", nullable=true)
    */
   protected $bonusPoints;
 
