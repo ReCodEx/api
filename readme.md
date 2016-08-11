@@ -21,9 +21,9 @@ Web Server Setup
 
 The simplest way to get started is to start the built-in PHP server in the root directory of your project:
 
-	php -S localhost:8000 -t www
+	php -S localhost:4000 -t www
 
-Then visit `http://localhost:8000` in your browser to see the welcome page.
+Then visit `http://localhost:4000` in your browser to see the welcome page.
 
 For Apache or Nginx, setup a virtual host to point to the `www/` directory of the project and you
 should be ready to go.
@@ -35,15 +35,15 @@ via a web browser. See [security warning](https://nette.org/security-warning).
 Requirements
 ------------
 
-PHP 5.6 or higher. To check whether server configuration meets the minimum requirements for
-Nette Framework browse to the directory `/checker` in your project root (i.e. `http://localhost:8000/checker`).
+PHP 7.0 or higher. To check whether server configuration meets the minimum requirements for
+Nette Framework browse to the directory `/checker` in your project root (i.e. `http://localhost:4000/checker`).
 
 
 Adminer
 -------
 
 [Adminer](https://www.adminer.org/) is full-featured database management tool written in PHP and it is part of this Sandbox.
-To use it, browse to the subdirectory `/adminer` in your project root (i.e. `http://localhost:8000/adminer`).
+To use it, browse to the subdirectory `/adminer` in your project root (i.e. `http://localhost:4000/adminer`).
 
 
 License
