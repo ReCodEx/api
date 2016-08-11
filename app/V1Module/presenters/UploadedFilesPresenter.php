@@ -60,9 +60,7 @@ class UploadedFilesPresenter extends BasePresenter {
   }
 
 
-  /**
-   * @POST
-   */
+  /** @POST */
   public function actionUpload() {
     $user = $this->findUserOrThrow("me");
     $files = $this->getHttpRequest()->getFiles();

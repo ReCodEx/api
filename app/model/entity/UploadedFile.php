@@ -52,10 +52,6 @@ class UploadedFile implements JsonSerializable
      */
     protected $user;
 
-    public function getUser() {
-      return $this->user;
-    }
-
     /**
      * @ORM\ManyToOne(targetEntity="Submission")
      * @ORM\JoinColumn(name="submission_id", referencedColumnName="id")
@@ -86,12 +82,5 @@ class UploadedFile implements JsonSerializable
         "userId" => $this->user->getId(),
         "content" => $this->getContent()
       ];
-    }
-
-    protected static function getFilePath($userId, FileUpload $file, $fsRoot) {
-      $fileName = pathinfo($file->getSanitizedName(), PATHINFO_FILENAME);
-      $ext = pathinfo($file->getSanitizedName(), PATHINFO_EXTENSION);
-      $uniqueId = uniqid();
-      return "$fsRoot/user_{$userId}/{$fileName}_{$uniqueId}.$ext";
     }
 }

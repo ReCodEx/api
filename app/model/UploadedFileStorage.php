@@ -1,5 +1,7 @@
 <?php
+
 namespace App;
+
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use Nette;
@@ -10,6 +12,7 @@ use Nette\Http\FileUpload;
  * @package App\Model
  */
 class UploadedFileStorage extends Nette\Object {
+
   /** @var string */
   private $uploadDir;
 
