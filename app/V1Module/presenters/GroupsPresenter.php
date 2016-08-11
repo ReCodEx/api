@@ -99,32 +99,7 @@ class GroupsPresenter extends BasePresenter {
       throw new BadRequestException("User $userId is not student of $groupId");
     }
 
-    $assignments = $group->getAssignments();
-    $completedAssignments = $assignments->filter(function($assignment) use ($user) {
-      return $assignment->getBestSolution($user) !== NULL;
-    });
-
-    $this->sendSuccessResponse([
-      "assignments" => [
-        "total" => $assignments->count(),
-        "completed" => $completedAssignments->count()
-      ],
-      "points" => [
-        "total" => $group->getMaxPoints(),
-        "gained" => array_reduce(
-          $completedAssignments->toArray(),
-          function ($carry, $assignment) use ($user) {
-            $best = $assignment->getBestSolution($user);
-            if ($best !== NULL) {
-              return $carry + $best->getTotalPoints();
-            }
-
-            return $carry;
-          },
-          0
-        )
-      ]
-    ]);
+    $this->sendSuccessResponse($group->getStudentsStats($user));
   }
 
 }

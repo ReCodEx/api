@@ -20,15 +20,11 @@ class Group implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  public function getId() { return $this->id; }
   
   /**
    * @ORM\Column(type="string")
    */
   protected $name;
-
-  public function getName() { return $this->name; }
 
   /**
    * @ORM\Column(type="string")
@@ -72,10 +68,6 @@ class Group implements JsonSerializable
    */
   protected $students;
   
-  public function getStudents() {
-    return $this->students;
-  }
-
   public function isStudentOf(User $user) {
     return $this->students->contains($user);
   }
@@ -90,10 +82,6 @@ class Group implements JsonSerializable
    */
   protected $supervisors;
   
-  public function getSupervisors() {
-    return $this->supervisors;
-  }
-
   public function isSupervisorOf(User $user) {
     return $this->supervisors->contains($user);
   }
@@ -106,19 +94,58 @@ class Group implements JsonSerializable
    * @ORM\OneToMany(targetEntity="ExerciseAssignment", mappedBy="group")
    */
   protected $assignments;
-  
-  public function getAssignments() {
-    return $this->assignments;
-  }
 
+  public function getAssignmentsIds() {
+    return $this->getAssignments()->map(function($a) { return $a->id; })->toArray();
+  }
+  
   public function getMaxPoints() {
     return array_reduce(
       $this->getAssignments()->toArray(),
-      function ($carry, $assignment) {
-        return $carry + $assignment->getMaxPoints();
+      function ($carry, $assignment) { return $carry + $assignment->getMaxPoints(); },
+      0
+    );
+  }
+
+  public function getCompletedAssignmentsByStudent(User $student) {
+    return $this->getAssignments()->filter(
+      function($assignment) use ($student) {
+        return $assignment->getBestSolution($student) !== NULL;
+      }
+    );
+  }
+
+  public function getPointsGainedByStudent(User $student) {
+    return array_reduce(
+      $this->getCompletedAssignmentsByStudent($student)->toArray(),
+      function ($carry, $assignment) use ($student) {
+        $best = $assignment->getBestSolution($student);
+        if ($best !== NULL) {
+          $carry += $best->getTotalPoints();
+        }
+
+        return $carry;
       },
       0
     );
+  }
+
+  /**
+   * Get the statistics of an individual student.
+   * @param User $student   Student of this group
+   * @return array          Students statistics
+   */
+  public function getStudentsStats(User $student) {
+    return [
+      "assignments" => [
+        "total" => $this->assignments->count(),
+        "completed" => $this->getCompletedAssignmentsByStudent($student)->count()
+      ],
+      "points" => [
+        "total" => $this->getMaxPoints(),
+        "gained" => $this->getPointsGainedByStudent($student)
+      ]
+    ];
   }
 
   public function jsonSerialize() {
@@ -128,12 +155,12 @@ class Group implements JsonSerializable
       "name" => $this->name,
       "description" => $this->description,
       "supervisors" => $this->supervisors->toArray(),
-      "students" => $this->students->toArray(),
+      "students" => $this->students->toArray(), // @todo: Only IDs
       "hasValidLicence" => $this->hasValidLicence(),
       "instanceId" => $instance ? $instance->getId() : NULL,
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => $this->childGroups->toArray(),
-      "assignments" => array_map(function ($assignment) { return $assignment->getId(); }, $this->getAssignments()->toArray())
+      "assignments" => $this->getAssignmentsIds()
     ];
   }
 
