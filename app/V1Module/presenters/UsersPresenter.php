@@ -98,7 +98,16 @@ class UsersPresenter extends BasePresenter {
     $user = $this->findUserOrThrow($id);
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->toArray(),
-      "student" => $user->getGroupsAsStudent()->toArray()
+      "student" => $user->getGroupsAsStudent()->toArray(),
+      "stats" => $user->getGroupsAsStudent()->map(
+        function ($group) use ($user) {
+          return [
+            "id" => $group->id,
+            "name" => $group->name,
+            "stats" => $group->getStudentsStats($user)
+          ];
+        }
+      )->toArray()
     ]);
   }
 

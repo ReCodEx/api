@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Groups;
 use App\Exception\BadRequestException;
+use App\Exception\ForbiddenRequestException;
 use App\Exception\NotFoundException;
 
 /**
@@ -80,6 +81,25 @@ class GroupsPresenter extends BasePresenter {
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
     $this->sendSuccessResponse($group->getAssignments()->toArray());
+  }
+
+  /** @GET */
+  public function actionStudentsStats(string $groupId, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($groupId);
+
+    if ($user->getId() !== $this->user->id
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot view these stats.");
+    }
+
+    if ($group->isStudentOf($user) === FALSE) {
+      throw new BadRequestException("User $userId is not student of $groupId");
+    }
+
+    $this->sendSuccessResponse($group->getStudentsStats($user));
   }
 
 }

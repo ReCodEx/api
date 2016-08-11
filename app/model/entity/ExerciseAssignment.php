@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
 
@@ -21,10 +22,6 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $id;
 
-  public function getId() {
-    return $this->id;
-  }
-
   /**
     * @ORM\Column(type="string")
     */
@@ -40,14 +37,10 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $jobConfigFilePath;
 
-  public function getJobConfigFilePath() { return $this->jobConfigFilePath; }
-
   /**
     * @ORM\Column(type="text")
     */
   protected $scoreConfig;
-
-  public function getScoreConfig() { return $this->scoreConfig; }
 
   /**
     * @ORM\Column(type="datetime")
@@ -73,8 +66,8 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $maxPointsBeforeSecondDeadline;
 
-  public function getMaxPoints(DateTime $time) {
-    if ($time < $this->firstDeadline) {
+  public function getMaxPoints(DateTime $time = NULL) {
+    if ($time === NULL || $time < $this->firstDeadline) {
       return $this->maxPointsBeforeFirstDeadline;
     } else if ($time < $this->secondDeadline) {
       return $this->maxPointsBeforeSecondDeadline;
@@ -107,10 +100,6 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $exercise;
 
-  public function getExercise() {
-    return $this->exercise;
-  }
-
   /**
     * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
     * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
@@ -136,6 +125,32 @@ class ExerciseAssignment implements JsonSerializable
   public function canAccessAsSupervisor(User $user) {
     return $this->group->isSupervisorOf($user);
   }
+
+  /**
+   * @ORM\OneToMany(targetEntity="Submission", mappedBy="exerciseAssignment")
+   */
+  protected $submissions;
+
+  public function getBestSolution(User $user) {
+    $usersSolutions = Criteria::create()
+      ->orWhere(Criteria::expr()->eq("user", $user))
+      ->orWhere(Criteria::expr()->neq("evaluation", NULL));
+    return array_reduce(
+      $this->submissions->matching($usersSolutions)->toArray(),
+      function ($best, $submission) {
+        if ($best === NULL) {
+          return $submission;
+        }
+
+        return $submission->getEvaluationStatus() !== "done" || $best->getTotalPoints() > $submission->getTotalPoints()
+          ? $best
+          : $submission;
+      },
+      NULL
+    );
+  }
+
+
 
   public function jsonSerialize() {
     return [
@@ -167,6 +182,7 @@ class ExerciseAssignment implements JsonSerializable
     $entity->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
     $entity->secondDeadline = $secondDeadline;
     $entity->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
+    $entity->submissions = new ArrayCollection;
     return $entity;
   }
 }
