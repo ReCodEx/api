@@ -32,6 +32,11 @@ class Group implements JsonSerializable
   protected $description;
 
   /**
+   * @ORM\Column(type="float", nullable=true)
+   */
+  protected $threshold;
+
+  /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
    */
   protected $parentGroup;
@@ -136,15 +141,22 @@ class Group implements JsonSerializable
    * @return array          Students statistics
    */
   public function getStudentsStats(User $student) {
+    $total = $this->assignments->count();
+    $completed = $this->getCompletedAssignmentsByStudent($student)->count();
+    $maxPoints = $this->getMaxPoints();
+    $gainedPoints = $this->getPointsGainedByStudent($student);
+
     return [
       "assignments" => [
-        "total" => $this->assignments->count(),
-        "completed" => $this->getCompletedAssignmentsByStudent($student)->count()
+        "total" => $total,
+        "completed" => $completed
       ],
       "points" => [
-        "total" => $this->getMaxPoints(),
-        "gained" => $this->getPointsGainedByStudent($student)
-      ]
+        "total" => $maxPoints,
+        "gained" => $gainedPoints
+      ],
+      "hasLimit" => $this->threshold !== NULL && $this->threshold > 0,
+      "passesLimit" => $this->threshold === NULL ? TRUE : $gainedPoints >= $maxPoints * $this->threshold 
     ];
   }
 
