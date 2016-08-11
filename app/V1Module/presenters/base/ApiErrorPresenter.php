@@ -7,6 +7,7 @@ use Nette\Application;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;
 use Doctrine\DBAL\Exception\ConnectionException;
+use Tracy\Debugger;
 
 /**
  * The error presenter for the API module - all responses are served as JSONs with a fixed format.
@@ -26,6 +27,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Database is offline");
     } else {
       $type = get_class($exception);
+      Debugger::log($exception);
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Unexpected Error {$type}");
     }
   }
