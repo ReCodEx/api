@@ -20,6 +20,8 @@ class Licence implements JsonSerializable
    */
   protected $id;
 
+  public function getId() { return $this->id; }
+
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="licences")
    */

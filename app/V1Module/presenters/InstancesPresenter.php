@@ -6,7 +6,9 @@ use Nette\Http\IResponse;
 
 use App\Exception\NotFoundException;
 use App\Model\Repository\Instances;
+use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
+use App\Model\Entity\Licence;
 
 /**
  * @Role superadmin
@@ -15,6 +17,9 @@ class InstancesPresenter extends BasePresenter {
 
   /** @inject @var Instances */
   public $instances;
+
+  /** @inject @var Licences */
+  public $licences;
 
   protected function findInstanceOrThrow(string $id) {
     $instance = $this->instances->get($id);
@@ -110,13 +115,13 @@ class InstancesPresenter extends BasePresenter {
   /**
    * @POST
    * @Param(type="post", name="note", validation="string:2..")
-   * @Param(type="post", name="validUntil", validation="string")
+   * @Param(type="post", name="validUntil", validation="datetime")
    */
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
     $instance = $this->findInstanceOrThrow($id);
-    //@todo solve the datetime validation+conversion problem
     $licence = Licence::createLicence($params->note, $params->validUntil, $instance);
+    $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);
   }
 

@@ -14,8 +14,8 @@ use App\Exception\InternalServerErrorException;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
-//use App\Model\Helpers\Validators;
-use Nette\Utils\Validators;
+use App\Model\Helpers\Validators;
+//use Nette\Utils\Validators;
 
 use Nette\Security\Identity;
 use Nette\Application\Application;
@@ -55,7 +55,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new NotImplementedException;
     }
 
-    //Validators::init();
+    Validators::init();
     $this->processParams($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
@@ -99,28 +99,11 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       }
 
       if ($validationRule !== NULL && $value !== NULL) {
-        $value = $this->preprocessValue($value, $validationRule);
-        $this->validateValue($name, $value, $validationRule, $msg);
+        $value = $this->validateValue($name, $value, $validationRule, $msg);
       }
 
       $this->parameters->$name = $value;
     }
-  }
-
-  /**
-   * Prepare values for validation - according to validation rules.
-   * @param  string $value          Value
-   * @param  string $validationRule Validation rule to be applied to the value
-   * @return string|int|bool|float  Preprocessed value
-   */
-  private function preprocessValue($value, $validationRule) {
-    foreach (explode('|', $validationRule) as $item) {
-      $item = explode(':', $item, 2);
-      if ($item[0] == 'bool' || $item[0] == 'boolean') {
-        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
-      }
-    }
-    return $value;
   }
 
   private $post = NULL;
@@ -155,12 +138,15 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   private function validateValue($param, $value, $validationRule, $msg = NULL) {
+    $value = Validators::preprocessValue($value, $validationRule);
     if (Validators::is($value, $validationRule) === FALSE) {
       throw new InvalidArgumentException(
         $param,
         $msg !== NULL ? $msg : "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
       );
     }
+
+    return $value;
   }
 
   /**
