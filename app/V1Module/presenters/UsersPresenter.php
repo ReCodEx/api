@@ -11,6 +11,7 @@ use App\Model\Repository\Roles;
 use App\Security\AccessManager;
 
 use App\Exception\BadRequestException;
+use Nette\Http\IResponse;
 
 class UsersPresenter extends BasePresenter {
 
@@ -34,10 +35,10 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @RequiredField(type="post", name="email", validation="email")
-   * @RequiredField(type="post", name="firstName", validation="string:2..")
-   * @RequiredField(type="post", name="lastName", validation="string:2..")
-   * @RequiredField(type="post", name="password", validation="string:8..", msg="Password must be at least 8 characters long.")
+   * @Param(type="post", name="email", validation="email")
+   * @Param(type="post", name="firstName", validation="string:2..")
+   * @Param(type="post", name="lastName", validation="string:2..")
+   * @Param(type="post", name="password", validation="string:8..", msg="Password must be at least 8 characters long.")
    */
   public function actionCreateAccount() {
     $req = $this->getHttpRequest();
@@ -76,7 +77,7 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse([
       "user" => $user,
       "accessToken" => $this->accessManager->issueToken($user)
-    ]);
+    ], IResponse::S201_CREATED);
   }
 
   /**

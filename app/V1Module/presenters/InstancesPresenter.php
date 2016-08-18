@@ -2,8 +2,11 @@
 
 namespace App\V1Module\Presenters;
 
+use Nette\Http\IResponse;
+
 use App\Exception\NotFoundException;
 use App\Model\Repository\Instances;
+use App\Model\Entity\Instance;
 
 /**
  * @Role superadmin
@@ -31,6 +34,56 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * @POST
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="description", required=FALSE)
+   * @Param(type="post", name="isOpen", validation="bool")
+   */
+  public function actionAddInstance() {
+    $params = $this->parameters;
+    $user = $this->findUserOrThrow('me');
+    $instance = Instance::createInstance(
+      $params->name,
+      $params->isOpen,
+      $user,
+      $params->description
+    );
+    $this->instances->persist($instance);
+    $this->sendSuccessResponse($instance, IResponse::S201_CREATED);
+  }
+
+  /**
+   * @PUT
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="description", required=FALSE)
+   * @Param(type="post", name="isOpen", validation="bool", required=FALSE)
+   */
+  public function actionUpdateInstance(string $id) {
+    $instance = $this->findInstanceOrThrow($id);
+    $params = $this->parameters;
+    if (isset($params->name)) {
+      $instance->name = $params->name;
+    }
+    if (isset($params->description)) {
+      $instance->description = $params->description;
+    }
+    if (isset($params->isOpen)) {
+      $instance->isOpen = $params->isOpen;
+    }
+    $this->instances->persist($instance);
+    $this->sendSuccessResponse($instance);
+  }
+
+  /**
+   * @DELETE
+   */
+  public function actionDeleteInstance(string $id) {
+    $instance = $this->findInstanceOrThrow($id);
+    $this->instances->remove($instance);
+    $this->sendSuccessResponse([]);
+  }
+
+  /**
    * @GET
    */
   public function actionDetail(string $id) {
@@ -44,6 +97,27 @@ class InstancesPresenter extends BasePresenter {
   public function actionGroups(string $id) {
     $instance = $this->findInstanceOrThrow($id);
     $this->sendSuccessResponse($instance->getTopLevelGroups()->toArray());
+  }
+
+  /**
+   * @GET
+   */
+  public function actionLicences(string $id) {
+    $instance = $this->findInstanceOrThrow($id);
+    $this->sendSuccessResponse($instance->getLicences()->toArray());
+  }
+
+  /**
+   * @POST
+   * @Param(type="post", name="note", validation="string:2..")
+   * @Param(type="post", name="validUntil", validation="string")
+   */
+  public function actionCreateLicence(string $id) {
+    $params = $this->parameters;
+    $instance = $this->findInstanceOrThrow($id);
+    //@todo solve the datetime validation+conversion problem
+    $licence = Licence::createLicence($params->note, $params->validUntil, $instance);
+    $this->sendSuccessResponse($licence);
   }
 
 }

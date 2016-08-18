@@ -47,8 +47,8 @@ class CommentsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @RequiredField(type="post", name="text", validation="string:1..")
-   * @RequiredField(type="post", name="isPrivate", validation="string")
+   * @Param(type="post", name="text", validation="string:1..")
+   * @Param(type="post", name="isPrivate", validation="string")
    */
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);

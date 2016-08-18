@@ -14,13 +14,15 @@ use App\Exception\InternalServerErrorException;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
+//use App\Model\Helpers\Validators;
+use Nette\Utils\Validators;
 
 use Nette\Security\Identity;
 use Nette\Application\Application;
+use Nette\Application\Responses;
 use Nette\Http\IResponse;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
-use Nette\Utils\Validators;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
   
@@ -36,10 +38,14 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   /** @inject @var Application */
   public $application;
 
+  /** @var object Processed parameters from annotations */
+  protected $parameters;
+
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
     $this->tryLogin();
+    $this->parameters = new \stdClass;
 
     try {
       $presenterReflection = new Reflection\ClassType(get_class($this));
@@ -49,7 +55,8 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new NotImplementedException;
     }
 
-    $this->validateRequiredParams($actionReflection);
+    //Validators::init();
+    $this->processParams($actionReflection);
     $this->restrictUnauthorizedAccess($presenterReflection);
     $this->restrictUnauthorizedAccess($actionReflection);
   }
@@ -68,49 +75,83 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private function validateRequiredParams(\Reflector $reflection) {
+  private function processParams(\Reflector $reflection) {
     $annotations = $reflection->getAnnotations();
-    $requiredFields = Arrays::get($annotations, "RequiredField", []);
+    $requiredFields = Arrays::get($annotations, "Param", []);
 
     foreach ($requiredFields as $field) {
       $type = strtolower($field->type);
       $name = $field->name;
       $validationRule = isset($field->validation) ? $field->validation : NULL;
       $msg = isset($field->msg) ? $field->msg : NULL;
+      $required = isset($field->required) ? $field->required : TRUE;
 
+      $value = NULL;
       switch ($type) {
         case "post":
-          $this->validatePostField($name, $validationRule, $msg);
+          $value = $this->getPostField($name, $required);
           break;
         case "query":
-          $this->validateQueryField($name, $validationRule, $msg);
+          $value = $this->getQueryField($name, $required);
         
         default:
           throw new InternalServerErrorException("Unknown parameter type '$type'");
       }
+
+      if ($validationRule !== NULL && $value !== NULL) {
+        $value = $this->preprocessValue($value, $validationRule);
+        $this->validateValue($name, $value, $validationRule, $msg);
+      }
+
+      $this->parameters->$name = $value;
     }
   }
 
-  private function validatePostField($param, $validationRule = NULL, $msg = NULL) {
-    $value = $this->getHttpRequest()->getPost($param);
-    if ($value === NULL) { 
+  /**
+   * Prepare values for validation - according to validation rules.
+   * @param  string $value          Value
+   * @param  string $validationRule Validation rule to be applied to the value
+   * @return string|int|bool|float  Preprocessed value
+   */
+  private function preprocessValue($value, $validationRule) {
+    foreach (explode('|', $validationRule) as $item) {
+      $item = explode(':', $item, 2);
+      if ($item[0] == 'bool' || $item[0] == 'boolean') {
+        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+      }
+    }
+    return $value;
+  }
+
+  private $post = NULL;
+  private function getPostField($param, $required = TRUE) {
+    
+    if ($this->post === NULL) {
+      $req = $this->getHttpRequest();
+      if ($req->isMethod("POST")) {
+        $this->post = $req->post;
+      } else if ($req->isMethod("PUT") || $req->isMethod("DELETE")) {
+        parse_str(file_get_contents('php://input'), $this->post);
+      } else {
+        throw new WrongHttpMethodException("Cannot get the post parameters in method '" . $req->getMethod() . "'.");
+      }
+    }
+
+    if (isset($this->post[$param])) {
+      return $this->post[$param];
+    } else if ($required) {
       throw new BadRequestException("Missing required POST field $param");
-    }
-
-    if ($validationRule !== NULL) {
-      $this->validateValue($param, $value, $validationRule, $msg);
+    } else {
+      return NULL;
     }
   }
 
-  private function validateQueryField($param, $validationRule = NULL, $msg = NULL) {
+  private function getQueryField($param, $required = TRUE) {
     $value = $this->getHttpRequest()->getQuery($param);
-    if ($value === NULL) { 
+    if ($value === NULL && $required) { 
       throw new BadRequestException("Missing required query field $param");
     }
-
-    if ($validationRule !== NULL) {
-      $this->validateValue($value, $validationRule, $msg);
-    }
+    return $value;
   }
 
   private function validateValue($param, $value, $validationRule, $msg = NULL) {
@@ -164,12 +205,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
-    // @todo set HTTP response code
+    $response = $this->context->getByType('Nette\Http\Response');
+    $response->setCode($code);
     $this->sendJson([
       "success" => TRUE,
       "code" => $code,
       "payload" => $payload
     ]);
   }
-
 }
