@@ -6,7 +6,7 @@ use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
-class Groups extends Nette\Object {
+class Groups extends BaseRepository {
   protected $entityName = "Group";
 
   public function persist(Group $group) {

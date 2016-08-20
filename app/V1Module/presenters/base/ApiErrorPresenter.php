@@ -13,11 +13,17 @@ use Doctrine\DBAL\Exception\ConnectionException;
  */
 class ApiErrorPresenter extends \App\Presenters\BasePresenter {
 
+  /** @var \Tracy\ILogger @inject */
+  public $logger;
+  private $exception;
+
   /**
    * @param  Exception
    * @return void
    */
   public function renderDefault($exception) {
+    $this->exception = $exception;
+
     if ($exception instanceof ApiException) {
       $this->handleAPIException($exception);
     } elseif ($exception instanceof BadRequestException) {
@@ -60,6 +66,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     */
   protected function shutdown($response) {
     // @todo log the error
+    $this->logger->log($this->exception, \Tracy\ILogger::EXCEPTION);
   }
 
 }
