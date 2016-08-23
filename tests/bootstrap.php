@@ -9,6 +9,7 @@ $configurator->setDebugMode(FALSE);
 $configurator->setTempDirectory(__DIR__ . '/../temp');
 $configurator->createRobotLoader()
 	->addDirectory(__DIR__ . '/../app')
+  ->addDirectory(__DIR__ . '/base')
 	->register();
 
 $configurator->addConfig(__DIR__ . '/../app/config/config.neon');

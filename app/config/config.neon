@@ -5,6 +5,13 @@
 parameters:
   uploadDir: %appDir%/../uploaded_data
 
+  accessManager:
+    leeway: 60
+    issuer: https://recodex.projekty.ms.mff.cuni.cz
+    audience: https://recodex.projekty.ms.mff.cuni.cz
+    expiration: 86400
+    algorithm: HS256
+
 
 application:
   errorPresenter: V1:ApiError
@@ -25,7 +32,7 @@ extensions:
 
 services:
   router: App\RouterFactory::createRouter
-  - App\Security\AccessManager
+  - App\Security\AccessManager(%accessManager%)
   - App\Security\Authorizator
   - App\UploadedFileStorage(%uploadDir%)
 

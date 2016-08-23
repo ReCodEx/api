@@ -24,8 +24,9 @@ class AccessManager {
   /** @var Users  Users repository */
   protected $users;
 
-  public function __construct(Users $users) {
+  public function __construct(array $parameters, Users $users) {
     $this->users = $users;
+    $this->parameters = $parameters;
   }
 
   /**
@@ -38,15 +39,13 @@ class AccessManager {
       throw new NoAccessTokenException;
     }
 
-    JWT::$leeway = 60; // @todo load this from config!!
+    JWT::$leeway = $this->parameters['leeway'];
 
     try {
       $decodedToken = JWT::decode($token, $this->getSecretVerificationKey(), $this->getAllowedAlgs());
     } catch (DomainException $e) {
       throw new InvalidAccessTokenException($token);
     } catch (UnexpectedValueException $e) {
-      throw new InvalidAccessTokenException($token);
-    } catch (DomainException $e) {
       throw new InvalidAccessTokenException($token);
     } catch (ExpiredException $e) {
       throw new InvalidAccessTokenException($token);
@@ -74,11 +73,11 @@ class AccessManager {
    */
   public function issueToken(User $user) {    
     $tokenPayload = [
-      "iss" => "https://recodex.projekty.ms.mff.cuni.cz", // @todo load this from config!!
-      "aud" => "https://recodex.projekty.ms.mff.cuni.cz", // @todo load this from config!!
+      "iss" => $this->parameters['issuer'],
+      "aud" => $this->parameters['audience'],
       "iat" => time(),
       "nbf" => time(),
-      "exp" => time() + 1*24*60*60, // @todo load this from config!!
+      "exp" => time() + $this->parameters['expiration'],
       "sub" => $user
     ];
 
@@ -87,16 +86,17 @@ class AccessManager {
 
   private function getSecretVerificationKey() {
     return "recodex-123"; // @todo make this secure using environment variables - it must not appear on GitHub...
+    // and maybe also make it harder to guess?
   }
 
   private function getAllowedAlgs() {
     // allowed algs must be separated from the used algs - if the algorithm is changed in the future,
     // we must accept the older algorithm until all the old tokens expire
-    return [ "HS256" ]; // @todo load this from config!!
+    return [ $this->parameters['algorithm'] ]; // @todo load this from config!!
   }
 
   private function getAlg() {
-    return "HS256"; // @todo load this from config!!
+    return $this->parameters['algorithm'];
   }
 
   /**
