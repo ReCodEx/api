@@ -7,6 +7,7 @@ use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
 use App\V1Module\Router\PostRoute;
+use App\V1Module\Router\DeleteRoute;
 use App\V1Module\Router\PreflightRoute;
 
 class RouterFactory {
@@ -58,10 +59,20 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix", "Groups:");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
+    
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
+    $router[] = new GetRoute("$prefix/<id>/students/<userId>", "Groups:studentsStats");
+    $router[] = new PostRoute("$prefix/<id>/students/<userId>", "Groups:addStudent");
+    $router[] = new DeleteRoute("$prefix/<id>/students/<userId>", "Groups:removeStudent");
+
     $router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
+    $router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
+    $router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
+    
+    $router[] = new GetRoute("$prefix/<id>/admin", "Groups:admin");
+    $router[] = new PostRoute("$prefix/<id>/admin", "Groups:makeAdmin");
+
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
-    $router[] = new GetRoute("$prefix/<groupId>/students-stats/<userId>", "Groups:studentsStats");
   }
 
   private static function createInstancesRoutes($router, $prefix) {
