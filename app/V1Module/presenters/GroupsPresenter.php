@@ -84,10 +84,10 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /** @GET */
-  public function actionStudentsStats(string $groupId, string $userId) {
+  public function actionStudentsStats(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
-    $group = $this->findGroupOrThrow($groupId);
+    $group = $this->findGroupOrThrow($id);
 
     if ($user->getId() !== $this->user->id
       && !$group->isSupervisorOf($currentUser)
@@ -96,10 +96,129 @@ class GroupsPresenter extends BasePresenter {
     }
 
     if ($group->isStudentOf($user) === FALSE) {
-      throw new BadRequestException("User $userId is not student of $groupId");
+      throw new BadRequestException("User $userId is not student of $id");
     }
 
     $this->sendSuccessResponse($group->getStudentsStats($user));
+  }
+
+  /** @POST */
+  public function actionAddStudent(string $id, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    // check that the user has rights to join the group
+    if ($user->getId() !== $currentUser->getId()
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    }
+
+    // make sure that the user is not already member of the group 
+    if ($group->isStudentOf($user) === FALSE) {
+      $user->makeStudentOf($group);
+      $this->groups->flush();
+    }
+
+    // join the group
+    $this->sendSuccessResponse($group);
+  }
+
+  /** @DELETE */
+  public function actionRemoveStudent(string $id, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    // check that the user has rights to join the group
+    if ($user->getId() !== $currentUser->getId()
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    }
+
+    // make sure that the user is student of the group 
+    if ($group->isStudentOf($user) === TRUE) {
+      $user->removeStudentFrom($group);
+      $this->users->flush();
+    }
+
+    // join the group
+    $this->sendSuccessResponse($group);
+  }
+
+  /** @POST */
+  public function actionAddSupervisor(string $id, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    // check that the user has rights to join the group
+    if (!$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    }
+
+    // make sure that the user is not already supervisor of the group 
+    if ($group->isSupervisorOf($user) === FALSE) {
+      $user->makeSupervisorOf($group);
+      $this->users->flush();
+    }
+
+    $this->sendSuccessResponse($group);
+  }
+
+  /** @DELETE */
+  public function actionRemoveSupervisor(string $id, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    // check that the user has rights to join the group
+    if (!$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    }
+
+    // make sure that the user is not already supervisor of the group 
+    if ($group->isSupervisorOf($user) === TRUE) {
+      $user->removeSupervisorFrom($group);
+      $this->users->flush();
+    }
+
+    $this->sendSuccessResponse($group);
+  }
+
+  /** @GET */
+  public function actionAdmin($id) {
+    $group = $this->findGroupOrThrow($id);
+    $this->sendSuccessResponse($group->getAdmin());
+  }
+
+  /**
+   * @POST
+   * @RequiredField(type="post", name="userId")
+   */
+  public function actionMakeAdmin(string $id) {
+    $userId = $this->getHttpRequest()->getPost("userId");
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow("me");
+    $group = $this->findGroupOrThrow($id);
+
+    // check that the user has rights to join the group
+    if (!$group->getAdmin() !== $currentUser
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    }
+
+    // make sure that the user is not already member of the group 
+    if ($group->getAdmin() !== $user) {
+      $group->setAdmin($user);
+      $this->groups->flush();
+    }
+
+    $this->sendSuccessResponse($group);
   }
 
 }
