@@ -83,6 +83,16 @@ class User implements JsonSerializable
         return $this->studentOf;
     }
 
+    public function makeStudentOf(Group $group) {
+      $this->studentOf->add($group);
+      $group->addStudent($this);
+    }
+
+    public function removeStudentFrom(Group $group) {
+      $this->studentOf->removeElement($group);
+      $group->removeStudent($this);
+    }
+
     /**
      * @ORM\ManyToMany(targetEntity="Group", inversedBy="supervisors")
      * @ORM\JoinTable(name="group_supervisor")
@@ -91,6 +101,16 @@ class User implements JsonSerializable
 
     public function getGroupsAsSupervisor() {
         return $this->supervisorOf;
+    }
+
+    public function makeSupervisorOf(Group $group) {
+      $this->supervisorOf->add($group);
+      $group->addSupervisor($this);
+    }
+
+    public function removeSupervisorFrom(Group $group) {
+      $this->supervisorOf->removeElement($group);
+      $group->removeSupervisor($this);
     }
     
     /**

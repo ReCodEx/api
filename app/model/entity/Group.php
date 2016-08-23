@@ -72,39 +72,55 @@ class Group implements JsonSerializable
    * @ORM\ManyToMany(targetEntity="User", mappedBy="studentOf")
    */
   protected $students;
-  
-  public function isStudentOf(User $user) {
+
+  public function isStudentOf(User $user): bool {
     return $this->students->contains($user);
   }
-  
+
+  public function addStudent(User $user) {
+    $this->students->add($user);
+  }
+
+  public function removeStudent(User $user) {
+    $this->students->removeElement($user);
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $admin;
-  
+
   /**
    * @ORM\ManyToMany(targetEntity="User", mappedBy="supervisorOf")
    */
   protected $supervisors;
-  
-  public function isSupervisorOf(User $user) {
+
+  public function isSupervisorOf(User $user): bool {
     return $this->supervisors->contains($user);
   }
 
-  public function isMemberOf(User $user) {
+  public function addSupervisor(User $user) {
+    $this->supervisors->add($user);
+  }
+
+  public function removeSupervisor(User $user) {
+    $this->supervisors->removeElement($user);
+  }
+
+  public function isMemberOf(User $user): bool {
     return $this->isStudentOf($user) || $this->isSupervisorOf($user);
   }
-  
+
   /**
    * @ORM\OneToMany(targetEntity="ExerciseAssignment", mappedBy="group")
    */
   protected $assignments;
 
-  public function getAssignmentsIds() {
+  public function getAssignmentsIds(): array {
     return $this->getAssignments()->map(function($a) { return $a->id; })->toArray();
   }
-  
-  public function getMaxPoints() {
+
+  public function getMaxPoints(): int {
     return array_reduce(
       $this->getAssignments()->toArray(),
       function ($carry, $assignment) { return $carry + $assignment->getMaxPoints(); },
