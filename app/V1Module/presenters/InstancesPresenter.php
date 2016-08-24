@@ -5,9 +5,6 @@ namespace App\V1Module\Presenters;
 use App\Exception\NotFoundException;
 use App\Model\Repository\Instances;
 
-/**
- * @Role superadmin
- */
 class InstancesPresenter extends BasePresenter {
 
   /** @inject @var Instances */

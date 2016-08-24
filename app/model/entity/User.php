@@ -74,6 +74,11 @@ class User implements JsonSerializable
     public function isAllowed() { return $this->isAllowed; }
 
     /**
+     * @ORM\ManyToOne(targetEntity="Instance")
+     */
+    protected $instance;
+
+    /**
      * @ORM\ManyToMany(targetEntity="Group", inversedBy="students")
      * @ORM\JoinTable(name="group_student")
      */
@@ -139,6 +144,7 @@ class User implements JsonSerializable
           "lastName" => $this->lastName,
           "degreesAfterName" => $this->degreesAfterName,
         ],
+        "instanceId" => $this->instance->getId(), 
         "avatarUrl" => $this->avatarUrl,
         "isVerified" => $this->isVerified,
         "role" => $this->role,
@@ -161,9 +167,11 @@ class User implements JsonSerializable
       string $lastName,
       string $degreesBeforeName,
       string $degreesAfterName,
-      Role   $role
+      Role $role,
+      Instance $instance
     ) {
         $user = new User;
+        $user->instance = $instance;
         $user->firstName = $firstName;
         $user->lastName = $lastName;
         $user->degreesBeforeName = $degreesBeforeName;

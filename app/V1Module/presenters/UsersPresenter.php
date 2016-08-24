@@ -2,12 +2,13 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Model\Entity\User;
 use App\Model\Entity\Login;
 use App\Model\Entity\Role;
-use App\Model\Repository\Users;
+use App\Model\Entity\User;
+use App\Model\Repository\Instances;
 use App\Model\Repository\Logins;
 use App\Model\Repository\Roles;
+use App\Model\Repository\Users;
 use App\Security\AccessManager;
 
 use App\Exception\BadRequestException;
@@ -22,6 +23,9 @@ class UsersPresenter extends BasePresenter {
 
   /** @inject @var Roles */
   public $roles;
+
+  /** @inject @var Instances */
+  public $instances;
 
   /**
    * @GET
@@ -38,6 +42,7 @@ class UsersPresenter extends BasePresenter {
    * @RequiredField(type="post", name="firstName", validation="string:2..")
    * @RequiredField(type="post", name="lastName", validation="string:2..")
    * @RequiredField(type="post", name="password", validation="string:8..", msg="Password must be at least 8 characters long.")
+   * @RequiredField(type="post", name="instanceId", validation="string:1..")
    */
   public function actionCreateAccount() {
     $req = $this->getHttpRequest();
@@ -59,13 +64,19 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to assign the new user role '$roleId'");
     }
 
+    $instance = $this->instances->get($req->getPost("instanceId"));
+    if (!$instance) {
+      throw new BadRequestException("Such instance does not exist.");
+    }
+
     $user = User::createUser(
       $email,
       $req->getPost("firstName"),
       $req->getPost("lastName"),
       $req->getPost("degreesBeforeName", ""),
       $req->getPost("degreesAfterName", ""),
-      $role
+      $role,
+      $instance
     );
     $login = Login::createLogin($user, $email, $req->getPost("password"));
 
