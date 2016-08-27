@@ -90,8 +90,12 @@ class Group implements JsonSerializable
    */
   protected $admin;
 
-  public function isAdminOf($user) {
-    return $this->admin->getId() === $user->getId();
+  public function isAdminOf(User $user) {
+    return $this->admin !== NULL && $this->admin->getId() === $user->getId();
+  }
+
+  public function makeAdmin(User $user) {
+    $this->admin = $user;
   }
 
   /**
@@ -167,6 +171,7 @@ class Group implements JsonSerializable
     $gainedPoints = $this->getPointsGainedByStudent($student);
 
     return [
+      "userId" => $student->getId(),
       "assignments" => [
         "total" => $total,
         "completed" => $completed

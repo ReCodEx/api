@@ -84,6 +84,27 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /** @GET */
+  public function actionStats(string $id) {
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    if (!$group->isAdminOf($currentUser)
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot view these stats.");
+    }
+
+    $this->sendSuccessResponse(
+      array_map(
+        function ($student) use ($group) {
+          return $group->getStudentsStats($student);
+        },
+        $group->getStudents()->toArray()
+      )
+    );
+  }
+
+  /** @GET */
   public function actionStudentsStats(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -214,7 +235,7 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is not already member of the group 
     if ($group->getAdmin() !== $user) {
-      $group->setAdmin($user);
+      $group->makeAdmin($user);
       $this->groups->flush();
     }
 
