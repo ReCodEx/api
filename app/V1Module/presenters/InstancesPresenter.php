@@ -40,7 +40,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $instance = $this->findInstanceOrThrow($id);
-    $this->sendSuccessResponse($instance->getTopLevelGroups()->toArray());
+    $this->sendSuccessResponse($instance->getGroups()->toArray());
   }
 
 }

@@ -127,6 +127,18 @@ class UsersPresenter extends BasePresenter {
    * @LoggedIn
    * @todo: Check if this user can access THAT information
    */
+  public function actionInstances(string $id) {
+    $user = $this->findUserOrThrow($id);
+    $this->sendSuccessResponse([
+      $user->getInstance() // @todo change when the user can be member of multiple instances
+    ]);
+  }
+
+  /**
+   * @GET
+   * @LoggedIn
+   * @todo: Check if this user can access THAT information
+   */
   public function actionExercises(string $id) {
     $user = $this->findUserOrThrow($id);
     $this->sendSuccessResponse($user->getUsersExercises()->toArray());

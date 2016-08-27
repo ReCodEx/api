@@ -73,7 +73,7 @@ class Group implements JsonSerializable
    */
   protected $students;
 
-  public function isStudentOf(User $user): bool {
+  public function isStudentOf(User $user) {
     return $this->students->contains($user);
   }
 
@@ -95,7 +95,7 @@ class Group implements JsonSerializable
    */
   protected $supervisors;
 
-  public function isSupervisorOf(User $user): bool {
+  public function isSupervisorOf(User $user) {
     return $this->supervisors->contains($user);
   }
 
@@ -107,7 +107,7 @@ class Group implements JsonSerializable
     $this->supervisors->removeElement($user);
   }
 
-  public function isMemberOf(User $user): bool {
+  public function isMemberOf(User $user) {
     return $this->isStudentOf($user) || $this->isSupervisorOf($user);
   }
 
@@ -187,7 +187,7 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "instanceId" => $instance ? $instance->getId() : NULL,
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      "childGroups" => $this->childGroups->toArray(),
+      "childGroups" => array_map(function($group) { return $group->getId(); }, $this->childGroups->toArray()),
       "assignments" => $this->getAssignmentsIds()
     ];
   }

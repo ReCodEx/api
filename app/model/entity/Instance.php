@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 
 /**
@@ -84,7 +85,9 @@ class Instance implements JsonSerializable
   protected $groups;
 
   public function getTopLevelGroups() {
-    return $this->groups;
+    $filter = Criteria::create()
+      ->orWhere(Criteria::expr()->eq("parentGroup", NULL));
+    return $this->groups->matching($filter);
   }
 
   public function jsonSerialize() {
@@ -97,7 +100,8 @@ class Instance implements JsonSerializable
       "isAllowed" => $this->isAllowed,
       "createdAt" => $this->createdAt,
       "updatedAt" => $this->updatedAt,
-      "admin" => $this->admin
+      "admin" => $this->admin,
+      "topLevelGroups" => array_map(function($group) { return $group->getId(); }, $this->getTopLevelGroups()->toArray())
     ];
   }
 

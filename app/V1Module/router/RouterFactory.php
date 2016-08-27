@@ -97,6 +97,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Users:createAccount");
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
+    $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
   }
 

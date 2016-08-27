@@ -23,6 +23,7 @@ class DefaultPresenter extends BasePresenter {
     $res = $this->getHttpResponse();
     $res->setHeader('Access-Control-Allow-Origin', '*');
     $res->setHeader('Access-Control-Allow-Headers', $req->getHeader('Access-Control-Request-Headers'));
+    $res->setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
     $this->terminate();
   }
 
