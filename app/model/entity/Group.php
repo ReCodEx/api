@@ -90,6 +90,10 @@ class Group implements JsonSerializable
    */
   protected $admin;
 
+  public function isAdminOf($user) {
+    return $this->admin->getId() === $user->getId();
+  }
+
   /**
    * @ORM\ManyToMany(targetEntity="User", mappedBy="supervisorOf")
    */

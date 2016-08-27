@@ -154,8 +154,8 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->findUserOrThrow('me');
     $group = $this->findGroupOrThrow($id);
 
-    // check that the user has rights to join the group
-    if (!$group->isSupervisorOf($currentUser)
+    // check that the user is the admin of the group
+    if (!$group->isAdminOf($currentUser)
       && !$this->user->isInRole("superadmin")) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
