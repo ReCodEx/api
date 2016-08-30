@@ -140,6 +140,23 @@ class Submission implements JsonSerializable
       return $this->tasksCount;
     }
 
+    public function getEvaluationSummary() {
+      $summary = [
+        "id" => $this->id,
+        "evaluationStatus" => $this->getEvaluationStatus()
+      ];
+      
+      if ($this->evaluation) {
+        $summary = array_merge($summary, [
+          "score" => $this->evaluation->getScore(),
+          "points" => $this->evaluation->getPoints(),
+          "bonusPoints" => $this->evaluation->getBonusPoints()
+        ]);
+      }
+      
+      return $summary;
+    }
+
     /**
      * @return array
      */

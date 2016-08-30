@@ -136,6 +136,15 @@ class Group implements JsonSerializable
     );
   }
 
+  public function getBestSolutions(User $user): array {
+    return array_map(
+      function ($assignment) use ($user) {
+        return $assignment->getBestSolution($user);
+      },
+      $this->assignments->toArray()
+    );
+  }
+
   public function getCompletedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
       function($assignment) use ($student) {
@@ -166,7 +175,7 @@ class Group implements JsonSerializable
    */
   public function getStudentsStats(User $student) {
     $total = $this->assignments->count();
-    $completed = $this->getCompletedAssignmentsByStudent($student)->count();
+    $completed = $this->getCompletedAssignmentsByStudent($student);
     $maxPoints = $this->getMaxPoints();
     $gainedPoints = $this->getPointsGainedByStudent($student);
 
@@ -175,7 +184,7 @@ class Group implements JsonSerializable
       "groupId" => $this->getId(),
       "assignments" => [
         "total" => $total,
-        "completed" => $completed
+        "completed" => $completed->count()
       ],
       "points" => [
         "total" => $maxPoints,
