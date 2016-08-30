@@ -133,8 +133,9 @@ class ExerciseAssignment implements JsonSerializable
 
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
-      ->orWhere(Criteria::expr()->eq("user", $user))
-      ->orWhere(Criteria::expr()->neq("evaluation", NULL));
+      ->where(Criteria::expr()->eq("user", $user))
+      ->andWhere(Criteria::expr()->neq("evaluation", NULL));
+
     return array_reduce(
       $this->submissions->matching($usersSolutions)->toArray(),
       function ($best, $submission) {
