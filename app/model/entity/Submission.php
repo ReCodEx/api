@@ -29,9 +29,12 @@ class Submission implements JsonSerializable
 {
     use MagicAccessors;
 
-    const REMOTE_FILE_SERVER_URL = "http://195.113.17.8:9999"; // @todo place in a configuration file
-    const ZMQ_SERVER_URL = "tcp://195.113.17.8:9658"; // @todo place in a configuration file
     const RESPONSE_ACCEPT = "accept";
+
+    public function __construct(array $fileServerConfig, array $brokerConfig) {
+      $this->fileServerConfig = $fileServerConfig;
+      $this->brokerConfig = $brokerConfig;
+    }
 
     /**
      * @ORM\Id
@@ -217,7 +220,7 @@ class Submission implements JsonSerializable
         throw new SubmissionFailedException("Remote file server broke the communication protocol");
       }
 
-      $this->resultsUrl = self::REMOTE_FILE_SERVER_URL . $remotePaths->result_path;
+      $this->resultsUrl = $this->fileServerConfig['address'] . $remotePaths->result_path;
       return $this->startEvaluation($this->id, $remotePaths->archive_path, $remotePaths->result_path);
     }
 
@@ -286,8 +289,9 @@ class Submission implements JsonSerializable
      */
     private function sendFilesToRemoteFileServer($submissionId, $files) {
       try {
-        $client = new Client([ "base_uri" => self::REMOTE_FILE_SERVER_URL ]);
-        $response = $client->request("POST", "/submissions/$submissionId", [ "multipart" => $files ]);
+        $client = new Client([ "base_uri" => $this->fileServerConfig['address'] ]);
+        $response = $client->request("POST", "/submissions/$submissionId",
+          [ "multipart" => $files, "auth" => [ $this->fileServerConfig['username'], $this->fileServerConfig['password'] ] ]);
 
         if ($response->getStatusCode() === 200) {
           return Json::decode($response->getBody());
@@ -312,14 +316,14 @@ class Submission implements JsonSerializable
     private function startEvaluation(string $submissionId, string $archiveRemotePath, string $resultRemotePath) {
       try {
         $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
-        $queue->connect(self::ZMQ_SERVER_URL);
+        $queue->connect($this->brokerConfig['address']);
         $queue->sendmulti([
           "eval",
           $submissionId,
           "hwgroup={$this->hardwareGroup}",
           "",
-          self::REMOTE_FILE_SERVER_URL . $archiveRemotePath,
-          self::REMOTE_FILE_SERVER_URL . $resultRemotePath
+          $this->fileServerConfig['address'] . $archiveRemotePath,
+          $this->fileServerConfig['address'] . $resultRemotePath
         ]);
 
         $response = $queue->recv();

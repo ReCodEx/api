@@ -12,6 +12,14 @@ parameters:
     expiration: 86400
     algorithm: HS256
 
+  fileServer:
+    address: http://195.113.17.8:9999
+	username: ""
+	password: ""
+
+  broker:
+    address: tcp://195.113.17.8:9658
+
 
 application:
   errorPresenter: V1:ApiError
@@ -50,6 +58,8 @@ services:
   - App\Model\Repository\SubmissionEvaluations()
   - App\Model\Repository\UploadedFiles()
   - App\Model\Repository\Users()
+
+  - App\Model\Entity\Submission(%fileServer%, %broker%)
 
 doctrine:
   user: 'root'
