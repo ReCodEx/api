@@ -123,6 +123,41 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group->getStudentsStats($user));
   }
 
+  public function actionStudentsBestResults(string $id, string $userId) {
+    $user = $this->findUserOrThrow($userId);
+    $currentUser = $this->findUserOrThrow('me');
+    $group = $this->findGroupOrThrow($id);
+
+    if ($user->getId() !== $this->user->id
+      && !$group->isSupervisorOf($currentUser)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You cannot view these stats.");
+    }
+
+    if ($group->isStudentOf($user) === FALSE) {
+      throw new BadRequestException("User $userId is not student of $id");
+    }
+
+    $statsMap = array_reduce(
+      $group->getBestSolutions($user),
+      function ($arr, $best) {
+        if ($best !== NULL) {
+          $arr[$best->getExerciseAssignment()->getId()] = [
+            "submissionId" => $best->getId(),
+            "score" => $best->getEvaluation()->getScore(),
+            "points" => $best->getEvaluation()->getPoints(),
+            "bonusPoints" => $best->getEvaluation()->getBonusPoints()
+          ];
+        }
+
+        return $arr;
+      },
+      []
+    );
+
+    $this->sendSuccessResponse($statsMap);
+  }
+
   /** @POST */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
