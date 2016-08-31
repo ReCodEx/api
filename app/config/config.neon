@@ -46,6 +46,9 @@ services:
   - App\Security\Authorizator
 
   # helpers
+  - App\Model\Helpers\BrokerProxy(%broker%)
+  - App\Model\Helpers\FileServerProxy(%fileServer%)
+  - App\Model\Helpers\SubmissionHelper
   - App\Model\Helpers\UploadedFileStorage(%uploadDir%)
 
   # models - repositories
