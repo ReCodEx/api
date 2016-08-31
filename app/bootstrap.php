@@ -15,9 +15,6 @@ $configurator->createRobotLoader()
 	->register();
 
 $configurator->addConfig(__DIR__ . '/config/config.neon');
-
-// local config is not needed for Travis or production server,
-// but is crutial for development - include only when provided
 if (file_exists(__DIR__ . '/config/config.local.neon')) {
   $configurator->addConfig(__DIR__ . '/config/config.local.neon');
 }
