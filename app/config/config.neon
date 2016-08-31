@@ -20,8 +20,6 @@ parameters:
 
   broker:
     address: tcp://195.113.17.8:9658
-    expectedResponse: "accept"
-
 
 application:
   errorPresenter: V1:ApiError
