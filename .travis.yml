@@ -10,4 +10,4 @@ install:
   - composer install --no-interaction --prefer-source
 
 script:
-  - ./vendor/nette/tester tests 
+  - ./vendor/bin/tester tests 
