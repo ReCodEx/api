@@ -16,9 +16,11 @@ parameters:
     address: http://195.113.17.8:9999
     username: ""
     password: ""
+    jobConfigFileName: "job-config.yml"
 
   broker:
     address: tcp://195.113.17.8:9658
+    expectedResponse: "accept"
 
 
 application:
@@ -42,7 +44,9 @@ services:
   router: App\RouterFactory::createRouter
   - App\Security\AccessManager(%accessManager%)
   - App\Security\Authorizator
-  - App\UploadedFileStorage(%uploadDir%)
+
+  # helpers
+  - App\Model\Helpers\UploadedFileStorage(%uploadDir%)
 
   # models - repositories
   - App\Model\Repository\Comments()
@@ -58,8 +62,6 @@ services:
   - App\Model\Repository\SubmissionEvaluations()
   - App\Model\Repository\UploadedFiles()
   - App\Model\Repository\Users()
-
-  - App\Model\Entity\Submission(%fileServer%, %broker%)
 
 doctrine:
   user: 'root'
