@@ -1,6 +1,8 @@
 ReCodEx REST API
 =============
 
+[![Build Status](https://travis-ci.org/ReCodEx/api.svg?branch=master)](https://travis-ci.org/ReCodEx/api)
+
 A REST API that provides access to the evaluation backend by clients.
 
 
