@@ -63,6 +63,10 @@ class SubmissionEvaluation implements JsonSerializable
    */
   protected $bonusPoints;
 
+  public function getTotalPoints() {
+    return $this->getPoints() + $this->getBonusPoints();
+  }
+
   /**
    * @ORM\Column(type="boolean")
    */
@@ -117,10 +121,10 @@ class SubmissionEvaluation implements JsonSerializable
       throw new NotFoundException('Results are not available (yet).');
     }
     
-    $jobConfig = $submission->getJobConfig(); // this handles errors well
+    $jobConfig = $submission->getParsedJobConfig();
     
     try {
-      $resultYmlContent = self::getResultYmlContent($zipFileContent);  
+      $resultYmlContent = self::getResultYmlContent($zipFileContent);
       $tasksResults = Yaml::parse($resultYmlContent);
     } catch (\Exception $e) { // @todo: Catch specific exceptions (unzipping and parsing)
       throw new SubmissionEvaluationFailedException("The results received from the file server are malformed.");

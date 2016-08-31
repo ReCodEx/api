@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Model\Helpers;
 
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;

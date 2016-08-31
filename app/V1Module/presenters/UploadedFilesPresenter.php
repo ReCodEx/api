@@ -6,7 +6,9 @@ use App;
 use App\Exception\NotFoundException;
 use App\Exception\CannotReceiveUploadedFileException;
 use App\Exception\BadRequestException;
+
 use App\Model\Entity\UploadedFile;
+use App\Model\Helpers\UploadedFileStorage;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
 
@@ -18,10 +20,10 @@ class UploadedFilesPresenter extends BasePresenter {
   /** @var UploadedFiles */
   private $uploadedFiles;
 
-  /** @var App\UploadedFileStorage */
+  /** @var UploadedFileStorage */
   private $fileStorage;
 
-  public function __construct(Users $users, UploadedFiles $files, App\UploadedFileStorage $fileStorage) {
+  public function __construct(Users $users, UploadedFiles $files, UploadedFileStorage $fileStorage) {
     parent::__construct();
     $this->uploadedFiles = $files;
     $this->fileStorage = $fileStorage;
