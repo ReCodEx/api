@@ -12,12 +12,12 @@ use ZMQSocketException;
  */
 class BrokerProxy {
 
+  const EXPECTED_RESPONSE = "accept";
+
   private $brokerAddress;
-  private $expectedResponse;
 
   public function __construct($config) {
     $this->brokerAddress = $config['address'];
-    $this->expectedResponse = $config['expectedResponse'];
   }
 
   /**
@@ -45,7 +45,7 @@ class BrokerProxy {
       ]);
 
       $response = $queue->recv();
-      return $response === $this->expectedResponse;
+      return $response === self::EXPECTED_RESPONSE;
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Communication with backend broker failed.");
     }
