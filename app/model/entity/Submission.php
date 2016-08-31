@@ -5,7 +5,6 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use GuzzleHttp\Client;
 use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use Nette\Utils\Arrays;
@@ -16,10 +15,6 @@ use App\Exception\MalformedJobConfigException;
 use App\Exception\SubmissionFailedException;
 
 use GuzzleHttp\Exception\RequestException;
-use ZMQ;
-use ZMQSocket;
-use ZMQContext;
-use ZMQSocketException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -28,13 +23,6 @@ use Symfony\Component\Yaml\Yaml;
 class Submission implements JsonSerializable
 {
     use MagicAccessors;
-
-    const RESPONSE_ACCEPT = "accept";
-
-    public function __construct(array $fileServerConfig, array $brokerConfig) {
-      $this->fileServerConfig = $fileServerConfig;
-      $this->brokerConfig = $brokerConfig;
-    }
 
     /**
      * @ORM\Id
@@ -133,16 +121,6 @@ class Submission implements JsonSerializable
       return $eval->getPoints() + $eval->getBonusPoints();
     }
 
-    /** @var null|int This value is not persisted to the database - it is loaded when the job config YML file is examined. */
-    private $tasksCount = NULL;
-
-    /**
-     * @return null|int
-     */
-    public function getTasksCount() {
-      return $this->tasksCount;
-    }
-
     /**
      * @return array
      */
@@ -209,127 +187,51 @@ class Submission implements JsonSerializable
       return $entity;
     }
 
-    /**
-     * @return bool
-     * @throws SubmissionFailedException
-     */
-    public function submit() {
-      $files = $this->prepareFilesForSendingToRemoteServer($this, $this->files);
-      $remotePaths = $this->sendFilesToRemoteFileServer($this->id, $files);
-      if (!isset($remotePaths->archive_path) || !isset($remotePaths->result_path)) {
-        throw new SubmissionFailedException("Remote file server broke the communication protocol");
-      }
-
-      $this->resultsUrl = $this->fileServerConfig['address'] . $remotePaths->result_path;
-      return $this->startEvaluation($this->id, $remotePaths->archive_path, $remotePaths->result_path);
-    }
+    private $parsedJobConfig = NULL;
+    private $jobConfig = NULL;
 
     /**
-     * @param Submission $submission
-     * @param array $files
-     * @return array
-     */
-    private function prepareFilesForSendingToRemoteServer(Submission $submission, $files) {
-      $filesToSubmit = array_map(function ($file) {
-        return [
-          "name" => $file->name,
-          "filename" => $file->name,
-          "contents" => fopen($file->filePath, "r")
-        ];
-      }, $files->toArray());
-      
-      $jobConfigYml = YAML::dump($this->getJobConfig());
-      $jobConfigFile = [
-        "name" => "job-config.yml",
-        "filename" => "job-config.yml",
-        "contents" => $jobConfigYml
-      ];
-
-      array_push($filesToSubmit, $jobConfigFile);
-      return $filesToSubmit;
-    }
-
-    /**
-     * @param Submission $submission  The submission entity
      * @throws MalformedJobConfigException
      * @return array Parsed YAML config with updated job-id
      */
-    public function getJobConfig(): array {
-      $configFileName = realpath($this->exerciseAssignment->getJobConfigFilePath());
-      if ($configFileName === FALSE) {
-        throw new MalformedJobConfigException("The configuration file does not exist on the server.");
-      }
+    public function getParsedJobConfig(): array {
+      if ($this->parsedJobConfig === NULL) {
+        $jobConfig = $this->exerciseAssignment->getJobConfig();
 
-      $jobConfig = file_get_contents($configFileName);
-      if ($jobConfig === FALSE) {
-        throw new MalformedJobConfigException("Cannot open the configuration file for reading.");
-      }
-
-      try {
-        $parsedConfig = Yaml::parse($jobConfig);
-      } catch (ParseException $e) {
-        throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
-      }
-
-      // update the job-id field 
-      $parsedConfig["submission"]["job-id"] = $this->getId();
-
-      // count the number of tasks - so we can calculate the progress
-      // of evaluation in the browser
-      $this->tasksCount = count($parsedConfig["tasks"]); 
-
-      return $parsedConfig;
-    }
-
-    /**
-     * @param $submissionId
-     * @param $files
-     * @return mixed
-     * @throws SubmissionFailedException
-     */
-    private function sendFilesToRemoteFileServer($submissionId, $files) {
-      try {
-        $client = new Client([ "base_uri" => $this->fileServerConfig['address'] ]);
-        $response = $client->request("POST", "/submissions/$submissionId",
-          [ "multipart" => $files, "auth" => [ $this->fileServerConfig['username'], $this->fileServerConfig['password'] ] ]);
-
-        if ($response->getStatusCode() === 200) {
-          return Json::decode($response->getBody());
-        } else {
-          throw new SubmissionFailedException("Remote file server is not working correctly");
+        try {
+          $parsedConfig = Yaml::parse($jobConfig);
+        } catch (ParseException $e) {
+          throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
         }
-      } catch (RequestException $e) {
-        throw new SubmissionFailedException("Cannot connect to remote file server");
+
+        $parsedConfig["submission"]["job-id"] = $this->getId(); // update the job-id field
+        $this->parsedJobConfig = $parsedConfig; // cache the content of the config so no more parsing is needed
       }
+
+      return $this->parsedJobConfig;
     }
 
     /**
-     * @param $submissionId
-     * @param $archiveRemotePath
-     * @param $resultRemotePath
-     * @return bool Evaluation has been started on remote server when returns TRUE.
-     * @throws SubmissionFailedException
-     * @internal param $string
-     * @internal param $string
-     * @internal param $string
+     * @return string YAML config for the evaluation server for this submission (updated job-id)
      */
-    private function startEvaluation(string $submissionId, string $archiveRemotePath, string $resultRemotePath) {
-      try {
-        $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
-        $queue->connect($this->brokerConfig['address']);
-        $queue->sendmulti([
-          "eval",
-          $submissionId,
-          "hwgroup={$this->hardwareGroup}",
-          "",
-          $this->fileServerConfig['address'] . $archiveRemotePath,
-          $this->fileServerConfig['address'] . $resultRemotePath
-        ]);
-
-        $response = $queue->recv();
-        return $response === self::RESPONSE_ACCEPT;
-      } catch (ZMQSocketException $e) {
-        throw new SubmissionFailedException("Communication with backend broker failed.");
+    public function getJobConfig(): string {
+      if ($this->jobConfig === NULL) {
+        // the config must be first parsed and updated
+        $this->jobConfig = Yaml::dump($this->getParsedJobConfig());
       }
+
+      return $this->jobConfig;
+    }
+
+    /**
+     * Count the number of tasks from the job config - so we can calculate the progress
+     * of evaluation in the browser
+     */
+    public function getTasksCount() {
+      if ($this->parsedJobConfig === NULL) {
+        $this->parsedJobConfig = $this->getJobConfig();
+      }
+
+      return count($this->parsedJobConfig["tasks"]);
     }
 }

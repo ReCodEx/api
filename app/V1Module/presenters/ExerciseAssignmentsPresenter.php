@@ -8,6 +8,7 @@ use App\Exception\BadRequestException;
 use App\Exception\SubmissionFailedException;
 
 use App\Model\Entity\Submission;
+use App\Model\Helpers\SubmissionHelper;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -26,15 +27,24 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @var UploadedFiles */
   private $files;
 
+  /** @var SubmissionHelper */
+  private $submissionHelper;
+
   /**
    * @param Submissions $submissions  Submissions repository
    * @param ExerciseAssignments $assignments  Assignments repository
    * @param UploadedFiles $files  Uploaded files repository
    */
-  public function __construct(Submissions $submissions, ExerciseAssignments $assignments, UploadedFiles $files) {
+  public function __construct(
+    Submissions $submissions,
+    ExerciseAssignments $assignments,
+    UploadedFiles $files,
+    SubmissionHelper $submissionHelper
+  ) {
     $this->submissions = $submissions;
     $this->assignments = $assignments;
     $this->files = $files;
+    $this->submissionHelper = $submissionHelper;
   }
 
   protected function findAssignmentOrFail(string $id) {
@@ -88,14 +98,11 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $user = $loggedInUser;
     }
 
-    // @todo: somehow get from somewhere (the assignment?)
+    // create the submission record
     $hwGroup = "group1";
-
-    // collect the array of already uploaded files
     $files = $this->files->findAllById($req->getPost("files"));
-
-    // prepare a record in the database
-    $submission = Submission::createSubmission($req->getPost("note"), $assignment, $user, $loggedInUser, $hwGroup, $files);
+    $note = $req->getPost("note");
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $hwGroup, $files);
 
     // persist all the data in the database
     $this->submissions->persist($submission);
@@ -103,8 +110,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $this->files->persist($file);
     }
 
-    // send the data to the evaluation server
-    if($submission->submit() === TRUE) { // true does not mean the solution is OK, just that the evaluation server accepted it and started evaluating it
+    $evaluationHasStarted = $this->submissionHelper->initiateEvaluation($submission);
+    if($evaluationHasStarted === TRUE) {
       $this->submissions->persist($submission);
       $this->files->flush();
       $this->sendSuccessResponse([
@@ -118,5 +125,4 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       throw new SubmissionFailedException;
     }
   }
-
 }

@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
+use App\Exception\MalformedJobConfigException;
 
 /**
  * @ORM\Entity
@@ -36,6 +37,33 @@ class ExerciseAssignment implements JsonSerializable
     * @ORM\Column(type="string")
     */
   protected $jobConfigFilePath;
+
+  /** @var string Job config file contents cache */
+  private $jobConfig = NULL;
+
+  /**
+   * @throws MalformedJobConfigException
+   * @return string YAML config file contents
+   */
+  public function getJobConfig(): string {
+    if ($this->jobConfig === NULL) {
+      $configFileName = realpath($this->jobConfigFilePath);
+      if ($configFileName === FALSE) {
+        throw new MalformedJobConfigException("The configuration file does not exist on the server.");
+      }
+
+      $this->jobConfig = file_get_contents($configFileName);
+      if ($this->jobConfig === FALSE) {
+        throw new MalformedJobConfigException("Cannot open the configuration file for reading.");
+      }
+    }
+
+    return $this->jobConfig;
+  }
+
+  /**
+   *
+   */
 
   /**
     * @ORM\Column(type="text")
@@ -149,8 +177,6 @@ class ExerciseAssignment implements JsonSerializable
       NULL
     );
   }
-
-
 
   public function jsonSerialize() {
     return [
