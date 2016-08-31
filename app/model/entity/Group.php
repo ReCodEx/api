@@ -201,6 +201,7 @@ class Group implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "description" => $this->description,
+      "adminId" => $this->admin->getId(),
       "supervisors" => $this->supervisors->toArray(),
       "students" => $this->students->toArray(), // @todo: Only IDs
       "hasValidLicence" => $this->hasValidLicence(),
