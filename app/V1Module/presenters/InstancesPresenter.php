@@ -41,7 +41,7 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="isOpen", validation="bool")
    */
-  public function actionAddInstance() {
+  public function actionCreateInstance() {
     $params = $this->parameters;
     $user = $this->findUserOrThrow('me');
     $instance = Instance::createInstance(
