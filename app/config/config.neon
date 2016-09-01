@@ -35,8 +35,6 @@ extensions:
   events: Kdyby\Events\DI\EventsExtension
   annotations: Kdyby\Annotations\DI\AnnotationsExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
-  migrations: Zenify\DoctrineMigrations\DI\MigrationsExtension
-  - Symnedi\EventDispatcher\DI\EventDispatcherExtension
 
 services:
   router: App\RouterFactory::createRouter
@@ -81,10 +79,4 @@ annotations:
     - GET
     - PUT
     - DELETE
-
-migrations:
-  table: doctrine_migrations
-  directory: %appDir%/../migrations
-  namespace: Migrations
-  codingStandard: spaces
 
