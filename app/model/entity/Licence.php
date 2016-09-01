@@ -41,6 +41,18 @@ class Licence implements JsonSerializable
   protected $validUntil;
 
   /**
+   * Checks if the licence is valid at a given moment - by default right now.
+   * @param DateTime $when When the licence should have been valid. 
+   * @return bool
+   */
+  public function isValid(\DateTime $when = NULL) {
+    if ($when === NULL) {
+      $when = new \DateTime;
+    }
+    return $this->isValid && $this->validUntil >= $when;
+  }
+
+  /**
    * @ORM\Column(type="string")
    */
   protected $note;
