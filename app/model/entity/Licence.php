@@ -48,7 +48,7 @@ class Licence implements JsonSerializable
       "id" => $this->id,
       "note" => $this->note,
       "isValid" => $this->isValid,
-      "validUntil" => $this->validUntil
+      "validUntil" => $this->validUntil->getTimestamp()
     ];
   }
 

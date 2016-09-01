@@ -98,8 +98,8 @@ class Instance implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "isOpen" => $this->isOpen,
       "isAllowed" => $this->isAllowed,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "admin" => $this->admin,
       "topLevelGroups" => array_map(function($group) { return $group->getId(); }, $this->getTopLevelGroups()->toArray())
     ];
@@ -116,6 +116,7 @@ class Instance implements JsonSerializable
     $instance->updatedAt = $now;
     $instance->admin = $admin;
     $instance->licences = new ArrayCollection;
+    $instance->groups = new ArrayCollection;
     return $instance;
   }
 
