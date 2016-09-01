@@ -83,8 +83,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @RequiredField(type="post", name="note")
-   * @RequiredField(type="post", name="files")
+   * @Param(type="post", name="note")
+   * @Param(type="post", name="files")
    */
   public function actionSubmit(string $id) {
     $assignment = $this->findAssignmentOrFail($id);

@@ -204,18 +204,20 @@ class Group implements JsonSerializable
       "adminId" => $this->admin->getId(),
       "supervisors" => $this->supervisors->toArray(),
       "students" => $this->students->toArray(), // @todo: Only IDs
-      "hasValidLicence" => $this->hasValidLicence(),
       "instanceId" => $instance ? $instance->getId() : NULL,
+      "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => array_map(function($group) { return $group->getId(); }, $this->childGroups->toArray()),
       "assignments" => $this->getAssignmentsIds()
     ];
   }
 
-  public static function createGroup($name) {
+  public static function createGroup(string $name, string $description) {
     $group = new Group;
     $group->name = $name;
-    $group->members = new ArrayCollection;
+    $group->description = $description;
+    $group->students = new ArrayCollection;
+    $group->supervisors = new ArrayCollection;
     return $group;
   }
 }
