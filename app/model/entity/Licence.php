@@ -20,15 +20,13 @@ class Licence implements JsonSerializable
    */
   protected $id;
 
+  public function getId() { return $this->id; }
+
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="licences")
    */
   protected $instance;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
 
   /**
    * @ORM\Column(type="boolean")
@@ -60,10 +58,20 @@ class Licence implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "name" => $this->name,
+      "note" => $this->note,
       "isValid" => $this->isValid,
       "validUntil" => $this->validUntil
     ];
+  }
+
+  public static function createLicence(string $note, \DateTime $validUntil, Instance $instance) {
+    $licence = new Licence();
+    $licence->note = $note;
+    $licence->validUntil = $validUntil;
+    $licence->isValid = TRUE; //@todo ask Simon the meaning of this
+    $licence->instance = $instance;
+    $instance->licences->add($licence);
+    return $licence;
   }
 
 }

@@ -41,6 +41,20 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * @POST
+   * @UserIsAllowed(groups="create")
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="description", required=FALSE)
+   * @Param(type="post", name="instanceId", validation="string:36")
+   * @Param(type="post", name="name", validation="string:2..")
+   */
+  public function actionAddGroup() {
+    
+    $this->groups->persist($group);
+    $this->sendSuccessResponse($group);
+  }
+
+  /**
    * @GET
    */
   public function actionDetail(string $id) {
@@ -254,7 +268,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @RequiredField(type="post", name="userId")
+   * @Param(type="post", name="userId")
    */
   public function actionMakeAdmin(string $id) {
     $userId = $this->getHttpRequest()->getPost("userId");

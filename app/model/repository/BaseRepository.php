@@ -27,8 +27,18 @@ class BaseRepository extends Nette\Object {
     return $this->repository->findOneById($id);
   }
 
-  public function persist($entity) {
+  public function persist($entity, $autoFlush = TRUE) {
     $this->em->persist($entity);
+    if ($autoFlush === TRUE) {
+      $this->flush();
+    }
+  }
+
+  public function remove($entity, $autoFlush = TRUE) {
+    $this->em->remove($entity);
+    if ($autoFlush === TRUE) {
+      $this->flush();
+    }
   }
 
   public function flush() {

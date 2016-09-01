@@ -31,7 +31,7 @@ class Instance implements JsonSerializable
   public function getName() { return $this->name; }
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", nullable=true)
    */
   protected $description;
 
@@ -103,6 +103,20 @@ class Instance implements JsonSerializable
       "admin" => $this->admin,
       "topLevelGroups" => array_map(function($group) { return $group->getId(); }, $this->getTopLevelGroups()->toArray())
     ];
+  }
+
+  public static function createInstance(string $name, bool $isOpen, User $admin, string $description = NULL) {
+    $instance = new Instance;
+    $instance->name = $name;
+    $instance->description = $description;
+    $instance->isOpen = $isOpen;
+    $instance->isAllowed = TRUE; //@todo - find out who should set this and how
+    $now = new \DateTime;
+    $instance->createdAt = $now;
+    $instance->updatedAt = $now;
+    $instance->admin = $admin;
+    $instance->licences = new ArrayCollection;
+    return $instance;
   }
 
 }
