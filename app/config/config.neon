@@ -14,12 +14,15 @@ parameters:
 
   fileServer:
     address: http://195.113.17.8:9999
-    username: ""
-    password: ""
+    username: "re"
+    password: "codex"
     jobConfigFileName: "job-config.yml"
 
   broker:
     address: tcp://195.113.17.8:9658
+
+  monitor:
+    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws
 
 application:
   errorPresenter: V1:ApiError
