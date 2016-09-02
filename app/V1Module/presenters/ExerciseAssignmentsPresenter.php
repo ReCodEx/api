@@ -18,34 +18,17 @@ use App\Model\Repository\UploadedFiles;
  */
 class ExerciseAssignmentsPresenter extends BasePresenter {
 
-  /** @var ExerciseAssignments */
-  private $assignments;
+  /** @inject @var ExerciseAssignments */
+  public $assignments;
 
-  /** @var Submissions */
-  private $submissions;
+  /** @inject @var Submissions */
+  public $submissions;
 
-  /** @var UploadedFiles */
-  private $files;
+  /** @inject @var UploadedFiles */
+  public $files;
 
-  /** @var SubmissionHelper */
-  private $submissionHelper;
-
-  /**
-   * @param Submissions $submissions  Submissions repository
-   * @param ExerciseAssignments $assignments  Assignments repository
-   * @param UploadedFiles $files  Uploaded files repository
-   */
-  public function __construct(
-    Submissions $submissions,
-    ExerciseAssignments $assignments,
-    UploadedFiles $files,
-    SubmissionHelper $submissionHelper
-  ) {
-    $this->submissions = $submissions;
-    $this->assignments = $assignments;
-    $this->files = $files;
-    $this->submissionHelper = $submissionHelper;
-  }
+  /** @inject @var SubmissionHelper */
+  public $submissionHelper;
 
   protected function findAssignmentOrFail(string $id) {
     $assignment = $this->assignments->get($id);
@@ -118,6 +101,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
         "submission" => $submission,
         "webSocketChannel" => [
           "id" => $submission->getId(),
+          "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
           "expectedTasksCount" => $submission->getTasksCount()
         ],
       ]);
