@@ -29,4 +29,16 @@ class LoginPresenter extends BasePresenter {
     ]);
   }
 
+  /**
+   * @GET
+   * @LoggedIn
+   */
+  public function actionRefresh() {
+    $user = $this->fetchUserOrThrow('me');
+    $this->sendSuccessResponse([
+      "accessToken" => $this->accessManager->issueToken($user),
+      "user" => $user
+    ]);
+  }
+
 }
