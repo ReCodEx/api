@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
+use App\Model\Helpers\FileServerProxy;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SubmissionEvaluations;
 use App\Model\Repository\ExerciseAssignments;
@@ -18,20 +19,14 @@ use App\Exception\SubmissionEvaluationFailedException;
  */
 class SubmissionsPresenter extends BasePresenter {
 
-  /** @var Submissions */
-  private $submissions;
+  /** @inject @var Submissions */
+  public $submissions;
 
-  /** @var SubmissionEvaluations */
-  private $evaluations;
+  /** @inject @var SubmissionEvaluations */
+  public $evaluations;
 
-  /**
-   * @param Submissions $submissions  Submissions repository
-   * @param SubmissionEvaluations $evaluations  Submission evaluations repository
-   */
-  public function __construct(Submissions $submissions, SubmissionEvaluations $evaluations) {
-    $this->submissions = $submissions;
-    $this->evaluations = $evaluations;
-  }
+  /** @inject @var FileServerProxy */
+  public $fileServer;
 
   /**
    * @param string $id
@@ -65,7 +60,8 @@ class SubmissionsPresenter extends BasePresenter {
     $evaluation = $submission->getEvaluation();
     if (!$evaluation) { // the evaluation must be loaded first
       try {
-        $evaluation = SubmissionEvaluation::loadEvaluation($submission);
+        $result = $this->fileServer->downloadResults($submission->resultsUrl);
+        $evaluation = SubmissionEvaluation::loadEvaluation($submission, $result);
         $this->evaluations->persist($evaluation);
         $this->submissions->persist($submission); // save the new binding
       } catch (SubmissionEvaluationFailedException $e) {
