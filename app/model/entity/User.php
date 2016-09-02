@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use forxer\Gravatar\Gravatar;
 
@@ -14,16 +15,35 @@ class User implements JsonSerializable
 {
     use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+    public function __construct(
+      string $email,
+      string $firstName,
+      string $lastName,
+      string $degreesBeforeName,
+      string $degreesAfterName,
+      Role $role,
+      Instance $instance
+    ) {
+        $this->instance = $instance;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->degreesBeforeName = $degreesBeforeName;
+        $this->degreesAfterName = $degreesAfterName;
+        $this->email = $email;
+        $this->avatarUrl = Gravatar::image($email, 200, "retro", "g", "png", true, false);
+        $this->isVerified = FALSE;
+        $this->isAllowed = TRUE;
+        $this->memberships = new ArrayCollection;
+        $this->exercises = new ArrayCollection;
+        $this->role = $role;
+    }
+
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
      * @ORM\GeneratedValue(strategy="UUID")
      */
     protected $id;
-
-    public function getId() {
-      return $this->id;
-    }
 
     /**
      * @ORM\Column(type="string")
@@ -59,8 +79,6 @@ class User implements JsonSerializable
      */
     protected $avatarUrl;
 
-    public function getAvatarUrl() { return $this->avatarUrl; }
-
     /**
      * @ORM\Column(type="boolean")
      */
@@ -79,60 +97,94 @@ class User implements JsonSerializable
     protected $instance;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Group", inversedBy="students")
-     * @ORM\JoinTable(name="group_student")
+     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"persist"})
      */
-    protected $studentOf;
+    protected $memberships;
+
+    protected function findMembership(Group $group) {
+      $filter = Criteria::create()->where(Criteria::expr()->eq("group", $group));
+      $filtered = $this->memberships->matching($filter);
+      if ($filtered->isEmpty()) {
+        return NULL;
+      }
+
+      if ($filtered->count() > 1) {
+        // @todo: handle this situation, when this user is double member of the same group
+      }
+
+      return $filtered->first();
+    }
+
+    protected function addMembership(Group $group, string $type) {
+      $membership = new GroupMembership($group, $this, $type, GroupMembership::STATUS_ACTIVE);
+      $this->memberships->add($membership);
+      $group->addMembership($membership);
+    }
+
+    protected function makeMemberOf(Group $group, string $type) {
+      $membership = $this->findMembership($group);
+      if ($membership === NULL) {
+        $this->addMembership($group, $type);
+      } else {
+        $membership->setType($type);
+        $membership->setStatus(GroupMembership::STATUS_ACTIVE);
+      }
+    }
+
+    protected function removeMemberOf(Group $group, $type = NULL) {
+      $membership = $this->findMembership($group);
+      if (!$membership || ($type !== NULL && $membership->type !== NULL)) {
+        // @todo: Handle the situation, when the user is not the member of this
+        // group or is not member of the particular type
+        return;
+      }
+
+      $this->memberships->remove($membership);
+      $group->removeMembership($membership);
+    }
+
+    protected function getGroups(string $type) {
+      $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+      return $this->memberships->matching($filter)->map(
+        function ($membership) {
+          return $membership->getGroup();
+        }
+      );
+    }
 
     public function getGroupsAsStudent() {
-        return $this->studentOf;
+      return $this->getGroups(GroupMembership::TYPE_STUDENT);
     }
 
     public function makeStudentOf(Group $group) {
-      $this->studentOf->add($group);
-      $group->addStudent($this);
+      $this->makeMemberOf($group, GroupMembership::TYPE_STUDENT);
     }
 
     public function removeStudentFrom(Group $group) {
-      $this->studentOf->removeElement($group);
-      $group->removeStudent($this);
+      $this->removeMemberOf($group, GroupMembership::TYPE_STUDENT);
     }
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Group", inversedBy="supervisors")
-     * @ORM\JoinTable(name="group_supervisor")
-     */
-    protected $supervisorOf;
-
     public function getGroupsAsSupervisor() {
-        return $this->supervisorOf;
+      return $this->getGroups(GroupMembership::TYPE_SUPERVISOR);
     }
 
     public function makeSupervisorOf(Group $group) {
-      $this->supervisorOf->add($group);
-      $group->addSupervisor($this);
+      $this->makeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
     }
 
     public function removeSupervisorFrom(Group $group) {
-      $this->supervisorOf->removeElement($group);
-      $group->removeSupervisor($this);
+      $this->removeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
     }
-    
+
     /**
      * @ORM\OneToMany(targetEntity="Exercise", mappedBy="author")
      */
     protected $exercises;
-    
-    public function getUsersExercises() {
-      return $this->exercises;
-    }
 
     /**
      * @ORM\ManyToOne(targetEntity="Role")
      */
     protected $role;
-
-    public function getRole() { return $this->role; }
 
     public function jsonSerialize() {
       return [
@@ -149,41 +201,9 @@ class User implements JsonSerializable
         "isVerified" => $this->isVerified,
         "role" => $this->role,
         "groups" => [
-          "studentOf" => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsStudent()->toArray()),
-          "supervisorOf" => array_map(function ($group) { return $group->getId(); }, $this->getGroupsAsSupervisor()->toArray())
+          "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->toArray(),
+          "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->toArray()
         ]
       ];
-    }
-  
-    /**
-     * The name of the user
-     * @param  string $name   Name of the user     
-     * @param  string $email  Email address of the user     
-     * @return User
-     */
-    public static function createUser(
-      string $email,
-      string $firstName,
-      string $lastName,
-      string $degreesBeforeName,
-      string $degreesAfterName,
-      Role $role,
-      Instance $instance
-    ) {
-        $user = new User;
-        $user->instance = $instance;
-        $user->firstName = $firstName;
-        $user->lastName = $lastName;
-        $user->degreesBeforeName = $degreesBeforeName;
-        $user->degreesAfterName = $degreesAfterName;
-        $user->email = $email;
-        $user->avatarUrl = Gravatar::image($email, 45, "retro", "g", "jpg", true, false);
-        $user->isVerified = FALSE;
-        $user->isAllowed = TRUE;
-        $user->studentOf = new ArrayCollection;
-        $user->supervisorOf = new ArrayCollection;
-        $user->exercises = new ArrayCollection;
-        $user->role = $role;
-        return $user;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 
 /**
@@ -69,20 +70,53 @@ class Group implements JsonSerializable
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="User", mappedBy="studentOf")
+   * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="group", cascade={"persist"})
    */
-  protected $students;
+  protected $memberships;
+
+  public function addMembership(GroupMembership $membership) {
+    $this->memberships->add($membership);
+  }
+
+  public function removeMembership(GroupMembership $membership) {
+    $this->memberships->remove($membership);
+  }
+
+  protected function getActiveMemberships(string $type) {
+    $filter = Criteria::create()
+                ->where(Criteria::expr()->eq("type", $type))
+                ->andWhere(Criteria::expr()->eq("status", GroupMembership::STATUS_ACTIVE));
+
+    return $this->memberships->matching($filter);
+  }
+
+  protected function getActiveMembers(string $type) {
+    return $this->getActiveMemberships($type)->map(
+      function(GroupMembership $membership) {
+        return $membership->getUser();
+      }
+    );
+  }
+
+  public function getStudents() {
+    return $this->getActiveMembers(GroupMembership::TYPE_STUDENT);
+  }
 
   public function isStudentOf(User $user) {
-    return $this->students->contains($user);
+    return $this->getStudents()->contains($user);
   }
 
-  public function addStudent(User $user) {
-    $this->students->add($user);
+  public function getSupervisors() {
+    return $this->getActiveMembers(GroupMembership::TYPE_SUPERVISOR);
   }
 
-  public function removeStudent(User $user) {
-    $this->students->removeElement($user);
+  public function isSupervisorOf(User $user) {
+    return $this->getSupervisors()->contains($user);
+  }
+
+  public function isMemberOf(User $user) {
+    // @todo: this could be more effective
+    return $this->isStudentOf($user) || $this->isSupervisorOf($user);
   }
 
   /**
@@ -96,27 +130,6 @@ class Group implements JsonSerializable
 
   public function makeAdmin(User $user) {
     $this->admin = $user;
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="User", mappedBy="supervisorOf")
-   */
-  protected $supervisors;
-
-  public function isSupervisorOf(User $user) {
-    return $this->supervisors->contains($user);
-  }
-
-  public function addSupervisor(User $user) {
-    $this->supervisors->add($user);
-  }
-
-  public function removeSupervisor(User $user) {
-    $this->supervisors->removeElement($user);
-  }
-
-  public function isMemberOf(User $user) {
-    return $this->isStudentOf($user) || $this->isSupervisorOf($user);
   }
 
   /**
@@ -137,12 +150,11 @@ class Group implements JsonSerializable
   }
 
   public function getBestSolutions(User $user): array {
-    return array_map(
+    return $this->assignments->map(
       function ($assignment) use ($user) {
         return $assignment->getBestSolution($user);
-      },
-      $this->assignments->toArray()
-    );
+      }
+    )->toArray();
   }
 
   public function getCompletedAssignmentsByStudent(User $student) {
@@ -202,12 +214,12 @@ class Group implements JsonSerializable
       "name" => $this->name,
       "description" => $this->description,
       "adminId" => $this->admin->getId(),
-      "supervisors" => $this->supervisors->toArray(),
-      "students" => $this->students->toArray(), // @todo: Only IDs
+      "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->toArray(),
+      "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->toArray(),
       "instanceId" => $instance ? $instance->getId() : NULL,
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      "childGroups" => array_map(function($group) { return $group->getId(); }, $this->childGroups->toArray()),
+      "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->toArray(),
       "assignments" => $this->getAssignmentsIds()
     ];
   }
@@ -216,8 +228,7 @@ class Group implements JsonSerializable
     $group = new Group;
     $group->name = $name;
     $group->description = $description;
-    $group->students = new ArrayCollection;
-    $group->supervisors = new ArrayCollection;
+    $group->memberships = new ArrayCollection;
     return $group;
   }
 }

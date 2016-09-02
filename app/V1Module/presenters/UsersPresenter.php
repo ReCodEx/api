@@ -70,7 +70,7 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("Such instance does not exist.");
     }
 
-    $user = User::createUser(
+    $user = new User(
       $email,
       $req->getPost("firstName"),
       $req->getPost("lastName"),
@@ -142,7 +142,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionExercises(string $id) {
     $user = $this->findUserOrThrow($id);
-    $this->sendSuccessResponse($user->getUsersExercises()->toArray());
+    $this->sendSuccessResponse($user->getExercises()->toArray());
   }
 
 }

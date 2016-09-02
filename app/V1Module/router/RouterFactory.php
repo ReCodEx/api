@@ -24,8 +24,8 @@ class RouterFactory {
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
     $router[] = new PreflightRoute($prefix, "Default:preflight");
-    $router[] = new GetRoute("$prefix/login", "Login:default");
 
+    self::createAuthRoutes($router, $prefix);
     self::createCommentsRoutes($router, "$prefix/comments");
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
@@ -36,6 +36,11 @@ class RouterFactory {
     self::createUsersRoutes($router, "$prefix/users");
 
     return $router;
+  }
+
+  private static function createAuthRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix/login", "Login:default");
+    $router[] = new GetRoute("$prefix/login/refresh", "Login:refresh");
   }
 
   private static function createCommentsRoutes($router, $prefix) {
