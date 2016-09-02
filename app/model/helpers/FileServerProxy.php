@@ -2,11 +2,17 @@
 
 namespace App\Model\Helpers;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
-use Doctrine\Common\Collections\ArrayCollection;
-use GuzzleHttp\Client;
+
 use App\Exception\SubmissionFailedException;
+use App\Exception\SubmissionEvaluationFailedException;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
+use ZipArchive;
 
 /**
  * @author  Šimon Rozsíval <simon@rozsival.com>
@@ -40,7 +46,11 @@ class FileServerProxy {
    * @return  string        Contents of the file
    */
   public function downloadResults(string $url) {
-    $response = $this->client->request("GET", $url);
+    try {
+      $response = $this->client->request("GET", $url);
+    } catch (ClientException $e) {
+      throw new SubmissionEvaluationFailedException("Results are not available.");
+    }
     $zip = $response->getBody();
     return $this->getResultYmlContent($zip);
   }

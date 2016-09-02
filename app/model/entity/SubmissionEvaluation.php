@@ -11,11 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\ClientException;
 
-use ZipArchive;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -107,9 +103,10 @@ class SubmissionEvaluation implements JsonSerializable
   /**
    * Loads and processes the results of the submission.
    * @param  Submission $submission   The submission
+   * @param  string     $resultYmlContent   Results YML raw file content
    * @return SubmissionEvaluation
    */
-  public static function loadEvaluation(Submission $submission) {
+  public static function loadEvaluation(Submission $submission, $resultYmlContent) {
     if (!$submission->resultsUrl) {
       throw new SubmissionEvaluationFailedException("The results archive cannot be located.");
     }
@@ -124,7 +121,6 @@ class SubmissionEvaluation implements JsonSerializable
     $jobConfig = $submission->getParsedJobConfig();
     
     try {
-      $resultYmlContent = self::getResultYmlContent($zipFileContent);
       $tasksResults = Yaml::parse($resultYmlContent);
     } catch (\Exception $e) { // @todo: Catch specific exceptions (unzipping and parsing)
       throw new SubmissionEvaluationFailedException("The results received from the file server are malformed.");
@@ -190,43 +186,6 @@ class SubmissionEvaluation implements JsonSerializable
     $entity->testResults = new ArrayCollection;
 
     return $entity;
-  }
-
-  /**
-   * Downloads the contents of a file at the given URL
-   * @param   string $url   URL of the file
-   * @return  string        Contents of the file
-   */
-  private static function downloadResults(string $url) {
-    $client = new Client();
-    $response = $client->request("GET", $url);
-    return $response->getBody();
-  }
-
-  /**
-   * Extracts the contents of the downloaded ZIP file
-   * @param   string $zipFileContent    Content of the zip file
-   * @return  string
-   */
-  private static function getResultYmlContent($zipFileContent) {
-    // the contents must be saved to a tmp file first
-    $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
-    file_put_contents($tmpFile, $zipFileContent);
-    $zip = new ZipArchive;
-    if (!$zip->open($tmpFile)) {
-      throw new SubmissionEvaluationFailedException("Cannot open results from remote file server.");
-    }
-
-    $yml = $zip->getFromName("result/result.yml");
-    if ($yml === FALSE) {
-      throw new SubmissionEvaluationFailedException("Results YAML file is missing in the archive received from remote FS.");
-    }
-
-    // a bit of a cleanup
-    $zip->close();
-    unlink($tmpFile);
-
-    return $yml;
   }
 
   /**
