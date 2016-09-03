@@ -24,15 +24,19 @@ class TaskConfig {
   }
 
   public function isInitiationTask() {
-    return $this->data["type"] === self::TYPE_INITIATION;
+    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_INITIATION;
   }
 
   public function isExecutionTask() {
-    return $this->data["type"] === self::TYPE_EXECUTION;
+    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_EXECUTION;
+  }
+
+  public function getAsExecutionTask() {
+    return new ExecutionTaskConfig($this->data);
   }
 
   public function isEvaluationTask() {
-    return $this->data["type"] === self::TYPE_EVALUATION;
+    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_EVALUATION;
   }
 
 
@@ -42,21 +46,6 @@ class TaskConfig {
    */
   public function getTestId() {
     return isset($this->data["test-id"]) ? $this->data["test-id"] : NULL;
-  }
-
-  /**
-   * Get the configured limits for a specific hardware group.
-   * @param  string $hardwareGroupId Hardware group ID
-   * @return Limits Limits for the specified hardware group
-   */
-  public function getLimits($hardwareGroupId): array {
-    foreach ($this->data["sandbox"]["limits"] as $limits) {
-      if ($limits["hw-group-id"] === $hardwareGroupId) {
-        return new Limits($limits["hw-group-id"]);
-      }
-    }
-
-    return NULL;
   }
 
 }

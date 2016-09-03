@@ -39,11 +39,11 @@ class StatsInterpretation {
 
 
   public function getUsedMemoryRatio(): float {
-    return floatval($stats->getUsedMemory() / floatval($limits->getMemoryLimit());
+    return floatval($this->stats->getUsedMemory()) / floatval($this->limits->getMemoryLimit());
   }
 
   public function getUsedTimeRatio(): float {
-    return floatval($stats->getUsedTime() / floatval($limits->getTimeLimit());
+    return floatval($this->stats->getUsedTime()) / floatval($this->limits->getTimeLimit());
   }
 
 }

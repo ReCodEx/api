@@ -40,8 +40,9 @@ class TestResult {
     $this->executionResult = $executionResult;
     $this->evaluationResult = $evaluationResult;
     $this->status = self::calculateStatus($executionResult->getStatus(), $evaluationResult->getStatus());
+    $this->stats = $executionResult->getStats();
     $this->limits = $config->getLimits($hardwareGroupId);
-    $this->statsInterpretation = new StatsInterpretation($this->stats $this->limits);
+    $this->statsInterpretation = new StatsInterpretation($this->stats, $this->limits);
   }
 
 
@@ -51,7 +52,7 @@ class TestResult {
    * @param   string $resultStatus  Next status
    * @return  string Status of the reduced test tasks" statuses
    */
-  public static function calcluateStatus(string $prevStatus, string $resultStatus): string {
+  public static function calculateStatus(string $prevStatus, string $resultStatus): string {
     if ($prevStatus === self::STATUS_OK) {
       return $resultStatus; // === "OK" | "SKIPPED" | "FAILED"
     } else if ($resultStatus === self::STATUS_OK) {

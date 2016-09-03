@@ -16,14 +16,13 @@ class TestConfig {
   /** @var Task The task which defines the evaluation part of the test */
   private $evaluationTask;
 
-  public function __construct(string $id, Limits $limits, array $tasks) {
+  public function __construct(string $id, array $tasks) {
     $this->id = $id;
-    $this->limits = $limits;
     $this->tasks = $tasks;
 
     foreach ($tasks as $task) {
       if ($task->isExecutionTask()) {
-        $this->executionTask = $task;
+        $this->executionTask = $task->getAsExecutionTask();
       } else if ($task->isEvaluationTask()) {
         $this->evaluationTask = $task;
       }
@@ -34,16 +33,20 @@ class TestConfig {
     }
   }
 
+  public function getId() {
+    return $this->id;
+  }
+
   public function getLimits($hardwareGroupId) {
     return $this->getExecutionTask()->getLimits($hardwareGroupId);
   }
 
   public function getExecutionTask() {
-    return $htis->executionTask;
+    return $this->executionTask;
   }
 
   public function getEvaluationTask() {
-    return $htis->evaluationTask;
+    return $this->evaluationTask;
   }
 
 }

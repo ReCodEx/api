@@ -9,12 +9,12 @@ use Symfony\Component\Yaml\Exception\ParseException;
 class Loader {
     
   /**
-   * @return string YAML config for the evaluation server for this submission (updated job-id)
+   * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
   public static function getJobConfig(Submission $submission): JobConfig {
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
     $jobConfig = self::getParsedJobConfig($submission->getId(), $path);
-    return Yaml::dump($parsedConfig);
+    return $jobConfig;
   }
 
   /** @var string Job config file contents cache */

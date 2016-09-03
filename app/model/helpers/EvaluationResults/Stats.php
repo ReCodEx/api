@@ -19,8 +19,8 @@ class Stats {
    * @param  Limits $limits The configured limits
    * @return boolean
    */
-  public function doesMeetAllLimits(Limits $limits): bool {
-    return $this->isTimeOK($limits->getTimeLimit()) && $this->isMemmoryOK($limits->getMemmoryLimit());
+  public function doesMeetAllCriteria(Limits $limits): bool {
+    return $this->isTimeOK($limits->getTimeLimit()) && $this->isMemoryOK($limits->getMemoryLimit());
   }
 
   /**
@@ -35,7 +35,11 @@ class Stats {
    * Returns the value of the judge output
    * @return float
    */
-  public function getJudgeOutput(): float {
+  public function getJudgeOutput() {
+    if (!$this->hasJudgeOutput()) {
+      return NULL;
+    }
+
     return floatval(strtok($this->data["judge_output"], " "));
   }
 
@@ -49,7 +53,7 @@ class Stats {
    * @return boolean
    */
   public function isTimeOK(float $secondsLimit): bool {
-    return $this->getUsedTime() < $secondsLimit;
+    return $this->getUsedTime() <= $secondsLimit;
   }
 
   public function getUsedMemory(): int {
@@ -62,7 +66,7 @@ class Stats {
    * @return boolean
    */
   public function isMemoryOK(int $bytesLimit): bool {
-    return $this->getUsedMemory() < $bytesLimit;
+    return $this->getUsedMemory() <= $bytesLimit;
   }
 
   public function getExitCode(): int {

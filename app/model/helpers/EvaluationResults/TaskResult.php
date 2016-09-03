@@ -25,12 +25,16 @@ class TaskResult {
     return $this->data["status"];
   }
 
+  public function isOK() {
+    return $this->getStatus() === self::STATUS_OK;
+  }
+
   /**
    * Get the score of this result
    * @return [type] [description]
    */
   public function getScore(): float {
-    return $this->getStatus() === self::STATUS_OK ? self::MAX_SCORE : self::MIN_SCORE;
+    return $this->isOK() ? self::MAX_SCORE : self::MIN_SCORE;
   }
 
 }

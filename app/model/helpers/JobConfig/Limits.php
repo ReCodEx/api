@@ -23,8 +23,8 @@ class Limits {
    * Returns the time limit in milliseconds
    * @return int Number of milliseconds
    */
-  public function getTimeLimit(): int {
-    return $this->data["time"];
+  public function getTimeLimit(): float {
+    return floatval($this->data["time"]);
   }
 
   /**

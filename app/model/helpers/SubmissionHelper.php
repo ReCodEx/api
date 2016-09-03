@@ -2,6 +2,7 @@
 
 namespace App\Model\Helpers;
 
+use App\Model\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\Submission;
 
 class SubmissionHelper {
@@ -19,26 +20,28 @@ class SubmissionHelper {
 
   /**
    * Uploads the files to the file server and initiates evaluation on backend.
-   * @param Submission  The submission to evaluate
+   * @param JobConfig  The submission to evaluate
    * @return bool       True when the submission was accepted by the evaluation server, otherwise false.
    */
-  public function initiateEvaluation(Submission $submission) {
+  public function initiateEvaluation(JobConfig $jobConfig, array $files, string $hardwareGroup) {
     list($archiveUrl, $resultsUrl) = $this->fileServer->sendFiles(
-      $submission->getId(),
-      $submission->getJobConfig(),
-      $submission->getFiles()->toArray()
+      $jobConfig->getJobId(),
+      (string) $jobConfig,
+      $files
     );
     
-    // save the results URL to this entity
-    $submission->setResultsUrl($resultsUrl);
-    $hardwareGroup = $submission->getHardwareGroup();
-
-    return $this->broker->startEvaluation(
-      $submission->getId(),
-      $submission->getHardwareGroup(),
+    $evaluationStarted = $this->broker->startEvaluation(
+      $jobConfig->getJobId(),
+      $hardwareGroup,
       $archiveUrl,
       $resultsUrl
     );
+
+    if ($evaluationStarted) {
+      return $resultsUrl;
+    } else {
+      return NULL;
+    }
   }
 
 

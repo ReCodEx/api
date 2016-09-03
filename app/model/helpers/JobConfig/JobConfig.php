@@ -68,7 +68,8 @@ class JobConfig {
       $this->tests = array_map(
         function ($tasks) {
           return new TestConfig(
-            // @todo
+            $tasks[0]->getTestId(),
+            $tasks
           );
         },
         $tasksByTests
