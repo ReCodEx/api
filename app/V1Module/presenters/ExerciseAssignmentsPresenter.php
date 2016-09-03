@@ -9,6 +9,7 @@ use App\Exception\SubmissionFailedException;
 
 use App\Model\Entity\Submission;
 use App\Model\Helpers\SubmissionHelper;
+use App\Model\Helpers\JobConfig;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -87,22 +88,27 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $note = $req->getPost("note");
     $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $hwGroup, $files);
 
-    // persist all the data in the database
+    // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
-    foreach ($files as $file) {
-      $this->files->persist($file);
-    }
+    $jobConfig = JobConfig\Loader::getJobConfig($submission);
 
-    $evaluationHasStarted = $this->submissionHelper->initiateEvaluation($submission);
-    if($evaluationHasStarted === TRUE) {
+    $resultsUrl = $this->submissionHelper->initiateEvaluation(
+      $jobConfig,
+      $submission->getFiles()->toArray(),
+      $hwGroup
+    );
+
+    if($resultsUrl !== NULL) {
+      $submission->setResultsUrl($resultsUrl);
       $this->submissions->persist($submission);
+      foreach ($files as $file) { $this->files->persist($file); }
       $this->files->flush();
       $this->sendSuccessResponse([
         "submission" => $submission,
         "webSocketChannel" => [
-          "id" => $submission->getId(),
+          "id" => $jobConfig->getJobId(),
           "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
-          "expectedTasksCount" => $submission->getTasksCount()
+          "expectedTasksCount" => $jobConfig->getTasksCount()
         ],
       ]);
     } else {

@@ -16,6 +16,27 @@ class ExerciseAssignment implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+  public function __construct(
+    string $name,
+    string $description,
+    DateTime $firstDeadline,
+    int $maxPointsBeforeFirstDeadline,
+    DateTime $secondDeadline,
+    int $maxPointsBeforeSecondDeadline,
+    Exercise $exercise,
+    Group $group
+  ) {
+    $this->name = $name;
+    $this->description = $description;
+    $this->exercise = $exercise;
+    $this->group = $group;
+    $this->firstDeadline = $firstDeadline;
+    $this->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
+    $this->secondDeadline = $secondDeadline;
+    $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
+    $this->submissions = new ArrayCollection;
+  }
+
   /**
     * @ORM\Id
     * @ORM\Column(type="guid")
@@ -37,33 +58,6 @@ class ExerciseAssignment implements JsonSerializable
     * @ORM\Column(type="string")
     */
   protected $jobConfigFilePath;
-
-  /** @var string Job config file contents cache */
-  private $jobConfig = NULL;
-
-  /**
-   * @throws MalformedJobConfigException
-   * @return string YAML config file contents
-   */
-  public function getJobConfig(): string {
-    if ($this->jobConfig === NULL) {
-      $configFileName = realpath($this->jobConfigFilePath);
-      if ($configFileName === FALSE) {
-        throw new MalformedJobConfigException("The configuration file does not exist on the server.");
-      }
-
-      $this->jobConfig = file_get_contents($configFileName);
-      if ($this->jobConfig === FALSE) {
-        throw new MalformedJobConfigException("Cannot open the configuration file for reading.");
-      }
-    }
-
-    return $this->jobConfig;
-  }
-
-  /**
-   *
-   */
 
   /**
     * @ORM\Column(type="text")
@@ -194,22 +188,4 @@ class ExerciseAssignment implements JsonSerializable
     ];
   }
 
-  /**
-    * The name of the user
-    * @param  string $name   Name of the exercise
-    * @return ExerciseAssignment
-    */
-  public static function createExerciseAssignment($name, $description, $firstDeadline, $maxPointsBeforeFirstDeadline, $secondDeadline, $maxPointsBeforeSecondDeadline, Exercise $exercise, Group $group) {
-    $entity = new ExerciseAssignment;
-    $entity->name = $name;
-    $entity->description = $description;
-    $entity->exercise = $exercise;
-    $entity->group = $group;
-    $entity->firstDeadline = $firstDeadline;
-    $entity->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
-    $entity->secondDeadline = $secondDeadline;
-    $entity->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
-    $entity->submissions = new ArrayCollection;
-    return $entity;
-  }
 }

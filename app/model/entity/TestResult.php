@@ -5,7 +5,7 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use Nette\Utils\Json;
+use App\Model\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
@@ -13,6 +13,25 @@ use Nette\Utils\Json;
 class TestResult implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
+
+  public function __construct(
+    SubmissionEvaluation $evaluation,
+    ER\TestResult $result
+  ) {
+    $statsInterpret = $result->getStatsInterpretation();
+    $this->submissionEvaluation = $evaluation;
+    $this->testName = $result->getId();
+    $this->status = $result->getStatus();
+    $this->score = $result->getScore();
+    $this->exitCode = $result->getStats()->getExitCode();
+    $this->usedMemoryRatio = $statsInterpret->getUsedMemoryRatio();
+    $this->memoryExceeded = !$statsInterpret->isMemoryOK();
+    $this->usedTimeRatio = $statsInterpret->getUsedTimeRatio();
+    $this->timeExceeded = !$statsInterpret->isTimeOK();
+    $this->message = $result->getStats()->getMessage();
+    $this->judgeOutput = $result->getStats()->getJudgeOutput();
+    $this->stats = (string) $result->getStats();
+  }
 
   /**
    * @ORM\Id
@@ -77,7 +96,7 @@ class TestResult implements JsonSerializable
   protected $stats;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", nullable=true)
    */
   protected $judgeOutput;
 
@@ -92,31 +111,6 @@ class TestResult implements JsonSerializable
       "timeExceeded" => $this->timeExceeded,
       "message" => $this->message
     ];
-  }
-
-  public static function createTestResult(
-    SubmissionEvaluation $evaluation,
-    string $name,
-    string $status,
-    float $score,
-    string $judgeOutput,
-    array $stats,
-    array $limits
-  ) {
-    $result = new TestResult;
-    $result->submissionEvaluation = $evaluation;
-    $result->testName = $name;
-    $result->status = $status;
-    $result->score = $score;
-    $result->exitCode = $stats["exitcode"];
-    $result->usedMemoryRatio = floatval($stats["memory"]) / floatval($limits["memory"]);
-    $result->memoryExceeded = $result->usedMemoryRatio > 1;
-    $result->usedTimeRatio = floatval($stats["time"]) / floatval($limits["time"]);
-    $result->timeExceeded = $result->usedTimeRatio > 1;
-    $result->message = $stats["message"];
-    $result->judgeOutput = $judgeOutput;
-    $result->stats = Json::encode($stats);
-    return $result;
   }
 
 }

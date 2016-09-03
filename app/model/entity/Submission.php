@@ -15,7 +15,6 @@ use App\Exception\MalformedJobConfigException;
 use App\Exception\SubmissionFailedException;
 
 use GuzzleHttp\Exception\RequestException;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
@@ -203,51 +202,4 @@ class Submission implements JsonSerializable
       return $entity;
     }
 
-    private $parsedJobConfig = NULL;
-    private $jobConfig = NULL;
-
-    /**
-     * @throws MalformedJobConfigException
-     * @return array Parsed YAML config with updated job-id
-     */
-    public function getParsedJobConfig(): array {
-      if ($this->parsedJobConfig === NULL) {
-        $jobConfig = $this->exerciseAssignment->getJobConfig();
-
-        try {
-          $parsedConfig = Yaml::parse($jobConfig);
-        } catch (ParseException $e) {
-          throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
-        }
-
-        $parsedConfig["submission"]["job-id"] = $this->getId(); // update the job-id field
-        $this->parsedJobConfig = $parsedConfig; // cache the content of the config so no more parsing is needed
-      }
-
-      return $this->parsedJobConfig;
-    }
-
-    /**
-     * @return string YAML config for the evaluation server for this submission (updated job-id)
-     */
-    public function getJobConfig(): string {
-      if ($this->jobConfig === NULL) {
-        // the config must be first parsed and updated
-        $this->jobConfig = Yaml::dump($this->getParsedJobConfig());
-      }
-
-      return $this->jobConfig;
-    }
-
-    /**
-     * Count the number of tasks from the job config - so we can calculate the progress
-     * of evaluation in the browser
-     */
-    public function getTasksCount() {
-      if ($this->parsedJobConfig === NULL) {
-        $this->parsedJobConfig = $this->getJobConfig();
-      }
-
-      return count($this->parsedJobConfig["tasks"]);
-    }
 }
