@@ -209,11 +209,12 @@ class Group implements JsonSerializable
 
   public function jsonSerialize() {
     $instance = $this->getInstance();
+    $admin = $this->admin;
     return [
       "id" => $this->id,
       "name" => $this->name,
       "description" => $this->description,
-      "adminId" => $this->admin->getId(),
+      "adminId" => $admin ? $this->admin->getId() : NULL,
       "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->toArray(),
       "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->toArray(),
       "instanceId" => $instance ? $instance->getId() : NULL,

@@ -4,6 +4,11 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
+use App\Model\Entity\TestResult;
+use App\Model\Helpers\FileServerProxy;
+use App\Model\Helpers\EvaluationResults;
+use App\Model\Helpers\JobConfig;
+use App\Model\Helpers\SimpleScoreCalculator;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SubmissionEvaluations;
 use App\Model\Repository\ExerciseAssignments;
@@ -18,20 +23,14 @@ use App\Exception\SubmissionEvaluationFailedException;
  */
 class SubmissionsPresenter extends BasePresenter {
 
-  /** @var Submissions */
-  private $submissions;
+  /** @inject @var Submissions */
+  public $submissions;
 
-  /** @var SubmissionEvaluations */
-  private $evaluations;
+  /** @inject @var SubmissionEvaluations */
+  public $evaluations;
 
-  /**
-   * @param Submissions $submissions  Submissions repository
-   * @param SubmissionEvaluations $evaluations  Submission evaluations repository
-   */
-  public function __construct(Submissions $submissions, SubmissionEvaluations $evaluations) {
-    $this->submissions = $submissions;
-    $this->evaluations = $evaluations;
-  }
+  /** @inject @var FileServerProxy */
+  public $fileServer;
 
   /**
    * @param string $id
@@ -65,16 +64,40 @@ class SubmissionsPresenter extends BasePresenter {
     $evaluation = $submission->getEvaluation();
     if (!$evaluation) { // the evaluation must be loaded first
       try {
-        $evaluation = SubmissionEvaluation::loadEvaluation($submission);
-        $this->evaluations->persist($evaluation);
-        $this->submissions->persist($submission); // save the new binding
+        $evaluation = $this->loadEvaluation($submission);
       } catch (SubmissionEvaluationFailedException $e) {
         // the evaluation is probably not ready yet
         throw new NotFoundException("Evaluation is not available yet.");
       }
+
+      $this->evaluations->persist($evaluation);
+      $this->submissions->persist($submission);
     }
 
     $this->sendSuccessResponse($submission);
+  }
+
+  private function loadEvaluation(Submission $submission) {
+    $yml = $this->fileServer->downloadResults($submission->resultsUrl);
+    $jobConfig = JobConfig\Loader::getJobConfig($submission);
+    $results = EvaluationResults\Loader::parseResults($yml, $jobConfig);
+    $evaluation = new SubmissionEvaluation($submission, $results);
+    if (!$results->hasEvaluationFailed()) {
+      $scores = []; 
+      foreach ($results->getTestsResults($submission->getHardwareGroup()) as $result) {
+        $evaluation->addTestResult(new TestResult($evaluation, $result));
+        $scores[$result->getId()] = $result->getScore();
+      }
+
+      $calculator = new SimpleScoreCalculator($submission->getExerciseAssignment()->getScoreConfig());
+      $score = $calculator->computeScore($scores);
+      $evaluation->setScore($score);
+      $evaluation->setPoints($score * $submission->getMaxPoints());
+    } else {
+      $evaluation->setScore(0);
+    }
+
+    return $evaluation;
   }
 
 }

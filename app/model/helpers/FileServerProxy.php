@@ -2,11 +2,17 @@
 
 namespace App\Model\Helpers;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
-use Doctrine\Common\Collections\ArrayCollection;
-use GuzzleHttp\Client;
+
 use App\Exception\SubmissionFailedException;
+use App\Exception\SubmissionEvaluationFailedException;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
+use ZipArchive;
 
 /**
  * @author  Šimon Rozsíval <simon@rozsival.com>
@@ -17,19 +23,62 @@ class FileServerProxy {
   private $remoteServerAddress;
 
   /** @var string */
-  private $username;
-
-  /** @var string */
-  private $password;
-
-  /** @var string */
   private $jobConfigFileName;
 
+  /** @var Client */
+  private $client;
+
   public function __construct(array $config) {
-    $this->remoteServerAddress = $config['address'];
-    $this->username = $config['username'];
-    $this->password = $config['password'];
-    $this->jobConfigFileName = $config['jobConfigFileName'];
+    $this->remoteServerAddress = $config["address"];
+    $this->jobConfigFileName = $config["jobConfigFileName"];
+    $this->client = new Client([
+      "base_uri" => $config["address"],
+      "auth" => [
+        $config["username"],
+        $config["password"]
+      ]
+    ]);
+  }
+
+  /**
+   * Downloads the contents of a file at the given URL
+   * @param   string $url   URL of the file
+   * @return  string        Contents of the file
+   */
+  public function downloadResults(string $url) {
+    try {
+      $response = $this->client->request("GET", $url);
+    } catch (ClientException $e) {
+      throw new SubmissionEvaluationFailedException("Results are not available.");
+    }
+    $zip = $response->getBody();
+    return $this->getResultYmlContent($zip);
+  }
+
+  /**
+   * Extracts the contents of the downloaded ZIP file
+   * @param   string $zipFileContent    Content of the zip file
+   * @return  string
+   */
+  private function getResultYmlContent($zipFileContent) {
+    // the contents must be saved to a tmp file first
+    $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
+    file_put_contents($tmpFile, $zipFileContent);
+    $zip = new ZipArchive;
+    if (!$zip->open($tmpFile)) {
+      throw new SubmissionEvaluationFailedException("Cannot open results from remote file server.");
+    }
+
+    $yml = $zip->getFromName("result/result.yml");
+    if ($yml === FALSE) {
+      throw new SubmissionEvaluationFailedException("Results YAML file is missing in the archive received from remote FS.");
+    }
+
+    // a bit of a cleanup
+    $zip->close();
+    unlink($tmpFile);
+
+    return $yml;
   }
 
   /**
@@ -42,9 +91,11 @@ class FileServerProxy {
     $filesToSubmit = $this->prepareFiles($jobConfig, $files);
 
     try {
-      $client = new Client([ "base_uri" => $this->remoteServerAddress ]);
-      $response = $client->request("POST", "/submissions/$submissionId",
-        [ "multipart" => $filesToSubmit, "auth" => [ $this->username, $this->password ] ]);
+      $response = $this->client->request(
+        "POST",
+        "/submissions/$submissionId",
+        [ "multipart" => $filesToSubmit ]
+      );
 
       if ($response->getStatusCode() === 200) {
         try {

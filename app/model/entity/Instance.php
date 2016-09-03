@@ -21,14 +21,10 @@ class Instance implements JsonSerializable
    */
   protected $id;
 
-  public function getId() { return $this->id; }
-
   /**
    * @ORM\Column(type="string")
    */
   protected $name;
-
-  public function getName() { return $this->name; }
 
   /**
    * @ORM\Column(type="string", nullable=true)
@@ -65,13 +61,9 @@ class Instance implements JsonSerializable
    */
   protected $licences;
 
-  public function getLicences() {
-    return $this->licences;
-  }
-
   public function getValidLicences() {
     return $this->licences->filter(function ($licence) {
-      return $licence->isValid === TRUE && $licence->validUntil > new \DateTime;
+      return $licence->isValid();
     });
   }
 
