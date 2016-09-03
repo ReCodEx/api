@@ -21,14 +21,10 @@ class Instance implements JsonSerializable
    */
   protected $id;
 
-  public function getId() { return $this->id; }
-
   /**
    * @ORM\Column(type="string")
    */
   protected $name;
-
-  public function getName() { return $this->name; }
 
   /**
    * @ORM\Column(type="string")
@@ -65,13 +61,9 @@ class Instance implements JsonSerializable
    */
   protected $licences;
 
-  public function getLicences() {
-    return $this->licences;
-  }
-
   public function getValidLicences() {
     return $this->licences->filter(function ($licence) {
-      return $licence->isValid === TRUE && $licence->validUntil > new \DateTime;
+      return $licence->isValid();
     });
   }
 
@@ -98,10 +90,14 @@ class Instance implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "isOpen" => $this->isOpen,
       "isAllowed" => $this->isAllowed,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "admin" => $this->admin,
-      "topLevelGroups" => array_map(function($group) { return $group->getId(); }, $this->getTopLevelGroups()->toArray())
+      "topLevelGroups" => $this->getTopLevelGroups()->map(
+        function($group) {
+          return $group->getId();
+        }
+      )->toArray()
     ];
   }
 
