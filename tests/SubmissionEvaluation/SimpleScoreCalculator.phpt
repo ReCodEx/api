@@ -23,21 +23,16 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     if ($scoreConfig === NULL) {
       $scoreConfig = $this->scoreConfig;
     }
-    $testResults = new ArrayCollection;
-
+    $scores = [];
     for ($i = 0; $i < count($scoreList); $i++) {
-      $tr = new TestResult;
-      $tr->setTestName($this->testNames[$i]);
-      $tr->setScore($scoreList[$i]);
-      $testResults->add($tr);
+      $scores[$this->testNames[$i]] = $scoreList[$i];
     }
-    $calc = new SimpleScoreCalculator;
-    return $calc->computeScore($scoreConfig, $testResults);
+    $calc = new SimpleScoreCalculator($scoreConfig);
+    return $calc->computeScore($scores);
   }
 
   private function isScoreConfigValid($scoreConfig) {
-    $calc = new SimpleScoreCalculator;
-    return $calc->isScoreConfigValid($scoreConfig);
+    return SimpleScoreCalculator::isScoreConfigValid($scoreConfig);
   }
 
   public function testInvalidYamlScoreConfig() {
