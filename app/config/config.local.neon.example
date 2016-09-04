@@ -1,3 +1,24 @@
+parameters:
+  accessManager:
+    leeway: 60
+    issuer: https://recodex.projekty.ms.mff.cuni.cz
+    audience: https://recodex.projekty.ms.mff.cuni.cz
+    expiration: 86400
+    algorithm: HS256
+
+  fileServer:
+    address: http://195.113.17.8:9999
+    username: "usr"
+    password: "passwd"
+    jobConfigFileName: "job-config.yml"
+
+  broker:
+    address: tcp://195.113.17.8:9658
+
+  monitor:
+    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
+
+
 doctrine:
   host: localhost
   user: recodex-api
