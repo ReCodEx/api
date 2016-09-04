@@ -3,6 +3,7 @@
 namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
+use App\Exception\JobConfigLoadingException;
 
 class JobConfig {
 
@@ -16,6 +17,22 @@ class JobConfig {
    * @param array $data The deserialized data from the config file
    */
   public function __construct(string $jobId, array $data) {
+    if (!isset($data["submission"])) {
+      throw new JobConfigLoadingException("Job config does not contain required section 'submission'.");
+    }
+
+    if (!is_array($data["submission"])) {
+      throw new JobConfigLoadingException("Job config section 'submission' must be an array.");
+    }
+
+    if (!isset($data["tasks"])) {
+      throw new JobConfigLoadingException("Job config does not contain required section 'tasks'.");
+    }
+
+    if (!is_array($data["tasks"])) {
+      throw new JobConfigLoadingException("Job config section 'tasks' must be an array.");
+    }
+
     $this->data = $data;
     $this->data["submission"]["job-id"] = $jobId;
     $this->tasksCount = count($data["tasks"]);

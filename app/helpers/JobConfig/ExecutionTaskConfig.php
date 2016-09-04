@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-
+use App\Exception\JobConfigLoadingException;
 
 class ExecutionTaskConfig extends TaskConfig {
 
@@ -9,6 +9,10 @@ class ExecutionTaskConfig extends TaskConfig {
     
   public function __construct(array $data) {
     parent::__construct($data);
+    if (!isset($data["sandbox"]) || !isset($data["sandbox"]["limits"])) {
+      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for the sandbox.");
+    }
+
     $this->limits = $data["sandbox"]["limits"];
   }
 
@@ -24,7 +28,7 @@ class ExecutionTaskConfig extends TaskConfig {
       }
     }
 
-    return NULL;
+    throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
   }
 
 }
