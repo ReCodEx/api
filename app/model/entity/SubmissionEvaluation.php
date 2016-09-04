@@ -4,8 +4,8 @@ namespace App\Model\Entity;
 
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Exception\NotFoundException;
-use App\Model\Helpers\EvaluationResults\EvaluationResults;
-use App\Model\Helpers\SimpleScoreCalculator;
+use App\Helpers\EvaluationResults\EvaluationResults;
+use App\Helpers\SimpleScoreCalculator;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;

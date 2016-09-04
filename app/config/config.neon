@@ -45,10 +45,10 @@ services:
   - App\Security\Authorizator
 
   # helpers
-  - App\Model\Helpers\BrokerProxy(%broker%)
-  - App\Model\Helpers\FileServerProxy(%fileServer%)
-  - App\Model\Helpers\SubmissionHelper
-  - App\Model\Helpers\UploadedFileStorage(%uploadDir%)
+  - App\Helpers\BrokerProxy(%broker%)
+  - App\Helpers\FileServerProxy(%fileServer%)
+  - App\Helpers\SubmissionHelper
+  - App\Helpers\UploadedFileStorage(%uploadDir%)
 
   # models - repositories
   - App\Model\Repository\Comments()

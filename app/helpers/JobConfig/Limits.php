@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Helpers\JobConfig;
+namespace App\Helpers\JobConfig;
 
 class Limits {
     

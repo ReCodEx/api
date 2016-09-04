@@ -8,7 +8,7 @@ use App\Exception\CannotReceiveUploadedFileException;
 use App\Exception\BadRequestException;
 
 use App\Model\Entity\UploadedFile;
-use App\Model\Helpers\UploadedFileStorage;
+use App\Helpers\UploadedFileStorage;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
 

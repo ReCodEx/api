@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Model\Helpers\EvaluationResults;
+namespace App\Helpers\EvaluationResults;
 
 use App\Exception\SubmissionEvaluationFailedException;
-use App\Model\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 

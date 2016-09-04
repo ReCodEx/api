@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Helpers;
+namespace App\Helpers;
 
 interface IScoreCalculator {
   public function computeScore(array $testResults);

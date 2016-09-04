@@ -3,9 +3,9 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Model\Helpers\EvaluationResults\Stats;
-use App\Model\Helpers\EvaluationResults\StatsInterpretation;
-use App\Model\Helpers\JobConfig\Limits;
+use App\Helpers\EvaluationResults\Stats;
+use App\Helpers\EvaluationResults\StatsInterpretation;
+use App\Helpers\JobConfig\Limits;
 
 class TestStatsInterpretation extends Tester\TestCase
 {

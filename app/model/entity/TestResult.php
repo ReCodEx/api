@@ -1,11 +1,11 @@
-<?php
+s<?php
 
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use App\Model\Helpers\EvaluationResults as ER;
+use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity

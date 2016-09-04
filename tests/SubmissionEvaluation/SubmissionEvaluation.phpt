@@ -4,7 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Model\Entity\SubmissionEvaluation;
-use App\Model\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\JobConfig;
 
 class TestSubmissionEvaluation extends Tester\TestCase
 {

@@ -1,13 +1,25 @@
 <?php
 
-namespace App\Model\Helpers\JobConfig;
+namespace App\Helpers\JobConfig;
 
+use App\Helpers\MemoryCache;
 use App\Model\Entity\Submission;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 class Loader {
     
+  /** @var MemoryCache */
+  private static $cache = NULL;
+
+  public static function getCache() {
+    if (self::$cache = NULL) {
+      self::$cache = new MemoryCache(NULL);
+    }
+
+    return self::$cache;
+  } 
+
   /**
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
@@ -15,28 +27,6 @@ class Loader {
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
     $jobConfig = self::getParsedJobConfig($submission->getId(), $path);
     return $jobConfig;
-  }
-
-  /** @var string Job config file contents cache */
-  private static $cache = NULL;
-
-  /**
-   * [getFromCache description]
-   * @param  string $path    Path of the job config
-   * @param  mixed  $default The value, which will be returned when there is nothing in the cache for the path
-   * @return JobConfig|NULL
-   */
-  private static function loadFromCache(string $path, $default = NULL) {
-    if (!isset(self::$cache[$path])) {
-      return $default;
-    }
-
-    return self::$cache[$path];
-  }
-
-  private static function storeInCache(string $path, JobConfig $data) {
-    self::$cache[$path] = $data; // override any previous data
-    return $data;
   }
 
   /**
@@ -76,11 +66,11 @@ class Loader {
    * @return array        The data structure stored in the config file
    */
   private static function getParsedJobConfig(string $jobId, string $path): JobConfig {
-    $cached = self::loadFromCache($path, NULL);
+    $cached = self::getCache()->load($path);
     if ($cached === NULL) {
       $yml = self::loadConfig($path);
       $jobConfig = self::parseJobConfig($jobId, $yml);
-      $cached = self::storeInCache($path, $jobConfig);
+      $cached = self::getCache()->store($path, $jobConfig);
     }
 
     return $cached;

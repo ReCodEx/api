@@ -8,8 +8,8 @@ use App\Exception\BadRequestException;
 use App\Exception\SubmissionFailedException;
 
 use App\Model\Entity\Submission;
-use App\Model\Helpers\SubmissionHelper;
-use App\Model\Helpers\JobConfig;
+use App\Helpers\SubmissionHelper;
+use App\Helpers\JobConfig;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;

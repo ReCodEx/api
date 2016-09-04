@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Helpers\EvaluationResults;
+namespace App\Helpers\EvaluationResults;
 
 class TaskResult {
 

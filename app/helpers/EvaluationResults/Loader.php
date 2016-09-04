@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Helpers\EvaluationResults;
+namespace App\Helpers\EvaluationResults;
 
-use App\Model\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\JobConfig;
 use App\Exception\SubmissionEvaluationFailedException;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;

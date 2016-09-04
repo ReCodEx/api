@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Helpers\EvaluationResults;
+namespace App\Helpers\EvaluationResults;
 
-use App\Model\Helpers\JobConfig\TestConfig;
+use App\Helpers\JobConfig\TestConfig;
 
 class TestResult {
 

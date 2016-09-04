@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Helpers;
+namespace App\Helpers;
 
 use Nette\Utils;
 

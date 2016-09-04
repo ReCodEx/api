@@ -3,7 +3,7 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Model\Helpers\EvaluationResults\Stats;
+use App\Helpers\EvaluationResults\Stats;
 
 class TestStats extends Tester\TestCase
 {

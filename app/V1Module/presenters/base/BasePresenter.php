@@ -14,7 +14,7 @@ use App\Exception\InternalServerErrorException;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
-use App\Model\Helpers\Validators;
+use App\Helpers\Validators;
 //use Nette\Utils\Validators;
 
 use Nette\Security\Identity;

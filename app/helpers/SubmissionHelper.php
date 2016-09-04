@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Helpers;
+namespace App\Helpers;
 
-use App\Model\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\Submission;
 
 class SubmissionHelper {

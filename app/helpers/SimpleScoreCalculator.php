@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Helpers;
+namespace App\Helpers;
 
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Model\Entity\SubmissionEvaluation;
