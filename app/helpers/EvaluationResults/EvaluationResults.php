@@ -55,18 +55,15 @@ class EvaluationResults {
   public function getTestsResults($hardwareGroupId) {
     return array_map(
       function($test) use ($hardwareGroupId) {
-        $executionData = $this->tasks[$test->getExecutionTask()->getId()];
-        $evaluationData = $this->tasks[$test->getEvaluationTask()->getId()];    
-
-        $taskA = new TaskResult($executionData);
-        $taskB = new TaskResult($evaluationData);
-        $status = TestResult::calculateStatus($taskA->getStatus(), $taskB->getStatus());
+        $execId = $test->getExecutionTask()->getId();
+        $evalId = $test->getEvaluationTask()->getId();
+        $status = TestResult::calculateStatus($this->getTaskResultStatus($execId), $this->getTaskResultStatus($evalId));
         switch ($status) {
           case TestResult::STATUS_OK:
             return new TestResult(
               $test,
-              new ExecutionTaskResult($executionData),
-              new EvaluationTaskResult($evaluationData),
+              new ExecutionTaskResult($this->tasks[$execId]),
+              new EvaluationTaskResult($this->tasks[$evalId]),
               $hardwareGroupId
             );
           
@@ -79,6 +76,18 @@ class EvaluationResults {
       },
       $this->config->getTests($hardwareGroupId)
     );
+  }
+
+  private function getTaskResultStatus($taskId) {
+    if (isset($this->tasks[$taskId])) {
+      if (isset($this->tasks[$taskId]["status"])) {
+        return $this->tasks[$taskId]["status"];
+      }
+
+      return TaskResult::STATUS_FAILED;
+    }
+
+    return TaskResult::STATUS_SKIPPED;
   }
 
   private function getTaskResult($taskId) {
