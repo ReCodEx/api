@@ -4,7 +4,7 @@ namespace App\Helpers\EvaluationResults;
 
 use App\Helpers\JobConfig\TestConfig;
 
-class TestResult {
+class TestResult implements ITestResult {
 
   const STATUS_OK = "OK";
   const STATUS_FAILED = "FAILED";
@@ -13,10 +13,10 @@ class TestResult {
   /** @var Test Test configuration */
   private $config;
 
-  /** @var TestResult Result of the execution task */
+  /** @var ExecutionTestResult Result of the execution task */
   private $executionResult;
 
-  /** @var TestResult Result of the evaluation task */
+  /** @var EvalutationTestResult Result of the evaluation task */
   private $evaluationResult;
 
   /** @var string Status of the test */
@@ -33,7 +33,7 @@ class TestResult {
   public function __construct(
     TestConfig $config,
     ExecutionTaskResult $executionResult,
-    TaskResult $evaluationResult,
+    EvaluationTaskResult $evaluationResult,
     string     $hardwareGroupId
   ) {
     $this->config = $config;
@@ -124,6 +124,26 @@ class TestResult {
    */
   public function isMemoryOK(): bool {
     return $this->statsInterpretation->isMemoryOK();
+  }
+
+  public function getExitCode(): int {
+    return $this->stats->getExitCode();
+  }
+
+  public function getUsedMemoryRatio(): float {
+    return $this->statsInterpretation->getUsedMemoryRatio();
+  }
+
+  public function getUsedTimeRatio(): float {
+    return $this->statsInterpretation->getUsedTimeRatio();
+  }
+
+  public function getMessage(): string {
+    return $this->stats->getMessage();
+  }
+
+  public function getJudgeOutput() {
+    return $this->evaluationResult->getJudgeOutput();
   }
 
 }

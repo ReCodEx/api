@@ -34,8 +34,8 @@ class MemoryCache {
    * @param mixed  $data  The data to store
    * @return mixed        The data to store
    */
-  private static function store(string $key, $data) {
-    self::$cache[$key] = $data;
+  public function store(string $key, $data) {
+    $this->cache[$key] = $data;
     return $data;
   }
 
