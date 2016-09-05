@@ -6,6 +6,7 @@ use App\Model\Repository\Groups;
 use App\Exception\BadRequestException;
 use App\Exception\ForbiddenRequestException;
 use App\Exception\NotFoundException;
+use Kdyby\Doctrine\EntityManager;
 
 /**
  * @LoggedIn
@@ -15,11 +16,15 @@ class GroupsPresenter extends BasePresenter {
   /** @var Groups */
   private $groups;
 
+  /** @var EntityManager */
+  private $em;
+
   /**
    * @param Groups $groups  Groups repository
    */
-  public function __construct(Groups $groups) {
+  public function __construct(Groups $groups, EntityManager $em) {
     $this->groups = $groups;
+    $this->em = $em;
   }
 
   protected function findGroupOrThrow($id) {
@@ -210,8 +215,9 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is student of the group 
     if ($group->isStudentOf($user) === TRUE) {
-      $user->removeStudentFrom($group);
-      $this->users->flush();
+      $membership = $user->removeStudentFrom($group);
+      $this->em->remove($membership);
+      $this->em->flush();
     }
 
     // join the group

@@ -119,7 +119,6 @@ class GroupMembership implements JsonSerializable
   protected $supervisorSince;
 
   public function jsonSerialize() {
-    $instance = $this->getInstance();
     return [
       "id" => $this->id,
       "userId" => $this->user->getId(),

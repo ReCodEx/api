@@ -97,7 +97,7 @@ class User implements JsonSerializable
     protected $instance;
 
     /**
-     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
      */
     protected $memberships;
 
@@ -133,14 +133,13 @@ class User implements JsonSerializable
 
     protected function removeMemberOf(Group $group, $type = NULL) {
       $membership = $this->findMembership($group);
-      if (!$membership || ($type !== NULL && $membership->type !== NULL)) {
+      if (!$membership || ($type === NULL && $membership->type !== NULL)) {
         // @todo: Handle the situation, when the user is not the member of this
         // group or is not member of the particular type
         return;
       }
 
-      $this->memberships->remove($membership);
-      $group->removeMembership($membership);
+      return $membership;
     }
 
     protected function getGroups(string $type) {
@@ -161,7 +160,7 @@ class User implements JsonSerializable
     }
 
     public function removeStudentFrom(Group $group) {
-      $this->removeMemberOf($group, GroupMembership::TYPE_STUDENT);
+      return $this->removeMemberOf($group, GroupMembership::TYPE_STUDENT);
     }
 
     public function getGroupsAsSupervisor() {
@@ -173,7 +172,7 @@ class User implements JsonSerializable
     }
 
     public function removeSupervisorFrom(Group $group) {
-      $this->removeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
+      return $this->removeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
     }
 
     /**

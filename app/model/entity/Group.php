@@ -70,7 +70,7 @@ class Group implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="group", cascade={"persist"})
+   * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="group", cascade={"all"})
    */
   protected $memberships;
 
