@@ -34,7 +34,7 @@ class UploadedFileStorage extends Nette\Object {
 
     $uploadedFile = new UploadedFile(
       $filePath,
-      $file->getSanitizedName(),
+      $file->getName(),
       new \DateTime(),
       $file->getSize(),
       $user
