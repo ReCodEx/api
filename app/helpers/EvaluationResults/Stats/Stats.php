@@ -51,7 +51,7 @@ class Stats implements IStats {
       throw new ResultsLoadingException("Sandbox results do not include the 'message' field.");
     }
 
-    $this->messsage = $data["messsage"];
+    $this->message = $data["message"];
 
     if (!isset($data["killed"])) {
       throw new ResultsLoadingException("Sandbox results do not include the 'killed' field.");
