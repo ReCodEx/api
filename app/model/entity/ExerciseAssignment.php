@@ -128,10 +128,10 @@ class ExerciseAssignment implements JsonSerializable
     */
   protected $group;
 
-  public function canReceiveSubmissions() {
-    // return $this->group->hasValidLicence(); // @todo WTF?!! $group->getInstance() always returns NULL...
-    // @todo check the deadline
-    return TRUE;
+  public function canReceiveSubmissions(User $user = NULL) {
+    return $this->group->hasValidLicence() && 
+      !$this->isAfterDeadline() &&
+      ($user === NULL || !$this->hasReachedSubmissionsCountLimit($user));
   }
 
   /**
@@ -153,6 +153,18 @@ class ExerciseAssignment implements JsonSerializable
    */
   protected $submissions;
 
+  public function getValidSubmissions(User $user) {
+    $fromThatUser = Criteria::create()
+      ->where(Criteria::expr()->eq("user", $user));
+    // @todo do not count the submissions, where the evaluation failed due to our mistake
+    // or those which were marked as invalid 
+    return $this->submissions->matching($fromThatUser);
+  }
+
+  public function hasReachedSubmissionsCountLimit(User $user) {
+    return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
+  }
+
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
@@ -173,7 +185,7 @@ class ExerciseAssignment implements JsonSerializable
     );
   }
 
-  public function jsonSerialize() {
+  public function getJsonData(User $user = NULL) {
     return [
       "id" => $this->id,
       "name" => $this->name,
@@ -184,8 +196,12 @@ class ExerciseAssignment implements JsonSerializable
         "second" => $this->secondDeadline->getTimestamp()
       ],
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => $this->canReceiveSubmissions()
+      "canReceiveSubmissions" => $this->canReceiveSubmissions($user)
     ];
+  }
+
+  public function jsonSerialize() {
+    return $this->getJsonData();
   }
 
 }
