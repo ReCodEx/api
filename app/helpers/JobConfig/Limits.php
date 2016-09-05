@@ -4,7 +4,10 @@ namespace App\Helpers\JobConfig;
 use App\Exception\JobConfigLoadingException;
 
 class Limits {
-    
+
+  /** @var array Raw data */
+  private $data;
+
   /** @var string ID of the harwdare group */
   private $id;
 
@@ -15,6 +18,8 @@ class Limits {
   private $memoryLimit;
 
   public function __construct(array $data) {
+    $this->data = $data;
+
     if (!isset($data["hw-group-id"])) {
       throw new JobConfigLoadingException("Sandbox limits section does not contain required field 'hw-group-id'");
     }
@@ -28,8 +33,8 @@ class Limits {
     }
 
     $this->id = $data["hw-group-id"];
-    $this->timeLimit = floatval($this->data["time"]);
-    $this->memoryLimit = intval($this->data["memory"]);
+    $this->timeLimit = floatval($data["time"]);
+    $this->memoryLimit = intval($data["memory"]);
   }
 
   public function getId() {
