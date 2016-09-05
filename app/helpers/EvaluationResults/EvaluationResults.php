@@ -20,7 +20,15 @@ class EvaluationResults {
 
   public function __construct(array $data, JobConfig $config) {
     if ($data["job-id"] !== $config->getJobId()) {
-      throw new SubmissionEvaluationFailedException("JobID of the configuration and the result do not match.");
+      throw new ResultsLoadingException("Job ID of the configuration and the result do not match.");
+    }
+
+    if (!isset($data["results"])) {
+      throw new ResultsLoadingException("Results are missing required field 'results'.");
+    }
+
+    if (!is_array($data["results"])) {
+      throw new ResultsLoadingException("Results field of the results must be an array.");
     }
 
     $this->config = $config;
@@ -31,17 +39,7 @@ class EvaluationResults {
     }
   }
 
-  public function hasEvaluationFailed() {
-    // @todo
-    return FALSE;
-  }
-
   public function wasInitialisationOK() {
-    // initialisation could not have succeeded when the whole evaluation failed somehow
-    if ($this->hasEvaluationFailed()) {
-      return FALSE;
-    }
-
     foreach ($this->config->getTasks() as $task) {
       if ($task->isInitiationTask()) {
         $taskResult = new TaskResult($this->tasks[$task->getId()]);
@@ -57,9 +55,27 @@ class EvaluationResults {
   public function getTestsResults($hardwareGroupId) {
     return array_map(
       function($test) use ($hardwareGroupId) {
-        $executionTaskResult = new ExecutionTaskResult($this->tasks[$test->getExecutionTask()->getId()]);
-        $evaluationTaskResult = new TaskResult($this->tasks[$test->getEvaluationTask()->getId()]);
-        return new TestResult($test, $executionTaskResult, $evaluationTaskResult, $hardwareGroupId);
+        $executionData = $this->tasks[$test->getExecutionTask()->getId()];
+        $evaluationData = $this->tasks[$test->getEvaluationTask()->getId()];    
+
+        $taskA = new TaskResult($executionData);
+        $taskB = new TaskResult($evaluationData);
+        $status = TestResult::calculateStatus($taskA->getStatus(), $taskB->getStatus());
+        switch ($status) {
+          case TestResult::STATUS_OK:
+            return new TestResult(
+              $test,
+              new ExecutionTaskResult($executionData),
+              new EvaluationTaskResult($evaluationData),
+              $hardwareGroupId
+            );
+          
+          case TestResult::STATUS_SKIPPED:
+            return new SkippedTestResult($test);
+
+          default:
+            return new FailedTestResult($test);
+        }
       },
       $this->config->getTests($hardwareGroupId)
     );
@@ -67,8 +83,7 @@ class EvaluationResults {
 
   private function getTaskResult($taskId) {
     if (!isset($this->tasks[$taskId])) {
-      // @todo throw an exception
-      return NULL;
+      throw new ResultsLoadingException("There is no result for task '$taskId' defined in the job config.");
     }
 
     return $this->tasks[$taskId];

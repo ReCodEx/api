@@ -1,18 +1,40 @@
 <?php
 
 namespace App\Helpers\JobConfig;
+use App\Exception\JobConfigLoadingException;
 
 class Limits {
-    
+
+  /** @var array Raw data */
+  private $data;
+
   /** @var string ID of the harwdare group */
   private $id;
 
-  /** @var array Raw data from the config of the limits */
-  private $data;
+  /** @var float Time limit */
+  private $timeLimit;
+
+  /** @var int Memory limit */
+  private $memoryLimit;
 
   public function __construct(array $data) {
-    $this->id = $data["hw-group-id"];
     $this->data = $data;
+
+    if (!isset($data["hw-group-id"])) {
+      throw new JobConfigLoadingException("Sandbox limits section does not contain required field 'hw-group-id'");
+    }
+
+    if (!isset($data["time"])) {
+      throw new JobConfigLoadingException("Sandbox limits section does not contain required time limit (field 'time')");
+    }
+
+    if (!isset($data["memory"])) {
+      throw new JobConfigLoadingException("Sandbox limits section does not contain required memory limit (field 'memory')");
+    }
+
+    $this->id = $data["hw-group-id"];
+    $this->timeLimit = floatval($data["time"]);
+    $this->memoryLimit = intval($data["memory"]);
   }
 
   public function getId() {
@@ -24,7 +46,7 @@ class Limits {
    * @return int Number of milliseconds
    */
   public function getTimeLimit(): float {
-    return floatval($this->data["time"]);
+    return $this->timeLimit;
   }
 
   /**
@@ -32,7 +54,7 @@ class Limits {
    * @return int Number of bytes
    */
   public function getMemoryLimit(): int {
-    return $this->data["memory"];
+    return $this->memoryLimit;
   }
 
 }

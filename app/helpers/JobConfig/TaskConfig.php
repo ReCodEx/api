@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-
+use App\Exception\JobConfigLoadingException;
 
 class TaskConfig {
 
@@ -9,10 +9,27 @@ class TaskConfig {
   const TYPE_EXECUTION = "execution";
   const TYPE_EVALUATION = "evaluation";
 
-  private $data;
+  /** @var string Task ID */
+  private $id;
+
+  /** @var string Type of the task */
+  private $type;
+
+  /** @var string ID of the test to which this task corresponds */
+  private $testId;
     
+  /** @var array Raw data */
+  private $data;
+
   public function __construct(array $data) {
+    if (!isset($data["task-id"])) {
+      throw new JobConfigLoadingException("Task configuration does not contain required 'task-id' field.");
+    }
+
     $this->data = $data;
+    $this->id = $data["task-id"];
+    $this->type = isset($data["type"]) ? $data["type"] : NULL;
+    $this->testId = isset($data["test-id"]) ? $data["test-id"] : NULL;
   }
 
   /**
@@ -20,15 +37,15 @@ class TaskConfig {
    * @return string
    */
   public function getId() {
-    return $this->data["task-id"];
+    return $this->id;
   }
 
   public function isInitiationTask() {
-    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_INITIATION;
+    return $this->type === self::TYPE_INITIATION;
   }
 
   public function isExecutionTask() {
-    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_EXECUTION;
+    return $this->type === self::TYPE_EXECUTION;
   }
 
   public function getAsExecutionTask() {
@@ -36,16 +53,15 @@ class TaskConfig {
   }
 
   public function isEvaluationTask() {
-    return isset($this->data["type"]) && $this->data["type"] === self::TYPE_EVALUATION;
+    return $this->type === self::TYPE_EVALUATION;
   }
-
 
   /**
    * ID of the test this task belongs to (if any)
    * @return string|NULL
    */
   public function getTestId() {
-    return isset($this->data["test-id"]) ? $this->data["test-id"] : NULL;
+    return $this->testId;
   }
 
 }

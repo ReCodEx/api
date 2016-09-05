@@ -16,20 +16,19 @@ class TestResult implements JsonSerializable
 
   public function __construct(
     SubmissionEvaluation $evaluation,
-    ER\TestResult $result
+    ER\ITestResult $result
   ) {
-    $statsInterpret = $result->getStatsInterpretation();
     $this->submissionEvaluation = $evaluation;
     $this->testName = $result->getId();
     $this->status = $result->getStatus();
     $this->score = $result->getScore();
-    $this->exitCode = $result->getStats()->getExitCode();
-    $this->usedMemoryRatio = $statsInterpret->getUsedMemoryRatio();
-    $this->memoryExceeded = !$statsInterpret->isMemoryOK();
-    $this->usedTimeRatio = $statsInterpret->getUsedTimeRatio();
-    $this->timeExceeded = !$statsInterpret->isTimeOK();
-    $this->message = $result->getStats()->getMessage();
-    $this->judgeOutput = $result->getStats()->getJudgeOutput();
+    $this->exitCode = $result->getExitCode();
+    $this->usedMemoryRatio = $result->getUsedMemoryRatio();
+    $this->memoryExceeded = !$result->isMemoryOK();
+    $this->usedTimeRatio = $result->getUsedTimeRatio();
+    $this->timeExceeded = !$result->isTimeOK();
+    $this->message = $result->getMessage();
+    $this->judgeOutput = $result->getJudgeOutput();
     $this->stats = (string) $result->getStats();
   }
 

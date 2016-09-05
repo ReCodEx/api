@@ -9,10 +9,23 @@ use App\Helpers\JobConfig\Limits;
 
 class TestStatsInterpretation extends Tester\TestCase
 {
+  
+  static $limitsSample = [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ];
+  static $statsSample = [
+    "exitcode"  => 0,
+    "max-rss"   => 19696,
+    "memory"    => 6032,
+    "wall-time" => 0.092,
+    "exitsig"   => 0,
+    "message"   => "This is a random message",
+    "status"    => "OK",
+    "time"      => 0.037,
+    "killed"    => false
+  ];
 
   public function testTimeUnused() {
-    $stats = new Stats([ "time" => 0.037 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "time" => 0.1 ]);
+    $stats = new Stats(self::$statsSample);
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(TRUE, $interpretation->isTimeOK());
@@ -20,8 +33,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testTimeSame() {
-    $stats = new Stats([ "time" => 0.1 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "time" => 0.1 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 0.1 ]));
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(TRUE, $interpretation->isTimeOK());
@@ -29,8 +42,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testTimeExceeded() {
-    $stats = new Stats([ "time" => 0.1 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "time" => 0.037 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 0.1 ]));
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.037 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(FALSE, $interpretation->isTimeOK());
@@ -38,8 +51,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testMemoryUnused() {
-    $stats = new Stats([ "memory" => 128 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "memory" => 256 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "memory" => 128 ]));
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "memory" => 256 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(TRUE, $interpretation->isMemoryOK());
@@ -47,8 +60,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testMemorySame() {
-    $stats = new Stats([ "memory" => 128 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "memory" => 128 ]));
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "memory" => 128 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(TRUE, $interpretation->isMemoryOK());
@@ -56,8 +69,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testMemoryExceeded() {
-    $stats = new Stats([ "memory" => 256 ]);
-    $limits = new Limits([ "hw-group-id" => "xzy", "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "memory" => 256 ]));
+    $limits = new Limits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "memory" => 128 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
     
     Assert::equal(FALSE, $interpretation->isMemoryOK());
@@ -65,7 +78,7 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testBothOK() {
-    $stats = new Stats([ "time" => 1, "memory" => 64 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 1, "memory" => 64 ]));
     $limits = new Limits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
     
@@ -73,7 +86,7 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testBothExceeded() {
-    $stats = new Stats([ "time" => 3, "memory" => 2560 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 3, "memory" => 2560 ]));
     $limits = new Limits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
     
@@ -81,7 +94,7 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testOnlyTimeExceeded() {
-    $stats = new Stats([ "time" => 3, "memory" => 1 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 3, "memory" => 1 ]));
     $limits = new Limits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
     
@@ -89,7 +102,7 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testOnlyMemoryExceeded() {
-    $stats = new Stats([ "time" => 1, "memory" => 2560 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 1, "memory" => 2560 ]));
     $limits = new Limits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
     

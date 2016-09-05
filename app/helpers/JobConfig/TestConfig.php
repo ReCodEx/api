@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
+use App\Exception\JobConfigLoadingException;
 
 class TestConfig {
 
@@ -20,6 +21,7 @@ class TestConfig {
     $this->id = $id;
     $this->tasks = $tasks;
 
+    // identify the important tasks
     foreach ($tasks as $task) {
       if ($task->isExecutionTask()) {
         $this->executionTask = $task->getAsExecutionTask();
@@ -29,7 +31,7 @@ class TestConfig {
     }
 
     if ($this->executionTask === NULL || $this->evaluationTask === NULL) {
-      // @todo 
+      throw new JobConfigLoadingException("Each test must contain tasks of both types 'execution' and 'evaluation'. Test '{$id}' does not include at least one of them.");
     }
   }
 

@@ -63,12 +63,12 @@ class SubmissionsPresenter extends BasePresenter {
     $submission = $this->findSubmissionOrThrow($id);
     $evaluation = $submission->getEvaluation();
     if (!$evaluation) { // the evaluation must be loaded first
-      try {
+      // try {
         $evaluation = $this->loadEvaluation($submission);
-      } catch (SubmissionEvaluationFailedException $e) {
+      // } catch (SubmissionEvaluationFailedException $e) {
         // the evaluation is probably not ready yet
-        throw new NotFoundException("Evaluation is not available yet.");
-      }
+        // throw new NotFoundException("Evaluation is not available yet.");
+      // }
 
       $this->evaluations->persist($evaluation);
       $this->submissions->persist($submission);
@@ -82,21 +82,16 @@ class SubmissionsPresenter extends BasePresenter {
     $jobConfig = JobConfig\Loader::getJobConfig($submission);
     $results = EvaluationResults\Loader::parseResults($yml, $jobConfig);
     $evaluation = new SubmissionEvaluation($submission, $results);
-    if (!$results->hasEvaluationFailed()) {
-      $scores = []; 
-      foreach ($results->getTestsResults($submission->getHardwareGroup()) as $result) {
-        $evaluation->addTestResult(new TestResult($evaluation, $result));
-        $scores[$result->getId()] = $result->getScore();
-      }
 
-      $calculator = new SimpleScoreCalculator($submission->getExerciseAssignment()->getScoreConfig());
-      $score = $calculator->computeScore($scores);
-      $evaluation->setScore($score);
-      $evaluation->setPoints($score * $submission->getMaxPoints());
+    // calcutate the total score
+    if (!!$results) {
+      $evaluation->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
+      $evaluation->updateScore(new SimpleScoreCalculator($submission->getExerciseAssignment()->getScoreConfig()));
     } else {
       $evaluation->setScore(0);
     }
 
+    $evaluation->setPoints($evaluation->getScore() * $submission->getMaxPoints());
     return $evaluation;
   }
 

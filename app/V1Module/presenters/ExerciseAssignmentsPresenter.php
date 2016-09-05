@@ -31,7 +31,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @inject @var SubmissionHelper */
   public $submissionHelper;
 
-  protected function findAssignmentOrFail(string $id) {
+  protected function findAssignmentOrThrow(string $id) {
     $assignment = $this->assignments->get($id);
     if (!$assignment) {
       throw new NotFoundException;
@@ -45,22 +45,29 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $this->sendSuccessResponse($assignments);
+    $user = $this->findUserOrThrow('me');
+    $personalizedData = $assignments->map(
+      function ($assignment) {
+        return $assignment->getJsonData($user);
+      }
+    );
+    $this->sendSuccessResponse($personalizedData);
   }
 
   /**
    * @GET
    */
   public function actionDetail(string $id) {
-    $assignment = $this->findAssignmentOrFail($id);
-    $this->sendSuccessResponse($assignment);
+    $assignment = $this->findAssignmentOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+    $this->sendSuccessResponse($assignment->getJsonData($user));
   }
 
   /**
    * @GET
    */
   public function actionSubmissions(string $id, string $userId) {
-    $assignment = $this->findAssignmentOrFail($id);
+    $assignment = $this->findAssignmentOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
     $this->sendSuccessResponse($submissions);
   }
@@ -71,7 +78,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="files")
    */
   public function actionSubmit(string $id) {
-    $assignment = $this->findAssignmentOrFail($id);
+    $assignment = $this->findAssignmentOrThrow($id);
     $req = $this->getHttpRequest();
 
     $loggedInUser = $this->findUserOrThrow("me");

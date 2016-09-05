@@ -164,21 +164,25 @@ class Submission implements JsonSerializable
      */
     public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
-      if ($assignment->canAccessAsStudent($user) === FALSE
-        ) {
-        // || ($user->getId() === $loggedInUser->getId() // @todo fix this mess
-        //     && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
+      if ($assignment->canAccessAsStudent($user) === FALSE &&
+        ($user->getId() === $loggedInUser->getId()
+          && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
         throw new ForbiddenRequestException("{$user->getName()} cannot submit solutions for this assignment.");
       }
 
-      if ($assignment->canReceiveSubmissions() === FALSE) {
+      if ($assignment->getGroup()->hasValidLicence() === FALSE) {
         // @todo Throw some more meaningful error (HTTP 402 - payment required)
         throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.");
       }
 
-      if ($assignment->isAfterDeadline() === TRUE
-        && $assignment->isSupervisorOf($loggedInUser) === FALSE) { // supervisors can force-submit even after the deadline 
-        throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
+      if ($assignment->canAccessAsSupervisor($loggedInUser) === FALSE) {
+        if ($assignment->isAfterDeadline() === TRUE) { // supervisors can force-submit even after the deadline 
+          throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
+        }
+
+        if ($assignment->hasReachedSubmissionsCountLimit($user)) {
+          throw new ForbiddenRequestException("The limit of {$assignment->getSubmissionsCountLimit()} submissions for this assignment has been reached. You cannot submit any more solutions.");
+        }
       }
 
       // now that the conditions for submission are validated, here comes the easy part:

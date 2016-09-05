@@ -5,7 +5,7 @@ namespace App\Model\Entity;
 use App\Exception\SubmissionEvaluationFailedException;
 use App\Exception\NotFoundException;
 use App\Helpers\EvaluationResults\EvaluationResults;
-use App\Helpers\SimpleScoreCalculator;
+use App\Helpers\IScoreCalculator;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -84,6 +84,21 @@ class SubmissionEvaluation implements JsonSerializable
    */
   protected $testResults;
 
+  public function setTestResults(array $testResults) {
+    foreach ($testResults as $result) {
+      $this->testResults->add(new TestResult($this, $result));
+    }
+  }
+
+  public function updateScore(IScoreCalculator $calculator) {
+    $scores = [];
+    foreach ($this->testResults as $result) {
+      $scores[$result->getTestName()] = $result->getScore();
+    }
+
+    $this->score = $calculator->computeScore($scores);
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -108,8 +123,8 @@ class SubmissionEvaluation implements JsonSerializable
   public function __construct(Submission $submission, EvaluationResults $results) {
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
-    $this->evaluationFailed = $results->hasEvaluationFailed();
-    $this->initFailed = $results->wasInitialisationOK();
+    $this->evaluationFailed = !$results;
+    $this->initFailed = !!$results && $results->wasInitialisationOK();
     $this->resultYml = (string) $results;
     $this->testResults = new ArrayCollection;
     $this->submission = $submission;

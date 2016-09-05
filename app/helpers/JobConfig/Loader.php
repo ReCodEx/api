@@ -12,8 +12,8 @@ class Loader {
   /** @var MemoryCache */
   private static $cache = NULL;
 
-  public static function getCache() {
-    if (self::$cache = NULL) {
+  protected static function getCache() {
+    if (self::$cache === NULL) {
       self::$cache = new MemoryCache(NULL);
     }
 
