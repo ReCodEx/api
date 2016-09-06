@@ -24,6 +24,17 @@ parameters:
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
 
+  emails:
+    url: http://recodex.projekty.ms.mff.cuni.cz
+    siteName: "ReCodEx"
+  
+  failiures:
+    emails:
+      to: "Šimon Rozsíval <simon@rozsival.com>"
+      from: "ReCodEx <noreply@recodex.org>"
+      subjectPrefix: "ReCodEx Failiure Report - "
+    
+
 application:
   errorPresenter: V1:ApiError
   mapping:
@@ -45,6 +56,8 @@ services:
   - App\Security\Authorizator
 
   # helpers
+  - App\Helpers\EmailHelper(@Nette\Mail\IMailer, %emails%)
+  - App\Helpers\FailiureHelper(@App\Helpers\EmailHelper, %failiures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper
