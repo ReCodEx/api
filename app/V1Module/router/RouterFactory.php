@@ -27,6 +27,7 @@ class RouterFactory {
 
     self::createAuthRoutes($router, $prefix);
     self::createCommentsRoutes($router, "$prefix/comments");
+    self::createBrokerReportsRoutes($router, "$prefix/broker-reports");
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
@@ -41,6 +42,11 @@ class RouterFactory {
   private static function createAuthRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/login", "Login:default");
     $router[] = new GetRoute("$prefix/login/refresh", "Login:refresh");
+  }
+
+  private static function createBrokerReportsRoutes($router, $prefix) {
+    $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
+    $router[] = new PostRoute("$prefix/job-status/<submissionId>", "BrokerReports:jobStatus");
   }
 
   private static function createCommentsRoutes($router, $prefix) {
