@@ -6,6 +6,7 @@ use ReflectionException;
 use App\Exception\NotFoundException;
 use App\Exception\BadRequestException;
 use App\Exception\ForbiddenRequestException;
+use App\Exception\UnauthorizedException;
 use App\Exception\WrongHttpMethodException;
 use App\Exception\NotImplementedException;
 use App\Exception\InvalidArgumentException;
@@ -156,7 +157,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   private function restrictUnauthorizedAccess(\Reflector $reflection) {
     if ($reflection->hasAnnotation("LoggedIn") && !$this->user->isLoggedIn()) {
-      throw new ForbiddenRequestException("You must be logged in - you probably didn\"t provide a valid access token in the HTTP request.");
+      throw new UnauthorizedException;
     }
         
     if ($reflection->hasAnnotation("Role")

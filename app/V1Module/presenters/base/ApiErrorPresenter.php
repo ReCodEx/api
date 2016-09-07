@@ -43,6 +43,11 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     * @param  ApiException $exception The exception which caused the error
     */
   protected function handleAPIException(ApiException $exception) {
+    $res = $this->getHttpResponse();
+    $additionalHeaders = $exception->getAdditionalHttpHeaders();
+    foreach ($additionalHeaders as $name => $value) {
+      $res->setHeader($name, $value);
+    }
     $this->sendErrorResponse($exception->getCode(), $exception->getMessage());
   }
 

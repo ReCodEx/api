@@ -13,4 +13,8 @@ class ApiException extends \Exception {
     parent::__construct($msg, $code, $previous);
   }
 
+  public function getAdditionalHttpHeaders() {
+    return [];
+  }
+
 }
