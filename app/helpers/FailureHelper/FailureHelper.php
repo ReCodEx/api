@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Utils\Arrays;
+use Latte;
 
 class FailureHelper {
 
@@ -12,7 +13,7 @@ class FailureHelper {
   const TYPE_API_ERROR = "API ERROR";
 
   /** @var EmailHelper */
-  private $mailer;
+  private $emailHelper;
 
   /** @var string */
   private $receivers;
@@ -20,12 +21,11 @@ class FailureHelper {
   /** @var string */
   private $sender;
 
-
   /** @var string */
   private $subjectPrefix;
 
-  public function __construct(EmailHelper $mailer, array $params) {
-    $this->mailer = $mailer;
+  public function __construct(EmailHelper $emailHelper, array $params) {
+    $this->emailHelper = $emailHelper;
     $this->receivers = Arrays::get($params, ["emails", "to"], [ "admin@recodex.org" ]);
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.org");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Failure Report - ");
