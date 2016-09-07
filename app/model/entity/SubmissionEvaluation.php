@@ -2,8 +2,8 @@
 
 namespace App\Model\Entity;
 
-use App\Exception\SubmissionEvaluationFailedException;
-use App\Exception\NotFoundException;
+use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\IScoreCalculator;
 

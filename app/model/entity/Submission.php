@@ -9,10 +9,10 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use Nette\Utils\Arrays;
 
-use App\Exception\BadRequestException;
-use App\Exception\ForbiddenRequestException;
-use App\Exception\MalformedJobConfigException;
-use App\Exception\SubmissionFailedException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\MalformedJobConfigException;
+use App\Exceptions\SubmissionFailedException;
 
 use GuzzleHttp\Exception\RequestException;
 

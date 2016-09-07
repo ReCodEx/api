@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exception;
+namespace App\Exceptions;
 
 class MalformedJobConfigException extends SubmissionFailedException {
 

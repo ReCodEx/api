@@ -5,9 +5,9 @@ namespace App\Security;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
 
-use App\Exception\InvalidAccessTokenException;
-use App\Exception\NoAccessTokenException;
-use App\Exception\ForbiddenRequestException;
+use App\Exceptions\InvalidAccessTokenException;
+use App\Exceptions\NoAccessTokenException;
+use App\Exceptions\ForbiddenRequestException;
 
 use Nette\Http\Request;
 use Nette\Utils\Strings;

@@ -3,14 +3,14 @@
 namespace App\V1Module\Presenters;
 
 use ReflectionException;
-use App\Exception\NotFoundException;
-use App\Exception\BadRequestException;
-use App\Exception\ForbiddenRequestException;
-use App\Exception\UnauthorizedException;
-use App\Exception\WrongHttpMethodException;
-use App\Exception\NotImplementedException;
-use App\Exception\InvalidArgumentException;
-use App\Exception\InternalServerErrorException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\UnauthorizedException;
+use App\Exceptions\WrongHttpMethodException;
+use App\Exceptions\NotImplementedException;
+use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InternalServerErrorException;
 
 use App\Security\AccessManager;
 use App\Security\Authorizator;

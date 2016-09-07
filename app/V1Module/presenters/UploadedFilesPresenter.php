@@ -3,9 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App;
-use App\Exception\NotFoundException;
-use App\Exception\CannotReceiveUploadedFileException;
-use App\Exception\BadRequestException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Exceptions\BadRequestException;
 
 use App\Model\Entity\UploadedFile;
 use App\Helpers\UploadedFileStorage;

@@ -2,7 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\WrongCredentialsException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Repository\Logins;
 use App\Security\AccessManager;
 

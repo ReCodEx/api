@@ -4,7 +4,7 @@ namespace App\V1Module\Presenters;
 
 use Nette\Http\IResponse;
 
-use App\Exception\NotFoundException;
+use App\Exceptions\NotFoundException;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;

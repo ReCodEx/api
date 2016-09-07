@@ -14,9 +14,9 @@ use App\Model\Repository\SubmissionEvaluations;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\UploadedFiles;
 
-use App\Exception\NotFoundException;
-use App\Exception\BadRequestException;
-use App\Exception\SubmissionEvaluationFailedException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 
 /**
  * @LoggedIn

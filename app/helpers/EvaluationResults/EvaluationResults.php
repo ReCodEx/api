@@ -2,7 +2,7 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Exception\SubmissionEvaluationFailedException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Helpers\JobConfig\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;

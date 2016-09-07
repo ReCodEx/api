@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exception;
+namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 class SubmissionEvaluationFailedException extends ApiException {

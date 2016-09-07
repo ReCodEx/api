@@ -3,7 +3,7 @@
 namespace App\Helpers\EvaluationResults;
 
 use App\Helpers\JobConfig\JobConfig;
-use App\Exception\SubmissionEvaluationFailedException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exception;
+namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 class NoAccessTokenException extends ApiException {

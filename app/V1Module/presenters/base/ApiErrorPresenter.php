@@ -2,7 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\ApiException;
+use App\Exceptions\ApiException;
 use Nette\Application;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;

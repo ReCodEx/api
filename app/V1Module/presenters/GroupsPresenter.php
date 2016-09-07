@@ -3,9 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Groups;
-use App\Exception\BadRequestException;
-use App\Exception\ForbiddenRequestException;
-use App\Exception\NotFoundException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
 use Kdyby\Doctrine\EntityManager;
 
 /**

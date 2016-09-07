@@ -11,7 +11,7 @@ use App\Model\Repository\Roles;
 use App\Model\Repository\Users;
 use App\Security\AccessManager;
 
-use App\Exception\BadRequestException;
+use App\Exceptions\BadRequestException;
 use Nette\Http\IResponse;
 
 class UsersPresenter extends BasePresenter {

@@ -2,8 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\NotFoundException;
-use App\Exception\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
 
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;

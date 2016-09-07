@@ -20,6 +20,7 @@ class FailureHelper {
   /** @var string */
   private $sender;
 
+
   /** @var string */
   private $subjectPrefix;
 

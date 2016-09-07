@@ -24,19 +24,19 @@ class LimitsTest extends Tester\TestCase
   public function testMissingHWGroupId() {
     $data = self::$sample;
     unset($data["hw-group-id"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exception\JobConfigLoadingException');
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
   }
 
   public function testMissingMemoryLimit() {
     $data = self::$sample;
     unset($data["memory"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exception\JobConfigLoadingException');
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
   }
 
   public function testMissingTimeLimit() {
     $data = self::$sample;
     unset($data["time"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exception\JobConfigLoadingException');
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
   }
 
 }

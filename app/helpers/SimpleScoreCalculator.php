@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Exception\SubmissionEvaluationFailedException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Model\Entity\SubmissionEvaluation;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Yaml\Yaml;
