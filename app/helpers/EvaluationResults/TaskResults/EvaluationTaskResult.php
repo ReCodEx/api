@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Helpers\EvaluationResults;
-use App\Exceptions\ResultsLoadingException;
 
 class EvaluationTaskResult extends TaskResult {
 
