@@ -4,8 +4,8 @@ namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 class UnauthorizedException extends ApiException {
-  public function __construct() {
-    parent::__construct("You must provide a valid access token or other specified means of authentication to be allowed to perform this request.", IResponse::S401_UNAUTHORIZED);
+  public function __construct($msg = "You must provide a valid access token or other specified means of authentication to be allowed to perform this request.") {
+    parent::__construct($msg, IResponse::S401_UNAUTHORIZED);
   }
 
   public function getAdditionalHttpHeaders() {
