@@ -20,6 +20,9 @@ parameters:
 
   broker:
     address: tcp://195.113.17.8:9658
+    auth:
+      username: "re"
+      password: "codex"
 
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
@@ -27,6 +30,7 @@ parameters:
   emails:
     url: http://recodex.projekty.ms.mff.cuni.cz
     siteName: "ReCodEx"
+    githubUrl: http://recodex.github.io
   
   failures:
     emails:
@@ -40,9 +44,11 @@ application:
   mapping:
     *: App\*Module\Presenters\*Presenter
 
+mail:
+  smtp: false
 
 session:
-  expiration: 14 days
+  useCookies: 0
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -62,6 +68,7 @@ services:
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
+  - App\Helpers\EvaluationLoader
 
   # models - repositories
   - App\Model\Repository\Comments()
