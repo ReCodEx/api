@@ -28,11 +28,11 @@ parameters:
     url: http://recodex.projekty.ms.mff.cuni.cz
     siteName: "ReCodEx"
   
-  failiures:
+  failures:
     emails:
       to: "Šimon Rozsíval <simon@rozsival.com>"
       from: "ReCodEx <noreply@recodex.org>"
-      subjectPrefix: "ReCodEx Failiure Report - "
+      subjectPrefix: "ReCodEx Failure Report - "
     
 
 application:
@@ -57,7 +57,7 @@ services:
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\IMailer, %emails%)
-  - App\Helpers\FailiureHelper(@App\Helpers\EmailHelper, %failiures%)
+  - App\Helpers\FailureHelper(@App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper

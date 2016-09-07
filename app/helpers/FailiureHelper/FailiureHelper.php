@@ -6,7 +6,7 @@ use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Utils\Arrays;
 
-class FailiureHelper {
+class FailureHelper {
 
   const TYPE_BACKEND_ERROR = "BACKEND ERROR";
   const TYPE_API_ERROR = "API ERROR";
@@ -27,7 +27,7 @@ class FailiureHelper {
     $this->mailer = $mailer;
     $this->receivers = Arrays::get($params, ["emails", "to"], [ "admin@recodex.org" ]);
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.org");
-    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Failiure Report - ");
+    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Failure Report - ");
 
     if (!is_array($this->receivers)) {
       $this->receivers = [ $this->receivers ];
