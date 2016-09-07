@@ -6,6 +6,7 @@ use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;
 use Nette\Utils\Arrays;
+use Latte;
 
 class EmailHelper {
 
@@ -18,10 +19,14 @@ class EmailHelper {
   /** @var string */
   private $siteName;
 
+  /** @var string */
+  private $githubUrl;
+
   public function __construct(IMailer $mailer, array $params) {
     $this->mailer = $mailer;
     $this->url = Arrays::get($params, "url", "https://recodex.projekty.ms.mff.cuni.cz");
     $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
+    $this->githubUrl = Arrays::get($params, "githubUrl", "http://recodex.github.io");
   }
 
   /**
@@ -39,7 +44,8 @@ class EmailHelper {
       "subject"   => $subject,
       "message"   => $text,
       "url"       => $this->url,
-      "siteName"  => $this->siteName
+      "siteName"  => $this->siteName,
+      "githubUrl" => $this->githubUrl
     ];
     $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
 
@@ -54,11 +60,12 @@ class EmailHelper {
 
     try {
       $this->mailer->send($message);
+      return TRUE;
     } catch (SendException $e) {
-      return FALSE;
+      // silent error
     }
 
-    return TRUE;
+    return FALSE;
   }
 
 }
