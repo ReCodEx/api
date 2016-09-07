@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helper;
+namespace App\Helpers;
 
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
@@ -35,13 +35,14 @@ class FailureHelper {
   }
 
   public function report(string $type, string $message) {
-    $this->emailHelper->send(
+    // @todo: Save the report to the database
+
+    return $this->emailHelper->send(
       $this->sender,
       $this->receivers,
       $this->formatSubject($type),
       $this->formatBody($message)
     );
-    // @todo: Save the report to the database
   }
 
   private function formatSubject(string $type): string {

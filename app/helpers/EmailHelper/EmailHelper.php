@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helper;
+namespace App\Helpers;
 
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
