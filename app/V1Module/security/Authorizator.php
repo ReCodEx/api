@@ -62,8 +62,13 @@ class Authorizator implements NS\IAuthorizator {
     try {
       return $this->acl->isAllowed($role, $resource, $privilege);
     } catch (Nette\InvalidStateException $e) {
-      // unknown resource - add it to the database so it does not trigger the error again
-      $this->resources->persist(new Resource($resource));
+      $resourceEntity = $this->resources->get($resource);
+      if (!$resourceEntity) {
+        // unknown resource - add it to the database so it does not trigger the error again
+        $resourceEntity = new Resource($resource);
+        $this->resources->persist($resourceEntity);
+      }
+
       return FALSE;
     }
   }
