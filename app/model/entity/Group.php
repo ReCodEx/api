@@ -126,12 +126,12 @@ class Group implements JsonSerializable
   }
 
   public function isSupervisorOf(User $user) {
-    return $this->getSupervisors()->contains($user);
+    return $this->getSupervisors()->contains($user) || $this->isAdminOf($user);
   }
 
   public function isMemberOf(User $user) {
     // @todo: this could be more effective
-    return $this->isStudentOf($user) || $this->isSupervisorOf($user);
+    return $this->isStudentOf($user) || $this->isSupervisorOf($user) || $this->isAdminOf($user);
   }
 
   /**
