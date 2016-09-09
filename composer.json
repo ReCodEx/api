@@ -36,7 +36,8 @@
 		"guzzlehttp/guzzle": "~6.0",
 		"symfony/yaml": "^3.1",
 		"firebase/php-jwt": "^4.0",
-		"forxer/gravatar": "^1.3"
+		"forxer/gravatar": "^1.3",
+		"mrdm-nl/ldap": "^1.1"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7"

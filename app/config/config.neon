@@ -24,6 +24,14 @@ parameters:
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
 
+  ldapConnection:
+    hostname: "ldap.cuni.cz"
+    base_dn: "ou=people,dc=cuni,dc=cz"
+    #port: 389
+    #security: SSL
+    bindName: "cunipersonalid"
+    mailName: "mail"
+
 application:
   errorPresenter: V1:ApiError
   mapping:
