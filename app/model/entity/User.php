@@ -96,6 +96,10 @@ class User implements JsonSerializable
      */
     protected $instance;
 
+    public function belongsTo(Instance $instance) {
+      return $this->instance->getId() === $instance->getId();
+    }
+
     /**
      * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
      */

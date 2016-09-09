@@ -14,7 +14,22 @@ use JsonSerializable;
 class Group implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
-  
+
+  public function __construct(string $name, string $description, Instance $instance, User $admin, Group $parentGroup = NULL) {
+    $this->name = $name;
+    $this->description = $description;
+    $this->memberships = new ArrayCollection;
+    $this->admin = $admin;
+    $this->instance = $instance;
+    $this->childGroups = new ArrayCollection;
+    $this->assignments = new ArrayCollection;
+    $admin->makeSupervisorOf($this);
+    $this->parentGroup = $parentGroup;
+    if ($parentGroup !== NULL) {
+      $this->parentGroup->addChildGroup($this);
+    }
+  }
+
   /**
    * @ORM\Id
    * @ORM\Column(type="guid")
@@ -124,8 +139,25 @@ class Group implements JsonSerializable
    */
   protected $admin;
 
+  public function getAdminsIds() {
+    $group = $this;
+    $admins = [];
+    while ($group !== NULL) {
+      $admins[] = $group->admin->getId();
+      $group = $group->parentGroup;
+    }
+
+    return array_unique($admins);
+  }
+
+  /**
+   * User is admin of a group when he is 
+   * @param User $user
+   * @return bool
+   */
   public function isAdminOf(User $user) {
-    return $this->admin !== NULL && $this->admin->getId() === $user->getId();
+    $admins = $this->getAdminsIds();
+    return array_search($user->getId(), $admins, TRUE) !== FALSE;
   }
 
   public function makeAdmin(User $user) {
@@ -225,6 +257,7 @@ class Group implements JsonSerializable
       "name" => $this->name,
       "description" => $this->description,
       "adminId" => $admin ? $this->admin->getId() : NULL,
+      "admins" => $this->getAdminsIds(),
       "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->toArray(),
       "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->toArray(),
       "instanceId" => $instance ? $instance->getId() : NULL,
@@ -235,11 +268,4 @@ class Group implements JsonSerializable
     ];
   }
 
-  public static function createGroup(string $name, string $description) {
-    $group = new Group;
-    $group->name = $name;
-    $group->description = $description;
-    $group->memberships = new ArrayCollection;
-    return $group;
-  }
 }
