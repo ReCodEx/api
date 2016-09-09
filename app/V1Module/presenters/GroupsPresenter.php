@@ -2,7 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Model\Entity\Group;
 use App\Model\Repository\Groups;
+use App\Model\Repository\Instances;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
@@ -13,19 +15,14 @@ use Kdyby\Doctrine\EntityManager;
  */
 class GroupsPresenter extends BasePresenter {
 
-  /** @var Groups */
-  private $groups;
+  /** @inject @var Groups */
+  public $groups;
 
-  /** @var EntityManager */
-  private $em;
+  /** @inject @var Instances */
+  public $instances;
 
-  /**
-   * @param Groups $groups  Groups repository
-   */
-  public function __construct(Groups $groups, EntityManager $em) {
-    $this->groups = $groups;
-    $this->em = $em;
-  }
+  /** @inject @var EntityManager */
+  public $em;
 
   protected function findGroupOrThrow($id) {
     $group = $this->groups->get($id);
@@ -51,12 +48,52 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="instanceId", validation="string:36")
-   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE)
    */
   public function actionAddGroup() {
-    
+    $req = $this->getHttpRequest();
+    $name = $req->getPost("name");
+    $instanceId = $req->getPost("instanceId");
+    $parentGroupId = $req->getPost("parentGroupId", NULL);
+    $user = $this->findUserOrThrow("me");
+    $instance = $this->instances->get($instanceId);
+
+    if (!$user->belongsTo($instance)) {
+      throw new ForbiddenRequestException("You cannot create group for instance '$instanceId'");
+    }
+
+    $description = $req->getPost("description");
+    $parentGroup = !$parentGroupId ? NULL : $this->groups->get($parentGroupId);
+
+    if ($parentGroup !== NULL && !$parentGroup->isAdminOf($user)) {
+      throw new ForbiddenRequestException("Only group administrators can create group.");
+    }
+
+    if (!$this->groups->nameIsFree($name, $instance->getId(), $parentGroup !== NULL ? $parentGroup->getId() : NULL)) {
+      throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
+    }
+
+    $group = new Group($name, $description, $instance, $user, $parentGroup);
+
     $this->groups->persist($group);
     $this->sendSuccessResponse($group);
+  }
+
+  /**
+   * @POST
+   * @Param(name="name", type="post")
+   * @Param(name="instanceId", type="post")
+   * @Param(name="parentGroupId", type="post", required=false)
+   */
+  public function actionValidateAddGroupData() {
+    $req = $this->getHttpRequest();
+    $name = $req->getPost("name");
+    $instanceId = $req->getPost("instanceId");
+    $parentGroupId = $req->getPost("parentGroupId", NULL);
+
+    $this->sendSuccessResponse([
+      "groupNameIsFree" => $this->groups->nameIsFree($name, $instanceId, $parentGroupId)
+    ]);
   }
 
   /**
@@ -64,7 +101,29 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$user->belongsTo($group->getInstance())
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not member of the same instance as the group.");
+    }
+
     $this->sendSuccessResponse($group);
+  }
+
+  /**
+   * @GET
+   */
+  public function actionSubgroups(string $id) {
+    $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$group->isMemberOf($user)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    }
+
+    $this->sendSuccessResponse($group->getChildGroups()->toArray());
   }
 
   /**
@@ -72,6 +131,13 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionMembers(string $id) {
     $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$group->isSupervisorOf($user)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    }
+
     $this->sendSuccessResponse([
       "supervisors" => $group->getSupervisors()->toArray(),
       "students" => $group->getStudents()->toArray()
@@ -83,6 +149,13 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionSupervisors(string $id) {
     $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$group->isSupervisorOf($user)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    }
+
     $this->sendSuccessResponse($group->getSupervisors()->toArray());
   }
 
@@ -91,6 +164,13 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudents(string $id) {
     $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$group->isSupervisorOf($user)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    }
+
     $this->sendSuccessResponse($group->getStudents()->toArray());
   }
 
@@ -99,6 +179,13 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$group->isMemberOf($user)
+      && !$this->user->isInRole("superadmin")) {
+      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    }
+
     $this->sendSuccessResponse($group->getAssignments()->toArray());
   }
 
@@ -107,8 +194,7 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->findUserOrThrow('me');
     $group = $this->findGroupOrThrow($id);
 
-    if (!$group->isAdminOf($currentUser)
-      && !$group->isSupervisorOf($currentUser)
+    if (!$group->isSupervisorOf($currentUser)
       && !$this->user->isInRole("superadmin")) {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }

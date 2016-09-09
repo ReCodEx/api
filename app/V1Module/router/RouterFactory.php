@@ -70,7 +70,9 @@ class RouterFactory {
   private static function createGroupsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Groups:");
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
+    $router[] = new PostRoute("$prefix/validate-add-group-data", "Groups:validateAddGroupData");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
+    $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
     
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
@@ -117,6 +119,7 @@ class RouterFactory {
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");
+    $router[] = new PostRoute("$prefix/validate-registration-data", "Users:validateRegistrationData");
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
