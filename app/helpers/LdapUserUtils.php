@@ -47,7 +47,8 @@ class LdapUserUtils {
    * Validates user against LDAP database.
    * @param string $userId user identifier, for example UKCO
    * @param string $password user's password
-   * @throws WrongCredentialsException when supplied username or password is incorrect 
+   * @throws WrongCredentialsException when supplied username or password is incorrect
+   * @throws LdapConnectException when ldap server cannot be reached
    * @return user's mail address
    */
   public function validateUser(string $userId, string $password) {
@@ -67,7 +68,7 @@ class LdapUserUtils {
     try {
       $manager->bind($bindString, $password);
     } catch (BindException $e) {
-      if (strpos($e->getMessage(), "-1") === FALSE) {
+      if (strpos($e->getMessage(), "Ldap Error Code=-1") === FALSE) {
         throw new WrongCredentialsException();
       } else {
         throw new LdapConnectException();

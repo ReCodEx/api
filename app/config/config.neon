@@ -57,6 +57,7 @@ services:
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
+  - App\Helpers\LdapUserUtils(%ldapConnection%)
 
   # models - repositories
   - App\Model\Repository\Comments()

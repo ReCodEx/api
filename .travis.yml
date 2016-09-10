@@ -5,6 +5,7 @@ php:
 
 before_install:
   - composer self-update
+  - echo "extension = ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 install:
   - composer install --no-interaction --prefer-source
