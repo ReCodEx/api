@@ -37,6 +37,19 @@ parameters:
       to: "Šimon Rozsíval <simon@rozsival.com>"
       from: "ReCodEx <noreply@recodex.org>"
       subjectPrefix: "ReCodEx Failure Report - "
+
+  mail:
+    smtp: true
+    host: "smtp.ps.stdin.cz"
+    port: 587
+    username: ""
+    password: ""
+    secure: "tls"
+    context:
+      ssl: 
+        verify_peer: false
+        verify_peer_name: false
+        allow_self_signed: true
     
 
 application:
@@ -44,8 +57,6 @@ application:
   mapping:
     *: App\*Module\Presenters\*Presenter
 
-mail:
-  smtp: false
 
 session:
   useCookies: 0
@@ -60,9 +71,10 @@ services:
   router: App\RouterFactory::createRouter
   - App\Security\AccessManager(%accessManager%)
   - App\Security\Authorizator
+  - Nette\Mail\SmtpMailer(%mail%)
 
   # helpers
-  - App\Helpers\EmailHelper(@Nette\Mail\IMailer, %emails%)
+  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\FailureHelper(@App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
