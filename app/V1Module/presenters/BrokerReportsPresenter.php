@@ -21,7 +21,7 @@ class BrokerReportsPresenter extends BasePresenter {
   /** @inject @var FailureHelper */
   public $failureHelper;
 
-  /** @inject @var FailureHelper */
+  /** @inject @var EmailHelper */
   public $emailHelper;
 
   /** @inject @var EvaluationLoader */
