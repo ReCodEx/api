@@ -35,8 +35,8 @@ parameters:
       bindName: "cunipersonalid"
     fields:
       email: "mail"
-      firstName: "first_name"
-      lastName: "last_name"
+      firstName: "givenName"
+      lastName: "sn"
 
 
 application:

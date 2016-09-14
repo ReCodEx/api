@@ -38,15 +38,15 @@ class CAS implements IExternalLoginService {
   }
 
   public function getUser(string $ukco, string $password): UserData {
-    // $data = $this->ldap->getUser($ukco, $password);
-    // $email = $this->getValue($data->get($this->emailField));
-    // $firstName = $this->getValue($data->get($this->firstNameField));
-    // $lastName = $this->getValue($data->get($this->lastNameField));
+    $data = $this->ldap->getUser($ukco, $password);
+    $email = $this->getValue($data->get($this->emailField));
+    $firstName = $this->getValue($data->get($this->firstNameField));
+    $lastName = $this->getValue($data->get($this->lastNameField));
 
     // @todo remove with the real stuff
-    $email = "simon@rozsival.com";
-    $firstName = "Simon";
-    $lastName = "Rozsival";
+    // $email = "simon@rozsival.com";
+    // $firstName = "Simon";
+    // $lastName = "Rozsival";
     
     return new UserData($ukco, $email, $firstName, $lastName, $this);
   }
