@@ -21,6 +21,7 @@ class LdapUserUtils {
   const ERROR_TOO_MANY_UNSUCCESSFUL_TRIES = 19;
   const ERROR_INAPPROPRIATE_AUTHENTICATION = 48;
   const ERROR_WRONG_CREDENTIALS = 49;
+  const ERROR_NO_SUCH_OBJECT = 32;
 
   /**
    * Configuration for initial connection to LDAP server. Requires
@@ -72,11 +73,14 @@ class LdapUserUtils {
         case self::ERROR_INAPPROPRIATE_AUTHENTICATION:
           throw new WrongCredentialsException("This CAS account cannot be used for authentication to ReCodEx. The password is probably not verified.");
 
-        case self::ERROR_WRONG_CREDENTIALS:
+        case self::ERROR_WRONG_CREDENTIALS:  // wrong password
+          throw new WrongCredentialsException;
+
+        case self::ERROR_NO_SUCH_OBJECT:  // wrong username (ukco)
           throw new WrongCredentialsException;
 
         case self::ERROR_TOO_MANY_UNSUCCESSFUL_TRIES:
-          throw new WrongCredeintailsException("Too many unsuccessful tries. You won't be able to log in for a short amount of time.");
+          throw new WrongCredentialsException("Too many unsuccessful tries. You won't be able to log in for a short amount of time.");
 
         default:
           throw new LdapConnectException;
