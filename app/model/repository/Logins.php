@@ -23,6 +23,7 @@ class Logins extends Nette\Object {
       $oldPwdHash = $login->getPasswordHash();
       if ($login->passwordsMatch($password)) {
         if ($login->getPasswordHash() !== $oldPwdHash) {
+          // the password has been rehashed - persist the information
           $this->persist($login);
           $this->em->flush();
         }

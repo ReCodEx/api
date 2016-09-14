@@ -24,13 +24,20 @@ parameters:
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
 
-  ldapConnection:
-    hostname: "ldap.cuni.cz"
-    base_dn: "ou=people,dc=cuni,dc=cz"
-    #port: 389
-    #security: SSL
-    bindName: "cunipersonalid"
-    mailName: "mail"
+
+  CAS:
+    serviceId: "cas-uk"
+    ldapConnection:
+      hostname: "ldap.cuni.cz"
+      base_dn: "ou=people,dc=cuni,dc=cz"
+      #port: 389
+      #security: SSL
+      bindName: "cunipersonalid"
+    fields:
+      email: "mail"
+      firstName: "first_name"
+      lastName: "last_name"
+
 
 application:
   errorPresenter: V1:ApiError
@@ -52,28 +59,31 @@ services:
   - App\Security\AccessManager(%accessManager%)
   - App\Security\Authorizator
 
+  # external login services
+  - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
+
   # helpers
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
-  - App\Helpers\LdapUserUtils(%ldapConnection%)
 
   # models - repositories
-  - App\Model\Repository\Comments()
-  - App\Model\Repository\Exercises()
-  - App\Model\Repository\ExerciseAssignments()
-  - App\Model\Repository\Groups()
-  - App\Model\Repository\Instances()
-  - App\Model\Repository\Licences()
-  - App\Model\Repository\Logins()
-  - App\Model\Repository\Permissions()
-  - App\Model\Repository\Resources()
-  - App\Model\Repository\Roles()
-  - App\Model\Repository\Submissions()
-  - App\Model\Repository\SubmissionEvaluations()
-  - App\Model\Repository\UploadedFiles()
-  - App\Model\Repository\Users()
+  - App\Model\Repository\Comments
+  - App\Model\Repository\Exercises
+  - App\Model\Repository\ExerciseAssignments
+  - App\Model\Repository\ExternalLogins
+  - App\Model\Repository\Groups
+  - App\Model\Repository\Instances
+  - App\Model\Repository\Licences
+  - App\Model\Repository\Logins
+  - App\Model\Repository\Permissions
+  - App\Model\Repository\Resources
+  - App\Model\Repository\Roles
+  - App\Model\Repository\Submissions
+  - App\Model\Repository\SubmissionEvaluations
+  - App\Model\Repository\UploadedFiles
+  - App\Model\Repository\Users
 
 doctrine:
   user: 'root'
