@@ -11,6 +11,7 @@ parameters:
     audience: https://recodex.projekty.ms.mff.cuni.cz
     expiration: 86400
     algorithm: HS256
+    verificationKey: "recodex-123"
 
   fileServer:
     address: http://195.113.17.8:9999

@@ -85,8 +85,7 @@ class AccessManager {
   }
 
   private function getSecretVerificationKey() {
-    return "recodex-123"; // @todo make this secure using environment variables - it must not appear on GitHub...
-    // and maybe also make it harder to guess?
+    return $this->parameters['verificationKey'];
   }
 
   private function getAllowedAlgs() {
