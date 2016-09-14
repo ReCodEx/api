@@ -61,6 +61,7 @@ class Instance implements JsonSerializable
    */
   protected $licences;
 
+
   public function getValidLicences() {
     return $this->licences->filter(function ($licence) {
       return $licence->isValid();
@@ -69,6 +70,39 @@ class Instance implements JsonSerializable
 
   public function hasValidLicence() {
     return $this->getValidLicences()->count() > 0;
+  }
+
+  /**
+   * @ORM\OneToMany(targetEntity="User", mappedBy="instance")
+   */
+  protected $members;
+
+  public function getMembers($search = NULL) {
+    if ($search !== NULL && !empty($search)) {
+      $filter = Criteria::create()
+                  ->where(Criteria::expr()->contains("firstName", $search))
+                  ->orWhere(Criteria::expr()->contains("lastName", $search))
+                  ->orWhere(Criteria::expr()->contains("email", $search));
+      $members = $this->members->matching($filter);
+      if ($members->count() > 0) {
+        return $members;
+      }
+
+      // weaker filter - the strict one did not match anything
+      $members = $this->members;
+      foreach (explode(" ", $search) as $part) {
+        $filter = Criteria::create()
+                      ->orWhere(Criteria::expr()->contains("firstName", $part))
+                      ->orWhere(Criteria::expr()->contains("lastName", $part))
+                      ->orWhere(Criteria::expr()->contains("email", $part));
+        $members = $members->matching($filter);
+      }
+
+      return $members;
+    } else {
+      // no query is present 
+      return $this->members;
+    }
   }
 
   /**

@@ -104,6 +104,21 @@ class InstancesPresenter extends BasePresenter {
   /**
    * @GET
    */
+  public function actionUsers(string $id, string $search = NULL) {
+    $instance = $this->findInstanceOrThrow($id);
+    $user = $this->findUserOrThrow("me");
+    if (!$user->belongsTo($instance)
+      || !$this->user->isInRole("superadmin")) { // @todo: use privilidges instead of roles
+        throw new ForbiddenRequestException("You cannot access this instance users."); 
+    }
+
+    $members = $instance->getMembers($search);
+    $this->sendSuccessResponse($members->toArray());
+  }
+
+  /**
+   * @GET
+   */
   public function actionLicences(string $id) {
     $instance = $this->findInstanceOrThrow($id);
     $this->sendSuccessResponse($instance->getLicences()->toArray());
