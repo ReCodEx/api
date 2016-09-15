@@ -62,16 +62,15 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $this->restrictUnauthorizedAccess($actionReflection);
   }
 
+  /**
+   * Try to authenticate the user from the parameters given in the request.
+   * @return void
+   */
   private function tryLogin() {
-    $user = NULL;
-    try {
-      $user = $this->accessManager->getUserFromRequestOrThrow($this->getHttpRequest());
-    } catch (\Exception $e) {
-      // silent error
-    }
-
-    if ($user) {
-      $this->user->login(new Identity($user->getId(), $user->getRole()->id, $user->jsonSerialize()));
+    // try to authenticate the user
+    $identity = $this->accessManager->getIdentity($this->getHttpRequest());
+    if ($identity !== NULL) {
+      $this->user->login($identity);
       $this->user->setAuthorizator($this->authorizator);
     }
   }
