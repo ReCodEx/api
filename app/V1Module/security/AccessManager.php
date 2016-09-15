@@ -5,11 +5,13 @@ namespace App\Security;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\NoAccessTokenException;
 use App\Exceptions\ForbiddenRequestException;
 
 use Nette\Http\Request;
+use Nette\Security\Identity;
 use Nette\Utils\Strings;
 
 use Firebase\JWT\JWT;
@@ -27,6 +29,20 @@ class AccessManager {
   public function __construct(array $parameters, Users $users) {
     $this->users = $users;
     $this->parameters = $parameters;
+  }
+
+  /**
+   * Extract user information from the 
+   * @param   Request       $req    HTTP request
+   * @return  Identity|NULL
+   */
+  public function getIdentity(Request $req) {
+    try {
+      $user = $this->getUserFromRequestOrThrow($req);
+      return new Identity($user->getId(), $user->getRole()->getId(), $user->jsonSerialize());
+    } catch (ApiException $e) {
+      return NULL; 
+    }
   }
 
   /**
@@ -55,11 +71,11 @@ class AccessManager {
       throw new InvalidAccessTokenException($token);
     }
 
-    if (!isset($decodedToken->sub) || !isset($decodedToken->sub->id)) {
+    if (!isset($decodedToken->sub)) {
       throw new InvalidAccessTokenException($token);
     }
 
-    $user = $this->users->get($decodedToken->sub->id);
+    $user = $this->users->get($decodedToken->sub);
     if (!$user || $user->isAllowed() === FALSE) {
       throw new ForbiddenRequestException;
     }
@@ -71,14 +87,14 @@ class AccessManager {
    * @param   User
    * @return  string
    */
-  public function issueToken(User $user) {    
+  public function issueToken(User $user) {
     $tokenPayload = [
       "iss" => $this->parameters['issuer'],
       "aud" => $this->parameters['audience'],
       "iat" => time(),
       "nbf" => time(),
       "exp" => time() + $this->parameters['expiration'],
-      "sub" => $user
+      "sub" => $user->getId()
     ];
 
     return JWT::encode($tokenPayload, $this->getSecretVerificationKey(), $this->getAlg());
