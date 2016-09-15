@@ -34,7 +34,7 @@ class CAS implements IExternalLoginService {
     // The field names of user's information stored in the CAS LDAP
     $this->emailField = Arrays::get($fields, "email", "mail");
     $this->firstNameField = Arrays::get($fields, "firstName", "firstName");
-    $this->lastNameField = Arrays::get($fields, "lastName", "firstName");
+    $this->lastNameField = Arrays::get($fields, "lastName", "lastName");
   }
 
   public function getUser(string $ukco, string $password): UserData {
@@ -43,11 +43,6 @@ class CAS implements IExternalLoginService {
     $firstName = $this->getValue($data->get($this->firstNameField));
     $lastName = $this->getValue($data->get($this->lastNameField));
 
-    // @todo remove with the real stuff
-    // $email = "simon@rozsival.com";
-    // $firstName = "Simon";
-    // $lastName = "Rozsival";
-    
     return new UserData($ukco, $email, $firstName, $lastName, $this);
   }
 
