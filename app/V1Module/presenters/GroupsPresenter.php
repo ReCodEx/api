@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Exceptions\BadRequestException;
@@ -301,9 +302,11 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is student of the group 
     if ($group->isStudentOf($user) === TRUE) {
-      $membership = $user->removeStudentFrom($group);
-      $this->em->remove($membership);
-      $this->em->flush();
+      $membership = $user->findMembershipAsStudent($group);
+      if ($membership) {
+        $this->em->remove($membership);
+        $this->em->flush();
+      }
     }
 
     // join the group
@@ -322,10 +325,11 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already supervisor of the group 
+    // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
       $user->makeSupervisorOf($group);
       $this->users->flush();
+      $this->groups->flush();
     }
 
     $this->sendSuccessResponse($group);
@@ -345,8 +349,11 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is not already supervisor of the group 
     if ($group->isSupervisorOf($user) === TRUE) {
-      $user->removeSupervisorFrom($group);
-      $this->users->flush();
+      $membership = $user->findMembershipAsSupervisor($group);
+      if ($membership) {
+        $this->em->remove($membership);
+        $this->em->flush();
+      }
     }
 
     $this->sendSuccessResponse($group);

@@ -126,7 +126,7 @@ class Group implements JsonSerializable
   }
 
   public function isSupervisorOf(User $user) {
-    return $this->getSupervisors()->contains($user) || $this->isAdminOf($user);
+    return $this->getSupervisors()->contains($user);
   }
 
   public function isMemberOf(User $user) {

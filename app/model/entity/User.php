@@ -105,8 +105,10 @@ class User implements JsonSerializable
      */
     protected $memberships;
 
-    protected function findMembership(Group $group) {
-      $filter = Criteria::create()->where(Criteria::expr()->eq("group", $group));
+    protected function findMembership(Group $group, string $type) {
+      $filter = Criteria::create()
+                  ->where(Criteria::expr()->eq("group", $group))
+                  ->andWhere(Criteria::expr()->eq("type", $type));
       $filtered = $this->memberships->matching($filter);
       if ($filtered->isEmpty()) {
         return NULL;
@@ -119,6 +121,14 @@ class User implements JsonSerializable
       return $filtered->first();
     }
 
+    public function findMembershipAsStudent(Group $group) {
+      return $this->findMembership($group, GroupMembership::TYPE_STUDENT);
+    }
+
+    public function findMembershipAsSupervisor(Group $group) {
+      return $this->findMembership($group, GroupMembership::TYPE_SUPERVISOR);
+    }
+
     protected function addMembership(Group $group, string $type) {
       $membership = new GroupMembership($group, $this, $type, GroupMembership::STATUS_ACTIVE);
       $this->memberships->add($membership);
@@ -126,24 +136,13 @@ class User implements JsonSerializable
     }
 
     protected function makeMemberOf(Group $group, string $type) {
-      $membership = $this->findMembership($group);
+      $membership = $this->findMembership($group, $type);
       if ($membership === NULL) {
         $this->addMembership($group, $type);
       } else {
         $membership->setType($type);
         $membership->setStatus(GroupMembership::STATUS_ACTIVE);
       }
-    }
-
-    protected function removeMemberOf(Group $group, $type = NULL) {
-      $membership = $this->findMembership($group);
-      if (!$membership || ($type === NULL && $membership->type !== NULL)) {
-        // @todo: Handle the situation, when the user is not the member of this
-        // group or is not member of the particular type
-        return;
-      }
-
-      return $membership;
     }
 
     protected function getGroups(string $type) {
@@ -163,20 +162,12 @@ class User implements JsonSerializable
       $this->makeMemberOf($group, GroupMembership::TYPE_STUDENT);
     }
 
-    public function removeStudentFrom(Group $group) {
-      return $this->removeMemberOf($group, GroupMembership::TYPE_STUDENT);
-    }
-
     public function getGroupsAsSupervisor() {
       return $this->getGroups(GroupMembership::TYPE_SUPERVISOR);
     }
 
     public function makeSupervisorOf(Group $group) {
       $this->makeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
-    }
-
-    public function removeSupervisorFrom(Group $group) {
-      return $this->removeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
     }
 
     /**
