@@ -143,7 +143,10 @@ class Group implements JsonSerializable
     $group = $this;
     $admins = [];
     while ($group !== NULL) {
-      $admins[] = $group->admin->getId();
+      if ($group->admin !== NULL) {
+        $admins[] = $group->admin->getId();
+      }
+
       $group = $group->parentGroup;
     }
 
