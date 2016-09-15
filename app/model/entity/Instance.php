@@ -57,6 +57,11 @@ class Instance implements JsonSerializable
   protected $admin;
 
   /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $needsLicence;
+
+  /**
    * @ORM\OneToMany(targetEntity="Licence", mappedBy="instance")
    */
   protected $licences;
@@ -68,7 +73,7 @@ class Instance implements JsonSerializable
   }
 
   public function hasValidLicence() {
-    return $this->getValidLicences()->count() > 0;
+    return $this->needsLicence === FALSE || $this->getValidLicences()->count() > 0;
   }
 
   /**
