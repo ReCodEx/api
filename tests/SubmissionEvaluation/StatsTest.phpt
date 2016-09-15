@@ -50,31 +50,31 @@ class TestStats extends Tester\TestCase
   public function testMissingExitcode() {
     $data = self::$sample;
     unset($data["exitcode"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exception\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'exitcode' field.");
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'exitcode' field.");
   }
   
   public function testMissingMemory() {
     $data = self::$sample;
     unset($data["memory"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exception\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'memory' field.");
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'memory' field.");
   }
   
   public function testMissingTime() {
     $data = self::$sample;
     unset($data["time"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exception\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'time' field.");
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'time' field.");
   }
   
   public function testMissingMessage() {
     $data = self::$sample;
     unset($data["message"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exception\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'message' field.");
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'message' field.");
   }
 
   public function testMissingKilled() {
     $data = self::$sample;
     unset($data["killed"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exception\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'killed' field.");
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'killed' field.");
   }
 
 }

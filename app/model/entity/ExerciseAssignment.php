@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
-use App\Exception\MalformedJobConfigException;
+use App\Exceptions\MalformedJobConfigException;
 
 /**
  * @ORM\Entity

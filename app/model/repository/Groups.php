@@ -8,4 +8,15 @@ class Groups extends BaseRepository {
   public function findAllByInstance(Instance $instance) {
     $this->repository->findBy([ 'instance' => $instance->getId() ]);
   }
+
+  public function nameIsFree($name, $instanceId, $parentGroupId = NULL) {
+    $name = trim($name);
+    $groups = $this->repository->findBy([
+      "name" => $name,
+      "parentGroup" => $parentGroupId,
+      "instance" => $instanceId
+    ]);
+
+    return count($groups) === 0;
+  }
 }

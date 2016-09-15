@@ -6,8 +6,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 
-use App\Exception\SubmissionFailedException;
-use App\Exception\SubmissionEvaluationFailedException;
+use App\Exceptions\SubmissionFailedException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;

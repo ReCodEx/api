@@ -27,6 +27,7 @@ class RouterFactory {
 
     self::createAuthRoutes($router, $prefix);
     self::createCommentsRoutes($router, "$prefix/comments");
+    self::createBrokerReportsRoutes($router, "$prefix/broker-reports");
     self::createExercisesRoutes($router, "$prefix/exercises");
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
@@ -42,6 +43,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/login", "Login:default");
     $router[] = new GetRoute("$prefix/login/refresh", "Login:refresh");
     $router[] = new GetRoute("$prefix/login/<serviceId>", "Login:external");
+  }
+
+  private static function createBrokerReportsRoutes($router, $prefix) {
+    $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
+    $router[] = new PostRoute("$prefix/job-status/<submissionId>", "BrokerReports:jobStatus");
   }
 
   private static function createCommentsRoutes($router, $prefix) {
@@ -65,7 +71,9 @@ class RouterFactory {
   private static function createGroupsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Groups:");
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
+    $router[] = new PostRoute("$prefix/validate-add-group-data", "Groups:validateAddGroupData");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
+    $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
     
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
@@ -92,6 +100,7 @@ class RouterFactory {
     $router[] = new PutRoute("$prefix/<id>", "Instances:updateInstance");
     $router[] = new DeleteRoute("$prefix/<id>", "Instances:deleteInstance");
     $router[] = new GetRoute("$prefix/<id>/groups", "Instances:groups");
+    $router[] = new GetRoute("$prefix/<id>/users", "Instances:users");
     $router[] = new GetRoute("$prefix/<id>/licences", "Instances:licences");
     $router[] = new PostRoute("$prefix/<id>/licences", "Instances:createLicence");
     $router[] = new PutRoute("$prefix/<id>/licences/<licenceId>", "Instances:updateLicence");
@@ -112,6 +121,7 @@ class RouterFactory {
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");
+    $router[] = new PostRoute("$prefix/validate-registration-data", "Users:validateRegistrationData");
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");

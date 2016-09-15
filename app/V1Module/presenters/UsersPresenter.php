@@ -11,8 +11,10 @@ use App\Model\Repository\Roles;
 use App\Model\Repository\Users;
 use App\Security\AccessManager;
 
-use App\Exception\BadRequestException;
+use App\Exceptions\BadRequestException;
 use Nette\Http\IResponse;
+
+use ZxcvbnPhp\Zxcvbn;
 
 class UsersPresenter extends BasePresenter {
 
@@ -42,7 +44,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="email", validation="email")
    * @Param(type="post", name="firstName", validation="string:2..")
    * @Param(type="post", name="lastName", validation="string:2..")
-   * @Param(type="post", name="password", validation="string:8..", msg="Password must be at least 8 characters long.")
+   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.")
    * @Param(type="post", name="instanceId", validation="string:1..")
    */
   public function actionCreateAccount() {
@@ -89,6 +91,27 @@ class UsersPresenter extends BasePresenter {
       "user" => $user,
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
+  }
+
+  /**
+   * @POST
+   * @Param(type="post", name="email")
+   * @Param(type="post", name="password")
+   */
+  public function actionValidateRegistrationData() {
+    $req = $this->getHttpRequest();
+    $email = $req->getPost("email");
+    $emailParts = explode("@", $email);
+    $password = $req->getPost("password");
+
+    $user = $this->users->getByEmail($email);
+    $zxcvbn = new Zxcvbn;
+    $passwordStrength = $zxcvbn->passwordStrength($password, [ $email, $emailParts[0] ]);
+
+    $this->sendSuccessResponse([
+      "usernameIsFree" => $user === NULL,
+      "passwordScore" => $passwordStrength["score"]
+    ]);
   }
 
   /**

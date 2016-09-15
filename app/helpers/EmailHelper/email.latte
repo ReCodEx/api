@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{$subject}</title>
+  {if !isset($noCss) || $noCss === FALSE}
+  <style>
+    {include 'style.css'|noescape}
+  </style>
+  {/if}
+</head>
+<body>
+  <div id="wrapper">
+    <table align="center">
+      <tr>
+        <td class="nopadding">
+          <h1>
+            <img src="{$url|trim:"/"}/emails/img/logo.png" alt="ReCodEx">
+          </h1>
+          <table width="600" algin="center" border="0" cellspacing="0" cellpadding="0" class="container">
+            <tr>
+              <td class="header" colspan="2">
+                <h2>{$subject}</h2>
+              </td>
+            </tr>
+          
+            <tr>
+              <td class="body" colspan="2">
+                  {$message|noescape}
+              </td>
+            </tr>
+            <tr class="container-footer">
+              <td class="signature">
+                <p>
+                  S přáním pěkného dne,<br>Roboti z ReCodExu<br>
+                  <a href="{$url}">{$url}</a>
+                </p>
+              </td>
+              <td class="social-icons">
+                <a href="{$githubUrl}" class="social-icon" target=_blank>
+                  <img src="{$url|trim:"/"}/emails/img/github.png" width="32" height="31" alt="Github">
+                </a>
+              </td>
+            </tr>
+          </table>
+          <table class="shadow" cellpadding="0" cellspacing="0" align="center">
+            <tr>
+              <td class="nopadding">
+                <img src="{$url|trim:"/"}/emails/img/shadow.png" alt="" width="600" height="14">
+              </td>
+            </tr>
+          </table>
+      
+          <p class="note">&copy; 2016 {$siteName}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>

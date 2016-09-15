@@ -2,7 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\NotFoundException;
+use App\Exceptions\NotFoundException;
 use App\Model\Repository\Exercises;
 
 /**

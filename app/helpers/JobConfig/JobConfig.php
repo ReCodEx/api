@@ -3,7 +3,7 @@
 namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
-use App\Exception\JobConfigLoadingException;
+use App\Exceptions\JobConfigLoadingException;
 
 class JobConfig {
 

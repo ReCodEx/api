@@ -2,10 +2,10 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\NotFoundException;
-use App\Exception\ForbiddenRequestException;
-use App\Exception\BadRequestException;
-use App\Exception\SubmissionFailedException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\SubmissionFailedException;
 
 use App\Model\Entity\Submission;
 use App\Helpers\SubmissionHelper;

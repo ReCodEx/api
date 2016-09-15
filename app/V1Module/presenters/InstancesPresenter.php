@@ -4,7 +4,7 @@ namespace App\V1Module\Presenters;
 
 use Nette\Http\IResponse;
 
-use App\Exception\NotFoundException;
+use App\Exceptions\NotFoundException;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
@@ -99,6 +99,21 @@ class InstancesPresenter extends BasePresenter {
   public function actionGroups(string $id) {
     $instance = $this->findInstanceOrThrow($id);
     $this->sendSuccessResponse($instance->getGroups()->toArray());
+  }
+
+  /**
+   * @GET
+   */
+  public function actionUsers(string $id, string $search = NULL) {
+    $instance = $this->findInstanceOrThrow($id);
+    $user = $this->findUserOrThrow("me");
+    if (!$user->belongsTo($instance)
+      || !$this->user->isInRole("superadmin")) { // @todo: use privilidges instead of roles
+        throw new ForbiddenRequestException("You cannot access this instance users."); 
+    }
+
+    $members = $instance->getMembers($search);
+    $this->sendSuccessResponse($members->toArray());
   }
 
   /**

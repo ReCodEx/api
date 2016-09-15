@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-use App\Exception\JobConfigLoadingException;
+use App\Exceptions\JobConfigLoadingException;
 
 class ExecutionTaskConfig extends TaskConfig {
 

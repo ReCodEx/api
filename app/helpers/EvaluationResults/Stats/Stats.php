@@ -2,7 +2,7 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Exception\ResultsLoadingException;
+use App\Exceptions\ResultsLoadingException;
 use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
