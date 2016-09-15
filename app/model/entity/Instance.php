@@ -91,6 +91,12 @@ class Instance implements JsonSerializable
       // weaker filter - the strict one did not match anything
       $members = $this->members;
       foreach (explode(" ", $search) as $part) {
+        // skip empty parts
+        $part = trim($part);
+        if (empty($part)) {
+          continue;
+        }
+
         $filter = Criteria::create()
                       ->orWhere(Criteria::expr()->contains("firstName", $part))
                       ->orWhere(Criteria::expr()->contains("lastName", $part))
