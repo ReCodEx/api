@@ -37,6 +37,23 @@ class CAS implements IExternalLoginService {
     $this->lastNameField = Arrays::get($fields, "lastName", "lastName");
   }
 
+  /**
+   * Tries to find UKCO for the given email. The ID cannot be determined if there is no
+   * person with this email or if there mare multiple people sharing the email.
+   * @param  string $email [description]
+   * @return string|NULL
+   */
+  public function getUKCO(string $email) {
+    // @todo
+    return NULL;
+  }
+
+  /**
+   * Read user's data from the CAS UK, if the credentials provided by the user are correct.
+   * @param  string $ukco     Identification number of the person
+   * @param  string $password User's password
+   * @return UserData
+   */
   public function getUser(string $ukco, string $password): UserData {
     $data = $this->ldap->getUser($ukco, $password);
     $email = $this->getValue($data->get($this->emailField));
@@ -46,6 +63,11 @@ class CAS implements IExternalLoginService {
     return new UserData($ukco, $email, $firstName, $lastName, $this);
   }
 
+  /**
+   * Get value of an attribute.
+   * @param  NodeAttribute $attribute The attribute
+   * @return mixed                    The value
+   */
   private function getValue(NodeAttribute $attribute) {
     if ($attribute === null || $attribute->count() === 0) {
       throw new \Exception; // @todo Throw a specific information
