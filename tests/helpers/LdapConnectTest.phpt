@@ -4,8 +4,8 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\LdapUserUtils;
-use App\Exception\WrongCredentialsException;
-use App\Exception\LdapConnectException;
+use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\LdapConnectException;
 
 
 class LdapConnectTest extends Tester\TestCase
@@ -41,21 +41,22 @@ class LdapConnectTest extends Tester\TestCase
     Assert::equal(LdapUserUtils::ERROR_WRONG_CREDENTIALS, LdapUserUtils::getErrorCode("Could not bind privileged user: Ldap Error Code=49 - Invalid credentials"));
     Assert::equal(LdapUserUtils::ERROR_TOO_MANY_UNSUCCESSFUL_TRIES, LdapUserUtils::getErrorCode("Could not bind privileged user: Ldap Error Code=19 - Constraint violation"));
     Assert::equal(LdapUserUtils::ERROR_INAPPROPRIATE_AUTHENTICATION, LdapUserUtils::getErrorCode("Could not bind privileged user: Ldap Error Code=48 - Inappropriate authentication"));
+    Assert::equal(LdapUserUtils::ERROR_NO_SUCH_OBJECT, LdapUserUtils::getErrorCode("Could not bind user: Ldap Error Code=32 - No such object"));
   }
 
   public function testInvalidArgumentConfig() {
     $ldapManager = new LdapUserUtils(self::$invalidArgumentConfig);
-    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exception\LdapConnectException');
+    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongConfig() {
     $ldapManager = new LdapUserUtils(self::$wrongConfig);
-    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exception\LdapConnectException');
+    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongCredentials() {
     $ldapManager = new LdapUserUtils(self::$config);
-    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exception\WrongCredentialsException');
+    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\WrongCredentialsException');
   }
 
 //   public function testCorrectCredentials() {
