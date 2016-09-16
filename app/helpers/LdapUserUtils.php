@@ -9,8 +9,8 @@ use Toyota\Component\Ldap\Exception\BindException;
 use Toyota\Component\Ldap\Exception\ConnectionException;
 use Toyota\Component\Ldap\Exception\OptionException;
 
-use App\Exception\WrongCredentialsException;
-use App\Exception\LdapConnectException;
+use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\LdapConnectException;
 
 use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
