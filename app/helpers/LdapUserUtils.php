@@ -36,6 +36,9 @@ class LdapUserUtils {
   /** @var string Name of userId element (such as cn or cunipersonalid) */
   private $bindName;
 
+  /** @var Manager Anonymous LDAP connection for searching */
+  private $anonymousManager;
+
   public function __construct(array $config) {
     $this->ldapConfig = [
       'hostname' => Arrays::get($config, 'hostname', NULL),
@@ -52,6 +55,13 @@ class LdapUserUtils {
 
     $this->baseDn = Arrays::get($config, 'base_dn');
     $this->bindName = Arrays::get($config, 'bindName');
+
+    try {
+      $this->anonymousManager = $this->connect();
+      $this->anonymousManager->bind();
+    } catch (\Exception $e) {
+      throw new LdapConnectException;
+    }
   }
 
   /**
@@ -88,6 +98,22 @@ class LdapUserUtils {
     }
 
     return $manager->getNode($bindString);
+  }
+
+  public function findUserByMail(string $mail) {
+    $results = $this->anonymousManager->search('ou=people,dc=cuni,dc=cz', "(&(objectClass=person)(mail={$mail}))");
+    $resultCount = 0;
+    foreach ($results as $node) {
+      $dn = $node->getDn();
+      $ukco = substr($dn, 15, 8);  // dn: cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz
+      $resultCount += 1;
+    }
+
+    if ($resultCount != 1) {
+      return NULL;
+    } else {
+      return $ukco;
+    }
   }
 
   public function getBindString($userId) {
