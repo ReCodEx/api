@@ -100,20 +100,19 @@ class LdapUserUtils {
     return $manager->getNode($bindString);
   }
 
-  public function findUserByMail(string $mail) {
-    $results = $this->anonymousManager->search('ou=people,dc=cuni,dc=cz', "(&(objectClass=person)(mail={$mail}))");
-    $resultCount = 0;
-    foreach ($results as $node) {
-      $dn = $node->getDn();
-      $ukco = substr($dn, 15, 8);  // dn: cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz
-      $resultCount += 1;
+  public function findUserByMail(string $mail, string $mailField = 'mail') {
+    $results = $this->anonymousManager->search(
+      $this->baseDn,
+      "(&(objectClass=person)({$mailField}={$mail}))"
+    );
+
+    // the ID can be extracted only if there is exactely one result
+    if (count($results) !== 1 || $results->valid() === FALSE) {
+      return NULL;
     }
 
-    if ($resultCount != 1) {
-      return NULL;
-    } else {
-      return $ukco;
-    }
+    $dn = $results->key();
+    return self::getPersonalId($dn);
   }
 
   public function getBindString($userId) {
@@ -136,9 +135,33 @@ class LdapUserUtils {
     return $manager;
   }
 
+  /**
+   * Extract the code of the error from the message.
+   * @param  string $msg The error messate
+   * @return int
+   */
   public static function getErrorCode(string $msg): int {
     list($code) = Strings::match($msg, "/-?\d+/");
+    if ($code === NULL) {
+      throw new LdapConnectException; // The bind exception didn't yield correct error message
+    }
+
     return intval($code);
+  }
+
+  /**
+   * Extracts the personal ID from distinguished name of the node. It is assumed, that the ID is the value of the left most component of the DN.
+   * @param  string $dn   Distinguished name of the node (i.e.: cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz)
+   * @return string|NULL  The personal ID
+   */
+  public static function getPersonalId(string $dn) {
+    $parts = ldap_explode_dn($dn, 1); // 1 ==> only values of RDN, see http://php.net/manual/en/function.ldap-explode-dn.php
+    if ($parts === FALSE || $parts["count"] === 0) {
+      return NULL;
+    }
+
+    unset($parts["count"]);
+    return reset($parts); // the first value is the left most component
   }
 
 }

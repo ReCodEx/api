@@ -49,7 +49,7 @@ class CAS implements IExternalLoginService {
    * @return string|NULL
    */
   public function getUKCO(string $email) {
-    return $this->ldap->findUserByMail($email);
+    return $this->ldap->findUserByMail($email, $this->objectClass, $this->emailField);
   }
 
   /**
