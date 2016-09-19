@@ -106,12 +106,13 @@ class LdapUserUtils {
       "(&(objectClass=person)({$mailField}={$mail}))"
     );
 
+    $dn = $results->key();
+
     // the ID can be extracted only if there is exactely one result
-    if (count($results) !== 1 || $results->valid() === FALSE) {
+    if ($dn === NULL || $results->next() !== NULL) {
       return NULL;
     }
 
-    $dn = $results->key();
     return self::getPersonalId($dn);
   }
 
