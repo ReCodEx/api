@@ -51,7 +51,7 @@ class Authorizator implements NS\IAuthorizator {
         $this->acl->{$permission->isAllowed() ? "allow" : "deny"}(
           $permission->getRoleId(),
           $permission->getResourceId()
-        )
+        );
 
         return;
       }
