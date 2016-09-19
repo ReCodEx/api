@@ -6,7 +6,7 @@ use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
 use App\Helpers\JobConfig\Loader as JobConfigLoader;
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\EvaluationResults;
+use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
 use App\Helpers\SimpleScoreCalculator;
 
@@ -32,7 +32,7 @@ class EvaluationLoader {
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
     $evaluation = new SubmissionEvaluation($submission, $results);
-    $this->calculateScore($evaluation, $results);
+    $this->calculateScore($submission, $evaluation, $results);
     $this->calculatePoints($evaluation, $submission->getMaxPoints());
     return $evaluation;
   }
@@ -59,11 +59,12 @@ class EvaluationLoader {
   }
 
   /**
+   * @param Submission            $submission   The submission
    * @param SubmissionEvaluation  $evaluation   Evaluation entity
-   * @param ExerciseResults       $results      Results of the evaluation
+   * @param EvaluationResults     $results      Results of the evaluation
    * @return void
    */
-  private function calculateScore(SubmissionEvaluation $evaluation, ExerciseResults $results) {
+  private function calculateScore(Submission $submission, SubmissionEvaluation $evaluation, EvaluationResults $results) {
     // calcutate the total score based on the results
     if (!!$results) {
       $evaluation->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
