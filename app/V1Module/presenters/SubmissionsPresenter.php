@@ -2,6 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\EvaluationLoader;
+
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
 use App\Model\Entity\TestResult;
@@ -24,6 +26,9 @@ class SubmissionsPresenter extends BasePresenter {
 
   /** @inject @var SubmissionEvaluations */
   public $evaluations;
+
+  /** @inject @var EvaluationLoader */
+  public $evaluationLoader;
 
   /**
    * @param string $id

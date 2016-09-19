@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
+use Symfony\Component\Yaml\Yaml;
 
 class TaskConfig {
 
@@ -40,6 +41,14 @@ class TaskConfig {
     return $this->id;
   }
 
+  /**
+   * Type of the task
+   * @return string
+   */
+  public function getType() {
+    return $this->type;
+  }
+
   public function isInitiationTask() {
     return $this->type === self::TYPE_INITIATION;
   }
@@ -62,6 +71,18 @@ class TaskConfig {
    */
   public function getTestId() {
     return $this->testId;
+  }
+
+  public function toArray() {
+    return $this->data;
+  }
+
+  /**
+   * Serialize the config
+   * @return string
+   */
+  public function __toString() {
+    return Yaml::dump($this->toArray());
   }
 
 }

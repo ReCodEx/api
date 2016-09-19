@@ -14,29 +14,31 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
 use ZipArchive;
 
+use Nette\Utils\Arrays;
+
 /**
  * @author  Šimon Rozsíval <simon@rozsival.com>
  */
 class FileServerProxy {
 
-  /** @var string */
-  private $remoteServerAddress;
+  const JOB_CONFIG_FILENAME = "job-config.yml";
 
   /** @var string */
-  private $jobConfigFileName;
+  private $remoteServerAddress;
 
   /** @var Client */
   private $client;
 
   public function __construct(array $config) {
-    $this->remoteServerAddress = $config["address"];
-    $this->jobConfigFileName = $config["jobConfigFileName"];
+    $this->remoteServerAddress = Arrays::get($config, "address");
     $this->client = new Client([
-      "base_uri" => $config["address"],
+      "base_uri" => $this->remoteServerAddress,
       "auth" => [
-        $config["username"],
-        $config["password"]
-      ]
+        Arrays::get($config, ["auth", "username"], "re"),
+        Arrays::get($config, ["auth", "password"], "codex")
+      ],
+      "connect_timeout" => floatval(Arrays::get($config, ["timeouts", "connection"], 1000)) / 1000.0,
+      "timeout" => floatval(Arrays::get($config, ["timeouts", "request"], 30000)) / 1000.0
     ]);
   }
 
@@ -132,8 +134,8 @@ class FileServerProxy {
         throw new SubmissionFailedException("File $file->filePath does not exist on the server.");
       }
 
-      if ($file->name === $this->jobConfigFileName) {
-        throw new SubmissionFailedException("User is not allowed to upload a file with the name of $this->jobConfigFileName");
+      if ($file->name === self::JOB_CONFIG_FILENAME) {
+        throw new SubmissionFailedException("User is not allowed to upload a file with the name of " . self::JOB_CONFIG_FILENAME);
       }
 
       return [
@@ -145,8 +147,8 @@ class FileServerProxy {
 
     // the job config must be among the uploaded files as well
     $filesToSubmit[] = [
-      "name" => $this->jobConfigFileName,
-      "filename" => $this->jobConfigFileName,
+      "name" => self::JOB_CONFIG_FILENAME,
+      "filename" => self::JOB_CONFIG_FILENAME,
       "contents" => $jobConfig
     ];
 
