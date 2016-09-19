@@ -14,19 +14,25 @@ parameters:
     verificationKey: "recodex-123"
 
   fileServer:
-    address: http://195.113.17.8:9999
-    username: "re"
-    password: "codex"
-    jobConfigFileName: "job-config.yml"
-
-  broker:
-    address: tcp://195.113.17.8:9658
+    address: http://195.113.17.8:10009
     auth:
       username: "re"
       password: "codex"
+    timeouts:
+      connection: 500
+
+  broker:
+    address: tcp://195.113.17.8:9668
+    auth:
+      username: "re"
+      password: "codex"
+    timeouts:
+      ack: 100
+      send: 5000
+      result: 1000
 
   monitor:
-    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
+    address: wss://recodex.projekty.ms.mff.cuni.cz:4443/ws
 
   CAS:
     serviceId: "cas-uk"
