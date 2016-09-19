@@ -58,9 +58,19 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @GET
    */
   public function actionDetail(string $id) {
+    // @todo: check if the user can access this information
+    $assignment = $this->findAssignmentOrThrow($id);
+    $this->sendSuccessResponse($assignment);
+  }
+
+  /**
+   * @GET
+   */
+  public function actionCanSubmit(string $id) {
+    // @todo: check if the user can access this information
     $assignment = $this->findAssignmentOrThrow($id);
     $user = $this->findUserOrThrow('me');
-    $this->sendSuccessResponse($assignment->getJsonData($user));
+    $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
   }
 
   /**
@@ -89,6 +99,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $user = $loggedInUser;
     }
 
+    if (!$assignment->canReceiveSubmissions($loggedInUser)) {
+      throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
+    }
+
     // create the submission record
     $hwGroup = "group1";
     $files = $this->files->findAllById($req->getPost("files"));
@@ -97,6 +111,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
+
     $jobConfig = JobConfig\Loader::getJobConfig($submission);
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
@@ -108,8 +123,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     if($resultsUrl !== NULL) {
       $submission->setResultsUrl($resultsUrl);
       $this->submissions->persist($submission);
-      foreach ($files as $file) { $this->files->persist($file); }
-      $this->files->flush();
       $this->sendSuccessResponse([
         "submission" => $submission,
         "webSocketChannel" => [

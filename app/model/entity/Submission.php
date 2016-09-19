@@ -190,11 +190,11 @@ class Submission implements JsonSerializable
       $entity->exerciseAssignment = $assignment;
       $entity->user = $user;
       $entity->note = $note;
-      $entity->hardwareGroup = $hardwareGroup;
       $entity->submittedAt = new \DateTime;
+      $entity->hardwareGroup = $hardwareGroup;
       $entity->files = new ArrayCollection;
       foreach ($files as $file) {
-        if ($file->submission !== NULL) {
+        if ($file->submission !== NULL && $file->submission->resultsUrl !== NULL) {
           // the file was already used before and that is not allowed
           throw new BadRequestException("The file {$file->getId()} was already used in a different submission. If you want to use this file, reupload it to the server.");
         }
