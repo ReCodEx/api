@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
+use Symfony\Component\Yaml\Yaml;
 
 class Limits {
 
@@ -55,6 +56,14 @@ class Limits {
    */
   public function getMemoryLimit(): int {
     return $this->memoryLimit;
+  }
+
+  public function toArray() {
+    return $this->data;
+  }
+
+  public function __toString() {
+    return Yaml::dump($this->toArray());
   }
 
 }

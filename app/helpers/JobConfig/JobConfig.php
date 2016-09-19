@@ -7,7 +7,12 @@ use App\Exceptions\JobConfigLoadingException;
 
 class JobConfig {
 
+  /** @var array */
   private $data;
+
+  /** @var SubmissionHeader */
+  private $submissionHeader;
+
   private $tasksCount;
   private $tasks = NULL;
   private $tests = NULL;
@@ -16,7 +21,7 @@ class JobConfig {
    * Job config data structure
    * @param array $data The deserialized data from the config file
    */
-  public function __construct(string $jobId, array $data) {
+  public function __construct(array $data) {
     if (!isset($data["submission"])) {
       throw new JobConfigLoadingException("Job config does not contain required section 'submission'.");
     }
@@ -34,7 +39,7 @@ class JobConfig {
     }
 
     $this->data = $data;
-    $this->data["submission"]["job-id"] = $jobId;
+    $this->submissionHeader = new SubmissionHeader($data["submission"]);
     $this->tasksCount = count($data["tasks"]);
   }
 
@@ -43,7 +48,15 @@ class JobConfig {
    * @return string
    */
   public function getJobId(): string {
-    return $this->data["submission"]["job-id"];
+    return $this->submissionHeader->getJobId();
+  }
+
+  /**
+   * Get the identificator of this job
+   * @param string $jobId
+   */
+  public function setJobId(string $jobId) {
+    $this->submissionHeader->setJobId($jobId);
   }
 
   /**
@@ -64,11 +77,10 @@ class JobConfig {
   }
 
   /**
-   * [getTests description]
-   * @param  string $hardwareGroupId ID of a specific hardware group
+   * Get the logical tests defined in the job config
    * @return Test[] [description]
    */
-  public function getTests($hardwareGroupId) {
+  public function getTests() {
     if ($this->tests === NULL) {
       $tasksByTests = [];
       foreach ($this->getTasks() as $task) {
@@ -104,12 +116,37 @@ class JobConfig {
     return $this->tasksCount;
   }
 
+  public function removeLimits(string $hwGroupId): JobConfig {
+    $cfg = new JobConfig($this->data);
+    $cfg->tasks = array_map(
+      function ($taskConfig) {
+        $task = new TaskConfig($taskConfig);
+        if ($task->isExecutionTask()) {
+          $task = $task->getAsExecutionTask();
+          $task->removeLimits($hwGroupId);
+        }
+
+        return $task;
+      },
+      $this->data["tasks"]
+    );
+
+    return $cfg;
+  }
+
+  public function toArray() {
+    return [
+      "submission" => $this->submissionHeader->toArray(),
+      "tasks" => array_map(function($task) { return $task->toArray(); }, $this->getTasks())
+    ];
+  }
+
   /**
-   * Serialize the 
-   * @return string [description]
+   * Serialize the config
+   * @return string
    */
   public function __toString() {
-    return Yaml::dump($this->data);
+    return Yaml::dump($this->toArray());
   }
 
 }

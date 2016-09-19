@@ -25,8 +25,7 @@ class Loader {
    */
   public static function getJobConfig(Submission $submission): JobConfig {
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
-    $jobConfig = self::getParsedJobConfig($submission->getId(), $path);
-    return $jobConfig;
+    return self::getParsedJobConfig($submission->getId(), $path);
   }
 
   /**
@@ -49,16 +48,16 @@ class Loader {
 
   /**
    * @throws MalformedJobConfigException
-   * @return array Parsed YAML config with updated job-id
+   * @return array Parsed YAML config
    */
-  private static function parseJobConfig(string $jobId, string $config): JobConfig {
+  private static function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {
       throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
     }
 
-    return new JobConfig($jobId, $parsedConfig);
+    return new JobConfig($parsedConfig);
   }
 
   /**
@@ -69,7 +68,8 @@ class Loader {
     $cached = self::getCache()->load($path);
     if ($cached === NULL) {
       $yml = self::loadConfig($path);
-      $jobConfig = self::parseJobConfig($jobId, $yml);
+      $jobConfig = self::parseJobConfig($yml);
+      $jobConfig->setJobId($jobId);
       $cached = self::getCache()->store($path, $jobConfig);
     }
 
