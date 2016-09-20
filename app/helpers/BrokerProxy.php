@@ -74,7 +74,6 @@ class BrokerProxy {
     try {
       $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
-        "identity",
         "eval",
         $submissionId,
         "hwgroup=$hardwareGroup",
@@ -83,31 +82,52 @@ class BrokerProxy {
         $resultRemotePath
       ]);
     } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Uploading solution to the Broker failed or timeouted.");
+      throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
     }
 
-    $ack = NULL;
-    try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->ackTimeout);
-      $ack = $queue->recvMulti();
-    } catch (ZMQException $e) {
+    $ackReceived = $this->pollRead($poll, $queue, $this->ackTimeout);
+    
+    if (!$ackReceived) {
       throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }
 
-    if ($ack !== self::EXPECTED_ACK) {
+    $ack = $queue->recvMulti();
+
+    if ($ack[0] !== self::EXPECTED_ACK) {
       throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
     }
 
-    try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->resultTimeout);
-      $result = $queue->recvMulti();
-    } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Receiving result from the broker failed.");
+    $responseReceived = $this->pollRead($poll, $queue, $this->resultTimeout);
+
+    if (!$responseReceived) {
+      throw new SubmissionFailedException("Receiving response from the broker failed.");
     }
 
-    var_dump($result); exit;
+    $response = $queue->recvMulti();
 
-    return $result === self::EXPECTED_RESULT;
+    return $response[0] === self::EXPECTED_RESULT;
   }
 
+  /**
+   * Wait until given socket can be read from
+   * @param $poll Polling helper structure
+   * @param $queue The socket for which we want to wait
+   * @param $timeout Time limit in milliseconds
+   */
+  private function pollRead(ZMQPoll $poll, ZMQSocket $queue, $timeout) {
+    $readable = [];
+    $writable = [];
+
+    try {
+      $events = $poll->poll($readable, $writable, $timeout);
+      $errors = $poll->getLastErrors();
+      if (count($errors) > 0) {
+        throw new SubmissionFailedException("ZMQ polling returned error(s).");
+      }
+    } catch (ZMQPollException $e) {
+      throw new SubmissionFailedException("ZMQ polling raised an exception.");
+    }
+
+    return in_array($queue, $readable);
+  }
 }
