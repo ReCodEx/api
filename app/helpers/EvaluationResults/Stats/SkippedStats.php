@@ -8,6 +8,8 @@ use Nette\Utils\Json;
 
 class SkippedStats implements IStats {
 
+  const EXIT_CODE = 255;
+
   /**
    * Compares all the stats to the limits
    * @param  Limits $limits The configured limits
@@ -53,7 +55,7 @@ class SkippedStats implements IStats {
    * @return int The exit code fo the executable 
    */
   public function getExitCode(): int {
-    return 255;
+    return self::EXIT_CODE;
   }
 
   /**

@@ -15,6 +15,10 @@ class ExecutionTaskResult extends TaskResult {
       throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain sandbox results.");
     }
 
+    if (!is_array($data["sandbox_results"])) {
+      throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain array of sandbox results.");
+    }
+
     $this->stats = new Stats($data["sandbox_results"]);
   }
 
