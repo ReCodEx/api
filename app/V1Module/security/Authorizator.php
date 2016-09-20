@@ -53,7 +53,7 @@ class Authorizator implements NS\IAuthorizator {
           $permission->getResourceId()
         );
 
-        return;
+        continue;
       }
 
       if ($permission->isAllowed()) {
