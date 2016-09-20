@@ -5,8 +5,11 @@ namespace App\Helpers;
 use App\Exceptions\SubmissionFailedException;
 
 use ZMQ;
-use ZMQSocket;
 use ZMQContext;
+use ZMQException;
+use ZMQPoll;
+use ZMQPollException;
+use ZMQSocket;
 use ZMQSocketException;
 
 use Nette\Utils\Arrays;
@@ -52,16 +55,26 @@ class BrokerProxy {
    */
   public function startEvaluation(string $submissionId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
+    $poll = NULL;
+
     try {
-      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
+      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $submissionId);
       $queue->connect($this->brokerAddress);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Cannot connect to the Broker.");
     }
-      
+
     try {
-      // $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $poll = new ZMQPoll();
+      $poll->add($queue, ZMQ::POLL_IN);
+    } catch (ZMQPollException $e) {
+      throw new SubmissionFailedException("Cannot create ZMQ poll.");
+    }
+
+    try {
+      $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
+        "identity",
         "eval",
         $submissionId,
         "hwgroup=$hardwareGroup",
@@ -73,11 +86,13 @@ class BrokerProxy {
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timeouted.");
     }
 
+    // $this->poll($poll, $queue);
+
     // $ack = NULL;
     // try {
     //   $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->ackTimeout);
     //   $ack = $queue->recv();
-    // } catch (ZMQSocketException $e) {
+    // } catch (ZMQException $e) {
     //   throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     // }
 
@@ -85,12 +100,7 @@ class BrokerProxy {
     //   throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
     // }
 
-    // try {
-    //   // send an ACK to unblock the socket
-    //   $queue->send(self::EXPECTED_ACK);
-    // } catch (ZMQSocketException $e) {
-    //   throw new SubmissionFailedException("API server was unable to send acknowledge message to the broker.");
-    // }
+    $this->poll($poll, $queue);
 
     try {
       $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->resultTimeout);
@@ -99,7 +109,28 @@ class BrokerProxy {
       throw new SubmissionFailedException("Receiving result from the broker failed.");
     }
 
+    var_dump($result); exit;
+
     return $result === self::EXPECTED_RESULT;
+  }
+
+  private function poll(ZMQPoll $poll, ZMQSocket $queue) {
+    $readable = [];
+    $writable = [];
+
+    try {
+      $events = $poll->poll($readable, $writable, -1);
+      $errors = $poll->getLastErrors();
+      if (count($errors) > 0) {
+        throw new SubmissionFailedException("ZMQ polling returned error(s).");
+      }
+    } catch (ZMQPollException $e) {
+      throw new SubmissionFailedException("ZMQ polling raised an exception.");
+    }
+
+    if (!in_array($queue, $readable)) {
+      throw new SubmissionFailedException("Cannot receive commands through ZMQ.");
+    }
   }
 
 }
