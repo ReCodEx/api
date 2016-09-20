@@ -60,7 +60,7 @@ class BrokerProxy {
     }
       
     try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      // $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
         "eval",
         $submissionId,
@@ -73,25 +73,32 @@ class BrokerProxy {
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timeouted.");
     }
 
-    $ack = NULL;
-    try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->ackTimeout);
-      $ack = $queue->recv();
-    } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Broker did not send acknowledgement message.");
-    }
-    
-    if ($ack !== self::EXPECTED_ACK) {
-      throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
-    }
-    
+    // $ack = NULL;
+    // try {
+    //   $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->ackTimeout);
+    //   $ack = $queue->recv();
+    // } catch (ZMQSocketException $e) {
+    //   throw new SubmissionFailedException("Broker did not send acknowledgement message.");
+    // }
+
+    // if ($ack !== self::EXPECTED_ACK) {
+    //   throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
+    // }
+
+    // try {
+    //   // send an ACK to unblock the socket
+    //   $queue->send(self::EXPECTED_ACK);
+    // } catch (ZMQSocketException $e) {
+    //   throw new SubmissionFailedException("API server was unable to send acknowledge message to the broker.");
+    // }
+
     try {
       $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->resultTimeout);
       $result = $queue->recv();
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Receiving result from the broker failed.");
     }
-    
+
     return $result === self::EXPECTED_RESULT;
   }
 
