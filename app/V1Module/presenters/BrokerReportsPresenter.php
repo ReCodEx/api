@@ -10,6 +10,7 @@ use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Model\Entity\Submission;
 use App\Model\Repository\Submissions;
+use App\Model\Repository\SubmissionEvaluations;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
@@ -29,6 +30,9 @@ class BrokerReportsPresenter extends BasePresenter {
 
   /** @inject @var Submissions */
   public $submissions;
+
+  /** @inject @var SubmissionEvaluations */
+  public $evaluations;
 
   /**
    * @param string $id
@@ -101,9 +105,10 @@ class BrokerReportsPresenter extends BasePresenter {
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
-    if ($submission->shouldNotifyAfterEvaluationIsLoader()) {
-      $this->notifyEvaluationFinished($submission);
-    }
+    // @todo: Fix this and uncomment (shouldNotifyAfterEvaluationIsLoader() in unknown method)
+    // if ($submission->shouldNotifyAfterEvaluationIsLoader()) {
+    //   $this->notifyEvaluationFinished($submission);
+    // }
   }
 
   /**
