@@ -29,4 +29,12 @@ class ExecutionTaskResult extends TaskResult {
     return $this->stats;
   }
 
+  /**
+   * The exit code of the executed program
+   * @return int
+   */
+  public function getExitCode(): int {
+    return $this->getStats()->getExitCode();
+  }
+
 }

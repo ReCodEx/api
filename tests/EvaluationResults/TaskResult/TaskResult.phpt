@@ -6,7 +6,7 @@ use Tester\Assert;
 use App\Helpers\EvaluationResults\TaskResult;
 use App\Exceptions\ResultsLoadingException;
 
-class TestTestResult extends Tester\TestCase
+class TestTaskResult extends Tester\TestCase
 {
 
   public function testMissingRequiredParams() {
@@ -49,5 +49,5 @@ class TestTestResult extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTestResult;
+$testCase = new TestTaskResult;
 $testCase->run();

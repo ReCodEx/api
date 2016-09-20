@@ -10,6 +10,9 @@ class TestResult implements ITestResult {
   const STATUS_FAILED = "FAILED";
   const STATUS_SKIPPED = "SKIPPED";
 
+  const SCORE_MIN = 0.0;
+  const SCORE_MAX = 1.0;
+
   /** @var Test Test configuration */
   private $config;
 
@@ -21,9 +24,6 @@ class TestResult implements ITestResult {
 
   /** @var string Status of the test */
   private $status;
-
-  /** @var Stats Stats of the execution task */
-  private $stats;
 
   /** @var Limits Limits of the execution of this test */
   private $limits;
@@ -39,10 +39,15 @@ class TestResult implements ITestResult {
     $this->config = $config;
     $this->executionResult = $executionResult;
     $this->evaluationResult = $evaluationResult;
-    $this->status = self::calculateStatus($executionResult->getStatus(), $evaluationResult->getStatus());
-    $this->stats = $executionResult->getStats();
     $this->limits = $config->getLimits($hardwareGroupId);
-    $this->statsInterpretation = new StatsInterpretation($this->stats, $this->limits);
+    $this->statsInterpretation = new StatsInterpretation($this->getStats(), $this->limits);
+
+    // set the status based on the tasks runtime and their results
+    $this->status = self::calculateStatus($executionResult->getStatus(), $evaluationResult->getStatus());
+    if ($this->status === self::STATUS_OK &&
+      (!$this->didExecutionMeetLimits() || !$this->evaluationResult->getScore() === self::SCORE_MIN)) {
+        $this->status = self::STATUS_FAILED; // the tasks execution was OK, but the result is not OK
+    }
   }
 
 
@@ -91,8 +96,9 @@ class TestResult implements ITestResult {
    * @return float
    */
   public function getScore(): float {
-    if ($this->didExecutionMeetLimits() === FALSE) {
-      return 0;
+    if ($this->didExecutionMeetLimits() === FALSE || $this->getStatus() !== self::STATUS_OK) {
+      // even though the judge might say different, this test failed and the score is zero
+      return self::SCORE_MIN;
     }
 
     return $this->evaluationResult->getScore();
@@ -127,7 +133,7 @@ class TestResult implements ITestResult {
   }
 
   public function getExitCode(): int {
-    return $this->stats->getExitCode();
+    return $this->getStats()->getExitCode();
   }
 
   public function getUsedMemoryRatio(): float {
@@ -139,7 +145,7 @@ class TestResult implements ITestResult {
   }
 
   public function getMessage(): string {
-    return $this->stats->getMessage();
+    return $this->getStats()->getMessage();
   }
 
   public function getJudgeOutput() {

@@ -123,7 +123,7 @@ class SubmissionEvaluation implements JsonSerializable
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
     $this->evaluationFailed = !$results;
-    $this->initFailed = !!$results && $results->wasInitialisationOK();
+    $this->initFailed = !!$results && $results->initOK();
     $this->resultYml = (string) $results;
     $this->testResults = new ArrayCollection;
     $this->submission = $submission;
