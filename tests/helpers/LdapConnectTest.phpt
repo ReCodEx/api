@@ -44,14 +44,20 @@ class LdapConnectTest extends Tester\TestCase
     Assert::equal(LdapUserUtils::ERROR_NO_SUCH_OBJECT, LdapUserUtils::getErrorCode("Could not bind user: Ldap Error Code=32 - No such object"));
   }
 
+  public function testPersonalIdExtraction() {
+    Assert::equal("54726191", LdapUserUtils::getPersonalId("cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz"));
+    Assert::equal("123", LdapUserUtils::getPersonalId("differentPersonalId=123,ou=people,dc=sth,dc=com"));
+    Assert::equal("547261911234567", LdapUserUtils::getPersonalId("id=547261911234567,ou=people,dc=cuni,dc=cz"));
+    Assert::equal(NULL, LdapUserUtils::getPersonalId(""));
+    Assert::equal(NULL, LdapUserUtils::getPersonalId("asldkjasdlkjasldkj"));
+  }
+
   public function testInvalidArgumentConfig() {
-    $ldapManager = new LdapUserUtils(self::$invalidArgumentConfig);
-    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\LdapConnectException');
+    Assert::exception(function() {new LdapUserUtils(self::$invalidArgumentConfig);}, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongConfig() {
-    $ldapManager = new LdapUserUtils(self::$wrongConfig);
-    Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\LdapConnectException');
+    Assert::exception(function() {new LdapUserUtils(self::$wrongConfig);}, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongCredentials() {
@@ -59,10 +65,20 @@ class LdapConnectTest extends Tester\TestCase
     Assert::exception(function() use ($ldapManager) {$ldapManager->getUser("12345678", "password");}, 'App\Exceptions\WrongCredentialsException');
   }
 
-//   public function testCorrectCredentials() {
-//     $ldapManager = new LdapUserUtils(self::$config);
-//     Assert::equal("ptr.stef@gmail.com", $ldapManager->getUser("54726191", "password"));
-//   }
+  // public function testCorrectCredentials() {
+  //   $ldapManager = new LdapUserUtils(self::$config);
+  //   Assert::equal("ptr.stef@gmail.com", $ldapManager->getUser("54726191", "password"));
+  // }
+
+  public function testFindValidUserByMail() {
+    $ldapManager = new LdapUserUtils(self::$config);
+    Assert::equal("54726191", $ldapManager->findUserByMail("ptr.stef@gmail.com"));
+  }
+
+  public function testFindInvalidUserByMail() {
+    $ldapManager = new LdapUserUtils(self::$config);
+    Assert::equal(NULL, $ldapManager->findUserByMail("ukco@example.com"));
+  }
 
 }
 

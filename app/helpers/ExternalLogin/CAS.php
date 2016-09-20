@@ -3,10 +3,15 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Model\Entity\User;
-use Nette\Utils\Arrays;
 use App\Helpers\LdapUserUtils;
+use App\Exceptions\WrongCredentialsException;
+
+use Nette\Utils\Arrays;
+use Nette\Utils\Validators;
+
 use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Core\NodeAttribute;
+
 
 class CAS implements IExternalLoginService {
 
@@ -37,8 +42,32 @@ class CAS implements IExternalLoginService {
     $this->lastNameField = Arrays::get($fields, "lastName", "lastName");
   }
 
-  public function getUser(string $ukco, string $password): UserData {
-    $data = $this->ldap->getUser($ukco, $password);
+  /**
+   * Tries to find UKCO for the given email. The ID cannot be determined if there is no
+   * person with this email or if there mare multiple people sharing the email.
+   * @param  string $email [description]
+   * @return string|NULL
+   */
+  public function getUKCO(string $email) {
+    return $this->ldap->findUserByMail($email, $this->objectClass, $this->emailField);
+  }
+
+  /**
+   * Read user's data from the CAS UK, if the credentials provided by the user are correct.
+   * @param  string $username Email or identification number of the person
+   * @param  string $password User's password
+   * @return UserData
+   */
+  public function getUser(string $username, string $password): UserData {
+    $ukco = $username;
+    if (Validators::isEmail($username)) {
+      $ukco = $this->getUKCO($username);
+      if ($ukco === NULL) {
+        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
+      }
+    }
+
+    $data = $this->ldap->getUser($ukco, $password); // throws when the credentials are wrong
     $email = $this->getValue($data->get($this->emailField));
     $firstName = $this->getValue($data->get($this->firstNameField));
     $lastName = $this->getValue($data->get($this->lastNameField));
@@ -46,6 +75,11 @@ class CAS implements IExternalLoginService {
     return new UserData($ukco, $email, $firstName, $lastName, $this);
   }
 
+  /**
+   * Get value of an attribute.
+   * @param  NodeAttribute $attribute The attribute
+   * @return mixed                    The value
+   */
   private function getValue(NodeAttribute $attribute) {
     if ($attribute === null || $attribute->count() === 0) {
       throw new \Exception; // @todo Throw a specific information
