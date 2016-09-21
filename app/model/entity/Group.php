@@ -15,12 +15,13 @@ class Group implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  public function __construct(string $name, string $description, Instance $instance, User $admin, Group $parentGroup = NULL) {
+  public function __construct(string $name, string $description, Instance $instance, User $admin, Group $parentGroup = NULL, bool $publicStats = TRUE) {
     $this->name = $name;
     $this->description = $description;
     $this->memberships = new ArrayCollection;
     $this->admin = $admin;
     $this->instance = $instance;
+    $this->publicStats = $publicStats;
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
     $admin->makeSupervisorOf($this);
@@ -51,6 +52,15 @@ class Group implements JsonSerializable
    * @ORM\Column(type="float", nullable=true)
    */
   protected $threshold;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $publicStats;
+
+  public function statsArePublic(): bool {
+    return $this->publicStats;
+  }
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
@@ -267,7 +277,8 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->toArray(),
-      "assignments" => $this->getAssignmentsIds()
+      "assignments" => $this->getAssignmentsIds(),
+      "publicStats" => $this->publicStats
     ];
   }
 

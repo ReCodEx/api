@@ -50,6 +50,7 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="instanceId", validation="string:36")
    * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE)
+   * @Param(type="post", name="publicStats", validation="bool", required=FALSE)
    */
   public function actionAddGroup() {
     $req = $this->getHttpRequest();
@@ -64,6 +65,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $description = $req->getPost("description");
+    $publicStats = $req->getPost("publicStats", TRUE);
     $parentGroup = !$parentGroupId ? NULL : $this->groups->get($parentGroupId);
 
     if ($parentGroup !== NULL && !$parentGroup->isAdminOf($user)) {
@@ -74,7 +76,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
     }
 
-    $group = new Group($name, $description, $instance, $user, $parentGroup);
+    $group = new Group($name, $description, $instance, $user, $parentGroup, $publicStats);
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($group);
@@ -195,7 +197,8 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->findUserOrThrow('me');
     $group = $this->findGroupOrThrow($id);
 
-    if (!$group->isSupervisorOf($currentUser)
+    if (!$group->statsArePublic()
+      && !$group->isSupervisorOf($currentUser)
       && !$this->user->isInRole("superadmin")) {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }
