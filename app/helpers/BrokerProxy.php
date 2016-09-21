@@ -5,8 +5,11 @@ namespace App\Helpers;
 use App\Exceptions\SubmissionFailedException;
 
 use ZMQ;
-use ZMQSocket;
 use ZMQContext;
+use ZMQException;
+use ZMQPoll;
+use ZMQPollException;
+use ZMQSocket;
 use ZMQSocketException;
 
 use Nette\Utils\Arrays;
@@ -52,15 +55,24 @@ class BrokerProxy {
    */
   public function startEvaluation(string $submissionId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
+    $poll = NULL;
+
     try {
-      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_REQ, $submissionId);
+      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $submissionId);
       $queue->connect($this->brokerAddress);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Cannot connect to the Broker.");
     }
-      
+
     try {
-      // $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $poll = new ZMQPoll();
+      $poll->add($queue, ZMQ::POLL_IN);
+    } catch (ZMQPollException $e) {
+      throw new SubmissionFailedException("Cannot create ZMQ poll.");
+    }
+
+    try {
+      $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
         "eval",
         $submissionId,
@@ -70,36 +82,52 @@ class BrokerProxy {
         $resultRemotePath
       ]);
     } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Uploading solution to the Broker failed or timeouted.");
+      throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
     }
 
-    // $ack = NULL;
-    // try {
-    //   $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->ackTimeout);
-    //   $ack = $queue->recv();
-    // } catch (ZMQSocketException $e) {
-    //   throw new SubmissionFailedException("Broker did not send acknowledgement message.");
-    // }
-
-    // if ($ack !== self::EXPECTED_ACK) {
-    //   throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
-    // }
-
-    // try {
-    //   // send an ACK to unblock the socket
-    //   $queue->send(self::EXPECTED_ACK);
-    // } catch (ZMQSocketException $e) {
-    //   throw new SubmissionFailedException("API server was unable to send acknowledge message to the broker.");
-    // }
-
-    try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_RCVTIMEO, $this->resultTimeout);
-      $result = $queue->recv();
-    } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Receiving result from the broker failed.");
+    $ackReceived = $this->pollRead($poll, $queue, $this->ackTimeout);
+    
+    if (!$ackReceived) {
+      throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }
 
-    return $result === self::EXPECTED_RESULT;
+    $ack = $queue->recvMulti();
+
+    if ($ack[0] !== self::EXPECTED_ACK) {
+      throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
+    }
+
+    $responseReceived = $this->pollRead($poll, $queue, $this->resultTimeout);
+
+    if (!$responseReceived) {
+      throw new SubmissionFailedException("Receiving response from the broker failed.");
+    }
+
+    $response = $queue->recvMulti();
+
+    return $response[0] === self::EXPECTED_RESULT;
   }
 
+  /**
+   * Wait until given socket can be read from
+   * @param $poll Polling helper structure
+   * @param $queue The socket for which we want to wait
+   * @param $timeout Time limit in milliseconds
+   */
+  private function pollRead(ZMQPoll $poll, ZMQSocket $queue, $timeout) {
+    $readable = [];
+    $writable = [];
+
+    try {
+      $events = $poll->poll($readable, $writable, $timeout);
+      $errors = $poll->getLastErrors();
+      if (count($errors) > 0) {
+        throw new SubmissionFailedException("ZMQ polling returned error(s).");
+      }
+    } catch (ZMQPollException $e) {
+      throw new SubmissionFailedException("ZMQ polling raised an exception.");
+    }
+
+    return in_array($queue, $readable);
+  }
 }
