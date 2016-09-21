@@ -67,4 +67,20 @@ class TaskResult {
     return $this->isOK() ? self::MAX_SCORE : self::MIN_SCORE;
   }
 
+  /**
+   * @throws ResultsLoadingException
+   * @return ExecutionTaskResult
+   */
+  public function getAsExecutionTaskResult() {
+    return new ExecutionTaskResult($this->data);
+  }
+
+  /**
+   * @throws ResultsLoadingException
+   * @return EvaluationTaskResult
+   */
+  public function getAsEvaluationTaskResult() {
+    return new EvaluationTaskResult($this->data);
+  }
+
 }

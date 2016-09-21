@@ -19,7 +19,7 @@ class EvaluationResults {
   private $config;
 
   /** @var bool */
-  private $initOK;
+  private $initOK = TRUE;
 
   public function __construct(array $data, JobConfig $config) {
     if (!isset($data["job-id"])) {
@@ -40,6 +40,8 @@ class EvaluationResults {
 
     $this->config = $config;
     $this->data = $data;
+
+    // store all the reported results
     $this->tasks = [];
     foreach ($data["results"] as $task) {
       if (!isset($task["task-id"])) {
@@ -50,19 +52,19 @@ class EvaluationResults {
       $this->tasks[$taskId] = new TaskResult($task);
     }
 
-    // test if all the tasks in the config file have corresponding results 
+    // test if all the tasks in the config file have corresponding results
+    // and also check if all the initiation tasks were successful
     // - missing task results are replaced with skipped task results
-    $this->initOK = TRUE;
-    foreach ($this->config->getTasks() as $task) {
-      $id = $task->getId();
+    foreach ($this->config->getTasks() as $taskCfg) {
+      $id = $taskCfg->getId();
       if (!isset($this->tasks[$id])) {
         $this->tasks[$id] = new SkippedTaskResult($id);
       }
-      
-      if ($task->isInitiationTask() && !$this->tasks[$id]->isOK()) {
+
+      if ($taskCfg->isInitiationTask() && !$this->tasks[$id]->isOK()) {
         $this->initOK = FALSE;
       }
-    } 
+    }
   }
 
   public function initOK() {
@@ -74,22 +76,14 @@ class EvaluationResults {
       function($test) use ($hardwareGroupId) {
         $execId = $test->getExecutionTask()->getId();
         $evalId = $test->getEvaluationTask()->getId();
-        $status = TestResult::calculateStatus(
-          $this->tasks[$taskId]->getStatus(),
-          $this->tasks[$taskId]->getStatus()
-        );
-        switch ($status) {
+        $exec = $this->tasks[$execId]->getAsExecutionTaskResult();
+        $eval = $this->tasks[$execId]->getAsEvaluationTaskResult();
+
+        switch (TestResult::calculateStatus($exec->getStatus(), $eval->getStatus())) {
           case TestResult::STATUS_OK:
-            return new TestResult(
-              $test,
-              new ExecutionTaskResult($this->tasks[$execId]),
-              new EvaluationTaskResult($this->tasks[$evalId]),
-              $hardwareGroupId
-            );
-          
+            return new TestResult($test, $exec, $eval, $hardwareGroupId);
           case TestResult::STATUS_SKIPPED:
             return new SkippedTestResult($test);
-
           default:
             return new FailedTestResult($test);
         }
