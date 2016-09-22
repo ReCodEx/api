@@ -120,7 +120,7 @@ class UsersPresenter extends BasePresenter {
    * @todo: Check if this user can access THAT user 
    */
   public function actionDetail(string $id) {
-    $user = $this->findUserOrThrow($id);
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse($user);
   }
 
@@ -130,7 +130,7 @@ class UsersPresenter extends BasePresenter {
    * @todo: Check if this user can access THAT information
    */
   public function actionGroups(string $id) {
-    $user = $this->findUserOrThrow($id);
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->toArray(),
       "student" => $user->getGroupsAsStudent()->toArray(),
@@ -152,7 +152,7 @@ class UsersPresenter extends BasePresenter {
    * @todo: Check if this user can access THAT information
    */
   public function actionInstances(string $id) {
-    $user = $this->findUserOrThrow($id);
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse([
       $user->getInstance() // @todo change when the user can be member of multiple instances
     ]);
@@ -164,7 +164,7 @@ class UsersPresenter extends BasePresenter {
    * @todo: Check if this user can access THAT information
    */
   public function actionExercises(string $id) {
-    $user = $this->findUserOrThrow($id);
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse($user->getExercises()->toArray());
   }
 

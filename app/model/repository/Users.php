@@ -7,15 +7,40 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\User;
+use Nette\Security as NS;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
 
 class Users extends BaseRepository {
 
-  public function __construct(EntityManager $em) {
+  /** @var NS\User */
+  private $userSession;
+
+  public function __construct(EntityManager $em, NS\User $user) {
     parent::__construct($em, User::CLASS);
+    $this->userSession = $user;
   }
 
   public function getByEmail(string $email) {
     return $this->findOneBy([ "email" => $email ]);
   }
+
+  protected function findOrThrow(string $id) {
+    if ($id === "me") {
+      if (!$this->userSession->isLoggedIn()) {
+        throw new ForbiddenRequestException; 
+      }
+
+      $id = $this->userSession->id;
+    }
+
+    $user = $this->get($id);
+    if (!$user) {
+      throw new NotFoundException("User '$id' does not exist.");
+    }
+
+    return $user;
+  }
+
 
 }

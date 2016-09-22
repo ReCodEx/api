@@ -72,7 +72,7 @@ class LoginPresenter extends BasePresenter {
    * @LoggedIn
    */
   public function actionRefresh() {
-    $user = $this->findUserOrThrow('me');
+    $user = $this->users->findOrThrow('me');
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user),
       "user" => $user

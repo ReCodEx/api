@@ -45,7 +45,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $user = $this->findUserOrThrow('me');
+    $user = $this->users->findOrThrow('me');
     $personalizedData = $assignments->map(
       function ($assignment) {
         return $assignment->getJsonData($user);
@@ -69,7 +69,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public function actionCanSubmit(string $id) {
     // @todo: check if the user can access this information
     $assignment = $this->findAssignmentOrThrow($id);
-    $user = $this->findUserOrThrow('me');
+    $user = $this->users->findOrThrow('me');
     $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
   }
 
@@ -91,10 +91,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $assignment = $this->findAssignmentOrThrow($id);
     $req = $this->getHttpRequest();
 
-    $loggedInUser = $this->findUserOrThrow("me");
+    $loggedInUser = $this->users->findOrThrow("me");
     $userId = $req->getPost("userId");
     if ($userId !== NULL) {
-      $user = $this->findUserOrThrow($userId);
+      $user = $this->users->findOrThrow($userId);
     } else {
       $user = $loggedInUser;
     }
