@@ -64,12 +64,12 @@ class ExerciseAssignment implements JsonSerializable
    * @return string File path of the 
    */
   public function getJobConfigFilePath(): string {
-    if (!$this->getJobConfigFilePath) {
+    if (!$this->jobConfigFilePath) {
       return $this->getExercise()->getJobConfigFilePath();
     }
 
     // @todo: Make dependable on the programming language/technology used by the user 
-    return $this->jobConfigFIlePath;
+    return $this->jobConfigFilePath;
   }
 
   /**
