@@ -37,7 +37,7 @@ class Solution implements JsonSerializable
     protected $user;
 
     /**
-     * @ORM\OneToMany(targetEntity="UploadedFile", mappedBy="submission")
+     * @ORM\OneToMany(targetEntity="UploadedFile", mappedBy="solution")
      */
     protected $files;
 
