@@ -12,7 +12,7 @@ class TestJobConfig extends Tester\TestCase
 {
   static $jobConfig = [
     "submission" => [
-      "job-id" => "ABC/bla bla bla"
+      "job-id" => "ABC_bla bla bla"
     ],
     "tasks" => [
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
@@ -35,16 +35,18 @@ class TestJobConfig extends Tester\TestCase
   public function testUpdateJobId() {
     $jobConfig = new JobConfig(self::$jobConfig);
     Assert::equal("ABC", $jobConfig->getType());
-    Assert::equal("bla bla bla", $jobConfig->getJobId());
+    Assert::equal("bla bla bla", $jobConfig->getId());
+    Assert::equal("ABC_bla bla bla", $jobConfig->getJobId());
     $jobConfig->setJobId("XYZ", "ratataId");
     Assert::equal("XYZ", $jobConfig->getType());
-    Assert::equal("ratataId", $jobConfig->getJobId());
+    Assert::equal("ratataId", $jobConfig->getId());
+    Assert::equal("XYZ_ratataId", $jobConfig->getJobId());
   }
 
   public function testInvalidJobType() {
     $jobConfig = new JobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
-      $jobConfig->setJobId("XY/Z", "ratataId");
+      $jobConfig->setJobId("XY_Z", "ratataId");
     }, JobConfigLoadingException::CLASS);
   }
 
@@ -52,7 +54,7 @@ class TestJobConfig extends Tester\TestCase
     $jobConfig = new JobConfig(self::$jobConfig);
     $jobConfig->setJobId("XYZ", "ratataId");
     $data = Yaml::parse((string) $jobConfig);
-    Assert::equal("XYZ/ratataId", $data["submission"]["job-id"]);
+    Assert::equal("XYZ_ratataId", $data["submission"]["job-id"]);
   }
   
   public function testTasksCount() {

@@ -7,16 +7,16 @@ use Symfony\Component\Yaml\Yaml;
 class SubmissionHeader {
 
   const TYPE_UNSPECIFIED = "recodex-unspecified";
-  const SEPARATOR = "/";
+  const SEPARATOR = "_";
 
   /** @var array Raw data */
   private $data;
 
   /** @var string Type of the job */
-  private $type;
+  private $id;
 
-  /** @var string ID of job */
-  private $jobId;
+  /** @var string Type of the job */
+  private $type;
 
   public function __construct(array $data) {
     $this->data = $data;
@@ -27,26 +27,35 @@ class SubmissionHeader {
 
     $jobId = $data["job-id"];
     if (!strpos($jobId, self::SEPARATOR)) {
-      $this->jobId = $jobId;
+      $this->id = $jobId;
       $this->type = self::TYPE_UNSPECIFIED;
     } else {
-      list($this->type, $this->jobId) = explode(self::SEPARATOR, $jobId, 2);
+      list($this->type, $this->id) = explode(self::SEPARATOR, $jobId, 2);
     }
   }
 
+  public function setJobId(string $type, string $id) {
+    $this->setType($type);
+    $this->setId($id);
+  }
+
   public function getJobId(): string {
-    return $this->jobId;
+    return $this->type . self::SEPARATOR . $this->id;
   }
 
-  public function setJobId(string $jobId) {
-    $this->jobId = $jobId;
+  public function getId(): string {
+    return $this->id;
   }
 
-  public function getJobType(): string {
+  public function setId(string $id) {
+    $this->id = $id;
+  }
+
+  public function getType(): string {
     return $this->type;
   }
 
-  public function setJobType(string $type) {
+  public function setType(string $type) {
     if (strpos($type, self::SEPARATOR) !== FALSE) {
       throw new JobConfigLoadingException("Submission type cannot contain the '" . self::SEPARATOR . "' character.");
     }
@@ -55,7 +64,7 @@ class SubmissionHeader {
 
   public function toArray() {
     $data = $this->data;
-    $data['job-id'] = $this->type . self::SEPARATOR . $this->jobId;
+    $data['job-id'] = $this->getJobId();
     return $data;
   }
 

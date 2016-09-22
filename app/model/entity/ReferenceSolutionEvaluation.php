@@ -15,6 +15,8 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+  const JOB_TYPE = "recodex-reference-solution";
+
   /**
    * @ORM\Id
    * @ORM\Column(type="guid")
