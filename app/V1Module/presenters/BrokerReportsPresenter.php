@@ -10,7 +10,7 @@ use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Model\Entity\Submission;
 use App\Model\Repository\Submissions;
-use App\Model\Repository\SubmissionEvaluations;
+use App\Model\Repository\SolutionEvaluations;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
@@ -31,7 +31,7 @@ class BrokerReportsPresenter extends BasePresenter {
   /** @inject @var Submissions */
   public $submissions;
 
-  /** @inject @var SubmissionEvaluations */
+  /** @inject @var SolutionEvaluations */
   public $evaluations;
 
   /**

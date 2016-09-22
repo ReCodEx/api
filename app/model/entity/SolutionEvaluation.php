@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @ORM\Entity
  */
-class SubmissionEvaluation implements JsonSerializable
+class SolutionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -31,11 +31,6 @@ class SubmissionEvaluation implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $evaluatedAt;
-
-  /**
-   * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
-   */
-  protected $submission;
 
   /**
    * @ORM\Column(type="boolean")

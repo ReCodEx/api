@@ -37,24 +37,29 @@ class ReferenceExerciseSolution implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
    */
-  protected $sourceCodeFilePath;
+  protected $solution;
 
+  /**
+   * @ORM\OneToMany(targetEntity="ReferenceSolutionEvaluation", mappedBy="referenceSolution")
+   */
+  protected $evaluations;
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "uploadedAt" => $this->uploadedAt->getTimestamp(),
-      "description" => $this->description
+      "description" => $this->description,
+      "solution" => $this->solution,
+      "evaluations" => $this->evaluations->toArray()
     ];
   }
 
-
-  public function __construct(Exercise $exercise, string $sourceCodeFilePath, \DateTime $uploadedAt, string $description) {
+  public function __construct(Exercise $exercise, User $user, string $description, array $files) {
     $this->exercise = $exercise;
-    $this->sourceCodeFilePath = $sourceCodeFilePath;
-    $this->uploadedAt = $uploadedAt;
+    $this->uploadedAt = new \DateTime;
     $this->description = $description;
+    $this->solution = new Solution($user, $files);
   }
 }
