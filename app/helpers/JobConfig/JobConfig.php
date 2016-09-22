@@ -51,11 +51,16 @@ class JobConfig {
     return $this->submissionHeader->getJobId();
   }
 
+  public function getType(): string {
+    return $this->submissionHeader->getJobType();
+  }
+
   /**
    * Get the identificator of this job
    * @param string $jobId
    */
-  public function setJobId(string $jobId) {
+  public function setJobId(string $type, string $jobId) {
+    $this->submissionHeader->setJobType($type);
     $this->submissionHeader->setJobId($jobId);
   }
 

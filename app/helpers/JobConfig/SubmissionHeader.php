@@ -6,8 +6,14 @@ use Symfony\Component\Yaml\Yaml;
 
 class SubmissionHeader {
 
+  const TYPE_UNSPECIFIED = "recodex-unspecified";
+  const SEPARATOR = "/";
+
   /** @var array Raw data */
   private $data;
+
+  /** @var string Type of the job */
+  private $type;
 
   /** @var string ID of job */
   private $jobId;
@@ -19,7 +25,13 @@ class SubmissionHeader {
       throw new JobConfigLoadingException("Submission header does not contain the 'job-id' field.");
     }
 
-    $this->jobId = $data["job-id"];
+    $jobId = $data["job-id"];
+    if (!strpos($jobId, self::SEPARATOR)) {
+      $this->jobId = $jobId;
+      $this->type = self::TYPE_UNSPECIFIED;
+    } else {
+      list($this->type, $this->jobId) = explode(self::SEPARATOR, $jobId, 2);
+    }
   }
 
   public function getJobId(): string {
@@ -30,9 +42,20 @@ class SubmissionHeader {
     $this->jobId = $jobId;
   }
 
+  public function getJobType(): string {
+    return $this->type;
+  }
+
+  public function setJobType(string $type) {
+    if (strpos($type, self::SEPARATOR) !== FALSE) {
+      throw new JobConfigLoadingException("Submission type cannot contain the '" . self::SEPARATOR . "' character.");
+    }
+    $this->type = $type;
+  }
+
   public function toArray() {
     $data = $this->data;
-    $data['job-id'] = $this->jobId;
+    $data['job-id'] = $this->type . self::SEPARATOR . $this->jobId;
     return $data;
   }
 
