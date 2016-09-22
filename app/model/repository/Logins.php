@@ -14,7 +14,7 @@ class Logins extends BaseRepository {
   }
 
   public function getUser($username, $password) {
-    $login = $this->logins->findOneBy([ "username" => $username ]);
+    $login = $this->findOneBy([ "username" => $username ]);
     if ($login) {
       $oldPwdHash = $login->getPasswordHash();
       if ($login->passwordsMatch($password)) {

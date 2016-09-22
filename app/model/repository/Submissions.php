@@ -16,7 +16,7 @@ class Submissions extends BaseRepository {
   }
 
   public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
-    return $this->submissions->findBy([
+    return $this->findBy([
       "user" => $userId,
       "exerciseAssignment" => $assignment
     ], [
