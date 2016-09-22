@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Helpers\EvaluationResults;
+use App\Exceptions\ResultsLoadingException;
+use Nette\Utils\Validators;
 
 class EvaluationTaskResult extends TaskResult {
 
@@ -16,8 +18,12 @@ class EvaluationTaskResult extends TaskResult {
     // judge output is optional and only the first token is interpreted as float value between 0 and 1
     if (isset($data["judge_output"]) && !empty($data["judge_output"])) {
       $this->judgeOutput = $data["judge_output"];
-      $score = floatval(strtok($this->judgeOutput, " "));
-      $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, $score));
+      $token = strtok($this->judgeOutput, " ");
+      if (Validators::isNumeric($token) === FALSE) {
+        throw new ResultsLoadingException("First token of the judge's output for task '{$this->getId()}' cannot be interpreted as number.");
+      }
+
+      $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($token)));
     }
   }
 

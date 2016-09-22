@@ -4,6 +4,7 @@ namespace App\Helpers\EvaluationResults;
 
 use App\Exceptions\ResultsLoadingException;
 use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\TestConfig;
 
 use Symfony\Component\Yaml\Yaml;
 
@@ -18,7 +19,14 @@ class EvaluationResults {
   /** @var JobConfig The configuration of the job */
   private $config;
 
+  /** @var bool */
+  private $initOK = TRUE;
+
   public function __construct(array $data, JobConfig $config) {
+    if (!isset($data["job-id"])) {
+      throw new ResultsLoadingException("Job ID is not set in the result.");
+    }
+
     if ($data["job-id"] !== $config->getJobId()) {
       throw new ResultsLoadingException("Job ID of the configuration and the result do not match.");
     }
@@ -33,69 +41,78 @@ class EvaluationResults {
 
     $this->config = $config;
     $this->data = $data;
+
+    // store all the reported results
     $this->tasks = [];
     foreach ($data["results"] as $task) {
-      $this->tasks[$task["task-id"]] = $task;
-    }
-  }
+      if (!isset($task["task-id"])) {
+        throw new ResultsLoadingException("One of the task's result is missing 'task-id'");
+      }
 
-  public function wasInitialisationOK() {
-    foreach ($this->config->getTasks() as $task) {
-      if ($task->isInitiationTask()) {
-        $taskResult = new TaskResult($this->tasks[$task->getId()]);
-        if (!$taskResult->isOK()) {
-          return FALSE;
-        }
+      $taskId = $task["task-id"];
+      $this->tasks[$taskId] = new TaskResult($task);
+    }
+
+    // test if all the tasks in the config file have corresponding results
+    // and also check if all the initiation tasks were successful
+    // - missing task results are replaced with skipped task results
+    foreach ($this->config->getTasks() as $taskCfg) {
+      $id = $taskCfg->getId();
+      if (!isset($this->tasks[$id])) {
+        $this->tasks[$id] = new SkippedTaskResult($id);
+      }
+
+      if ($taskCfg->isInitiationTask() && !$this->tasks[$id]->isOK()) {
+        $this->initOK = FALSE;
       }
     }
-
-    return TRUE;
   }
 
+  /**
+   * @return bool Initialisation was OK
+   */
+  public function initOK() {
+    return $this->initOK;
+  }
+
+  /**
+   * Get 
+   * @param string $hardwareGroupId Hardware group
+   * @return TestResult[] 
+   */
   public function getTestsResults($hardwareGroupId) {
-    return array_map(
-      function($test) use ($hardwareGroupId) {
-        $execId = $test->getExecutionTask()->getId();
-        $evalId = $test->getEvaluationTask()->getId();
-        $status = TestResult::calculateStatus($this->getTaskResultStatus($execId), $this->getTaskResultStatus($evalId));
-        switch ($status) {
-          case TestResult::STATUS_OK:
-            return new TestResult(
-              $test,
-              new ExecutionTaskResult($this->tasks[$execId]),
-              new EvaluationTaskResult($this->tasks[$evalId]),
-              $hardwareGroupId
-            );
-          
-          case TestResult::STATUS_SKIPPED:
-            return new SkippedTestResult($test);
-
-          default:
-            return new FailedTestResult($test);
-        }
-      },
-      $this->config->getTests($hardwareGroupId)
-    );
+    return array_map(function($test) use ($hardwareGroupId) {
+      return $this->getTestResult($test, $hardwareGroupId);
+    }, $this->config->getTests());
   }
 
-  private function getTaskResultStatus($taskId) {
-    if (isset($this->tasks[$taskId])) {
-      if (isset($this->tasks[$taskId]["status"])) {
-        return $this->tasks[$taskId]["status"];
-      }
-
-      return TaskResult::STATUS_FAILED;
-    }
-
-    return TaskResult::STATUS_SKIPPED;
+  /**
+   * @param TestConfig  $test       Configuration of the test
+   * @param string $hardwareGroupId Hardware group 
+   * @return TestResult
+   */
+  public function getTestResult(TestConfig $test, $hardwareGroupId) {
+    $exec = $this->getExecutionTaskResult($test);
+    $eval = $this->getEvaluationTaskResult($test);
+    return new TestResult($test, $exec, $eval, $hardwareGroupId);
   }
 
-  private function getTaskResult($taskId) {
-    if (!isset($this->tasks[$taskId])) {
-      throw new ResultsLoadingException("There is no result for task '$taskId' defined in the job config.");
-    }
+  /**
+   * @param TestConfig $test Configuration of the examined test
+   * @return EvaluationTaskResult
+   */
+  private function getEvaluationTaskResult(TestConfig $test) {
+    $id = $test->getEvaluationTask()->getId();
+    return $this->tasks[$id]->getAsEvaluationTaskResult();
+  }
 
-    return $this->tasks[$taskId];
+  /**
+   * @param TestConfig $test Configuration of the examined test
+   * @return ExecutionTaskResult
+   */
+  private function getExecutionTaskResult(TestConfig $test) {
+    $id = $test->getExecutionTask()->getId();
+    return $this->tasks[$id]->getAsExecutionTaskResult();
   }
 
   public function __toString() {

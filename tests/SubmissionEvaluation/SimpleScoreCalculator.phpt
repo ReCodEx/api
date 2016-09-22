@@ -4,6 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\SimpleScoreCalculator;
+use App\Helpers\ScoreCalculatorFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Model\Entity\TestResult;
@@ -19,17 +20,20 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   f: 200";
   private $testNames = ["a", "b", "c", "d", "e", "f"];
 
-  private function computeScore(array $scoreList, $scoreConfig = NULL) {
-    if ($scoreConfig === NULL) {
-      $scoreConfig = $this->scoreConfig;
-    }
+  private function getCalc() { return new SimpleScoreCalculator($this->scoreConfig); }
+
+  private function computeScore(array $scoreList) {
+    return $this->getCalc()->computeScore($this->getCfg($scoreList));
+  }
+
+  private function getCfg(array $scoreList) {
     $scores = [];
     for ($i = 0; $i < count($scoreList); $i++) {
       $scores[$this->testNames[$i]] = $scoreList[$i];
     }
-    $calc = new SimpleScoreCalculator($scoreConfig);
-    return $calc->computeScore($scores);
-  }
+
+    return $scores;
+  } 
 
   private function isScoreConfigValid($scoreConfig) {
     return SimpleScoreCalculator::isScoreConfigValid($scoreConfig);
@@ -37,52 +41,23 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
   public function testInvalidYamlScoreConfig() {
     $cfg = "\"asd";
-    Assert::exception(
-      function () use ($cfg) { $this->computeScore([1, 1, 1, 1, 1, 1], $cfg); },
-      "InvalidArgumentException",
-      "Supplied score config is not a valid YAML."
-    );
-    Assert::same(FALSE, $this->isScoreConfigValid($cfg));
+    Assert::false(SimpleScoreCalculator::isScoreConfigValid($cfg));
   }
 
   public function testScoreConfigNonIntegerWeights() {
     $cfg = "testWeights:\n  a: a";
-    Assert::exception(
-      function () use ($cfg) { $this->computeScore([1, 1, 1, 1, 1, 1], $cfg); },
-      "InvalidArgumentException",
-      "Test weights must be integers."
-    );
-    Assert::same(FALSE, $this->isScoreConfigValid($cfg));
-  }
-
-  public function testScoreConfigNoWeights() {
-    $cfg = "testWeight:\n  a: 1";
-    Assert::exception(
-      function () use ($cfg) { $this->computeScore([1, 1, 1, 1, 1, 1], $cfg); },
-      "InvalidArgumentException",
-      "Score config is missing 'testWeights' array parameter."
-    );
-    Assert::same(FALSE, $this->isScoreConfigValid($cfg));
+    Assert::false(SimpleScoreCalculator::isScoreConfigValid($cfg));
   }
 
   public function testScoreConfigDifferentWeightCount() {
     $cfg = "testWeights:\n  a: 1";
-    Assert::exception(
-      function () use ($cfg) { $this->computeScore([1, 1, 1, 1, 1, 1], $cfg); },
-      "InvalidArgumentException",
-      "Score config has different number of test weights than the number of test results."
-    );
-    Assert::same(TRUE, $this->isScoreConfigValid($cfg));
+    $calc = new SimpleScoreCalculator($cfg);
+    Assert::exception(function() use ($calc) { $calc->computeScore([ "a" => 0.5, "b" => 1 ]); }, \InvalidArgumentException::CLASS);
   }
 
   public function testScoreConfigWrongTestName() {
     $cfg = "testWeights:\n  b: 1";
-    Assert::exception(
-      function () use ($cfg) { $this->computeScore([1], $cfg); },
-      "InvalidArgumentException",
-      "There is no weight for a test with name 'a' in score config."
-    );
-    Assert::same(TRUE, $this->isScoreConfigValid($cfg));
+    Assert::true(SimpleScoreCalculator::isScoreConfigValid($cfg));
   }
 
   public function testAllPassed() {
@@ -98,7 +73,13 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   }
 
   public function testScoreConfigValid() {
-    Assert::same(TRUE, $this->isScoreConfigValid($this->scoreConfig));
+    Assert::true(SimpleScoreCalculator::isScoreConfigValid($this->scoreConfig));
+  }
+
+  public function testFactory() {
+    $calc = ScoreCalculatorFactory::create($this->scoreConfig);
+    Assert::type(SimpleScoreCalculator::CLASS, $calc);
+    Assert::equal(0.6, $calc->computeScore($this->getCfg([1, 1, 1, 0, 0, 0])));
   }
 }
 

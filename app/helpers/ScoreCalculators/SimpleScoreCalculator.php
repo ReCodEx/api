@@ -17,7 +17,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
   private $weights;
 
   public function __construct(string $scoreConfig) {
-    if (!self::isScoreConfigValid($scoreConfig, TRUE)) {
+    if (!self::isScoreConfigValid($scoreConfig)) {
       throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
     }
 
@@ -30,7 +30,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @param ArrayCollection   $testResults   Results of individual tests
    * @return float
    */
-  public function computeScore(array $testResults): float {    
+  public function computeScore(array $testResults): float {
     if (count($this->weights) != count($testResults)) {
       throw new \InvalidArgumentException("Score config has different number of test weights than the number of test results.");
     }
@@ -55,36 +55,26 @@ class SimpleScoreCalculator implements IScoreCalculator {
 
   /**
    * @param string  $scoreConfig     YAML configuration of the weights
-   * @param bool    $throwExceptions Throw exceptions when the config is invalid
    * @return bool
    */
-  public static function isScoreConfigValid(string $scoreConfig, bool $throwExceptions = FALSE) {
+  public static function isScoreConfigValid(string $scoreConfig) {
     try {
       $config = Yaml::parse($scoreConfig);
 
       if (isset($config['testWeights']) && is_array($config['testWeights'])) {
         foreach ($config['testWeights'] as $value) {
           if (!is_integer($value)) {
-            if ($throwExceptions) {
-              throw new \InvalidArgumentException("Test weights must be integers.");
-            } else {
-              return FALSE;
-            }
+            // throw new \InvalidArgumentException("Test weights must be integers.");
+            return FALSE;
           }
         }
       } else {
-        if ($throwExceptions) {
-          throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
-        } else {
-          return FALSE;
-        }
-      }
-    } catch (ParseException $e) {
-      if ($throwExceptions) {
-        throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");
-      } else {
+        throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
         return FALSE;
       }
+    } catch (ParseException $e) {
+      // throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");
+      return FALSE;
     }
 
     return TRUE;

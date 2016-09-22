@@ -70,7 +70,7 @@ class JobConfig {
           return new TaskConfig($task);
         },
         $this->data["tasks"]
-      );      
+      );
     }
 
     return $this->tasks;
@@ -102,7 +102,7 @@ class JobConfig {
           );
         },
         $tasksByTests
-      );      
+      );
     }
 
     return $this->tests;

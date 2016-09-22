@@ -1,0 +1,113 @@
+App\Helpers\EvaluationResults\TestResult::__set_state(/* #49ac */ array(
+	'config' => App\Helpers\JobConfig\TestConfig::__set_state(/* #6bd7 */ array(
+		'id' => 'A',
+		'tasks' => array(
+			App\Helpers\JobConfig\TaskConfig::__set_state(/* #68a2 */ array(
+				'id' => 'X',
+				'type' => 'evaluation',
+				'testId' => 'A',
+				'data' => array('task-id' => 'X', 'test-id' => 'A', 'type' => 'evaluation'),
+			)),
+			App\Helpers\JobConfig\TaskConfig::__set_state(/* #c3d8 */ array(
+				'id' => 'Y',
+				'type' => 'execution',
+				'testId' => 'A',
+				'data' => array(
+					'task-id' => 'Y',
+					'test-id' => 'A',
+					'type' => 'execution',
+					'sandbox' => array(
+						'limits' => array(array('hw-group-id' => 'A', 'memory' => 123, 'time' => 456)),
+					),
+				),
+			)),
+		),
+		'executionTask' => App\Helpers\JobConfig\ExecutionTaskConfig::__set_state(/* #c775 */ array(
+			'limits' => array(
+				'A' => App\Helpers\JobConfig\Limits::__set_state(/* #b76d */ array(
+					'data' => array('hw-group-id' => 'A', 'memory' => 123, 'time' => 456),
+					'id' => 'A',
+					'timeLimit' => 456.0,
+					'memoryLimit' => 123,
+				)),
+			),
+			'limitsConfig' => array(array('hw-group-id' => 'A', 'memory' => 123, 'time' => 456)),
+			'id' => 'Y',
+			'type' => 'execution',
+			'testId' => 'A',
+			'data' => array(
+				'task-id' => 'Y',
+				'test-id' => 'A',
+				'type' => 'execution',
+				'sandbox' => array(
+					'limits' => array(array('hw-group-id' => 'A', 'memory' => 123, 'time' => 456)),
+				),
+			),
+		)),
+		'evaluationTask' => /* App\Helpers\JobConfig\TaskConfig dumped on line 5 */,
+	)),
+	'executionResult' => App\Helpers\EvaluationResults\ExecutionTaskResult::__set_state(/* #cac9 */ array(
+		'stats' => App\Helpers\EvaluationResults\Stats::__set_state(/* #bea4 */ array(
+			'data' => array(
+				'exitcode' => 0,
+				'max-rss' => 19696,
+				'memory' => 6032,
+				'wall-time' => 0.092,
+				'exitsig' => 0,
+				'message' => 'This is a random message',
+				'status' => 'OK',
+				'time' => 0.037,
+				'killed' => FALSE,
+			),
+			'time' => 0.037,
+			'memory' => 6032,
+			'exitcode' => 0,
+			'message' => 'This is a random message',
+			'killed' => FALSE,
+		)),
+		'data' => array(
+			'task-id' => 'Y',
+			'status' => 'OK',
+			'sandbox_results' => array(
+				'exitcode' => 0,
+				'max-rss' => 19696,
+				'memory' => 6032,
+				'wall-time' => 0.092,
+				'exitsig' => 0,
+				'message' => 'This is a random message',
+				'status' => 'OK',
+				'time' => 0.037,
+				'killed' => FALSE,
+			),
+		),
+		'id' => 'Y',
+		'status' => 'OK',
+	)),
+	'evaluationResult' => App\Helpers\EvaluationResults\EvaluationTaskResult::__set_state(/* #9e3f */ array(
+		'judgeOutput' => '',
+		'score' => NULL,
+		'data' => array(
+			'task-id' => 'Y',
+			'status' => 'OK',
+			'sandbox_results' => array(
+				'exitcode' => 0,
+				'max-rss' => 19696,
+				'memory' => 6032,
+				'wall-time' => 0.092,
+				'exitsig' => 0,
+				'message' => 'This is a random message',
+				'status' => 'OK',
+				'time' => 0.037,
+				'killed' => FALSE,
+			),
+		),
+		'id' => 'Y',
+		'status' => 'OK',
+	)),
+	'status' => 'FAILED',
+	'limits' => /* App\Helpers\JobConfig\Limits dumped on line 27 */,
+	'statsInterpretation' => App\Helpers\EvaluationResults\StatsInterpretation::__set_state(/* #3e6c */ array(
+		'stats' => /* App\Helpers\EvaluationResults\Stats dumped on line 50 */,
+		'limits' => /* App\Helpers\JobConfig\Limits dumped on line 27 */,
+	)),
+))

@@ -15,6 +15,10 @@ class ExecutionTaskResult extends TaskResult {
       throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain sandbox results.");
     }
 
+    if (!is_array($data["sandbox_results"])) {
+      throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain array of sandbox results.");
+    }
+
     $this->stats = new Stats($data["sandbox_results"]);
   }
 
@@ -23,6 +27,14 @@ class ExecutionTaskResult extends TaskResult {
    */
   public function getStats(): Stats {
     return $this->stats;
+  }
+
+  /**
+   * The exit code of the executed program
+   * @return int
+   */
+  public function getExitCode(): int {
+    return $this->getStats()->getExitCode();
   }
 
 }

@@ -23,9 +23,15 @@ class Loader {
   /**
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
-  public static function getJobConfig(Submission $submission): JobConfig {
-    $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
-    return self::getParsedJobConfig($submission->getId(), $path);
+  public static function getJobConfig(string $path): JobConfig {
+    $cached = self::getCache()->load($path);
+    if ($cached === NULL) {
+      $yml = self::loadConfig($path);
+      $jobConfig = self::parseJobConfig($yml);
+      $cached = self::getCache()->store($path, $jobConfig);
+    }
+
+    return $cached;
   }
 
   /**
@@ -58,22 +64,6 @@ class Loader {
     }
 
     return new JobConfig($parsedConfig);
-  }
-
-  /**
-   * @param  string $path Path of the configuration file
-   * @return array        The data structure stored in the config file
-   */
-  private static function getParsedJobConfig(string $jobId, string $path): JobConfig {
-    $cached = self::getCache()->load($path);
-    if ($cached === NULL) {
-      $yml = self::loadConfig($path);
-      $jobConfig = self::parseJobConfig($yml);
-      $jobConfig->setJobId($jobId);
-      $cached = self::getCache()->store($path, $jobConfig);
-    }
-
-    return $cached;
   }
 
 }

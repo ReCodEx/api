@@ -83,19 +83,16 @@ class SubmissionEvaluation implements JsonSerializable
    */
   protected $testResults;
 
+  /** @var array */
+  private $scores;
+
   public function setTestResults(array $testResults) {
+    $this->scores = [];
     foreach ($testResults as $result) {
-      $this->testResults->add(new TestResult($this, $result));
+      $testResult = new TestResult($this, $result);
+      $this->testResults->add($testResult);
+      $scores[$testResult->getTestName()] = $testResult->getScore();
     }
-  }
-
-  public function updateScore(IScoreCalculator $calculator) {
-    $scores = [];
-    foreach ($this->testResults as $result) {
-      $scores[$result->getTestName()] = $result->getScore();
-    }
-
-    $this->score = $calculator->computeScore($scores);
   }
 
   public function jsonSerialize() {
@@ -116,18 +113,24 @@ class SubmissionEvaluation implements JsonSerializable
 
   /**
    * Loads and processes the results of the submission.
-   * @param  Submission $submission   The submission
-   * @param  EvaluationResults   $results   The interpreted results
+   * @param  Submission $submission           The submission
+   * @param  EvaluationResults   $results     The interpreted results
+   * @param  IScoreCalculator    $calculator  Calculates the score from given test results
    */
-  public function __construct(Submission $submission, EvaluationResults $results) {
+  public function __construct(Submission $submission, EvaluationResults $results, IScoreCalculator $calculator) {
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
     $this->evaluationFailed = !$results;
-    $this->initFailed = !!$results && $results->wasInitialisationOK();
+    $this->initFailed = !!$results && $results->initOK();
     $this->resultYml = (string) $results;
-    $this->testResults = new ArrayCollection;
     $this->submission = $submission;
     $submission->setEvaluation($this);
+
+    // calculate the score and points
+    $this->testResults = new ArrayCollection;
+    $this->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
+    $this->score = $this->calculator->calculateScore($this->scores);
+    $this->points = $this->score * $submission->getExerciseAssignment->getMaxPoints();
   }
 
 }

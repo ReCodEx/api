@@ -8,7 +8,7 @@ use App\Helpers\JobConfig\Loader as JobConfigLoader;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
-use App\Helpers\SimpleScoreCalculator;
+use App\Helpers\ScoreCalculatorFactory;
 
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
@@ -31,10 +31,8 @@ class EvaluationLoader {
    */
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
-    $evaluation = new SubmissionEvaluation($submission, $results);
-    $this->calculateScore($submission, $evaluation, $results);
-    $this->calculatePoints($evaluation, $submission->getMaxPoints());
-    return $evaluation;
+    $calculator = ScoreCalculatorFactory::create($submission->getExerciseAssignment()->getScoreConfig());
+    return new SubmissionEvaluation($submission, $results, $calculator);
   }
 
   /**
@@ -47,8 +45,10 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
+    $jobConfigPath = $submission->getExerciseAssignment()->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfigLoader::getJobConfig($submission);
+      $jobConfig = JobConfigLoader::getJobConfig($jobConfigPath); 
+      $jobConfig->setJobId($submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
       return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
     } catch (ResultsLoadingException $e) {
@@ -56,35 +56,6 @@ class EvaluationLoader {
     } catch (JobConfigLoadingException $e) {
       throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");
     }
-  }
-
-  /**
-   * @param Submission            $submission   The submission
-   * @param SubmissionEvaluation  $evaluation   Evaluation entity
-   * @param EvaluationResults     $results      Results of the evaluation
-   * @return void
-   */
-  private function calculateScore(Submission $submission, SubmissionEvaluation $evaluation, EvaluationResults $results) {
-    // calcutate the total score based on the results
-    if (!!$results) {
-      $evaluation->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
-      $calculator = new SimpleScoreCalculator($submission->getExerciseAssignment()->getScoreConfig());
-      $evaluation->updateScore($calculator);
-    } else {
-      $evaluation->setScore(0);
-    }
-  }
-
-  /**
-   * @param SubmissionEvaluation  $evaluation   Evaluation of the submission
-   * @param int                   $maxPoints    Maximum points
-   * @return void
-   */
-  private function calculatePoints(SubmissionEvaluation $evaluation, int $maxPoints) {
-    // from the score, calculate the points
-    // 'getMaxPoints' is time-dependent, but we don't have to bother with that here
-    $points = $evaluation->getScore() * $maxPoints;
-    $evaluation->setPoints($points);
   }
 
 }
