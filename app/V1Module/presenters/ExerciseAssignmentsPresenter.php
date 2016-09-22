@@ -112,7 +112,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
 
-    $jobConfig = JobConfig\Loader::getJobConfig($submission);
+    // get the job config with correct job id
+    $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
+    $jobConfig = JobConfig\Loader::getJobConfig($path); 
+    $jobConfig->setJobId($submission->getId());
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,

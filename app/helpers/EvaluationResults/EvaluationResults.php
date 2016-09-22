@@ -4,6 +4,7 @@ namespace App\Helpers\EvaluationResults;
 
 use App\Exceptions\ResultsLoadingException;
 use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\TestConfig;
 
 use Symfony\Component\Yaml\Yaml;
 
@@ -67,29 +68,51 @@ class EvaluationResults {
     }
   }
 
+  /**
+   * @return bool Initialisation was OK
+   */
   public function initOK() {
     return $this->initOK;
   }
 
+  /**
+   * Get 
+   * @param string $hardwareGroupId Hardware group
+   * @return TestResult[] 
+   */
   public function getTestsResults($hardwareGroupId) {
-    return array_map(
-      function($test) use ($hardwareGroupId) {
-        $execId = $test->getExecutionTask()->getId();
-        $evalId = $test->getEvaluationTask()->getId();
-        $exec = $this->tasks[$execId]->getAsExecutionTaskResult();
-        $eval = $this->tasks[$execId]->getAsEvaluationTaskResult();
+    return array_map(function($test) use ($hardwareGroupId) {
+      return $this->getTestResult($test, $hardwareGroupId);
+    }, $this->config->getTests());
+  }
 
-        switch (TestResult::calculateStatus($exec->getStatus(), $eval->getStatus())) {
-          case TestResult::STATUS_OK:
-            return new TestResult($test, $exec, $eval, $hardwareGroupId);
-          case TestResult::STATUS_SKIPPED:
-            return new SkippedTestResult($test);
-          default:
-            return new FailedTestResult($test);
-        }
-      },
-      $this->config->getTests($hardwareGroupId)
-    );
+  /**
+   * @param TestConfig  $test       Configuration of the test
+   * @param string $hardwareGroupId Hardware group 
+   * @return TestResult
+   */
+  public function getTestResult(TestConfig $test, $hardwareGroupId) {
+    $exec = $this->getExecutionTaskResult($test);
+    $eval = $this->getEvaluationTaskResult($test);
+    return new TestResult($test, $exec, $eval, $hardwareGroupId);
+  }
+
+  /**
+   * @param TestConfig $test Configuration of the examined test
+   * @return EvaluationTaskResult
+   */
+  private function getEvaluationTaskResult(TestConfig $test) {
+    $id = $test->getEvaluationTask()->getId();
+    return $this->tasks[$id]->getAsEvaluationTaskResult();
+  }
+
+  /**
+   * @param TestConfig $test Configuration of the examined test
+   * @return ExecutionTaskResult
+   */
+  private function getExecutionTaskResult(TestConfig $test) {
+    $id = $test->getExecutionTask()->getId();
+    return $this->tasks[$id]->getAsExecutionTaskResult();
   }
 
   public function __toString() {
