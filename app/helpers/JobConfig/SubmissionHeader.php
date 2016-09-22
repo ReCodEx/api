@@ -6,17 +6,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class SubmissionHeader {
 
-  const TYPE_UNSPECIFIED = "recodex-unspecified";
-  const SEPARATOR = "_";
-
   /** @var array Raw data */
   private $data;
 
-  /** @var string Type of the job */
-  private $id;
-
-  /** @var string Type of the job */
-  private $type;
+  /** @var JobId Job identification */
+  private $jobId;
 
   public function __construct(array $data) {
     $this->data = $data;
@@ -24,47 +18,37 @@ class SubmissionHeader {
     if (!isset($data["job-id"])) {
       throw new JobConfigLoadingException("Submission header does not contain the 'job-id' field.");
     }
-
-    $jobId = $data["job-id"];
-    if (!strpos($jobId, self::SEPARATOR)) {
-      $this->id = $jobId;
-      $this->type = self::TYPE_UNSPECIFIED;
-    } else {
-      list($this->type, $this->id) = explode(self::SEPARATOR, $jobId, 2);
-    }
+    
+    $this->jobId = new JobId($data["job-id"]);
   }
 
   public function setJobId(string $type, string $id) {
-    $this->setType($type);
-    $this->setId($id);
+    $this->jobId->setJobId($type, $id);
   }
 
   public function getJobId(): string {
-    return $this->type . self::SEPARATOR . $this->id;
+    return (string) $this->jobId;
   }
 
   public function getId(): string {
-    return $this->id;
+    return $this->jobId->getId();
   }
 
   public function setId(string $id) {
-    $this->id = $id;
+    $this->jobId->setId($id);
   }
 
   public function getType(): string {
-    return $this->type;
+    return $this->jobId->getType();
   }
 
   public function setType(string $type) {
-    if (strpos($type, self::SEPARATOR) !== FALSE) {
-      throw new JobConfigLoadingException("Submission type cannot contain the '" . self::SEPARATOR . "' character.");
-    }
-    $this->type = $type;
+    $this->jobId->setType($type);
   }
 
   public function toArray() {
     $data = $this->data;
-    $data['job-id'] = $this->getJobId();
+    $data['job-id'] = (string) $this->jobId;
     return $data;
   }
 

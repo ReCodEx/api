@@ -25,6 +25,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
 {
     use MagicAccessors;
 
+    const JOB_TYPE = "recodex-assignment-solution";
+
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
@@ -131,7 +133,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "exerciseAssignmentId" => $this->getExerciseAssignment()->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-        "evaluation" => $this->getEvaluation(),
+        "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
         "files" => $this->getSolution()->getFiles()->toArray()
       ];
     }

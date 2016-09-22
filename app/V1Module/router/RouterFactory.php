@@ -47,7 +47,7 @@ class RouterFactory {
 
   private static function createBrokerReportsRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
-    $router[] = new PostRoute("$prefix/job-status/<submissionId>", "BrokerReports:jobStatus");
+    $router[] = new PostRoute("$prefix/job-status/<jobId>", "BrokerReports:jobStatus");
   }
 
   private static function createCommentsRoutes($router, $prefix) {

@@ -115,11 +115,11 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // get the job config with correct job id
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
     $jobConfig = JobConfig\Loader::getJobConfig($path); 
-    $jobConfig->setJobId($submission->getId());
+    $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getFiles()->toArray(),
+      $submission->getSolution()->getFiles()->toArray(),
       $hwGroup
     );
 
