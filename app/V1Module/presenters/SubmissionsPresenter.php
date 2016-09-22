@@ -8,7 +8,7 @@ use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
 use App\Model\Entity\TestResult;
 use App\Model\Repository\Submissions;
-use App\Model\Repository\SubmissionEvaluations;
+use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\UploadedFiles;
 
@@ -24,7 +24,7 @@ class SubmissionsPresenter extends BasePresenter {
   /** @inject @var Submissions */
   public $submissions;
 
-  /** @inject @var SubmissionEvaluations */
+  /** @inject @var SolutionEvaluations */
   public $evaluations;
 
   /** @inject @var EvaluationLoader */
