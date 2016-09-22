@@ -25,7 +25,7 @@ class Users extends BaseRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
-  protected function findOrThrow(string $id) {
+  public function findOrThrow($id) {
     if ($id === "me") {
       if (!$this->userSession->isLoggedIn()) {
         throw new ForbiddenRequestException; 
