@@ -9,16 +9,13 @@ use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
 use App\Model\Entity\User;
 
-class Comments extends Nette\Object {
+class Comments extends BaseRepository {
 
-  private $em;
-  private $comments;
   private $threads;
 
   public function __construct(EntityManager $em) {
-    $this->em = $em;
-    $this->comments = $em->getRepository("App\Model\Entity\Comment");
-    $this->threads = $em->getRepository("App\Model\Entity\CommentThread");
+    parent::__construct($em, Comment::CLASS);
+    $this->threads = $em->getRepository(CommentThread::CLASS);
   }
 
   public function get($id) {
@@ -26,7 +23,7 @@ class Comments extends Nette\Object {
   }
 
   public function persistComment(Comment $comment) {
-    $this->em->persist($comment);
+    $this->persist($comment);
   }
 
   public function persistThread(CommentThread $thread) {
@@ -37,7 +34,4 @@ class Comments extends Nette\Object {
     return $this->comments->findOneBy([ "user" => $user, "id" => $id ]);
   }
 
-  public function flush() {
-    $this->em->flush();
-  }
 }
