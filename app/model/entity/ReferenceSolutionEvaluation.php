@@ -28,7 +28,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable
   protected $referenceSolution;
 
   /**
-   * @ORM\Column(type="datetime")
+   * @ORM\Column(type="datetime", nullable=true)
    */
   protected $evaluatedAt;
 
@@ -38,15 +38,19 @@ class ReferenceSolutionEvaluation implements JsonSerializable
   protected $hwgroup;
 
   /**
-   * @ORM\Column(type="float")
+   * @ORM\Column(type="float", nullable=true)
    */
   protected $score;
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\Column(type="string", nullable=true)
+   */
+  protected $resultsUrl;
+
+  /**
+   * @ORM\Column(type="text", nullable=true)
    */
   protected $resultYml;
-
 
   public function jsonSerialize() {
     return [
@@ -57,10 +61,13 @@ class ReferenceSolutionEvaluation implements JsonSerializable
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hwgroup, EvaluationResults $results) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hwgroup) {
     $this->referenceSolution = $referenceSolution;
-    $this->evaluatedAt = new \DateTime;
     $this->hwgroup = $hwgroup;
+  }
+
+  public function saveResults(EvaluationResults $results) {
+    $this->evaluatedAt = new \DateTime;
     $this->score = 0;  // @todo: Somehow calculate the score.
     $this->resultYml = (string) $results;
   }

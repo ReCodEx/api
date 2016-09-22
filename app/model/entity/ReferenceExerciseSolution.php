@@ -22,8 +22,7 @@ class ReferenceExerciseSolution implements JsonSerializable
   protected $id;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise")
-   * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
+   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
    */
   protected $exercise;
 
