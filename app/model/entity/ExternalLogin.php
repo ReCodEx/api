@@ -3,7 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Exception\InvalidArgumentException;
+use App\Exceptions\InvalidArgumentException;
 
 use Nette\Security\Passwords;
 use Nette\Utils\Validators;

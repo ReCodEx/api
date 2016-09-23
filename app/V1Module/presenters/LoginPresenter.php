@@ -2,8 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exception\WrongCredentialsException;
-use App\Exception\BadRequestException;
+use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\CAS;
 use App\Helpers\ExternalLogin\IExternalLoginService;
 use App\Model\Entity\User;
