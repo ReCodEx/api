@@ -29,7 +29,7 @@ class LoginPresenter extends BasePresenter {
    * Sends response with an access token, if the user exists.
    * @throws WrongCreedentialsException
    */
-  private function trySendingLoggedInResponse(User $user) {
+  private function trySendingLoggedInResponse($user) {
     if (!$user) {
       throw new WrongCredentialsException;
     }
