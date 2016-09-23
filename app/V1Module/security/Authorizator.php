@@ -7,6 +7,7 @@ use Nette\Security as NS;
 
 use App\Model\Repository\Permissions;
 use App\Model\Entity\Resource;
+use App\Model\Entity\Permission;
 use App\Model\Repository\Resources;
 use App\Model\Repository\Roles;
 
@@ -46,6 +47,15 @@ class Authorizator implements NS\IAuthorizator {
     }
 
     foreach ($this->permissions->findAll() as $permission) {
+      if ($permission->getAction() === Permission::ACTION_WILDCARD) {
+        $this->acl->{$permission->isAllowed() ? "allow" : "deny"}(
+          $permission->getRoleId(),
+          $permission->getResourceId()
+        );
+
+        continue;
+      }
+
       if ($permission->isAllowed()) {
         $this->acl->allow($permission->getRoleId(), $permission->getResourceId(), $permission->getAction());
       } else {

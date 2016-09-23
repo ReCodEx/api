@@ -11,6 +11,8 @@ use JsonSerializable;
  */
 class Permission implements JsonSerializable
 {
+  const ACTION_WILDCARD = "*";
+
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
   /**

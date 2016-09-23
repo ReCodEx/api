@@ -41,7 +41,8 @@
 		"bjeavons/zxcvbn-php": "^0.1.4"
 	},
 	"require-dev": {
-		"nette/tester": "^1.7"
+		"nette/tester": "^1.7",
+		"mockery/mockery": "@stable"
 	},
 	"minimum-stability": "dev"
 }
