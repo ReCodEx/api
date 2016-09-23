@@ -24,6 +24,11 @@ class Role implements JsonSerializable
    */
   protected $parentRole;
 
+  public function __construct()
+  {
+    $this->childRoles = new ArrayCollection();
+  }
+
   public function getParentRoleId() {
     return $this->parentRole === NULL ? NULL : $this->parentRole->getId();
   }
