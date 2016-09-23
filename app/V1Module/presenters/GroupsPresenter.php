@@ -169,8 +169,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->findGroupOrThrow($id);
     $user = $this->findUserOrThrow('me');
 
-    if (!$group->isSupervisorOf($user)
-      && !$this->user->isInRole("superadmin")) {
+    if (!$group->isMemberOf($user) && !$this->user->isAllowed("group", "viewStudents")) {
       throw new ForbiddenRequestException("You are not supervisor of this group.");
     }
 
