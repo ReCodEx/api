@@ -46,6 +46,10 @@ class ReferenceExerciseSolution implements JsonSerializable
    */
   protected $evaluations;
 
+  public function getFiles() {
+    return $this->solution->getFiles();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,

@@ -64,7 +64,6 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "submittedAt" => $this->submittedAt->getTimestamp(),
       "hardwareGroup" => $this->hardwareGroup,
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "evaluation" => $this->evaluation
@@ -72,7 +71,6 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   public function __construct(ReferenceExerciseSolution $referenceSolution, string $hardwareGroup) {
-    $this->submittedAt = new \DateTime;
     $this->referenceSolution = $referenceSolution;
     $this->hardwareGroup = $hardwareGroup;
   }

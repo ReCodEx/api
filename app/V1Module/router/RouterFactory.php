@@ -32,6 +32,7 @@ class RouterFactory {
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
     self::createInstancesRoutes($router, "$prefix/instances");
+    self::createReferenceSolutionsRoutes($router, "$prefix/reference-solutions");
     self::createSubmissionRoutes($router, "$prefix/submissions");
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
@@ -106,6 +107,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/licences", "Instances:createLicence");
     $router[] = new PutRoute("$prefix/<id>/licences/<licenceId>", "Instances:updateLicence");
     $router[] = new DeleteRoute("$prefix/<id>/licences/<licenceId>", "Instances:deleteLicence");
+  }
+
+  private static function createReferenceSolutionsRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
+    $router[] = new PostRoute("$prefix/<exerciseId>/solution/<id>", "ReferenceExerciseSolutions:evaluate");
   }
 
   private static function createSubmissionRoutes($router, $prefix) {

@@ -11,6 +11,9 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 
+use App\Helpers\JobConfig;
+use App\Helpers\SubmissionHelper;
+
 use Nette\Utils\Arrays;
 
 class ReferenceExerciseSolutionsPresenter extends BasePresenter {
@@ -26,6 +29,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
   /** @inject @var ReferenceSolutionEvaluations */
   public $referenceEvaluations;
+
+  /** @inject @var SubmissionHelper */
+  public $submissionHelper;
 
   /**
    * @POST
@@ -58,14 +64,18 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * @POST
    */
-  public function actionSubmit(string $id) {
-    $referenceSolution = $this->findReferenceSolutionOrThrow($id);
+  public function actionEvaluate(string $exerciseId, string $id) {
+    $referenceSolution = $this->referenceSolutions->findOrThrow($id);
     $user = $this->users->findOrThrow("me");
+
+    if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
+      // @todo throw some exception to report inconsistence
+    }
 
     // @todo validate that user can do this action
 
     // create the entity and generate the ID
-    $hwGroup = $req->getPost("hwGroup");
+    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
     $this->referenceEvaluations->persist($evaluation);
 
@@ -79,7 +89,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $evaluation->setResultsUrl($resultsUrl);
       $this->referenceEvaluations->flush();
       $this->sendSuccessResponse([
-        "submission" => $submission,
+        "evaluation" => $evaluation,
         "webSocketChannel" => [
           "id" => $jobConfig->getJobId(),
           "monitorUrl" => $this->getMonitorUrl(),
