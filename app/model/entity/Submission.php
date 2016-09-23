@@ -144,7 +144,7 @@ class Submission implements JsonSerializable
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
         "note" => $this->note,
-        "exerciseAssignmentId" => $this->getExerciseAssignment()->getId(),
+        "exerciseAssignmentId" => $this->exerciseAssignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => $this->getEvaluationStatus(),
         "evaluation" => $this->getEvaluation(),

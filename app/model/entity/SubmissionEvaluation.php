@@ -91,7 +91,7 @@ class SubmissionEvaluation implements JsonSerializable
     foreach ($testResults as $result) {
       $testResult = new TestResult($this, $result);
       $this->testResults->add($testResult);
-      $scores[$testResult->getTestName()] = $testResult->getScore();
+      $this->scores[$testResult->getTestName()] = $testResult->getScore();
     }
   }
 
@@ -102,7 +102,7 @@ class SubmissionEvaluation implements JsonSerializable
       "score" => $this->score,
       "points" => $this->points,
       "bonusPoints" => $this->bonusPoints,
-      "maxPoints" => $this->submission->getExerciseAssignment()->getMaxPoints($this->evaluatedAt),
+      "maxPoints" => $this->submission->getMaxPoints($this->evaluatedAt),
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
@@ -129,8 +129,8 @@ class SubmissionEvaluation implements JsonSerializable
     // calculate the score and points
     $this->testResults = new ArrayCollection;
     $this->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
-    $this->score = $this->calculator->calculateScore($this->scores);
-    $this->points = $this->score * $submission->getExerciseAssignment->getMaxPoints();
+    $this->score = $calculator->computeScore($this->scores);
+    $this->points = $this->score * $submission->getMaxPoints();
   }
 
 }
