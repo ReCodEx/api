@@ -53,21 +53,15 @@ class TestResult implements ITestResult {
 
   /**
    * Determines the status of the test based on the previously reduced status of the test and the status of the next processed task result status.
-   * @param   string $prevStatus    Current status
-   * @param   string $resultStatus  Next status
+   * @param   string $execStatus    Current status
+   * @param   string $evalStatus  Next status
    * @return  string Status of the reduced test tasks" statuses
    */
-  public static function calculateStatus(string $prevStatus, string $resultStatus): string {
-    if ($prevStatus === self::STATUS_OK) {
-      return $resultStatus; // === "OK" | "SKIPPED" | "FAILED"
-    } else if ($resultStatus === self::STATUS_OK) {
-      return $prevStatus; // === "OK" | "SKIPPED" | "FAILED"
-    } else if ($prevStatus === self::STATUS_SKIPPED) {
-      return $resultStatus; // === "SKIPPED" | "FAILED"
-    } else if ($resultStatus === self::STATUS_SKIPPED) {
-      return $prevStatus; // === "SKIPPED" | "FAILED"
+  public static function calculateStatus(string $execStatus, string $evalStatus): string {
+    if ($execStatus === self::STATUS_OK) {
+      return $evalStatus;
     } else {
-      return self::STATUS_FAILED;
+      return $execStatus;
     }
   }
 

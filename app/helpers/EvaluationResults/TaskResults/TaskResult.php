@@ -60,6 +60,20 @@ class TaskResult {
   }
 
   /**
+   * @return boolean The status of the task is 'SKIPPED' 
+   */
+  public function isSkipped() {
+    return $this->getStatus() === self::STATUS_SKIPPED;
+  }
+
+  /**
+   * @return boolean The status of the task is 'FAILED' 
+   */
+  public function hasFailed() {
+    return $this->getStatus() === self::STATUS_FAILED;
+  }
+
+  /**
    * Get the score of this result
    * @return float The score
    */
@@ -72,6 +86,9 @@ class TaskResult {
    * @return ExecutionTaskResult
    */
   public function getAsExecutionTaskResult() {
+    if ($this->isSkipped()) {
+      return new SkippedTaskResult($this->getId());
+    }
     return new ExecutionTaskResult($this->data);
   }
 
@@ -80,6 +97,9 @@ class TaskResult {
    * @return EvaluationTaskResult
    */
   public function getAsEvaluationTaskResult() {
+    if ($this->isSkipped()) {
+      return new SkippedTaskResult($this->getId());
+    }
     return new EvaluationTaskResult($this->data);
   }
 

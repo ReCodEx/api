@@ -63,9 +63,9 @@ class TestTestResult extends Tester\TestCase
     Assert::equal(TR::STATUS_OK,        TR::calculateStatus(TR::STATUS_OK, TR::STATUS_OK));
     Assert::equal(TR::STATUS_SKIPPED,   TR::calculateStatus(TR::STATUS_OK, TR::STATUS_SKIPPED));
     Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_OK, TR::STATUS_FAILED));
-    Assert::equal(TR::STATUS_SKIPPED,   TR::calculateStatus(TR::STATUS_SKIPPED, TR::STATUS_OK));
-    Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_FAILED, TR::STATUS_OK));
-    Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_SKIPPED, TR::STATUS_FAILED));
+    Assert::equal(TR::STATUS_SKIPPED,   TR::calculateStatus(TR::STATUS_SKIPPED, TR::STATUS_OK)); // this should never happen in real world
+    Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_FAILED, TR::STATUS_OK)); // this should never happen in real world
+    Assert::equal(TR::STATUS_SKIPPED,   TR::calculateStatus(TR::STATUS_SKIPPED, TR::STATUS_FAILED)); // this should never happen in real world
     Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_FAILED, TR::STATUS_SKIPPED));
     Assert::equal(TR::STATUS_SKIPPED,   TR::calculateStatus(TR::STATUS_SKIPPED, TR::STATUS_SKIPPED));
     Assert::equal(TR::STATUS_FAILED,    TR::calculateStatus(TR::STATUS_FAILED, TR::STATUS_FAILED));
@@ -152,9 +152,8 @@ class TestTestResult extends Tester\TestCase
       [TaskResult::STATUS_SKIPPED, TaskResult::STATUS_SKIPPED, TR::STATUS_SKIPPED],
       [TaskResult::STATUS_FAILED, TaskResult::STATUS_FAILED, TR::STATUS_FAILED],
       [TaskResult::STATUS_FAILED, TaskResult::STATUS_SKIPPED, TR::STATUS_FAILED],
-      [TaskResult::STATUS_SKIPPED, TaskResult::STATUS_FAILED, TR::STATUS_FAILED]
     ] as $statuses) {
-      list($evalStatus, $execStatus, $result) = $statuses;
+      list($execStatus, $evalStatus, $result) = $statuses;
       $execRes = self::$execRes;
       $execRes["status"] = $execStatus;
       $evalRes = self::$evalRes;
