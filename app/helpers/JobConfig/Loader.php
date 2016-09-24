@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 
+use App\Exceptions\MalformedJobConfigException;
 use App\Helpers\MemoryCache;
 use App\Model\Entity\Submission;
 use Symfony\Component\Yaml\Yaml;
@@ -24,7 +25,7 @@ class Loader {
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
   public static function getJobConfig(string $path): JobConfig {
-    $cached = self::getCache()->load($path);
+    $cached = self::getFromCache($path);
     if ($cached === NULL) {
       $yml = self::loadConfig($path);
       $jobConfig = self::parseJobConfig($yml);
@@ -32,6 +33,14 @@ class Loader {
     }
 
     return $cached;
+  }
+
+  public static function getFromCache(string $path) {
+    return self::getCache()->load($path);
+  }
+
+  public static function invalidateCache(string $path) {
+    self::getCache()->remove($path);
   }
 
   /**
@@ -56,11 +65,11 @@ class Loader {
    * @throws MalformedJobConfigException
    * @return array Parsed YAML config
    */
-  private static function parseJobConfig(string $config): JobConfig {
+  public static function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {
-      throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
+      throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed. ({$e->getMessage()})");
     }
 
     return new JobConfig($parsedConfig);

@@ -6,7 +6,6 @@ use Symfony\Component\Yaml\Yaml;
 
 class JobId {
 
-  const TYPE_UNSPECIFIED = "recodex-unspecified";
   const SEPARATOR = "_";
 
   /** @var string Type of the job */
@@ -18,7 +17,7 @@ class JobId {
   public function __construct(string $jobId) {
     if (!strpos($jobId, self::SEPARATOR)) {
       $this->id = $jobId;
-      $this->type = self::TYPE_UNSPECIFIED;
+      $this->type = NULL;
     } else {
       list($this->type, $this->id) = explode(self::SEPARATOR, $jobId, 2);
     }
@@ -30,6 +29,10 @@ class JobId {
   }
 
   public function getJobId(): string {
+    if ($this->type === NULL) {
+      return $this->id;
+    }
+
     return $this->type . self::SEPARATOR . $this->id;
   }
 
