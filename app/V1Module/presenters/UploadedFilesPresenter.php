@@ -45,6 +45,7 @@ class UploadedFilesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(files="view-detail")
    * @todo: Check if this user can access the file
    */
   public function actionDetail(string $id) {
@@ -54,6 +55,7 @@ class UploadedFilesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(files="view-content")
    * @todo: Check if this user can access the file
    */
   public function actionContent(string $id) {
@@ -62,7 +64,10 @@ class UploadedFilesPresenter extends BasePresenter {
   }
 
 
-  /** @POST */
+  /**
+   * @POST
+   * @UserIsAllowed(files="upload")
+   */
   public function actionUpload() {
     $user = $this->findUserOrThrow("me");
     $files = $this->getHttpRequest()->getFiles();

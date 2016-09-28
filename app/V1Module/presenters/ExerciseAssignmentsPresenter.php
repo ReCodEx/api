@@ -42,6 +42,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(asignments="view-all")
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
@@ -56,6 +57,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(asignments="view-detail")
    */
   public function actionDetail(string $id) {
     // @todo: check if the user can access this information
@@ -65,6 +67,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(asignments="submit")
    */
   public function actionCanSubmit(string $id) {
     // @todo: check if the user can access this information
@@ -75,6 +78,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(asignments="view-submissions")
    */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->findAssignmentOrThrow($id);
@@ -84,6 +88,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @UserIsAllowed(asignments="submit")
    * @Param(type="post", name="note")
    * @Param(type="post", name="files")
    */

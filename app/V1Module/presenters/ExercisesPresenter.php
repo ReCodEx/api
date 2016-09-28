@@ -31,6 +31,7 @@ class ExercisesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(exercises="view-all")
    */
   public function actionDefault() {
     $exercises = $this->exercises->findAll();
@@ -39,6 +40,7 @@ class ExercisesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(exercises="view-detail")
    */
   public function actionDetail(string $id) {
     $exercise = $this->findExerciseOrThrow($id);

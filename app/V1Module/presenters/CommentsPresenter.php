@@ -36,6 +36,7 @@ class CommentsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(comments="view")
    */
   public function actionDefault($id) {
     $thread = $this->findThreadOrCreateIt($id);
@@ -47,6 +48,7 @@ class CommentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @UserIsAllowed(comments="alter")
    * @Param(type="post", name="text", validation="string:1..")
    * @Param(type="post", name="isPrivate", validation="string")
    */
@@ -66,6 +68,7 @@ class CommentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @UserIsAllowed(comments="alter")
    */
   public function actionTogglePrivate(string $threadId, string $commentId) {
     $user = $this->findUserOrThrow("me");

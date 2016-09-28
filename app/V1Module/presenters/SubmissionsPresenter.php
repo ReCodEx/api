@@ -46,6 +46,7 @@ class SubmissionsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(submissions="view-all")
    */
   public function actionDefault() {
     $submissions = $this->submissions->findAll();
@@ -54,6 +55,7 @@ class SubmissionsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(submissions="view-evaluation")
    * @param string $id
    * @throws NotFoundException
    */
