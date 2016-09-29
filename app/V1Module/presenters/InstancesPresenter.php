@@ -108,7 +108,7 @@ class InstancesPresenter extends BasePresenter {
     $instance = $this->findInstanceOrThrow($id);
     $user = $this->findUserOrThrow("me");
     if (!$user->belongsTo($instance)
-      || !$this->user->isInRole("superadmin")) { // @todo: use privilidges instead of roles
+      && !$this->user->isInRole("superadmin")) { // @todo: use privilidges instead of roles
         throw new ForbiddenRequestException("You cannot access this instance users."); 
     }
 
