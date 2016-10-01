@@ -38,7 +38,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * @POST
    * @LoggedIn
-   * @UserIsAllowed(instances="create")
+   * @UserIsAllowed(instances="add")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="isOpen", validation="bool")
@@ -83,7 +83,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * @DELETE
    * @LoggedIn
-   * @UserIsAllowed(instances="delete")
+   * @UserIsAllowed(instances="remove")
    */
   public function actionDeleteInstance(string $id) {
     $instance = $this->findInstanceOrThrow($id);
@@ -139,7 +139,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * @POST
    * @LoggedIn
-   * @UserIsAllowed(instances="create-licence")
+   * @UserIsAllowed(instances="add-licence")
    * @Param(type="post", name="note", validation="string:2..")
    * @Param(type="post", name="validUntil", validation="datetime")
    */

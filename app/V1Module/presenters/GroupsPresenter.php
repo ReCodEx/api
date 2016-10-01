@@ -45,7 +45,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(groups="create")
+   * @UserIsAllowed(groups="add")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="instanceId", validation="string:36")
@@ -84,7 +84,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(groups="create")
+   * @UserIsAllowed(groups="add")
    * @Param(name="name", type="post")
    * @Param(name="instanceId", type="post")
    * @Param(name="parentGroupId", type="post", required=false)
@@ -389,7 +389,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(groups="get-admin")
+   * @UserIsAllowed(groups="view-admin")
    */
   public function actionAdmin($id) {
     $group = $this->findGroupOrThrow($id);
@@ -398,7 +398,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(groups="make-admin")
+   * @UserIsAllowed(groups="set-admin")
    * @Param(type="post", name="userId")
    */
   public function actionMakeAdmin(string $id) {
