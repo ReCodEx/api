@@ -10,6 +10,7 @@ use App\Exceptions\SubmissionFailedException;
 use App\Model\Entity\Submission;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Model\Entity\ExerciseAssignment;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -31,6 +32,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @inject @var SubmissionHelper */
   public $submissionHelper;
 
+  /**
+   *
+   * @param string $id
+   * @return ExerciseAssignment assignment which corresponds to given id
+   * @throws NotFoundException
+   */
   protected function findAssignmentOrThrow(string $id) {
     $assignment = $this->assignments->get($id);
     if (!$assignment) {
@@ -114,7 +121,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // get the job config with correct job id
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
-    $jobConfig = JobConfig\Loader::getJobConfig($path); 
+    $jobConfig = JobConfig\Loader::getJobConfig($path);
     $jobConfig->setJobId($submission->getId());
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
@@ -137,5 +144,37 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     } else {
       throw new SubmissionFailedException;
     }
+  }
+
+  /**
+   * @GET
+   * @UserIsAllowed(assignment="view-limits")
+   */
+  public function actionGetLimits(string $id) {
+    $assignment = $this->findAssignmentOrThrow($id);
+
+    // get job config and its test cases
+    $path = $assignment->getJobConfigFilePath();
+    $jobConfig = JobConfig\Loader::getJobConfig($path);
+    $tests = $jobConfig->getTests();
+
+    $this->sendSuccessResponse(
+      array_map(
+        function ($test) {
+          return $test->getLimits("group1")->toArray(); // TODO: hardcoded hwgroup
+        },
+        $tests
+      )
+    );
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(assignment="set-limits")
+   */
+  public function actionSetLimits(string $id) {
+    $assignment = $this->findAssignmentOrThrow($id);
+    // TODO:
+    $this->sendSuccessResponse($assignment);
   }
 }

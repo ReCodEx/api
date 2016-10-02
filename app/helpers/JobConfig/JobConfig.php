@@ -61,7 +61,7 @@ class JobConfig {
 
   /**
    * Returns the tasks of this configuration
-   * @return Task[] The tasks
+   * @return TaskConfig[] The tasks
    */
   public function getTasks(): array {
     if ($this->tasks === NULL) {
@@ -78,7 +78,7 @@ class JobConfig {
 
   /**
    * Get the logical tests defined in the job config
-   * @return Test[] [description]
+   * @return TestConfig[] tests with their corresponding tasks
    */
   public function getTests() {
     if ($this->tests === NULL) {
