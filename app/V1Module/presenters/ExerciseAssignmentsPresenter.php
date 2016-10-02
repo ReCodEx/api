@@ -60,8 +60,13 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(asignments="view-detail")
    */
   public function actionDetail(string $id) {
-    // @todo: check if the user can access this information
     $assignment = $this->findAssignmentOrThrow($id);
+    $user = $this->findUserOrThrow('me');
+
+    if (!$assignment->canAccessAsStudent($user)
+      && !$assignment->canAccessAsSupervisor($user)) {
+        throw new ForbiddenRequestException("You cannot view this assignment.");
+    }
     $this->sendSuccessResponse($assignment);
   }
 
@@ -70,9 +75,13 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(asignments="submit")
    */
   public function actionCanSubmit(string $id) {
-    // @todo: check if the user can access this information
     $assignment = $this->findAssignmentOrThrow($id);
     $user = $this->findUserOrThrow('me');
+
+    if (!$assignment->canAccessAsStudent($user)
+      && !$assignment->canAccessAsSupervisor($user)) {
+        throw new ForbiddenRequestException("You cannot access this assignment.");
+    }
     $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
   }
 

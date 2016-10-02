@@ -126,7 +126,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isMemberOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view subgroups of this group.");
     }
 
     $this->sendSuccessResponse($group->getChildGroups()->toArray());
@@ -143,7 +143,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isSupervisorOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view members of this group.");
     }
 
     $this->sendSuccessResponse([
@@ -162,7 +162,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isSupervisorOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
 
     $this->sendSuccessResponse($group->getSupervisors()->toArray());
@@ -176,8 +176,8 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->findGroupOrThrow($id);
     $user = $this->findUserOrThrow('me');
 
-    if (!$group->isMemberOf($user) && !$this->user->isAllowed("group", "viewStudents")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    if (!$group->isMemberOf($user)) {
+      throw new ForbiddenRequestException("You are not allowed to view students of this group.");
     }
 
     $this->sendSuccessResponse($group->getStudents()->toArray());
@@ -193,7 +193,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isMemberOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
     }
 
     $this->sendSuccessResponse($group->getAssignments()->toArray());
