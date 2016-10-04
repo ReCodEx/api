@@ -16,6 +16,8 @@ Installation
    `app/config/config.local.neon.example`)
 4. Setup the database schema by running `php www/index.php 
    orm:schema-tool:update --force`
+5. Fill database with initial values by running `php www/index.php 
+   db:fill`
 
 
 Web Server Setup
