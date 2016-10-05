@@ -176,9 +176,9 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionSetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->findAssignmentOrThrow($id);
-    $limits = $this->httpRequest->getPost("limits");
+    $limits = $this->getHttpRequest()->getPost("limits");
     if ($limits === NULL || !is_array($limits)) {
-        throw new InvalidArgumentException("limits");
+      throw new InvalidArgumentException("limits");
     }
 
     // get job config and its test cases
@@ -188,6 +188,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // TODO: save job config
 
-    $this->sendSuccessResponse($newJobConfig);
+    $this->sendSuccessResponse($newJobConfig->toArray());
   }
 }

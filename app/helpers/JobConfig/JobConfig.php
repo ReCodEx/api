@@ -4,6 +4,7 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\InvalidArgumentException;
 
 class JobConfig {
 
@@ -137,11 +138,29 @@ class JobConfig {
   /**
    *
    * @param string $hwGroupId
-   * @param type $limits
-   * @return JobConfig newly created instance of job configuration with new limits
+   * @param array $limits
+   * @return JobConfig newly created instance of job configuration with given limits
    */
-  public function setLimits(string $hwGroupId, $limits): JobConfig {
-      // TODO:
+  public function setLimits(string $hwGroupId, array $limits): JobConfig {
+    $cfg = new JobConfig($this->data);
+    $cfg->tasks = array_map(
+      function ($taskConfig) use ($hwGroupId, $limits) {
+        $task = new TaskConfig($taskConfig);
+        if ($task->isExecutionTask()) {
+          if (!array_key_exists($task->getTestId(), $limits)) {
+            throw new InvalidArgumentException("Missing limits for test: " . $task->getTestId());
+          }
+
+          $task = $task->getAsExecutionTask();
+          $task->setLimits($hwGroupId, new Limits($limits[$task->getTestId()]));
+        }
+
+        return $task;
+      },
+      $this->data["tasks"]
+    );
+
+    return $cfg;
   }
 
   public function toArray() {
