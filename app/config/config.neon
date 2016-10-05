@@ -51,7 +51,7 @@ parameters:
     url: http://recodex.projekty.ms.mff.cuni.cz
     siteName: "ReCodEx"
     githubUrl: http://recodex.github.io
-  
+
   failures:
     emails:
       to: "Šimon Rozsíval <simon@rozsival.com>"
@@ -66,11 +66,11 @@ parameters:
     password: ""
     secure: "tls"
     context:
-      ssl: 
+      ssl:
         verify_peer: false
         verify_peer_name: false
         allow_self_signed: true
-    
+
 
 application:
   errorPresenter: V1:ApiError
@@ -86,12 +86,15 @@ extensions:
   events: Kdyby\Events\DI\EventsExtension
   annotations: Kdyby\Annotations\DI\AnnotationsExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
+  fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
 
 services:
   router: App\RouterFactory::createRouter
   - App\Security\AccessManager(%accessManager%)
   - App\Security\Authorizator
   - Nette\Mail\SmtpMailer(%mail%)
+  - class: App\Console\DoctrineFixtures
+    tags: [kdyby.console.command]
 
   # external login services
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
@@ -128,6 +131,10 @@ doctrine:
   dbname: 'recodex-api'
   metadata:
     App: %appDir%
+
+fixtures:
+  locale: "en_US"
+  seed: 1
 
 annotations:
   ignore:

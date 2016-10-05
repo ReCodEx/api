@@ -45,7 +45,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(groups="create")
+   * @UserIsAllowed(groups="add")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="instanceId", validation="string:36")
@@ -84,6 +84,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @UserIsAllowed(groups="add")
    * @Param(name="name", type="post")
    * @Param(name="instanceId", type="post")
    * @Param(name="parentGroupId", type="post", required=false)
@@ -101,6 +102,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-detail")
    */
   public function actionDetail(string $id) {
     $group = $this->findGroupOrThrow($id);
@@ -116,6 +118,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-subgroups")
    */
   public function actionSubgroups(string $id) {
     $group = $this->findGroupOrThrow($id);
@@ -123,7 +126,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isMemberOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view subgroups of this group.");
     }
 
     $this->sendSuccessResponse($group->getChildGroups()->toArray());
@@ -131,6 +134,8 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-students")
+   * @UserIsAllowed(groups="view-supervisors")
    */
   public function actionMembers(string $id) {
     $group = $this->findGroupOrThrow($id);
@@ -138,7 +143,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isSupervisorOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view members of this group.");
     }
 
     $this->sendSuccessResponse([
@@ -149,6 +154,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-supervisors")
    */
   public function actionSupervisors(string $id) {
     $group = $this->findGroupOrThrow($id);
@@ -156,7 +162,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isSupervisorOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
 
     $this->sendSuccessResponse($group->getSupervisors()->toArray());
@@ -164,13 +170,14 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-students")
    */
   public function actionStudents(string $id) {
     $group = $this->findGroupOrThrow($id);
     $user = $this->findUserOrThrow('me');
 
-    if (!$group->isMemberOf($user) && !$this->user->isAllowed("group", "viewStudents")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+    if (!$group->isMemberOf($user)) {
+      throw new ForbiddenRequestException("You are not allowed to view students of this group.");
     }
 
     $this->sendSuccessResponse($group->getStudents()->toArray());
@@ -178,6 +185,7 @@ class GroupsPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @UserIsAllowed(groups="view-detail")
    */
   public function actionAssignments(string $id) {
     $group = $this->findGroupOrThrow($id);
@@ -185,13 +193,16 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->isMemberOf($user)
       && !$this->user->isInRole("superadmin")) {
-      throw new ForbiddenRequestException("You are not supervisor of this group.");
+      throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
     }
 
     $this->sendSuccessResponse($group->getAssignments()->toArray());
   }
 
-  /** @GET */
+  /**
+   * @GET
+   * @UserIsAllowed(groups="view-detail")
+   */
   public function actionStats(string $id) {
     $currentUser = $this->findUserOrThrow('me');
     $group = $this->findGroupOrThrow($id);
@@ -212,7 +223,10 @@ class GroupsPresenter extends BasePresenter {
     );
   }
 
-  /** @GET */
+  /**
+   * @GET
+   * @UserIsAllowed(groups="view-detail")
+   */
   public function actionStudentsStats(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -266,7 +280,10 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($statsMap);
   }
 
-  /** @POST */
+  /**
+   * @POST
+   * @UserIsAllowed(groups="add-student")
+   */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -289,7 +306,10 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group);
   }
 
-  /** @DELETE */
+  /**
+   * @DELETE
+   * @UserIsAllowed(groups="remove-student")
+   */
   public function actionRemoveStudent(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -315,7 +335,10 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group);
   }
 
-  /** @POST */
+  /**
+   * @POST
+   * @UserIsAllowed(groups="add-supervisor")
+   */
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -337,7 +360,10 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group);
   }
 
-  /** @DELETE */
+  /**
+   * @DELETE
+   * @UserIsAllowed(groups="remove-supervisor")
+   */
   public function actionRemoveSupervisor(string $id, string $userId) {
     $user = $this->findUserOrThrow($userId);
     $currentUser = $this->findUserOrThrow('me');
@@ -361,14 +387,18 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group);
   }
 
-  /** @GET */
+  /**
+   * @GET
+   * @UserIsAllowed(groups="view-admin")
+   */
   public function actionAdmin($id) {
     $group = $this->findGroupOrThrow($id);
-    $this->sendSuccessResponse($group->getAdmin());
+    $this->sendSuccessResponse($group->getAdminIds());
   }
 
   /**
    * @POST
+   * @UserIsAllowed(groups="set-admin")
    * @Param(type="post", name="userId")
    */
   public function actionMakeAdmin(string $id) {
@@ -378,13 +408,13 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->findGroupOrThrow($id);
 
     // check that the user has rights to join the group
-    if (!$group->getAdmin() !== $currentUser
+    if ($group->isAdminOf($currentUser) === FALSE
       && !$this->user->isInRole("superadmin")) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
     // make sure that the user is not already member of the group 
-    if ($group->getAdmin() !== $user) {
+    if ($group->isAdminOf($user) === FALSE) {
       $group->makeAdmin($user);
       $this->groups->flush();
     }

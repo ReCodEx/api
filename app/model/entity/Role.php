@@ -48,7 +48,7 @@ class Role implements JsonSerializable
   }
 
   public function hasLimitedRights() {
-    return $this->id === "student";
+    return $this->id !== "superadmin";
   }
 
 }

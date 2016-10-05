@@ -37,6 +37,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @LoggedIn
+   * @UserIsAllowed(instances="add")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="isOpen", validation="bool")
@@ -56,6 +58,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @PUT
+   * @LoggedIn
+   * @UserIsAllowed(instances="update")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="isOpen", validation="bool", required=FALSE)
@@ -78,6 +82,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @DELETE
+   * @LoggedIn
+   * @UserIsAllowed(instances="remove")
    */
   public function actionDeleteInstance(string $id) {
     $instance = $this->findInstanceOrThrow($id);
@@ -95,6 +101,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @LoggedIn
+   * @UserIsAllowed(instances="view-groups")
    */
   public function actionGroups(string $id) {
     $instance = $this->findInstanceOrThrow($id);
@@ -103,12 +111,14 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @LoggedIn
+   * @UserIsAllowed(instances="view-users")
    */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->findInstanceOrThrow($id);
     $user = $this->findUserOrThrow("me");
     if (!$user->belongsTo($instance)
-      && !$this->user->isInRole("superadmin")) { // @todo: use privilidges instead of roles
+      && !$this->user->isInRole("superadmin")) {
         throw new ForbiddenRequestException("You cannot access this instance users."); 
     }
 
@@ -118,6 +128,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @LoggedIn
+   * @UserIsAllowed(instances="view-licences")
    */
   public function actionLicences(string $id) {
     $instance = $this->findInstanceOrThrow($id);
@@ -126,6 +138,8 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @LoggedIn
+   * @UserIsAllowed(instances="add-licence")
    * @Param(type="post", name="note", validation="string:2..")
    * @Param(type="post", name="validUntil", validation="datetime")
    */
