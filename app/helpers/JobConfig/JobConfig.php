@@ -118,10 +118,10 @@ class JobConfig {
   }
 
   public function removeLimits(string $hwGroupId): JobConfig {
-    $cfg = new JobConfig($this->data);
+    $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
-      function ($taskConfig) use ($hwGroupId) {
-        $task = new TaskConfig($taskConfig);
+      function ($originalTask) use ($hwGroupId) {
+        $task = new TaskConfig($originalTask->toArray());
         if ($task->isExecutionTask()) {
           $task = $task->getAsExecutionTask();
           $task->removeLimits($hwGroupId);
@@ -129,7 +129,7 @@ class JobConfig {
 
         return $task;
       },
-      $this->data["tasks"]
+      $this->getTasks()
     );
 
     return $cfg;
@@ -142,10 +142,10 @@ class JobConfig {
    * @return JobConfig newly created instance of job configuration with given limits
    */
   public function setLimits(string $hwGroupId, array $limits): JobConfig {
-    $cfg = new JobConfig($this->data);
+    $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
-      function ($taskConfig) use ($hwGroupId, $limits) {
-        $task = new TaskConfig($taskConfig);
+      function ($originalTask) use ($hwGroupId, $limits) {
+        $task = new TaskConfig($originalTask->toArray());
         if ($task->isExecutionTask()) {
           if (!array_key_exists($task->getTestId(), $limits)) {
             throw new InvalidArgumentException("Missing limits for test: " . $task->getTestId());
@@ -157,7 +157,7 @@ class JobConfig {
 
         return $task;
       },
-      $this->data["tasks"]
+      $this->getTasks()
     );
 
     return $cfg;

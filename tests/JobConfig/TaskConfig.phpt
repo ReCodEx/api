@@ -103,6 +103,17 @@ class TestTaskConfig extends Tester\TestCase
     Assert::equal($expected, $deserialized);
   }
 
+  public function testSetLimits() {
+    $task = new TaskConfig(self::$execution);
+    $limits = new Limits([ "hw-group-id" => "another", "memory" => "987", "time" => "654" ]);
+
+    $exec = $task->getAsExecutionTask();
+    $exec->setLimits($limits->getId(), $limits);
+    Assert::type(Limits::class, $exec->getLimits("A"));
+    Assert::type(Limits::class, $exec->getLimits("another"));
+    Assert::equal($limits, $exec->getLimits("another"));
+  }
+
 }
 
 # Testing methods run
