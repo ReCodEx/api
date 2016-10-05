@@ -6,6 +6,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
+use App\Exceptions\InvalidArgumentException;
 
 use App\Model\Entity\Submission;
 use App\Helpers\SubmissionHelper;
@@ -150,7 +151,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(assignment="view-limits")
    */
-  public function actionGetLimits(string $id) {
+  public function actionGetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->findAssignmentOrThrow($id);
 
     // get job config and its test cases
@@ -160,8 +161,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     $this->sendSuccessResponse(
       array_map(
-        function ($test) {
-          return $test->getLimits("group1")->toArray(); // TODO: hardcoded hwgroup
+        function ($test) use ($hardwareGroup) {
+          return $test->getLimits($hardwareGroup)->toArray();
         },
         $tests
       )
@@ -171,10 +172,22 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /**
    * @POST
    * @UserIsAllowed(assignment="set-limits")
+   * @Param(type="post", name="limits")
    */
-  public function actionSetLimits(string $id) {
+  public function actionSetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->findAssignmentOrThrow($id);
-    // TODO:
-    $this->sendSuccessResponse($assignment);
+    $limits = $this->httpRequest->getPost("limits");
+    if ($limits === NULL || !is_array($limits)) {
+        throw new InvalidArgumentException("limits");
+    }
+
+    // get job config and its test cases
+    $path = $assignment->getJobConfigFilePath();
+    $jobConfig = JobConfig\Loader::getJobConfig($path);
+    $newJobConfig = $jobConfig->setLimits($hardwareGroup, $limits);
+
+    // TODO: save job config
+
+    $this->sendSuccessResponse($newJobConfig);
   }
 }

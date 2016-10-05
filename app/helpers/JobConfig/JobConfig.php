@@ -119,7 +119,7 @@ class JobConfig {
   public function removeLimits(string $hwGroupId): JobConfig {
     $cfg = new JobConfig($this->data);
     $cfg->tasks = array_map(
-      function ($taskConfig) {
+      function ($taskConfig) use ($hwGroupId) {
         $task = new TaskConfig($taskConfig);
         if ($task->isExecutionTask()) {
           $task = $task->getAsExecutionTask();
@@ -132,6 +132,16 @@ class JobConfig {
     );
 
     return $cfg;
+  }
+
+  /**
+   *
+   * @param string $hwGroupId
+   * @param type $limits
+   * @return JobConfig newly created instance of job configuration with new limits
+   */
+  public function setLimits(string $hwGroupId, $limits): JobConfig {
+      // TODO:
   }
 
   public function toArray() {

@@ -67,8 +67,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
     $router[] = new PostRoute("$prefix/<id>/submit", "ExerciseAssignments:submit");
-    $router[] = new GetRoute("$prefix/<id>/limits", "ExerciseAssignments:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/limits", "ExerciseAssignments:setLimits");
+    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:setLimits");
   }
 
   private static function createGroupsRoutes($router, $prefix) {
