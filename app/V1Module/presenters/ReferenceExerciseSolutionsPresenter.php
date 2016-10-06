@@ -63,13 +63,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @Param(type="post", name="hwGroup")
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
     $user = $this->users->findOrThrow("me");
 
     if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
-      // @todo throw some exception to report inconsistence
+      throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
     }
 
     // @todo validate that user can do this action

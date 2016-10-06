@@ -13,7 +13,7 @@ class EvaluationStatus {
       if (!$evaluable->canBeEvaluated()) {
         return self::EVALUATION_STATUS_EVALUATION_FAILED;
       } else if (!$evaluable->hasEvaluation()) {
-        return self::EVALUATION_STATUS_EVALUATION_FAILED;
+        return self::EVALUATION_STATUS_IN_PROGRESS;
       }
 
       $eval = $evaluable->getEvaluation();
