@@ -105,7 +105,7 @@ class JobConfig {
       $this->tests = array_map(
         function ($tasks) {
           return new TestConfig(
-            $tasks[0]->getTestId(),
+            $tasks[0]->getTestId(), // there is always at least one task
             $tasks
           );
         },
