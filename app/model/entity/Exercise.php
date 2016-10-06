@@ -81,7 +81,7 @@ class Exercise implements JsonSerializable
         "id" => $this->id,
         "name" => $this->name,
         "version" => $this->version,
-        "author" => $this->author,
+        "authorId" => $this->author->getId(),
         "forkedFrom" => $this->getForkedFrom(),
         "description" => $this->description,
         "difficulty" => $this->difficulty,

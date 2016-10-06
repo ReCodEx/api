@@ -45,6 +45,10 @@ class User implements JsonSerializable
      */
     protected $id;
 
+    public function getId() {
+      return $this->id;
+    }
+
     /**
      * @ORM\Column(type="string")
      */
