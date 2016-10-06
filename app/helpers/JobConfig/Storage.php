@@ -2,12 +2,14 @@
 
 namespace App\Helpers\JobConfig;
 
+use App\Exceptions\MalformedJobConfigException;
+use App\Exceptions\JobConfigStorageException;
 use App\Helpers\MemoryCache;
 use App\Model\Entity\Submission;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-class Loader {
+class Storage {
     
   /** @var MemoryCache */
   private static $cache = NULL;
@@ -32,6 +34,44 @@ class Loader {
     }
 
     return $cached;
+  }
+
+  public static function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
+    $archivedConfigPath = NULL;
+    if (is_file($path) && $doNotArchive !== TRUE) {
+      $archivedConfigPath = self::archiveJobConfig($path);
+    }
+
+    // make sure the directory exists
+    $dirname = dirname($path);
+    if (!is_dir($dirname) && mkdir($dirname, 0777, TRUE) === FALSE) {
+      throw new JobConfigStorageException("Cannot create the directory for the job config.");
+    }
+
+    if (!file_put_contents($path, (string) $config)) {
+      throw new JobConfigStorageException("Cannot write the new job config to the storage.");
+    }
+
+    return $archivedConfigPath;
+  }
+
+  public static function archiveJobConfig(string $path, string $prefix = "arch_") {
+    $dirname = dirname($path);
+    $filename = pathinfo($path, PATHINFO_BASENAME);
+    $ext = pathinfo($path, PATHINFO_EXTENSION);
+    $copyId = 0;
+
+    do {
+      $copyId++;
+      $newFileName = "{$prefix}{$filename}_{$copyId}.{$ext}";
+    } while (is_file("$dirname/$newFileName"));
+
+    $newPath = "$dirname/$newFileName";
+    if (!rename($path, $newPath)) {
+      throw new JobConfigStorageException("Cannot archive job config.");
+    }
+
+    return $newPath;
   }
 
   /**

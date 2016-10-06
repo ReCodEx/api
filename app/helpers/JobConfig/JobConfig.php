@@ -117,7 +117,7 @@ class JobConfig {
     return $this->tasksCount;
   }
 
-  public function removeLimits(string $hwGroupId): JobConfig {
+  public function cloneWithoutLimits(string $hwGroupId): JobConfig {
     $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
       function ($originalTask) use ($hwGroupId) {
@@ -141,7 +141,7 @@ class JobConfig {
    * @param array $limits
    * @return JobConfig newly created instance of job configuration with given limits
    */
-  public function setLimits(string $hwGroupId, array $limits): JobConfig {
+  public function cloneWithNewLimits(string $hwGroupId, array $limits): JobConfig {
     $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
       function ($originalTask) use ($hwGroupId, $limits) {

@@ -122,7 +122,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // get the job config with correct job id
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
-    $jobConfig = JobConfig\Loader::getJobConfig($path);
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId($submission->getId());
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
@@ -156,7 +156,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath();
-    $jobConfig = JobConfig\Loader::getJobConfig($path);
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
     $tests = $jobConfig->getTests();
 
     $this->sendSuccessResponse(
@@ -183,10 +183,18 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath();
-    $jobConfig = JobConfig\Loader::getJobConfig($path);
-    $newJobConfig = $jobConfig->setLimits($hardwareGroup, $limits);
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
+    $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
 
-    // TODO: save job config
+    // @todo: archive old job config?
+    try {
+      $archivedFilePath = JobConfig\Storage::saveJobConfig($newJobConfig, $path);
+      if ($archivedFilePath !== NULL) {
+        
+      }
+    } catch (JobConfigStorageException $e) {
+      
+    }
 
     $this->sendSuccessResponse($newJobConfig->toArray());
   }

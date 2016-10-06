@@ -68,7 +68,7 @@ class TestJobConfig extends Tester\TestCase
     $hwGroup = "A";
 
     $jobConfig = new JobConfig(self::$jobConfig);
-    $removedConfig = $jobConfig->removeLimits($hwGroup);
+    $removedConfig = $jobConfig->cloneWithoutLimits($hwGroup);
 
     // test if limits were not changed in original config
     Assert::equal(self::$jobConfig, $jobConfig->toArray());
@@ -86,7 +86,7 @@ class TestJobConfig extends Tester\TestCase
     $testLimits = [$testId => $limits];
 
     $jobConfig = new JobConfig(self::$jobConfig);
-    $setConfig = $jobConfig->setLimits($hwGroup, $testLimits);
+    $setConfig = $jobConfig->cloneWithNewLimits($hwGroup, $testLimits);
 
     // test for expected limits which should be set
     foreach ($setConfig->getTests() as $test) {
