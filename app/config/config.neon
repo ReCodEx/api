@@ -10,7 +10,9 @@ parameters:
     issuer: https://recodex.projekty.ms.mff.cuni.cz
     audience: https://recodex.projekty.ms.mff.cuni.cz
     expiration: 86400
-    algorithm: HS256
+    usedAlgorithm: HS256
+    allowedAlgorithms:
+      - HS256
     verificationKey: "recodex-123"
 
   fileServer:
