@@ -8,6 +8,7 @@ use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
 use Nette\Utils\Json;
 use Nette\Utils\Arrays;
+use Nette\Http\IResponse;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -171,8 +172,8 @@ class Submission implements JsonSerializable
       }
 
       if ($assignment->getGroup()->hasValidLicence() === FALSE) {
-        // @todo Throw some more meaningful error (HTTP 402 - payment required)
-        throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.");
+        throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
+          IResponse::S402_PAYMENT_REQUIRED);
       }
 
       if ($assignment->canAccessAsSupervisor($loggedInUser) === FALSE) {
