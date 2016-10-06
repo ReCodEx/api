@@ -36,13 +36,20 @@ class Storage {
     return $cached;
   }
 
+  /**
+   * Store new configuration object to the file storage.
+   * @param  JobConfig   $config        The configuration to be stored
+   * @param  string      $path          Path of the configuration file
+   * @param  boolean     $doNotArchive  Whether to archive the file (if there is some existing file)
+   * @return string|NULL                Path of the archived configuration file.
+   */
   public static function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
     $archivedConfigPath = NULL;
     if (is_file($path) && $doNotArchive !== TRUE) {
       $archivedConfigPath = self::archiveJobConfig($path);
     }
 
-    // make sure the directory exists
+    // make sure the directory exists and that the file is stored correctly
     $dirname = dirname($path);
     if (!is_dir($dirname) && mkdir($dirname, 0777, TRUE) === FALSE) {
       throw new JobConfigStorageException("Cannot create the directory for the job config.");
@@ -52,12 +59,21 @@ class Storage {
       throw new JobConfigStorageException("Cannot write the new job config to the storage.");
     }
 
+    // save the config to the cache
+    self::getCache()->store($path, $config);
+
     return $archivedConfigPath;
   }
 
-  public static function archiveJobConfig(string $path, string $prefix = "arch_") {
+  /**
+   * @param  string $path     Path of the old config
+   * @param  string $prefifx  Prefix of the archived file name
+   * @return string           New file path
+   * @throws JobConfigStorageException  When the file cannot be renamed (within in the same directory)
+   */
+  public static function archive(string $path, string $prefix = "arch_") {
     $dirname = dirname($path);
-    $filename = pathinfo($path, PATHINFO_BASENAME);
+    $filename = pathinfo($path, PATHINFO_FILENAME);
     $ext = pathinfo($path, PATHINFO_EXTENSION);
     $copyId = 0;
 

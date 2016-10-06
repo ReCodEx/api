@@ -177,6 +177,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public function actionSetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->findAssignmentOrThrow($id);
     $limits = $this->getHttpRequest()->getPost("limits");
+
     if ($limits === NULL || !is_array($limits)) {
       throw new InvalidArgumentException("limits");
     }
@@ -186,14 +187,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
 
-    // @todo: archive old job config?
-    try {
-      $archivedFilePath = JobConfig\Storage::saveJobConfig($newJobConfig, $path);
-      if ($archivedFilePath !== NULL) {
-        
-      }
-    } catch (JobConfigStorageException $e) {
-      
+    // save the new & archive the old config
+    $archivedFilePath = JobConfig\Storage::saveJobConfig($newJobConfig, $path, TRUE); // @todo: remove the 'TRUE' so the configs are archived as soon as the next todo in this method is implemented
+    if ($archivedFilePath !== NULL) {
+      // @todo: where to store the old job config file names?
     }
 
     $this->sendSuccessResponse($newJobConfig->toArray());

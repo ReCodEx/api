@@ -148,11 +148,12 @@ class JobConfig {
         $task = new TaskConfig($originalTask->toArray());
         if ($task->isExecutionTask()) {
           if (!array_key_exists($task->getTestId(), $limits)) {
-            throw new InvalidArgumentException("Missing limits for test: " . $task->getTestId());
+            return $task; // the limits for this task are unchanged
           }
 
           $task = $task->getAsExecutionTask();
-          $task->setLimits($hwGroupId, new Limits($limits[$task->getTestId()]));
+          $taskLimits = array_merge($task->getLimits($hwGroupId)->toArray(), $limits[$task->getTestId()]);
+          $task->setLimits($hwGroupId, new Limits($taskLimits));
         }
 
         return $task;
