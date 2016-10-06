@@ -5,6 +5,7 @@ namespace App\Helpers\ExternalLogin;
 use App\Model\Entity\User;
 use App\Helpers\LdapUserUtils;
 use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\CASMissingInfoException;
 
 use Nette\Utils\Arrays;
 use Nette\Utils\Validators;
@@ -68,9 +69,9 @@ class CAS implements IExternalLoginService {
     }
 
     $data = $this->ldap->getUser($ukco, $password); // throws when the credentials are wrong
-    $email = $this->getValue($data->get($this->emailField));
-    $firstName = $this->getValue($data->get($this->firstNameField));
-    $lastName = $this->getValue($data->get($this->lastNameField));
+    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
+    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
+    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
 
     return new UserData($ukco, $email, $firstName, $lastName, $this);
   }
@@ -79,10 +80,11 @@ class CAS implements IExternalLoginService {
    * Get value of an attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value
+   * @throws CASMissingInfoException  If attribute is invalid (empty or NULL)
    */
   private function getValue(NodeAttribute $attribute) {
     if ($attribute === null || $attribute->count() === 0) {
-      throw new \Exception; // @todo Throw a specific information
+      throw new CASMissingInfoException();
     }
 
     return $attribute->current();
