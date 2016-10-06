@@ -117,10 +117,9 @@ class BrokerReportsPresenter extends BasePresenter {
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
-    // @todo: Fix this and uncomment (shouldNotifyAfterEvaluationIsLoader() in unknown method)
-    // if ($submission->shouldNotifyAfterEvaluationIsLoader()) {
-    //   $this->notifyEvaluationFinished($submission);
-    // }
+    if ($submission->isAsynchronous()) {
+      $this->notifyEvaluationFinished($submission);
+    }
   }
 
   /**
