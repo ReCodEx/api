@@ -67,6 +67,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
     $router[] = new PostRoute("$prefix/<id>/submit", "ExerciseAssignments:submit");
+    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:setLimits");
   }
 
   private static function createGroupsRoutes($router, $prefix) {
@@ -76,7 +78,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
     $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
-    
+
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
     $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
     $router[] = new GetRoute("$prefix/<id>/students/<userId>", "Groups:studentsStats");
@@ -87,7 +89,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/supervisors", "Groups:supervisors");
     $router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
     $router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
-    
+
     $router[] = new GetRoute("$prefix/<id>/admin", "Groups:admin");
     $router[] = new PostRoute("$prefix/<id>/admin", "Groups:makeAdmin");
 

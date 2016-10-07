@@ -4,6 +4,7 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\InvalidArgumentException;
 
 class JobConfig {
 
@@ -61,7 +62,7 @@ class JobConfig {
 
   /**
    * Returns the tasks of this configuration
-   * @return Task[] The tasks
+   * @return TaskConfig[] The tasks
    */
   public function getTasks(): array {
     if ($this->tasks === NULL) {
@@ -78,7 +79,7 @@ class JobConfig {
 
   /**
    * Get the logical tests defined in the job config
-   * @return Test[] [description]
+   * @return TestConfig[] tests with their corresponding tasks
    */
   public function getTests() {
     if ($this->tests === NULL) {
@@ -116,11 +117,11 @@ class JobConfig {
     return $this->tasksCount;
   }
 
-  public function removeLimits(string $hwGroupId): JobConfig {
-    $cfg = new JobConfig($this->data);
+  public function cloneWithoutLimits(string $hwGroupId): JobConfig {
+    $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
-      function ($taskConfig) {
-        $task = new TaskConfig($taskConfig);
+      function ($originalTask) use ($hwGroupId) {
+        $task = new TaskConfig($originalTask->toArray());
         if ($task->isExecutionTask()) {
           $task = $task->getAsExecutionTask();
           $task->removeLimits($hwGroupId);
@@ -128,7 +129,39 @@ class JobConfig {
 
         return $task;
       },
-      $this->data["tasks"]
+      $this->getTasks()
+    );
+
+    return $cfg;
+  }
+
+  /**
+   *
+   * @param string $hwGroupId
+   * @param array $limits
+   * @return JobConfig newly created instance of job configuration with given limits
+   */
+  public function cloneWithNewLimits(string $hwGroupId, array $limits): JobConfig {
+    $cfg = new JobConfig($this->toArray());
+    $cfg->tasks = array_map(
+      function ($originalTask) use ($hwGroupId, $limits) {
+        $task = new TaskConfig($originalTask->toArray());
+        if ($task->isExecutionTask()) {
+          if (!array_key_exists($task->getTestId(), $limits)) {
+            return $task; // the limits for this task are unchanged
+          }
+
+          $task = $task->getAsExecutionTask();
+          $taskLimits = array_merge(
+            $task->hasLimits($hwGroupId) ? $task->getLimits($hwGroupId)->toArray() : [],
+            $limits[$task->getTestId()]
+          );
+          $task->setLimits($hwGroupId, new Limits($taskLimits));
+        }
+
+        return $task;
+      },
+      $this->getTasks()
     );
 
     return $cfg;

@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionEvaluation;
-use App\Helpers\JobConfig\Loader as JobConfigLoader;
+use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
@@ -47,7 +47,7 @@ class EvaluationLoader {
 
     $jobConfigPath = $submission->getExerciseAssignment()->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfigLoader::getJobConfig($jobConfigPath); 
+      $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath); 
       $jobConfig->setJobId($submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
       return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);

@@ -18,7 +18,7 @@ class TaskConfig {
 
   /** @var string ID of the test to which this task corresponds */
   private $testId;
-    
+
   /** @var array Raw data */
   private $data;
 
@@ -58,7 +58,10 @@ class TaskConfig {
   }
 
   public function getAsExecutionTask() {
-    return new ExecutionTaskConfig($this->data);
+    if ($this instanceof ExecutionTaskConfig) {
+        return $this;
+    }
+    return new ExecutionTaskConfig($this->toArray());
   }
 
   public function isEvaluationTask() {
