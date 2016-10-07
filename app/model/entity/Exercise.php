@@ -46,6 +46,11 @@ class Exercise implements JsonSerializable
     protected $description;
 
     /**
+     * @ORM\Column(type="text")
+     */
+    protected $assignment;
+
+    /**
      * @ORM\Column(type="string")
      */
     protected $difficulty;
@@ -84,6 +89,7 @@ class Exercise implements JsonSerializable
         "authorId" => $this->author->getId(),
         "forkedFrom" => $this->getForkedFrom(),
         "description" => $this->description,
+        "assignment" => $this->assignment,
         "difficulty" => $this->difficulty,
         "createdAt" => $this->createdAt,
         "updatedAt" => $this->updatedAt
