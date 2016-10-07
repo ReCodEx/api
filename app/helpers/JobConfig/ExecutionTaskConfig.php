@@ -22,13 +22,21 @@ class ExecutionTaskConfig extends TaskConfig {
   }
 
   /**
+   * Does the task config have limits for given hardware group?
+   * @return bool
+   */
+  public function hasLimits(string $hardwareGroupId): bool {
+    return isset($this->limits[$hardwareGroupId]) || $this->findLimits($hardwareGroupId) !== NULL;
+  }
+
+  /**
    * Get the configured limits for a specific hardware group.
    * @param  string $hardwareGroupId Hardware group ID
    * @return Limits Limits for the specified hardware group
    */
   public function getLimits(string $hardwareGroupId): Limits {
     if (!isset($this->limits[$hardwareGroupId])) {
-      $limits = $this->findLimits($hardwareGroupId);
+      $limits = $this->findLimitsOrThrow($hardwareGroupId);
       $this->setLimits($hardwareGroupId, new Limits($limits));
     }
 
@@ -42,14 +50,22 @@ class ExecutionTaskConfig extends TaskConfig {
    * @throws JobConfigLoadingException
    * @return array
    */
-  private function findLimits(string $hardwareGroupId): array {
+  private function findLimitsOrThrow(string $hardwareGroupId): array {
+    $limits = $this->findLimits($hardwareGroupId);
+    if ($limits === NULL) {
+      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
+    }
+    return $limits;
+  }
+
+  private function findLimits(string $hardwareGroupId) {
     foreach ($this->limitsConfig as $limits) {
       if ($limits["hw-group-id"] === $hardwareGroupId) {
         return $limits;
       }
     }
 
-    throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
+    return NULL;
   }
 
   /**

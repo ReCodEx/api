@@ -152,7 +152,10 @@ class JobConfig {
           }
 
           $task = $task->getAsExecutionTask();
-          $taskLimits = array_merge($task->getLimits($hwGroupId)->toArray(), $limits[$task->getTestId()]);
+          $taskLimits = array_merge(
+            $task->hasLimits($hwGroupId) ? $task->getLimits($hwGroupId)->toArray() : [],
+            $limits[$task->getTestId()]
+          );
           $task->setLimits($hwGroupId, new Limits($taskLimits));
         }
 
