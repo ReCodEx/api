@@ -150,7 +150,7 @@ class ExerciseAssignment implements JsonSerializable
 
   /**
    * @ORM\OneToMany(targetEntity="Submission", mappedBy="exerciseAssignment")
-   * @ORM\OrderBy({ "submittedAt" => "DESC" })
+   * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
   protected $submissions;
 
