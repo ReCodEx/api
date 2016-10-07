@@ -107,16 +107,25 @@ class Group implements JsonSerializable
     $this->memberships->remove($membership);
   }
 
-  protected function getActiveMemberships(string $type) {
+  protected function getActiveMemberships() {
     $filter = Criteria::create()
-                ->where(Criteria::expr()->eq("type", $type))
-                ->andWhere(Criteria::expr()->eq("status", GroupMembership::STATUS_ACTIVE));
+                ->where(Criteria::expr()->eq("status", GroupMembership::STATUS_ACTIVE));
 
     return $this->memberships->matching($filter);
   }
 
+  /**
+   * Return all active members depending on specified type
+   */
   protected function getActiveMembers(string $type) {
-    return $this->getActiveMemberships($type)->map(
+    if ($type == GroupMembership::TYPE_ALL) {
+      $members = $this->getActiveMemberships();
+    } else {
+      $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+      $members = $this->getActiveMemberships()->matching($filter);
+    }
+
+    return $members->map(
       function(GroupMembership $membership) {
         return $membership->getUser();
       }
@@ -140,8 +149,7 @@ class Group implements JsonSerializable
   }
 
   public function isMemberOf(User $user) {
-    // @todo: this could be more effective
-    return $this->isStudentOf($user) || $this->isSupervisorOf($user) || $this->isAdminOf($user);
+    return $this->getActiveMembers(GroupMembership::TYPE_ALL)->contains($user);
   }
 
   /**

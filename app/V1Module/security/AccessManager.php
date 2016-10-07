@@ -107,11 +107,11 @@ class AccessManager {
   private function getAllowedAlgs() {
     // allowed algs must be separated from the used algs - if the algorithm is changed in the future,
     // we must accept the older algorithm until all the old tokens expire
-    return [ $this->parameters['algorithm'] ]; // @todo load this from config!!
+    return $this->parameters['allowedAlgorithms'];
   }
 
   private function getAlg() {
-    return $this->parameters['algorithm'];
+    return $this->parameters['usedAlgorithm'];
   }
 
   /**

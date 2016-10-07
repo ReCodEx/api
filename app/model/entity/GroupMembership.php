@@ -19,6 +19,7 @@ class GroupMembership implements JsonSerializable
 
   const TYPE_STUDENT = "student";
   const TYPE_SUPERVISOR = "supervisor";
+  const TYPE_ALL = "*";
 
   public function __construct(Group $group, User $user, string $type, string $status) {
     $this->group = $group;
