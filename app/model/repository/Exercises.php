@@ -13,4 +13,13 @@ class Exercises extends BaseRepository {
     parent::__construct($em, Exercise::CLASS);
   }
 
+  public function findOrThrow($id) {
+    return $this->findOrThrow($id);
+  }
+
+  public function getByName(string $name) {
+    return $this->findBy([ "name" => $name ]);
+  }
+
+
 }
