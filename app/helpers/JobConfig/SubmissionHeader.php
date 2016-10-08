@@ -12,6 +12,9 @@ class SubmissionHeader {
   /** @var string ID of job */
   private $jobId;
 
+  /** @var string fileserver url */
+  private $fileCollector = "";
+
   public function __construct(array $data) {
     $this->data = $data;
 
@@ -20,6 +23,9 @@ class SubmissionHeader {
     }
 
     $this->jobId = $data["job-id"];
+    if (array_key_exists("file-collector", $data)) {
+      $this->fileCollector = $data["file-collector"];
+    }
   }
 
   public function getJobId(): string {
@@ -30,9 +36,18 @@ class SubmissionHeader {
     $this->jobId = $jobId;
   }
 
+  public function getFileCollector(): string {
+    return $this->fileCollector;
+  }
+
+  public function setFileCollector(string $fileCollector) {
+    $this->fileCollector = $fileCollector;
+  }
+
   public function toArray() {
     $data = $this->data;
-    $data['job-id'] = $this->jobId;
+    $data["job-id"] = $this->jobId;
+    $data["file-collector"] = $this->fileCollector;
     return $data;
   }
 

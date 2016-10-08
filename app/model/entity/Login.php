@@ -50,7 +50,7 @@ class Login
   public function passwordsMatch($password) {
     if (Passwords::verify($password, $this->passwordHash)) {
       if (Passwords::needsRehash($this->passwordHash, self::HASHING_OPTIONS)) {
-        $this->password = self::hashPassword($password);
+        $this->passwordHash = self::hashPassword($password);
       }
 
       return TRUE;
