@@ -253,6 +253,13 @@ class Group implements JsonSerializable
     $maxPoints = $this->getMaxPoints();
     $gainedPoints = $this->getPointsGainedByStudent($student);
 
+    $statuses = [];
+    foreach ($this->assignments as $assignment) {
+      $best = $assignment->getBestSolution($student);
+      $solution = $best ? $best : $assignment->getLastSolution($student);
+      $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL;
+    }
+
     return [
       "userId" => $student->getId(),
       "groupId" => $this->getId(),
@@ -265,6 +272,7 @@ class Group implements JsonSerializable
         "total" => $maxPoints,
         "gained" => $gainedPoints
       ],
+      "statuses" => $statuses,
       "hasLimit" => $this->threshold !== NULL && $this->threshold > 0,
       "passesLimit" => $this->threshold === NULL ? TRUE : $gainedPoints >= $maxPoints * $this->threshold 
     ];

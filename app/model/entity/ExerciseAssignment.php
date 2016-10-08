@@ -150,6 +150,7 @@ class ExerciseAssignment implements JsonSerializable
 
   /**
    * @ORM\OneToMany(targetEntity="Submission", mappedBy="exerciseAssignment")
+   * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
   protected $submissions;
 
@@ -164,6 +165,12 @@ class ExerciseAssignment implements JsonSerializable
 
   public function hasReachedSubmissionsCountLimit(User $user) {
     return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
+  }
+
+  public function getLastSolution(User $user) {
+    $usersSolutions = Criteria::create()
+      ->where(Criteria::expr()->eq("user", $user));
+    return $this->submissions->matching($usersSolutions)->first();
   }
 
   public function getBestSolution(User $user) {

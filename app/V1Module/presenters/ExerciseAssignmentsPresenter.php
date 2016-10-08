@@ -6,10 +6,12 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
+use App\Exceptions\InvalidArgumentException;
 
 use App\Model\Entity\Submission;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Model\Entity\ExerciseAssignment;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -31,6 +33,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @inject @var SubmissionHelper */
   public $submissionHelper;
 
+  /**
+   *
+   * @param string $id
+   * @return ExerciseAssignment assignment which corresponds to given id
+   * @throws NotFoundException
+   */
   protected function findAssignmentOrThrow(string $id) {
     $assignment = $this->assignments->get($id);
     if (!$assignment) {
@@ -128,7 +136,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // get the job config with correct job id
     $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
-    $jobConfig = JobConfig\Loader::getJobConfig($path); 
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId($submission->getId());
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
@@ -151,5 +159,54 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     } else {
       throw new SubmissionFailedException;
     }
+  }
+
+  /**
+   * @GET
+   * @UserIsAllowed(assignment="view-limits")
+   */
+  public function actionGetLimits(string $id, string $hardwareGroup) {
+    $assignment = $this->findAssignmentOrThrow($id);
+
+    // get job config and its test cases
+    $path = $assignment->getJobConfigFilePath();
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
+    $tests = $jobConfig->getTests();
+
+    $this->sendSuccessResponse(
+      array_map(
+        function ($test) use ($hardwareGroup) {
+          return $test->getLimits($hardwareGroup)->toArray();
+        },
+        $tests
+      )
+    );
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(assignment="set-limits")
+   * @Param(type="post", name="limits")
+   */
+  public function actionSetLimits(string $id, string $hardwareGroup) {
+    $assignment = $this->findAssignmentOrThrow($id);
+    $limits = $this->getHttpRequest()->getPost("limits");
+
+    if ($limits === NULL || !is_array($limits)) {
+      throw new InvalidArgumentException("limits");
+    }
+
+    // get job config and its test cases
+    $path = $assignment->getJobConfigFilePath();
+    $jobConfig = JobConfig\Storage::getJobConfig($path);
+    $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
+
+    // save the new & archive the old config
+    $archivedFilePath = JobConfig\Storage::saveJobConfig($newJobConfig, $path, TRUE); // @todo: remove the 'TRUE' so the configs are archived as soon as the next todo in this method is implemented
+    if ($archivedFilePath !== NULL) {
+      // @todo: where to store the old job config file names?
+    }
+
+    $this->sendSuccessResponse($newJobConfig->toArray());
   }
 }

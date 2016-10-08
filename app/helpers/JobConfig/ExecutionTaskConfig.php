@@ -11,7 +11,7 @@ class ExecutionTaskConfig extends TaskConfig {
 
   /** @var array */
   private $limitsConfig;
-    
+
   public function __construct(array $data) {
     parent::__construct($data);
     if (!isset($data["sandbox"]) || !isset($data["sandbox"]["limits"])) {
@@ -22,13 +22,21 @@ class ExecutionTaskConfig extends TaskConfig {
   }
 
   /**
+   * Does the task config have limits for given hardware group?
+   * @return bool
+   */
+  public function hasLimits(string $hardwareGroupId): bool {
+    return isset($this->limits[$hardwareGroupId]) || $this->findLimits($hardwareGroupId) !== NULL;
+  }
+
+  /**
    * Get the configured limits for a specific hardware group.
    * @param  string $hardwareGroupId Hardware group ID
    * @return Limits Limits for the specified hardware group
    */
   public function getLimits(string $hardwareGroupId): Limits {
     if (!isset($this->limits[$hardwareGroupId])) {
-      $limits = $this->findLimits($hardwareGroupId);
+      $limits = $this->findLimitsOrThrow($hardwareGroupId);
       $this->setLimits($hardwareGroupId, new Limits($limits));
     }
 
@@ -41,15 +49,23 @@ class ExecutionTaskConfig extends TaskConfig {
    * @param string $hardwareGroupId
    * @throws JobConfigLoadingException
    * @return array
-   */  
-  private function findLimits(string $hardwareGroupId): array {
+   */
+  private function findLimitsOrThrow(string $hardwareGroupId): array {
+    $limits = $this->findLimits($hardwareGroupId);
+    if ($limits === NULL) {
+      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
+    }
+    return $limits;
+  }
+
+  private function findLimits(string $hardwareGroupId) {
     foreach ($this->limitsConfig as $limits) {
       if ($limits["hw-group-id"] === $hardwareGroupId) {
         return $limits;
       }
     }
 
-    throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
+    return NULL;
   }
 
   /**
@@ -73,7 +89,7 @@ class ExecutionTaskConfig extends TaskConfig {
   }
 
   /**
-   * Merge all the data of the parent with all the 
+   * Merge all the data of the parent with all the
    * @return array
    */
   public function toArray() {
@@ -94,11 +110,11 @@ class ExecutionTaskConfig extends TaskConfig {
   private function getLimitsConfig(): array {
     $data = array_map(
       function ($limits) {
-        return $limits->toArray(); 
+        return $limits->toArray();
       },
       array_values($this->limits)
     );
-    
+
     // add original data for all the uncached limits
     // (definitelly unaltered)
     foreach ($this->getAllHWGroupsIds() as $id) {
