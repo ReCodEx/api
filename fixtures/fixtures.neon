@@ -10,8 +10,8 @@ App\Model\Entity\Role:
     "parentRole": @supervisor
 
 App\Model\Entity\Resource:
-  "asignments":
-    __construct: ["asignments"]
+  "assignments":
+    __construct: ["assignments"]
   "comments":
     __construct: ["comments"]
   "exercises":
@@ -28,9 +28,9 @@ App\Model\Entity\Resource:
     __construct: ["users"]
 
 App\Model\Entity\Permission:
-  "superadmin-asignments":
+  "superadmin-assignments":
     "role": @superadmin
-    "resource": @asignments
+    "resource": @assignments
     "action": "*"
     "isAllowed": 1
   "superadmin-comments":
@@ -68,24 +68,24 @@ App\Model\Entity\Permission:
     "resource": @users
     "action": "*"
     "isAllowed": 1
-  "student-asignments-submit":
+  "student-assignments-submit":
     "role": @student
-    "resource": @asignments
+    "resource": @assignments
     "action": "submit"
     "isAllowed": 1
-  "student-asignments-view-all":
+  "student-assignments-view-all":
     "role": @student
-    "resource": @asignments
+    "resource": @assignments
     "action": "view-all"
     "isAllowed": 1
-  "student-asignments-view-detail":
+  "student-assignments-view-detail":
     "role": @student
-    "resource": @asignments
+    "resource": @assignments
     "action": "view-detail"
     "isAllowed": 1
-  "student-asignments-view-submissions":
+  "student-assignments-view-submissions":
     "role": @student
-    "resource": @asignments
+    "resource": @assignments
     "action": "view-submissions"
     "isAllowed": 1
   "student-comments-alter":
@@ -193,14 +193,14 @@ App\Model\Entity\Permission:
     "resource": @users
     "action": "view-instances"
     "isAllowed": 1
-  "supervisor-asignments-view-limits":
+  "supervisor-assignments-view-limits":
     "role": @supervisor
-    "resource": @asignments
+    "resource": @assignments
     "action": "view-limits"
     "isAllowed": 1
-  "supervisor-asignments-set-limits":
+  "supervisor-assignments-set-limits":
     "role": @supervisor
-    "resource": @asignments
+    "resource": @assignments
     "action": "set-limits"
     "isAllowed": 1
   "supervisor-groups-view-all":

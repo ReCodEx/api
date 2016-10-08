@@ -50,7 +50,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(asignments="view-all")
+   * @UserIsAllowed(assignments="view-all")
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
@@ -65,7 +65,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(asignments="view-detail")
+   * @UserIsAllowed(assignments="view-detail")
    */
   public function actionDetail(string $id) {
     $assignment = $this->findAssignmentOrThrow($id);
@@ -80,7 +80,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(asignments="submit")
+   * @UserIsAllowed(assignments="submit")
    */
   public function actionCanSubmit(string $id) {
     $assignment = $this->findAssignmentOrThrow($id);
@@ -95,7 +95,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(asignments="view-submissions")
+   * @UserIsAllowed(assignments="view-submissions")
    */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->findAssignmentOrThrow($id);
@@ -105,7 +105,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(asignments="submit")
+   * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note")
    * @Param(type="post", name="files")
    */
@@ -163,7 +163,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @GET
-   * @UserIsAllowed(assignment="view-limits")
+   * @UserIsAllowed(assignments="view-limits")
    */
   public function actionGetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->findAssignmentOrThrow($id);
@@ -185,7 +185,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
-   * @UserIsAllowed(assignment="set-limits")
+   * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="limits")
    */
   public function actionSetLimits(string $id, string $hardwareGroup) {
