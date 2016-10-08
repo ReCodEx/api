@@ -170,15 +170,16 @@ class ExerciseAssignment implements JsonSerializable
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
+    $validSubmissions = function ($submission) {
+      $evaluation = $submission->getEvaluation();
+      // keep only solutions, which are marked as valid (both manual and automatic way)
+      return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
+    }; 
     
-    return array_filter(
-      $this->submissions->matching($fromThatUser)->toArray(),
-      function($submission) {
-        $evaluation = $submission->getEvaluation();
-        // keep only solutions, which are marked as valid (both manual and automatic way)
-        return $evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE;
-      }
-    );
+    return $this->submissions
+      ->matching($fromThatUser)
+      ->filter($validSubmissions)
+      ->toArray();
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
