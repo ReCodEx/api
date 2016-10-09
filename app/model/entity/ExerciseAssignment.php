@@ -24,7 +24,8 @@ class ExerciseAssignment implements JsonSerializable
     DateTime $secondDeadline,
     int $maxPointsBeforeSecondDeadline,
     Exercise $exercise,
-    Group $group
+    Group $group,
+    bool $isPublic
   ) {
     $this->name = $name;
     $this->description = $description;
@@ -35,6 +36,21 @@ class ExerciseAssignment implements JsonSerializable
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
+    $this->isPublic = $isPublic;
+  }
+
+  public static function assignToGroup(Exercise $exercies, Group $group, $isPublic = FALSE) {
+    return new self(
+      $exercise->name,
+      $exercise->assignment,
+      NULL,
+      0,
+      NULL,
+      0,
+      $exercise,
+      $group,
+      $isPublic
+    );
   }
 
   /**
@@ -48,6 +64,11 @@ class ExerciseAssignment implements JsonSerializable
     * @ORM\Column(type="string")
     */
   protected $name;
+
+  /**
+    * @ORM\Column(type="boolean")
+    */
+  protected $isPublic;
 
   /**
     * @ORM\Column(type="smallint")
@@ -142,7 +163,8 @@ class ExerciseAssignment implements JsonSerializable
   protected $group;
 
   public function canReceiveSubmissions(User $user = NULL) {
-    return $this->group->hasValidLicence() && 
+    return $this->isPublic === TRUE &&
+      $this->group->hasValidLicence() && 
       !$this->isAfterDeadline() &&
       ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
   }
@@ -151,7 +173,7 @@ class ExerciseAssignment implements JsonSerializable
     * Can a specific user access this assignment as student?
     */
   public function canAccessAsStudent(User $user) {
-    return $this->group->isStudentOf($user);
+    return $this->isPublic === TRUE && $this->group->isStudentOf($user);
   }
 
   /**
@@ -203,6 +225,7 @@ class ExerciseAssignment implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
+      "isPublic" => $this->isPublic,
       "description" => $this->getDescription(),
       "groupId" => $this->group->getId(),
       "deadline" => [
