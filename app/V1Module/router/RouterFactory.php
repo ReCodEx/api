@@ -64,6 +64,7 @@ class RouterFactory {
 
   private static function createExerciseAssignmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
+    $router[] = new PostRoute("$prefix", "ExerciseAssignments:create");
     $router[] = new GetRoute("$prefix/<id>", "ExerciseAssignments:detail");
     $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");

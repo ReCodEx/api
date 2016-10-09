@@ -8,6 +8,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 
 use App\Model\Entity\Submission;
+use App\Model\Entity\ExerciseAssignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Model\Repository\Exercises;
@@ -47,6 +48,32 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       }
     );
     $this->sendSuccessResponse($personalizedData);
+  }
+
+  /**
+   * @GET
+   * @Param(type="post", name="exerciseId")
+   * @Param(type="post", name="groupId")
+   */
+  public function actionCreate() {
+    $req = $this->getHttpRequest();
+    $exerciseId = $req->getPost("exerciseId");
+    $groupId = $req->getPost("groupId");
+
+    $exercise = $this->exercises->findOrThrow($exerciseId);
+    $group = $this->groups->findOrThrow($groupId);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    // test, if the user has privilidges to the given group
+    if ($group->isSupervisorOf($user) === FALSE) {
+      throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
+    }
+
+    // create an assignment for the group based on the given exercise but without any params
+    // and make sure the assignment is not public yet - the supervisor must edit it first
+    $assignment = ExerciseAssignment::assignExerciseToGroup($exercise, $group, FALSE);
+    $this->assignments->persist($assignment);
+    $this->sendSuccessResponse($assignment);
   }
 
   /**
