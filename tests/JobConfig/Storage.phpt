@@ -25,7 +25,7 @@ class TestJobConfigStorage extends Tester\TestCase
 
     public function testArchivation() {
         $oldContents = file_get_contents($this->jobConfigFileName);
-        $newFilePath = Storage::archive($this->jobConfigFileName, "my_custom_prefix_");
+        $newFilePath = Storage::archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
         $newContents = file_get_contents($newFilePath);
         $newFileName = pathinfo($newFilePath, PATHINFO_FILENAME);
         Assert::true(Strings::startsWith($newFileName, "my_custom_prefix_"));
@@ -36,9 +36,9 @@ class TestJobConfigStorage extends Tester\TestCase
         // first make sure the file is real
         Assert::true(is_file($this->jobConfigFileName));
 
-        $firstArchivedFilePath = Storage::archive($this->jobConfigFileName, "my_custom_prefix_");
+        $firstArchivedFilePath = Storage::archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
         file_put_contents($this->jobConfigFileName, "bla"); // the file was moved => create new with arbitrary cotnents..
-        $secondArchivedFilePath = Storage::archive($this->jobConfigFileName, "my_custom_prefix_");
+        $secondArchivedFilePath = Storage::archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
 
         // both archives must exist
         Assert::true(is_file($firstArchivedFilePath));
