@@ -38,7 +38,7 @@ class Authorizator implements NS\IAuthorizator {
       while (count($roles) > 0) {
         $role = array_pop($roles);
         $this->acl->addRole($role->getId(), $role->getParentRoleId());
-        $roles = array_merge($roles, $role->getChildRoles()->toArray());
+        $roles = array_merge($roles, $role->getChildRoles()->getValues());
       }
     }
 
