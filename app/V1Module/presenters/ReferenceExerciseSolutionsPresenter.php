@@ -47,7 +47,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
   public function actionCreateReferenceSolution() {
     $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->users->findOrThrow("me");
+    $user = $this->users->findCurrentUserOrThrow();
 
     // @todo validate user's access
 
@@ -67,7 +67,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-    $user = $this->users->findOrThrow("me");
+    $user = $this->users->findCurrentUserOrThrow();
 
     if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
       throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");

@@ -10,6 +10,7 @@ use App\Exceptions\SubmissionFailedException;
 use App\Model\Entity\Submission;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -18,6 +19,9 @@ use App\Model\Repository\UploadedFiles;
  * @LoggedIn
  */
 class ExerciseAssignmentsPresenter extends BasePresenter {
+
+  /** @inject @var Exercises */
+  public $exercises;
 
   /** @inject @var ExerciseAssignments */
   public $assignments;
@@ -31,21 +35,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   /** @inject @var SubmissionHelper */
   public $submissionHelper;
 
-  protected function findAssignmentOrThrow(string $id) {
-    $assignment = $this->assignments->get($id);
-    if (!$assignment) {
-      throw new NotFoundException;
-    }
-
-    return $assignment;
-  }
-
   /**
    * @GET
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $user = $this->users->findOrThrow('me');
+    $user = $this->users->findCurrentUserOrThrow();
     $personalizedData = $assignments->map(
       function ($assignment) {
         return $assignment->getJsonData($user);
@@ -59,7 +54,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     // @todo: check if the user can access this information
-    $assignment = $this->findAssignmentOrThrow($id);
+    $assignment = $this->assignments->findOrThrow($id);
     $this->sendSuccessResponse($assignment);
   }
 
@@ -68,8 +63,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionCanSubmit(string $id) {
     // @todo: check if the user can access this information
-    $assignment = $this->findAssignmentOrThrow($id);
-    $user = $this->users->findOrThrow('me');
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
     $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
   }
 
@@ -77,7 +72,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @GET
    */
   public function actionSubmissions(string $id, string $userId) {
-    $assignment = $this->findAssignmentOrThrow($id);
+    $assignment = $this->assignments->findOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
     $this->sendSuccessResponse($submissions);
   }
@@ -88,10 +83,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="files")
    */
   public function actionSubmit(string $id) {
-    $assignment = $this->findAssignmentOrThrow($id);
+    $assignment = $this->assignments->findOrThrow($id);
     $req = $this->getHttpRequest();
 
-    $loggedInUser = $this->users->findOrThrow("me");
+    $loggedInUser = $this->users->findCurrentUserOrThrow();
     $userId = $req->getPost("userId");
     if ($userId !== NULL) {
       $user = $this->users->findOrThrow($userId);
