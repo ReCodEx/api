@@ -48,7 +48,7 @@ class EvaluationLoader {
     $jobConfigPath = $submission->getExerciseAssignment()->getJobConfigFilePath();
     try {
       $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath); 
-      $jobConfig->setJobId($submission->getId());
+      $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
       return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
     } catch (ResultsLoadingException $e) {

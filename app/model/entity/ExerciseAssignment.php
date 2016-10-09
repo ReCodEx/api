@@ -194,15 +194,20 @@ class ExerciseAssignment implements JsonSerializable
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
     $validSubmissions = function ($submission) {
-      $evaluation = $submission->getEvaluation();
+      if (!$submission->hasEvaluation()) {
+        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
+        // -> otherwise the user would be able to submit many solutions before they are evaluated
+        return TRUE;
+      }
+
       // keep only solutions, which are marked as valid (both manual and automatic way)
+      $evaluation = $submission->getEvaluation();
       return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
     }; 
     
     return $this->submissions
       ->matching($fromThatUser)
-      ->filter($validSubmissions)
-      ->toArray();
+      ->filter($validSubmissions);
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
@@ -221,7 +226,7 @@ class ExerciseAssignment implements JsonSerializable
       ->andWhere(Criteria::expr()->neq("evaluation", NULL));
 
     return array_reduce(
-      $this->submissions->matching($usersSolutions)->toArray(),
+      $this->submissions->matching($usersSolutions)->getValues(),
       function ($best, $submission) {
         if ($best === NULL) {
           return $submission;

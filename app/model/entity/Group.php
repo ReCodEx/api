@@ -191,12 +191,12 @@ class Group implements JsonSerializable
   protected $assignments;
 
   public function getAssignmentsIds(): array {
-    return $this->getAssignments()->map(function($a) { return $a->id; })->toArray();
+    return $this->getAssignments()->map(function($a) { return $a->id; })->getValues();
   }
 
   public function getMaxPoints(): int {
     return array_reduce(
-      $this->getAssignments()->toArray(),
+      $this->getAssignments()->getValues(),
       function ($carry, $assignment) { return $carry + $assignment->getMaxPoints(); },
       0
     );
@@ -207,7 +207,7 @@ class Group implements JsonSerializable
       function ($assignment) use ($user) {
         return $assignment->getBestSolution($user);
       }
-    )->toArray();
+    )->getValues();
   }
 
   public function getCompletedAssignmentsByStudent(User $student) {
@@ -228,7 +228,7 @@ class Group implements JsonSerializable
 
   public function getPointsGainedByStudent(User $student) {
     return array_reduce(
-      $this->getCompletedAssignmentsByStudent($student)->toArray(),
+      $this->getCompletedAssignmentsByStudent($student)->getValues(),
       function ($carry, $assignment) use ($student) {
         $best = $assignment->getBestSolution($student);
         if ($best !== NULL) {
@@ -287,12 +287,12 @@ class Group implements JsonSerializable
       "description" => $this->description,
       "adminId" => $admin ? $this->admin->getId() : NULL,
       "admins" => $this->getAdminsIds(),
-      "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->toArray(),
-      "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->toArray(),
+      "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->getValues(),
+      "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->getValues(),
       "instanceId" => $instance ? $instance->getId() : NULL,
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->toArray(),
+      "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
       "assignments" => $this->getAssignmentsIds(),
       "publicStats" => $this->publicStats
     ];

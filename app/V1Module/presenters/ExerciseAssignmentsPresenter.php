@@ -158,7 +158,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getSolution()->getFiles()->toArray(),
+      $submission->getSolution()->getFiles()->getValues(),
       $hwGroup
     );
 
@@ -193,7 +193,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup)->toArray();
+          return $test->getLimits($hardwareGroup)->getValues();
         },
         $tests
       )
@@ -224,6 +224,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       // @todo: where to store the old job config file names?
     }
 
-    $this->sendSuccessResponse($newJobConfig->toArray());
+    $this->sendSuccessResponse($newJobConfig->getValues());
   }
 }

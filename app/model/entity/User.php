@@ -195,8 +195,8 @@ class User implements JsonSerializable
         "isVerified" => $this->isVerified,
         "role" => $this->role,
         "groups" => [
-          "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->toArray(),
-          "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->toArray()
+          "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->getValues(),
+          "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->getValues()
         ]
       ];
     }

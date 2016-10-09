@@ -106,7 +106,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $instance = $this->findInstanceOrThrow($id);
-    $this->sendSuccessResponse($instance->getGroups()->toArray());
+    $this->sendSuccessResponse($instance->getGroups()->getValues());
   }
 
   /**
@@ -123,7 +123,7 @@ class InstancesPresenter extends BasePresenter {
     }
 
     $members = $instance->getMembers($search);
-    $this->sendSuccessResponse($members->toArray());
+    $this->sendSuccessResponse($members->getValues());
   }
 
   /**
@@ -133,7 +133,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionLicences(string $id) {
     $instance = $this->findInstanceOrThrow($id);
-    $this->sendSuccessResponse($instance->getLicences()->toArray());
+    $this->sendSuccessResponse($instance->getLicences()->getValues());
   }
 
   /**
