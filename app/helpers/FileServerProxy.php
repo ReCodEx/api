@@ -22,6 +22,7 @@ use Nette\Utils\Arrays;
 class FileServerProxy {
 
   const JOB_CONFIG_FILENAME = "job-config.yml";
+  const TASKS_ROUTE = "/tasks";
 
   /** @var string */
   private $remoteServerAddress;
@@ -40,6 +41,14 @@ class FileServerProxy {
       "connect_timeout" => floatval(Arrays::get($config, ["timeouts", "connection"], 1000)) / 1000.0,
       "timeout" => floatval(Arrays::get($config, ["timeouts", "request"], 30000)) / 1000.0
     ]);
+  }
+
+  /**
+   * Gets URL of fileserver which can be used from worker to download data during execution
+   * @return string
+   */
+  public function getFileserverTasksUrl() {
+      return $this->remoteServerAddress . self::TASKS_ROUTE;
   }
 
   /**

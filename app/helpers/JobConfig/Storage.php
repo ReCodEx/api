@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 class Storage {
-    
+
   /** @var MemoryCache */
   private static $cache = NULL;
 
@@ -20,7 +20,7 @@ class Storage {
     }
 
     return self::$cache;
-  } 
+  }
 
   /**
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
@@ -67,11 +67,11 @@ class Storage {
 
   /**
    * @param  string $path     Path of the old config
-   * @param  string $prefifx  Prefix of the archived file name
+   * @param  string $prefix  Prefix of the archived file name
    * @return string           New file path
    * @throws JobConfigStorageException  When the file cannot be renamed (within in the same directory)
    */
-  public static function archive(string $path, string $prefix = "arch_") {
+  public static function archiveJobConfig(string $path, string $prefix = "arch_") {
     $dirname = dirname($path);
     $filename = pathinfo($path, PATHINFO_FILENAME);
     $ext = pathinfo($path, PATHINFO_EXTENSION);
