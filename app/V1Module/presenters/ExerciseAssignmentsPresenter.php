@@ -2,7 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 
@@ -190,7 +192,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getSolution()->getFiles()->toArray(),
+      $submission->getSolution()->getFiles()->getValues(),
       $hwGroup
     );
 
@@ -225,7 +227,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup);
+          return $test->getLimits($hardwareGroup)->getValues();
         },
         $tests
       )
@@ -253,6 +255,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // save the new & archive the old config
     JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($jobConfig->toArray());
+    $this->sendSuccessResponse($newJobConfig->getValues());
   }
 }

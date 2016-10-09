@@ -132,8 +132,8 @@ class UsersPresenter extends BasePresenter {
   public function actionGroups(string $id) {
     $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse([
-      "supervisor" => $user->getGroupsAsSupervisor()->toArray(),
-      "student" => $user->getGroupsAsStudent()->toArray(),
+      "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
+      "student" => $user->getGroupsAsStudent()->getValues(),
       "stats" => $user->getGroupsAsStudent()->map(
         function ($group) use ($user) {
           return [
@@ -142,7 +142,7 @@ class UsersPresenter extends BasePresenter {
             "stats" => $group->getStudentsStats($user)
           ];
         }
-      )->toArray()
+      )->getValues()
     ]);
   }
 
@@ -165,7 +165,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);
-    $this->sendSuccessResponse($user->getExercises()->toArray());
+    $this->sendSuccessResponse($user->getExercises()->getValues());
   }
 
 }

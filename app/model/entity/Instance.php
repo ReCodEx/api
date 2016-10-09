@@ -137,7 +137,7 @@ class Instance implements JsonSerializable
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "admin" => $this->admin,
-      "topLevelGroups" => $this->getTopLevelGroups()->map(function($group) { return $group->getId(); })->toArray()
+      "topLevelGroups" => $this->getTopLevelGroups()->map(function($group) { return $group->getId(); })->getValues()
     ];
   }
 

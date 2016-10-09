@@ -151,7 +151,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view subgroups of this group.");
     }
 
-    $this->sendSuccessResponse($group->getChildGroups()->toArray());
+    $this->sendSuccessResponse($group->getChildGroups()->getValues());
   }
 
   /**
@@ -169,8 +169,8 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "supervisors" => $group->getSupervisors()->toArray(),
-      "students" => $group->getStudents()->toArray()
+      "supervisors" => $group->getSupervisors()->getValues(),
+      "students" => $group->getStudents()->getValues()
     ]);
   }
 
@@ -187,7 +187,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
 
-    $this->sendSuccessResponse($group->getSupervisors()->toArray());
+    $this->sendSuccessResponse($group->getSupervisors()->getValues());
   }
 
   /**
@@ -202,7 +202,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view students of this group.");
     }
 
-    $this->sendSuccessResponse($group->getStudents()->toArray());
+    $this->sendSuccessResponse($group->getStudents()->getValues());
   }
 
   /**
@@ -218,7 +218,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
     }
 
-    $this->sendSuccessResponse($group->getAssignments()->toArray());
+    $this->sendSuccessResponse($group->getAssignments()->getValues());
   }
 
   /**
@@ -240,7 +240,7 @@ class GroupsPresenter extends BasePresenter {
         function ($student) use ($group) {
           return $group->getStudentsStats($student);
         },
-        $group->getStudents()->toArray()
+        $group->getStudents()->getValues()
       )
     );
   }
