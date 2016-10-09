@@ -2,12 +2,12 @@
 
 namespace App\Helpers\EvaluationStatus;
 
-use App\Model\Entity\Evaluation;
+use App\Model\Entity\SolutionEvaluation;
 
 interface IEvaluable {
 
   function hasEvaluation(): bool;
-  function getEvaluation(): Evaluation;
+  function getEvaluation(): SolutionEvaluation;
   function canBeEvaluated(): bool;
 
 }

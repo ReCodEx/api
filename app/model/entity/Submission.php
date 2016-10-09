@@ -97,11 +97,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $this->evaluation !== NULL;
     }
 
-    public function getEvaluation(): Evaluation {
+    public function getEvaluation(): SolutionEvaluation {
       return $this->evaluation;
     }
 
-    public function setEvaluation(Evaluation $evaluation) {
+    public function setEvaluation(SolutionEvaluation $evaluation) {
       $this->evaluation = $evaluation;
       $this->solution->setEvaluated(TRUE);
     }

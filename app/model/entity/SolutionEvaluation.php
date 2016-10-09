@@ -33,6 +33,7 @@ class SolutionEvaluation implements JsonSerializable
   protected $evaluatedAt;
 
   /**
+   * If true, the solution cannot be compiled.
    * @ORM\Column(type="boolean")
    */
   protected $initFailed;
@@ -58,12 +59,14 @@ class SolutionEvaluation implements JsonSerializable
   }
 
   /**
+   * Manualy set error in evaluation.
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
   public function isValid() { return $this->isValid; }
 
   /**
+   * Automaticaly detected error in evaluation (reported by broker).
    * @ORM\Column(type="boolean")
    */
   protected $evaluationFailed;
