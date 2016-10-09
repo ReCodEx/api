@@ -92,8 +92,21 @@ class EvaluationResults {
    * @return TestResult
    */
   public function getTestResult(TestConfig $test, $hardwareGroupId) {
+    if ($this->initOK === FALSE) {
+      return new SkippedTestResult($test);
+    }
+
     $exec = $this->getExecutionTaskResult($test);
     $eval = $this->getEvaluationTaskResult($test);
+
+    if ($exec->isSkipped()) {
+      return new SkippedTestResult($test);
+    }
+
+    if ($exec->hasFailed() || $eval->isSkipped()) {
+      return new FailedTestResult($test);
+    }
+
     return new TestResult($test, $exec, $eval, $hardwareGroupId);
   }
 

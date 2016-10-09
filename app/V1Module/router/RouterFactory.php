@@ -32,6 +32,7 @@ class RouterFactory {
     self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
     self::createInstancesRoutes($router, "$prefix/instances");
+    self::createReferenceSolutionsRoutes($router, "$prefix/reference-solutions");
     self::createSubmissionRoutes($router, "$prefix/submissions");
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
@@ -47,7 +48,7 @@ class RouterFactory {
 
   private static function createBrokerReportsRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
-    $router[] = new PostRoute("$prefix/job-status/<submissionId>", "BrokerReports:jobStatus");
+    $router[] = new PostRoute("$prefix/job-status/<jobId>", "BrokerReports:jobStatus");
   }
 
   private static function createCommentsRoutes($router, $prefix) {
@@ -63,6 +64,7 @@ class RouterFactory {
 
   private static function createExerciseAssignmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
+    $router[] = new PostRoute("$prefix", "ExerciseAssignments:create");
     $router[] = new GetRoute("$prefix/<id>", "ExerciseAssignments:detail");
     $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
@@ -108,6 +110,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/licences", "Instances:createLicence");
     $router[] = new PutRoute("$prefix/<id>/licences/<licenceId>", "Instances:updateLicence");
     $router[] = new DeleteRoute("$prefix/<id>/licences/<licenceId>", "Instances:deleteLicence");
+  }
+
+  private static function createReferenceSolutionsRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
+    $router[] = new PostRoute("$prefix/<exerciseId>/evaluate/<id>", "ReferenceExerciseSolutions:evaluate");
   }
 
   private static function createSubmissionRoutes($router, $prefix) {

@@ -7,38 +7,41 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\User;
+use Nette\Security as NS;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
 
-class Users extends Nette\Object {
+class Users extends BaseRepository {
 
-  private $em;
-  private $users;
+  /** @var NS\User */
+  private $userSession;
 
-  public function __construct(EntityManager $em) {
-    $this->em = $em;
-    $this->users = $em->getRepository("App\Model\Entity\User");
-  }
-
-  public function findAll() {
-    return $this->users->findAll();
-  }
-
-  public function get($id) {
-    return $this->users->findOneById($id);
+  public function __construct(EntityManager $em, NS\User $user) {
+    parent::__construct($em, User::CLASS);
+    $this->userSession = $user;
   }
 
   public function getByEmail(string $email) {
-    return $this->users->findOneBy([ "email" => $email ]);
+    return $this->findOneBy([ "email" => $email ]);
   }
 
-  public function persist(User $user, $autoFlush = TRUE) {
-    $this->em->persist($user);
-    if ($autoFlush) {
-      $this->flush();
+  public function findCurrentUserOrThrow() {
+    if (!$this->userSession->isLoggedIn()) {
+      throw new ForbiddenRequestException; 
     }
+
+    $id = $this->userSession->id;
+    return $this->findOrThrow($id);
   }
 
-  public function flush() {
-    $this->em->flush();
+  public function findOrThrow($id) {
+    $user = $this->get($id);
+    if (!$user) {
+      throw new NotFoundException("User '$id' does not exist.");
+    }
+
+    return $user;
   }
+
 
 }

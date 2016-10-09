@@ -24,7 +24,8 @@ class ExerciseAssignment implements JsonSerializable
     DateTime $secondDeadline,
     int $maxPointsBeforeSecondDeadline,
     Exercise $exercise,
-    Group $group
+    Group $group,
+    bool $isPublic
   ) {
     $this->name = $name;
     $this->description = $description;
@@ -35,6 +36,21 @@ class ExerciseAssignment implements JsonSerializable
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
+    $this->isPublic = $isPublic;
+  }
+
+  public static function assignToGroup(Exercise $exercies, Group $group, $isPublic = FALSE) {
+    return new self(
+      $exercise->name,
+      $exercise->assignment,
+      NULL,
+      0,
+      NULL,
+      0,
+      $exercise,
+      $group,
+      $isPublic
+    );
   }
 
   /**
@@ -50,6 +66,11 @@ class ExerciseAssignment implements JsonSerializable
   protected $name;
 
   /**
+    * @ORM\Column(type="boolean")
+    */
+  protected $isPublic;
+
+  /**
     * @ORM\Column(type="smallint")
     */
   protected $submissionsCountLimit;
@@ -58,6 +79,19 @@ class ExerciseAssignment implements JsonSerializable
     * @ORM\Column(type="string")
     */
   protected $jobConfigFilePath;
+
+  /**
+   *
+   * @return string File path of the 
+   */
+  public function getJobConfigFilePath(): string {
+    if (!$this->jobConfigFilePath) {
+      return $this->getExercise()->getJobConfigFilePath();
+    }
+
+    // @todo: Make dependable on the programming language/technology used by the user 
+    return $this->jobConfigFilePath;
+  }
 
   /**
     * @ORM\Column(type="text")
@@ -129,7 +163,8 @@ class ExerciseAssignment implements JsonSerializable
   protected $group;
 
   public function canReceiveSubmissions(User $user = NULL) {
-    return $this->group->hasValidLicence() && 
+    return $this->isPublic === TRUE &&
+      $this->group->hasValidLicence() && 
       !$this->isAfterDeadline() &&
       ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
   }
@@ -138,7 +173,7 @@ class ExerciseAssignment implements JsonSerializable
     * Can a specific user access this assignment as student?
     */
   public function canAccessAsStudent(User $user) {
-    return $this->group->isStudentOf($user);
+    return $this->isPublic === TRUE && $this->group->isStudentOf($user);
   }
 
   /**
@@ -158,9 +193,16 @@ class ExerciseAssignment implements JsonSerializable
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
-    // @todo do not count the submissions, where the evaluation failed due to our mistake
-    // or those which were marked as invalid 
-    return $this->submissions->matching($fromThatUser);
+    $validSubmissions = function ($submission) {
+      $evaluation = $submission->getEvaluation();
+      // keep only solutions, which are marked as valid (both manual and automatic way)
+      return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
+    }; 
+    
+    return $this->submissions
+      ->matching($fromThatUser)
+      ->filter($validSubmissions)
+      ->toArray();
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
@@ -197,6 +239,7 @@ class ExerciseAssignment implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
+      "isPublic" => $this->isPublic,
       "description" => $this->getDescription(),
       "groupId" => $this->group->getId(),
       "deadline" => [

@@ -7,18 +7,14 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 
-class Logins extends Nette\Object {
-
-  private $em;
-  private $logins;
+class Logins extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    $this->em = $em;
-    $this->logins = $em->getRepository("App\Model\Entity\Login");
+    parent::__construct($em, Login::CLASS);
   }
 
   public function getUser($username, $password) {
-    $login = $this->logins->findOneBy([ "username" => $username ]);
+    $login = $this->findOneBy([ "username" => $username ]);
     if ($login) {
       $oldPwdHash = $login->getPasswordHash();
       if ($login->passwordsMatch($password)) {
@@ -33,17 +29,6 @@ class Logins extends Nette\Object {
     }
 
     return NULL;
-  }
-
-  public function persist(Login $login, $autoFlush = TRUE) {
-    $this->em->persist($login);
-    if ($autoFlush) {
-      $this->flush();
-    }
-  }
-
-  public function flush() {
-    $this->em->flush();
   }
 
 }

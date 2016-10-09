@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @ORM\Entity
  */
-class SubmissionEvaluation implements JsonSerializable
+class SolutionEvaluation implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -33,11 +33,7 @@ class SubmissionEvaluation implements JsonSerializable
   protected $evaluatedAt;
 
   /**
-   * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
-   */
-  protected $submission;
-
-  /**
+   * If true, the solution cannot be compiled.
    * @ORM\Column(type="boolean")
    */
   protected $initFailed;
@@ -63,12 +59,14 @@ class SubmissionEvaluation implements JsonSerializable
   }
 
   /**
+   * Manualy set error in evaluation.
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
   public function isValid() { return $this->isValid; }
 
   /**
+   * Automaticaly detected error in evaluation (reported by broker).
    * @ORM\Column(type="boolean")
    */
   protected $evaluationFailed;

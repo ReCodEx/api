@@ -39,4 +39,13 @@ class MemoryCache {
     return $data;
   }
 
+  /**
+   * Remove an item into the cache
+   * @param string $key   Cache key
+   * @return void
+   */
+  public function remove(string $key) {
+    unset($this->cache[$key]);
+  }
+
 }

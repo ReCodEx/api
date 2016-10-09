@@ -46,6 +46,11 @@ class Exercise implements JsonSerializable
     protected $description;
 
     /**
+     * @ORM\Column(type="text")
+     */
+    protected $assignment;
+
+    /**
      * @ORM\Column(type="string")
      */
     protected $difficulty;
@@ -66,6 +71,11 @@ class Exercise implements JsonSerializable
     }
 
     /**
+     * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
+     */
+    protected $referenceSolutions;
+
+    /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
@@ -76,9 +86,10 @@ class Exercise implements JsonSerializable
         "id" => $this->id,
         "name" => $this->name,
         "version" => $this->version,
-        "author" => $this->author,
+        "authorId" => $this->author->getId(),
         "forkedFrom" => $this->getForkedFrom(),
         "description" => $this->description,
+        "assignment" => $this->assignment,
         "difficulty" => $this->difficulty,
         "createdAt" => $this->createdAt,
         "updatedAt" => $this->updatedAt

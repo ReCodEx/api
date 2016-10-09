@@ -15,14 +15,18 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\SubmissionFailedException;
 
+use App\Helpers\EvaluationStatus as ES;
+
 use GuzzleHttp\Exception\RequestException;
 
 /**
  * @ORM\Entity
  */
-class Submission implements JsonSerializable
+class Submission implements JsonSerializable, ES\IEvaluable
 {
     use MagicAccessors;
+
+    const JOB_TYPE = "recodex-assignment-solution";
 
     /**
      * @ORM\Id
@@ -36,10 +40,6 @@ class Submission implements JsonSerializable
      */
     protected $submittedAt;
 
-    public function getSubmittedAt() {
-      return $this->submittedAt;
-    }
-
     /**
      * @ORM\Column(type="text")
      */
@@ -50,10 +50,13 @@ class Submission implements JsonSerializable
      */
     protected $resultsUrl;
 
+    public function canBeEvaluated(): bool {
+      return $this->resultsUrl !== NULL;
+    }
+
     /**
      * @var ExerciseAssignment
      * @ORM\ManyToOne(targetEntity="ExerciseAssignment")
-     * @ORM\JoinColumn(name="exercise_assignment_id", referencedColumnName="id")
      */
     protected $exerciseAssignment;
 
@@ -62,60 +65,52 @@ class Submission implements JsonSerializable
     }
 
     /**
-     * @ORM\Column(type="string")
-     */
-    protected $hardwareGroup;
-
-    /**
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     protected $user;
 
-    public function getUser() {
-      return $this->user;
-    }
-
     /**
-     * @ORM\OneToMany(targetEntity="UploadedFile", mappedBy="submission")
+     * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
      */
-    protected $files;
+    protected $solution;
 
-    public function getFiles() {
-      return $this->files;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $hardwareGroup;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $asynchronous;
+
+    public function isAsynchronous(): bool {
+      return $this->asynchronous;
     }
 
     /**
-     * @ORM\OneToOne(targetEntity="SubmissionEvaluation", inversedBy="submission")
-     * @ORM\JoinColumn(name="submission_evaluation_id", referencedColumnName="id")
+     * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
      */
     protected $evaluation;
 
-    public function getEvaluation() {
+    public function hasEvaluation(): bool {
+      return $this->evaluation !== NULL;
+    }
+
+    public function getEvaluation(): SolutionEvaluation {
       return $this->evaluation;
     }
 
-    public function setEvaluation(SubmissionEvaluation $evaluation) {
+    public function setEvaluation(SolutionEvaluation $evaluation) {
       $this->evaluation = $evaluation;
-    }
-
-    public function getEvaluationStatus() {
-      $eval = $this->getEvaluation();
-      if ($eval === NULL) {
-        return "work-in-progress";
-      } elseif ($eval->isValid() === FALSE) {
-        return "evaluation-failed";
-      } elseif ($eval->isCorrect() === TRUE) {
-        return "done";
-      } else {
-        return "failed";
-      }
+      $this->solution->setEvaluated(TRUE);
     }
 
     public function getEvaluationSummary() {
       $summary = [
         "id" => $this->id,
-        "evaluationStatus" => $this->getEvaluationStatus()
+        "evaluationStatus" => ES\EvaluationStatus::getStatus($this)
       ];
       
       if ($this->evaluation) {
@@ -147,9 +142,9 @@ class Submission implements JsonSerializable
         "note" => $this->note,
         "exerciseAssignmentId" => $this->exerciseAssignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
-        "evaluationStatus" => $this->getEvaluationStatus(),
-        "evaluation" => $this->getEvaluation(),
-        "files" => $this->getFiles()->toArray()
+        "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
+        "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
+        "files" => $this->getSolution()->getFiles()->toArray()
       ];
     }
 
@@ -161,9 +156,10 @@ class Submission implements JsonSerializable
      * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
      * @param string $hardwareGroup
      * @param array $files
+     * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE) 
      * @return Submission
      */
-    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files) {
+    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files, bool $asynchronous = FALSE) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE &&
         ($user->getId() === $loggedInUser->getId()
@@ -193,16 +189,8 @@ class Submission implements JsonSerializable
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
       $entity->hardwareGroup = $hardwareGroup;
-      $entity->files = new ArrayCollection;
-      foreach ($files as $file) {
-        if ($file->submission !== NULL && $file->submission->resultsUrl !== NULL) {
-          // the file was already used before and that is not allowed
-          throw new BadRequestException("The file {$file->getId()} was already used in a different submission. If you want to use this file, reupload it to the server.");
-        }
-
-        $entity->files->add($file);
-        $file->submission = $entity;
-      }
+      $entity->asynchronous = $asynchronous;
+      $entity->solution = new Solution($user, $files);
 
       return $entity;
     }

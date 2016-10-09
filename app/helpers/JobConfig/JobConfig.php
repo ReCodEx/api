@@ -44,6 +44,14 @@ class JobConfig {
     $this->tasksCount = count($data["tasks"]);
   }
 
+  public function getId(): string {
+    return $this->submissionHeader->getId();
+  }
+
+  public function getType(): string {
+    return $this->submissionHeader->getType();
+  }
+
   /**
    * Get the identificator of this job
    * @return string
@@ -56,8 +64,8 @@ class JobConfig {
    * Get the identificator of this job
    * @param string $jobId
    */
-  public function setJobId(string $jobId) {
-    $this->submissionHeader->setJobId($jobId);
+  public function setJobId(string $type, string $jobId) {
+    $this->submissionHeader->setJobId($type, $jobId);
   }
 
   /**
@@ -98,7 +106,7 @@ class JobConfig {
       $this->tests = array_map(
         function ($tasks) {
           return new TestConfig(
-            $tasks[0]->getTestId(),
+            $tasks[0]->getTestId(), // there is always at least one task
             $tasks
           );
         },

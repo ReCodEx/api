@@ -9,44 +9,19 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Submission;
 use App\Model\Entity\ExerciseAssignment;
 
-class Submissions extends Nette\Object {
-
-  private $em;
-  private $submissions;
+class Submissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    $this->em = $em;
-    $this->submissions = $em->getRepository("App\Model\Entity\Submission");
-  }
-
-  public function findAll() {
-    return $this->submissions->findAll();
+    parent::__construct($em, Submission::CLASS);
   }
 
   public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
-    return $this->submissions->findBy(
-      [
-        "user" => $userId,
-        "exerciseAssignment" => $assignment
-      ],
-      [
-        "submittedAt" => "DESC"
-      ]
-    );
+    return $this->findBy([
+      "user" => $userId,
+      "exerciseAssignment" => $assignment
+    ], [
+      "submittedAt" => "DESC"
+    ]);
   }
 
-  public function get($id) {
-    return $this->submissions->findOneById($id);
-  }
-
-  public function persist(Submission $submission, $autoFlush = TRUE) {
-    $this->em->persist($submission);
-    if ($autoFlush) {
-      $this->flush();
-    }
-  }
-
-  public function flush() {
-    $this->em->flush();
-  }
 }

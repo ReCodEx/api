@@ -50,9 +50,9 @@ class TestResult implements JsonSerializable
   protected $status;
 
   /**
-   * @ORM\ManyToOne(targetEntity="SubmissionEvaluation", inversedBy="testResults")
+   * @ORM\ManyToOne(targetEntity="SolutionEvaluation", inversedBy="testResults")
    */
-  protected $submissionEvaluation;
+  protected $solutionEvaluation;
 
   /**
    * @ORM\Column(type="float")
@@ -103,7 +103,7 @@ class TestResult implements JsonSerializable
     return [
       "id" => $this->id,
       "testName" => $this->testName,
-      "submissionEvaluationId" => $this->submissionEvaluation->getId(),
+      "solutionEvaluationId" => $this->solutionEvaluation->getId(),
       "status" => $this->status,
       "score" => $this->score,
       "memoryExceeded" => $this->memoryExceeded,

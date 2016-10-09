@@ -8,9 +8,11 @@ use App\Helpers\FailureHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
+use App\Helpers\JobConfig\JobId;
 use App\Model\Entity\Submission;
+use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Repository\Submissions;
-use App\Model\Repository\SubmissionEvaluations;
+use App\Model\Repository\SolutionEvaluations;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
@@ -31,7 +33,7 @@ class BrokerReportsPresenter extends BasePresenter {
   /** @inject @var Submissions */
   public $submissions;
 
-  /** @inject @var SubmissionEvaluations */
+  /** @inject @var SolutionEvaluations */
   public $evaluations;
 
   /**
@@ -71,19 +73,29 @@ class BrokerReportsPresenter extends BasePresenter {
    * @Param(name="status", type="post")
    * @Param(name="message", type="post", required=false)
    */
-  public function actionJobStatus($submissionId) {
+  public function actionJobStatus($jobId) {
     $status = $this->getHttpRequest()->getPost("status");
+    $job = new JobId($jobId);
 
     switch ($status) {
       case self::STATUS_OK:
-        $submission = $this->findSubmissionOrThrow($submissionId);
-        $this->loadEvaluation($submission);
+        switch ($job->getType()) {
+          case ReferenceSolutionEvaluation::JOB_TYPE:
+            // @todo load the evaluation of the reference solution
+            break;
+          case Submission::JOB_TYPE:
+            // @todo load the evaluation only if the submission is "async"
+            // (submitted by other person than the student/author or automatically)
+            $submission = $this->findSubmissionOrThrow($jobId->getId());
+            $this->loadEvaluation($submission);
+            break;
+        } 
         break;
       case self::STATUS_FAILED:
         $message = $this->getHttpRequest()->getPost("message", "");
         $this->failureHelper->report(
           FailureHelper::TYPE_BACKEND_ERROR,
-          "Broker reports job $submissionId processing failure: $message"
+          "Broker reports job '$jobId' (type: '{$jobId->getType()}', id: '{$jobId->getId()}') processing failure: $message"
         );
         break;
     }
@@ -105,10 +117,9 @@ class BrokerReportsPresenter extends BasePresenter {
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
-    // @todo: Fix this and uncomment (shouldNotifyAfterEvaluationIsLoader() in unknown method)
-    // if ($submission->shouldNotifyAfterEvaluationIsLoader()) {
-    //   $this->notifyEvaluationFinished($submission);
-    // }
+    if ($submission->isAsynchronous()) {
+      $this->notifyEvaluationFinished($submission);
+    }
   }
 
   /**

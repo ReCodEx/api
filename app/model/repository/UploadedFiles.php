@@ -8,33 +8,14 @@ use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\UploadedFile;
 
-class UploadedFiles extends Nette\Object {
-
-  private $em;
-  private $uploadedFiles;
+class UploadedFiles extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    $this->em = $em;
-    $this->uploadedFiles = $em->getRepository("App\Model\Entity\UploadedFile");
-  }
-
-  public function findAll() {
-    return $this->uploadedFiles->findAll();
+    parent::__construct($em, UploadedFile::CLASS);
   }
 
   public function findAllById($ids) {
-    return $this->uploadedFiles->findBy([ "id" => $ids ]);
+    return $this->repository->findBy([ "id" => $ids ]);
   }
 
-  public function get($id) {
-    return $this->uploadedFiles->findOneById($id);
-  }
-
-  public function persist(UploadedFile $uploadedFile) {
-    $this->em->persist($uploadedFile);
-  }
-
-  public function flush() {
-    $this->em->flush();
-  }
 }

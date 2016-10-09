@@ -43,7 +43,7 @@ class BrokerProxy {
   }
 
   /**
-   * @param $submissionId
+   * @param $jobId
    * @param $archiveRemotePath
    * @param $resultRemotePath
    * @return bool Evaluation has been started on remote server when returns TRUE.
@@ -53,12 +53,12 @@ class BrokerProxy {
    * @internal param $string
    * @internal param $string
    */
-  public function startEvaluation(string $submissionId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
+  public function startEvaluation(string $jobId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
     $poll = NULL;
 
     try {
-      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $submissionId);
+      $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $jobId);
       $queue->connect($this->brokerAddress);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Cannot connect to the Broker.");
@@ -75,7 +75,7 @@ class BrokerProxy {
       $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
         "eval",
-        $submissionId,
+        $jobId,
         "hwgroup=$hardwareGroup",
         "",
         $archiveRemotePath,

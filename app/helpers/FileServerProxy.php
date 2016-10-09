@@ -84,18 +84,18 @@ class FileServerProxy {
   }
 
   /**
-   * @param string   $submissionId
+   * @param string   $jobId
    * @param string[] $files
    * @return mixed
    * @throws SubmissionFailedException
    */
-  public function sendFiles(string $submissionId, string $jobConfig, array $files) {
+  public function sendFiles(string $jobId, string $jobConfig, array $files) {
     $filesToSubmit = $this->prepareFiles($jobConfig, $files);
 
     try {
       $response = $this->client->request(
         "POST",
-        "/submissions/$submissionId",
+        "/submissions/$jobId",
         [ "multipart" => $filesToSubmit ]
       );
 

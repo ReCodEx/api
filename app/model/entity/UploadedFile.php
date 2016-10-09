@@ -48,15 +48,13 @@ class UploadedFile implements JsonSerializable
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     protected $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Submission")
-     * @ORM\JoinColumn(name="submission_id", referencedColumnName="id")
+     * @ORM\ManyToOne(targetEntity="Solution")
      */
-    protected $submission;
+    protected $solution;
 
     /**
      * @param string $filePath Path where the file is stored
@@ -79,8 +77,7 @@ class UploadedFile implements JsonSerializable
         "name" => $this->name,
         "size" => $this->fileSize,
         "uploadedAt" => $this->uploadedAt->getTimestamp(),
-        "userId" => $this->user->getId(),
-        "content" => $this->getContent()
+        "userId" => $this->user->getId()
       ];
     }
 }

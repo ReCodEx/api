@@ -45,7 +45,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionCreateInstance() {
     $params = $this->parameters;
-    $user = $this->findUserOrThrow('me');
+    $user = $this->users->findCurrentUserOrThrow();
     $instance = Instance::createInstance(
       $params->name,
       $params->isOpen,
@@ -116,7 +116,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->findInstanceOrThrow($id);
-    $user = $this->findUserOrThrow("me");
+    $user = $this->users->findCurrentUserOrThrow();
     if (!$user->belongsTo($instance)
       && !$this->user->isInRole("superadmin")) {
         throw new ForbiddenRequestException("You cannot access this instance users."); 

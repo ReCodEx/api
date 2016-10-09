@@ -120,10 +120,12 @@ services:
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
   - App\Model\Repository\Permissions
+  - App\Model\Repository\ReferenceExerciseSolutions
+  - App\Model\Repository\ReferenceSolutionEvaluations
   - App\Model\Repository\Resources
   - App\Model\Repository\Roles
   - App\Model\Repository\Submissions
-  - App\Model\Repository\SubmissionEvaluations
+  - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
 

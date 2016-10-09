@@ -173,23 +173,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  protected function findUserOrThrow(string $id) {
-    if ($id === "me") {
-      if (!$this->user->isLoggedIn()) {
-        throw new ForbiddenRequestException; 
-      }
-
-      $id = $this->user->id;
-    }
-
-    $user = $this->users->get($id);
-    if (!$user) {
-      throw new NotFoundException;
-    }
-
-    return $user;
-  }
-
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
     $resp = $this->getHttpResponse();
     $resp->setCode($code);
