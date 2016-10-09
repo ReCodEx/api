@@ -60,6 +60,7 @@ class RouterFactory {
   private static function createExercisesRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
+    $router[] = new GetRoute("$prefix/search/<search>", "Exercises:search");
   }
 
   private static function createExerciseAssignmentsRoutes($router, $prefix) {

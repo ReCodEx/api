@@ -59,4 +59,8 @@ class BaseRepository extends Nette\Object {
   public function flush() {
     $this->em->flush();
   }
+
+  public function matching($params) {
+    return $this->repository->matching($params);
+  }
 }

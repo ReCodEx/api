@@ -227,7 +227,7 @@ class ExerciseAssignment implements JsonSerializable
           return $submission;
         }
 
-        return $submission->getEvaluationStatus() !== "done" || $best->getTotalPoints() > $submission->getTotalPoints()
+        return $submission->hasEvaluation() === FALSE || $best->getTotalPoints() > $submission->getTotalPoints()
           ? $best
           : $submission;
       },

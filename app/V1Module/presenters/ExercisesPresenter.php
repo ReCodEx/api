@@ -47,4 +47,13 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
+  /**
+   * @GET
+   * @UserIsAllowed(exercises="view-all")
+   */
+  public function actionSearch(string $search) {
+    $result = $this->exercises->searchByNameOrId($search);
+    $this->sendSuccessResponse($result);
+  }
+
 }
