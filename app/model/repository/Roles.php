@@ -15,7 +15,7 @@ class Roles extends BaseRepository {
   }
 
   public function findLowestLevelRoles() {
-    return $this->roles->findBy([ "parentRole" => NULL ]);
+    return $this->repository->findBy([ "parentRole" => NULL ]);
   }
 
 }
