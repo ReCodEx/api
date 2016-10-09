@@ -42,7 +42,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public function actionExercise($id) {
     // @todo check that this user can access this information
     $exercise = $this->findExerciseOrThrow($id);
-    $this->sendSuccessResponse($exercise->referenceSolutions->toArray());
+    $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
   public function actionCreateReferenceSolution() {
@@ -83,7 +83,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     // configure the job and start evaluation
     $jobConfig = JobConfig\Storage::getJobConfig($referenceSolution->getExercise()->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
-    $files = $referenceSolution->getFiles()->toArray();
+    $files = $referenceSolution->getFiles()->getValues();
     $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
 
     if($resultsUrl !== NULL) {
