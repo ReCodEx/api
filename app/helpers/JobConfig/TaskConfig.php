@@ -4,7 +4,7 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
-class TaskConfig {
+abstract class TaskConfig {
 
   const TYPE_INITIATION = "initiation";
   const TYPE_EXECUTION = "execution";
