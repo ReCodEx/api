@@ -10,13 +10,13 @@ class Limits {
   private $data;
 
   /** @var string ID of the harwdare group */
-  private $id;
+  protected $id;
 
   /** @var float Time limit */
-  private $timeLimit;
+  protected $timeLimit = 0;
 
   /** @var int Memory limit */
-  private $memoryLimit;
+  protected $memoryLimit = 0;
 
   public function __construct(array $data) {
     $this->data = $data;

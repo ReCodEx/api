@@ -7,7 +7,7 @@ use App\Exceptions\JobConfigLoadingException;
 use App\Model\Entity\SubmissionEvaluation;
 use App\Helpers\JobConfig\JobConfig;
 use Symfony\Component\Yaml\Yaml;
-use App\Helpers\JobConfig\InfiniteLimits;
+use App\Helpers\JobConfig\UndefinedLimits;
 use App\Helpers\JobConfig\Limits;
 
 class TestJobConfig extends Tester\TestCase
@@ -102,7 +102,7 @@ class TestJobConfig extends Tester\TestCase
 
     // test for infinite limits which are set in remove limits
     foreach ($removedConfig->getTests() as $test) {
-      Assert::equal(new InfiniteLimits($hwGroup), $test->getLimits($hwGroup));
+      Assert::equal(new UndefinedLimits($hwGroup), $test->getLimits($hwGroup));
     }
   }
 

@@ -5,7 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\Loader as JobConfigLoader;
+use App\Helpers\JobConfig\Storage as JobConfigLoader;
 use App\Helpers\JobConfig\TaskConfig;
 
 use App\Helpers\EvaluationResults\Loader;
@@ -583,7 +583,7 @@ results:
     - { task-id: judging_test_6, status: OK, sandbox_results: { exitcode: 0, time: 0.001, wall-time: 0.075, memory: 256, max-rss: 1332, status: OK, killed: false, exitsig: 0, message: '' } }
     - { task-id: rm_junk_test_6, status: OK }
 EOS;
-  
+
     static $initFailedResult = <<<'EOS'
 results:
     - { status: FAILED, sandbox_results: { killed: false, status: OK, wall-time: 0.08, message: '', max-rss: 9944, memory: 6508, exitcode: 0, time: 0.072, exitsig: 0 }, task-id: compilation }

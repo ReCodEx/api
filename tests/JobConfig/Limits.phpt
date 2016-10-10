@@ -4,7 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\Limits;
-use App\Helpers\JobConfig\InfiniteLimits;
+use App\Helpers\JobConfig\UndefinedLimits;
 use Symfony\Component\Yaml\Yaml;
 
 class TestLimits extends Tester\TestCase
@@ -39,11 +39,11 @@ class TestLimits extends Tester\TestCase
   }
 
   public function testInfiniteLimits() {
-    $limits = new InfiniteLimits("XYZ");
+    $limits = new UndefinedLimits("XYZ");
     Assert::equal("XYZ", $limits->getId());
-    Assert::equal(InfiniteLimits::INFINITE_MEMORY, $limits->getMemoryLimit());
+    Assert::equal(0, $limits->getMemoryLimit());
     Assert::type("int", $limits->getMemoryLimit());
-    Assert::equal(InfiniteLimits::INFINITE_TIME, $limits->getTimeLimit());
+    Assert::equal(0.0, $limits->getTimeLimit());
     Assert::type("float", $limits->getTimeLimit());
   }
 

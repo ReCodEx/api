@@ -95,7 +95,7 @@ class ExecutionTaskConfig extends TaskConfig {
    * @return void
    */
   public function removeLimits(string $hardwareGroupId) {
-    $this->setLimits($hardwareGroupId, new InfiniteLimits($hardwareGroupId));
+    $this->setLimits($hardwareGroupId, new UndefinedLimits($hardwareGroupId));
   }
 
   /**

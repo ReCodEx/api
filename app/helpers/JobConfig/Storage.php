@@ -112,7 +112,7 @@ class Storage {
    * @throws MalformedJobConfigException
    * @return array Parsed YAML config
    */
-  private static function parseJobConfig(string $config): JobConfig {
+  public static function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {

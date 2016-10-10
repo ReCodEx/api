@@ -8,7 +8,7 @@ use App\Helpers\JobConfig\TaskConfig;
 use App\Helpers\JobConfig\ExecutionTaskConfig;
 use App\Helpers\JobConfig\EvaluationTaskConfig;
 use App\Helpers\JobConfig\Limits;
-use App\Helpers\JobConfig\InfiniteLimits;
+use App\Helpers\JobConfig\UndefinedLimits;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -79,7 +79,7 @@ class TestTaskConfig extends Tester\TestCase
     $task = new TaskConfig(self::$execution);
     $exec = $task->getAsExecutionTask();
     $exec->removeLimits("A");
-    Assert::type(InfiniteLimits::class, $exec->getLimits("A"));
+    Assert::type(UndefinedLimits::class, $exec->getLimits("A"));
   }
 
   public function testRemovedLimitsSerialization() {
@@ -94,8 +94,6 @@ class TestTaskConfig extends Tester\TestCase
         "limits" => [
           [
             "hw-group-id" => "A",
-            "memory" => InfiniteLimits::INFINITE_MEMORY,
-            "time" => InfiniteLimits::INFINITE_TIME
           ]
         ]
       ]

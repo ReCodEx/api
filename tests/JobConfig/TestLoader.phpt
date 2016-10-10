@@ -6,7 +6,7 @@ use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\MalformedJobConfigException;
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\Loader;
+use App\Helpers\JobConfig\Storage;
 use Symfony\Component\Yaml\Yaml;
 
 class TestLoader extends Tester\TestCase
@@ -29,7 +29,7 @@ class TestLoader extends Tester\TestCase
 
 	public function testCanBeLoaded() {
 		echo "a";
-		$jobConfig = Loader::parseJobConfig(self::$jobConfig);
+		$jobConfig = Storage::parseJobConfig(self::$jobConfig);
 		Assert::type(JobConfig::CLASS, $jobConfig);
 		Assert::equal("hippoes", $jobConfig->getId());
 	}
@@ -41,19 +41,19 @@ class TestLoader extends Tester\TestCase
 	- ratatat
 	- foo
 		- bar';
-			Loader::parseJobConfig($invalidCfg);
+			Storage::parseJobConfig($invalidCfg);
 		}, MalformedJobConfigException::CLASS);
 	}
 
 	public function testLoadFromFile() {
 		echo "c";
-		$jobConfig = Loader::getJobConfig($this->jobConfigFilePath);
+		$jobConfig = Storage::getJobConfig($this->jobConfigFilePath);
 		Assert::equal("hippoes", $jobConfig->getId());
 		Assert::type(JobConfig::CLASS, $jobConfig);
 	}
 
 	public function testCorrectInterpretation() {
-		$jobConfig = Loader::parseJobConfig(self::$jobConfig);
+		$jobConfig = Storage::parseJobConfig(self::$jobConfig);
 		Assert::equal(31, $jobConfig->getTasksCount());
 		Assert::equal(31, count($jobConfig->getTasks()));
 		Assert::equal(6, count($jobConfig->getTests()));
