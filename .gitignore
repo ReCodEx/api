@@ -10,3 +10,4 @@ uploaded_data/*
 composer.lock
 /nbproject/private/
 /nbproject
+output/

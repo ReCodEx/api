@@ -20,6 +20,7 @@ class TestTaskConfig extends Tester\TestCase
   static $execution = [
     "task-id" => "Y", "test-id" => "A", "type" => "execution",
     "sandbox" => [
+      "name" => "isolate",
       "limits" => [
         [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]
       ]
@@ -89,6 +90,7 @@ class TestTaskConfig extends Tester\TestCase
     $expected = [
       "task-id" => "Y", "test-id" => "A", "type" => "execution",
       "sandbox" => [
+        "name" => "isolate",
         "limits" => [
           [
             "hw-group-id" => "A",
@@ -114,6 +116,11 @@ class TestTaskConfig extends Tester\TestCase
     Assert::equal($limits, $exec->getLimits("another"));
   }
 
+  public function testGetSandboxName() {
+    $task = new TaskConfig(self::$execution);
+    $exec = $task->getAsExecutionTask();
+    Assert::equal("isolate", $exec->getSandboxName());
+  }
 }
 
 # Testing methods run

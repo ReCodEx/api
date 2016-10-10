@@ -23,6 +23,7 @@ class TestSkippedTestResult extends Tester\TestCase
     "test-id" => "A",
     "type" => TaskConfig::TYPE_EXECUTION,
     "sandbox" => [
+      "name" => "isolate",
       "limits" => [
         [
           "hw-group-id" => "A",

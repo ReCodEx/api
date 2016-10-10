@@ -20,7 +20,7 @@ class TestJobConfig extends Tester\TestCase
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
       [
         "task-id" => "Y", "test-id" => "A", "type" => "execution",
-        "sandbox" => ["limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
+        "sandbox" => ["name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
         ]
       ]
     ]
