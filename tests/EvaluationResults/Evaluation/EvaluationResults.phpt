@@ -25,7 +25,7 @@ class TestEvaluationResults extends Tester\TestCase
       [ "task-id" => "W", "type" => TaskConfig::TYPE_INITIATION ],
       [
         "task-id" => "X", "test-id" => "A", "type" => TaskConfig::TYPE_EXECUTION,
-        "sandbox" => [ "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]] ]
+        "sandbox" => [ "name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]] ]
       ],
       [ "task-id" => "Y", "test-id" => "A", "type" => TaskConfig::TYPE_EVALUATION ]
     ]
@@ -33,35 +33,35 @@ class TestEvaluationResults extends Tester\TestCase
 
   public function testMissingParams() {
     $jobConfig = new JobConfig(self::$jobConfig);
-    
+
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([], $jobConfig);
     }, ResultsLoadingException::CLASS);
-    
+
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([ "job-id" => "ABC_ratata" ], $jobConfig);
     }, ResultsLoadingException::CLASS);
-    
+
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "ABC_bla bla bla"
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
-    
+
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "ABC_bla bla bla",
         "results" => NULL
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
-    
+
     Assert::noError(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "ABC_bla bla bla",
         "results" => []
       ], $jobConfig);
     });
-    
+
     // missing type ("prefix_") in job id
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
@@ -69,7 +69,7 @@ class TestEvaluationResults extends Tester\TestCase
         "results" => [ [ "a" => "b" ] ]
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
-    
+
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "ABC_bla bla bla",
@@ -173,8 +173,9 @@ class TestEvaluationResults extends Tester\TestCase
         "killed"    => false
       ]
     ];
-    $evalRes = [ "task-id" => "Y", "status" => "OK", "judge_output" => "0.456" ]; 
-    $results = new EvaluationResults([ "job-id" => "ABC_bla bla bla", "results" => [ $initRes, $evalRes, $execRes ] ], $jobConfig); 
+
+    $evalRes = [ "task-id" => "Y", "status" => "OK", "judge_output" => "0.456" ];
+    $results = new EvaluationResults([ "job-id" => "ABC_bla bla bla", "results" => [ $initRes, $evalRes, $execRes ] ], $jobConfig);
     $testConfig = $jobConfig->getTests()["A"];
 
     $testResult = $results->getTestResult($testConfig, "A");

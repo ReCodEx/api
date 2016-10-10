@@ -4,7 +4,6 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
-use App\Exceptions\InvalidArgumentException;
 
 class JobConfig {
 
@@ -61,11 +60,27 @@ class JobConfig {
   }
 
   /**
-   * Get the identificator of this job
+   * Set the identificator of this job
    * @param string $jobId
    */
   public function setJobId(string $type, string $jobId) {
     $this->submissionHeader->setJobId($type, $jobId);
+  }
+
+  /**
+   * Get URL of fileserver which will serve as source of files for worker
+   * @return string
+   */
+  public function getFileCollector(): string {
+    return $this->submissionHeader->getFileCollector();
+  }
+
+  /**
+   * Sets URL of fileserver
+   * @param string $fileCollector
+   */
+  public function setFileCollector(string $fileCollector) {
+    $this->submissionHeader->setFileCollector($fileCollector);
   }
 
   /**

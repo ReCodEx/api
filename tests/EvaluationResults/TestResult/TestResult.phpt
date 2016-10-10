@@ -26,6 +26,7 @@ class TestTestResult extends Tester\TestCase
     "test-id" => "A",
     "type" => TaskConfig::TYPE_EXECUTION,
     "sandbox" => [
+      "name" => "isolate",
       "limits" => [
         [
           "hw-group-id" => "A",
@@ -34,7 +35,7 @@ class TestTestResult extends Tester\TestCase
         ]
       ]
     ]
-  ];  
+  ];
 
   static $evalRes = [
     "task-id" => "X",
@@ -160,7 +161,7 @@ class TestTestResult extends Tester\TestCase
       $evalRes["status"] = $evalStatus;
 
       $execRes = new ExecutionTaskResult($execRes);
-      $evalRes = new EvaluationTaskResult($evalRes);  
+      $evalRes = new EvaluationTaskResult($evalRes);
       $res = new TR($cfg, $execRes, $evalRes, "A");
       Assert::true($res->didExecutionMeetLimits());
       Assert::equal($result, $res->getStatus());

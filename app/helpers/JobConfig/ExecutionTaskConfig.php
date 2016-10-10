@@ -9,15 +9,24 @@ class ExecutionTaskConfig extends TaskConfig {
   /** @var Limits[] */
   private $limits = [];
 
+  /** @var string */
+  private $sandboxName;
+
   /** @var array */
   private $limitsConfig;
 
   public function __construct(array $data) {
     parent::__construct($data);
+
+    if (!isset($data["sandbox"]) || !isset($data["sandbox"]["name"])) {
+      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define sandbox name");
+    }
+
     if (!isset($data["sandbox"]) || !isset($data["sandbox"]["limits"])) {
       throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for the sandbox.");
     }
 
+    $this->sandboxName = $data["sandbox"]["name"];
     $this->limitsConfig = $data["sandbox"]["limits"];
   }
 
@@ -97,10 +106,19 @@ class ExecutionTaskConfig extends TaskConfig {
       parent::toArray(),
       [
         "sandbox" => [
+          "name" => $this->sandboxName,
           "limits" => $this->getLimitsConfig()
         ]
       ]
     );
+  }
+
+  /**
+   * Get name of sandbox which will be used for execution
+   * @return string Description
+   */
+  public function getSandboxName(): string {
+    return $this->sandboxName;
   }
 
   /**

@@ -16,6 +16,7 @@ class TestTestResult extends Tester\TestCase
   static $execution = [
     "task-id" => "Y", "test-id" => "A", "type" => "execution",
     "sandbox" => [
+      "name" => "isolate",
       "limits" => [
         [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]
       ]
@@ -34,7 +35,7 @@ class TestTestResult extends Tester\TestCase
         ]
       );
     }, JobConfigLoadingException::CLASS);
-    
+
     Assert::exception(function () {
       new TestConfig(
         "some ID",

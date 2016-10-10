@@ -14,13 +14,14 @@ class TestJobConfig extends Tester\TestCase
 {
   static $jobConfig = [
     "submission" => [
-      "job-id" => "ABC_bla bla bla"
+      "job-id" => "ABC_bla bla bla",
+      "file-collector" => "url://url.url"
     ],
     "tasks" => [
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
       [
         "task-id" => "Y", "test-id" => "A", "type" => "execution",
-        "sandbox" => ["limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
+        "sandbox" => ["name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
         ]
       ]
     ]
@@ -57,6 +58,20 @@ class TestJobConfig extends Tester\TestCase
     $jobConfig->setJobId("XYZ", "ratataId");
     $data = Yaml::parse((string) $jobConfig);
     Assert::equal("XYZ_ratataId", $data["submission"]["job-id"]);
+  }
+
+  public function testUpdateFileCollector() {
+    $jobConfig = new JobConfig(self::$jobConfig);
+    Assert::equal("url://url.url", $jobConfig->getFileCollector());
+    $jobConfig->setFileCollector("url://file.collector.recodex");
+    Assert::equal("url://file.collector.recodex", $jobConfig->getFileCollector());
+  }
+
+  public function testUpdateFileCollectorInSerializedConfig() {
+    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig->setFileCollector("url://file.collector.recodex");
+    $data = Yaml::parse((string) $jobConfig);
+    Assert::equal("url://file.collector.recodex", $data["submission"]["file-collector"]);
   }
 
   public function testTasksCount() {

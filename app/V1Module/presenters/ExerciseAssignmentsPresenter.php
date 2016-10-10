@@ -219,10 +219,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
 
     // save the new & archive the old config
-    $archivedFilePath = JobConfig\Storage::saveJobConfig($newJobConfig, $path, TRUE); // @todo: remove the 'TRUE' so the configs are archived as soon as the next todo in this method is implemented
-    if ($archivedFilePath !== NULL) {
-      // @todo: where to store the old job config file names?
-    }
+    JobConfig\Storage::saveJobConfig($newJobConfig, $path);
 
     $this->sendSuccessResponse($newJobConfig->toArray());
   }
