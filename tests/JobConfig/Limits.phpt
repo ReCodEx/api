@@ -7,8 +7,14 @@ use App\Helpers\JobConfig\Limits;
 use App\Helpers\JobConfig\UndefinedLimits;
 use Symfony\Component\Yaml\Yaml;
 
+// TODO: finish tests
 class TestLimits extends Tester\TestCase
 {
+  static $sample = [
+    "hw-group-id" => "A",
+    "memory" => 123,
+    "time" => 456
+  ];
   static $cfg = [
     [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ],
     [ "hw-group-id" => "B", "memory" => 321, "time" => 645 ]
@@ -17,7 +23,25 @@ class TestLimits extends Tester\TestCase
   public function testSerialization() {
     $cfg = [ "hw-group-id" => "A", "memory" => 123, "time" => 456, "somethingElse" => 124578 ];
     $deserialized = Yaml::parse((string) new Limits($cfg));
-    Assert::equal($cfg, $deserialized);
+    Assert::isEqual($cfg, $deserialized);
+  }
+
+  public function testMissingHWGroupId() {
+    $data = self::$sample;
+    unset($data["hw-group-id"]);
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
+  }
+
+  public function testMissingMemoryLimit() {
+    $data = self::$sample;
+    unset($data["memory"]);
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
+  }
+
+  public function testMissingTimeLimit() {
+    $data = self::$sample;
+    unset($data["time"]);
+    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
   }
 
   public function testParsingA() {

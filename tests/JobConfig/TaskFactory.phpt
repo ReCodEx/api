@@ -29,7 +29,7 @@ class TestTaskFactory extends Tester\TestCase
     "cmd" => [ "bin" => "fetch" ],
     "sandbox" => [
       "name" => "isolate",
-      "limits" => [ 0 => [ "hw-group-id" => "group1" ] ]
+      "limits" => [ 0 => [ "hw-group-id" => "group1", "time" => "1", "memory" => "1000" ] ]
     ]
   ];
 

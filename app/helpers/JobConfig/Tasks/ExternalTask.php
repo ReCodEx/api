@@ -2,99 +2,42 @@
 
 namespace App\Helpers\JobConfig\Tasks;
 use App\Exceptions\JobConfigLoadingException;
+use App\Helpers\JobConfig\SandboxConfig;
+use Symfony\Component\Yaml\Yaml;
 
-// todo: change
+
+/**
+ *
+ */
 class ExternalTask extends TaskBase {
 
-  /** @var Limits[] */
-  private $limits = [];
+  const SANDBOX_KEY = "sandbox";
 
-  /** @var string */
-  private $sandboxName;
+  /** @var SandboxConfig */
+  private $sandboxConfig;
 
-  /** @var array */
-  private $limitsConfig;
-
+  /**
+   *
+   * @param array $data
+   * @throws JobConfigLoadingException
+   */
   public function __construct(array $data) {
     parent::__construct($data);
 
-    if (!isset($data["sandbox"]) || !isset($data["sandbox"]["name"])) {
-      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define sandbox name");
+    if (!isset($this->data[self::SANDBOX_KEY])) {
+      throw new JobConfigLoadingException("External task '{$this->getId()}' does not define field '" . self::SANDBOX_KEY . "'");
     }
 
-    if (!isset($data["sandbox"]) || !isset($data["sandbox"]["limits"])) {
-      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for the sandbox.");
-    }
-
-    $this->sandboxName = $data["sandbox"]["name"];
-    $this->limitsConfig = $data["sandbox"]["limits"];
+    $this->sandboxConfig = new SandboxConfig($this->data[self::SANDBOX_KEY]);
+    unset($this->data[self::SANDBOX_KEY]);
   }
 
   /**
-   * Does the task config have limits for given hardware group?
-   * @return bool
+   * Get sandbox configuration which will be used for execution
+   * @return string Description
    */
-  public function hasLimits(string $hardwareGroupId): bool {
-    return isset($this->limits[$hardwareGroupId]) || $this->findLimits($hardwareGroupId) !== NULL;
-  }
-
-  /**
-   * Get the configured limits for a specific hardware group.
-   * @param  string $hardwareGroupId Hardware group ID
-   * @return Limits Limits for the specified hardware group
-   */
-  public function getLimits(string $hardwareGroupId): Limits {
-    if (!isset($this->limits[$hardwareGroupId])) {
-      $limits = $this->findLimitsOrThrow($hardwareGroupId);
-      $this->setLimits($hardwareGroupId, new Limits($limits));
-    }
-
-    return $this->limits[$hardwareGroupId];
-  }
-
-  /**
-   * Return configuration for a specific hardware group or throw an exception,
-   * if there is no config.
-   * @param string $hardwareGroupId
-   * @throws JobConfigLoadingException
-   * @return array
-   */
-  private function findLimitsOrThrow(string $hardwareGroupId): array {
-    $limits = $this->findLimits($hardwareGroupId);
-    if ($limits === NULL) {
-      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
-    }
-    return $limits;
-  }
-
-  private function findLimits(string $hardwareGroupId) {
-    foreach ($this->limitsConfig as $limits) {
-      if ($limits["hw-group-id"] === $hardwareGroupId) {
-        return $limits;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * Set limits for a specific hardware group
-   * @param string $hardwareGroupId   Hardware group ID
-   * @param Limits $limits            The limits
-   * @return void
-   */
-  public function setLimits(string $hardwareGroupId, Limits $limits) {
-    $this->limits[$hardwareGroupId] = $limits;
-  }
-
-  /**
-   * Set limits of a given HW group to infinite, which basically means
-   * that there are no more limits anymore.
-   * @param string $hardwareGroupId   Hardware group ID
-   * @return void
-   */
-  public function removeLimits(string $hardwareGroupId) {
-    $this->setLimits($hardwareGroupId, new UndefinedLimits($hardwareGroupId));
+  public function getSandboxConfig(): SandboxConfig {
+    return $this->sandboxConfig;
   }
 
   /**
@@ -104,57 +47,16 @@ class ExternalTask extends TaskBase {
   public function toArray() {
     return array_merge(
       parent::toArray(),
-      [
-        "sandbox" => [
-          "name" => $this->sandboxName,
-          "limits" => $this->getLimitsConfig()
-        ]
-      ]
+      [ "sandbox" => $this->sandboxConfig->toArray() ]
     );
   }
 
   /**
-   * Get name of sandbox which will be used for execution
-   * @return string Description
+   * Serialize the config
+   * @return string
    */
-  public function getSandboxName(): string {
-    return $this->sandboxName;
-  }
-
-  /**
-   * Get merged limits of new, altered and original configuration of limits.
-   * @return array
-   */
-  private function getLimitsConfig(): array {
-    $data = array_map(
-      function ($limits) {
-        return $limits->toArray();
-      },
-      array_values($this->limits)
-    );
-
-    // add original data for all the uncached limits
-    // (definitelly unaltered)
-    foreach ($this->getAllHWGroupsIds() as $id) {
-      if (!isset($this->limits[$id])) {
-        $data[] = $this->findLimits($id);
-      }
-    }
-
-    return $data;
-  }
-
-  /**
-   * Get array of all hardware groups from the input data
-   * @return array
-   */
-  private function getAllHWGroupsIds() {
-    return array_map(
-      function($cfg) {
-        return $cfg['hw-group-id'];
-      },
-      $this->limitsConfig
-    );
+  public function __toString() {
+    return Yaml::dump($this->toArray());
   }
 
 }
