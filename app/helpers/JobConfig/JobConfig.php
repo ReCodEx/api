@@ -4,18 +4,23 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
-use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\TaskFactory;
+use App\Helpers\JobConfig\SubmissionHeader;
+
 
 class JobConfig {
+  const SUBMISSION_KEY = "submission";
+  const TASKS_KEY = "tasks";
 
-  /** @var array */
+  /** @var array Additional top level data */
   private $data;
 
   /** @var SubmissionHeader */
   private $submissionHeader;
 
-  private $tasksCount;
-  private $tasks = NULL;
+  /** @var array List of tasks */
+  private $tasks = [];
+
   private $tests = NULL;
 
   /**
@@ -23,25 +28,21 @@ class JobConfig {
    * @param array $data The deserialized data from the config file
    */
   public function __construct(array $data) {
-    if (!isset($data["submission"])) {
-      throw new JobConfigLoadingException("Job config does not contain required section 'submission'.");
+    if (!isset($data[self::SUBMISSION_KEY])) {
+      throw new JobConfigLoadingException("Job config does not contain the required '" . self::SUBMISSION_KEY . "' field.");
     }
+    $this->submissionHeader = new SubmissionHeader($data[self::SUBMISSION_KEY]);
+    unset($data[self::SUBMISSION_KEY]);
 
-    if (!is_array($data["submission"])) {
-      throw new JobConfigLoadingException("Job config section 'submission' must be an array.");
+    if (!isset($data[self::TASKS_KEY])) {
+      throw new JobConfigLoadingException("Job config does not contain the required '" . self::TASKS_KEY . "' field.");
     }
-
-    if (!isset($data["tasks"])) {
-      throw new JobConfigLoadingException("Job config does not contain required section 'tasks'.");
+    foreach ($data[self::TASKS_KEY] as $taskConfig) {
+      $this->tasks[] = TaskFactory::create($taskConfig);
     }
-
-    if (!is_array($data["tasks"])) {
-      throw new JobConfigLoadingException("Job config section 'tasks' must be an array.");
-    }
+    unset($data[self::TASKS_KEY]);
 
     $this->data = $data;
-    $this->submissionHeader = new SubmissionHeader($data["submission"]);
-    $this->tasksCount = count($data["tasks"]);
   }
 
   public function getId(): string {
@@ -53,7 +54,7 @@ class JobConfig {
   }
 
   /**
-   * Get the identificator of this job
+   * Get the identificator of this job including the type
    * @return string
    */
   public function getJobId(): string {
@@ -86,18 +87,9 @@ class JobConfig {
 
   /**
    * Returns the tasks of this configuration
-   * @return TaskConfig[] The tasks
+   * @return TaskBase[] The tasks with instances of InternalTask and ExternalTask
    */
   public function getTasks(): array {
-    if ($this->tasks === NULL) {
-      $this->tasks = array_map(
-        function ($task) {
-          return new TaskConfig($task);
-        },
-        $this->data["tasks"]
-      );
-    }
-
     return $this->tasks;
   }
 
@@ -106,31 +98,27 @@ class JobConfig {
    * @return TestConfig[] tests with their corresponding tasks
    */
   public function getTests() {
-    if ($this->tests === NULL) {
-      $tasksByTests = [];
-      foreach ($this->getTasks() as $task) {
-        $id = $task->getTestId();
-        if ($id !== NULL) {
-          if (!isset($tasksByTests[$id])) {
-            $tasksByTests[$id] = [];
-          }
-
-          $tasksByTests[$id][] = $task;
+    $tasksByTests = [];
+    foreach ($this->tasks as $task) {
+      $testId = $task->getTestId();
+      if ($id !== NULL) {
+        if (!isset($tasksByTests[$id])) {
+          $tasksByTests[$id] = [];
         }
-      }
 
-      $this->tests = array_map(
-        function ($tasks) {
-          return new TestConfig(
-            $tasks[0]->getTestId(), // there is always at least one task
-            $tasks
-          );
-        },
-        $tasksByTests
-      );
+        $tasksByTests[$id][] = $task;
+      }
     }
 
-    return $this->tests;
+    return array_map(
+      function ($tasks) {
+        return new TestConfig(
+          $tasks[0]->getTestId(), // there is always at least one task
+          $tasks
+        );
+      },
+      $tasksByTests
+    );
   }
 
   /**
@@ -138,19 +126,17 @@ class JobConfig {
    * @return int The number of tasks defined in this job config
    */
   public function getTasksCount(): int {
-    return $this->tasksCount;
+    return count($this->tasks);
   }
 
   public function cloneWithoutLimits(string $hwGroupId): JobConfig {
     $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
       function ($originalTask) use ($hwGroupId) {
-        $task = new TaskConfig($originalTask->toArray());
+        $task = TaskFactory::create($originalTask->toArray());
         if ($task->isExecutionTask()) {
-          $task = $task->getAsExecutionTask();
-          $task->removeLimits($hwGroupId);
+          $task->getSandboxConfig()->removeLimits($hwGroupId);
         }
-
         return $task;
       },
       $this->getTasks()
@@ -169,18 +155,18 @@ class JobConfig {
     $cfg = new JobConfig($this->toArray());
     $cfg->tasks = array_map(
       function ($originalTask) use ($hwGroupId, $limits) {
-        $task = new TaskConfig($originalTask->toArray());
+        $task = TaskFactory::create($originalTask->toArray());
         if ($task->isExecutionTask()) {
           if (!array_key_exists($task->getTestId(), $limits)) {
             return $task; // the limits for this task are unchanged
           }
 
-          $task = $task->getAsExecutionTask();
-          $taskLimits = array_merge(
-            $task->hasLimits($hwGroupId) ? $task->getLimits($hwGroupId)->toArray() : [],
+          $sandboxConfig = $task->getSandboxConfig();
+          $newTaskLimits = array_merge(
+            $sandboxConfig->hasLimits($hwGroupId) ? $sandboxConfig->getLimits($hwGroupId)->toArray() : [],
             $limits[$task->getTestId()]
           );
-          $task->setLimits($hwGroupId, new Limits($taskLimits));
+          $task->setLimits($hwGroupId, new Limits($newTaskLimits));
         }
 
         return $task;
@@ -194,7 +180,7 @@ class JobConfig {
   public function toArray() {
     return [
       "submission" => $this->submissionHeader->toArray(),
-      "tasks" => array_map(function($task) { return $task->toArray(); }, $this->getTasks())
+      "tasks" => array_map(function($task) { return $task->toArray(); }, $this->tasks)
     ];
   }
 
