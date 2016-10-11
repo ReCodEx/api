@@ -13,7 +13,12 @@ use App\Helpers\JobConfig\TestConfig;
 
 class FakeTask extends TaskBase {
   public function __construct(array $data) {
-  parent::__construct($data);
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+    
+    parent::__construct($data);
   }
 }
 

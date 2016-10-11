@@ -16,7 +16,12 @@ use App\Exceptions\ResultsLoadingException;
 
 class FakeTask extends TaskBase {
   public function __construct(array $data) {
-  parent::__construct($data);
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
   }
 }
 
@@ -34,16 +39,6 @@ class TestTestResult extends Tester\TestCase
     "task-id" => "Y",
     "test-id" => "A",
     "type" => ExecutionTaskType::TASK_TYPE,
-    "sandbox" => [
-      "name" => "isolate",
-      "limits" => [
-        [
-          "hw-group-id" => "A",
-          "memory" => 8096,
-          "time" => 1.0
-        ]
-      ]
-    ]
   ];
 
   static $evalRes = [

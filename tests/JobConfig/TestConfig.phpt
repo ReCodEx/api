@@ -10,7 +10,12 @@ use App\Exceptions\JobConfigLoadingException;
 
 class FakeTask extends TaskBase {
   public function __construct(array $data) {
-  parent::__construct($data);
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
   }
 }
 
@@ -18,15 +23,15 @@ class FakeTask extends TaskBase {
 class TestTestResult extends Tester\TestCase
 {
 
-  static $evaluation = [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ];
+  static $evaluation = [
+    "task-id" => "X",
+    "test-id" => "A",
+    "type" => "evaluation",
+  ];
   static $execution = [
-    "task-id" => "Y", "test-id" => "A", "type" => "execution",
-    "sandbox" => [
-      "name" => "isolate",
-      "limits" => [
-        [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]
-      ]
-    ]
+    "task-id" => "Y",
+    "test-id" => "A",
+    "type" => "execution",
   ];
 
   public function testMissingExecutionOrEvaluationTask() {
@@ -99,7 +104,6 @@ class TestTestResult extends Tester\TestCase
 
     Assert::true($cfg->getExecutionTask()->isExecutionTask());
     Assert::equal("Y", $cfg->getExecutionTask()->getId());
-    Assert::equal($exec->getLimits("A"), $cfg->getLimits("A"));
     Assert::equal("X", $cfg->getEvaluationTask()->getId());
   }
 

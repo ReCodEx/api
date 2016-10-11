@@ -14,7 +14,7 @@ class TestJobConfig extends Tester\TestCase
 {
   static $jobConfig = [
     "submission" => [
-      "job-id" => "ABC_bla bla bla",
+      "job-id" => "student_bla bla bla",
       "file-collector" => "url://url.url"
     ],
     "tasks" => [
@@ -37,9 +37,9 @@ class TestJobConfig extends Tester\TestCase
 
   public function testUpdateJobId() {
     $jobConfig = new JobConfig(self::$jobConfig);
-    Assert::equal("ABC", $jobConfig->getType());
+    Assert::equal("student", $jobConfig->getType());
     Assert::equal("bla bla bla", $jobConfig->getId());
-    Assert::equal("ABC_bla bla bla", $jobConfig->getJobId());
+    Assert::equal("student_bla bla bla", $jobConfig->getJobId());
     $jobConfig->setJobId("XYZ", "ratataId");
     Assert::equal("XYZ", $jobConfig->getType());
     Assert::equal("ratataId", $jobConfig->getId());

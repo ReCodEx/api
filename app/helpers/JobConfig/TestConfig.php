@@ -2,6 +2,9 @@
 
 namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
+use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
+use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
+use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 
 class TestConfig {
 
@@ -11,11 +14,14 @@ class TestConfig {
   /** @var array The tasks which define this test */
   private $tasks;
 
-  /** @var Task The task which defines the execution part of the test */
-  private $executionTask;
+  /** @var ExecutionTaskType The task which defines the execution part of the test */
+  private $executionTaskType;
 
-  /** @var Task The task which defines the evaluation part of the test */
-  private $evaluationTask;
+  /** @var EvaluationTaskType The task which defines the evaluation part of the test */
+  private $evaluationTaskType;
+
+  /** @var InitiationTaskType The task which defines the initiation part of the test */
+  private $initiationTaskType;
 
   public function __construct(string $id, array $tasks) {
     $this->id = $id;
@@ -24,13 +30,15 @@ class TestConfig {
     // identify the important tasks
     foreach ($tasks as $task) {
       if ($task->isExecutionTask()) {
-        $this->executionTask = $task->getAsExecutionTask();
+        $this->executionTaskType = new ExecutionTaskType($task);
       } else if ($task->isEvaluationTask()) {
-        $this->evaluationTask = $task;
+        $this->evaluationTaskType = new EvaluationTaskType($task);
+      } else if ($task->isInitiationTask()) {
+        $this->initiationTaskType = new InitiationTaskType($task);
       }
     }
 
-    if ($this->executionTask === NULL || $this->evaluationTask === NULL) {
+    if ($this->executionTaskType === NULL || $this->evaluationTaskType === NULL) {
       throw new JobConfigLoadingException("Each test must contain tasks of both types 'execution' and 'evaluation'. Test '{$id}' does not include at least one of them.");
     }
   }
@@ -40,15 +48,19 @@ class TestConfig {
   }
 
   public function getLimits($hardwareGroupId) {
-    return $this->getExecutionTask()->getLimits($hardwareGroupId);
+    return $this->executionTaskType->getLimits($hardwareGroupId);
   }
 
   public function getExecutionTask() {
-    return $this->executionTask;
+    return $this->executionTaskType->getTask();
   }
 
   public function getEvaluationTask() {
-    return $this->evaluationTask;
+    return $this->evaluationTaskType->getTask();
+  }
+
+  public function getInitiationTask() {
+    return $this->initiationTaskType->getTask();
   }
 
 }
