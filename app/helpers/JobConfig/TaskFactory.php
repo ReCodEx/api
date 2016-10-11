@@ -4,7 +4,7 @@ namespace App\Helpers\JobConfig;
 
 
 class TaskFactory implements ITaskFactory {
-  public function create(array $data): TaskConfig {
+  public function create(array $data): TaskBase {
     // TODO:
   }
 }

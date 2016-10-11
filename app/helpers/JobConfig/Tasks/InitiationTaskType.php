@@ -3,5 +3,5 @@
 namespace App\Helpers\JobConfig;
 
 
-class InitialTaskType {
+class InitiationTaskType {
 }

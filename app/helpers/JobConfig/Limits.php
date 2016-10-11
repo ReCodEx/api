@@ -9,7 +9,7 @@ class Limits {
   /** @var array Raw data */
   private $data;
 
-  /** @var string ID of the harwdare group */
+  /** @var string ID of the hardware group */
   protected $id;
 
   /** @var float Time limit */

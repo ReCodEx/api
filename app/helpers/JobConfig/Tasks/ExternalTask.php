@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Helpers\JobConfig;
-use Symfony\Component\Yaml\Yaml;
+namespace App\Helpers\JobConfig\Tasks;
 use App\Exceptions\JobConfigLoadingException;
 
 // todo: change
-class ExecutionTaskConfig extends TaskConfig {
+class ExternalTask extends TaskBase {
 
   /** @var Limits[] */
   private $limits = [];
