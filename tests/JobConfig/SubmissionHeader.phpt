@@ -5,7 +5,6 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Helpers\JobConfig\SubmissionHeader;
-use Symfony\Component\Yaml\Yaml;
 
 
 class TestSubmissionHeader extends Tester\TestCase
