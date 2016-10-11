@@ -5,9 +5,18 @@ include '../../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
 use App\Helpers\EvaluationResults\FailedTestResult;
-use App\Helpers\JobConfig\ExecutionTaskConfig;
-use App\Helpers\JobConfig\TaskConfig;
+use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
+use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
+
+
+class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+  parent::__construct($data);
+  }
+}
+
 
 class TestFailedTestResult extends Tester\TestCase
 {
@@ -15,13 +24,13 @@ class TestFailedTestResult extends Tester\TestCase
   static $evalCfg = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EVALUATION
+    "type" => EvaluationTaskType::TASK_TYPE
   ];
 
   static $execCfg = [
     "task-id" => "Y",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EXECUTION,
+    "type" => ExecutionTaskType::TASK_TYPE,
     "sandbox" => [
       "name" => "isolate",
       "limits" => [
@@ -35,16 +44,16 @@ class TestFailedTestResult extends Tester\TestCase
   ];
 
   public function testOKTest() {
-    $exec = new ExecutionTaskConfig(self::$execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeTask(self::$execCfg);
+    $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 

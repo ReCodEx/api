@@ -1,18 +1,19 @@
 <?php
 
-include '../bootstrap.php';
+include '../../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\Tasks\TaskBase;
 use App\Exceptions\JobConfigLoadingException;
 
-class DerivedTask extends TaskBase {
+
+class FakeTask extends TaskBase {
   public function __construct(array $data) {
   parent::__construct($data);
   }
 }
 
-class TestTaskConfig extends Tester\TestCase
+class TestTaskBase extends Tester\TestCase
 {
   static $basic = [
     "task-id" => "A",
@@ -71,11 +72,11 @@ class TestTaskConfig extends Tester\TestCase
   ];
 
   public function testMissingRequiredFields() {
-    Assert::exception(function() { new DerivedTask([]); }, JobConfigLoadingException::class);
+    Assert::exception(function() { new FakeTask([]); }, JobConfigLoadingException::class);
   }
 
   public function testBasicTask() {
-    $task = new DerivedTask(self::$basic);
+    $task = new FakeTask(self::$basic);
     Assert::equal("A", $task->getId());
     Assert::equal(1, $task->getPriority());
     Assert::equal(true, $task->getFatalFailure());
@@ -89,7 +90,7 @@ class TestTaskConfig extends Tester\TestCase
   }
 
   public function testInitiationTask() {
-    $task = new DerivedTask(self::$initiation);
+    $task = new FakeTask(self::$initiation);
     Assert::equal("B", $task->getId());
     Assert::equal(2, $task->getPriority());
     Assert::equal(false, $task->getFatalFailure());
@@ -103,7 +104,7 @@ class TestTaskConfig extends Tester\TestCase
   }
 
   public function testEvaluationTask() {
-    $task = new DerivedTask(self::$evaluation);
+    $task = new FakeTask(self::$evaluation);
     Assert::equal("C", $task->getId());
     Assert::equal(3, $task->getPriority());
     Assert::equal(true, $task->getFatalFailure());
@@ -117,7 +118,7 @@ class TestTaskConfig extends Tester\TestCase
   }
 
   public function testExecutionTask() {
-    $task = new DerivedTask(self::$execution);
+    $task = new FakeTask(self::$execution);
     Assert::equal("D", $task->getId());
     Assert::equal(4, $task->getPriority());
     Assert::equal(false, $task->getFatalFailure());
@@ -131,7 +132,7 @@ class TestTaskConfig extends Tester\TestCase
   }
 
   public function testOptionalTask() {
-    $task = new DerivedTask(self::$optional);
+    $task = new FakeTask(self::$optional);
     Assert::equal("optional", $task->getId());
     Assert::equal(5, $task->getPriority());
     Assert::equal(true, $task->getFatalFailure());
@@ -146,5 +147,5 @@ class TestTaskConfig extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTaskConfig;
+$testCase = new TestTaskBase;
 $testCase->run();

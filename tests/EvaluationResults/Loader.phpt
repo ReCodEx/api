@@ -5,8 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\Storage as JobConfigLoader;
-use App\Helpers\JobConfig\TaskConfig;
+use App\Helpers\JobConfig\Storage as JobConfigStorage;
 
 use App\Helpers\EvaluationResults\Loader;
 use App\Helpers\EvaluationResults\EvaluationResults;
@@ -22,13 +21,13 @@ class TestEvaluationResultsLoader extends Tester\TestCase
 {
 
   public function testCanLoadSuccessResult() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$successResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
   }
 
   public function testCanLoadInitFailedResult() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$initFailedResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
     Assert::false($results->initOK());
@@ -39,13 +38,13 @@ class TestEvaluationResultsLoader extends Tester\TestCase
   }
 
   public function testCanLoadFailedResult() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$failedResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
   }
 
   public function testRejectsInvalidYaml() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
       Loader::parseResults('
 a:
@@ -56,14 +55,14 @@ b:
   }
 
   public function testCorrectInterpretation() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$successResult, $jobConfig);
     Assert::true($results->initOK());
     Assert::equal(6, count($results->getTestsResults("group1")));
   }
 
   public function testCorrectInterpretationOfFailedSubmission() {
-    $jobConfig = JobConfigLoader::parseJobConfig(self::$jobConfig);
+    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$failedResult, $jobConfig);
     Assert::true($results->initOK());
     Assert::equal(6, count($results->getTestsResults("group1")));

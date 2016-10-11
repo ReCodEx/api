@@ -6,10 +6,6 @@ use Symfony\Component\Yaml\Yaml;
 
 abstract class TaskBase {
 
-  const TYPE_INITIATION = "initiation";
-  const TYPE_EXECUTION = "execution";
-  const TYPE_EVALUATION = "evaluation";
-
   const TASK_ID_KEY = "task-id";
   const PRIORITY_KEY = "priority";
   const FATAL_FAILURE_KEY = "fatal-failure";
@@ -142,15 +138,15 @@ abstract class TaskBase {
   }
 
   public function isInitiationTask() {
-    return $this->type === self::TYPE_INITIATION;
+    return $this->type === InitiationTaskType::TASK_TYPE;
   }
 
   public function isExecutionTask() {
-    return $this->type === self::TYPE_EXECUTION;
+    return $this->type === ExecutionTaskType::TASK_TYPE;
   }
 
   public function isEvaluationTask() {
-    return $this->type === self::TYPE_EVALUATION;
+    return $this->type === EvaluationTaskType::TASK_TYPE;
   }
 
   /**

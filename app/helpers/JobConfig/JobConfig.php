@@ -4,6 +4,7 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
+use App\Helpers\JobConfig\Tasks\TaskBase;
 
 class JobConfig {
 

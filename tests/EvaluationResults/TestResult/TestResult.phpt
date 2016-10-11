@@ -7,10 +7,19 @@ use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
 use App\Helpers\EvaluationResults\TestResult as TR;
 use App\Helpers\EvaluationResults\TaskResult;
-use App\Helpers\JobConfig\ExecutionTaskConfig;
-use App\Helpers\JobConfig\TaskConfig;
+use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
+use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
 use App\Exceptions\ResultsLoadingException;
+
+
+class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+  parent::__construct($data);
+  }
+}
+
 
 class TestTestResult extends Tester\TestCase
 {
@@ -18,13 +27,13 @@ class TestTestResult extends Tester\TestCase
   static $evalCfg = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EVALUATION
+    "type" => EvaluationTaskType::TASK_TYPE
   ];
 
   static $execCfg = [
     "task-id" => "Y",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EXECUTION,
+    "type" => ExecutionTaskType::TASK_TYPE,
     "sandbox" => [
       "name" => "isolate",
       "limits" => [
@@ -73,16 +82,16 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testOKTest() {
-    $exec = new ExecutionTaskConfig(self::$execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeTask(self::$execCfg);
+    $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
@@ -106,17 +115,17 @@ class TestTestResult extends Tester\TestCase
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
     $execCfg["sandbox"]["limits"][0]["time"] = 0.01;
 
-    $exec = new ExecutionTaskConfig($execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeTask($execCfg);
+    $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
@@ -135,17 +144,17 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testFailedTestBecauseOfFailedExecution() {
-    $exec = new ExecutionTaskConfig(self::$execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeTask(self::$execCfg);
+    $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
