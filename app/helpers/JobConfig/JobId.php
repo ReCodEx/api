@@ -7,6 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 class JobId {
 
   const SEPARATOR = "_";
+  const ALLOWED_TYPES = array("student", "reference");
 
   /** @var string Type of the job */
   private $id;
@@ -14,12 +15,19 @@ class JobId {
   /** @var string Type of the job */
   private $type;
 
+  private function checkTypeValidity(string $type) {
+    if (!in_array($type, self::ALLOWED_TYPES)) {
+      throw new JobConfigLoadingException("Job id contains unknown type '" . $type . "'.");
+    }
+  }
+
   public function __construct(string $jobId) {
     if (!strpos($jobId, self::SEPARATOR)) {
       $this->id = $jobId;
-      $this->type = NULL;
+      $this->type = "student";
     } else {
       list($this->type, $this->id) = explode(self::SEPARATOR, $jobId, 2);
+      $this->checkTypeValidity($this->type);
     }
   }
 
@@ -29,10 +37,6 @@ class JobId {
   }
 
   public function getJobId(): string {
-    if ($this->type === NULL) {
-      return $this->id;
-    }
-
     return $this->type . self::SEPARATOR . $this->id;
   }
 
@@ -49,9 +53,7 @@ class JobId {
   }
 
   public function setType(string $type) {
-    if (strpos($type, self::SEPARATOR) !== FALSE) {
-      throw new JobConfigLoadingException("Submission type cannot contain the '" . self::SEPARATOR . "' character.");
-    }
+    $this->checkTypeValidity($type);
     $this->type = $type;
   }
 
