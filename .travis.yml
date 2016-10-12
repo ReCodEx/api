@@ -9,6 +9,10 @@ before_install:
 
 install:
   - composer install --no-interaction --prefer-source
+  - pear install PHP_CodeSniffer
 
 script:
   - ./vendor/bin/tester tests 
+
+after_install:
+  - phpcs app
