@@ -16,11 +16,23 @@ class TestExternalTask extends Tester\TestCase
     "cmd" => [
       "bin" => "cmdA"
     ],
+    "sandbox" => [
+      "name" => "isolate",
+      "limits" => []
+    ],
     "forward" => "compatibility"
   ];
 
   public function testMissingRequiredFields() {
     Assert::exception(function() { new ExternalTask([]); }, JobConfigLoadingException::class);
+  }
+
+  public function testMissingSandbox() {
+    Assert::exception(function() {
+      $data = self::$basic;
+      unset($data["sandbox"]);
+      new ExternalTask($data);
+    }, JobConfigLoadingException::class);
   }
 
   public function testBasicTask() {
@@ -33,6 +45,7 @@ class TestExternalTask extends Tester\TestCase
     Assert::equal([], $task->getCommandArguments());
     Assert::equal(NULL, $task->getType());
     Assert::equal(NULL, $task->getTestId());
+    Assert::equal("isolate", $task->getSandboxConfig()->getName());
 
     Assert::isEqual(self::$basic, $task->toArray());
   }

@@ -14,5 +14,5 @@ install:
 script:
   - ./vendor/bin/tester tests 
 
-after_install:
+after_script:
   - phpcs app
