@@ -24,6 +24,14 @@ class TestExternalTask extends Tester\TestCase
     Assert::exception(function() { new ExternalTask([]); }, JobConfigLoadingException::class);
   }
 
+  public function testMissingSandbox() {
+    Assert::exception(function() {
+      $data = self::$basic;
+      unset($data["sandbox"]);
+      new ExternalTask($data);
+    }, JobConfigLoadingException::class);
+  }
+
   public function testBasicTask() {
     $task = new ExternalTask(self::$basic);
     Assert::equal("A", $task->getId());
@@ -34,6 +42,7 @@ class TestExternalTask extends Tester\TestCase
     Assert::equal([], $task->getCommandArguments());
     Assert::equal(NULL, $task->getType());
     Assert::equal(NULL, $task->getTestId());
+    Assert::equal("isolate", $task->getSandboxConfig()->getName());
 
     Assert::isEqual(self::$basic, $task->toArray());
   }
