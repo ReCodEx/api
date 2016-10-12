@@ -4,8 +4,6 @@ php:
   - 7.0.4
 
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y php-codesniffer
   - composer self-update
   - echo "extension = ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
@@ -13,7 +11,4 @@ install:
   - composer install --no-interaction --prefer-source
 
 script:
-  - ./vendor/bin/tester tests 
-
-after_script:
-  - phpcs app
+  - ./vendor/bin/tester tests

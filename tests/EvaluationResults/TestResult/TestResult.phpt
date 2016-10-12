@@ -8,6 +8,7 @@ use App\Helpers\EvaluationResults\ExecutionTaskResult;
 use App\Helpers\EvaluationResults\TestResult as TR;
 use App\Helpers\EvaluationResults\TaskResult;
 use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\ExternalTask;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
@@ -15,6 +16,18 @@ use App\Exceptions\ResultsLoadingException;
 
 
 class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
+
+class FakeExternalTask extends ExternalTask {
   public function __construct(array $data) {
     $data["priority"] = 1;
     $data["fatal-failure"] = true;
@@ -39,6 +52,16 @@ class TestTestResult extends Tester\TestCase
     "task-id" => "Y",
     "test-id" => "A",
     "type" => ExecutionTaskType::TASK_TYPE,
+    "sandbox" => [
+      "name" => "isolate",
+      "limits" => [
+        [
+          "hw-group-id" => "A",
+          "memory" => 8096,
+          "time" => 1.0
+        ]
+      ]
+    ]
   ];
 
   static $evalRes = [
@@ -77,7 +100,7 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testOKTest() {
-    $exec = new FakeTask(self::$execCfg);
+    $exec = new FakeExternalTask(self::$execCfg);
     $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
@@ -110,7 +133,7 @@ class TestTestResult extends Tester\TestCase
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
     $execCfg["sandbox"]["limits"][0]["time"] = 0.01;
 
-    $exec = new FakeTask($execCfg);
+    $exec = new FakeExternalTask($execCfg);
     $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
@@ -139,7 +162,7 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testFailedTestBecauseOfFailedExecution() {
-    $exec = new FakeTask(self::$execCfg);
+    $exec = new FakeExternalTask(self::$execCfg);
     $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
