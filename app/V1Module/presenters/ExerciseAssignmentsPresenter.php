@@ -216,11 +216,11 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath();
     $jobConfig = JobConfig\Storage::getJobConfig($path);
-    $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
+    $jobConfig->setLimits($hardwareGroup, $limits);
 
     // save the new & archive the old config
-    JobConfig\Storage::saveJobConfig($newJobConfig, $path);
+    JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($newJobConfig->toArray());
+    $this->sendSuccessResponse($jobConfig->toArray());
   }
 }
