@@ -15,14 +15,15 @@ class TestJobConfig extends Tester\TestCase
   static $jobConfig = [
     "submission" => [
       "job-id" => "student_bla bla bla",
-      "file-collector" => "url://url.url"
+      "file-collector" => "url://url.url",
+      "language" => "cpp",
+      "log" => "true"
     ],
     "tasks" => [
-      [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ],
+      [ "task-id" => "X", "test-id" => "A", "type" => "evaluation", "priority" => 1, "fatal-failure" => "false", "cmd" => [ "bin" => "a.out" ] ],
       [
-        "task-id" => "Y", "test-id" => "A", "type" => "execution",
-        "sandbox" => ["name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
-        ]
+        "task-id" => "Y", "test-id" => "A", "type" => "execution", "priority" => 1, "fatal-failure" => "false", "cmd" => [ "bin" => "a.out" ],
+        "sandbox" => [ "name" => "isolate", "limits" => [ [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ] ] ]
       ]
     ]
   ];
@@ -40,10 +41,10 @@ class TestJobConfig extends Tester\TestCase
     Assert::equal("student", $jobConfig->getType());
     Assert::equal("bla bla bla", $jobConfig->getId());
     Assert::equal("student_bla bla bla", $jobConfig->getJobId());
-    $jobConfig->setJobId("XYZ", "ratataId");
-    Assert::equal("XYZ", $jobConfig->getType());
+    $jobConfig->setJobId("reference", "ratataId");
+    Assert::equal("reference", $jobConfig->getType());
     Assert::equal("ratataId", $jobConfig->getId());
-    Assert::equal("XYZ_ratataId", $jobConfig->getJobId());
+    Assert::equal("reference_ratataId", $jobConfig->getJobId());
   }
 
   public function testInvalidJobType() {
@@ -55,9 +56,9 @@ class TestJobConfig extends Tester\TestCase
 
   public function testUpdateJobIdInSerializedConfig() {
     $jobConfig = new JobConfig(self::$jobConfig);
-    $jobConfig->setJobId("XYZ", "ratataId");
+    $jobConfig->setJobId("reference", "ratataId");
     $data = Yaml::parse((string) $jobConfig);
-    Assert::equal("XYZ_ratataId", $data["submission"]["job-id"]);
+    Assert::equal("reference_ratataId", $data["submission"]["job-id"]);
   }
 
   public function testUpdateFileCollector() {
@@ -87,7 +88,7 @@ class TestJobConfig extends Tester\TestCase
 
   public function testGetTests() {
     $jobConfig = new JobConfig(self::$jobConfig);
-    $tests = $jobConfig->getTests("A");
+    $tests = $jobConfig->getTests();
     Assert::equal(1, count($tests));
   }
 
@@ -95,28 +96,27 @@ class TestJobConfig extends Tester\TestCase
     $hwGroup = "A";
 
     $jobConfig = new JobConfig(self::$jobConfig);
-    $removedConfig = $jobConfig->cloneWithoutLimits($hwGroup);
-
-    // test if limits were not changed in original config
-    Assert::equal(self::$jobConfig, $jobConfig->toArray());
+    $jobConfig->removeLimits($hwGroup);
 
     // test for infinite limits which are set in remove limits
-    foreach ($removedConfig->getTests() as $test) {
-      Assert::equal(new UndefinedLimits($hwGroup), $test->getLimits($hwGroup));
+    foreach ($jobConfig->getTasks() as $task) {
+      if ($task->isExecutionTask()) {
+        Assert::equal(new UndefinedLimits($hwGroup), $task->getSandboxConfig()->getLimits($hwGroup));
+      }
     }
   }
 
   public function testSetLimits() {
     $testId = "A";
     $hwGroup = "another";
-    $limits = ["hw-group-id" => $hwGroup, "time" => "987", "memory" => "654"];
-    $testLimits = [$testId => $limits];
+    $limits = [ "hw-group-id" => $hwGroup, "time" => "987", "memory" => "654" ];
+    $testLimits = [ $testId => $limits ];
 
     $jobConfig = new JobConfig(self::$jobConfig);
-    $setConfig = $jobConfig->cloneWithNewLimits($hwGroup, $testLimits);
+    $jobConfig->setLimits($hwGroup, $testLimits);
 
     // test for expected limits which should be set
-    foreach ($setConfig->getTests() as $test) {
+    foreach ($jobConfig->getTests() as $test) {
       Assert::equal(new Limits($testLimits[$testId]), $test->getLimits($hwGroup));
     }
   }

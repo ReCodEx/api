@@ -21,8 +21,6 @@ class JobConfig {
   /** @var array List of tasks */
   private $tasks = [];
 
-  private $tests = NULL;
-
   /**
    * Job config data structure
    * @param array $data The deserialized data from the config file
@@ -129,59 +127,48 @@ class JobConfig {
     return count($this->tasks);
   }
 
-  public function cloneWithoutLimits(string $hwGroupId): JobConfig {
-    $cfg = new JobConfig($this->toArray());
-    $cfg->tasks = array_map(
-      function ($originalTask) use ($hwGroupId) {
-        $task = TaskFactory::create($originalTask->toArray());
-        if ($task->isExecutionTask()) {
-          $task->getSandboxConfig()->removeLimits($hwGroupId);
-        }
-        return $task;
-      },
-      $this->getTasks()
-    );
-
-    return $cfg;
+  /**
+   * Removes limits for all execution tasks (only specified hwgroup).
+   */
+  public function removeLimits(string $hwGroupId) {
+    foreach ($this->tasks as $task) {
+      if ($task->isExecutionTask()) {
+        $task->getSandboxConfig()->removeLimits($hwGroupId);
+      }
+    }
   }
 
   /**
-   *
-   * @param string $hwGroupId
-   * @param array $limits
-   * @return JobConfig newly created instance of job configuration with given limits
+   * Set limits for execution tasks. For given hwgroup set limits of some/all execution tasks.
+   * @param string $hwGroupId Hardware group for new limits
+   * @param array $limits Map of test-id (key) and limits as array (value)
    */
-  public function cloneWithNewLimits(string $hwGroupId, array $limits): JobConfig {
-    $cfg = new JobConfig($this->toArray());
-    $cfg->tasks = array_map(
-      function ($originalTask) use ($hwGroupId, $limits) {
-        $task = TaskFactory::create($originalTask->toArray());
-        if ($task->isExecutionTask()) {
-          if (!array_key_exists($task->getTestId(), $limits)) {
-            return $task; // the limits for this task are unchanged
-          }
-
+  public function setLimits(string $hwGroupId, array $limits) {
+    foreach ($this->tasks as $task) {
+      if ($task->isExecutionTask()) {
+        if (!array_key_exists($task->getTestId(), $limits)) {
+          continue; // the limits for this task are unchanged
+        } else {
           $sandboxConfig = $task->getSandboxConfig();
           $newTaskLimits = array_merge(
             $sandboxConfig->hasLimits($hwGroupId) ? $sandboxConfig->getLimits($hwGroupId)->toArray() : [],
             $limits[$task->getTestId()]
           );
-          $task->setLimits($hwGroupId, new Limits($newTaskLimits));
+          $task->getSandboxConfig()->setLimits(new Limits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }
-
-        return $task;
-      },
-      $this->getTasks()
-    );
-
-    return $cfg;
+      }
+    }
   }
 
   public function toArray() {
-    return [
-      "submission" => $this->submissionHeader->toArray(),
-      "tasks" => array_map(function($task) { return $task->toArray(); }, $this->tasks)
-    ];
+    $data = $this->data;
+    $data[self::SUBMISSION_KEY] = $this->submissionHeader->toArray();
+    $data[self::TASKS_KEY] = array_map(
+      function($task) {
+        return $task->toArray();
+      }, $this->tasks
+    );
+    return $data; 
   }
 
   /**

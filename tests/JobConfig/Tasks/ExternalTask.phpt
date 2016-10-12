@@ -16,6 +16,7 @@ class TestExternalTask extends Tester\TestCase
     "cmd" => [
       "bin" => "cmdA"
     ],
+    "sandbox" => [ "name" => "isolate", "limits" => [ [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ] ] ],
     "forward" => "compatibility"
   ];
 
