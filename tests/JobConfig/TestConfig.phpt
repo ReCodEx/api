@@ -5,10 +5,22 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\JobConfig\TestConfig;
 use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\ExternalTask;
 use App\Exceptions\JobConfigLoadingException;
 
 
 class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
+class FakeExternalTask extends ExternalTask {
   public function __construct(array $data) {
     $data["priority"] = 1;
     $data["fatal-failure"] = true;
@@ -26,12 +38,16 @@ class TestTestResult extends Tester\TestCase
   static $evaluation = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => "evaluation",
+    "type" => "evaluation"
   ];
   static $execution = [
     "task-id" => "Y",
     "test-id" => "A",
     "type" => "execution",
+    "sandbox" => [
+      "name" => "sandboxName",
+      "limits" => []
+    ]
   ];
 
   public function testMissingExecutionOrEvaluationTask() {
@@ -52,7 +68,7 @@ class TestTestResult extends Tester\TestCase
         "some ID",
         [
           new FakeTask([ "task-id" => "A" ]),
-          new FakeTask(self::$execution),
+          new FakeExternalTask(self::$execution),
           new FakeTask([ "task-id" => "C" ]),
           new FakeTask([ "task-id" => "D" ])
         ]
@@ -77,7 +93,7 @@ class TestTestResult extends Tester\TestCase
       "some ID",
       [
         new FakeTask([ "task-id" => "A" ]),
-        new FakeTask(self::$execution),
+        new FakeExternalTask(self::$execution),
         new FakeTask([ "task-id" => "C" ]),
         new FakeTask(self::$evaluation),
         new FakeTask([ "task-id" => "D" ])
@@ -88,7 +104,7 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testExecutionOrEvaluationTasksAvailability() {
-    $exec = new FakeTask(self::$execution);
+    $exec = new FakeExternalTask(self::$execution);
     $eval = new FakeTask(self::$evaluation);
 
     $cfg = new TestConfig(

@@ -6,6 +6,7 @@ use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
 use App\Helpers\EvaluationResults\SkippedTestResult;
 use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\ExternalTask;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
@@ -17,7 +18,18 @@ class FakeTask extends TaskBase {
     $data["fatal-failure"] = true;
     $data["cmd"] = [];
     $data["cmd"]["bin"] = "cmd";
-    
+
+    parent::__construct($data);
+  }
+}
+
+class FakeExternalTask extends ExternalTask {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
     parent::__construct($data);
   }
 }
@@ -49,7 +61,7 @@ class TestSkippedTestResult extends Tester\TestCase
   ];
 
   public function testOKTest() {
-    $exec = new FakeTask(self::$execCfg);
+    $exec = new FakeExternalTask(self::$execCfg);
     $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",

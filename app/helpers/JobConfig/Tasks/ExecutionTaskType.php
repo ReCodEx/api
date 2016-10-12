@@ -1,21 +1,29 @@
 <?php
 
 namespace App\Helpers\JobConfig\Tasks;
-
 use App\Helpers\JobConfig\Limits;
+use App\Exceptions\JobConfigLoadingException;
 
 
 class ExecutionTaskType {
   const TASK_TYPE = "execution";
 
-  /** @var TaskBase */
+  /** @var ExternalTask */
   private $task;
 
   public function __construct(TaskBase $task) {
-    $this->task = $task; // TODO: check for external task
+    if (!$task->isExecutionTask()) {
+      throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
+    }
+
+    if (!$task instanceof ExternalTask) {
+      throw new JobConfigLoadingException("Execution task has to be ExternalTask type");
+    }
+
+    $this->task = $task;
   }
 
-  public function getTask() {
+  public function getTask(): TaskBase {
     return $this->task;
   }
 
