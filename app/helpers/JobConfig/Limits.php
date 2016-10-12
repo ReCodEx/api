@@ -27,23 +27,35 @@ class BoundDirectoryConfig {
     if (!isset($data[self::SRC_KEY])) {
       throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::SRC_KEY . "'");
     }
-    $this->id = $data[self::SRC_KEY];
+    $this->source = $data[self::SRC_KEY];
     unset($data[self::SRC_KEY]);
 
     if (!isset($data[self::DST_KEY])) {
       throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::DST_KEY . "'");
     }
-    $this->id = $data[self::DST_KEY];
+    $this->destination = $data[self::DST_KEY];
     unset($data[self::DST_KEY]);
 
     if (!isset($data[self::MODE_KEY])) {
       throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::MODE_KEY . "'");
     }
-    $this->id = $data[self::MODE_KEY];
+    $this->mode = $data[self::MODE_KEY];
     unset($data[self::MODE_KEY]);
 
     // *** LOAD REMAINING DATA
     $this->data = $data;
+  }
+
+  public function getSource(): string {
+    return $this->source;
+  }
+
+  public function getDestination(): string {
+    return $this->destination;
+  }
+
+  public function getMode(): string {
+    return $this->mode;
   }
 
   public function toArray() {
@@ -79,7 +91,7 @@ class Limits {
   protected $id;
 
   /** @var float Time limit */
-  protected $time;
+  protected $time = 0;
 
   /** @var float */
   protected $wallTime = 0;
@@ -91,7 +103,7 @@ class Limits {
   protected $stackSize = 0;
 
   /** @var int Memory limit */
-  protected $memory;
+  protected $memory = 0;
 
   /** @var int */
   protected $parallel = 0;
@@ -106,7 +118,7 @@ class Limits {
   protected $environVariables = [];
 
   /** @var string */
-  protected $chdir = NULL;
+  protected $chdir = "";
 
   /** @var BoundDirectoryConfig[] */
   protected $boundDirectories = [];
@@ -170,7 +182,7 @@ class Limits {
     }
 
     if (isset($data[self::CHDIR_KEY])) {
-      $this->chdir = $data[self::CHDIR_KEY];
+      $this->chdir = strval($data[self::CHDIR_KEY]);
       unset($data[self::CHDIR_KEY]);
     }
 
@@ -186,7 +198,11 @@ class Limits {
     $this->data = $data;
   }
 
-  public function getId() {
+  /**
+   * Hardware group identification
+   * @return string
+   */
+  public function getId(): string {
     return $this->id;
   }
 
@@ -198,6 +214,18 @@ class Limits {
     return $this->time;
   }
 
+  public function getWallTime(): float {
+    return $this->wallTime;
+  }
+
+  public function getExtraTime(): float {
+    return $this->extraTime;
+  }
+
+  public function getStackSize(): int {
+    return $this->stackSize;
+  }
+
   /**
    * Returns the memory limit in bytes
    * @return int Number of bytes
@@ -206,14 +234,38 @@ class Limits {
     return $this->memory;
   }
 
+  public function getParallel(): int {
+    return $this->parallel;
+  }
+
+  public function getDiskSize(): int {
+    return $this->diskSize;
+  }
+
+  public function getDiskFiles(): int {
+    return $this->diskFiles;
+  }
+
+  public function getEnvironVariables(): array {
+    return $this->environVariables;
+  }
+
+  public function getChdir(): string {
+    return $this->chdir;
+  }
+
+  public function getBoundDirectories(): array {
+    return $this->boundDirectories;
+  }
+
   public function toArray() {
     $data = $this->data;
     $data[self::HW_GROUP_ID_KEY] = $this->id;
-    $data[self::TIME_KEY] = $this->time;
-    $data[self::MEMORY_KEY] = $this->memory;
+    if ($this->time > 0) { $data[self::TIME_KEY] = $this->time; }
     if ($this->wallTime > 0) { $data[self::WALL_TIME_KEY] = $this->wallTime; }
     if ($this->extraTime > 0) { $data[self::EXTRA_TIME_KEY] = $this->extraTime; }
     if ($this->stackSize > 0) { $data[self::STACK_SIZE_KEY] = $this->stackSize; }
+    if ($this->memory) { $data[self::MEMORY_KEY] = $this->memory; }
     if ($this->parallel > 0) { $data[self::PARALLEL_KEY] = $this->parallel; }
     if ($this->diskSize > 0) { $data[self::DISK_SIZE_KEY] = $this->diskSize; }
     if ($this->diskFiles > 0) { $data[self::DISK_FILES_KEY] = $this->diskFiles; }

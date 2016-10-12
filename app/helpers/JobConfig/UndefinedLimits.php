@@ -6,9 +6,7 @@ class UndefinedLimits extends Limits {
 
   public function __construct($id) {
     parent::__construct([
-      "hw-group-id" => $id,
-      "time" => 0.0,
-      "memory" => 0
+      "hw-group-id" => $id
     ]);
   }
 
