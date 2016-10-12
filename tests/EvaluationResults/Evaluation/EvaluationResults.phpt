@@ -26,12 +26,33 @@ class TestEvaluationResults extends Tester\TestCase
       "language" => "cpp"
     ],
     "tasks" => [
-      [ "task-id" => "W", "type" => InitiationTaskType::TASK_TYPE ],
       [
-        "task-id" => "X", "test-id" => "A", "type" => ExecutionTaskType::TASK_TYPE,
-        "sandbox" => [ "name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]] ]
+        "task-id" => "W",
+        "priority" => 1,
+        "fatal-failure" => true,
+        "type" => InitiationTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdW" ]
       ],
-      [ "task-id" => "Y", "test-id" => "A", "type" => EvaluationTaskType::TASK_TYPE ]
+      [
+        "task-id" => "X",
+        "priority" => 2,
+        "fatal-failure" => false,
+        "test-id" => "A",
+        "type" => ExecutionTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdX" ],
+        "sandbox" => [
+          "name" => "isolate",
+          "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
+        ]
+      ],
+      [
+        "task-id" => "Y",
+        "priority" => 3,
+        "fatal-failure" => true,
+        "test-id" => "A",
+        "type" => EvaluationTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdY" ]
+      ]
     ]
   ];
 
@@ -99,11 +120,25 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfSkippedTask() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "student_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => InitiationTaskType::TASK_TYPE ],
-        [ "task-id" => "B", "type" => InitiationTaskType::TASK_TYPE ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([
@@ -120,11 +155,25 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfFailedTask() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "student_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => InitiationTaskType::TASK_TYPE ],
-        [ "task-id" => "B", "type" => InitiationTaskType::TASK_TYPE ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([
@@ -141,11 +190,25 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfMissingTaskInitResult() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "student_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => InitiationTaskType::TASK_TYPE ],
-        [ "task-id" => "B", "type" => InitiationTaskType::TASK_TYPE ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([

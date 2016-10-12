@@ -122,19 +122,12 @@ class Limits {
     $this->id = $data[self::HW_GROUP_ID_KEY];
     unset($data[self::HW_GROUP_ID_KEY]);
 
-    if (!isset($data[self::TIME_KEY])) {
-      throw new JobConfigLoadingException("Sandbox limits section does not contain required field '" . self::TIME_KEY . "'");
-    }
-    $this->time = floatval($data[self::TIME_KEY]);
-    unset($data[self::TIME_KEY]);
-
-    if (!isset($data[self::MEMORY_KEY])) {
-      throw new JobConfigLoadingException("Sandbox limits section does not contain required field '" . self::MEMORY_KEY . "'");
-    }
-    $this->memory = intval($data[self::MEMORY_KEY]);
-    unset($data[self::MEMORY_KEY]);
-
     // *** LOAD OPTIONAL DATAS
+
+    if (isset($data[self::TIME_KEY])) {
+      $this->time = floatval($data[self::TIME_KEY]);
+      unset($data[self::TIME_KEY]);
+    }
 
     if (isset($data[self::WALL_TIME_KEY])) {
       $this->wallTime = floatval($data[self::WALL_TIME_KEY]);
@@ -149,6 +142,11 @@ class Limits {
     if (isset($data[self::STACK_SIZE_KEY])) {
       $this->stackSize = intval($data[self::STACK_SIZE_KEY]);
       unset($data[self::STACK_SIZE_KEY]);
+    }
+
+    if (isset($data[self::MEMORY_KEY])) {
+      $this->memory = intval($data[self::MEMORY_KEY]);
+      unset($data[self::MEMORY_KEY]);
     }
 
     if (isset($data[self::PARALLEL_KEY])) {

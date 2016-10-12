@@ -32,18 +32,6 @@ class TestLimits extends Tester\TestCase
     Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
   }
 
-  public function testMissingMemoryLimit() {
-    $data = self::$sample;
-    unset($data["memory"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
-  }
-
-  public function testMissingTimeLimit() {
-    $data = self::$sample;
-    unset($data["time"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
-  }
-
   public function testParsingA() {
     $limits = new Limits(self::$cfg[0]);
     Assert::equal("A", $limits->getId());

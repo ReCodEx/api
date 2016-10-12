@@ -5,6 +5,7 @@ namespace App\Helpers\EvaluationResults;
 use App\Exceptions\ResultsLoadingException;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\TestConfig;
+use App\Helpers\JobConfig\JobId;
 
 use Symfony\Component\Yaml\Yaml;
 
@@ -27,7 +28,8 @@ class EvaluationResults {
       throw new ResultsLoadingException("Job ID is not set in the result.");
     }
 
-    if ($data["job-id"] !== $config->getJobId()) {
+    $jobId = new JobId($data["job-id"]);
+    if ((string) $jobId !== $config->getJobId()) {
       throw new ResultsLoadingException("Job ID of the configuration and the result do not match.");
     }
 
@@ -76,9 +78,9 @@ class EvaluationResults {
   }
 
   /**
-   * Get 
+   * Get
    * @param string $hardwareGroupId Hardware group
-   * @return TestResult[] 
+   * @return TestResult[]
    */
   public function getTestsResults($hardwareGroupId) {
     return array_map(function($test) use ($hardwareGroupId) {
@@ -88,7 +90,7 @@ class EvaluationResults {
 
   /**
    * @param TestConfig  $test       Configuration of the test
-   * @param string $hardwareGroupId Hardware group 
+   * @param string $hardwareGroupId Hardware group
    * @return TestResult
    */
   public function getTestResult(TestConfig $test, $hardwareGroupId) {

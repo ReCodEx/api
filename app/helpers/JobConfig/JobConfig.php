@@ -100,7 +100,7 @@ class JobConfig {
   public function getTests() {
     $tasksByTests = [];
     foreach ($this->tasks as $task) {
-      $testId = $task->getTestId();
+      $id = $task->getTestId();
       if ($id !== NULL) {
         if (!isset($tasksByTests[$id])) {
           $tasksByTests[$id] = [];
