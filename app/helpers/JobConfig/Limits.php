@@ -118,7 +118,7 @@ class Limits {
   protected $environVariables = [];
 
   /** @var string */
-  protected $chdir = "";
+  protected $chdir = NULL;
 
   /** @var BoundDirectoryConfig[] */
   protected $boundDirectories = [];
@@ -250,7 +250,11 @@ class Limits {
     return $this->environVariables;
   }
 
-  public function getChdir(): string {
+  /**
+   *
+   * @return string|NULL
+   */
+  public function getChdir() {
     return $this->chdir;
   }
 

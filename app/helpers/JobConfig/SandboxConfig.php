@@ -67,6 +67,38 @@ class SandboxConfig {
     $this->data = $data;
   }
 
+  public function getName(): string {
+    return $this->name;
+  }
+
+  /**
+   *
+   * @return string|NULL
+   */
+  public function getStdin() {
+    return $this->stdin;
+  }
+
+  /**
+   *
+   * @return string|NULL
+   */
+  public function getStdout() {
+    return $this->stdout;
+  }
+
+  /**
+   *
+   * @return string|NULL
+   */
+  public function getStderr() {
+    return $this->stderr;
+  }
+
+  public function getLimitsArray(): array {
+    return $this->limits;
+  }
+
   /**
    * Does the task config have limits for given hardware group?
    * @return bool
@@ -83,7 +115,7 @@ class SandboxConfig {
    */
   public function getLimits(string $hardwareGroupId): Limits {
     if (!isset($this->limits[$hardwareGroupId])) {
-      throw new JobConfigLoadingException("Execution task '{$this->getId()}' does not define limits for hardware group '$hardwareGroupId'");
+      throw new JobConfigLoadingException("Sandbox config does not define limits for hardware group '$hardwareGroupId'");
     }
 
     return $this->limits[$hardwareGroupId];
@@ -95,8 +127,8 @@ class SandboxConfig {
    * @param Limits $limits            The limits
    * @return void
    */
-  public function setLimits(string $hardwareGroupId, Limits $limits) {
-    $this->limits[$hardwareGroupId] = $limits;
+  public function setLimits(Limits $limits) {
+    $this->limits[$limits->getId()] = $limits;
   }
 
   /**
@@ -106,15 +138,15 @@ class SandboxConfig {
    * @return void
    */
   public function removeLimits(string $hardwareGroupId) {
-    $this->setLimits($hardwareGroupId, new UndefinedLimits($hardwareGroupId));
+    $this->setLimits(new UndefinedLimits($hardwareGroupId));
   }
 
   public function toArray() {
     $data = $this->data;
     $data[self::NAME_KEY] = $this->name;
-    if ($data[self::STDIN_KEY]) { $data[self::STDIN_KEY] = $this->stdin; }
-    if ($data[self::STDOUT_KEY]) { $data[self::STDOUT_KEY] = $this->stdout; }
-    if ($data[self::STDERR_KEY]) { $data[self::STDERR_KEY] = $this->stderr; }
+    if (!empty($this->stdin)) { $data[self::STDIN_KEY] = $this->stdin; }
+    if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
+    if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
 
     $data[self::LIMITS_KEY] = [];
     foreach ($this->limits as $limit) {
