@@ -45,7 +45,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $assignments = $this->assignments->findAll();
     $user = $this->users->findCurrentUserOrThrow();
     $personalizedData = $assignments->map(
-      function ($assignment) {
+      function ($assignment) use ($user) {
         return $assignment->getJsonData($user);
       }
     );
@@ -82,7 +82,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($groupId);
     $user = $this->users->findCurrentUserOrThrow();
 
-    // test, if the user has privilidges to the given group
+    // test, if the user has privileges to the given group
     if ($group->isSupervisorOf($user) === FALSE) {
       throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
     }
