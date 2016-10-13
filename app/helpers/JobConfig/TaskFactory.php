@@ -8,13 +8,14 @@ use App\Helpers\JobConfig\Tasks\InternalTask;
 
 
 /**
- *
+ * Factory for tasks creation.
  */
 class TaskFactory {
   /**
-   *
-   * @param array $data
-   * @return TaskBase
+   * Based on given datas it constructs internal or external task
+   * and returns it.
+   * @param array $data structured job configuration
+   * @return TaskBase particular task representation
    */
   public static function create(array $data): TaskBase {
     if (isset($data["sandbox"])) {

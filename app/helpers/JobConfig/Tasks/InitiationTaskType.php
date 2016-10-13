@@ -8,10 +8,10 @@ use App\Exceptions\JobConfigLoadingException;
  *
  */
 class InitiationTaskType {
-  /**  */
+  /** Initiation task type value */
   const TASK_TYPE = "initiation";
 
-  /** @var TaskBase */
+  /** @var TaskBase Initiation task */
   private $task;
 
   /**

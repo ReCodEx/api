@@ -9,13 +9,13 @@ use Symfony\Component\Yaml\Yaml;
  *
  */
 class SubmissionHeader {
-  /**  */
+  /** Job identification key */
   const JOB_ID_KEY = "job-id";
-  /**  */
+  /** File collector key */
   const FILE_COLLECTOR_KEY = "file-collector";
-  /**  */
+  /** Language key */
   const LANGUAGE_KEY = "language";
-  /**  */
+  /** Log bit key */
   const LOG_KEY = "log";
 
   /** @var array Additional data */
@@ -167,7 +167,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -180,7 +180,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {

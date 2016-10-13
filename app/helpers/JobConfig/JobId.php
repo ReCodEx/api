@@ -9,9 +9,9 @@ use Symfony\Component\Yaml\Yaml;
  *
  */
 class JobId {
-  /**  */
+  /** Separator used in ID */
   const SEPARATOR = "_";
-  /**  */
+  /** Allowed types which can be used in ID */
   const ALLOWED_TYPES = array("student", "reference");
 
   /** @var string Type of the job */
@@ -96,7 +96,7 @@ class JobId {
   }
 
   /**
-   *
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {

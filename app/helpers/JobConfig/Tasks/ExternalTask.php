@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 class ExternalTask extends TaskBase {
 
-  /**  */
+  /** Sandbox config key */
   const SANDBOX_KEY = "sandbox";
 
   /** @var SandboxConfig */
@@ -42,7 +42,7 @@ class ExternalTask extends TaskBase {
   }
 
   /**
-   * Merge all the data of the parent with all the
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -53,7 +53,7 @@ class ExternalTask extends TaskBase {
   }
 
   /**
-   * Serialize the config
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {

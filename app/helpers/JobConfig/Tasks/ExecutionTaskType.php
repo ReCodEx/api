@@ -9,10 +9,10 @@ use App\Exceptions\JobConfigLoadingException;
  *
  */
 class ExecutionTaskType {
-  /**  */
+  /** Execution task type value */
   const TASK_TYPE = "execution";
 
-  /** @var ExternalTask */
+  /** @var ExternalTask Execution task */
   private $task;
 
   /**

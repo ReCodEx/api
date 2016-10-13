@@ -6,29 +6,29 @@ use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * BoundDirectory helper holder structure.
  */
 class BoundDirectoryConfig {
-  /**  */
+  /** Source folder key */
   const SRC_KEY = "src";
-  /**  */
+  /** Destination folder key */
   const DST_KEY = "dst";
-  /**  */
+  /** Mode key */
   const MODE_KEY = "mode";
 
-  /** @var string */
+  /** @var string Source folder for bound directory */
   private $source;
-  /** @var string */
+  /** @var string Destination folder for bound directory */
   private $destination;
-  /** @var string */
+  /** @var string Mode in which folder is loaded */
   private $mode;
-  /** @var array */
+  /** @var array Additional data */
   private $data;
 
   /**
-   *
-   * @param array $data
-   * @throws JobConfigLoadingException
+   * Construct BoundDirectory from given structured configuration.
+   * @param array $data Structured configuration
+   * @throws JobConfigLoadingException In case of any parsing error
    */
   public function __construct(array $data) {
 
@@ -55,7 +55,7 @@ class BoundDirectoryConfig {
   }
 
   /**
-   *
+   * Get source folder for bound directory.
    * @return string
    */
   public function getSource(): string {
@@ -63,7 +63,7 @@ class BoundDirectoryConfig {
   }
 
   /**
-   *
+   * Get destination folder for source directory.
    * @return string
    */
   public function getDestination(): string {
@@ -71,7 +71,7 @@ class BoundDirectoryConfig {
   }
 
   /**
-   *
+   * Get mounting mode of bounded directory.
    * @return string
    */
   public function getMode(): string {
@@ -79,7 +79,7 @@ class BoundDirectoryConfig {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -91,7 +91,7 @@ class BoundDirectoryConfig {
   }
 
   /**
-   *
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {
@@ -101,65 +101,66 @@ class BoundDirectoryConfig {
 }
 
 /**
- *
+ * Limits helper holder structure which holds every possible information about
+ * limits and keep forward compatibility.
  */
 class Limits {
-  /**  */
+  /** Hardware group identification key */
   const HW_GROUP_ID_KEY = "hw-group-id";
-  /**  */
+  /** Time limit key */
   const TIME_KEY = "time";
-  /**  */
+  /** Wall time limit key */
   const WALL_TIME_KEY = "wall-time";
-  /**  */
+  /** Extra time limit key */
   const EXTRA_TIME_KEY = "extra-time";
-  /**  */
+  /** Stack size limit key */
   const STACK_SIZE_KEY = "stack-size";
-  /**  */
+  /** Memory limit key */
   const MEMORY_KEY = "memory";
-  /**  */
+  /** Parallel executions key */
   const PARALLEL_KEY = "parallel";
-  /**  */
+  /** Disk size key */
   const DISK_SIZE_KEY = "disk-size";
-  /**  */
+  /** Disk files key */
   const DISK_FILES_KEY = "disk-files";
-  /**  */
+  /** Environmental variables key */
   const ENVIRON_KEY = "environ-variable";
-  /**  */
+  /** Change directory key */
   const CHDIR_KEY = "chdir";
-  /**  */
+  /** Bound directories key */
   const BOUND_DIRECTORIES_KEY = "bound-directories";
 
   /** @var string ID of the hardware group */
   protected $id;
   /** @var float Time limit */
   protected $time = 0;
-  /** @var float */
+  /** @var float Wall time limit */
   protected $wallTime = 0;
-  /** @var float */
+  /** @var float Extra time limit */
   protected $extraTime = 0;
-  /** @var int */
+  /** @var int Stack size limit */
   protected $stackSize = 0;
   /** @var int Memory limit */
   protected $memory = 0;
-  /** @var int */
+  /** @var int Parallel processes/threads count limit */
   protected $parallel = 0;
-  /** @var int */
+  /** @var int Disk size limit */
   protected $diskSize = 0;
-  /** @var int */
+  /** @var int Disk files limit */
   protected $diskFiles = 0;
-  /** @var string[] */
+  /** @var string[] Environmental variables array */
   protected $environVariables = [];
-  /** @var string */
+  /** @var string Change directory */
   protected $chdir = NULL;
-  /** @var BoundDirectoryConfig[] */
+  /** @var BoundDirectoryConfig[] Bound directories array */
   protected $boundDirectories = [];
-  /** @var array Raw data */
+  /** @var array Additional data */
   protected $data;
 
   /**
-   *
-   * @param array $data
-   * @throws JobConfigLoadingException
+   * Construct Limits structure from given structured configuration.
+   * @param array $data Structured config
+   * @throws JobConfigLoadingException In case of parsing error
    */
   public function __construct(array $data) {
 
@@ -234,7 +235,7 @@ class Limits {
   }
 
   /**
-   * Hardware group identification
+   * Hardware group identification.
    * @return string
    */
   public function getId(): string {
@@ -242,32 +243,32 @@ class Limits {
   }
 
   /**
-   * Returns the time limit in milliseconds
-   * @return float Number of milliseconds
+   * Returns the time limit in seconds.
+   * @return float Number of seconds
    */
   public function getTimeLimit(): float {
     return $this->time;
   }
 
   /**
-   *
-   * @return float
+   * Returns wall time limit.
+   * @return float Number of seconds
    */
   public function getWallTime(): float {
     return $this->wallTime;
   }
 
   /**
-   *
-   * @return float
+   * Returns extra time limit.
+   * @return float Number of seconds
    */
   public function getExtraTime(): float {
     return $this->extraTime;
   }
 
   /**
-   *
-   * @return int
+   * Get maximum stack size.
+   * @return int Number in kilobytes
    */
   public function getStackSize(): int {
     return $this->stackSize;
@@ -275,38 +276,38 @@ class Limits {
 
   /**
    * Returns the memory limit in bytes
-   * @return int Number of bytes
+   * @return int Number of kilobytes
    */
   public function getMemoryLimit(): int {
     return $this->memory;
   }
 
   /**
-   *
-   * @return int
+   * Gets number of processes/threads which can be created in sandboxed program.
+   * @return int Number of processes/threads
    */
   public function getParallel(): int {
     return $this->parallel;
   }
 
   /**
-   *
-   * @return int
+   * Returns maximum disk IO operations count in kilobytes.
+   * @return int Number in kilobytes
    */
   public function getDiskSize(): int {
     return $this->diskSize;
   }
 
   /**
-   *
-   * @return int
+   * Gets maximum number of opened files in sandboxed application.
+   * @return int Number of files
    */
   public function getDiskFiles(): int {
     return $this->diskFiles;
   }
 
   /**
-   *
+   * Get array of environmental variables which will be set in sandbox.
    * @return array
    */
   public function getEnvironVariables(): array {
@@ -314,7 +315,7 @@ class Limits {
   }
 
   /**
-   *
+   * Get directory in which sandboxed program will be executed.
    * @return string|NULL
    */
   public function getChdir() {
@@ -322,7 +323,8 @@ class Limits {
   }
 
   /**
-   *
+   * Gets array of BoundDirectory structures representing bound directories
+   * inside sandbox.
    * @return array
    */
   public function getBoundDirectories(): array {
@@ -330,7 +332,7 @@ class Limits {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -356,7 +358,7 @@ class Limits {
   }
 
   /**
-   *
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {

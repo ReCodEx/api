@@ -9,15 +9,15 @@ use Symfony\Component\Yaml\Yaml;
  *
  */
 class SandboxConfig {
-  /**  */
+  /** Sandbox name key */
   const NAME_KEY = "name";
-  /**  */
+  /** Stdin config key */
   const STDIN_KEY = "stdin";
-  /**  */
+  /** Stdout config key */
   const STDOUT_KEY = "stdout";
-  /**  */
+  /** Stderr config key */
   const STDERR_KEY = "stderr";
-  /**  */
+  /** Limits collection key */
   const LIMITS_KEY = "limits";
 
   /** @var string */
@@ -158,7 +158,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -177,7 +177,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {
