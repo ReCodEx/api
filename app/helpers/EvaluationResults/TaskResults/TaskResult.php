@@ -3,14 +3,19 @@
 namespace App\Helpers\EvaluationResults;
 use App\Exceptions\ResultsLoadingException;
 
+/**
+ * Common evaluation results for all task types
+ */
 class TaskResult {
-
   const STATUS_OK = "OK";
   const STATUS_FAILED = "FAILED";
   const STATUS_SKIPPED = "SKIPPED";
 
   const MAX_SCORE = 1.0;
   const MIN_SCORE = 0.0;
+
+  const TASK_ID_KEY = "task-id";
+  const STATUS_KEY = "status";
   
   /** @var array Raw data */
   protected $data;
@@ -21,23 +26,26 @@ class TaskResult {
   /** @var string Status of the task */
   private $status;
   
+  /**
+   * Constructor
+   * @param array $data Raw result data
+   */
   public function __construct(array $data) {
     $this->data = $data;
 
-    if (!isset($data["task-id"])) {
-      throw new ResultsLoadingException("Task result does include the required 'task-id' field.");
+    if (!isset($data[self::TASK_ID_KEY])) {
+      throw new ResultsLoadingException("Task result does include the required '" . self::TASK_ID_KEY ."' field.");
     }
+    $this->id = $data[self::TASK_ID_KEY];
 
-    $this->id = $data["task-id"];
-
-    if (!isset($data["status"])) {
-      throw new ResultsLoadingException("Task '{$this->id}' result does include the required 'status' field.");
+    if (!isset($data[self::STATUS_KEY])) {
+      throw new ResultsLoadingException("Task '{$this->id}' result does include the required '" . self::STATUS_KEY . "' field.");
     }
-
-    $this->status = $data["status"];
+    $this->status = $data[self::STATUS_KEY];
   }
 
   /**
+   * Get unique task identifier
    * @return string ID of the task
    */
   public function getId() {
@@ -53,21 +61,24 @@ class TaskResult {
   }
 
   /**
-   * @return boolean The status of the task is 'OK' 
+   * If the status of the task is 'OK'
+   * @return boolean The result  
    */
   public function isOK() {
     return $this->getStatus() === self::STATUS_OK;
   }
 
   /**
-   * @return boolean The status of the task is 'SKIPPED' 
+   * If the status of the task is 'SKIPPED'
+   * @return boolean The result  
    */
   public function isSkipped() {
     return $this->getStatus() === self::STATUS_SKIPPED;
   }
 
   /**
-   * @return boolean The status of the task is 'FAILED' 
+   * If the status of the task is 'FAILED'
+   * @return boolean The result
    */
   public function hasFailed() {
     return $this->getStatus() === self::STATUS_FAILED;
@@ -82,8 +93,9 @@ class TaskResult {
   }
 
   /**
-   * @throws ResultsLoadingException
-   * @return ExecutionTaskResult
+   * Get as specific result for execution tasks
+   * @throws ResultsLoadingException If cast is not possible
+   * @return ExecutionTaskResult The result
    */
   public function getAsExecutionTaskResult() {
     if ($this->isSkipped()) {
@@ -93,8 +105,9 @@ class TaskResult {
   }
 
   /**
-   * @throws ResultsLoadingException
-   * @return EvaluationTaskResult
+   * Get as specific result for evaluation tasks
+   * @throws ResultsLoadingException If cast is not possible
+   * @return EvaluationTaskResult The result
    */
   public function getAsEvaluationTaskResult() {
     if ($this->isSkipped()) {

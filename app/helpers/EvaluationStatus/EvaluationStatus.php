@@ -2,6 +2,9 @@
 
 namespace App\Helpers\EvaluationStatus;
 
+/**
+ * Helper class for manipulation with evaluations 
+ */
 class EvaluationStatus {
 
   const EVALUATION_STATUS_IN_PROGRESS = "work-in-progress";
@@ -9,7 +12,12 @@ class EvaluationStatus {
   const EVALUATION_STATUS_DONE = "done";
   const EVALUATION_STATUS_FAILED = "failed";
   
-  public static function getStatus(IEvaluable $evaluable) {
+  /**
+   * Helper method for converting IEvaluable object to human readable string status
+   * @param IEvaluable $evaluable Object which state will be returned
+   * @return string String representation of given object
+   */
+  public static function getStatus(IEvaluable $evaluable): string {
       if (!$evaluable->canBeEvaluated()) {
         return self::EVALUATION_STATUS_EVALUATION_FAILED;
       } else if (!$evaluable->hasEvaluation()) {

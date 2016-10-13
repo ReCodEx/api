@@ -77,7 +77,7 @@ class TestSkippedTestResult extends Tester\TestCase
     $res = new SkippedTestResult($cfg);
     Assert::equal("some ID", $res->getId());
     Assert::equal(TestResult::STATUS_SKIPPED, $res->getStatus());
-    Assert::equal(NULL, $res->getStats());
+    Assert::equal([], $res->getStats());
     Assert::equal(0.0, $res->getScore());
     Assert::false($res->didExecutionMeetLimits());
     Assert::same(0, $res->getExitCode());

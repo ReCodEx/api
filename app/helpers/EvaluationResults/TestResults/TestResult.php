@@ -4,14 +4,16 @@ namespace App\Helpers\EvaluationResults;
 
 use App\Helpers\JobConfig\TestConfig;
 
+/**
+ * Implementation of test results. In this case, each test can have tasks
+ * of multiple types: zero or many initiation tasks, zero on many execution
+ * tasks and exactly one task of evaluation type.
+ */
 class TestResult implements ITestResult {
 
   const STATUS_OK = "OK";
   const STATUS_FAILED = "FAILED";
   const STATUS_SKIPPED = "SKIPPED";
-
-  const SCORE_MIN = 0.0;
-  const SCORE_MAX = 1.0;
 
   /** @var TestConfig Test configuration */
   private $config;
@@ -31,6 +33,13 @@ class TestResult implements ITestResult {
   /** @var array Stats interpretation for each execution task (indexed by task-id)  */
   private $statsInterpretation;
 
+  /**
+   * Constructor
+   * @param TestConfig            $config           Test configuration (contained tasks grupped by types, limits)
+   * @param array                 $executionResults Results of execution tasks
+   * @param EvaluationTaskResults $evaluationResult Result of the one evaluation task
+   * @param string                $hardwareGroupId  Identifier of hardware group on which was the test evaluated
+   */
   public function __construct(
     TestConfig $config,
     array $executionResults,
@@ -75,7 +84,7 @@ class TestResult implements ITestResult {
 
   /**
    * Get the ID of the test as it was defined in the config
-   * @return string
+   * @return string The ID
    */
   public function getId(): string {
     return $this->config->getId();
@@ -83,13 +92,17 @@ class TestResult implements ITestResult {
 
   /**
    * Get the status of the whole test.
-   * @return string
+   * @return string The status, implementation specific
    */
   public function getStatus(): string {
     return $this->status;
   }
 
-  public function getStats() {
+  /**
+   * Get parsed result statistics for each task
+   * @return array List of results for each task in this test
+   */
+  public function getStats(): array {
     return array_map(
       function ($result) {return $result->getStats(); },
       $this->executionResults
@@ -98,7 +111,7 @@ class TestResult implements ITestResult {
 
   /**
    * Calculates the score for this test.
-   * @return float
+   * @return float The score between SCORE_MIN a SCORE_MAX
    */
   public function getScore(): float {
     if ($this->didExecutionMeetLimits() === FALSE || $this->getStatus() !== self::STATUS_OK) {
@@ -111,7 +124,7 @@ class TestResult implements ITestResult {
 
   /**
    * Checks the configuration agains the actual performace.
-   * @return boolean
+   * @return boolean The result
    */
   public function didExecutionMeetLimits(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
@@ -128,7 +141,7 @@ class TestResult implements ITestResult {
 
   /**
    * Checks if the execution time of all tasks meets the limit
-   * @return boolean
+   * @return boolean The result
    */
   public function isTimeOK(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
@@ -140,8 +153,8 @@ class TestResult implements ITestResult {
   }
 
   /**
-   * Checks if the allocated memory of all tasks meets the limit
-   * @return boolean
+   * Checks if the execution memory of all tasks meets the limit
+   * @return boolean The result
    */
   public function isMemoryOK(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
@@ -153,7 +166,8 @@ class TestResult implements ITestResult {
   }
 
   /**
-   * If all tasks are successful, return 0. If not, return first nonzero code returned.
+   * Get the return code
+   * @return int If all tasks are successful, return 0. If not, return first nonzero code returned.
    */
   public function getExitCode(): int {
     foreach ($this->getStats() as $stat) {
@@ -166,6 +180,7 @@ class TestResult implements ITestResult {
 
   /**
    * Get maximum used memory ratio of all tasks.
+   * @return float The value in [0.0, 1.0]
    */
   public function getUsedMemoryRatio(): float {
     $maxRatio = 0.0;
@@ -178,7 +193,8 @@ class TestResult implements ITestResult {
   }
 
   /**
-   * Used time ratio as sum of ratios of all tasks.
+   * Get maximum used time ratio of all tasks.
+   * @return float The value in [0.0, 1.0]
    */
   public function getUsedTimeRatio(): float {
     $sumRatio = 0.0;
@@ -190,6 +206,7 @@ class TestResult implements ITestResult {
 
   /**
    * Get first nonempty message, if any exists or empty string.
+   * @return string The message
    */
   public function getMessage(): string {
     foreach ($this->getStats() as $stat) {
@@ -202,8 +219,9 @@ class TestResult implements ITestResult {
 
   /**
    * Get judge output.
+   * @return string Standard output of judge binary (evaluation task)
    */
-  public function getJudgeOutput() {
+  public function getJudgeOutput(): string {
     return $this->evaluationResult->getJudgeOutput();
   }
 

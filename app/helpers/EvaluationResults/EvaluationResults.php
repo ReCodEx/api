@@ -9,6 +9,9 @@ use App\Helpers\JobConfig\JobId;
 
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Evaluation results of whole job
+ */
 class EvaluationResults {
   const JOB_ID_KEY = "job-id";
   const RESULTS_KEY = "results";
@@ -26,6 +29,11 @@ class EvaluationResults {
   /** @var bool */
   private $initOK = TRUE;
 
+  /**
+   * Constructor
+   * @param array      $rawResults  Raw results of evaluation from backend (just after basic parsing)
+   * @param JobCOnfig  $config      Configuration of this job
+   */
   public function __construct(array $rawResults, JobConfig $config) {
     if (!isset($rawResults[self::JOB_ID_KEY])) {
       throw new ResultsLoadingException("Job ID is not set in the result.");
@@ -74,7 +82,8 @@ class EvaluationResults {
   }
 
   /**
-   * @return bool Initialisation was OK
+   * Initialisation was OK
+   * @return boolean The result
    */
   public function initOK() {
     return $this->initOK;
@@ -83,7 +92,7 @@ class EvaluationResults {
   /**
    * Get results for all logical tests, one result per test
    * @param string $hardwareGroupId Hardware group
-   * @return TestResult[]
+   * @return TestResult[] Results of all test inside job
    */
   public function getTestsResults($hardwareGroupId) {
     return array_map(function($test) use ($hardwareGroupId) {
@@ -95,7 +104,7 @@ class EvaluationResults {
    * Get (aggregate) result for one test
    * @param TestConfig  $test       Configuration of the test
    * @param string $hardwareGroupId Hardware group
-   * @return TestResult
+   * @return TestResult Results for specified test
    */
   public function getTestResult(TestConfig $test, $hardwareGroupId) {
     if ($this->initOK === FALSE) {
@@ -123,7 +132,7 @@ class EvaluationResults {
   /**
    * Get aggregated results for all execution tasks in test
    * @param TestConfig $test Configuration of the examined test
-   * @return ExecutionTaskResult[]
+   * @return ExecutionTaskResult[] Results for tasks in specified test
    */
   private function getExecutionTasksResult(TestConfig $test) {
     $executionTasks = $test->getExecutionTasks();
@@ -137,14 +146,18 @@ class EvaluationResults {
   /**
    * Get simple results for single evaluation tasks
    * @param TestConfig $test Configuration of the examined test
-   * @return EvaluationTaskResult
+   * @return EvaluationTaskResult Result for evaluation of specified test
    */
   private function getEvaluationTaskResult(TestConfig $test) {
     $id = $test->getEvaluationTask()->getId();
     return $this->tasks[$id]->getAsEvaluationTaskResult();
   }
 
-  public function __toString() {
+  /**
+   * Save raw results to string
+   * @return string Serialized data in YAML format
+   */
+  public function __toString(): string {
     return Yaml::dump($this->rawResults);
   }
 
