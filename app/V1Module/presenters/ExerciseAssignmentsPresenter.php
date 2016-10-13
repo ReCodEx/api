@@ -22,19 +22,34 @@ use App\Model\Repository\UploadedFiles;
  */
 class ExerciseAssignmentsPresenter extends BasePresenter {
 
-  /** @inject @var Exercises */
+  /**
+   * @var Exercises
+   * @inject
+   */
   public $exercises;
 
-  /** @inject @var ExerciseAssignments */
+  /**
+   * @var ExerciseAssignments
+   * @inject
+   */
   public $assignments;
 
-  /** @inject @var Submissions */
+  /**
+   * @var Submissions
+   * @inject
+   */
   public $submissions;
 
-  /** @inject @var UploadedFiles */
+  /**
+   * @inject
+   * @var UploadedFiles
+   */
   public $files;
 
-  /** @inject @var SubmissionHelper */
+  /**
+   * @var SubmissionHelper
+   * @inject
+   */
   public $submissionHelper;
 
   /**
