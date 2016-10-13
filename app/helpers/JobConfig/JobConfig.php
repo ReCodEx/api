@@ -141,18 +141,18 @@ class JobConfig {
   /**
    * Set limits for execution tasks. For given hwgroup set limits of some/all execution tasks.
    * @param string $hwGroupId Hardware group for new limits
-   * @param array $limits Map of test-id (key) and limits as array (value)
+   * @param array $limits Map of task-id (key) and limits as array (value)
    */
   public function setLimits(string $hwGroupId, array $limits) {
     foreach ($this->tasks as $task) {
       if ($task->isExecutionTask()) {
-        if (!array_key_exists($task->getTestId(), $limits)) {
+        if (!array_key_exists($task->getId(), $limits)) {
           continue; // the limits for this task are unchanged
         } else {
           $sandboxConfig = $task->getSandboxConfig();
           $newTaskLimits = array_merge(
             $sandboxConfig->hasLimits($hwGroupId) ? $sandboxConfig->getLimits($hwGroupId)->toArray() : [],
-            $limits[$task->getTestId()]
+            $limits[$task->getId()]
           );
           $task->getSandboxConfig()->setLimits(new Limits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }

@@ -107,17 +107,17 @@ class TestJobConfig extends Tester\TestCase
   }
 
   public function testSetLimits() {
-    $testId = "A";
+    $taskId = "Y";
     $hwGroup = "another";
     $limits = [ "hw-group-id" => $hwGroup, "time" => "987", "memory" => "654" ];
-    $testLimits = [ $testId => $limits ];
+    $testLimits = [ $taskId => $limits ];
 
     $jobConfig = new JobConfig(self::$jobConfig);
     $jobConfig->setLimits($hwGroup, $testLimits);
 
     // test for expected limits which should be set
     foreach ($jobConfig->getTests() as $test) {
-      Assert::equal(new Limits($testLimits[$testId]), $test->getLimits($hwGroup));
+      Assert::equal(new Limits($testLimits[$taskId]), $test->getLimits($hwGroup)[$taskId]);
     }
   }
 

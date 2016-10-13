@@ -193,7 +193,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup)->toArray();
+          return $test->getLimits($hardwareGroup);
         },
         $tests
       )

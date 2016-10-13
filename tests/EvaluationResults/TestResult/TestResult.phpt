@@ -113,16 +113,16 @@ class TestTestResult extends Tester\TestCase
       ]
     );
 
-    $execRes = new ExecutionTaskResult(self::$execRes);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
     $evalRes = new EvaluationTaskResult(self::$evalRes);
 
     $res = new TR($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TR::STATUS_OK, $res->getStatus());
-    Assert::equal($execRes->getStats(), $res->getStats());
+    Assert::equal($execRes[0]->getStats(), $res->getStats()[0]);
     Assert::equal(0.123, $res->getScore());
     Assert::true($res->didExecutionMeetLimits());
-    Assert::same($execRes->getExitCode(), $res->getExitCode());
+    Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/8096.0, $res->getUsedMemoryRatio());
     Assert::same(0.037/1.0, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
@@ -147,7 +147,7 @@ class TestTestResult extends Tester\TestCase
       ]
     );
 
-    $execRes = new ExecutionTaskResult(self::$execRes);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
     $evalRes = new EvaluationTaskResult(self::$evalRes);
 
     $res = new TR($cfg, $execRes, $evalRes, "A");
@@ -155,7 +155,7 @@ class TestTestResult extends Tester\TestCase
     Assert::equal("some ID", $res->getId());
     Assert::equal(TR::STATUS_FAILED, $res->getStatus());
     Assert::equal(0.0, $res->getScore());
-    Assert::same($execRes->getExitCode(), $res->getExitCode());
+    Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/1024.0, $res->getUsedMemoryRatio());
     Assert::same(0.037/0.01, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
@@ -189,7 +189,7 @@ class TestTestResult extends Tester\TestCase
 
       $execRes = new ExecutionTaskResult($execRes);
       $evalRes = new EvaluationTaskResult($evalRes);
-      $res = new TR($cfg, $execRes, $evalRes, "A");
+      $res = new TR($cfg, [ $execRes ], $evalRes, "A");
       Assert::true($res->didExecutionMeetLimits());
       Assert::equal($result, $res->getStatus());
       Assert::equal(0.0, $res->getScore());

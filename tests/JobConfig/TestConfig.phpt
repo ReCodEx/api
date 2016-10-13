@@ -118,8 +118,8 @@ class TestTestResult extends Tester\TestCase
       ]
     );
 
-    Assert::true($cfg->getExecutionTask()->isExecutionTask());
-    Assert::equal("Y", $cfg->getExecutionTask()->getId());
+    Assert::true($cfg->getExecutionTasks()[0]->isExecutionTask());
+    Assert::equal("Y", $cfg->getExecutionTasks()[0]->getId());
     Assert::equal("X", $cfg->getEvaluationTask()->getId());
   }
 
