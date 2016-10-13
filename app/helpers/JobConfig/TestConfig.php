@@ -6,23 +6,29 @@ use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 
+
+/**
+ *
+ */
 class TestConfig {
 
   /** @var string ID of the test */
   private $id;
-
   /** @var array The tasks which define this test */
   private $tasks;
-
   /** @var ExecutionTaskType The task which defines the execution part of the test */
-  private $executionTaskType;
-
+  private $executionTaskType = NULL;
   /** @var EvaluationTaskType The task which defines the evaluation part of the test */
-  private $evaluationTaskType;
-
+  private $evaluationTaskType = NULL;
   /** @var InitiationTaskType The task which defines the initiation part of the test */
-  private $initiationTaskType;
+  private $initiationTaskType = NULL;
 
+  /**
+   *
+   * @param string $id
+   * @param array $tasks
+   * @throws JobConfigLoadingException
+   */
   public function __construct(string $id, array $tasks) {
     $this->id = $id;
     $this->tasks = $tasks;
@@ -43,22 +49,43 @@ class TestConfig {
     }
   }
 
-  public function getId() {
+  /**
+   *
+   * @return string
+   */
+  public function getId(): string {
     return $this->id;
   }
 
-  public function getLimits($hardwareGroupId) {
+  /**
+   *
+   * @param type $hardwareGroupId
+   * @return Limits
+   */
+  public function getLimits($hardwareGroupId): Limits {
     return $this->executionTaskType->getLimits($hardwareGroupId);
   }
 
+  /**
+   *
+   * @return TaskBase|NULL
+   */
   public function getExecutionTask() {
     return $this->executionTaskType->getTask();
   }
 
+  /**
+   *
+   * @return TaskBase|NULL
+   */
   public function getEvaluationTask() {
     return $this->evaluationTaskType->getTask();
   }
 
+  /**
+   *
+   * @return TaskBase|NULL
+   */
   public function getInitiationTask() {
     return $this->initiationTaskType->getTask();
   }

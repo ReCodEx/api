@@ -8,16 +8,19 @@ use App\Helpers\JobConfig\TaskFactory;
 use App\Helpers\JobConfig\SubmissionHeader;
 
 
+/**
+ *
+ */
 class JobConfig {
+  /**  */
   const SUBMISSION_KEY = "submission";
+  /**  */
   const TASKS_KEY = "tasks";
 
   /** @var array Additional top level data */
   private $data;
-
   /** @var SubmissionHeader */
   private $submissionHeader;
-
   /** @var array List of tasks */
   private $tasks = [];
 
@@ -43,10 +46,18 @@ class JobConfig {
     $this->data = $data;
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getId(): string {
     return $this->submissionHeader->getId();
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getType(): string {
     return $this->submissionHeader->getType();
   }
@@ -160,7 +171,11 @@ class JobConfig {
     }
   }
 
-  public function toArray() {
+  /**
+   *
+   * @return array
+   */
+  public function toArray(): array {
     $data = $this->data;
     $data[self::SUBMISSION_KEY] = $this->submissionHeader->toArray();
     $data[self::TASKS_KEY] = array_map(
@@ -168,14 +183,14 @@ class JobConfig {
         return $task->toArray();
       }, $this->tasks
     );
-    return $data; 
+    return $data;
   }
 
   /**
    * Serialize the config
    * @return string
    */
-  public function __toString() {
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 

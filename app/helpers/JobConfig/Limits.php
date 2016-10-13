@@ -4,24 +4,32 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
-class BoundDirectoryConfig {
 
+/**
+ *
+ */
+class BoundDirectoryConfig {
+  /**  */
   const SRC_KEY = "src";
+  /**  */
   const DST_KEY = "dst";
+  /**  */
   const MODE_KEY = "mode";
 
   /** @var string */
   private $source;
-
   /** @var string */
   private $destination;
-
   /** @var string */
   private $mode;
-
   /** @var array */
   private $data;
 
+  /**
+   *
+   * @param array $data
+   * @throws JobConfigLoadingException
+   */
   public function __construct(array $data) {
 
     if (!isset($data[self::SRC_KEY])) {
@@ -46,19 +54,35 @@ class BoundDirectoryConfig {
     $this->data = $data;
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getSource(): string {
     return $this->source;
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getDestination(): string {
     return $this->destination;
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getMode(): string {
     return $this->mode;
   }
 
-  public function toArray() {
+  /**
+   *
+   * @return array
+   */
+  public function toArray(): array {
     $data = $this->data;
     $data[self::SRC_KEY] = $this->source;
     $data[self::DST_KEY] = $this->destination;
@@ -66,66 +90,77 @@ class BoundDirectoryConfig {
     return $data;
   }
 
-  public function __toString() {
+  /**
+   *
+   * @return string
+   */
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 
 }
 
+/**
+ *
+ */
 class Limits {
-
+  /**  */
   const HW_GROUP_ID_KEY = "hw-group-id";
+  /**  */
   const TIME_KEY = "time";
+  /**  */
   const WALL_TIME_KEY = "wall-time";
+  /**  */
   const EXTRA_TIME_KEY = "extra-time";
+  /**  */
   const STACK_SIZE_KEY = "stack-size";
+  /**  */
   const MEMORY_KEY = "memory";
+  /**  */
   const PARALLEL_KEY = "parallel";
+  /**  */
   const DISK_SIZE_KEY = "disk-size";
+  /**  */
   const DISK_FILES_KEY = "disk-files";
+  /**  */
   const ENVIRON_KEY = "environ-variable";
+  /**  */
   const CHDIR_KEY = "chdir";
+  /**  */
   const BOUND_DIRECTORIES_KEY = "bound-directories";
 
   /** @var string ID of the hardware group */
   protected $id;
-
   /** @var float Time limit */
   protected $time = 0;
-
   /** @var float */
   protected $wallTime = 0;
-
   /** @var float */
   protected $extraTime = 0;
-
   /** @var int */
   protected $stackSize = 0;
-
   /** @var int Memory limit */
   protected $memory = 0;
-
   /** @var int */
   protected $parallel = 0;
-
   /** @var int */
   protected $diskSize = 0;
-
   /** @var int */
   protected $diskFiles = 0;
-
   /** @var string[] */
   protected $environVariables = [];
-
   /** @var string */
   protected $chdir = NULL;
-
   /** @var BoundDirectoryConfig[] */
   protected $boundDirectories = [];
-
   /** @var array Raw data */
   protected $data;
 
+  /**
+   *
+   * @param array $data
+   * @throws JobConfigLoadingException
+   */
   public function __construct(array $data) {
 
     if (!isset($data[self::HW_GROUP_ID_KEY])) {
@@ -208,20 +243,32 @@ class Limits {
 
   /**
    * Returns the time limit in milliseconds
-   * @return int Number of milliseconds
+   * @return float Number of milliseconds
    */
   public function getTimeLimit(): float {
     return $this->time;
   }
 
+  /**
+   *
+   * @return float
+   */
   public function getWallTime(): float {
     return $this->wallTime;
   }
 
+  /**
+   *
+   * @return float
+   */
   public function getExtraTime(): float {
     return $this->extraTime;
   }
 
+  /**
+   *
+   * @return int
+   */
   public function getStackSize(): int {
     return $this->stackSize;
   }
@@ -234,18 +281,34 @@ class Limits {
     return $this->memory;
   }
 
+  /**
+   *
+   * @return int
+   */
   public function getParallel(): int {
     return $this->parallel;
   }
 
+  /**
+   *
+   * @return int
+   */
   public function getDiskSize(): int {
     return $this->diskSize;
   }
 
+  /**
+   *
+   * @return int
+   */
   public function getDiskFiles(): int {
     return $this->diskFiles;
   }
 
+  /**
+   *
+   * @return array
+   */
   public function getEnvironVariables(): array {
     return $this->environVariables;
   }
@@ -258,11 +321,19 @@ class Limits {
     return $this->chdir;
   }
 
+  /**
+   *
+   * @return array
+   */
   public function getBoundDirectories(): array {
     return $this->boundDirectories;
   }
 
-  public function toArray() {
+  /**
+   *
+   * @return array
+   */
+  public function toArray(): array {
     $data = $this->data;
     $data[self::HW_GROUP_ID_KEY] = $this->id;
     if ($this->time > 0) { $data[self::TIME_KEY] = $this->time; }
@@ -284,7 +355,11 @@ class Limits {
     return $data;
   }
 
-  public function __toString() {
+  /**
+   *
+   * @return string
+   */
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 

@@ -4,45 +4,55 @@ namespace App\Helpers\JobConfig\Tasks;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
+
+/**
+ *
+ */
 abstract class TaskBase {
 
+  /**  */
   const TASK_ID_KEY = "task-id";
+  /**  */
   const PRIORITY_KEY = "priority";
+  /**  */
   const FATAL_FAILURE_KEY = "fatal-failure";
+  /**  */
   const DEPENDENCIES = "dependencies";
+  /**  */
   const CMD_KEY = "cmd";
+  /**  */
   const CMD_BIN_KEY = "bin";
+  /**  */
   const CMD_ARGS_KEY = "args";
+  /**  */
   const TEST_ID_KEY = "test-id";
+  /**  */
   const TYPE_KEY = "type";
 
   /** @var string Task ID */
   protected $id;
-
   /** @var integer Priority of task, higher number means higher priority */
   protected $priority;
-
   /** @var boolean If true execution of whole job will be stopped on failure */
   protected $fatalFailure;
-
   /** @var array */
   protected $dependencies = [];
-
   /** @var string */
   protected $commandBinary;
-
   /** @var array */
   protected $commandArguments = [];
-
   /** @var string Type of the task */
   protected $type = NULL;
-
   /** @var string ID of the test to which this task corresponds */
   protected $testId = NULL;
-
   /** @var array Additional data */
   protected $data = [];
 
+  /**
+   *
+   * @param array $data
+   * @throws JobConfigLoadingException
+   */
   public function __construct(array $data) {
 
     // *** LOAD MANDATORY ITEMS
@@ -105,47 +115,79 @@ abstract class TaskBase {
    * ID of the task itself
    * @return string
    */
-  public function getId() {
+  public function getId(): string {
     return $this->id;
   }
 
-  public function getPriority() {
+  /**
+   *
+   * @return int
+   */
+  public function getPriority(): int {
     return $this->priority;
   }
 
-  public function getFatalFailure() {
+  /**
+   *
+   * @return bool
+   */
+  public function getFatalFailure(): bool {
     return $this->fatalFailure;
   }
 
-  public function getDependencies() {
+  /**
+   *
+   * @return array
+   */
+  public function getDependencies(): array {
     return $this->dependencies;
   }
 
-  public function getCommandBinary() {
+  /**
+   *
+   * @return string
+   */
+  public function getCommandBinary(): string {
     return $this->commandBinary;
   }
 
-  public function getCommandArguments() {
+  /**
+   *
+   * @return array
+   */
+  public function getCommandArguments(): array {
     return $this->commandArguments;
   }
 
   /**
    * Type of the task
-   * @return string
+   * @return string|NULL
    */
   public function getType() {
     return $this->type;
   }
 
-  public function isInitiationTask() {
+  /**
+   *
+   * @return bool
+   */
+  public function isInitiationTask(): bool {
     return $this->type === InitiationTaskType::TASK_TYPE;
   }
 
-  public function isExecutionTask() {
+  /**
+   *
+   * @return bool
+   */
+  public function isExecutionTask(): bool {
     return $this->type === ExecutionTaskType::TASK_TYPE;
   }
 
-  public function isEvaluationTask() {
+  /**
+   *
+   * @return bool
+   */
+  public function isEvaluationTask(): bool {
     return $this->type === EvaluationTaskType::TASK_TYPE;
   }
 
@@ -157,7 +199,11 @@ abstract class TaskBase {
     return $this->testId;
   }
 
-  public function toArray() {
+  /**
+   *
+   * @return array
+   */
+  public function toArray(): array {
     $data = $this->data;
     $data[self::TASK_ID_KEY] = $this->id;
     $data[self::PRIORITY_KEY] = $this->priority;
@@ -176,7 +222,7 @@ abstract class TaskBase {
    * Serialize the config
    * @return string
    */
-  public function __toString() {
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 }

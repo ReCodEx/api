@@ -5,16 +5,23 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\JobConfigStorageException;
 use App\Helpers\MemoryCache;
-use App\Model\Entity\Submission;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
+
+/**
+ *
+ */
 class Storage {
 
   /** @var MemoryCache */
   private static $cache = NULL;
 
-  protected static function getCache() {
+  /**
+   *
+   * @return MemoryCache
+   */
+  protected static function getCache(): MemoryCache {
     if (self::$cache === NULL) {
       self::$cache = new MemoryCache(NULL);
     }
@@ -23,6 +30,7 @@ class Storage {
   }
 
   /**
+   * 
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
   public static function getJobConfig(string $path): JobConfig {
@@ -66,6 +74,7 @@ class Storage {
   }
 
   /**
+   *
    * @param  string $path     Path of the old config
    * @param  string $prefix  Prefix of the archived file name
    * @return string           New file path
@@ -91,6 +100,7 @@ class Storage {
   }
 
   /**
+   *
    * @throws MalformedJobConfigException
    * @return string YAML config file contents
    */
@@ -109,6 +119,7 @@ class Storage {
   }
 
   /**
+   *
    * @throws MalformedJobConfigException
    * @return array Parsed YAML config
    */
