@@ -82,14 +82,14 @@ class ExerciseAssignment implements JsonSerializable
 
   /**
    *
-   * @return string File path of the 
+   * @return string File path of the
    */
   public function getJobConfigFilePath(): string {
     if (!$this->jobConfigFilePath) {
       return $this->getExercise()->getJobConfigFilePath();
     }
 
-    // @todo: Make dependable on the programming language/technology used by the user 
+    // @todo: Make dependable on the programming language/technology used by the user
     return $this->jobConfigFilePath;
   }
 
@@ -109,7 +109,7 @@ class ExerciseAssignment implements JsonSerializable
   protected $secondDeadline;
 
   public function isAfterDeadline() {
-    return $this->secondDeadline < new \DateTime; 
+    return $this->secondDeadline < new \DateTime;
   }
 
   /**
@@ -164,7 +164,7 @@ class ExerciseAssignment implements JsonSerializable
 
   public function canReceiveSubmissions(User $user = NULL) {
     return $this->isPublic === TRUE &&
-      $this->group->hasValidLicence() && 
+      $this->group->hasValidLicence() &&
       !$this->isAfterDeadline() &&
       ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
   }
@@ -197,8 +197,8 @@ class ExerciseAssignment implements JsonSerializable
       $evaluation = $submission->getEvaluation();
       // keep only solutions, which are marked as valid (both manual and automatic way)
       return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
-    }; 
-    
+    };
+
     return $this->submissions
       ->matching($fromThatUser)
       ->filter($validSubmissions)
@@ -206,7 +206,7 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
-    return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
+    return count($this->getValidSubmissions($user)) >= $this->submissionsCountLimit;
   }
 
   public function getLastSolution(User $user) {
