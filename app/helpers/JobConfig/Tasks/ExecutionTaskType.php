@@ -6,7 +6,7 @@ use App\Exceptions\JobConfigLoadingException;
 
 
 /**
- *
+ * Holder for task which has execution type set.
  */
 class ExecutionTaskType {
   /** Execution task type value */
@@ -16,7 +16,7 @@ class ExecutionTaskType {
   private $task;
 
   /**
-   *
+   * Checks and store execution task.
    * @param TaskBase $task
    * @throws JobConfigLoadingException
    */
@@ -33,7 +33,7 @@ class ExecutionTaskType {
   }
 
   /**
-   *
+   * Get execution task which was given and checked during construction.
    * @return TaskBase
    */
   public function getTask(): TaskBase {
@@ -41,11 +41,12 @@ class ExecutionTaskType {
   }
 
   /**
-   *
-   * @param string $hwGroup
-   * @return Limits
+   * Get limits with given hardware group from internal task.
+   * @param string $hwGroup hardware group identification
+   * @return Limits limits structure
    */
   public function getLimits(string $hwGroup): Limits {
     return $this->task->getSandboxConfig()->getLimits($hwGroup);
   }
+
 }

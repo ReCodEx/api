@@ -6,7 +6,9 @@ use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * Sandbox configuration holder contains mainly name of used sandbox and limits
+ * for specific hardware groups. Limits can be also removed or set
+ * to another ones.
  */
 class SandboxConfig {
   /** Sandbox name key */
@@ -20,23 +22,23 @@ class SandboxConfig {
   /** Limits collection key */
   const LIMITS_KEY = "limits";
 
-  /** @var string */
+  /** @var string Sandbox name */
   private $name;
-  /** @var string */
+  /** @var string Standard input redirection file */
   private $stdin = NULL;
-  /** @var string */
+  /** @var string Standard output redirection file */
   private $stdout = NULL;
-  /** @var string */
+  /** @var string Standard error redirection file */
   private $stderr = NULL;
-  /** @var array */
+  /** @var array List of limits */
   private $limits = [];
-  /** @var array Raw data */
+  /** @var array Additional data */
   private $data;
 
   /**
-   *
-   * @param array $data
-   * @throws JobConfigLoadingException
+   * Creates sandbox config from given structured data.
+   * @param array $data structured config
+   * @throws JobConfigLoadingException In case of parsing error
    */
   public function __construct(array $data) {
     if (!isset($data[self::NAME_KEY])) {
@@ -76,7 +78,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Get sandbox name.
    * @return string
    */
   public function getName(): string {
@@ -84,7 +86,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Return standard input redirection file.
    * @return string|NULL
    */
   public function getStdin() {
@@ -92,7 +94,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Return standard output redirection file.
    * @return string|NULL
    */
   public function getStdout() {
@@ -100,7 +102,7 @@ class SandboxConfig {
   }
 
   /**
-   *
+   * Get standard error redirection file.
    * @return string|NULL
    */
   public function getStderr() {
@@ -108,8 +110,8 @@ class SandboxConfig {
   }
 
   /**
-   *
-   * @return array
+   * Gets limits as array.
+   * @return Limits[]
    */
   public function getLimitsArray(): array {
     return $this->limits;
@@ -148,7 +150,7 @@ class SandboxConfig {
   }
 
   /**
-   * Set limits of a given HW group to infinite, which basically means
+   * Set limits of a given HW group to undefined, which basically means
    * that there are no more limits anymore.
    * @param string $hardwareGroupId   Hardware group ID
    * @return void

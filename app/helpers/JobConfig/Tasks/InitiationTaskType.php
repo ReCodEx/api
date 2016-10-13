@@ -5,7 +5,7 @@ use App\Exceptions\JobConfigLoadingException;
 
 
 /**
- *
+ * Holder for task which has initiation type set.
  */
 class InitiationTaskType {
   /** Initiation task type value */
@@ -15,7 +15,7 @@ class InitiationTaskType {
   private $task;
 
   /**
-   *
+   * Checks and store initiation task.
    * @param TaskBase $task
    * @throws JobConfigLoadingException
    */
@@ -28,10 +28,11 @@ class InitiationTaskType {
   }
 
   /**
-   *
+   * Get initiation task which was given and checked during construction.
    * @return TaskBase
    */
   public function getTask(): TaskBase {
     return $this->task;
   }
+
 }

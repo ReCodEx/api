@@ -9,23 +9,24 @@ use App\Helpers\JobConfig\SubmissionHeader;
 
 
 /**
- *
+ * Stores all possible information about some particular job.
+ * Job datas are parsed from structured configuration given at construction.
  */
 class JobConfig {
-  /**  */
+  /** Submission header key */
   const SUBMISSION_KEY = "submission";
-  /**  */
+  /** Tasks config key */
   const TASKS_KEY = "tasks";
 
   /** @var array Additional top level data */
   private $data;
-  /** @var SubmissionHeader */
+  /** @var SubmissionHeader Holds data about this job submission */
   private $submissionHeader;
   /** @var array List of tasks */
   private $tasks = [];
 
   /**
-   * Job config data structure
+   * Job config data structure creation
    * @param array $data The deserialized data from the config file
    */
   public function __construct(array $data) {
@@ -47,7 +48,7 @@ class JobConfig {
   }
 
   /**
-   *
+   * Get only job identification without type.
    * @return string
    */
   public function getId(): string {
@@ -55,7 +56,7 @@ class JobConfig {
   }
 
   /**
-   *
+   * Get type of this job.
    * @return string
    */
   public function getType(): string {
@@ -140,6 +141,7 @@ class JobConfig {
 
   /**
    * Removes limits for all execution tasks (only specified hwgroup).
+   * @param string $hwGroupId Hardware group identification
    */
   public function removeLimits(string $hwGroupId) {
     foreach ($this->tasks as $task) {
@@ -172,7 +174,7 @@ class JobConfig {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -187,7 +189,7 @@ class JobConfig {
   }
 
   /**
-   * Serialize the config
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {

@@ -2,11 +2,10 @@
 
 namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
-use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * Job identification holder structure.
  */
 class JobId {
   /** Separator used in ID */
@@ -14,13 +13,13 @@ class JobId {
   /** Allowed types which can be used in ID */
   const ALLOWED_TYPES = array("student", "reference");
 
-  /** @var string Type of the job */
+  /** @var string Identification of the job */
   private $id;
   /** @var string Type of the job */
   private $type;
 
   /**
-   *
+   * Check if type of identification is the right one.
    * @param string $type
    * @throws JobConfigLoadingException
    */
@@ -31,7 +30,7 @@ class JobId {
   }
 
   /**
-   *
+   * Create job ID from given textual description.
    * @param string $jobId
    */
   public function __construct(string $jobId) {
@@ -45,9 +44,9 @@ class JobId {
   }
 
   /**
-   *
-   * @param string $type
-   * @param string $id
+   * Set type and identification of a job.
+   * @param string $type Type of a job
+   * @param string $id Identification of a job
    */
   public function setJobId(string $type, string $id) {
     $this->setType($type);
@@ -55,7 +54,7 @@ class JobId {
   }
 
   /**
-   *
+   * Get textual description of type and identification.
    * @return string
    */
   public function getJobId(): string {
@@ -63,7 +62,7 @@ class JobId {
   }
 
   /**
-   *
+   * Get only identification.
    * @return string
    */
   public function getId(): string {
@@ -71,7 +70,7 @@ class JobId {
   }
 
   /**
-   *
+   * Set only identification.
    * @param string $id
    */
   public function setId(string $id) {
@@ -79,7 +78,7 @@ class JobId {
   }
 
   /**
-   *
+   * Get type of job.
    * @return string
    */
   public function getType(): string {
@@ -87,7 +86,7 @@ class JobId {
   }
 
   /**
-   *
+   * Set type of job.
    * @param string $type
    */
   public function setType(string $type) {

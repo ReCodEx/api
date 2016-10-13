@@ -6,7 +6,7 @@ use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * Header which represents and holds information about job submission.
  */
 class SubmissionHeader {
   /** Job identification key */
@@ -30,9 +30,9 @@ class SubmissionHeader {
   private $log = FALSE;
 
   /**
-   *
-   * @param array $data
-   * @throws JobConfigLoadingException
+   * Construct submission header from given structured data.
+   * @param array $data Structured configuration
+   * @throws JobConfigLoadingException In case of any parsing error
    */
   public function __construct(array $data) {
     if (!isset($data[self::JOB_ID_KEY])) {
@@ -62,16 +62,16 @@ class SubmissionHeader {
   }
 
   /**
-   *
-   * @param string $type
-   * @param string $id
+   * Set job identification alogside with its type.
+   * @param string $type type of job
+   * @param string $id identification of job
    */
   public function setJobId(string $type, string $id) {
     $this->jobId->setJobId($type, $id);
   }
 
   /**
-   *
+   * Get textual representation of job identification.
    * @return string
    */
   public function getJobId(): string {
@@ -79,7 +79,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Get job identification without type.
    * @return string
    */
   public function getId(): string {
@@ -87,7 +87,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Set job identification without type.
    * @param string $id
    */
   public function setId(string $id) {
@@ -95,7 +95,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Get job type which is coded into job id.
    * @return string
    */
   public function getType(): string {
@@ -103,7 +103,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Set type of this job.
    * @param string $type
    */
   public function setType(string $type) {
@@ -111,7 +111,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Get fileserver URL.
    * @return string
    */
   public function getFileCollector(): string {
@@ -119,7 +119,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Set fileserver URL.
    * @param string $fileCollector
    */
   public function setFileCollector(string $fileCollector) {
@@ -127,7 +127,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Set language of this job.
    * @param string $language
    */
   public function setLanguage(string $language) {
@@ -135,7 +135,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Gets language of this job.
    * @return string
    */
   public function getLanguage(): string {
@@ -143,7 +143,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Set logging on/off bit.
    * @param bool $log
    */
   public function setLog(bool $log) {
@@ -151,7 +151,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Checks if log is on or off.
    * @return bool
    */
   public function getLog(): bool {
@@ -159,7 +159,7 @@ class SubmissionHeader {
   }
 
   /**
-   *
+   * Get additional data which was not parsed at construction.
    * @return array
    */
   public function getAdditionalData(): array {

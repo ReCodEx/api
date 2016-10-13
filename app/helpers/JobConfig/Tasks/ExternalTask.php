@@ -7,19 +7,20 @@ use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * Extends TaskBase holder and adds/contains mainly sandbox configuration.
+ * Represents tasks which are supposed to run in sandboxed environment.
  */
 class ExternalTask extends TaskBase {
 
   /** Sandbox config key */
   const SANDBOX_KEY = "sandbox";
 
-  /** @var SandboxConfig */
+  /** @var SandboxConfig Sandbox configuration */
   private $sandboxConfig;
 
   /**
-   *
-   * @param array $data
+   * Parse external task from given structured data.
+   * @param array $data structured config
    * @throws JobConfigLoadingException
    */
   public function __construct(array $data) {
@@ -34,7 +35,7 @@ class ExternalTask extends TaskBase {
   }
 
   /**
-   * Get sandbox configuration which will be used for execution
+   * Get sandbox configuration which will be used for execution.
    * @return string Description
    */
   public function getSandboxConfig(): SandboxConfig {

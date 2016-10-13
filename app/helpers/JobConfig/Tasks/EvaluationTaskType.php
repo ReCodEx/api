@@ -5,7 +5,7 @@ use App\Exceptions\JobConfigLoadingException;
 
 
 /**
- *
+ * Holder for task which has evaluation type set.
  */
 class EvaluationTaskType {
   /** Evaluation task type value */
@@ -15,7 +15,7 @@ class EvaluationTaskType {
   private $task;
 
   /**
-   *
+   * Checks and store evaluation task.
    * @param TaskBase $task
    * @throws JobConfigLoadingException
    */
@@ -28,10 +28,11 @@ class EvaluationTaskType {
   }
 
   /**
-   *
+   * Get evaluation task which was given and checked during construction.
    * @return TaskBase
    */
   public function getTask(): TaskBase {
     return $this->task;
   }
+
 }
