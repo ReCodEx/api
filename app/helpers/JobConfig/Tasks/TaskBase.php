@@ -6,27 +6,27 @@ use Symfony\Component\Yaml\Yaml;
 
 
 /**
- *
+ * Abstract base class for internal and external tasks which stores all shared info.
  */
 abstract class TaskBase {
 
-  /**  */
+  /** Config key which represents task identification */
   const TASK_ID_KEY = "task-id";
-  /**  */
+  /** Key representing priority of task */
   const PRIORITY_KEY = "priority";
-  /**  */
+  /** Config key which represents if task has fatal failure bit set */
   const FATAL_FAILURE_KEY = "fatal-failure";
-  /**  */
+  /** Key representing dependencies collection */
   const DEPENDENCIES = "dependencies";
-  /**  */
+  /** Key representing command map */
   const CMD_KEY = "cmd";
-  /**  */
+  /** Command binary key */
   const CMD_BIN_KEY = "bin";
-  /**  */
+  /** Command arguments key */
   const CMD_ARGS_KEY = "args";
-  /**  */
+  /** Test identification key */
   const TEST_ID_KEY = "test-id";
-  /**  */
+  /** Task type key */
   const TYPE_KEY = "type";
 
   /** @var string Task ID */
@@ -35,11 +35,11 @@ abstract class TaskBase {
   protected $priority;
   /** @var boolean If true execution of whole job will be stopped on failure */
   protected $fatalFailure;
-  /** @var array */
+  /** @var array Collection of dependencies */
   protected $dependencies = [];
-  /** @var string */
+  /** @var string Binary which will be executed in this task */
   protected $commandBinary;
-  /** @var array */
+  /** @var array Arguments for execution command */
   protected $commandArguments = [];
   /** @var string Type of the task */
   protected $type = NULL;
@@ -49,9 +49,9 @@ abstract class TaskBase {
   protected $data = [];
 
   /**
-   *
-   * @param array $data
-   * @throws JobConfigLoadingException
+   * Construction which takes structured configuration in form of array.
+   * @param array $data Structured config
+   * @throws JobConfigLoadingException In case of any parsing error
    */
   public function __construct(array $data) {
 
@@ -112,7 +112,7 @@ abstract class TaskBase {
   }
 
   /**
-   * ID of the task itself
+   * ID of the task itself.
    * @return string
    */
   public function getId(): string {
@@ -120,7 +120,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Priority of this task.
    * @return int
    */
   public function getPriority(): int {
@@ -128,7 +128,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Fatal failure bit.
    * @return bool
    */
   public function getFatalFailure(): bool {
@@ -136,7 +136,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Gets array of dependencies.
    * @return array
    */
   public function getDependencies(): array {
@@ -144,7 +144,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Returns command binary.
    * @return string
    */
   public function getCommandBinary(): string {
@@ -152,7 +152,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Gets command arguments.
    * @return array
    */
   public function getCommandArguments(): array {
@@ -168,7 +168,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Check if task has type initiation or not.
    * @return bool
    */
   public function isInitiationTask(): bool {
@@ -176,7 +176,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Check if task is of type execution or not.
    * @return bool
    */
   public function isExecutionTask(): bool {
@@ -184,7 +184,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Checks if task has type evaluation or not.
    * @return bool
    */
   public function isEvaluationTask(): bool {
@@ -192,7 +192,7 @@ abstract class TaskBase {
   }
 
   /**
-   * ID of the test this task belongs to (if any)
+   * ID of the test this task belongs to (if any).
    * @return string|NULL
    */
   public function getTestId() {
@@ -200,7 +200,7 @@ abstract class TaskBase {
   }
 
   /**
-   *
+   * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
@@ -219,7 +219,7 @@ abstract class TaskBase {
   }
 
   /**
-   * Serialize the config
+   * Serialize the config.
    * @return string
    */
   public function __toString(): string {
