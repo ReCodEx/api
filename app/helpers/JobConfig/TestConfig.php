@@ -7,11 +7,14 @@ use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 use App\Helpers\JobConfig\Tasks\TaskBase;
 
+
+/**
+ *
+ */
 class TestConfig {
 
   /** @var string ID of the test */
   private $id;
-
   /** @var array The tasks which define this test */
   private $tasks;
 
@@ -22,8 +25,14 @@ class TestConfig {
   private $executionTaskType = [];
 
   /** @var EvaluationTaskType The task which defines the evaluation part of the test */
-  private $evaluationTaskType;
+  private $evaluationTaskType = NULL;
 
+  /**
+   *
+   * @param string $id
+   * @param array $tasks
+   * @throws JobConfigLoadingException
+   */
   public function __construct(string $id, array $tasks) {
     $this->id = $id;
     $this->tasks = $tasks;
@@ -44,7 +53,11 @@ class TestConfig {
     }
   }
 
-  public function getId() {
+  /**
+   *
+   * @return string
+   */
+  public function getId(): string {
     return $this->id;
   }
 

@@ -4,32 +4,40 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
-class SandboxConfig {
 
+/**
+ *
+ */
+class SandboxConfig {
+  /**  */
   const NAME_KEY = "name";
+  /**  */
   const STDIN_KEY = "stdin";
+  /**  */
   const STDOUT_KEY = "stdout";
+  /**  */
   const STDERR_KEY = "stderr";
+  /**  */
   const LIMITS_KEY = "limits";
 
   /** @var string */
   private $name;
-
   /** @var string */
   private $stdin = NULL;
-
   /** @var string */
   private $stdout = NULL;
-
   /** @var string */
   private $stderr = NULL;
-
   /** @var array */
   private $limits = [];
-
   /** @var array Raw data */
   private $data;
 
+  /**
+   *
+   * @param array $data
+   * @throws JobConfigLoadingException
+   */
   public function __construct(array $data) {
     if (!isset($data[self::NAME_KEY])) {
       throw new JobConfigLoadingException("Sandbox section does not contain required field '" . self::NAME_KEY . "'");
@@ -67,6 +75,10 @@ class SandboxConfig {
     $this->data = $data;
   }
 
+  /**
+   *
+   * @return string
+   */
   public function getName(): string {
     return $this->name;
   }
@@ -95,6 +107,10 @@ class SandboxConfig {
     return $this->stderr;
   }
 
+  /**
+   *
+   * @return array
+   */
   public function getLimitsArray(): array {
     return $this->limits;
   }
@@ -141,7 +157,11 @@ class SandboxConfig {
     $this->setLimits(new UndefinedLimits($hardwareGroupId));
   }
 
-  public function toArray() {
+  /**
+   *
+   * @return array
+   */
+  public function toArray(): array {
     $data = $this->data;
     $data[self::NAME_KEY] = $this->name;
     if (!empty($this->stdin)) { $data[self::STDIN_KEY] = $this->stdin; }
@@ -156,7 +176,11 @@ class SandboxConfig {
     return $data;
   }
 
-  public function __toString() {
+  /**
+   *
+   * @return string
+   */
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 

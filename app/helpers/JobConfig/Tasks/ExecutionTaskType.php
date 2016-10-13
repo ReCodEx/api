@@ -5,12 +5,21 @@ use App\Helpers\JobConfig\Limits;
 use App\Exceptions\JobConfigLoadingException;
 
 
+/**
+ *
+ */
 class ExecutionTaskType {
+  /**  */
   const TASK_TYPE = "execution";
 
   /** @var ExternalTask */
   private $task;
 
+  /**
+   *
+   * @param TaskBase $task
+   * @throws JobConfigLoadingException
+   */
   public function __construct(TaskBase $task) {
     if (!$task->isExecutionTask()) {
       throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
@@ -23,10 +32,19 @@ class ExecutionTaskType {
     $this->task = $task;
   }
 
+  /**
+   *
+   * @return TaskBase
+   */
   public function getTask(): TaskBase {
     return $this->task;
   }
 
+  /**
+   *
+   * @param string $hwGroup
+   * @return Limits
+   */
   public function getLimits(string $hwGroup): Limits {
     return $this->task->getSandboxConfig()->getLimits($hwGroup);
   }

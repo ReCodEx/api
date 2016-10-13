@@ -11,6 +11,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 class ExternalTask extends TaskBase {
 
+  /**  */
   const SANDBOX_KEY = "sandbox";
 
   /** @var SandboxConfig */
@@ -44,7 +45,7 @@ class ExternalTask extends TaskBase {
    * Merge all the data of the parent with all the
    * @return array
    */
-  public function toArray() {
+  public function toArray(): array {
     return array_merge(
       parent::toArray(),
       [ "sandbox" => $this->sandboxConfig->toArray() ]
@@ -55,7 +56,7 @@ class ExternalTask extends TaskBase {
    * Serialize the config
    * @return string
    */
-  public function __toString() {
+  public function __toString(): string {
     return Yaml::dump($this->toArray());
   }
 
