@@ -5,7 +5,9 @@ include '../../bootstrap.php';
 use Tester\Assert;
 
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\TaskConfig;
+use App\Helpers\JobConfig\Tasks\InitiationTaskType;
+use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
+use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\TaskResult;
@@ -19,15 +21,38 @@ class TestEvaluationResults extends Tester\TestCase
 
   static $jobConfig = [
     "submission" => [
-      "job-id" => "ABC_bla bla bla"
+      "job-id" => "student_bla bla bla",
+      "file-collector" => "https://collector",
+      "language" => "cpp"
     ],
     "tasks" => [
-      [ "task-id" => "W", "type" => TaskConfig::TYPE_INITIATION ],
       [
-        "task-id" => "X", "test-id" => "A", "type" => TaskConfig::TYPE_EXECUTION,
-        "sandbox" => [ "name" => "isolate", "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]] ]
+        "task-id" => "W",
+        "priority" => 1,
+        "fatal-failure" => true,
+        "type" => InitiationTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdW" ]
       ],
-      [ "task-id" => "Y", "test-id" => "A", "type" => TaskConfig::TYPE_EVALUATION ]
+      [
+        "task-id" => "X",
+        "priority" => 2,
+        "fatal-failure" => false,
+        "test-id" => "A",
+        "type" => ExecutionTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdX" ],
+        "sandbox" => [
+          "name" => "isolate",
+          "limits" => [[ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]]
+        ]
+      ],
+      [
+        "task-id" => "Y",
+        "priority" => 3,
+        "fatal-failure" => true,
+        "test-id" => "A",
+        "type" => EvaluationTaskType::TASK_TYPE,
+        "cmd" => [ "bin" => "cmdY" ]
+      ]
     ]
   ];
 
@@ -39,25 +64,25 @@ class TestEvaluationResults extends Tester\TestCase
     }, ResultsLoadingException::CLASS);
 
     Assert::exception(function () use ($jobConfig) {
-      new EvaluationResults([ "job-id" => "ABC_ratata" ], $jobConfig);
+      new EvaluationResults([ "job-id" => "student_ratata" ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
-        "job-id" => "ABC_bla bla bla"
+        "job-id" => "student_bla bla bla"
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
-        "job-id" => "ABC_bla bla bla",
+        "job-id" => "student_bla bla bla",
         "results" => NULL
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
     Assert::noError(function () use ($jobConfig) {
       new EvaluationResults([
-        "job-id" => "ABC_bla bla bla",
+        "job-id" => "student_bla bla bla",
         "results" => []
       ], $jobConfig);
     });
@@ -72,7 +97,7 @@ class TestEvaluationResults extends Tester\TestCase
 
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
-        "job-id" => "ABC_bla bla bla",
+        "job-id" => "student_bla bla bla",
         "results" => [ [ "a" => "b" ] ]
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
@@ -81,7 +106,7 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationOK() {
     $jobConfig = new JobConfig(self::$jobConfig);
     $results = new EvaluationResults([
-      "job-id" => "ABC_bla bla bla",
+      "job-id" => "student_bla bla bla",
       "results" => [
         [ "task-id" => "W", "status" => "OK" ],
         [ "task-id" => "X", "status" => "OK" ],
@@ -95,15 +120,29 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfSkippedTask() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "ABC_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => TaskConfig::TYPE_INITIATION ],
-        [ "task-id" => "B", "type" => TaskConfig::TYPE_INITIATION ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([
-      "job-id" => "ABC_bla bla bla",
+      "job-id" => "student_bla bla bla",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ],
         [ "task-id" => "B", "status" => "SKIPPED" ]
@@ -116,15 +155,29 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfFailedTask() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "ABC_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => TaskConfig::TYPE_INITIATION ],
-        [ "task-id" => "B", "type" => TaskConfig::TYPE_INITIATION ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([
-      "job-id" => "ABC_bla bla bla",
+      "job-id" => "student_bla bla bla",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ],
         [ "task-id" => "B", "status" => "FAILED" ]
@@ -137,15 +190,29 @@ class TestEvaluationResults extends Tester\TestCase
   public function testInitialisationFailedBecauseOfMissingTaskInitResult() {
     $jobConfig = new JobConfig([
       "submission" => [
-        "job-id" => "ABC_bla bla bla"
+        "job-id" => "student_bla bla bla",
+        "file-collector" => "https://collector",
+        "language" => "php"
       ],
       "tasks" => [
-        [ "task-id" => "A", "type" => TaskConfig::TYPE_INITIATION ],
-        [ "task-id" => "B", "type" => TaskConfig::TYPE_INITIATION ]
+        [
+          "task-id" => "A",
+          "priority" => 1,
+          "fatal-failure" => true,
+          "cmd" => [ "bin" => "cmdA" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ],
+        [
+          "task-id" => "B",
+          "priority" => 2,
+          "fatal-failure" => false,
+          "cmd" => [ "bin" => "cmdB" ],
+          "type" => InitiationTaskType::TASK_TYPE
+        ]
       ]
     ]);
     $results = new EvaluationResults([
-      "job-id" => "ABC_bla bla bla",
+      "job-id" => "student_bla bla bla",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ]
       ]
@@ -175,7 +242,7 @@ class TestEvaluationResults extends Tester\TestCase
     ];
 
     $evalRes = [ "task-id" => "Y", "status" => "OK", "judge_output" => "0.456" ];
-    $results = new EvaluationResults([ "job-id" => "ABC_bla bla bla", "results" => [ $initRes, $evalRes, $execRes ] ], $jobConfig);
+    $results = new EvaluationResults([ "job-id" => "student_bla bla bla", "results" => [ $initRes, $evalRes, $execRes ] ], $jobConfig);
     $testConfig = $jobConfig->getTests()["A"];
 
     $testResult = $results->getTestResult($testConfig, "A");

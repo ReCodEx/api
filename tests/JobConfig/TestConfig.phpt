@@ -4,22 +4,49 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\TestConfig;
-use App\Helpers\JobConfig\TaskConfig;
-use App\Helpers\JobConfig\ExecutionTaskConfig;
-use App\Helpers\JobConfig\EvaluationTaskConfig;
+use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\ExternalTask;
 use App\Exceptions\JobConfigLoadingException;
+
+
+class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
+class FakeExternalTask extends ExternalTask {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
 
 class TestTestResult extends Tester\TestCase
 {
 
-  static $evaluation = [ "task-id" => "X", "test-id" => "A", "type" => "evaluation" ];
+  static $evaluation = [
+    "task-id" => "X",
+    "test-id" => "A",
+    "type" => "evaluation"
+  ];
   static $execution = [
-    "task-id" => "Y", "test-id" => "A", "type" => "execution",
+    "task-id" => "Y",
+    "test-id" => "A",
+    "type" => "execution",
     "sandbox" => [
-      "name" => "isolate",
-      "limits" => [
-        [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ]
-      ]
+      "name" => "sandboxName",
+      "limits" => []
     ]
   ];
 
@@ -28,10 +55,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          new TaskConfig([ "task-id" => "A" ]),
-          new TaskConfig([ "task-id" => "B" ]),
-          new TaskConfig([ "task-id" => "C" ]),
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "B" ]),
+          new FakeTask([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "D" ])
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -40,10 +67,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          new TaskConfig([ "task-id" => "A" ]),
-          new ExecutionTaskConfig(self::$execution),
-          new TaskConfig([ "task-id" => "C" ]),
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "A" ]),
+          new FakeExternalTask(self::$execution),
+          new FakeTask([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "D" ])
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -52,10 +79,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          new TaskConfig([ "task-id" => "A" ]),
-          new TaskConfig([ "task-id" => "B" ]),
-          new TaskConfig(self::$evaluation),
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "B" ]),
+          new FakeTask(self::$evaluation),
+          new FakeTask([ "task-id" => "D" ])
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -65,11 +92,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-        new TaskConfig([ "task-id" => "A" ]),
-        new ExecutionTaskConfig(self::$execution),
-        new TaskConfig([ "task-id" => "C" ]),
-        new TaskConfig(self::$evaluation),
-        new TaskConfig([ "task-id" => "D" ])
+        new FakeTask([ "task-id" => "A" ]),
+        new FakeExternalTask(self::$execution),
+        new FakeTask([ "task-id" => "C" ]),
+        new FakeTask(self::$evaluation),
+        new FakeTask([ "task-id" => "D" ])
       ]
     );
 
@@ -77,23 +104,22 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testExecutionOrEvaluationTasksAvailability() {
-    $exec = new ExecutionTaskConfig(self::$execution);
-    $eval = new TaskConfig(self::$evaluation);
+    $exec = new FakeExternalTask(self::$execution);
+    $eval = new FakeTask(self::$evaluation);
 
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
-    Assert::type(ExecutionTaskConfig::CLASS, $cfg->getExecutionTask());
-    Assert::equal("Y", $cfg->getExecutionTask()->getId());
-    Assert::equal($exec->getLimits("A"), $cfg->getLimits("A"));
+    Assert::true($cfg->getExecutionTasks()[0]->isExecutionTask());
+    Assert::equal("Y", $cfg->getExecutionTasks()[0]->getId());
     Assert::equal("X", $cfg->getEvaluationTask()->getId());
   }
 

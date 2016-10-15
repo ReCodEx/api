@@ -11,4 +11,4 @@ install:
   - composer install --no-interaction --prefer-source
 
 script:
-  - ./vendor/bin/tester tests 
+  - ./vendor/bin/tester tests

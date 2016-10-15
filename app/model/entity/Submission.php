@@ -26,7 +26,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 {
     use MagicAccessors;
 
-    const JOB_TYPE = "recodex-assignment-solution";
+    const JOB_TYPE = "student"; // TODO: make this changeable
 
     /**
      * @ORM\Id
@@ -112,7 +112,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "id" => $this->id,
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this)
       ];
-      
+
       if ($this->evaluation) {
         $summary = array_merge($summary, [
           "score" => $this->evaluation->getScore(),
@@ -120,7 +120,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
           "bonusPoints" => $this->evaluation->getBonusPoints()
         ]);
       }
-      
+
       return $summary;
     }
 
@@ -156,7 +156,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
      * @param string $hardwareGroup
      * @param array $files
-     * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE) 
+     * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE)
      * @return Submission
      */
     public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files, bool $asynchronous = FALSE) {
@@ -173,7 +173,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       }
 
       if ($assignment->canAccessAsSupervisor($loggedInUser) === FALSE) {
-        if ($assignment->isAfterDeadline() === TRUE) { // supervisors can force-submit even after the deadline 
+        if ($assignment->isAfterDeadline() === TRUE) { // supervisors can force-submit even after the deadline
           throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
         }
 

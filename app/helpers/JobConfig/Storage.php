@@ -5,16 +5,25 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\JobConfigStorageException;
 use App\Helpers\MemoryCache;
-use App\Model\Entity\Submission;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
+
+/**
+ * Storage of job configuration which is designed to load them from
+ * given files, parse configuration and of course save it. MemoryCache is used
+ * for smart caching of loaded configurations.
+ */
 class Storage {
 
-  /** @var MemoryCache */
+  /** @var MemoryCache Run-time memory cache for job configurations */
   private static $cache = NULL;
 
-  protected static function getCache() {
+  /**
+   * Lazy construction of MemoryCache.
+   * @return MemoryCache
+   */
+  protected static function getCache(): MemoryCache {
     if (self::$cache === NULL) {
       self::$cache = new MemoryCache(NULL);
     }
@@ -23,6 +32,8 @@ class Storage {
   }
 
   /**
+   * Try to load configuration from cache if present, if not load it from given
+   * path and parse it info JobConfig structure.
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
   public static function getJobConfig(string $path): JobConfig {
@@ -42,6 +53,7 @@ class Storage {
    * @param  string      $path          Path of the configuration file
    * @param  boolean     $doNotArchive  Whether to archive the file (if there is some existing file)
    * @return string|NULL                Path of the archived configuration file.
+   * @throws JobConfigStorageException In case of any error
    */
   public static function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
     $archivedConfigPath = NULL;
@@ -66,6 +78,7 @@ class Storage {
   }
 
   /**
+   * Archive job config on the given path, file will be moved and renamed.
    * @param  string $path     Path of the old config
    * @param  string $prefix  Prefix of the archived file name
    * @return string           New file path
@@ -91,7 +104,8 @@ class Storage {
   }
 
   /**
-   * @throws MalformedJobConfigException
+   * Load file content from given path and return it.
+   * @throws MalformedJobConfigException In case of file reading error
    * @return string YAML config file contents
    */
   private static function loadConfig(string $path): string {
@@ -109,10 +123,12 @@ class Storage {
   }
 
   /**
-   * @throws MalformedJobConfigException
+   * Parse configuration from given string a create and return new instance
+   * of JobConfig.
+   * @throws MalformedJobConfigException In case of YAML parsing error
    * @return array Parsed YAML config
    */
-  private static function parseJobConfig(string $config): JobConfig {
+  public static function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {

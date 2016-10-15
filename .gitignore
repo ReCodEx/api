@@ -11,3 +11,5 @@ composer.lock
 /nbproject/private/
 /nbproject
 output/
+test.ini
+

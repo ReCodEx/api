@@ -7,10 +7,37 @@ use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
 use App\Helpers\EvaluationResults\TestResult as TR;
 use App\Helpers\EvaluationResults\TaskResult;
-use App\Helpers\JobConfig\ExecutionTaskConfig;
-use App\Helpers\JobConfig\TaskConfig;
+use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\ExternalTask;
+use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
+use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
 use App\Exceptions\ResultsLoadingException;
+
+
+class FakeTask extends TaskBase {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
+
+class FakeExternalTask extends ExternalTask {
+  public function __construct(array $data) {
+    $data["priority"] = 1;
+    $data["fatal-failure"] = true;
+    $data["cmd"] = [];
+    $data["cmd"]["bin"] = "cmd";
+
+    parent::__construct($data);
+  }
+}
+
 
 class TestTestResult extends Tester\TestCase
 {
@@ -18,13 +45,13 @@ class TestTestResult extends Tester\TestCase
   static $evalCfg = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EVALUATION
+    "type" => EvaluationTaskType::TASK_TYPE
   ];
 
   static $execCfg = [
     "task-id" => "Y",
     "test-id" => "A",
-    "type" => TaskConfig::TYPE_EXECUTION,
+    "type" => ExecutionTaskType::TASK_TYPE,
     "sandbox" => [
       "name" => "isolate",
       "limits" => [
@@ -73,29 +100,29 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testOKTest() {
-    $exec = new ExecutionTaskConfig(self::$execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeExternalTask(self::$execCfg);
+    $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
-    $execRes = new ExecutionTaskResult(self::$execRes);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
     $evalRes = new EvaluationTaskResult(self::$evalRes);
 
     $res = new TR($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TR::STATUS_OK, $res->getStatus());
-    Assert::equal($execRes->getStats(), $res->getStats());
+    Assert::equal($execRes[0]->getStats(), $res->getStats()[0]);
     Assert::equal(0.123, $res->getScore());
     Assert::true($res->didExecutionMeetLimits());
-    Assert::same($execRes->getExitCode(), $res->getExitCode());
+    Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/8096.0, $res->getUsedMemoryRatio());
     Assert::same(0.037/1.0, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
@@ -106,21 +133,21 @@ class TestTestResult extends Tester\TestCase
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
     $execCfg["sandbox"]["limits"][0]["time"] = 0.01;
 
-    $exec = new ExecutionTaskConfig($execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeExternalTask($execCfg);
+    $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
-    $execRes = new ExecutionTaskResult(self::$execRes);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
     $evalRes = new EvaluationTaskResult(self::$evalRes);
 
     $res = new TR($cfg, $execRes, $evalRes, "A");
@@ -128,24 +155,24 @@ class TestTestResult extends Tester\TestCase
     Assert::equal("some ID", $res->getId());
     Assert::equal(TR::STATUS_FAILED, $res->getStatus());
     Assert::equal(0.0, $res->getScore());
-    Assert::same($execRes->getExitCode(), $res->getExitCode());
+    Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/1024.0, $res->getUsedMemoryRatio());
     Assert::same(0.037/0.01, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
   }
 
   public function testFailedTestBecauseOfFailedExecution() {
-    $exec = new ExecutionTaskConfig(self::$execCfg);
-    $eval = new TaskConfig(self::$evalCfg);
+    $exec = new FakeExternalTask(self::$execCfg);
+    $eval = new FakeTask(self::$evalCfg);
 
     $cfg = new TestConfig(
       "some ID",
       [
-          new TaskConfig([ "task-id" => "A" ]),
+          new FakeTask([ "task-id" => "A" ]),
           $exec,
-          new TaskConfig([ "task-id" => "C" ]),
+          new FakeTask([ "task-id" => "C" ]),
           $eval,
-          new TaskConfig([ "task-id" => "D" ])
+          new FakeTask([ "task-id" => "D" ])
       ]
     );
 
@@ -162,7 +189,7 @@ class TestTestResult extends Tester\TestCase
 
       $execRes = new ExecutionTaskResult($execRes);
       $evalRes = new EvaluationTaskResult($evalRes);
-      $res = new TR($cfg, $execRes, $evalRes, "A");
+      $res = new TR($cfg, [ $execRes ], $evalRes, "A");
       Assert::true($res->didExecutionMeetLimits());
       Assert::equal($result, $res->getStatus());
       Assert::equal(0.0, $res->getScore());
