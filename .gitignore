@@ -12,4 +12,6 @@ composer.lock
 /nbproject
 output/
 test.ini
+docs/*
+phpDocumentor.phar
 
