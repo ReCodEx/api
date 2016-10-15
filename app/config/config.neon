@@ -50,9 +50,9 @@ parameters:
       lastName: "sn"
 
   emails:
-    url: http://recodex.projekty.ms.mff.cuni.cz
+    url: http://recodex.projekty.ms.mff.cuni.cz:4000
     siteName: "ReCodEx"
-    githubUrl: http://recodex.github.io
+    githubUrl: https://github.com/ReCodEx
 
   failures:
     emails:

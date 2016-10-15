@@ -13,26 +13,47 @@ use Nette\Utils\Validators;
 use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Core\NodeAttribute;
 
-
+/**
+ * Login provider of Charles University, CAS - Centrální autentizační služba UK.
+ * CAS is basically just LDAP database, but it has some specifics. We are not
+ * allowed to have account with sufficient permissions to read password hashes
+ * for other users like normal LDAP login services works. Instead, we have only
+ * anonymous binding which don't allow us to read almost anything. So, user must
+ * login by his UKCO (unique student/staff university number) and we bind into
+ * LDAP by his credentials. If this succeeded, we know the credentials was correct
+ * and we can read his email address and other information to save them into our
+ * database. There is also function to find user by email, but it's not guaranteed
+ * to be unique, so this method may fail (but very unlikely).
+ */
 class CAS implements IExternalLoginService {
 
-  /** @var string */
+  /** @var string Unique identifier of this login service, for example "cas-uk" */
   private $serviceId;
 
+  /**
+   * Gets identifier for this service
+   * @return string Login service unique identifier
+   */
   public function getServiceId(): string { return $this->serviceId; }
 
-  /** @var LdapUserUtils */
+  /** @var LdapUserUtils Ldap utilities for bindings and searching */
   private $ldap;
 
-  /** @var string */
+  /** @var string Name of LDAP field containing user mail address */
   private $emailField;
 
-  /** @var string */
+  /** @var string Name of LDAP field containing user first name */
   private $firstNameField;
 
-  /** @var string */
+  /** @var string Name of LDAP field containing user last name */
   private $lastNameField;
 
+  /**
+   * Constructor
+   * @param string $serviceId      Identifier of this login service, must be unique
+   * @param array  $ldapConnection Parameters for instantiating LdapUserUtils class
+   * @param array  $fields         Name of LDAP fields containing requested metadata (email, first and last name)
+   */
   public function __construct(string $serviceId, array $ldapConnection, array $fields) {
     $this->serviceId = $serviceId;
     $this->ldap = new LdapUserUtils($ldapConnection);
@@ -46,18 +67,19 @@ class CAS implements IExternalLoginService {
   /**
    * Tries to find UKCO for the given email. The ID cannot be determined if there is no
    * person with this email or if there mare multiple people sharing the email.
-   * @param  string $email [description]
+   * @param  string $email Email address of user, whose UKCO is requested
    * @return string|NULL
    */
   public function getUKCO(string $email) {
-    return $this->ldap->findUserByMail($email, $this->objectClass, $this->emailField);
+    return $this->ldap->findUserByMail($email, $this->emailField);
   }
 
   /**
    * Read user's data from the CAS UK, if the credentials provided by the user are correct.
    * @param  string $username Email or identification number of the person
    * @param  string $password User's password
-   * @return UserData
+   * @return UserData Information known about this user
+   * @throws WrongCredentialsException when login is not successfull
    */
   public function getUser(string $username, string $password): UserData {
     $ukco = $username;
@@ -77,7 +99,7 @@ class CAS implements IExternalLoginService {
   }
 
   /**
-   * Get value of an attribute.
+   * Get value of an LDAP attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value
    * @throws CASMissingInfoException  If attribute is invalid (empty or NULL)
