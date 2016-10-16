@@ -106,6 +106,8 @@ services:
   - Nette\Mail\SmtpMailer(%mail%)
   - class: App\Console\DoctrineFixtures
     tags: [kdyby.console.command]
+  - class: App\Console\GenerateSwagger
+    tags: [kdyby.console.command]
 
   # external login services
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
