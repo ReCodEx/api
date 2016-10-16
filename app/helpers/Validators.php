@@ -4,8 +4,14 @@ namespace App\Helpers;
 
 use Nette\Utils;
 
+/**
+ * Custom validators extension
+ */
 class Validators extends Utils\Validators {
   
+  /**
+   * Registering new validating functions
+   */
   public static function init() {
     static::$validators['datetime'] = [__CLASS__, 'isDateTime'];
   }
@@ -13,7 +19,7 @@ class Validators extends Utils\Validators {
   /**
    * Datetime validation
    * @param  DateTime  $value
-   * @return boolean
+   * @return bool TRUE if $value is instance of DateTime class
    */
   public static function isDateTime($value) {
     return $value instanceof \DateTime;

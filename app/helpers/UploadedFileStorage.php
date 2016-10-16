@@ -9,17 +9,26 @@ use Nette\Http\FileUpload;
 
 /**
  * Stores uploaded files in a configured directory
- * @package App\Model
  */
 class UploadedFileStorage extends Nette\Object {
 
-  /** @var string */
+  /** @var string Target directory, where the files will be stored */
   private $uploadDir;
 
+  /**
+   * Constructor
+   * @param string $uploadDir Target storage directory
+   */
   public function __construct(string $uploadDir) {
     $this->uploadDir = $uploadDir;
   }
 
+  /**
+   * Save the file into storage
+   * @param FileUpload $file The file to be stored
+   * @param User       $user User, who uploaded the file
+   * @return UploadedFile|NULL If the operation is not successful, NULL is returned 
+   */
   public function store(FileUpload $file, User $user) {
     if (!$file->isOk()) {
       return NULL;
@@ -43,7 +52,13 @@ class UploadedFileStorage extends Nette\Object {
     return $uploadedFile;
   }
 
-  protected function getFilePath($userId, FileUpload $file) {
+  /**
+   * For given user ID and file, get the path, where the file will be stored
+   * @param string     $userId User's identifier
+   * @param FileUpload $file   File to be stored
+   * @return string Path, where the newly stored file will be saved (including configured uploadDir)
+   */
+  protected function getFilePath($userId, FileUpload $file): string {
     $fileName = pathinfo($file->getSanitizedName(), PATHINFO_FILENAME);
     $ext = pathinfo($file->getSanitizedName(), PATHINFO_EXTENSION);
     $uniqueId = uniqid();

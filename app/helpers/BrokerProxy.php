@@ -15,27 +15,30 @@ use ZMQSocketException;
 use Nette\Utils\Arrays;
 
 /**
- * @author  Šimon Rozsíval <simon@rozsival.com>
+ * Helper class for handling connection with broker over ZeroMQ communication channel.
  */
 class BrokerProxy {
 
   const EXPECTED_RESULT = "accept";
   const EXPECTED_ACK = "ack";
 
-  /** @var string */
+  /** @var string IP address or hostname (with port) of ReCodEx broker */
   private $brokerAddress;
 
-  /** @var int */
+  /** @var int Time limit (milliseconds) how long to wait for broker accept message after submitting new job */
   private $ackTimeout;
 
-  /** @var int */
+  /** @var int Time limit (milliseconds) how long to try sending new job to the broker */
   private $sendTimeout;
 
-  /** @var int */
+  /** @var int Time limit (milliseconds) how long to wait for final broker message if the job can be processed or not */
   private $resultTimeout;
 
-
-  public function __construct($config) {
+  /**
+   * Constructor
+   * @param array $config Array with data about broker address and all timeouts
+   */
+  public function __construct(array $config) {
     $this->brokerAddress = Arrays::get($config, 'address');
     $this->ackTimeout = intval(Arrays::get($config, ['timeouts', 'ack'], 100));
     $this->sendTimeout = intval(Arrays::get($config, ['timeouts', 'send'], 5000));
@@ -43,15 +46,16 @@ class BrokerProxy {
   }
 
   /**
-   * @param $jobId
-   * @param $archiveRemotePath
-   * @param $resultRemotePath
+   * Start evaluation of new job. This means sending proper message to broker that we want this new
+   * job to be evaluated, receive confirmation that the message was successfuly received and finally
+   * receive confirmation if the evaluation can be processed or not (for example if there is worker
+   * for that hwgroup available). 
+   * @param string $jobId Unique identifier of the new job
+   * @param string $hardwareGroup Hardware group of this submission
+   * @param string $archiveRemotePath URL of the archive with source codes and job evaluation configuration
+   * @param string $resultRemotePath URL where to store resulting archive of whole evaluation
    * @return bool Evaluation has been started on remote server when returns TRUE.
-   * @throws SubmissionFailedException
-   * @internal param $string
-   * @internal param $string
-   * @internal param $string
-   * @internal param $string
+   * @throws SubmissionFailedException on any error
    */
   public function startEvaluation(string $jobId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
@@ -110,11 +114,11 @@ class BrokerProxy {
 
   /**
    * Wait until given socket can be read from
-   * @param $poll Polling helper structure
-   * @param $queue The socket for which we want to wait
-   * @param $timeout Time limit in milliseconds
+   * @param ZMQPoll $poll Polling helper structure
+   * @param ZMQSocket $queue The socket for which we want to wait
+   * @param int $timeout Time limit in milliseconds
    */
-  private function pollRead(ZMQPoll $poll, ZMQSocket $queue, $timeout) {
+  private function pollRead(ZMQPoll $poll, ZMQSocket $queue, int $timeout) {
     $readable = [];
     $writable = [];
 
