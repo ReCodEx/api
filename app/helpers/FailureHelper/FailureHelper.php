@@ -6,6 +6,8 @@ use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Utils\Arrays;
 use Latte;
+use Kdyby\Doctrine\EntityManager;
+use App\Model\Entity\ReportedErrors;
 
 /**
  * Sending error reports to administrator by email.
@@ -27,12 +29,17 @@ class FailureHelper {
   /** @var string Prefix of mail subject to be used */
   private $subjectPrefix;
 
+  /** @var EntityManager Database entity manager */
+  private $em;
+
   /**
    * Constructor
-   * @param EmailHelper $emailHelper Instance of object which is able to sending mails
-   * @param array       $params      Array of configurable options like destination addresses etc.
+   * @param EntityManager $em          Database entity manager
+   * @param EmailHelper   $emailHelper Instance of object which is able to sending mails
+   * @param array         $params      Array of configurable options like destination addresses etc.
    */
-  public function __construct(EmailHelper $emailHelper, array $params) {
+  public function __construct(EntityManager $em, EmailHelper $emailHelper, array $params) {
+    $this->em = $em;
     $this->emailHelper = $emailHelper;
     $this->receivers = Arrays::get($params, ["emails", "to"], [ "admin@recodex.org" ]);
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.org");
@@ -49,12 +56,19 @@ class FailureHelper {
    * @param string $message Text of the error message
    */
   public function report(string $type, string $message) {
-    // @todo: Save the report to the database
+    $subject = $this->formatSubject($type);
+    $recipients = implode(",", $this->receivers);
 
+    // Save the report to the database
+    $entry = new ReportedErrors($type, $recipients, $subject, $message);
+    $this->em->persist($entry);
+    $this->em->flush();
+
+    // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       $this->receivers,
-      $this->formatSubject($type),
+      $subject,
       $this->formatBody($message)
     );
   }
@@ -65,7 +79,7 @@ class FailureHelper {
    * @return string Mail subject for this type of error
    */
   private function formatSubject(string $type): string {
-    return $type; // @todo
+    return $this->subjectPrefix . $type;
   }
 
   /**

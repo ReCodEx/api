@@ -50,7 +50,8 @@ parameters:
       lastName: "sn"
 
   emails:
-    url: http://recodex.projekty.ms.mff.cuni.cz:4000
+    apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
+    footerUrl: https://recodex.projekty.ms.mff.cuni.cz
     siteName: "ReCodEx"
     githubUrl: https://github.com/ReCodEx
 
@@ -103,7 +104,7 @@ services:
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
-  - App\Helpers\FailureHelper(@App\Helpers\EmailHelper, %failures%)
+  - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
   - App\Helpers\SubmissionHelper

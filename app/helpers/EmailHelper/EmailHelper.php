@@ -18,7 +18,10 @@ class EmailHelper {
   private $mailer;
 
   /** @var string Url of api instance */
-  private $url;
+  private $apiUrl;
+
+  /** @var string Url which will be mentioned in mail footer */
+  private $footerUrl;
 
   /** @var string Name of the frontend interface, defaults to "ReCodEx" */
   private $siteName;
@@ -33,7 +36,8 @@ class EmailHelper {
    */
   public function __construct(IMailer $mailer, array $params) {
     $this->mailer = $mailer;
-    $this->url = Arrays::get($params, "url", "https://recodex.projekty.ms.mff.cuni.cz:4000");
+    $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.projekty.ms.mff.cuni.cz:4000");
+    $this->footerUrl = Arrays::get($params, "footerUrl", "https://recodex.projekty.ms.mff.cuni.cz");
     $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
     $this->githubUrl = Arrays::get($params, "githubUrl", "https://github.com/ReCodEx");
   }
@@ -52,7 +56,8 @@ class EmailHelper {
     $params = [
       "subject"   => $subject,
       "message"   => $text,
-      "url"       => $this->url,
+      "apiUrl"    => $this->apiUrl,
+      "footerUrl" => $this->footerUrl,
       "siteName"  => $this->siteName,
       "githubUrl" => $this->githubUrl
     ];
