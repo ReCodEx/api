@@ -1,10 +1,19 @@
 <?php
 
 namespace App\Exceptions;
+
 use Nette\Http\IResponse;
 
+/**
+ * Nice and easy purpose this exception trully has, sending wrong credentials
+ * alerts to misguided users it must.
+ */
 class WrongCredentialsException extends ApiException {
-  public function __construct($msg = "The username or password is incorrect.") {
+  /**
+   * Creates instance with optional further description.
+   * @param string $msg description
+   */
+  public function __construct(string $msg = "The username or password is incorrect.") {
     parent::__construct($msg, IResponse::S401_UNAUTHORIZED);
   }
 

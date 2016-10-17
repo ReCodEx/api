@@ -6,14 +6,16 @@ use App\Exceptions\HttpBasicAuthException;
 use Nette\Http\Request;
 use Nette\Utils\Strings;
 
+/**
+ * Handle HTTP Basic Auth headers.
+ */
 class BasicAuthHelper {
 
   /**
-   * Extracts the username and password from the Authorization header of the HTTP request
-   * according to the  
+   * Extracts the username and password from the Authorization header of the HTTP request.
    * @param Request $req    HTTP request
    * @return array          Username and password
-   * @throws App\Exceptions\BadRequestException
+   * @throws HttpBasicAuthException if Authorization header is not present or is corrupted
    */
   public static function getCredentials(Request $req) {
     $auth = $req->getHeader("Authorization", NULL);

@@ -2,9 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 
@@ -22,19 +20,34 @@ use App\Model\Repository\UploadedFiles;
  */
 class ExerciseAssignmentsPresenter extends BasePresenter {
 
-  /** @inject @var Exercises */
+  /**
+   * @var Exercises
+   * @inject
+   */
   public $exercises;
 
-  /** @inject @var ExerciseAssignments */
+  /**
+   * @var ExerciseAssignments
+   * @inject
+   */
   public $assignments;
 
-  /** @inject @var Submissions */
+  /**
+   * @var Submissions
+   * @inject
+   */
   public $submissions;
 
-  /** @inject @var UploadedFiles */
+  /**
+   * @inject
+   * @var UploadedFiles
+   */
   public $files;
 
-  /** @inject @var SubmissionHelper */
+  /**
+   * @var SubmissionHelper
+   * @inject
+   */
   public $submissionHelper;
 
   /**
@@ -44,8 +57,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
     $user = $this->users->findCurrentUserOrThrow();
-    $personalizedData = $assignments->map(
-      function ($assignment) {
+    $personalizedData = $assignments->map( // TODO: map function does not exist on array
+      function ($assignment) use ($user) {
         return $assignment->getJsonData($user);
       }
     );
@@ -79,10 +92,10 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $groupId = $req->getPost("groupId");
 
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $group = $this->groups->findOrThrow($groupId);
+    $group = $this->groups->findOrThrow($groupId); // TODO: $this->groups property does not exist
     $user = $this->users->findCurrentUserOrThrow();
 
-    // test, if the user has privilidges to the given group
+    // test, if the user has privileges to the given group
     if ($group->isSupervisorOf($user) === FALSE) {
       throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
     }
@@ -99,6 +112,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="submit")
    */
   public function actionCanSubmit(string $id) {
+    // TODO: Really do not know what this method should do, but I got following error after calling
+    // TODO: Return value of App\Model\Entity\Submission::getEvaluation() must be an instance of App\Model\Entity\SolutionEvaluation, null returned
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 
@@ -193,7 +208,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup)->toArray();
+          return $test->getLimits($hardwareGroup);
         },
         $tests
       )
@@ -216,11 +231,11 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath();
     $jobConfig = JobConfig\Storage::getJobConfig($path);
-    $newJobConfig = $jobConfig->cloneWithNewLimits($hardwareGroup, $limits);
+    $jobConfig->setLimits($hardwareGroup, $limits);
 
     // save the new & archive the old config
-    JobConfig\Storage::saveJobConfig($newJobConfig, $path);
+    JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($newJobConfig->toArray());
+    $this->sendSuccessResponse($jobConfig->toArray());
   }
 }

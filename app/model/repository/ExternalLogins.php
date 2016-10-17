@@ -7,7 +7,6 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
-use App\Helpers\ExternalLogin\UserData;
 
 class ExternalLogins extends BaseRepository {
 

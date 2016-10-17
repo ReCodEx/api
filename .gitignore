@@ -11,3 +11,7 @@ composer.lock
 /nbproject/private/
 /nbproject
 output/
+test.ini
+docs/*
+phpDocumentor.phar
+

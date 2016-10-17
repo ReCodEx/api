@@ -15,7 +15,11 @@ use App\Exceptions\LdapConnectException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
 
-
+/**
+ * Utilities for LDAP communication. This tries to be more general, but some methods may
+ * be a little prepared for usage in cooperation with CAS authentication system of Charles
+ * University.
+ */
 class LdapUserUtils {
 
   const ERROR_TOO_MANY_UNSUCCESSFUL_TRIES = 19;
@@ -24,13 +28,14 @@ class LdapUserUtils {
   const ERROR_NO_SUCH_OBJECT = 32;
 
   /**
+   * @var array
    * Configuration for initial connection to LDAP server. Requires
    * 'hostname' and 'base_dn', optionally 'port' and 'security'. For
    * more info see https://github.com/mrdm-nl/ldap.
    */
   private $ldapConfig;
 
-  /** @var string */
+  /** @var string LDAP's base_dn field */
   private $baseDn;
 
   /** @var string Name of userId element (such as cn or cunipersonalid) */
@@ -39,6 +44,11 @@ class LdapUserUtils {
   /** @var Manager Anonymous LDAP connection for searching */
   private $anonymousManager;
 
+  /**
+   * Constructor with initialization of config and anonymous connection to LDAP
+   * @param array $config LDAP configuration
+   * @throws LdapConnectException if anonymous connection fails
+   */
   public function __construct(array $config) {
     $this->ldapConfig = [
       'hostname' => Arrays::get($config, 'hostname', NULL),
@@ -81,7 +91,7 @@ class LdapUserUtils {
       $code = self::getErrorCode($e->getMessage());
       switch ($code) {
         case self::ERROR_INAPPROPRIATE_AUTHENTICATION:
-          throw new WrongCredentialsException("This CAS account cannot be used for authentication to ReCodEx. The password is probably not verified.");
+          throw new WrongCredentialsException("This account cannot be used for authentication to ReCodEx. The password is probably not verified.");
 
         case self::ERROR_WRONG_CREDENTIALS:  // wrong password
           throw new WrongCredentialsException;
@@ -100,6 +110,12 @@ class LdapUserUtils {
     return $manager->getNode($bindString);
   }
 
+  /**
+   * Find unique user identifier for email supplied (anonymous finding).
+   * @param string $mail      Email address to be searched
+   * @param string $mailField LDAP email field, defaults to 'mail'
+   * @return string|NULL Unique user ID or NULL
+   */
   public function findUserByMail(string $mail, string $mailField = 'mail') {
     $results = $this->anonymousManager->search(
       $this->baseDn,
@@ -116,10 +132,20 @@ class LdapUserUtils {
     return self::getPersonalId($dn);
   }
 
-  public function getBindString($userId) {
+  /**
+   * Return binding string to LDAP for given user identifier
+   * @param string $userId User identifier
+   * @return string LDAP binding string
+   */
+  public function getBindString(string $userId): string {
     return "{$this->bindName}={$userId},{$this->baseDn}";
   }
 
+  /**
+   * Connecting to LDAP
+   * @return Connected LDAP manager instance
+   * @throws LdapConnectException on error
+   */
   private function connect() {
     try {
       $manager = new Manager($this->ldapConfig, new Driver());
@@ -139,7 +165,7 @@ class LdapUserUtils {
   /**
    * Extract the code of the error from the message.
    * @param  string $msg The error messate
-   * @return int
+   * @return int The code
    */
   public static function getErrorCode(string $msg): int {
     list($code) = Strings::match($msg, "/-?\d+/");

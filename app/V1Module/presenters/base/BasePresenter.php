@@ -27,16 +27,28 @@ use Nette\Utils\Arrays;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
   
-  /** @inject @var Users */
+  /**
+   * @var Users
+   * @inject
+   */
   public $users;
 
-  /** @inject @var AccessManager */
+  /**
+   * @var AccessManager
+   * @inject
+   */
   public $accessManager;
 
-  /** @inject @var Authorizator */
+  /**
+   * @var Authorizator
+   * @inject
+   */
   public $authorizator;
  
-  /** @inject @var Application */
+  /**
+   * @var Application
+   * @inject
+   */
   public $application;
 
   /** @var object Processed parameters from annotations */

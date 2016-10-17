@@ -3,9 +3,12 @@
 namespace App\Exceptions;
 use Nette\Http\IResponse;
 
+/**
+ * Used when JWT decoding of given access token failed misserably.
+ */
 class InvalidAccessTokenException extends ApiException {
-
   /**
+   * Creates instance with invalid token as argument
    * @param string $token   Access token from the HTTP request
    */
   public function __construct($token) {

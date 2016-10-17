@@ -4,23 +4,35 @@ namespace App\Helpers;
 
 use App\Helpers\JobConfig\JobConfig;
 
+/**
+ * Easy submit new job to the backend. This means prepare the archive, upload it to the
+ * fileserver and then tell broker to evaluate the submission.
+ */
 class SubmissionHelper {
 
-  /** @var BrokerProxy */
+  /** @var BrokerProxy Communication with broker */
   private $broker;
 
-  /** @var FileServerProxy */
+  /** @var FileServerProxy Communication with fileserver */
   private $fileServer;
 
+  /**
+   * Constructor
+   * @param BrokerProxy     $bp  Initialized communication wrapper with broker
+   * @param FileServerProxy $fsp Initialized communication wrapper with fileserver
+   */
   public function __construct(BrokerProxy $bp, FileServerProxy $fsp) {
     $this->broker = $bp;
     $this->fileServer = $fsp;
   }
 
   /**
-   * Uploads the files to the file server and initiates evaluation on backend.
-   * @param JobConfig  The submission to evaluate
-   * @return bool       True when the submission was accepted by the evaluation server, otherwise false.
+   * Upload the files to the fileserver and initiates evaluation on backend
+   * @param JobConfig $jobConfig     The submission configuration file content
+   * @param array     $files         Paths to submitted files
+   * @param string    $hardwareGroup Harware group to evaluate this submission with
+   * @return string|NULL  URL of the results when the submission was accepted and evaluation started, otherwise NULL
+   * @throws SubmissionFailedException if the job cannot be submitted
    */
   public function initiateEvaluation(JobConfig $jobConfig, array $files, string $hardwareGroup) {
     // firstly let us set address of fileserver to job configuration

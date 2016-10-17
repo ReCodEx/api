@@ -1,0 +1,1 @@
+phpdoc -d app -t docs --template="responsive-twig" $*

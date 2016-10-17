@@ -33,8 +33,11 @@ class ExercisesPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(exercises="view-all")
    */
-  public function actionDefault() {
-    $exercises = $this->exercises->findAll();
+  public function actionDefault(string $search = NULL) {
+    $exercises = $search === NULL
+      ? $this->exercises->findAll()
+      : $this->exercises->searchByNameOrId($search);
+
     $this->sendSuccessResponse($exercises);
   }
 
@@ -45,15 +48,6 @@ class ExercisesPresenter extends BasePresenter {
   public function actionDetail(string $id) {
     $exercise = $this->findExerciseOrThrow($id);
     $this->sendSuccessResponse($exercise);
-  }
-
-  /**
-   * @GET
-   * @UserIsAllowed(exercises="view-all")
-   */
-  public function actionSearch(string $search) {
-    $result = $this->exercises->searchByNameOrId($search);
-    $this->sendSuccessResponse($result);
   }
 
 }
