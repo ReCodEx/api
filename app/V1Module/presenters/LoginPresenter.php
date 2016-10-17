@@ -41,7 +41,7 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
-   * @GET
+   * @POST
    */
   public function actionDefault($username, $password) {
     $user = $this->logins->getUser($username, $password);
@@ -49,7 +49,7 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
-   * @GET
+   * @POST
    */
   public function actionExternal($serviceId, $username, $password) {
     $authService = $this->getAuthService($serviceId);
