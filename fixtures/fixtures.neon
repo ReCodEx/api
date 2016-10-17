@@ -203,6 +203,16 @@ App\Model\Entity\Permission:
     "resource": @assignments
     "action": "set-limits"
     "isAllowed": 1
+  "supervisor-assignments-create":
+    "role": @supervisor
+    "resource": @assignments
+    "action": "create"
+    "isAllowed": 1
+  "supervisor-assignments-remove":
+    "role": @supervisor
+    "resource": @assignments
+    "action": "remove"
+    "isAllowed": 1
   "supervisor-groups-view-all":
     "role": @supervisor
     "resource": @groups

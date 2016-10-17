@@ -14,6 +14,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\Groups;
 
 /**
  * @LoggedIn
@@ -39,10 +40,16 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public $submissions;
 
   /**
-   * @inject
    * @var UploadedFiles
+   * @inject
    */
   public $files;
+
+  /**
+   * @var Groups
+   * @inject
+   */
+  public $groups; 
 
   /**
    * @var SubmissionHelper
@@ -56,13 +63,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $user = $this->users->findCurrentUserOrThrow();
-    $personalizedData = $assignments->map( // TODO: map function does not exist on array
-      function ($assignment) use ($user) {
-        return $assignment->getJsonData($user);
-      }
-    );
-    $this->sendSuccessResponse($personalizedData);
+    $this->sendSuccessResponse($assignments);
   }
 
   /**
@@ -82,7 +83,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * @GET
+   * @POST
+   * @UserIsAllowed(assignments="create")
    * @Param(type="post", name="exerciseId")
    * @Param(type="post", name="groupId")
    */
@@ -92,7 +94,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $groupId = $req->getPost("groupId");
 
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $group = $this->groups->findOrThrow($groupId); // TODO: $this->groups property does not exist
+    $group = $this->groups->findOrThrow($groupId);
     $user = $this->users->findCurrentUserOrThrow();
 
     // test, if the user has privileges to the given group
@@ -108,12 +110,27 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * @DELETE
+   * @UserIsAllowed(assignments="remove")
+   */
+  public function actionRemove(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    if (!$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("Only supervisors of the group can remove assigned exercises.");
+    }
+
+    $this->assignments->remove($assignment);
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * @GET
    * @UserIsAllowed(assignments="submit")
    */
   public function actionCanSubmit(string $id) {
-    // TODO: Really do not know what this method should do, but I got following error after calling
-    // TODO: Return value of App\Model\Entity\Submission::getEvaluation() must be an instance of App\Model\Entity\SolutionEvaluation, null returned
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 

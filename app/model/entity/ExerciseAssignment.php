@@ -194,9 +194,13 @@ class ExerciseAssignment implements JsonSerializable
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
     $validSubmissions = function ($submission) {
-      $evaluation = $submission->getEvaluation();
-      // keep only solutions, which are marked as valid (both manual and automatic way)
-      return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
+      if ($submission->hasEvaluation() === FALSE) {
+        return FALSE;
+      } else {
+        $evaluation = $submission->getEvaluation();
+        // keep only solutions, which are marked as valid (both manual and automatic way)
+        return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
+      }
     };
 
     return $this->submissions

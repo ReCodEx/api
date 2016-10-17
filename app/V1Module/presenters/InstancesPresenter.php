@@ -109,7 +109,7 @@ class InstancesPresenter extends BasePresenter {
     $instance = $this->instances->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
     if (!$user->belongsTo($instance)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot access this instance users."); 
     }
 

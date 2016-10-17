@@ -22,8 +22,8 @@ class GroupsPresenter extends BasePresenter {
   /** @inject @var Instances */
   public $instances;
 
-  /** @inject @var EntityManager */
-  public $em;
+  /** @inject @var Users */
+  public $users;
 
   protected function findGroupOrThrow($id) {
     $group = $this->groups->get($id);
@@ -109,7 +109,7 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$user->belongsTo($group->getInstance())
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not member of the same instance as the group.");
     }
 
@@ -125,7 +125,7 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$group->isMemberOf($user)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view subgroups of this group.");
     }
 
@@ -142,7 +142,7 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$group->isSupervisorOf($user)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view members of this group.");
     }
 
@@ -161,7 +161,7 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$group->isSupervisorOf($user)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
 
@@ -192,7 +192,7 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$group->isMemberOf($user)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
     }
 
@@ -209,7 +209,7 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$group->statsArePublic()
       && !$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }
 
@@ -234,7 +234,7 @@ class GroupsPresenter extends BasePresenter {
 
     if ($user->getId() !== $this->user->id
       && !$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }
 
@@ -245,6 +245,10 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($group->getStudentsStats($user));
   }
 
+  /**
+   * @GET
+   * @UserIsAllowed(groups="view-detail")
+   */
   public function actionStudentsBestResults(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $currentUser = $this->users->findCurrentUserOrThrow();
@@ -252,7 +256,7 @@ class GroupsPresenter extends BasePresenter {
 
     if ($user->getId() !== $this->user->id
       && !$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }
 
@@ -292,7 +296,7 @@ class GroupsPresenter extends BasePresenter {
     // check that the user has rights to join the group
     if ($user->getId() !== $currentUser->getId()
       && !$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
@@ -318,7 +322,7 @@ class GroupsPresenter extends BasePresenter {
     // check that the user has rights to join the group
     if ($user->getId() !== $currentUser->getId()
       && !$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
@@ -326,8 +330,8 @@ class GroupsPresenter extends BasePresenter {
     if ($group->isStudentOf($user) === TRUE) {
       $membership = $user->findMembershipAsStudent($group);
       if ($membership) {
-        $this->em->remove($membership);
-        $this->em->flush();
+        $this->groups->remove($membership);
+        $this->groups->flush();
       }
     }
 
@@ -346,7 +350,7 @@ class GroupsPresenter extends BasePresenter {
 
     // check that the user is the admin of the group
     if (!$group->isAdminOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
@@ -371,7 +375,7 @@ class GroupsPresenter extends BasePresenter {
 
     // check that the user has rights to join the group
     if (!$group->isSupervisorOf($currentUser)
-      && !$this->user->isInRole("superadmin")) {
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
@@ -409,7 +413,7 @@ class GroupsPresenter extends BasePresenter {
 
     // check that the user has rights to join the group
     if ($group->isAdminOf($currentUser) === FALSE
-      && !$this->user->isInRole("superadmin")) {
+      && $curretnUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
