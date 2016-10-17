@@ -1,10 +1,18 @@
 <?php
 
-namespace App\Exceptions; 
+namespace App\Exceptions;
 
+/**
+ * In some part of application HTTP basic auth can be used, in case
+ * of bad credentials this exception can be thrown. Because of inheritance
+ * this exception is treated as UnauthorizedException in most cases.
+ */
 class HttpBasicAuthException extends UnauthorizedException {
-
-  public function __construct($msg = "Invalid HTTP Basic authentication") {
+  /**
+   * Creates instance with given description.
+   * @param string $msg description
+   */
+  public function __construct(string $msg = "Invalid HTTP Basic authentication") {
     parent::__construct($msg);
   }
 

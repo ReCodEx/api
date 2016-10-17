@@ -2,10 +2,16 @@
 
 namespace App\Exceptions;
 
-class JobConfigLoadingException extends SubmissionFailedException {
-
-  public function __construct($msg = 'Please contact your supervisor') {
+/**
+ * General exception used in all job configuration helpers in case
+ * of loading error. Ussually concerning bad structure or bad value type.
+ */
+class JobConfigLoadingException extends ApiException {
+  /**
+   * Create instance with further description.
+   * @param string $msg description
+   */
+  public function __construct(string $msg = 'Please contact your supervisor') {
     parent::__construct("Job configuration file cannot be opened or parsed - $msg");
   }
-
 }
