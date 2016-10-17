@@ -24,6 +24,9 @@ class Authorizator implements NS\IAuthorizator {
   /** @var Permissions */
   private $permissions;
 
+  /** @var array Scopes of the current user */
+  private $scopes;
+
   public function __construct(Roles $roles, Resources $resources, Permissions $permissions) {
     $this->roles = $roles;
     $this->resources = $resources;
@@ -81,5 +84,25 @@ class Authorizator implements NS\IAuthorizator {
 
       return FALSE;
     }
+  }
+
+  /**
+   * Set scopes for given user.
+   * @param NS\User $user   The user
+   * @param array   $scopes List of scopes
+   * @return void
+   */
+  public function setScopes(NS\User $user, array $scopes) {
+    $this->scopes[$user->getId()] = $scopes;
+  }
+
+  /**
+   * Is the given user in the specified scope?
+   * @param NS\User $user   The user
+   * @param string  $scope  Scope
+   * @return bool
+   */
+  public function isInScope(NS\User $user, string $scope): bool {
+    return in_array($scope, $this->scopes[$user->getId()]);
   }
 }

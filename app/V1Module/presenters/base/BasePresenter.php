@@ -84,7 +84,17 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($identity !== NULL) {
       $this->user->login($identity);
       $this->user->setAuthorizator($this->authorizator);
+      $this->authorizator->setScopes($this->user, $identity->scopes);
     }
+  }
+
+  /**
+   * Is current user in the given scope?
+   * @param string $scope Scope ID
+   * @return bool
+   */
+  protected function isInScope(string $scope): bool {
+    return $this->user->isLoggedIn() && $this->authorizator->isInScope($this->user, $scope);
   }
 
   private function processParams(\Reflector $reflection) {
