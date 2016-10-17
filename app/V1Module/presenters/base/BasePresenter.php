@@ -84,7 +84,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($identity !== NULL) {
       $this->user->login($identity);
       $this->user->setAuthorizator($this->authorizator);
-      $this->authorizator->setScopes($this->user, $scopes);
+      $this->authorizator->setScopes($this->user, $identity->scopes);
     }
   }
 

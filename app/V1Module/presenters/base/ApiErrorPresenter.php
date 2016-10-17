@@ -3,11 +3,11 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ApiException;
-use Nette\Application;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;
 use Doctrine\DBAL\Exception\ConnectionException;
 use Tracy\Debugger;
+use Tracy\ILogger;
 
 /**
  * The error presenter for the API module - all responses are served as JSONs with a fixed format.
@@ -16,14 +16,14 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
 
   /** @var \Tracy\ILogger @inject */
   public $logger;
-  private $exception;
 
   /**
    * @param  Exception
    * @return void
    */
   public function renderDefault($exception) {
-    $this->exception = $exception;
+      // first let us log the whole error thingy
+    $this->handleLogging($exception);
 
     if ($exception instanceof ApiException) {
       $this->handleAPIException($exception);
@@ -52,6 +52,15 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   }
 
   /**
+   * Simply logs given exception into standard logger. Some filtering or
+   * further modifications can be engaged.
+   * @param \Throwable $exception Exception which should be logged
+   */
+  protected function handleLogging($exception) {
+      $this->logger->log($exception, ILogger::EXCEPTION);
+  }
+
+  /**
     * Send a JSON response with a specific HTTP code
     * @param  int      $code HTTP code of the response
     * @param  string   $msg  Human readable description of the error
@@ -64,16 +73,6 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
         "success"   => FALSE,
         "msg"       => $msg
     ]);
-  }
-
-  /**
-    * Log the error respose
-    * @param  Nette\Application\IResponse $response The response information
-    * @return void
-    */
-  protected function shutdown($response) {
-    // @todo log the error
-    $this->logger->log($this->exception, \Tracy\ILogger::EXCEPTION);
   }
 
 }
