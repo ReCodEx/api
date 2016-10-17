@@ -56,7 +56,7 @@ class ReferenceExerciseSolution implements JsonSerializable
       "uploadedAt" => $this->uploadedAt->getTimestamp(),
       "description" => $this->description,
       "solution" => $this->solution,
-      "evaluations" => $this->evaluations->toArray()
+      "evaluations" => $this->evaluations->getValues()
     ];
   }
 

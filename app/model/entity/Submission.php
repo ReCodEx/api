@@ -102,6 +102,10 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $this->evaluation;
     }
 
+    public function getEvaluationStatus(): string {
+      return ES\EvaluationStatus::getStatus($this);
+    }
+
     public function setEvaluation(SolutionEvaluation $evaluation) {
       $this->evaluation = $evaluation;
       $this->solution->setEvaluated(TRUE);
@@ -110,7 +114,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     public function getEvaluationSummary() {
       $summary = [
         "id" => $this->id,
-        "evaluationStatus" => ES\EvaluationStatus::getStatus($this)
+        "evaluationStatus" => $this->getEvaluationStatus()
       ];
 
       if ($this->evaluation) {
@@ -144,7 +148,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
-        "files" => $this->getSolution()->getFiles()->toArray()
+        "files" => $this->getSolution()->getFiles()->getValues()
       ];
     }
 

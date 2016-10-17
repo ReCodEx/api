@@ -105,7 +105,7 @@ class SolutionEvaluation implements JsonSerializable
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
       "evaluationFailed" => $this->evaluationFailed,
-      "testResults" => $this->testResults->toArray()
+      "testResults" => $this->testResults->getValues()
     ];
   }
 
