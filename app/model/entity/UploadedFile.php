@@ -56,6 +56,9 @@ class UploadedFile implements JsonSerializable
      */
     protected $solution;
 
+    /** @var string */
+    protected $downloadUrl = NULL;
+
     /**
      * @param string $filePath Path where the file is stored
      * @param string $name Name of the file
@@ -77,7 +80,8 @@ class UploadedFile implements JsonSerializable
         "name" => $this->name,
         "size" => $this->fileSize,
         "uploadedAt" => $this->uploadedAt->getTimestamp(),
-        "userId" => $this->user->getId()
+        "userId" => $this->user->getId(),
+        "downloadUrl" => $this->downloadUrl
       ];
     }
 }

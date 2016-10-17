@@ -6,11 +6,16 @@ use App;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
+
+use App\Helpers\UploadedFileStorage;
 
 use App\Model\Entity\UploadedFile;
-use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\User;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Users;
+
+use Nette\Application\Responses\FileResponse;
 
 /**
  * @LoggedIn
@@ -29,18 +34,11 @@ class UploadedFilesPresenter extends BasePresenter {
     $this->fileStorage = $fileStorage;
   }
 
-  /**
-   * @param $id
-   * @return UploadedFile
-   * @throws NotFoundException
-   */
-  protected function findFileOrThrow($id) {
-    $file = $this->uploadedFiles->get($id);
-    if (!$file) {
-      throw new NotFoundException("File $id");
+  private function throwIfUserCantAccessFile(UploadedFile $file) {
+    $user = $this->users->findCurrentUserOrThrow();
+    if ($file->getUser()->getId() !== $user->getId()) { // @todo the admins and supervisors of the group, into which the assignment for which this file was submitted as solution should be able to access this file
+      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
-
-    return $file;
   }
 
   /**
@@ -49,8 +47,21 @@ class UploadedFilesPresenter extends BasePresenter {
    * @todo: Check if this user can access the file
    */
   public function actionDetail(string $id) {
-    $file = $this->findFileOrThrow($id);
+    $file = $this->files->findOrThrow($id);
+    $this->throwIfUserCantAccessFile($file);
+    $file->setDownloadUrl($this->link("//download", $id));
     $this->sendSuccessResponse($file);
+  }
+
+  /**
+   * @GET
+   * @UserIsAllowed(files="view-detail")
+   * @todo: Check if this user can access the file
+   */
+  public function actionDownload(string $id) {
+    $file = $this->files->findOrThrow($id);
+    $this->throwIfUserCantAccessFile($file);
+    $this->send(new FileResponse($file->getFilePath(), $file->getName()));
   }
 
   /**

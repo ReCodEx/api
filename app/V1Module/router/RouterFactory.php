@@ -126,6 +126,7 @@ class RouterFactory {
   private static function createUploadedFilesRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
     $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
+    $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
     $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
   }
 
