@@ -255,6 +255,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // save the new & archive the old config
     JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($newJobConfig->getValues());
+    $this->sendSuccessResponse($jobConfig->getValues());
   }
 }
