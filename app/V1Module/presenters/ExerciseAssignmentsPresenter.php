@@ -2,9 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 
@@ -59,7 +57,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
     $user = $this->users->findCurrentUserOrThrow();
-    $personalizedData = $assignments->map(
+    $personalizedData = $assignments->map( // TODO: map function does not exist on array
       function ($assignment) use ($user) {
         return $assignment->getJsonData($user);
       }
@@ -94,7 +92,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $groupId = $req->getPost("groupId");
 
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $group = $this->groups->findOrThrow($groupId);
+    $group = $this->groups->findOrThrow($groupId); // TODO: $this->groups property does not exist
     $user = $this->users->findCurrentUserOrThrow();
 
     // test, if the user has privileges to the given group
@@ -114,6 +112,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="submit")
    */
   public function actionCanSubmit(string $id) {
+    // TODO: Really do not know what this method should do, but I got following error after calling
+    // TODO: Return value of App\Model\Entity\Submission::getEvaluation() must be an instance of App\Model\Entity\SolutionEvaluation, null returned
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 
