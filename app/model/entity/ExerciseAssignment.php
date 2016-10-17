@@ -201,8 +201,7 @@ class ExerciseAssignment implements JsonSerializable
     
     return $this->submissions
       ->matching($fromThatUser)
-      ->filter($validSubmissions)
-      ->toArray();
+      ->filter($validSubmissions);
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
