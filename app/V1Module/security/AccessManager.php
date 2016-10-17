@@ -38,23 +38,27 @@ class AccessManager {
    */
   public function getIdentity(Request $req) {
     try {
-      $user = $this->getUserFromRequestOrThrow($req);
-      return new Identity($user->getId(), $user->getRole()->getId(), $user->jsonSerialize());
+      $token = $this->getGivenAccessTokenOrThrow($req);
+      $decodedToken = $this->decodeToken($token);
+      $user = $this->getUser($decodedToken);
+      $scopes = [];
+      if (isset($decodedToken->scopes)) {
+        $scopes = $decodedToken->scopes;
+      }
+
+      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "scopes" => $scopes ]);
     } catch (ApiException $e) {
       return NULL; 
     }
   }
 
   /**
-   * @param   Request
-   * @return  User
+   * Parse and validate a JWT token and extract the payload.
+   * @param string The potential JWT token
+   * @return object The decoded payload
+   * @throws InvalidAccessTokenException
    */
-  public function getUserFromRequestOrThrow(Request $req) {
-    $token = $this->getGivenAccessToken($req);
-    if ($token === NULL) {
-      throw new NoAccessTokenException;
-    }
-
+  public function decodeToken($token) {
     JWT::$leeway = $this->parameters['leeway'];
 
     try {
@@ -75,7 +79,15 @@ class AccessManager {
       throw new InvalidAccessTokenException($token);
     }
 
-    $user = $this->users->get($decodedToken->sub);
+    return $decodedToken;
+  }
+
+  /**
+   * @param   object $token   Valid JWT payload
+   * @return  User
+   */
+  public function getUser($token): User {
+    $user = $this->users->get($token->sub);
     if (!$user || $user->isAllowed() === FALSE) {
       throw new ForbiddenRequestException;
     }
@@ -87,14 +99,15 @@ class AccessManager {
    * @param   User
    * @return  string
    */
-  public function issueToken(User $user) {
+  public function issueToken(User $user, array $scopes = []) {
     $tokenPayload = [
       "iss" => $this->parameters['issuer'],
       "aud" => $this->parameters['audience'],
       "iat" => time(),
       "nbf" => time(),
       "exp" => time() + $this->parameters['expiration'],
-      "sub" => $user->getId()
+      "sub" => $user->getId(),
+      "scopes" => $scopes
     ];
 
     return JWT::encode($tokenPayload, $this->getSecretVerificationKey(), $this->getAlg());
@@ -112,6 +125,18 @@ class AccessManager {
 
   private function getAlg() {
     return $this->parameters['usedAlgorithm'];
+  }
+
+  /**
+   * Extract the access token from the request and throw an exception if there is none.
+   * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
+   * @throws NoAccessTokenException
+   */
+  public function getGivenAccessTokenOrThrow(Request $request) {
+    $token = $this->getGivenAccessToken($req);
+    if ($token === NULL) {
+      throw new NoAccessTokenException;
+    }
   }
 
   /**
