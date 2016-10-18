@@ -254,6 +254,11 @@ class ExerciseAssignment implements JsonSerializable
         "first" => $this->firstDeadline->getTimestamp(),
         "second" => $this->secondDeadline->getTimestamp()
       ],
+      "maxPoints" => [
+        "first" => $this->maxPointsBeforeFirstDeadline,
+        "second" => $this->maxPointsBeforeSecondDeadline
+      ],
+      "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE // the app must perform a special request to get the valid information
     ];

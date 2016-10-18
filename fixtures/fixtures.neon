@@ -208,6 +208,11 @@ App\Model\Entity\Permission:
     "resource": @assignments
     "action": "create"
     "isAllowed": 1
+  "supervisor-assignments-update":
+    "role": @supervisor
+    "resource": @assignments
+    "action": "update"
+    "isAllowed": 1
   "supervisor-assignments-remove":
     "role": @supervisor
     "resource": @assignments

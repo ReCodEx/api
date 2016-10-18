@@ -87,6 +87,55 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
   /**
    * @POST
+   * @UserIsAllowed(assignments="update")
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="isPublic", validation="bool")
+   * @Param(type="post", name="description", validation="string")
+   * @Param(type="post", name="firstDeadline", validation="numericint")
+   * @Param(type="post", name="secondDeadline", validation="numericint")
+   * @Param(type="post", name="firstMaxPoints", validation="numericint")
+   * @Param(type="post", name="secondMaxPoints", validation="numericint")
+   * @Param(type="post", name="submissionsLimit", validation="numericint")
+   * @Param(type="post", name="scoreConfig", validation="string")
+   */
+  public function actionUpdateDetail(string $id) {
+    $req = $this->getHttpRequest();
+    $name = $req->getPost("name");
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $description = $req->getPost("description");
+    $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
+    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline"));
+    $firstMaxPoints = $req->getPost("firstMaxPoints");
+    $secondMaxPoints = $req->getPost("secondMaxPoints");
+    $submissionsLimit = $req->getPost("submissionsLimit");
+    $scoreConfig = $req->getPost("scoreConfig");
+
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    if (!$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
+        throw new ForbiddenRequestException("You cannot update this assignment.");
+    }
+
+    $assignment->setName($name);
+    $assignment->setDescription($description);
+    $assignment->setIsPublic($isPublic);
+    $assignment->setFirstDeadline($firstDeadline);
+    $assignment->setSecondDeadline($secondDeadline);
+    $assignment->setMaxPointsBeforeFirstDeadline($firstMaxPoints);
+    $assignment->setMaxPointsBeforeSecondDeadline($secondMaxPoints);
+    $assignment->setSubmissionsCountLimit($submissionsLimit);
+    $assignment->setScoreConfig($scoreConfig);
+
+    $this->assignments->persist($assignment);
+    $this->assignments->flush();
+
+    $this->sendSuccessResponse($assignment);
+  }
+
+  /**
+   * @POST
    * @UserIsAllowed(assignments="create")
    * @Param(type="post", name="exerciseId")
    * @Param(type="post", name="groupId")
