@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Model\Entity\Group;
 use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Groups;
+use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -64,7 +65,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot create group for instance '$instanceId'");
     }
 
-    $description = $req->getPost("description");
+    $description = $req->getPost("description", "");
     $publicStats = $req->getPost("publicStats", TRUE);
     $parentGroup = !$parentGroupId ? NULL : $this->groups->get($parentGroupId);
 
@@ -98,6 +99,27 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse([
       "groupNameIsFree" => $this->groups->nameIsFree($name, $instanceId, $parentGroupId)
     ]);
+  }
+
+  /**
+   * @DELETE
+   * @UserIsAllowed(groups="remove")
+   */
+  public function actionRemoveGroup(string $id) {
+    $user = $this->users->findCurrentUserOrThrow();
+    $group = $this->groups->findOrThrow($id);
+
+    if ($group->isAdminOf($user) === FALSE) {
+      throw new ForbiddenRequestException("Only administrator of a group can remove it");
+    }
+    if ($group->getChildGroups()->count() !== 0) {
+      throw new ForbiddenRequestException("There are subgroups of group '$id'. Please remove them first.");
+    }
+
+    $this->groups->remove($group);
+    $this->groups->flush();
+
+    $this->sendSuccessResponse("OK");
   }
 
   /**
