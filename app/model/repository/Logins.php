@@ -6,11 +6,25 @@ use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
+use Nette\Security as NS;
 
 class Logins extends BaseRepository {
 
-  public function __construct(EntityManager $em) {
+  /** @var NS\User */
+  private $userSession;
+
+  public function __construct(EntityManager $em, NS\User $user) {
     parent::__construct($em, Login::CLASS);
+    $this->userSession = $user;
+  }
+
+  /**
+   *
+   * @return Login|NULL
+   */
+  public function findCurrent() {
+    $id = $this->userSession->id;
+    return $this->findOneBy([ "user_id" => $id ]);
   }
 
   public function getUser($username, $password) {
