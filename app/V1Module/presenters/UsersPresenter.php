@@ -151,7 +151,7 @@ class UsersPresenter extends BasePresenter {
     $firstName = $req->getPost("firstName");
     $lastName = $req->getPost("lastName");
     $degreesBeforeName = $req->getPost("degreesBeforeName");
-    $degreesAfterName = $req->getPost("degreesAfterName");
+    $degreesAfterName = $req->getPost("degreesAftername");
 
     $oldPassword = $req->getPost("oldPassword");
     $newPassword = $req->getPost("password");
@@ -170,7 +170,7 @@ class UsersPresenter extends BasePresenter {
     if ($login && $newPassword) {
       if ($oldPassword) {
         // old password was provided, just check it against the one from db
-        if (!$login->passwordsMatch($oldPassword)) {
+        if ($login->getPasswordHash() !== Login::hashPassword($oldPassword)) {
           throw new WrongCredentialsException("The old password is incorrect");
         }
         $login->setPasswordHash(Login::hashPassword($newPassword));
