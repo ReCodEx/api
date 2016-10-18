@@ -3,7 +3,6 @@
 namespace App\V1Module\Presenters;
 
 use ReflectionException;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\UnauthorizedException;
@@ -18,15 +17,13 @@ use App\Model\Repository\Users;
 use App\Helpers\Validators;
 //use Nette\Utils\Validators;
 
-use Nette\Security\Identity;
 use Nette\Application\Application;
-use Nette\Application\Responses;
 use Nette\Http\IResponse;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
-  
+
   /**
    * @var Users
    * @inject
@@ -44,7 +41,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $authorizator;
- 
+
   /**
    * @var Application
    * @inject
@@ -115,7 +112,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
           break;
         case "query":
           $value = $this->getQueryField($name, $required);
-        
+
         default:
           throw new InternalServerErrorException("Unknown parameter type '$type'");
       }
@@ -130,7 +127,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   private $post = NULL;
   private function getPostField($param, $required = TRUE) {
-    
+
     if ($this->post === NULL) {
       $req = $this->getHttpRequest();
       if ($req->isMethod("POST")) {
@@ -153,7 +150,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   private function getQueryField($param, $required = TRUE) {
     $value = $this->getHttpRequest()->getQuery($param);
-    if ($value === NULL && $required) { 
+    if ($value === NULL && $required) {
       throw new BadRequestException("Missing required query field $param");
     }
     return $value;
@@ -180,7 +177,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($reflection->hasAnnotation("LoggedIn") && !$this->user->isLoggedIn()) {
       throw new UnauthorizedException;
     }
-        
+
     if ($reflection->hasAnnotation("Role")
       && !$this->user->isInRole($reflection->getAnnotation("Role"))) {
         throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
