@@ -26,13 +26,11 @@ class Login
    * @ORM\Column(type="string")
    */
   protected $username;
-  
+
   /**
    * @ORM\Column(type="string")
    */
   protected $passwordHash;
-
-  public function getPasswordHash() { return $this->passwordHash; }
 
   /**
    * @ORM\ManyToOne(targetEntity="User")

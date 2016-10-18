@@ -3,31 +3,42 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Login;
-use App\Model\Entity\Role;
 use App\Model\Entity\User;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Logins;
 use App\Model\Repository\Roles;
-use App\Model\Repository\Users;
 use App\Security\AccessManager;
-
+use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\InvalidArgumentException;
 use Nette\Http\IResponse;
 
 use ZxcvbnPhp\Zxcvbn;
 
 class UsersPresenter extends BasePresenter {
 
-  /** @inject @var Logins */
+  /**
+   * @var Logins
+   * @inject
+   */
   public $logins;
 
-  /** @inject @var AccessManager */
+  /**
+   * @var AccessManager
+   * @inject
+   */
   public $accessManager;
 
-  /** @inject @var Roles */
+  /**
+   * @var Roles
+   * @inject
+   */
   public $roles;
 
-  /** @inject @var Instances */
+  /**
+   * @var Instances
+   * @inject
+   */
   public $instances;
 
   /**
@@ -121,6 +132,61 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
+    $this->sendSuccessResponse($user);
+  }
+
+  /**
+   * @POST
+   * @LoggedIn
+   * @Param(type="post", name="email", validation="email")
+   * @Param(type="post", name="firstName", validation="string:2..")
+   * @Param(type="post", name="lastName", validation="string:2..")
+   * @Param(type="post", name="degreesBeforeName", validation="string:1..")
+   * @Param(type="post", name="degreesAfterName", validation="string:1..")
+   */
+  public function actionUpdateProfile() {
+    $req = $this->getHttpRequest();
+    $email = $req->getPost("email");
+    $firstName = $req->getPost("firstName");
+    $lastName = $req->getPost("lastName");
+    $degreesBeforeName = $req->getPost("degreesBeforeName");
+    $degreesAfterName = $req->getPost("degreesAftername");
+
+    $oldPassword = $req->getPost("oldPassword");
+    $newPassword = $req->getPost("password");
+
+    // fill user with all provided datas
+    $login = $this->logins->findCurrent();
+    $user = $this->users->findCurrentUserOrThrow();
+
+    $user->setFirstName($firstName);
+    $user->setLastName($lastName);
+    $user->setEmail($email);
+    $user->setDegreesBeforeName($degreesBeforeName);
+    $user->setDegreesAfterName($degreesAfterName);
+
+    // passwords need to be handled differently
+    if ($login && $newPassword) {
+      if ($oldPassword) {
+        // old password was provided, just check it against the one from db
+        if ($login->getPasswordHash() !== Login::hashPassword($oldPassword)) {
+          throw new WrongCredentialsException("The old password is incorrect");
+        }
+        $login->setPasswordHash(Login::hashPassword($newPassword));
+      } else if ($this->isInScope("modify-password")) {
+        // user is in modify-password scope and can change password without providing old one
+        $login->setPasswordHash(Login::hashPassword($newPassword));
+      }
+
+      // make password changes permanent
+      $this->logins->persist($login);
+      $this->logins->flush();
+    }
+
+    // make changes permanent
+    $this->users->persist($user);
+    $this->users->flush();
+
     $this->sendSuccessResponse($user);
   }
 

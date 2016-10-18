@@ -25,16 +25,16 @@ class Users extends BaseRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
-  public function findCurrentUserOrThrow() {
+  public function findCurrentUserOrThrow(): User {
     if (!$this->userSession->isLoggedIn()) {
-      throw new ForbiddenRequestException; 
+      throw new ForbiddenRequestException;
     }
 
     $id = $this->userSession->id;
     return $this->findOrThrow($id);
   }
 
-  public function findOrThrow($id) {
+  public function findOrThrow($id): User {
     $user = $this->get($id);
     if (!$user) {
       throw new NotFoundException("User '$id' does not exist.");
