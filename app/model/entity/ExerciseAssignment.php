@@ -39,7 +39,7 @@ class ExerciseAssignment implements JsonSerializable
     $this->isPublic = $isPublic;
     $this->submissionsCountLimit = 25;
     $this->jobConfigFilePath = null;
-    $this->scoreConfig = null;
+    $this->scoreConfig = "";
   }
 
   public static function assignToGroup(Exercise $exercises, Group $group, $isPublic = FALSE) {

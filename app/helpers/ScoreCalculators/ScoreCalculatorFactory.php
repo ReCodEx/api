@@ -38,4 +38,13 @@ class ScoreCalculatorFactory {
     return SimpleScoreCalculator::CLASS;
   }
 
+  /**
+   * One calculator is set as default for creating new assignments. This method
+   * return class of this calculator.
+   * @return class Default IScoreCalculator implementation
+   */
+  public static function getDefaultCalculatorClass() {
+    return SimpleScoreCalculator::CLASS;
+  }
+
 }

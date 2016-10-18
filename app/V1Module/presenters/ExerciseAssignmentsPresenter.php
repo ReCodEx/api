@@ -7,11 +7,13 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\JobConfigLoadingException;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\ExerciseAssignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
@@ -157,8 +159,25 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
+    $assignment->setScoreConfig(self::getDefaultScoreConfig($assignment));
+
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
+  }
+
+  private static function getDefaultScoreConfig(ExerciseAssignment $assignment): string {
+    $jobConfigPath = $assignment->getJobConfigFilePath();
+    try {
+      $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
+      $tests = array_map(
+        function ($test) { return $test->getId(); },
+        $jobConfig->getTests()
+      );
+      $defaultCalculatorClass = ScoreCalculatorFactory::getDefaultCalculatorClass();
+      return $defaultCalculatorClass::getDefaultConfig($tests);
+    } catch (JobConfigLoadingException $e) {
+      return "";
+    }
   }
 
   /**
