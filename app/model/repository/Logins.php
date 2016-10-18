@@ -24,7 +24,7 @@ class Logins extends BaseRepository {
    */
   public function findCurrent() {
     $id = $this->userSession->id;
-    return $this->findOneBy([ "user_id" => $id ]);
+    return $this->findOneBy([ "user" => $id ]);
   }
 
   public function getUser($username, $password) {
