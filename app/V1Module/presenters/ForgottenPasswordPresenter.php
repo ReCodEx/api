@@ -75,4 +75,5 @@ class ForgottenPasswordPresenter extends BasePresenter {
       "passwordScore" => $passwordStrength["score"]
     ]);
   }
+
 }
