@@ -77,7 +77,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$assignment->canAccessAsStudent($user)
-      && !$assignment->canAccessAsSupervisor($user)) {
+      && !$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot view this assignment.");
     }
 
@@ -100,13 +101,13 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     // test, if the user has privileges to the given group
-    if ($group->isSupervisorOf($user) === FALSE) {
+    if ($group->isSupervisorOf($user) === FALSE && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
     }
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = ExerciseAssignment::assignExerciseToGroup($exercise, $group, FALSE);
+    $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }
