@@ -81,7 +81,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
    * @Param(type="post", name="username", validation="string:2..")
    * @Param(type="post", name="redirectUrl", validation="string:2..")
    */
-  public function actionForgotten() {
+  public function actionDefault() {
     $req = $this->getHttpRequest();
     $username = $req->getPost("username");
     $redirectUrl = $req->getPost("redirectUrl");

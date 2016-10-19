@@ -117,11 +117,7 @@ services:
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
-<<<<<<< 93e03221d111374794cf77777978438e514dcbe1
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-=======
-  - App\Helpers\ForgottenPasswordHelper(@App\Helpers\EmailHelper, %forgottenPassword%)
->>>>>>> WIP: ForgottenPassword
 
   # models - repositories
   - App\Model\Repository\Comments
