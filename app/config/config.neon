@@ -116,7 +116,7 @@ services:
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
-  - App\Helpers\ForgottenPasswordHelper(@App\Helpers\EmailHelper, %forgottenPassword%)
+  - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
 
   # models - repositories
   - App\Model\Repository\Comments
