@@ -46,7 +46,7 @@ class AccessManager {
         $scopes = $decodedToken->scopes;
       }
 
-      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "scopes" => $scopes ]);
+      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "token" => $token ]);
     } catch (ApiException $e) {
       return NULL; 
     }
@@ -58,7 +58,7 @@ class AccessManager {
    * @return object The decoded payload
    * @throws InvalidAccessTokenException
    */
-  public function decodeToken($token) {
+  public function decodeToken($token): AccessToken {
     JWT::$leeway = $this->parameters['leeway'];
 
     try {
@@ -79,15 +79,15 @@ class AccessManager {
       throw new InvalidAccessTokenException($token);
     }
 
-    return $decodedToken;
+    return new AccessToken($decodedToken);
   }
 
   /**
    * @param   object $token   Valid JWT payload
    * @return  User
    */
-  public function getUser($token): User {
-    $user = $this->users->get($token->sub);
+  public function getUser(AccessToken $token): User {
+    $user = $this->users->get($token->getUserId());
     if (!$user || $user->isAllowed() === FALSE) {
       throw new ForbiddenRequestException;
     }
