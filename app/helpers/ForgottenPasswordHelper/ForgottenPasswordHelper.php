@@ -61,6 +61,10 @@ class ForgottenPasswordHelper {
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.cz");
   }
 
+  /**
+   * Generate access token and send it to the given email.
+   * @param Login $login
+   */
   public function process(Login $login) {
     // Stalk forgotten password requests a little bit and store them to database
     $entry = new ForgottenPassword($login->user, $login->user->email, $this->redirectUrl);
