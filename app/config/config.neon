@@ -54,12 +54,18 @@ parameters:
     footerUrl: https://recodex.projekty.ms.mff.cuni.cz
     siteName: "ReCodEx"
     githubUrl: https://github.com/ReCodEx
+    from: "ReCodEx <noreply@recodex.org>"
 
   failures:
     emails:
       to: "Šimon Rozsíval <simon@rozsival.com>"
-      from: "ReCodEx <noreply@recodex.org>"
+      from: %emails.from%
       subjectPrefix: "ReCodEx Failure Report - "
+
+  forgottenPassword:
+    emails:
+      from: %emails.from%
+      subjectPrefix: "ReCodEx Forgotten Password Request - "
 
   mail:
     smtp: true
@@ -110,6 +116,7 @@ services:
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
+  - App\Helpers\ForgottenPasswordHelper(@App\Helpers\EmailHelper, %forgottenPassword%)
 
   # models - repositories
   - App\Model\Repository\Comments
