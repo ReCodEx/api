@@ -69,7 +69,7 @@ class TestConfig {
   public function getLimits($hardwareGroupId): array {
     $limits = [];
     foreach ($this->executionTaskType as $task) {
-      $limits[$task->getTask()->getId()] = $task->getLimits($hardwareGroupId)->toArray();
+      $limits[$task->getTask()->getId()] = $task->getLimits($hardwareGroupId);
     }
     return $limits;
   }

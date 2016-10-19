@@ -4,6 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\SubmissionEvaluation;
 use App\Helpers\JobConfig\JobConfig;
 use Symfony\Component\Yaml\Yaml;
@@ -108,7 +109,7 @@ class TestJobConfig extends Tester\TestCase
 
   public function testSetLimits() {
     $taskId = "Y";
-    $hwGroup = "another";
+    $hwGroup = "A";
     $limits = [ "hw-group-id" => $hwGroup, "time" => "987", "memory" => "654" ];
     $testLimits = [ $taskId => $limits ];
 
@@ -119,6 +120,10 @@ class TestJobConfig extends Tester\TestCase
     foreach ($jobConfig->getTests() as $test) {
       Assert::equal(new Limits($testLimits[$taskId]), $test->getLimits($hwGroup)[$taskId]);
     }
+
+    Assert::exception(function() use ($jobConfig, $testLimits) {
+      $jobConfig->setLimits("newHwGroup", $testLimits);
+    }, ForbiddenRequestException::CLASS);
   }
 
 }

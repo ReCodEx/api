@@ -293,14 +293,28 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $tests = $jobConfig->getTests();
 
-    $this->sendSuccessResponse(
-      array_map(
-        function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup);
-        },
-        $tests
-      )
+    // Array of test-id as a key and the value is another array of task-id and limits as Limits type 
+    $listTestLimits = array_map(
+      function ($test) use ($hardwareGroup) {
+        return $test->getLimits($hardwareGroup);
+      },
+      $tests
     );
+
+    // Convert the Limits type (as said above) to array representation
+    $listTestArray = array_map(
+      function ($limits) {
+        $arrayLimits = [];
+        foreach ($limits as $taskId => $limit) {
+          $arrayLimits[$taskId] = $limit->toArray();
+        }
+        return $arrayLimits;
+      },
+      $listTestLimits
+    );
+
+    $this->sendSuccessResponse($listTestArray); 
+      
   }
 
   /**
