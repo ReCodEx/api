@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Repository\Logins;
+use App\Helpers\ForgottenPasswordHelper;
 
 class ForgottenPasswordPresenter extends BasePresenter {
 
@@ -13,31 +14,26 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public $logins;
 
   /**
+   * @var ForgottenPasswordHelper
+   * @inject
+   */
+  public $forgottenPasswordHelper;
+
+  /**
    * @POST
+   * @Param(type="post", name="username", validation="string:2..")
+   * @Param(type="post", name="redirectUrl", validation="string:2..")
    */
   public function actionForgotten() {
-    //
-  }
+    $req = $this->getHttpRequest();
+    $username = $req->getPost("username");
+    $redirectUrl = $req->getPost("redirectUrl");
 
-  /**
-   * @GET
-   */
-  public function actionIsTokenValid() {
-    //
-  }
+    // try to find login according to username and process request
+    $login = $this->logins->findByUsernameOrThrow($username);
+    $this->forgottenPasswordHelper->process($login, $redirectUrl);
 
-  /**
-   * @GET
-   */
-  public function actionResetToken() {
-    //
-  }
-
-  /**
-   * @POST
-   */
-  public function actionRenew() {
-    //
+    $this->sendSuccessResponse("OK");
   }
 
 }
