@@ -76,4 +76,21 @@ class ForgottenPasswordPresenter extends BasePresenter {
     ]);
   }
 
+  /**
+   * @POST
+   * @Param(type="post", name="username", validation="string:2..")
+   * @Param(type="post", name="redirectUrl", validation="string:2..")
+   */
+  public function actionForgotten() {
+    $req = $this->getHttpRequest();
+    $username = $req->getPost("username");
+    $redirectUrl = $req->getPost("redirectUrl");
+
+    // try to find login according to username and process request
+    $login = $this->logins->findByUsernameOrThrow($username);
+    $this->forgottenPasswordHelper->process($login, $redirectUrl);
+
+    $this->sendSuccessResponse("OK");
+  }
+
 }

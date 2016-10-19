@@ -6,13 +6,17 @@ use Nette\Utils\Arrays;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\ForgottenPassword;
+<<<<<<< 93e03221d111374794cf77777978438e514dcbe1
 use App\Security\AccessManager;
+=======
+>>>>>>> WIP: ForgottenPassword
 
 /**
  * Sending error reports to administrator by email.
  */
 class ForgottenPasswordHelper {
 
+<<<<<<< 93e03221d111374794cf77777978438e514dcbe1
   /**
    * Database entity manager
    * @var EntityManager
@@ -59,6 +63,28 @@ class ForgottenPasswordHelper {
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Forgotten Password Request - ");
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.cz");
+=======
+  /** @var EntityManager Database entity manager */
+  private $em;
+
+  /** @var EmailHelper Emails sending component */
+  private $emailHelper;
+
+  /** @var string Sender address of all mails, something like "noreply@recodex.cz" */
+  private $sender;
+
+  /** @var string Prefix of mail subject to be used */
+  private $subjectPrefix;
+
+  /**
+   * Constructor
+   * @param \App\Helpers\EmailHelper $emailHelper
+   */
+  public function __construct(EntityManager $em, EmailHelper $emailHelper, array $params) {
+    $this->em = $em;
+    $this->emailHelper = $emailHelper;
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Forgotten Password Request - ");
   }
 
   /**

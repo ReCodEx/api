@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use Nette\Security as NS;
+use App\Model\Entity\User;
 
 class Logins extends BaseRepository {
 
