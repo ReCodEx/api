@@ -20,4 +20,12 @@ interface IScoreCalculator {
    * @return bool If the config is valid or not
    */
   public static function isScoreConfigValid(string $scoreConfig): bool;
+
+  /**
+   * Make default configuration for array of test names. Each test will
+   * have the same priority as others.
+   * @param array List of string names of tests
+   * @return string Default configuration for given tests
+   */
+  public static function getDefaultConfig(array $tests): string;
 }

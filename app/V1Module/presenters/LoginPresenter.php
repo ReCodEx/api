@@ -42,17 +42,29 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
-   * @GET
+   * @POST
+   * @Param(type="post", name="username", validation="email")
+   * @Param(type="post", name="password", validation="string")
    */
-  public function actionDefault($username, $password) {
+  public function actionDefault() {
+    $req = $this->getHttpRequest();
+    $username = $req->getPost("username");
+    $password = $req->getPost("password");
+
     $user = $this->logins->getUser($username, $password);
     $this->trySendingLoggedInResponse($user);
   }
 
   /**
-   * @GET
+   * @POST
+   * @Param(type="post", name="username", validation="string")
+   * @Param(type="post", name="password", validation="string")
    */
-  public function actionExternal($serviceId, $username, $password) {
+  public function actionExternal($serviceId) {
+    $req = $this->getHttpRequest();
+    $username = $req->getPost("username");
+    $password = $req->getPost("password");
+
     $authService = $this->getAuthService($serviceId);
     $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());

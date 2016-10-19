@@ -133,10 +133,11 @@ class AccessManager {
    * @throws NoAccessTokenException
    */
   public function getGivenAccessTokenOrThrow(Request $request) {
-    $token = $this->getGivenAccessToken($req);
+    $token = $this->getGivenAccessToken($request);
     if ($token === NULL) {
       throw new NoAccessTokenException;
     }
+    return $token;
   }
 
   /**

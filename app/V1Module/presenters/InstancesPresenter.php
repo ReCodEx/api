@@ -18,6 +18,15 @@ class InstancesPresenter extends BasePresenter {
   /** @inject @var Licences */
   public $licences;
 
+  protected function findInstanceOrThrow(string $id) {
+    $instance = $this->instances->get($id);
+    if (!$instance) {
+      throw new NotFoundException("Instance $id");
+    }
+
+    return $instance;
+  }
+
   /**
    * @GET
    */
@@ -56,7 +65,7 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="isOpen", validation="bool", required=FALSE)
    */
   public function actionUpdateInstance(string $id) {
-    $instance = $this->instances->findOrThrow($id);
+    $instance = $this->findInstanceOrThrow($id);
     $params = $this->parameters;
     if (isset($params->name)) {
       $instance->name = $params->name;
@@ -77,7 +86,7 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="remove")
    */
   public function actionDeleteInstance(string $id) {
-    $instance = $this->instances->findOrThrow($id);
+    $instance = $this->findInstanceOrThrow($id);
     $this->instances->remove($instance);
     $this->sendSuccessResponse([]);
   }
@@ -86,7 +95,7 @@ class InstancesPresenter extends BasePresenter {
    * @GET
    */
   public function actionDetail(string $id) {
-    $instance = $this->instances->findOrThrow($id);
+    $instance = $this->findInstanceOrThrow($id);
     $this->sendSuccessResponse($instance);
   }
 
@@ -96,8 +105,8 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="view-groups")
    */
   public function actionGroups(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    $this->sendSuccessResponse($instance->getGroups()->toArray());
+    $instance = $this->findInstanceOrThrow($id);
+    $this->sendSuccessResponse($instance->getGroups()->getValues());
   }
 
   /**
@@ -106,15 +115,15 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="view-users")
    */
   public function actionUsers(string $id, string $search = NULL) {
-    $instance = $this->instances->findOrThrow($id);
+    $instance = $this->findInstanceOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
     if (!$user->belongsTo($instance)
-      && !$this->user->isInRole("superadmin")) {
+      && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot access this instance users."); 
     }
 
     $members = $instance->getMembers($search);
-    $this->sendSuccessResponse($members->toArray());
+    $this->sendSuccessResponse($members->getValues());
   }
 
   /**
@@ -123,8 +132,8 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="view-licences")
    */
   public function actionLicences(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    $this->sendSuccessResponse($instance->getLicences()->toArray());
+    $instance = $this->findInstanceOrThrow($id);
+    $this->sendSuccessResponse($instance->getLicences()->getValues());
   }
 
   /**
@@ -136,7 +145,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
-    $instance = $this->instances->findOrThrow($id);
+    $instance = $this->findInstanceOrThrow($id);
     $licence = Licence::createLicence($params->note, $params->validUntil, $instance);
     $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);

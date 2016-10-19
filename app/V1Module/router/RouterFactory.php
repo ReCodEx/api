@@ -41,9 +41,9 @@ class RouterFactory {
   }
 
   private static function createAuthRoutes($router, $prefix) {
-    $router[] = new GetRoute("$prefix/login", "Login:default");
+    $router[] = new PostRoute("$prefix/login", "Login:default");
     $router[] = new GetRoute("$prefix/login/refresh", "Login:refresh");
-    $router[] = new GetRoute("$prefix/login/<serviceId>", "Login:external");
+    $router[] = new PostRoute("$prefix/login/<serviceId>", "Login:external");
   }
 
   private static function createBrokerReportsRoutes($router, $prefix) {
@@ -66,6 +66,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
     $router[] = new PostRoute("$prefix", "ExerciseAssignments:create");
     $router[] = new GetRoute("$prefix/<id>", "ExerciseAssignments:detail");
+    $router[] = new PostRoute("$prefix/<id>", "ExerciseAssignments:updateDetail");
+    $router[] = new DeleteRoute("$prefix/<id>", "ExerciseAssignments:remove");
     $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
     $router[] = new PostRoute("$prefix/<id>/submit", "ExerciseAssignments:submit");
@@ -78,6 +80,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
     $router[] = new PostRoute("$prefix/validate-add-group-data", "Groups:validateAddGroupData");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
+    $router[] = new DeleteRoute("$prefix/<id>", "Groups:removeGroup");
     $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
 

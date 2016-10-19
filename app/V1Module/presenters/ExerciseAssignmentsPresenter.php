@@ -2,18 +2,23 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\JobConfigLoadingException;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\ExerciseAssignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\Groups;
 
 /**
  * @LoggedIn
@@ -39,10 +44,16 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public $submissions;
 
   /**
-   * @inject
    * @var UploadedFiles
+   * @inject
    */
   public $files;
+
+  /**
+   * @var Groups
+   * @inject
+   */
+  public $groups; 
 
   /**
    * @var SubmissionHelper
@@ -56,13 +67,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $user = $this->users->findCurrentUserOrThrow();
-    $personalizedData = $assignments->map( // TODO: map function does not exist on array
-      function ($assignment) use ($user) {
-        return $assignment->getJsonData($user);
-      }
-    );
-    $this->sendSuccessResponse($personalizedData);
+    $this->sendSuccessResponse($assignments);
   }
 
   /**
@@ -74,7 +79,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$assignment->canAccessAsStudent($user)
-      && !$assignment->canAccessAsSupervisor($user)) {
+      && !$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot view this assignment.");
     }
 
@@ -82,7 +88,57 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * @GET
+   * @POST
+   * @UserIsAllowed(assignments="update")
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="isPublic", validation="bool")
+   * @Param(type="post", name="description", validation="string")
+   * @Param(type="post", name="firstDeadline", validation="numericint")
+   * @Param(type="post", name="secondDeadline", validation="numericint")
+   * @Param(type="post", name="firstMaxPoints", validation="numericint")
+   * @Param(type="post", name="secondMaxPoints", validation="numericint")
+   * @Param(type="post", name="submissionsLimit", validation="numericint")
+   * @Param(type="post", name="scoreConfig", validation="string")
+   */
+  public function actionUpdateDetail(string $id) {
+    $req = $this->getHttpRequest();
+    $name = $req->getPost("name");
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $description = $req->getPost("description");
+    $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
+    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline"));
+    $firstMaxPoints = $req->getPost("firstMaxPoints");
+    $secondMaxPoints = $req->getPost("secondMaxPoints");
+    $submissionsLimit = $req->getPost("submissionsLimit");
+    $scoreConfig = $req->getPost("scoreConfig");
+
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    if (!$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
+        throw new ForbiddenRequestException("You cannot update this assignment.");
+    }
+
+    $assignment->setName($name);
+    $assignment->setDescription($description);
+    $assignment->setIsPublic($isPublic);
+    $assignment->setFirstDeadline($firstDeadline);
+    $assignment->setSecondDeadline($secondDeadline);
+    $assignment->setMaxPointsBeforeFirstDeadline($firstMaxPoints);
+    $assignment->setMaxPointsBeforeSecondDeadline($secondMaxPoints);
+    $assignment->setSubmissionsCountLimit($submissionsLimit);
+    $assignment->setScoreConfig($scoreConfig);
+
+    $this->assignments->persist($assignment);
+    $this->assignments->flush();
+
+    $this->sendSuccessResponse($assignment);
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(assignments="create")
    * @Param(type="post", name="exerciseId")
    * @Param(type="post", name="groupId")
    */
@@ -92,19 +148,53 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $groupId = $req->getPost("groupId");
 
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $group = $this->groups->findOrThrow($groupId); // TODO: $this->groups property does not exist
+    $group = $this->groups->findOrThrow($groupId);
     $user = $this->users->findCurrentUserOrThrow();
 
     // test, if the user has privileges to the given group
-    if ($group->isSupervisorOf($user) === FALSE) {
+    if ($group->isSupervisorOf($user) === FALSE && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
     }
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = ExerciseAssignment::assignExerciseToGroup($exercise, $group, FALSE);
+    $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
+    $assignment->setScoreConfig(self::getDefaultScoreConfig($assignment));
+
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
+  }
+
+  private static function getDefaultScoreConfig(ExerciseAssignment $assignment): string {
+    $jobConfigPath = $assignment->getJobConfigFilePath();
+    try {
+      $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
+      $tests = array_map(
+        function ($test) { return $test->getId(); },
+        $jobConfig->getTests()
+      );
+      $defaultCalculatorClass = ScoreCalculatorFactory::getDefaultCalculatorClass();
+      return $defaultCalculatorClass::getDefaultConfig($tests);
+    } catch (JobConfigLoadingException $e) {
+      return "";
+    }
+  }
+
+  /**
+   * @DELETE
+   * @UserIsAllowed(assignments="remove")
+   */
+  public function actionRemove(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    if (!$assignment->canAccessAsSupervisor($user)
+      && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("Only supervisors of the group can remove assigned exercises.");
+    }
+
+    $this->assignments->remove($assignment);
+    $this->sendSuccessResponse("OK");
   }
 
   /**
@@ -112,8 +202,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="submit")
    */
   public function actionCanSubmit(string $id) {
-    // TODO: Really do not know what this method should do, but I got following error after calling
-    // TODO: Return value of App\Model\Entity\Submission::getEvaluation() must be an instance of App\Model\Entity\SolutionEvaluation, null returned
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 
@@ -173,7 +261,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getSolution()->getFiles()->toArray(),
+      $submission->getSolution()->getFiles()->getValues(),
       $hwGroup
     );
 
@@ -208,7 +296,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup);
+          return $test->getLimits($hardwareGroup)->getValues();
         },
         $tests
       )
@@ -236,6 +324,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // save the new & archive the old config
     JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($jobConfig->toArray());
+    $this->sendSuccessResponse($jobConfig->getValues());
   }
 }

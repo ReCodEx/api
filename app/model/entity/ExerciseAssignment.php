@@ -37,17 +37,20 @@ class ExerciseAssignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->submissionsCountLimit = 25;
+    $this->jobConfigFilePath = null;
+    $this->scoreConfig = "";
   }
 
-  public static function assignToGroup(Exercise $exercies, Group $group, $isPublic = FALSE) {
+  public static function assignToGroup(Exercise $exercises, Group $group, $isPublic = FALSE) {
     return new self(
-      $exercise->name,
-      $exercise->assignment,
-      NULL,
-      0,
-      NULL,
-      0,
-      $exercise,
+      $exercises->name,
+      $exercises->assignment,
+      new \DateTime(),
+      10,
+      new \DateTime(),
+      5,
+      $exercises,
       $group,
       $isPublic
     );
@@ -76,7 +79,7 @@ class ExerciseAssignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-    * @ORM\Column(type="string")
+    * @ORM\Column(type="string", nullable=true)
     */
   protected $jobConfigFilePath;
 
@@ -94,7 +97,7 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-    * @ORM\Column(type="text")
+    * @ORM\Column(type="text", nullable=true)
     */
   protected $scoreConfig;
 
@@ -194,11 +197,17 @@ class ExerciseAssignment implements JsonSerializable
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
     $validSubmissions = function ($submission) {
-      $evaluation = $submission->getEvaluation();
-      // keep only solutions, which are marked as valid (both manual and automatic way)
-      return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
-    };
+      if (!$submission->hasEvaluation()) {
+        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
+        // -> otherwise the user would be able to submit many solutions before they are evaluated
+        return TRUE;
+      }
 
+      // keep only solutions, which are marked as valid (both manual and automatic way)
+      $evaluation = $submission->getEvaluation();
+      return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
+    }; 
+    
     return $this->submissions
       ->matching($fromThatUser)
       ->filter($validSubmissions);
@@ -220,7 +229,7 @@ class ExerciseAssignment implements JsonSerializable
       ->andWhere(Criteria::expr()->neq("evaluation", NULL));
 
     return array_reduce(
-      $this->submissions->matching($usersSolutions)->toArray(),
+      $this->submissions->matching($usersSolutions)->getValues(),
       function ($best, $submission) {
         if ($best === NULL) {
           return $submission;
@@ -245,6 +254,11 @@ class ExerciseAssignment implements JsonSerializable
         "first" => $this->firstDeadline->getTimestamp(),
         "second" => $this->secondDeadline->getTimestamp()
       ],
+      "maxPoints" => [
+        "first" => $this->maxPointsBeforeFirstDeadline,
+        "second" => $this->maxPointsBeforeSecondDeadline
+      ],
+      "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE // the app must perform a special request to get the valid information
     ];

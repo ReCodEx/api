@@ -53,7 +53,7 @@ class Solution implements JsonSerializable
       return [
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
-        "files" => $this->getFiles()->toArray()
+        "files" => $this->getFiles()->getValues()
       ];
     }
 

@@ -89,4 +89,18 @@ class SimpleScoreCalculator implements IScoreCalculator {
 
     return TRUE;
   }
+
+  /**
+   * Make default configuration for array of test names. Each test will
+   * have the same priority as others.
+   * @param array List of string names of tests
+   * @return string Default configuration for given tests
+   */
+  public static function getDefaultConfig(array $tests): string {
+    $config = "testWeights:\n";
+    foreach ($tests as $test) {
+      $config .= "  $test: 100\n";
+    }
+    return $config;
+  }
 }
