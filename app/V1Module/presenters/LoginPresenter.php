@@ -9,6 +9,7 @@ use App\Helpers\ExternalLogin\IExternalLoginService;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
+use App\Security\AccessToken;
 use App\Security\AccessManager;
 
 class LoginPresenter extends BasePresenter {
@@ -35,7 +36,7 @@ class LoginPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user),
+      "accessToken" => $this->accessManager->issueToken($user, [ AccessToken::SCOPE_REFRESH ]),
       "user" => $user
     ]);
   }

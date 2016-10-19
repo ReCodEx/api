@@ -12,6 +12,7 @@ use App\Exceptions\NotImplementedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InternalServerErrorException;
 
+use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
@@ -84,7 +85,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($identity !== NULL) {
       $this->user->login($identity);
       $this->user->setAuthorizator($this->authorizator);
-      $this->authorizator->setScopes($this->user, $identity->scopes);
     }
   }
 
@@ -94,7 +94,10 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @return bool
    */
   protected function isInScope(string $scope): bool {
-    return $this->user->isLoggedIn() && $this->authorizator->isInScope($this->user, $scope);
+    return $this->user->isLoggedIn()
+      && isset($this->user->identity->token)
+      && $this->user->identity->token instanceof AccessToken  
+      && $this->user->identity->token->isInScope($scope);
   }
 
   private function processParams(\Reflector $reflection) {
@@ -180,7 +183,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($reflection->hasAnnotation("LoggedIn") && !$this->user->isLoggedIn()) {
       throw new UnauthorizedException;
     }
-        
+
     if ($reflection->hasAnnotation("Role")
       && !$this->user->isInRole($reflection->getAnnotation("Role"))) {
         throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
