@@ -13,19 +13,39 @@ use App\Security\AccessManager;
  */
 class ForgottenPasswordHelper {
 
-  /** @var EntityManager Database entity manager */
+  /**
+   * Database entity manager
+   * @var EntityManager
+   */
   private $em;
 
-  /** @var EmailHelper Emails sending component */
+  /**
+   * Emails sending component
+   * @var EmailHelper
+   */
   private $emailHelper;
 
-  /** @var string Sender address of all mails, something like "noreply@recodex.cz" */
+  /**
+   * Sender address of all mails, something like "noreply@recodex.cz"
+   * @var string
+   */
   private $sender;
 
-  /** @var string Prefix of mail subject to be used */
+  /**
+   * Prefix of mail subject to be used
+   * @var string
+   */
   private $subjectPrefix;
 
-  /** @var AccessManager */
+  /**
+   * URL which will be sent to user with token.
+   * @var string
+   */
+  private $redirectUrl;
+
+  /**
+   * @var AccessManager
+   */
   private $accessManager;
 
   /**
@@ -38,22 +58,23 @@ class ForgottenPasswordHelper {
     $this->accessManager = $accessManager;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Forgotten Password Request - ");
+    $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.cz");
   }
 
   /**
    * Generate access token and send it to the given email.
    * @param Login $login
    */
-  public function process(Login $login, string $redirectUrl) {
+  public function process(Login $login) {
     // Stalk forgotten password requests a little bit and store them to database
-    $entry = new ForgottenPassword($login->user, $login->user->email, $redirectUrl);
+    $entry = new ForgottenPassword($login->user, $login->user->email, $this->redirectUrl);
     $this->em->persist($entry);
     $this->em->flush();
 
     // prepare all necessary things
     $token = $this->accessManager->issueToken($login->user, [ "modify-password" ]);
     $subject = $this->createSubject($login);
-    $message = $this->createBody($login, $redirectUrl, $token);
+    $message = $this->createBody($login, $token);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -68,10 +89,10 @@ class ForgottenPasswordHelper {
     return $this->subjectPrefix . " " . $login->username;
   }
 
-  private function createBody(Login $login, string $redirectUrl, string $token): string {
+  private function createBody(Login $login, string $token): string {
     $msg = "User " . $login->username . " requested password renewal.<br>";
     $msg .= "Password can be changed after clicking on this ";
-    $msg .= "<a href=\"" . $redirectUrl . "?token=" . $token . "\">link</a>";
+    $msg .= "<a href=\"" . $this->redirectUrl . "#" . $token . "\">link</a>";
     return $msg;
   }
 

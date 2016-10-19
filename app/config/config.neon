@@ -63,6 +63,7 @@ parameters:
       subjectPrefix: "ReCodEx Failure Report - "
 
   forgottenPassword:
+    redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz"
     emails:
       from: %emails.from%
       subjectPrefix: "ReCodEx Forgotten Password Request - "
