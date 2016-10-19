@@ -4,6 +4,7 @@ namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
 use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\JobConfig\TaskFactory;
 use App\Helpers\JobConfig\SubmissionHeader;
 
@@ -163,11 +164,14 @@ class JobConfig {
           continue; // the limits for this task are unchanged
         } else {
           $sandboxConfig = $task->getSandboxConfig();
+          if (!$sandboxConfig->hasLimits($hwGroupId)) {
+            throw new ForbiddenRequestException("It's not allowed to set limits for new hwgroup.");
+          }
           $newTaskLimits = array_merge(
-            $sandboxConfig->hasLimits($hwGroupId) ? $sandboxConfig->getLimits($hwGroupId)->toArray() : [],
+            $sandboxConfig->getLimits($hwGroupId)->toArray(),
             $limits[$task->getId()]
           );
-          $task->getSandboxConfig()->setLimits(new Limits($newTaskLimits)); // $hwGroupId is inherited from current limits
+          $sandboxConfig->setLimits(new Limits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }
       }
     }

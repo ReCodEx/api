@@ -286,7 +286,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="view-limits")
    */
   public function actionGetLimits(string $id, string $hardwareGroup) {
-    $assignment = $this->findAssignmentOrThrow($id);
+    $assignment = $this->assignments->findOrThrow($id);
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath();
@@ -296,7 +296,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($test) use ($hardwareGroup) {
-          return $test->getLimits($hardwareGroup)->getValues();
+          return $test->getLimits($hardwareGroup);
         },
         $tests
       )
@@ -309,7 +309,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="limits")
    */
   public function actionSetLimits(string $id, string $hardwareGroup) {
-    $assignment = $this->findAssignmentOrThrow($id);
+    $assignment = $this->assignments->findOrThrow($id);
     $limits = $this->getHttpRequest()->getPost("limits");
 
     if ($limits === NULL || !is_array($limits)) {
@@ -324,6 +324,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // save the new & archive the old config
     JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($jobConfig->getValues());
+    $this->sendSuccessResponse($jobConfig->toArray());
   }
 }
