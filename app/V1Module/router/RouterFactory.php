@@ -42,7 +42,7 @@ class RouterFactory {
 
   private static function createAuthRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/login", "Login:default");
-    $router[] = new GetRoute("$prefix/login/refresh", "Login:refresh");
+    $router[] = new PostRoute("$prefix/login/refresh", "Login:refresh");
     $router[] = new PostRoute("$prefix/login/<serviceId>", "Login:external");
   }
 
