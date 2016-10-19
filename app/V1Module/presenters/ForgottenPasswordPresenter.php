@@ -70,5 +70,5 @@ class ForgottenPasswordPresenter extends BasePresenter {
     $this->sendSuccessResponse([
       "passwordScore" => $passwordStrength["score"]
     ]);
-
+  }
 }
