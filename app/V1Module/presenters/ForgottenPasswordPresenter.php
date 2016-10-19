@@ -45,7 +45,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public function actionChange() {
     $req = $this->getHttpRequest();
 
-    if (!$this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
+    if (!$this->user->identity->token->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
       throw new ForbiddenRequestException("You cannot reset your password with this access token.");
     }
 
