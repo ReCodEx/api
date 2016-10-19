@@ -2,9 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
