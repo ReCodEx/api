@@ -146,6 +146,7 @@ class RouterFactory {
 
   private static function createForgottenPasswordRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
+    $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");
   }
 
 }
