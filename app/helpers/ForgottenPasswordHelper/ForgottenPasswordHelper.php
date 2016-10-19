@@ -72,7 +72,7 @@ class ForgottenPasswordHelper {
     $this->em->flush();
 
     // prepare all necessary things
-    $token = $this->accessManager->issueToken($login->user, [ "modify-password" ]);
+    $token = $this->accessManager->issueToken($login->user, [ "modify-password" ]); // TODO: token has to be valid for only few minutes
     $subject = $this->createSubject($login);
     $message = $this->createBody($login, $token);
 

@@ -12,6 +12,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidArgumentException;
 use Nette\Http\IResponse;
+use App\Security\AccessToken;
 
 use ZxcvbnPhp\Zxcvbn;
 
@@ -173,7 +174,7 @@ class UsersPresenter extends BasePresenter {
           throw new WrongCredentialsException("The old password is incorrect");
         }
         $login->setPasswordHash(Login::hashPassword($newPassword));
-      } else if ($this->isInScope("modify-password")) {
+      } else if ($this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
         // user is in modify-password scope and can change password without providing old one
         $login->setPasswordHash(Login::hashPassword($newPassword));
       }

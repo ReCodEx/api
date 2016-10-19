@@ -2,9 +2,10 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\ForgottenRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\ForgottenPasswordHelper;
 use App\Model\Repository\Logins;
+use App\Model\Entity\Login;
 use App\Security\AccessToken;
 
 class ForgottenPasswordPresenter extends BasePresenter {
@@ -44,7 +45,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public function actionChange() {
     $req = $this->getHttpRequest();
 
-    if (!$this->user->identity->token->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
+    if (!$this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
       throw new ForbiddenRequestException("You cannot reset your password with this access token.");
     }
 
@@ -52,7 +53,10 @@ class ForgottenPasswordPresenter extends BasePresenter {
     $password = $req->getPost("password");
     $login = $this->logins->findCurrent();
 
-    // @todo actually change the password
+    // actually change the password
+    $login->setPasswordHash(Login::hashPassword($password));
+    $this->logins->persist($login);
+    $this->logins->flush();
 
     $this->sendSuccessResponse("OK");
   }
