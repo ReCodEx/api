@@ -16,9 +16,9 @@ use App\Helpers\JobConfig;
 use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
+use App\Model\Repository\Groups;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\Groups;
 
 /**
  * @LoggedIn
@@ -30,6 +30,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $exercises;
+
+  /**
+   * @var Groups
+   * @inject
+   */
+  public $groups;
 
   /**
    * @var ExerciseAssignments
@@ -48,12 +54,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $files;
-
-  /**
-   * @var Groups
-   * @inject
-   */
-  public $groups; 
 
   /**
    * @var SubmissionHelper
@@ -160,7 +160,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
     $assignment->setScoreConfig(self::getDefaultScoreConfig($assignment));
-
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }
@@ -338,6 +337,6 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     // save the new & archive the old config
     JobConfig\Storage::saveJobConfig($jobConfig, $path);
 
-    $this->sendSuccessResponse($jobConfig->toArray());
+    $this->sendSuccessResponse($jobConfig->getValues());
   }
 }
