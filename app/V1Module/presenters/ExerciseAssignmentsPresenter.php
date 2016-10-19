@@ -53,7 +53,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @var Groups
    * @inject
    */
-  public $groups; 
+  public $groups;
 
   /**
    * @var SubmissionHelper
