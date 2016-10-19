@@ -25,7 +25,9 @@ class ExerciseAssignment implements JsonSerializable
     int $maxPointsBeforeSecondDeadline,
     Exercise $exercise,
     Group $group,
-    bool $isPublic
+    bool $isPublic,
+    string $jobConfigFilePath,
+    int $submissionsCountLimit
   ) {
     $this->name = $name;
     $this->description = $description;
@@ -37,19 +39,24 @@ class ExerciseAssignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->submissionsCountLimit = $submissionsCountLimit;
+    $this->jobConfigFilePath = $jobConfigFilePath;
+    $this->scoreConfig = "";
   }
 
-  public static function assignToGroup(Exercise $exercies, Group $group, $isPublic = FALSE) {
+  public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
     return new self(
       $exercise->name,
       $exercise->assignment,
-      NULL,
+      new DateTime,
       0,
-      NULL,
+      new DateTime,
       0,
       $exercise,
       $group,
-      $isPublic
+      $isPublic,
+      $exercise->getJobConfigFilePath(),
+      50
     );
   }
 

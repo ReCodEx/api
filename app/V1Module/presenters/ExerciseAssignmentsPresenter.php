@@ -12,6 +12,7 @@ use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseAssignments;
+use App\Model\Repository\Groups;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
 
@@ -25,6 +26,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $exercises;
+
+  /**
+   * @var Groups
+   * @inject
+   */
+  public $groups;
 
   /**
    * @var ExerciseAssignments
@@ -102,7 +109,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = ExerciseAssignment::assignExerciseToGroup($exercise, $group, FALSE);
+    $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }
