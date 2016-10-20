@@ -2,9 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
-
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
 use App\Model\Repository\Comments;
@@ -14,16 +12,17 @@ use App\Model\Repository\Comments;
  */
 class CommentsPresenter extends BasePresenter {
 
-  /** @var Comments */
+  /**
+   * @var Comments
+   * @inject
+   */
   private $comments;
 
   /**
-   * @param Comments $comments  Comments repository
+   *
+   * @param string $id
+   * @return CommentThread
    */
-  public function __construct(Comments $comments) {
-    $this->comments = $comments;
-  }
-
   protected function findThreadOrCreateIt(string $id) {
     $thread = $this->comments->get($id);
     if (!$thread) {
@@ -58,7 +57,7 @@ class CommentsPresenter extends BasePresenter {
     $text = $this->getHttpRequest()->getPost("text");
     $isPrivate = $this->getHttpRequest()->getPost("isPrivate") === "yes";
     $comment = Comment::createComment($thread, $user, $text, $isPrivate);
-    
+
     $this->comments->persistComment($comment);
     $this->comments->persistThread($thread);
     $this->comments->flush();
@@ -73,7 +72,7 @@ class CommentsPresenter extends BasePresenter {
   public function actionTogglePrivate(string $threadId, string $commentId) {
     $user = $this->users->findCurrentUserOrThrow();
     $comment = $this->comments->findUsersComment($user, $commentId);
-    
+
     if (!$comment || $comment->getCommentThread()->getId() !== $threadId) {
       throw new ForbiddenRequestException("This comment does not exist or you cannot access it.");
     }

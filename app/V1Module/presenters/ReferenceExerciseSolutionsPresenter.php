@@ -2,7 +2,6 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionEvaluations;
@@ -18,19 +17,34 @@ use Nette\Utils\Arrays;
 
 class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
-  /** @inject @var Exercises */
+  /**
+   * @var Exercises
+   * @inject
+   */
   public $exercises;
 
-  /** @inject @var UploadedFiles */
+  /**
+   * @var UploadedFiles
+   * @inject
+   */
   public $files;
 
-  /** @inject @var ReferenceExerciseSolutions */
+  /**
+   * @var ReferenceExerciseSolutions
+   * @inject
+   */
   public $referenceSolutions;
 
-  /** @inject @var ReferenceSolutionEvaluations */
+  /**
+   * @var ReferenceSolutionEvaluations
+   * @inject
+   */
   public $referenceEvaluations;
 
-  /** @inject @var SubmissionHelper */
+  /**
+   * @var SubmissionHelper
+   * @inject
+   */
   public $submissionHelper;
 
   /**

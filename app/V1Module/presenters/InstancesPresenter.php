@@ -12,12 +12,24 @@ use App\Model\Entity\Licence;
 
 class InstancesPresenter extends BasePresenter {
 
-  /** @inject @var Instances */
+  /**
+   * @var Instances
+   * @inject
+   */
   public $instances;
 
-  /** @inject @var Licences */
+  /**
+   * @var Licences
+   * @inject
+   */
   public $licences;
 
+  /**
+   *
+   * @param string $id
+   * @return Instance
+   * @throws NotFoundException
+   */
   protected function findInstanceOrThrow(string $id) {
     $instance = $this->instances->get($id);
     if (!$instance) {
@@ -119,7 +131,7 @@ class InstancesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     if (!$user->belongsTo($instance)
       && $user->getRole()->hasLimitedRights()) {
-        throw new ForbiddenRequestException("You cannot access this instance users."); 
+        throw new ForbiddenRequestException("You cannot access this instance users.");
     }
 
     $members = $instance->getMembers($search);

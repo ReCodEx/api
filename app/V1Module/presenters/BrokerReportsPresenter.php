@@ -13,7 +13,6 @@ use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
-use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
 class BrokerReportsPresenter extends BasePresenter {
@@ -21,19 +20,34 @@ class BrokerReportsPresenter extends BasePresenter {
   const STATUS_OK = "OK";
   const STATUS_FAILED = "FAILED";
 
-  /** @inject @var FailureHelper */
+  /**
+   * @var FailureHelper
+   * @inject
+   */
   public $failureHelper;
 
-  /** @inject @var EmailHelper */
+  /**
+   * @var EmailHelper
+   * @inject
+   */
   public $emailHelper;
 
-  /** @inject @var EvaluationLoader */
+  /**
+   * @var EvaluationLoader
+   * @inject
+   */
   public $evaluationLoader;
 
-  /** @inject @var Submissions */
+  /**
+   * @var Submissions
+   * @inject
+   */
   public $submissions;
 
-  /** @inject @var SolutionEvaluations */
+  /**
+   * @var SolutionEvaluations
+   * @inject
+   */
   public $evaluations;
 
   /**
@@ -51,7 +65,7 @@ class BrokerReportsPresenter extends BasePresenter {
   }
 
   /**
-   * The actions of this presenter have specific 
+   * The actions of this presenter have specific
    */
   public function startup() {
     $req = $this->getHttpRequest();
@@ -89,7 +103,7 @@ class BrokerReportsPresenter extends BasePresenter {
             $submission = $this->findSubmissionOrThrow($jobId->getId());
             $this->loadEvaluation($submission);
             break;
-        } 
+        }
         break;
       case self::STATUS_FAILED:
         $message = $this->getHttpRequest()->getPost("message", "");

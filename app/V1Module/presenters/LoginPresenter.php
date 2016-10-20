@@ -14,20 +14,33 @@ use App\Security\AccessManager;
 
 class LoginPresenter extends BasePresenter {
 
-  /** @inject @var Logins */
+  /**
+   * @var Logins
+   * @inject
+   */
   public $logins;
 
-  /** @inject @var ExternalLogins */
+  /**
+   * @var ExternalLogins
+   * @inject
+   */
   public $externalLogins;
 
-  /** @inject @var CAS */
+  /**
+   * @var CAS
+   * @inject
+   */
   public $CAS;
 
-  /** @inject @var AccessManager */
+  /**
+   * @var AccessManager
+   * @inject
+   */
   public $accessManager;
 
   /**
    * Sends response with an access token, if the user exists.
+   * @param User $user
    * @throws WrongCreedentialsException
    */
   private function trySendingLoggedInResponse($user) {

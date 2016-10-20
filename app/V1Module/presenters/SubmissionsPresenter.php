@@ -5,15 +5,9 @@ namespace App\V1Module\Presenters;
 use App\Helpers\EvaluationLoader;
 
 use App\Model\Entity\Submission;
-use App\Model\Entity\SubmissionEvaluation;
-use App\Model\Entity\TestResult;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
-use App\Model\Repository\ExerciseAssignments;
-use App\Model\Repository\UploadedFiles;
-
 use App\Exceptions\NotFoundException;
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
 /**
@@ -21,18 +15,27 @@ use App\Exceptions\SubmissionEvaluationFailedException;
  */
 class SubmissionsPresenter extends BasePresenter {
 
-  /** @inject @var Submissions */
+  /**
+   * @var Submissions
+   * @inject
+   */
   public $submissions;
 
-  /** @inject @var SolutionEvaluations */
+  /**
+   * @var SolutionEvaluations
+   * @inject
+   */
   public $evaluations;
 
-  /** @inject @var EvaluationLoader */
+  /**
+   * @var EvaluationLoader
+   * @inject
+   */
   public $evaluationLoader;
 
   /**
    * @param string $id
-   * @return mixed
+   * @return Submission
    * @throws NotFoundException
    */
   protected function findSubmissionOrThrow(string $id) {

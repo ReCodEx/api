@@ -2,19 +2,14 @@
 
 namespace App\V1Module\Presenters;
 
-use App;
-use App\Exceptions\NotFoundException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
 use App\Helpers\UploadedFileStorage;
-
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\Users;
-
 use Nette\Application\Responses\FileResponse;
 
 /**
@@ -22,18 +17,23 @@ use Nette\Application\Responses\FileResponse;
  */
 class UploadedFilesPresenter extends BasePresenter {
 
-  /** @var UploadedFiles */
+  /**
+   * @var UploadedFiles
+   * @inject
+   */
   private $uploadedFiles;
 
-  /** @var UploadedFileStorage */
+  /**
+   * @var UploadedFileStorage
+   * @inject
+   */
   private $fileStorage;
 
-  public function __construct(Users $users, UploadedFiles $files, UploadedFileStorage $fileStorage) {
-    parent::__construct();
-    $this->uploadedFiles = $files;
-    $this->fileStorage = $fileStorage;
-  }
-
+  /**
+   *
+   * @param UploadedFile $file
+   * @throws ForbiddenRequestException
+   */
   private function throwIfUserCantAccessFile(UploadedFile $file) {
     $user = $this->users->findCurrentUserOrThrow();
     if ($file->getUser()->getId() !== $user->getId()) { // @todo the admins and supervisors of the group, into which the assignment for which this file was submitted as solution should be able to access this file
