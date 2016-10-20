@@ -4,18 +4,16 @@ namespace App\Helpers;
 
 use Latte;
 use Nette\Utils\Arrays;
-
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\ForgottenPassword;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
-
 use DateTime;
 use DateInterval;
 
 /**
- * Sending error reports to administrator by email.
+ * Provides all necessary things which are needed on forgotten password request.
  */
 class ForgottenPasswordHelper {
 
@@ -62,7 +60,10 @@ class ForgottenPasswordHelper {
 
   /**
    * Constructor
-   * @param \App\Helpers\EmailHelper $emailHelper
+   * @param EntityManager $em
+   * @param EmailHelper $emailHelper
+   * @param AccessManager $accessManager
+   * @param array $params Parameters from configuration file
    */
   public function __construct(EntityManager $em, EmailHelper $emailHelper, AccessManager $accessManager , array $params) {
     $this->em = $em;
@@ -77,6 +78,7 @@ class ForgottenPasswordHelper {
   /**
    * Generate access token and send it to the given email.
    * @param Login $login
+   * @return bool If sending was successful or not
    */
   public function process(Login $login) {
     // Stalk forgotten password requests a little bit and store them to database
@@ -98,10 +100,21 @@ class ForgottenPasswordHelper {
     );
   }
 
+  /**
+   * Creates and returns subject of email message.
+   * @param Login $login
+   * @return string
+   */
   private function createSubject(Login $login): string {
     return $this->subjectPrefix . " " . $login->username;
   }
 
+  /**
+   * Creates and return body of email message.
+   * @param Login $login
+   * @param string $token
+   * @return string
+   */
   private function createBody(Login $login, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
