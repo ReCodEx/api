@@ -1,4 +1,4 @@
-<?php
+je<?php
 
 namespace App\V1Module\Presenters;
 
@@ -21,13 +21,13 @@ class UploadedFilesPresenter extends BasePresenter {
    * @var UploadedFiles
    * @inject
    */
-  private $uploadedFiles;
+  public $uploadedFiles;
 
   /**
    * @var UploadedFileStorage
    * @inject
    */
-  private $fileStorage;
+  public $fileStorage;
 
   /**
    *

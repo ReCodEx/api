@@ -15,7 +15,7 @@ class ExercisesPresenter extends BasePresenter {
    * @var Exercises
    * @inject
    */
-  private $exercises;
+  public $exercises;
 
   /**
    *

@@ -16,7 +16,7 @@ class CommentsPresenter extends BasePresenter {
    * @var Comments
    * @inject
    */
-  private $comments;
+  public $comments;
 
   /**
    *
