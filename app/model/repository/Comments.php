@@ -12,10 +12,12 @@ use App\Model\Entity\User;
 class Comments extends BaseRepository {
 
   private $threads;
+  private $comments;
 
   public function __construct(EntityManager $em) {
     parent::__construct($em, Comment::CLASS);
     $this->threads = $em->getRepository(CommentThread::CLASS);
+    $this->comments = $em->getRepository(Comment::CLASS);
   }
 
   public function get($id) {
@@ -27,7 +29,7 @@ class Comments extends BaseRepository {
   }
 
   public function persistThread(CommentThread $thread) {
-    $this->em->persist($thread);
+    $this->persist($thread);
   }
 
   public function findUsersComment(User $user, string $id) {
