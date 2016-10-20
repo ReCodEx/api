@@ -77,15 +77,12 @@ class SolutionEvaluation implements JsonSerializable
   protected $resultYml;
 
   /**
-   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="submissionEvaluation", cascade={"persist"})
+   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="solutionEvaluation", cascade={"persist"})
    */
   protected $testResults;
 
   /** @var array */
   private $scores;
-
-  /** @var float */
-  private $maxPoints;
 
   public function setTestResults(array $testResults) {
     $this->scores = [];
@@ -103,7 +100,6 @@ class SolutionEvaluation implements JsonSerializable
       "score" => $this->score,
       "points" => $this->points,
       "bonusPoints" => $this->bonusPoints,
-      "maxPoints" => $this->maxPoints,
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
@@ -130,8 +126,8 @@ class SolutionEvaluation implements JsonSerializable
     $this->testResults = new ArrayCollection;
     $this->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
     $this->score = $calculator->computeScore($this->scores);
+    $this->bonusPoints = 0;
     $this->points = $this->score * $submission->getMaxPoints();
-    $this->maxPoints = $submission->getMaxPoints($this->evaluatedAt);
   }
 
 }
