@@ -4,16 +4,19 @@ namespace App;
 
 use Nette;
 use Nette\Application\Routers\RouteList;
-use Nette\Application\Routers\Route;
 
 
+/**
+ * Main router factory which is used to create all possible routes.
+ */
 class RouterFactory
 {
   use Nette\StaticClass;
 
   /**
-    * @return Nette\Application\IRouter
-    */
+   * Create list of routes from all modules.
+   * @return Nette\Application\IRouter
+   */
   public static function createRouter()
   {
     $router = new RouteList;

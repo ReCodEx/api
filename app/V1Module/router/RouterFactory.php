@@ -3,6 +3,7 @@
 namespace App\V1Module;
 
 use Nette;
+use Nette\Application\IRouter;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
@@ -11,13 +12,18 @@ use App\V1Module\Router\PutRoute;
 use App\V1Module\Router\DeleteRoute;
 use App\V1Module\Router\PreflightRoute;
 
+
+/**
+ * Router factory for V1 module.
+ */
 class RouterFactory {
 
   use Nette\StaticClass;
 
   /**
-    * @return Nette\Application\IRouter
-    */
+   * Create router with all routes for V1 module.
+   * @return IRouter
+   */
   public static function createRouter() {
     $router = new RouteList("V1");
 
@@ -40,28 +46,53 @@ class RouterFactory {
     return $router;
   }
 
+  /**
+   * Adds all Authentication endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createAuthRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/login", "Login:default");
     $router[] = new PostRoute("$prefix/login/refresh", "Login:refresh");
     $router[] = new PostRoute("$prefix/login/<serviceId>", "Login:external");
   }
 
+  /**
+   * Adds all BrokerReports endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createBrokerReportsRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
     $router[] = new PostRoute("$prefix/job-status/<jobId>", "BrokerReports:jobStatus");
   }
 
+  /**
+   * Adds all Comments endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createCommentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "Comments:default");
     $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
     $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/toggle", "Comments:togglePrivate");
   }
 
+  /**
+   * Adds all Exercises endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createExercisesRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
   }
 
+  /**
+   * Adds all Assignments endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createExerciseAssignmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
     $router[] = new PostRoute("$prefix", "ExerciseAssignments:create");
@@ -75,6 +106,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:setLimits");
   }
 
+  /**
+   * Adds all Groups endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createGroupsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Groups:");
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
@@ -101,6 +137,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
   }
 
+  /**
+   * Adds all Instances endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createInstancesRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Instances:");
     $router[] = new PostRoute("$prefix", "Instances:createInstance");
@@ -115,16 +156,31 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>/licences/<licenceId>", "Instances:deleteLicence");
   }
 
+  /**
+   * Adds all ReferenceSolutions endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createReferenceSolutionsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
     $router[] = new PostRoute("$prefix/<exerciseId>/evaluate/<id>", "ReferenceExerciseSolutions:evaluate");
   }
 
+  /**
+   * Adds all Submission endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createSubmissionRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Submissions:");
     $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
   }
 
+  /**
+   * Adds all UploadedFiles endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createUploadedFilesRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
     $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
@@ -132,6 +188,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");
   }
 
+  /**
+   * Adds all Users endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");

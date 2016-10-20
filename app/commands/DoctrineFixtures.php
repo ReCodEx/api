@@ -2,13 +2,10 @@
 
 namespace App\Console;
 
-use Doctrine;
-use Entity;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
-use Kdyby\Doctrine\EntityManager;
 
 /**
  * Fill in database with initial data. Actual data are stored in YAML file
@@ -18,12 +15,8 @@ use Kdyby\Doctrine\EntityManager;
 class DoctrineFixtures extends Command {
 
   /**
-   * @inject @var EntityManager Entity manager
-   */
-  public $em;
-
-  /**
-   * @var AliceLoaderInterface Loader of YAML files with database values
+   * Loader of YAML files with database values
+   * @var AliceLoaderInterface
    */
   private $aliceLoader;
 

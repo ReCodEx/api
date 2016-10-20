@@ -2,6 +2,9 @@
 
 namespace App\V1Module\Router;
 
+/**
+ * HTTP Delete request route.
+ */
 class DeleteRoute extends MethodRoute {
 
   /**

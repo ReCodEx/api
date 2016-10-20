@@ -2,6 +2,9 @@
 
 namespace App\V1Module\Router;
 
+/**
+ * HTTP Get request route.
+ */
 class GetRoute extends MethodRoute {
 
   /**

@@ -2,6 +2,9 @@
 
 namespace App\V1Module\Router;
 
+/**
+ * HTTP Post request route.
+ */
 class PostRoute extends MethodRoute {
 
   /**
