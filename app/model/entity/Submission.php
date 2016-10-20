@@ -148,7 +148,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
-        "files" => $this->getSolution()->getFiles()->getValues()
+        "files" => $this->getSolution()->getFiles()->getValues(),
+        "maxPoints" => $this->getMaxPoints()
       ];
     }
 

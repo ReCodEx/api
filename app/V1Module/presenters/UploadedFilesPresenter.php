@@ -47,7 +47,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @todo: Check if this user can access the file
    */
   public function actionDetail(string $id) {
-    $file = $this->files->findOrThrow($id);
+    $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
     $file->setDownloadUrl($this->link("//download", $id));
     $this->sendSuccessResponse($file);
@@ -59,7 +59,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @todo: Check if this user can access the file
    */
   public function actionDownload(string $id) {
-    $file = $this->files->findOrThrow($id);
+    $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
     $this->send(new FileResponse($file->getFilePath(), $file->getName()));
   }
@@ -70,7 +70,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @todo: Check if this user can access the file
    */
   public function actionContent(string $id) {
-    $file = $this->findFileOrThrow($id);
+    $file = $this->uploadedFiles->findOrThrow($id);
     $this->sendSuccessResponse($file->getContent());
   }
 
