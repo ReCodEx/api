@@ -4,22 +4,25 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\NotFoundException;
 use App\Model\Repository\Exercises;
+use App\Model\Entity\Exercise;
 
 /**
  * @LoggedIn
  */
 class ExercisesPresenter extends BasePresenter {
 
-  /** @var Exercises */
+  /**
+   * @var Exercises
+   * @inject
+   */
   private $exercises;
 
   /**
-   * @param Exercises $exercises  Exercises repository
+   *
+   * @param string $id
+   * @return Exercise
+   * @throws NotFoundException
    */
-  public function __construct(Exercises $exercises) {
-    $this->exercises = $exercises;
-  }
-
   protected function findExerciseOrThrow(string $id) {
     $exercise = $this->exercises->get($id);
     if (!$exercise) {

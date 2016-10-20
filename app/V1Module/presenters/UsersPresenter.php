@@ -8,7 +8,6 @@ use App\Model\Entity\User;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Logins;
 use App\Model\Repository\Roles;
-use App\Model\Repository\Users;
 use App\Security\AccessManager;
 
 use App\Exceptions\BadRequestException;
@@ -18,16 +17,28 @@ use ZxcvbnPhp\Zxcvbn;
 
 class UsersPresenter extends BasePresenter {
 
-  /** @inject @var Logins */
+  /**
+   * @var Logins
+   * @inject
+   */
   public $logins;
 
-  /** @inject @var AccessManager */
+  /**
+   * @var AccessManager
+   * @inject
+   */
   public $accessManager;
 
-  /** @inject @var Roles */
+  /**
+   * @var Roles
+   * @inject
+   */
   public $roles;
 
-  /** @inject @var Instances */
+  /**
+   * @var Instances
+   * @inject
+   */
   public $instances;
 
   /**

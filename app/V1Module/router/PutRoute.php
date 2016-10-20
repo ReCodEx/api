@@ -2,6 +2,9 @@
 
 namespace App\V1Module\Router;
 
+/**
+ * HTTP Put request route.
+ */
 class PutRoute extends MethodRoute {
 
   /**

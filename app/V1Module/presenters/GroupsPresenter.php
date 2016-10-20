@@ -3,29 +3,42 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Group;
-use App\Model\Entity\GroupMembership;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
-use Kdyby\Doctrine\EntityManager;
 
 /**
  * @LoggedIn
  */
 class GroupsPresenter extends BasePresenter {
 
-  /** @inject @var Groups */
+  /**
+   * @var Groups
+   * @inject
+   */
   public $groups;
 
-  /** @inject @var Instances */
+  /**
+   * @var Instances
+   * @inject
+   */
   public $instances;
 
-  /** @inject @var Users */
+  /**
+   * @var Users
+   * @inject
+   */
   public $users;
 
+  /**
+   *
+   * @param type $id
+   * @return Group
+   * @throws NotFoundException
+   */
   protected function findGroupOrThrow($id) {
     $group = $this->groups->get($id);
     if (!$group) {
@@ -322,7 +335,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already member of the group 
+    // make sure that the user is not already member of the group
     if ($group->isStudentOf($user) === FALSE) {
       $user->makeStudentOf($group);
       $this->groups->flush();
@@ -348,7 +361,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is student of the group 
+    // make sure that the user is student of the group
     if ($group->isStudentOf($user) === TRUE) {
       $membership = $user->findMembershipAsStudent($group);
       if ($membership) {
@@ -401,7 +414,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already supervisor of the group 
+    // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
       $membership = $user->findMembershipAsSupervisor($group);
       if ($membership) {
@@ -439,7 +452,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already member of the group 
+    // make sure that the user is not already member of the group
     if ($group->isAdminOf($user) === FALSE) {
       $group->makeAdmin($user);
       $this->groups->flush();

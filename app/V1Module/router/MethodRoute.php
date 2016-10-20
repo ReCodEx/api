@@ -8,6 +8,10 @@ use Nette\Application\IRouter;
 use Nette\Application\Request;
 use Nette\Application\Routers\Route;
 
+/**
+ * Base class of all module routes which construct URLs. And also does all
+ * checkings of HTTP request method against the one given during construction.
+ */
 class MethodRoute implements IRouter {
 
   /** @var string */

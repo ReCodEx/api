@@ -10,6 +10,9 @@ use Nette\Application\IRouter;
 use Nette\Application\Request;
 use Nette\Utils\Strings;
 
+/**
+ * HTTP Options request route aka. preflight requests.
+ */
 class PreflightRoute implements IRouter {
 
   /** @var string */

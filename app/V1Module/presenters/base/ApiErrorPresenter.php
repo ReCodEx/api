@@ -14,7 +14,10 @@ use Tracy\ILogger;
  */
 class ApiErrorPresenter extends \App\Presenters\BasePresenter {
 
-  /** @var \Tracy\ILogger @inject */
+  /**
+   * @var ILogger
+   * @inject
+   */
   public $logger;
 
   /**

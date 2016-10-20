@@ -2,9 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
@@ -292,7 +290,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $tests = $jobConfig->getTests();
 
-    // Array of test-id as a key and the value is another array of task-id and limits as Limits type 
+    // Array of test-id as a key and the value is another array of task-id and limits as Limits type
     $listTestLimits = array_map(
       function ($test) use ($hardwareGroup) {
         return $test->getLimits($hardwareGroup);
@@ -312,8 +310,8 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
       $listTestLimits
     );
 
-    $this->sendSuccessResponse($listTestArray); 
-      
+    $this->sendSuccessResponse($listTestArray);
+
   }
 
   /**
