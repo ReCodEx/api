@@ -13,6 +13,7 @@ use App\Exceptions\ForbiddenRequestException;
 use Nette\Http\Request;
 use Nette\Security\Identity;
 use Nette\Utils\Strings;
+use Nette\Utils\Arrays;
 
 use Firebase\JWT\JWT;
 use DomainException;
@@ -26,9 +27,30 @@ class AccessManager {
   /** @var Users  Users repository */
   protected $users;
 
+  /** @var string Identification of the issuer of the token */
+  private $issuer;
+
+  /** @var string Identification of the audience of the token */
+  private $audience;
+
+  /** @var string[] Allowed algorithms for the encoding of the signature */
+  private $allowedAlgorithms;
+
+  /** @var string Name of the algorithm currently used for encrypting the signature of the token. */
+  private $usedAlgoirthm;
+
+  /** @var string Verification key */
+  private $verificationKey;
+
   public function __construct(array $parameters, Users $users) {
     $this->users = $users;
-    $this->parameters = $parameters;
+    $this->verificationKey = Arrays::get($parameters, "verificationKey");
+    $this->expiration = Arrays::get($parameters, "expiration", 60 * 60); // one hour in seconds
+    $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.projekty.ms.mff.cuni.cz");
+    $this->audience = Arrays::get($parameters, "audience", "https://recodex.projekty.ms.mff.cuni.cz");
+    $this->allowedAlgorithms = Arrays::get($parameters, "allowedAlgorithms", [ "HS256" ]);
+    $this->usedAlgorithm = Arrays::get($parameters, "usedAlogrithm", "HS256");
+    JWT::$leeway = Arrays::get($parameters, "leeway", 10); // 10 seconds
   }
 
   /**
@@ -38,7 +60,7 @@ class AccessManager {
    */
   public function getIdentity(Request $req) {
     try {
-      $token = $this->getGivenAccessTokenOrThrow($req);
+      $token = self::getGivenAccessTokenOrThrow($req);
       $decodedToken = $this->decodeToken($token);
       $user = $this->getUser($decodedToken);
       $scopes = [];
@@ -59,10 +81,8 @@ class AccessManager {
    * @throws InvalidAccessTokenException
    */
   public function decodeToken($token): AccessToken {
-    JWT::$leeway = $this->parameters['leeway'];
-
     try {
-      $decodedToken = JWT::decode($token, $this->getSecretVerificationKey(), $this->getAllowedAlgs());
+      $decodedToken = JWT::decode($token, $this->verificationKey, $this->allowedAlgorithms);
     } catch (DomainException $e) {
       throw new InvalidAccessTokenException($token);
     } catch (UnexpectedValueException $e) {
@@ -102,14 +122,18 @@ class AccessManager {
    * @param   int      $exp      Expiration of the token in seconds
    * @return  string
    */
-  public function issueToken(User $user, array $scopes = [], $exp = NULL) {
-    if ($exp === NULL) {
-      $exp = $this->parameters['expiration'];
+  public function issueToken(User $user, $scopes = NULL, $exp = NULL) {
+    if ($exp === NULL || !is_numeric($exp)) {
+      $exp = $this->expiration;
+    }
+
+    if (!$scopes || !is_array($scopes)) {
+      $scopes = [];
     }
 
     $tokenPayload = [
-      "iss" => $this->parameters['issuer'],
-      "aud" => $this->parameters['audience'],
+      "iss" => $this->issuer,
+      "aud" => $this->audience,
       "iat" => time(),
       "nbf" => time(),
       "exp" => time() + $exp,
@@ -117,21 +141,7 @@ class AccessManager {
       "scopes" => $scopes
     ];
 
-    return JWT::encode($tokenPayload, $this->getSecretVerificationKey(), $this->getAlg());
-  }
-
-  private function getSecretVerificationKey() {
-    return $this->parameters['verificationKey'];
-  }
-
-  private function getAllowedAlgs() {
-    // allowed algs must be separated from the used algs - if the algorithm is changed in the future,
-    // we must accept the older algorithm until all the old tokens expire
-    return $this->parameters['allowedAlgorithms'];
-  }
-
-  private function getAlg() {
-    return $this->parameters['usedAlgorithm'];
+    return JWT::encode($tokenPayload, $this->verificationKey, $this->usedAlgorithm);
   }
 
   /**
@@ -139,7 +149,7 @@ class AccessManager {
    * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
    * @throws NoAccessTokenException
    */
-  public function getGivenAccessTokenOrThrow(Request $request) {
+  public static function getGivenAccessTokenOrThrow(Request $request) {
     $token = $this->getGivenAccessToken($request);
     if ($token === NULL) {
       throw new NoAccessTokenException;
@@ -151,16 +161,18 @@ class AccessManager {
    * Extract the access token from the request.
    * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
    */
-  public function getGivenAccessToken(Request $request) {
+  public static function getGivenAccessToken(Request $request) {
     $accessToken = $request->getQuery("access_token");
-    if($accessToken !== NULL) return $accessToken; // the token is specified in the URL
+    if($accessToken !== NULL && Strings::length($accessToken) > 0) {
+      return $accessToken; // the token specified in the URL is prefered
+    }
 
     // if the token is not in the URL, try to find the "Authorization" header with the bearer token
     $authorizationHeader = $request->getHeader("Authorization", NULL);
     $parts = Strings::split($authorizationHeader, "/ /");
     if(count($parts) === 2) {
       list($bearer, $accessToken) = $parts;
-      if($bearer === "Bearer" && !Strings::contains($accessToken, " ")) {
+      if($bearer === "Bearer" && !Strings::contains($accessToken, " ") && Strings::length($accessToken) > 0) {
         return $accessToken;
       }
     }
