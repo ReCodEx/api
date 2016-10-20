@@ -18,10 +18,10 @@ class TestResult implements ITestResult {
   /** @var TestConfig Test configuration */
   private $config;
 
-  /** @var ExecutionTestResult[] Result of the execution task */
+  /** @var ExecutionTaskResult[] Result of the execution task */
   private $executionResults;
 
-  /** @var EvalutationTestResult Result of the evaluation task */
+  /** @var EvalutationTaskResult Result of the evaluation task */
   private $evaluationResult;
 
   /** @var string Status of the test */

@@ -29,7 +29,7 @@ class TestResult implements JsonSerializable
     $this->timeExceeded = !$result->isTimeOK();
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
-    $this->stats = (string) $result->getStats();
+    $this->stats = implode(",", array_map(function ($stat) { return (string) $stat; }, $result->getStats()));
   }
 
   /**
