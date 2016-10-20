@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Model\Entity\Submission;
-use App\Model\Entity\SubmissionEvaluation;
+use App\Model\Entity\SolutionEvaluation;
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\EvaluationResults\EvaluationResults;
@@ -40,7 +40,7 @@ class EvaluationLoader {
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
     $calculator = ScoreCalculatorFactory::create($submission->getExerciseAssignment()->getScoreConfig());
-    return new SubmissionEvaluation($submission, $results, $calculator);
+    return new SolutionEvaluation($submission, $results, $calculator);
   }
 
   /**

@@ -150,7 +150,7 @@ class AccessManager {
    * @throws NoAccessTokenException
    */
   public static function getGivenAccessTokenOrThrow(Request $request) {
-    $token = $this->getGivenAccessToken($request);
+    $token = self::getGivenAccessToken($request);
     if ($token === NULL) {
       throw new NoAccessTokenException;
     }
