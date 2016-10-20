@@ -53,4 +53,40 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
+  /**
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   */
+  public function actionUpdateDetail(string $id) {
+    $req = $this->getHttpRequest();
+
+    // TODO
+
+    $this->sendSuccessResponse();
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(exercises="create")
+   */
+  public function actionCreate() {
+    $req = $this->getHttpRequest();
+
+    // TODO
+
+    $this->sendSuccessResponse();
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(exercises="fork")
+   */
+  public function actionForkFrom(string $id) {
+    $req = $this->getHttpRequest();
+
+    // TODO
+
+    $this->sendSuccessResponse();
+  }
+
 }
