@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use \DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
 /**
@@ -89,7 +88,6 @@ class Exercise implements JsonSerializable
       $difficulty, $jobConfigFilePath, $exercise, User $user) {
     $this->name = $name;
     $this->version = $version;
-    $this->description = $description;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
     $this->description = $description;
@@ -100,21 +98,20 @@ class Exercise implements JsonSerializable
     $this->author = $user;
   }
 
-  public static function create($name, $description, $assignment, $difficulty,
-      $jobConfigFilePath, User $user) {
+  public static function create(User $user): Exercise {
     return new self(
-      $name,
+      "",
       1,
-      $description,
-      $assignment,
-      $difficulty,
-      $jobConfigFilePath,
+      "",
+      "",
+      "",
+      "",
       NULL,
       $user
     );
   }
 
-  public static function forkFrom(Exercise $exercise, User $user) {
+  public static function forkFrom(Exercise $exercise, User $user): Exercise {
     return new self(
       $exercise->name,
       $exercise->version + 1,
@@ -132,13 +129,14 @@ class Exercise implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "version" => $this->version,
-      "authorId" => $this->author->getId(),
-      "forkedFrom" => $this->getForkedFrom(),
+      "createdAt" => $this->createdAt,
+      "updatedAt" => $this->updatedAt,
       "description" => $this->description,
       "assignment" => $this->assignment,
       "difficulty" => $this->difficulty,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt
+      "jobConfigFilePath" => $this->jobConfigFilePath,
+      "forkedFrom" => $this->getForkedFrom(),
+      "authorId" => $this->author->getId()
     ];
   }
 

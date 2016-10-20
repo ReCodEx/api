@@ -4,6 +4,7 @@
 #
 parameters:
   uploadDir: %appDir%/../uploaded_data
+  jobConfigStorageDir: %appDir%/../job_config
 
   accessManager:
     leeway: 60
@@ -110,6 +111,7 @@ services:
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
+  - App\Helpers\JobConfigStorage(%jobConfigStorageDir%)
 
   # models - repositories
   - App\Model\Repository\Comments

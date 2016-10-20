@@ -56,6 +56,7 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * @POST
    * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="jobConfig")
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getHttpRequest();
@@ -70,11 +71,13 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="create")
    */
   public function actionCreate() {
-    $req = $this->getHttpRequest();
+    $user = $this->users->findCurrentUserOrThrow();
 
-    // TODO
+    $exercise = Exercise::create($user);
+    $this->exercises->persist($exercise);
+    $this->exercises->flush();
 
-    $this->sendSuccessResponse();
+    $this->sendSuccessResponse($exercise);
   }
 
   /**
@@ -82,11 +85,14 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="fork")
    */
   public function actionForkFrom(string $id) {
-    $req = $this->getHttpRequest();
+    $exercise = $this->exercises->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
 
-    // TODO
+    $forkedExercise = Exercise::forkFrom($exercise, $user);
+    $this->exercises->persist($forkedExercise);
+    $this->flush();
 
-    $this->sendSuccessResponse();
+    $this->sendSuccessResponse($forkedExercise);
   }
 
 }
