@@ -96,16 +96,23 @@ class AccessManager {
   }
 
   /**
-   * @param   User
+   * Issue a new JWT for the user with optional scopes and optional explicit expiration time.
+   * @param   User     $user
+   * @param   string[] $scopes   Array of scopes
+   * @param   int      $exp      Expiration of the token in seconds
    * @return  string
    */
-  public function issueToken(User $user, array $scopes = []) {
+  public function issueToken(User $user, array $scopes = [], $exp = NULL) {
+    if ($exp === NULL) {
+      $exp = $this->parameters['expiration'];
+    }
+
     $tokenPayload = [
       "iss" => $this->parameters['issuer'],
       "aud" => $this->parameters['audience'],
       "iat" => time(),
       "nbf" => time(),
-      "exp" => time() + $this->parameters['expiration'],
+      "exp" => time() + $exp,
       "sub" => $user->getId(),
       "scopes" => $scopes
     ];
