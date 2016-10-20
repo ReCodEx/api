@@ -15,10 +15,10 @@ class TestResult implements JsonSerializable
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
   public function __construct(
-    SubmissionEvaluation $evaluation,
+    SolutionEvaluation $evaluation,
     ER\ITestResult $result
   ) {
-    $this->submissionEvaluation = $evaluation;
+    $this->solutionEvaluation = $evaluation;
     $this->testName = $result->getId();
     $this->status = $result->getStatus();
     $this->score = $result->getScore();

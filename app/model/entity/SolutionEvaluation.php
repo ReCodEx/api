@@ -84,6 +84,9 @@ class SolutionEvaluation implements JsonSerializable
   /** @var array */
   private $scores;
 
+  /** @var float */
+  private $maxPoints;
+
   public function setTestResults(array $testResults) {
     $this->scores = [];
     foreach ($testResults as $result) {
@@ -100,7 +103,7 @@ class SolutionEvaluation implements JsonSerializable
       "score" => $this->score,
       "points" => $this->points,
       "bonusPoints" => $this->bonusPoints,
-      "maxPoints" => $this->submission->getMaxPoints($this->evaluatedAt),
+      "maxPoints" => $this->maxPoints,
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
@@ -121,7 +124,6 @@ class SolutionEvaluation implements JsonSerializable
     $this->evaluationFailed = !$results;
     $this->initFailed = !!$results && $results->initOK();
     $this->resultYml = (string) $results;
-    $this->submission = $submission;
     $submission->setEvaluation($this);
 
     // calculate the score and points
@@ -129,6 +131,7 @@ class SolutionEvaluation implements JsonSerializable
     $this->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
     $this->score = $calculator->computeScore($this->scores);
     $this->points = $this->score * $submission->getMaxPoints();
+    $this->maxPoints = $submission->getMaxPoints($this->evaluatedAt);
   }
 
 }
