@@ -29,21 +29,20 @@ class JobConfigStorage {
    * Save the file into storage
    * @param FileUpload $file The file to be stored
    * @param User       $user User, who uploaded the file
-   * @return bool True if storing was successful, false otherwise
+   * @return string|NULL Path to newly stored file
    */
   public function store(FileUpload $file, User $user) {
     if (!$file->isOk()) {
-      return false;
+      return NULL;
     }
 
     try {
-      $filePath = self::getFilePath($user->getId(), $file);
+      $filePath = getFilePath($user->getId(), $file);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
+      return $filePath;
     } catch (Nette\InvalidStateException $e) {
-      return false;
+      return NULL;
     }
-
-    return true;
   }
 
   /**

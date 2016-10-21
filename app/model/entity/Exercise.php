@@ -81,6 +81,10 @@ class Exercise implements JsonSerializable
    */
   protected $author;
 
+  public function isAuthor(User $user) {
+    return $this->author->id === $user->id;
+  }
+
   /**
    * Constructor
    */
@@ -96,6 +100,15 @@ class Exercise implements JsonSerializable
     $this->jobConfigFilePath = $jobConfigFilePath;
     $this->exercise = $exercise;
     $this->author = $user;
+  }
+
+  public function update($name, $description, $assignment, $difficulty) {
+    $this->name = $name;
+    $this->version++;
+    $this->updatedAt = new DateTime;
+    $this->description = $description;
+    $this->assignment = $assignment;
+    $this->difficulty = $difficulty;
   }
 
   public static function create(User $user): Exercise {
