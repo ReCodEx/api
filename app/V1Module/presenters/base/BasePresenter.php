@@ -18,7 +18,6 @@ use App\Model\Repository\Users;
 use App\Helpers\Validators;
 //use Nette\Utils\Validators;
 
-use Nette\Security\Identity;
 use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;

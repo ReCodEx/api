@@ -42,6 +42,7 @@ class RouterFactory {
     self::createSubmissionRoutes($router, "$prefix/submissions");
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
+    self::createForgottenPasswordRoutes($router, "$prefix/forgotten-password");
 
     return $router;
   }
@@ -201,6 +202,13 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
+    $router[] = new PostRoute("$prefix/detail", "Users:updateProfile"); // TODO: maybe a bit different route
+  }
+
+  private static function createForgottenPasswordRoutes($router, $prefix) {
+    $router[] = new PostRoute("$prefix", "ForgottenPassword:");
+    $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");
+    $router[] = new PostRoute("$prefix/validate-password-strength", "ForgottenPassword:validatePasswordStrength");
   }
 
 }
