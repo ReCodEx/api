@@ -93,7 +93,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   protected function isInScope(string $scope): bool {
     return $this->user->isLoggedIn()
       && isset($this->user->identity->token)
-      && $this->user->identity->token instanceof AccessToken  
+      && $this->user->identity->token instanceof AccessToken
       && $this->user->identity->token->isInScope($scope);
   }
 

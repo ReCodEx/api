@@ -19,12 +19,24 @@ class Logins extends BaseRepository {
   }
 
   /**
-   *
+   * Find currently logged in user's login.
    * @return Login|NULL
    */
   public function findCurrent() {
-    $id = $this->userSession->id;
-    return $this->findOneBy([ "user" => $id ]);
+    if ($this->userSession->isLoggedIn() === FALSE) {
+      return NULL;
+    }
+
+    return $this->findByUserId($this->userSession->id);
+  }
+
+  /**
+   * Find user's login
+   * @param   string $userId ID of the user
+   * @return  User|NULL
+   */
+  public function findByUserId($userId) {
+    return $this->findOneBy([ "user" => $userId ]);
   }
 
   /**

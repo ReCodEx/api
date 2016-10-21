@@ -41,12 +41,7 @@ class AccessManager {
       $token = $this->getGivenAccessTokenOrThrow($req);
       $decodedToken = $this->decodeToken($token);
       $user = $this->getUser($decodedToken);
-      $scopes = [];
-      if (isset($decodedToken->scopes)) {
-        $scopes = $decodedToken->scopes;
-      }
-
-      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "token" => $token ]);
+      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "token" => $decodedToken ]);
     } catch (ApiException $e) {
       return NULL; 
     }

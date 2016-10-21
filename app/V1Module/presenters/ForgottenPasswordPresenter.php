@@ -8,6 +8,8 @@ use App\Model\Repository\Logins;
 use App\Model\Entity\Login;
 use App\Security\AccessToken;
 
+use ZxcvbnPhp\Zxcvbn;
+
 class ForgottenPasswordPresenter extends BasePresenter {
 
   /**
@@ -68,9 +70,9 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public function actionValidatePasswordStrength() {
     $req = $this->getHttpRequest();
     $password = $req->getPost("password");
+    
     $zxcvbn = new Zxcvbn;
     $passwordStrength = $zxcvbn->passwordStrength($password);
-
     $this->sendSuccessResponse([
       "passwordScore" => $passwordStrength["score"]
     ]);
