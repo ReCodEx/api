@@ -12,7 +12,7 @@ use App\Exceptions\MalformedJobConfigException;
 /**
  * @ORM\Entity
  */
-class ExerciseAssignment implements JsonSerializable
+class Assignment implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -205,7 +205,7 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Submission", mappedBy="exerciseAssignment")
+   * @ORM\OneToMany(targetEntity="Submission", mappedBy="assignment")
    * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
   protected $submissions;

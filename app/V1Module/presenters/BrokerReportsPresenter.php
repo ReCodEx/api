@@ -142,7 +142,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @return void
    */
   private function notifyEvaluationFinished(Submission $submission) {
-    $exerciseName = $submission->getExerciseAssignment()->getName();
+    $exerciseName = $submission->getAssignment()->getName();
     $date = $submission->getEvaluation()->getEvaluatedAt()->format('j. n. H:i'); // @todo: Localizable
     $status = $successful === TRUE ? "Řešení je v pořádku" : "Řešení je chybné";  // @todo: Translatable
     $subject = "$exerciseName - $status [$date]";

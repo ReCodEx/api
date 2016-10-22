@@ -7,7 +7,7 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\Submission;
-use App\Model\Entity\ExerciseAssignment;
+use App\Model\Entity\Assignment;
 
 class Submissions extends BaseRepository {
 
@@ -15,7 +15,7 @@ class Submissions extends BaseRepository {
     parent::__construct($em, Submission::CLASS);
   }
 
-  public function findSubmissions(ExerciseAssignment $assignment, string $userId) {
+  public function findSubmissions(Assignment $assignment, string $userId) {
     return $this->findBy([
       "user" => $userId,
       "exerciseAssignment" => $assignment

@@ -39,7 +39,7 @@ class EvaluationLoader {
    */
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
-    $calculator = ScoreCalculatorFactory::create($submission->getExerciseAssignment()->getScoreConfig());
+    $calculator = ScoreCalculatorFactory::create($submission->getAssignment()->getScoreConfig());
     return new SolutionEvaluation($submission, $results, $calculator);
   }
 
@@ -53,7 +53,7 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $submission->getExerciseAssignment()->getJobConfigFilePath();
+    $jobConfigPath = $submission->getAssignment()->getJobConfigFilePath();
     try {
       $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath); 
       $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());

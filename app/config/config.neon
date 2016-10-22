@@ -123,7 +123,7 @@ services:
   # models - repositories
   - App\Model\Repository\Comments
   - App\Model\Repository\Exercises
-  - App\Model\Repository\ExerciseAssignments
+  - App\Model\Repository\Assignments
   - App\Model\Repository\ExternalLogins
   - App\Model\Repository\Groups
   - App\Model\Repository\Instances

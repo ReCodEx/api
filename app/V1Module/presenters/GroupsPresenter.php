@@ -303,7 +303,7 @@ class GroupsPresenter extends BasePresenter {
       $group->getBestSolutions($user),
       function ($arr, $best) {
         if ($best !== NULL) {
-          $arr[$best->getExerciseAssignment()->getId()] = [
+          $arr[$best->getAssignment()->getId()] = [
             "submissionId" => $best->getId(),
             "score" => $best->getEvaluation()->getScore(),
             "points" => $best->getEvaluation()->getPoints(),

@@ -35,7 +35,7 @@ class RouterFactory {
     self::createCommentsRoutes($router, "$prefix/comments");
     self::createBrokerReportsRoutes($router, "$prefix/broker-reports");
     self::createExercisesRoutes($router, "$prefix/exercises");
-    self::createExerciseAssignmentsRoutes($router, "$prefix/exercise-assignments");
+    self::createAssignmentsRoutes($router, "$prefix/exercise-assignments");
     self::createGroupsRoutes($router, "$prefix/groups");
     self::createInstancesRoutes($router, "$prefix/instances");
     self::createReferenceSolutionsRoutes($router, "$prefix/reference-solutions");
@@ -94,17 +94,17 @@ class RouterFactory {
    * @param type $router
    * @param type $prefix Route prefix
    */
-  private static function createExerciseAssignmentsRoutes($router, $prefix) {
-    $router[] = new GetRoute("$prefix", "ExerciseAssignments:");
-    $router[] = new PostRoute("$prefix", "ExerciseAssignments:create");
-    $router[] = new GetRoute("$prefix/<id>", "ExerciseAssignments:detail");
-    $router[] = new PostRoute("$prefix/<id>", "ExerciseAssignments:updateDetail");
-    $router[] = new DeleteRoute("$prefix/<id>", "ExerciseAssignments:remove");
-    $router[] = new GetRoute("$prefix/<id>/can-submit", "ExerciseAssignments:canSubmit");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "ExerciseAssignments:submissions");
-    $router[] = new PostRoute("$prefix/<id>/submit", "ExerciseAssignments:submit");
-    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "ExerciseAssignments:setLimits");
+  private static function createAssignmentsRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix", "Assignments:");
+    $router[] = new PostRoute("$prefix", "Assignments:create");
+    $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
+    $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
+    $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
+    $router[] = new GetRoute("$prefix/<id>/can-submit", "Assignments:canSubmit");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
+    $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
+    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:setLimits");
   }
 
   /**

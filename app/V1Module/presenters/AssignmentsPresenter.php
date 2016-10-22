@@ -8,12 +8,12 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
 
 use App\Model\Entity\Submission;
-use App\Model\Entity\ExerciseAssignment;
+use App\Model\Entity\Assignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
-use App\Model\Repository\ExerciseAssignments;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -21,7 +21,7 @@ use App\Model\Repository\UploadedFiles;
 /**
  * @LoggedIn
  */
-class ExerciseAssignmentsPresenter extends BasePresenter {
+class AssignmentsPresenter extends BasePresenter {
 
   /**
    * @var Exercises
@@ -36,7 +36,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
   public $groups;
 
   /**
-   * @var ExerciseAssignments
+   * @var Assignments
    * @inject
    */
   public $assignments;
@@ -159,13 +159,13 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = ExerciseAssignment::assignToGroup($exercise, $group, FALSE);
+    $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
     $assignment->setScoreConfig(self::getDefaultScoreConfig($assignment));
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }
 
-  private static function getDefaultScoreConfig(ExerciseAssignment $assignment): string {
+  private static function getDefaultScoreConfig(Assignment $assignment): string {
     $jobConfigPath = $assignment->getJobConfigFilePath();
     try {
       $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
@@ -255,7 +255,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $this->submissions->persist($submission);
 
     // get the job config with correct job id
-    $path = $submission->getExerciseAssignment()->getJobConfigFilePath();
+    $path = $submission->getAssignment()->getJobConfigFilePath();
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
 

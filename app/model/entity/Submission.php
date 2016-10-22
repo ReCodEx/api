@@ -55,13 +55,13 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
     /**
-     * @var ExerciseAssignment
-     * @ORM\ManyToOne(targetEntity="ExerciseAssignment")
+     * @var Assignment
+     * @ORM\ManyToOne(targetEntity="Assignment")
      */
-    protected $exerciseAssignment;
+    protected $assignment;
 
     public function getMaxPoints() {
-      return $this->exerciseAssignment->getMaxPoints($this->submittedAt);
+      return $this->assignment->getMaxPoints($this->submittedAt);
     }
 
     /**
@@ -144,7 +144,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
         "note" => $this->note,
-        "exerciseAssignmentId" => $this->exerciseAssignment->getId(),
+        "exerciseAssignmentId" => $this->assignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
@@ -156,7 +156,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     /**
      * The name of the user
      * @param string $note
-     * @param ExerciseAssignment $assignment
+     * @param Assignment $assignment
      * @param User $user          The user who submits the solution
      * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
      * @param string $hardwareGroup
@@ -164,7 +164,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE)
      * @return Submission
      */
-    public static function createSubmission(string $note, ExerciseAssignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files, bool $asynchronous = FALSE) {
+    public static function createSubmission(string $note, Assignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files, bool $asynchronous = FALSE) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE &&
         ($user->getId() === $loggedInUser->getId()
@@ -189,7 +189,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
       // now that the conditions for submission are validated, here comes the easy part:
       $entity = new Submission;
-      $entity->exerciseAssignment = $assignment;
+      $entity->assignment = $assignment;
       $entity->user = $user;
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
