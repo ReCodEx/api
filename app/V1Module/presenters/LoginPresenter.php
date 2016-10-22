@@ -4,8 +4,8 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
-use App\Helpers\ExternalLogin\CAS;
 use App\Helpers\ExternalLogin\IExternalLoginService;
+use App\Helpers\ExternalLogin\AuthService;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
@@ -27,16 +27,16 @@ class LoginPresenter extends BasePresenter {
   public $externalLogins;
 
   /**
-   * @var CAS
-   * @inject
-   */
-  public $CAS;
-
-  /**
    * @var AccessManager
    * @inject
    */
   public $accessManager;
+
+  /**
+   * @var AuthService
+   * @inject
+   */
+  public $authService;
 
   /**
    * Sends response with an access token, if the user exists.
@@ -78,19 +78,10 @@ class LoginPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-    $authService = $this->getAuthService($serviceId);
+    $authService = $this->authService->getById($serviceId);
     $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
     $this->trySendingLoggedInResponse($user);
-  }
-
-  private function getAuthService(string $serviceId): IExternalLoginService {
-    switch (strtolower($serviceId)) {
-      case $this->CAS->getServiceId():
-        return $this->CAS;
-      default:
-        throw new BadRequestException("Authentication service '$serviceId' is not supported.");
-    }
   }
 
   /**

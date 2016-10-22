@@ -197,6 +197,7 @@ class RouterFactory {
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");
+    $router[] = new PostRoute("$prefix/ext", "Users:createAccountExt");
     $router[] = new PostRoute("$prefix/validate-registration-data", "Users:validateRegistrationData");
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");

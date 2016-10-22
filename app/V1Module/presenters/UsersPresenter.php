@@ -4,13 +4,16 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
+use App\Model\Entity\ExternalLogin;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Logins;
+use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Roles;
 use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExternalLogin\AuthService;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -23,6 +26,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $logins;
+
+  /**
+   * @var ExternalLogins
+   * @inject
+   */
+  public $externalLogins;
 
   /**
    * @var AccessManager
@@ -41,6 +50,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $instances;
+
+  /**
+   * @var AuthService
+   * @inject
+   */
+  public $authService;
 
   /**
    * @GET
@@ -68,15 +83,10 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("This email address is already taken.");
     }
 
-    $roleId = $req->getPost("role", "student");
+    $roleId = "student";
     $role = $this->roles->get($roleId);
     if (!$role) {
       throw new BadRequestException("Role '$roleId' does not exist.");
-    }
-
-    if ($role->hasLimitedRights() === FALSE
-      && (!$this->user->isLoggedIn() || $this->user->isAllowed("role-$roleId", "assign"))) {
-      throw new ForbiddenRequestException("You are not allowed to assign the new user role '$roleId'");
     }
 
     $instance = $this->instances->get($req->getPost("instanceId"));
@@ -97,6 +107,52 @@ class UsersPresenter extends BasePresenter {
 
     $this->users->persist($user);
     $this->logins->persist($login);
+
+    // successful!
+    $this->sendSuccessResponse([
+      "user" => $user,
+      "accessToken" => $this->accessManager->issueToken($user)
+    ], IResponse::S201_CREATED);
+  }
+
+  /**
+   * @POST
+   * @Param(type="post", name="username", validation="string:2..")
+   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.")
+   * @Param(type="post", name="instanceId", validation="string:1..")
+   * @Param(type="post", name="serviceId", validation="string:1..")
+   */
+  public function actionCreateAccountExt() {
+    $req = $this->getHttpRequest();
+    $serviceId = $req->getPost("serviceId");
+
+    $roleId = "student";
+    $role = $this->roles->get($roleId);
+    if (!$role) {
+      throw new BadRequestException("Role '$roleId' does not exist.");
+    }
+
+    $instance = $this->instances->get($req->getPost("instanceId"));
+    if (!$instance) {
+      throw new BadRequestException("Such instance does not exist.");
+    }
+
+    $username = $req->getPost("username");
+    $password = $req->getPost("password");
+
+    $authService = $this->authService->getById($serviceId);
+    $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
+    $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
+
+    if ($user != NULL) {
+      throw new BadRequestException("User is already registered.");
+    }
+
+    $user = $externalData->createEntity();
+    $this->users->persist($user);
+
+    $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());
+    $this->externalLogins->persist($externalLogin);
 
     // successful!
     $this->sendSuccessResponse([
