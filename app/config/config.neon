@@ -138,6 +138,8 @@ services:
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
+  - App\Model\Repository\RuntimeEnvironments
+  - App\Model\Repository\AssignmentRuntimeConfigs
 
 doctrine:
   user: 'root'

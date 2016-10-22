@@ -23,8 +23,7 @@ class Assignment implements JsonSerializable
     int $maxPointsBeforeFirstDeadline,
     Exercise $exercise,
     Group $group,
-    bool $isPublic,
-    string $jobConfigFilePath,
+    bool $isPublic, // TODO: jobConfigFilePath argument was removed
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
@@ -46,7 +45,7 @@ class Assignment implements JsonSerializable
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->submissionsCountLimit = $submissionsCountLimit;
-    $this->jobConfigFilePath = $jobConfigFilePath;
+    $this->assignmentRuntimeConfigs = new ArrayCollection;
     $this->scoreConfig = "";
   }
 
@@ -59,7 +58,7 @@ class Assignment implements JsonSerializable
       $exercise,
       $group,
       $isPublic,
-      $exercise->getJobConfigFilePath(),
+      $exercise->getJobConfigFilePath(), // TODO: solve this
       50,
       FALSE
     );
@@ -88,22 +87,9 @@ class Assignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\Column(type="string", nullable=true)
+   * @ORM\ManyToMany(targetEntity="AssignmentRuntimeConfig")
    */
-  protected $jobConfigFilePath;
-
-  /**
-   *
-   * @return string File path of the
-   */
-  public function getJobConfigFilePath(): string {
-    if (!$this->jobConfigFilePath) {
-      return $this->getExercise()->getJobConfigFilePath();
-    }
-
-    // @todo: Make dependable on the programming language/technology used by the user
-    return $this->jobConfigFilePath;
-  }
+  protected $assignmentRuntimeConfigs;
 
   /**
    * @ORM\Column(type="text", nullable=true)
@@ -224,8 +210,8 @@ class Assignment implements JsonSerializable
       // keep only solutions, which are marked as valid (both manual and automatic way)
       $evaluation = $submission->getEvaluation();
       return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
-    }; 
-    
+    };
+
     return $this->submissions
       ->matching($fromThatUser)
       ->filter($validSubmissions);
