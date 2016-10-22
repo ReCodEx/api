@@ -148,7 +148,7 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("User is already registered.");
     }
 
-    $user = $externalData->createEntity();
+    $user = $externalData->createEntity($instance, $role);
     $this->users->persist($user);
 
     $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());

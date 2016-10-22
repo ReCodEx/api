@@ -11,10 +11,18 @@ use App\Exceptions\BadRequestException;
 class AuthService {
 
   /**
+   * Auth service of Charles University
    * @var CAS
-   * @inject
    */
-  public $CAS;
+  private $cas;
+
+  /**
+   * Constructor with instantiation of all login services
+   * @param CAS $cas Charles University autentication service
+   */
+  public function __construct(CAS $cas) {
+    $this->cas = $cas;
+  }
 
   /**
    * Get external service depending on the ID
@@ -24,8 +32,8 @@ class AuthService {
    */
   public function getById(string $serviceId): IExternalLoginService {
     switch (strtolower($serviceId)) {
-      case $this->CAS->getServiceId():
-        return $this->CAS;
+      case $this->cas->getServiceId():
+        return $this->cas;
       default:
         throw new BadRequestException("Authentication service '$serviceId' is not supported.");
     }

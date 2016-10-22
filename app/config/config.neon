@@ -108,8 +108,8 @@ services:
     tags: [kdyby.console.command]
 
   # external login services
-  - App\Helpers\ExternalLogin\AuthService
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
+  - App\Helpers\ExternalLogin\AuthService(@App\Helpers\ExternalLogin\CAS)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
