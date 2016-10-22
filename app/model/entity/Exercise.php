@@ -2,8 +2,8 @@
 
 namespace App\Model\Entity;
 
+use \DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
 // TODO: jobConfigFilePath lost
@@ -83,34 +83,77 @@ class Exercise implements JsonSerializable
    */
   protected $author;
 
+  public function isAuthor(User $user) {
+    return $this->author->id === $user->id;
+  }
+
+  /**
+   * Constructor
+   */
+  private function __construct($name, $version, $description, $assignment,
+      $difficulty, $solutionRuntimeConfigs, $exercise, User $user) {
+    $this->name = $name;
+    $this->version = $version;
+    $this->createdAt = new DateTime;
+    $this->updatedAt = new DateTime;
+    $this->description = $description;
+    $this->assignment = $assignment;
+    $this->difficulty = $difficulty;
+    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
+    $this->exercise = $exercise;
+    $this->author = $user;
+  }
+
+  public function update($name, $description, $assignment, $difficulty) {
+    $this->name = $name;
+    $this->version++;
+    $this->updatedAt = new DateTime;
+    $this->description = $description;
+    $this->assignment = $assignment;
+    $this->difficulty = $difficulty;
+  }
+
+  public static function create(User $user): Exercise {
+    return new self(
+      "",
+      1,
+      "",
+      "",
+      "",
+      "",
+      new ArrayCollection,
+      NULL,
+      $user
+    );
+  }
+
+  public static function forkFrom(Exercise $exercise, User $user): Exercise {
+    return new self(
+      $exercise->name,
+      $exercise->version + 1,
+      $exercise->description,
+      $exercise->assignment,
+      $exercise->difficulty,
+      $exercise->getSolutionRuntimeConfigs(),
+      $exercise,
+      $user
+    );
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "name" => $this->name,
       "version" => $this->version,
-      "authorId" => $this->author->getId(),
-      "forkedFrom" => $this->getForkedFrom(),
+      "createdAt" => $this->createdAt,
+      "updatedAt" => $this->updatedAt,
       "description" => $this->description,
       "assignment" => $this->assignment,
       "difficulty" => $this->difficulty,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt,
-      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues()
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
+      "forkedFrom" => $this->getForkedFrom(),
+      "authorId" => $this->author->getId()
     ];
   }
 
-  /**
-   * The name of the user
-   * @param  string $name   Name of the exercise
-   * @return User
-   */
-  public static function createExercise($name, $description, User $user) {
-      $entity = new Exercise;
-      $entity->name = $name;
-      $entity->exercise = NULL;
-      $entity->version = 1;
-      $entity->description = $description;
-      $entity->user = $user;
-      return $entity;
-  }
 }

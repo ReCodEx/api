@@ -228,4 +228,18 @@ App\Model\Entity\Permission:
     "resource": @instances
     "action": "view-users"
     "isAllowed": 1
-
+  "supervisor-exercises-create":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "create"
+    "isAllowed": 1
+  "supervisor-exercises-fork":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "fork"
+    "isAllowed": 1
+  "supervisor-exercises-update":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "update"
+    "isAllowed": 1
