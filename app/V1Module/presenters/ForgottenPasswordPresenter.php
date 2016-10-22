@@ -34,7 +34,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
 
     // try to find login according to username and process request
     $login = $this->logins->findByUsernameOrThrow($username);
-    $this->forgottenPasswordHelper->process($login);
+    $this->forgottenPasswordHelper->process($login, $req->getRemoteAddress());
 
     $this->sendSuccessResponse("OK");
   }

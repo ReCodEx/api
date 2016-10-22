@@ -36,6 +36,7 @@ class User implements JsonSerializable
         $this->memberships = new ArrayCollection;
         $this->exercises = new ArrayCollection;
         $this->role = $role;
+        $this->createdAt = new \DateTime;
     }
 
     /**
@@ -90,6 +91,11 @@ class User implements JsonSerializable
     protected $isAllowed;
 
     public function isAllowed() { return $this->isAllowed; }
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="Instance")
