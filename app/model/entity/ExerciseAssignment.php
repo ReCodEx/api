@@ -21,20 +21,26 @@ class ExerciseAssignment implements JsonSerializable
     string $description,
     DateTime $firstDeadline,
     int $maxPointsBeforeFirstDeadline,
-    DateTime $secondDeadline,
-    int $maxPointsBeforeSecondDeadline,
     Exercise $exercise,
     Group $group,
     bool $isPublic,
     string $jobConfigFilePath,
-    int $submissionsCountLimit
+    int $submissionsCountLimit,
+    bool $allowSecondDeadline,
+    DateTime $secondDeadline = null,
+    int $maxPointsBeforeSecondDeadline = 0
   ) {
+    if ($secondDeadline == null) {
+      $secondDeadline = $firstDeadline;
+    }
+
     $this->name = $name;
     $this->description = $description;
     $this->exercise = $exercise;
     $this->group = $group;
     $this->firstDeadline = $firstDeadline;
     $this->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
+    $this->allowSecondDeadline = $allowSecondDeadline;
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
@@ -50,41 +56,40 @@ class ExerciseAssignment implements JsonSerializable
       $exercise->assignment,
       new DateTime,
       0,
-      new DateTime,
-      0,
       $exercise,
       $group,
       $isPublic,
       $exercise->getJobConfigFilePath(),
-      50
+      50,
+      FALSE
     );
   }
 
   /**
-    * @ORM\Id
-    * @ORM\Column(type="guid")
-    * @ORM\GeneratedValue(strategy="UUID")
-    */
+   * @ORM\Id
+   * @ORM\Column(type="guid")
+   * @ORM\GeneratedValue(strategy="UUID")
+   */
   protected $id;
 
   /**
-    * @ORM\Column(type="string")
-    */
+   * @ORM\Column(type="string")
+   */
   protected $name;
 
   /**
-    * @ORM\Column(type="boolean")
-    */
+   * @ORM\Column(type="boolean")
+   */
   protected $isPublic;
 
   /**
-    * @ORM\Column(type="smallint")
-    */
+   * @ORM\Column(type="smallint")
+   */
   protected $submissionsCountLimit;
 
   /**
-    * @ORM\Column(type="string", nullable=true)
-    */
+   * @ORM\Column(type="string", nullable=true)
+   */
   protected $jobConfigFilePath;
 
   /**
@@ -101,38 +106,47 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-    * @ORM\Column(type="text", nullable=true)
-    */
+   * @ORM\Column(type="text", nullable=true)
+   */
   protected $scoreConfig;
 
   /**
-    * @ORM\Column(type="datetime")
-    */
+   * @ORM\Column(type="datetime")
+   */
   protected $firstDeadline;
 
   /**
-    * @ORM\Column(type="datetime")
-    */
+   * @ORM\Column(type="boolean")
+   */
+  protected $allowSecondDeadline;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
   protected $secondDeadline;
 
   public function isAfterDeadline() {
-    return $this->secondDeadline < new \DateTime;
+    if ($this->allowSecondDeadline) {
+      return $this->secondDeadline < new \DateTime;
+    } else {
+      return $this->firstDeadline < new \DateTime;
+    }
   }
 
   /**
-    * @ORM\Column(type="smallint")
-    */
+   * @ORM\Column(type="smallint")
+   */
   protected $maxPointsBeforeFirstDeadline;
 
   /**
-    * @ORM\Column(type="smallint")
-    */
+   * @ORM\Column(type="smallint")
+   */
   protected $maxPointsBeforeSecondDeadline;
 
   public function getMaxPoints(DateTime $time = NULL) {
     if ($time === NULL || $time < $this->firstDeadline) {
       return $this->maxPointsBeforeFirstDeadline;
-    } else if ($time < $this->secondDeadline) {
+    } else if ($this->allowSecondDeadline && $time < $this->secondDeadline) {
       return $this->maxPointsBeforeSecondDeadline;
     } else {
       return 0;
@@ -140,8 +154,8 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-    * @ORM\Column(type="text")
-    */
+   * @ORM\Column(type="text")
+   */
   protected $description;
 
   public function getDescription() {
@@ -158,15 +172,15 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-    * @ORM\ManyToOne(targetEntity="Exercise")
-    * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
-    */
+   * @ORM\ManyToOne(targetEntity="Exercise")
+   * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
+   */
   protected $exercise;
 
   /**
-    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
-    * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
-    */
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
+   * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
+   */
   protected $group;
 
   public function canReceiveSubmissions(User $user = NULL) {
@@ -177,15 +191,15 @@ class ExerciseAssignment implements JsonSerializable
   }
 
   /**
-    * Can a specific user access this assignment as student?
-    */
+   * Can a specific user access this assignment as student?
+   */
   public function canAccessAsStudent(User $user) {
     return $this->isPublic === TRUE && $this->group->isStudentOf($user);
   }
 
   /**
-    * Can a specific user access this assignment as supervisor?
-    */
+   * Can a specific user access this assignment as supervisor?
+   */
   public function canAccessAsSupervisor(User $user) {
     return $this->group->isSupervisorOf($user);
   }
@@ -258,6 +272,7 @@ class ExerciseAssignment implements JsonSerializable
         "first" => $this->firstDeadline->getTimestamp(),
         "second" => $this->secondDeadline->getTimestamp()
       ],
+      "allowSecondDeadline" => $this->allowSecondDeadline,
       "maxPoints" => [
         "first" => $this->maxPointsBeforeFirstDeadline,
         "second" => $this->maxPointsBeforeSecondDeadline

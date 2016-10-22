@@ -92,11 +92,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="isPublic", validation="bool")
    * @Param(type="post", name="description", validation="string")
    * @Param(type="post", name="firstDeadline", validation="numericint")
-   * @Param(type="post", name="secondDeadline", validation="numericint")
    * @Param(type="post", name="firstMaxPoints", validation="numericint")
-   * @Param(type="post", name="secondMaxPoints", validation="numericint")
    * @Param(type="post", name="submissionsLimit", validation="numericint")
    * @Param(type="post", name="scoreConfig", validation="string")
+   * @Param(type="post", name="allowSecondDeadline", validation="bool")
+   * @Param(type="post", name="secondDeadline", validation="numericint", required=false)
+   * @Param(type="post", name="secondMaxPoints", validation="numericint", required=false)
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getHttpRequest();
@@ -104,11 +105,12 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $description = $req->getPost("description");
     $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
-    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline"));
     $firstMaxPoints = $req->getPost("firstMaxPoints");
-    $secondMaxPoints = $req->getPost("secondMaxPoints");
     $submissionsLimit = $req->getPost("submissionsLimit");
     $scoreConfig = $req->getPost("scoreConfig");
+    $allowSecondDeadline = $req->getPost("allowSecondDeadline");
+    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0));
+    $secondMaxPoints = $req->getPost("secondMaxPoints", 0);
 
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
@@ -127,6 +129,7 @@ class ExerciseAssignmentsPresenter extends BasePresenter {
     $assignment->setMaxPointsBeforeSecondDeadline($secondMaxPoints);
     $assignment->setSubmissionsCountLimit($submissionsLimit);
     $assignment->setScoreConfig($scoreConfig);
+    $assignment->setAllowSecondDeadline($allowSecondDeadline);
 
     $this->assignments->persist($assignment);
     $this->assignments->flush();
