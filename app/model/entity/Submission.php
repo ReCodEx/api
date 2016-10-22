@@ -195,7 +195,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->submittedAt = new \DateTime;
       $entity->hardwareGroup = $hardwareGroup;
       $entity->asynchronous = $asynchronous;
-      $entity->solution = new Solution($user, $files);
+      $entity->solution = new Solution($user, $files); // TODO: third parameter has to be SolutionRuntimeConfig
 
       return $entity;
     }

@@ -8,7 +8,7 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  */
-class AssignmentRuntimeConfig implements JsonSerializable
+class SolutionRuntimeConfig implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 

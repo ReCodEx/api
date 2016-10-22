@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
+// TODO: jobConfigFilePath lost
+
 /**
  * @ORM\Entity
  */
@@ -56,9 +58,9 @@ class Exercise implements JsonSerializable
   protected $difficulty;
 
   /**
-   * @ORM\ManyToMany(targetEntity="AssignmentRuntimeConfig")
+   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
    */
-  protected $assignmentRuntimeConfigs;
+  protected $solutionRuntimeConfigs;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -92,7 +94,8 @@ class Exercise implements JsonSerializable
       "assignment" => $this->assignment,
       "difficulty" => $this->difficulty,
       "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt
+      "updatedAt" => $this->updatedAt,
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues()
     ];
   }
 

@@ -42,6 +42,11 @@ class Solution implements JsonSerializable
     protected $files;
 
     /**
+     * @ORM\ManyToOne(targetEntity="SolutionRuntimeConfig")
+     */
+    protected $solutionRuntimeConfig;
+
+    /**
      * @ORM\Column(type="boolean")
      */
     protected $evaluated;
@@ -62,10 +67,11 @@ class Solution implements JsonSerializable
      * @param string $hardwareGroup
      * @param array $files
      */
-    public function __construct(User $user, array $files) {
+    public function __construct(User $user, array $files, SolutionRuntimeConfig $solutionRuntimeConfig) {
       $this->user = $user;
       $this->files = new ArrayCollection;
       $this->evaluated = FALSE;
+      $this->solutionRuntimeConfig = $solutionRuntimeConfig;
       foreach ($files as $file) {
         if ($file->getSolution() !== NULL && $file->getSolution()->getEvaluated() === TRUE) {
           // the file was already used before and that is not allowed

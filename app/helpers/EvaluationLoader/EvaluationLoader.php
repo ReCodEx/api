@@ -16,7 +16,7 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 
 /**
  * Load evaluation for given submission. This may require connecting to the fileserver,
- * download the results, parsing and evaluating them. 
+ * download the results, parsing and evaluating them.
  */
 class EvaluationLoader {
 
@@ -53,9 +53,9 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $submission->getAssignment()->getJobConfigFilePath();
+    $jobConfigPath = $submission->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath); 
+      $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath);
       $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
       return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);

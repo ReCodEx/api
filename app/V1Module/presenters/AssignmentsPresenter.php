@@ -165,7 +165,7 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
-  private static function getDefaultScoreConfig(Assignment $assignment): string {
+  private static function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
     $jobConfigPath = $assignment->getJobConfigFilePath();
     try {
       $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
@@ -255,7 +255,7 @@ class AssignmentsPresenter extends BasePresenter {
     $this->submissions->persist($submission);
 
     // get the job config with correct job id
-    $path = $submission->getAssignment()->getJobConfigFilePath();
+    $path = $submission->getAssignment()->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
 
@@ -289,7 +289,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
 
     // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath();
+    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $tests = $jobConfig->getTests();
 
@@ -331,7 +331,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath();
+    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setLimits($hardwareGroup, $limits);
 

@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
-use App\Exceptions\MalformedJobConfigException;
 
 /**
  * @ORM\Entity
@@ -16,14 +15,15 @@ class Assignment implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  public function __construct(
+  private function __construct(
     string $name,
     string $description,
     DateTime $firstDeadline,
     int $maxPointsBeforeFirstDeadline,
     Exercise $exercise,
     Group $group,
-    bool $isPublic, // TODO: jobConfigFilePath argument was removed
+    bool $isPublic,
+    ArrayCollection $solutionRuntimeConfigs,
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
@@ -44,8 +44,8 @@ class Assignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->submissionsCountLimit = $submissionsCountLimit;
-    $this->assignmentRuntimeConfigs = new ArrayCollection;
     $this->scoreConfig = "";
   }
 
@@ -58,7 +58,7 @@ class Assignment implements JsonSerializable
       $exercise,
       $group,
       $isPublic,
-      $exercise->getJobConfigFilePath(), // TODO: solve this
+      $exercise->getSolutionRuntimeConfigs(),
       50,
       FALSE
     );
@@ -87,9 +87,9 @@ class Assignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\ManyToMany(targetEntity="AssignmentRuntimeConfig")
+   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
    */
-  protected $assignmentRuntimeConfigs;
+  protected $solutionRuntimeConfigs;
 
   /**
    * @ORM\Column(type="text", nullable=true)
@@ -265,7 +265,8 @@ class Assignment implements JsonSerializable
       ],
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => FALSE // the app must perform a special request to get the valid information
+      "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues()
     ];
   }
 }
