@@ -132,9 +132,10 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("Role '$roleId' does not exist.");
     }
 
-    $instance = $this->instances->get($req->getPost("instanceId"));
+    $instanceId = $req->getPost("instanceId");
+    $instance = $this->instances->get($instanceId);
     if (!$instance) {
-      throw new BadRequestException("Such instance does not exist.");
+      throw new BadRequestException("Instance '$instanceId' does not exist.");
     }
 
     $username = $req->getPost("username");
