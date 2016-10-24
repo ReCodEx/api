@@ -139,6 +139,7 @@ services:
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
+  - App\Model\Repository\UserActions
 
 doctrine:
   user: 'root'
