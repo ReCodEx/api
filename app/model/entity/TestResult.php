@@ -63,7 +63,7 @@ class TestResult implements JsonSerializable
     * @ORM\Column(type="boolean")
     */
   protected $memoryExceeded;
-  
+
   /**
    * @ORM\Column(type="float")
    */
@@ -73,7 +73,7 @@ class TestResult implements JsonSerializable
     * @ORM\Column(type="boolean")
     */
   protected $timeExceeded;
-  
+
   /**
    * @ORM\Column(type="float")
    */
@@ -83,7 +83,7 @@ class TestResult implements JsonSerializable
     * @ORM\Column(type="boolean")
     */
   protected $exitCode;
-  
+
   /**
     * @ORM\Column(type="string")
     */

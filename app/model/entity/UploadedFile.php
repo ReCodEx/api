@@ -14,24 +14,24 @@ use Nette\Http\FileUpload;
 class UploadedFile implements JsonSerializable
 {
     use \Kdyby\Doctrine\Entities\MagicAccessors;
-    
+
     /**
      * @ORM\Id
      * @ORM\Column(type="guid")
      * @ORM\GeneratedValue(strategy="UUID")
      */
     protected $id;
-    
+
     /**
      * @ORM\Column(type="string")
      */
     protected $name;
-    
+
     /**
      * @ORM\Column(type="string")
      */
     protected $filePath;
-    
+
     public function getContent() {
       return file_get_contents($this->filePath);
     }

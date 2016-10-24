@@ -95,7 +95,7 @@ class Exercise implements JsonSerializable
         "updatedAt" => $this->updatedAt
       ];
     }
-  
+
     /**
      * The name of the user
      * @param  string $name   Name of the exercise

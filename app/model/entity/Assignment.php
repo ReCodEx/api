@@ -224,8 +224,8 @@ class Assignment implements JsonSerializable
       // keep only solutions, which are marked as valid (both manual and automatic way)
       $evaluation = $submission->getEvaluation();
       return ($evaluation->isValid() === TRUE && $evaluation->getEvaluationFailed() === FALSE);
-    }; 
-    
+    };
+
     return $this->submissions
       ->matching($fromThatUser)
       ->filter($validSubmissions);
