@@ -254,15 +254,11 @@ class Assignment implements JsonSerializable
       "isPublic" => $this->isPublic,
       "description" => $this->getDescription(),
       "groupId" => $this->group->getId(),
-      "deadline" => [
-        "first" => $this->firstDeadline->getTimestamp(),
-        "second" => $this->secondDeadline->getTimestamp()
-      ],
+      "firstDeadline" => $this->firstDeadline->getTimestamp(),
+      "secondDeaedline" => $this->secondDeadline->getTimestamp(),
       "allowSecondDeadline" => $this->allowSecondDeadline,
-      "maxPoints" => [
-        "first" => $this->maxPointsBeforeFirstDeadline,
-        "second" => $this->maxPointsBeforeSecondDeadline
-      ],
+      "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
+      "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information

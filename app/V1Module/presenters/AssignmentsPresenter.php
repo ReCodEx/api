@@ -92,12 +92,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="isPublic", validation="bool")
    * @Param(type="post", name="description", validation="string")
    * @Param(type="post", name="firstDeadline", validation="numericint")
-   * @Param(type="post", name="firstMaxPoints", validation="numericint")
-   * @Param(type="post", name="submissionsLimit", validation="numericint")
+   * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint")
+   * @Param(type="post", name="submissionsCountLimit", validation="numericint")
    * @Param(type="post", name="scoreConfig", validation="string")
    * @Param(type="post", name="allowSecondDeadline", validation="bool")
    * @Param(type="post", name="secondDeadline", validation="numericint", required=false)
-   * @Param(type="post", name="secondMaxPoints", validation="numericint", required=false)
+   * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false)
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getHttpRequest();
@@ -105,12 +105,12 @@ class AssignmentsPresenter extends BasePresenter {
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $description = $req->getPost("description");
     $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
-    $firstMaxPoints = $req->getPost("firstMaxPoints");
-    $submissionsLimit = $req->getPost("submissionsLimit");
+    $maxPointsBeforeFirstDeadline = $req->getPost("maxPointsBeforeFirstDeadline");
+    $submissionsLimit = $req->getPost("submissionsCountLimit");
     $scoreConfig = $req->getPost("scoreConfig");
-    $allowSecondDeadline = $req->getPost("allowSecondDeadline");
-    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0));
-    $secondMaxPoints = $req->getPost("secondMaxPoints", 0);
+    $allowSecondDeadline = (bool) $req->getPost("allowSecondDeadline");
+    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("maxPointsBeforeSecondDeadline", 0));
+    $maxPointsBeforeSecondDeadline = $req->getPost("secondMaxPoints", 0);
 
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
@@ -125,8 +125,8 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setIsPublic($isPublic);
     $assignment->setFirstDeadline($firstDeadline);
     $assignment->setSecondDeadline($secondDeadline);
-    $assignment->setMaxPointsBeforeFirstDeadline($firstMaxPoints);
-    $assignment->setMaxPointsBeforeSecondDeadline($secondMaxPoints);
+    $assignment->setMaxPointsBeforeFirstDeadline($maxPointsBeforeFirstDeadline);
+    $assignment->setMaxPointsBeforeSecondDeadline($maxPointsBeforeSecondDeadline);
     $assignment->setSubmissionsCountLimit($submissionsLimit);
     $assignment->setScoreConfig($scoreConfig);
     $assignment->setAllowSecondDeadline($allowSecondDeadline);
