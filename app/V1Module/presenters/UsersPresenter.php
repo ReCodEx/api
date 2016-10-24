@@ -9,6 +9,7 @@ use App\Model\Repository\Instances;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Roles;
+use App\Model\Entity\Role;
 use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
@@ -83,12 +84,7 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("This email address is already taken.");
     }
 
-    $roleId = "student";
-    $role = $this->roles->get($roleId);
-    if (!$role) {
-      throw new BadRequestException("Role '$roleId' does not exist.");
-    }
-
+    $role = $this->roles->get(Role::STUDENT);
     $instance = $this->instances->get($req->getPost("instanceId"));
     if (!$instance) {
       throw new BadRequestException("Such instance does not exist.");
@@ -126,12 +122,7 @@ class UsersPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
     $serviceId = $req->getPost("serviceId");
 
-    $roleId = "student";
-    $role = $this->roles->get($roleId);
-    if (!$role) {
-      throw new BadRequestException("Role '$roleId' does not exist.");
-    }
-
+    $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
     $instance = $this->instances->get($instanceId);
     if (!$instance) {

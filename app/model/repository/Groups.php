@@ -12,7 +12,7 @@ class Groups extends BaseRepository {
   }
 
   public function findAllByInstance(Instance $instance) {
-    $this->repository->findBy([ 'instance' => $instance->getId() ]);
+    return $this->repository->findBy([ 'instance' => $instance->getId() ]);
   }
 
   public function nameIsFree($name, $instanceId, $parentGroupId = NULL) {

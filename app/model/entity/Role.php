@@ -13,6 +13,10 @@ class Role implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+  const STUDENT = "student";
+  const SUPERVISOR = "supervisor";
+  const SUPERADMIN = "superadmin";
+
   /**
    * @ORM\Id
    * @ORM\Column(type="string")

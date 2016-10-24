@@ -140,6 +140,7 @@ services:
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
   - App\Model\Repository\UserActions
+  - App\Model\Repository\GroupMemberships
 
 doctrine:
   user: 'root'

@@ -3,9 +3,12 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\Role;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
+use App\Model\Repository\Roles;
+use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
@@ -32,6 +35,18 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $users;
+
+  /**
+   * @var Roles
+   * @inject
+   */
+  public $roles;
+
+  /**
+   * @var GroupMemberships
+   * @inject
+   */
+  public $groupMemberships;
 
   /**
    *
@@ -392,6 +407,8 @@ class GroupsPresenter extends BasePresenter {
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
       $user->makeSupervisorOf($group);
+      // TODO: change only if user has smaller than supervisor role
+      $user->setRole($this->roles->get(Role::SUPERVISOR));
       $this->users->flush();
       $this->groups->flush();
     }
@@ -414,13 +431,18 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already supervisor of the group
+    // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
-      $membership = $user->findMembershipAsSupervisor($group);
-      if ($membership) {
-        $this->em->remove($membership);
-        $this->em->flush();
+      // if user is not supervisor in any other group, let downgrade his/hers privileges
+      if ($user->findGroupMembershipsAsSupervisor()->isEmpty()) {
+        // TODO: change only if user has global supervisor role
+        $user->setRole($this->roles->get(Role::SUPERVISOR));
+        $this->users->flush();
       }
+
+      $membership = $user->findMembershipAsSupervisor($group); // should be always there
+      $this->groupMemberships->remove($membership);
+      $this->groupMemberships->flush();
     }
 
     $this->sendSuccessResponse($group);
@@ -447,8 +469,8 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->findGroupOrThrow($id);
 
     // check that the user has rights to join the group
-    if ($group->isAdminOf($currentUser) === FALSE
-      && $curretnUser->getRole()->hasLimitedRights()) {
+    if ($group->isAdminOf($currentUser) === FALSE // TODO: is this condition all right?
+      && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
