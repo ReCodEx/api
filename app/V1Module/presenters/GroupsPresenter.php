@@ -434,16 +434,16 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
+      $membership = $user->findMembershipAsSupervisor($group); // should be always there
+      $this->groupMemberships->remove($membership);
+      $this->groupMemberships->flush();
+
       // if user is not supervisor in any other group, lets downgrade his/hers privileges
       if ($user->findGroupMembershipsAsSupervisor()->isEmpty()
           && $user->getRole()->isSupervisor()) {
         $user->setRole($this->roles->get(Role::STUDENT));
         $this->users->flush();
       }
-
-      $membership = $user->findMembershipAsSupervisor($group); // should be always there
-      $this->groupMemberships->remove($membership);
-      $this->groupMemberships->flush();
     }
 
     $this->sendSuccessResponse($group);
