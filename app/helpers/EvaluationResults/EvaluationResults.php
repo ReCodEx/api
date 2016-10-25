@@ -15,7 +15,7 @@ use Symfony\Component\Yaml\Yaml;
 class EvaluationResults {
   const JOB_ID_KEY = "job-id";
   const RESULTS_KEY = "results";
-  const TASK_ID_KEY = "task-id"; 
+  const TASK_ID_KEY = "task-id";
 
   /** @var array Raw data from the results */
   private $rawResults;

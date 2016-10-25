@@ -83,7 +83,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     // log the action done by the current user
     if ($this->user->isLoggedIn()) {
       // determine the action name from the application request
-      $req = $this->getRequest(); 
+      $req = $this->getRequest();
       $params = $req->getParameters();
       $action = isset($params[self::ACTION_KEY]) ? $params[self::ACTION_KEY] : self::DEFAULT_ACTION;
       unset($params[self::ACTION_KEY]);

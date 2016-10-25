@@ -27,7 +27,7 @@ class UploadedFileStorage extends Nette\Object {
    * Save the file into storage
    * @param FileUpload $file The file to be stored
    * @param User       $user User, who uploaded the file
-   * @return UploadedFile|NULL If the operation is not successful, NULL is returned 
+   * @return UploadedFile|NULL If the operation is not successful, NULL is returned
    */
   public function store(FileUpload $file, User $user) {
     if (!$file->isOk()) {

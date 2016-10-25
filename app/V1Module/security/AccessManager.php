@@ -54,7 +54,7 @@ class AccessManager {
   }
 
   /**
-   * Extract user information from the 
+   * Extract user information from the
    * @param   Request       $req    HTTP request
    * @return  Identity|NULL
    */
@@ -65,7 +65,7 @@ class AccessManager {
       $user = $this->getUser($decodedToken);
       return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "token" => $decodedToken ]);
     } catch (ApiException $e) {
-      return NULL; 
+      return NULL;
     }
   }
 

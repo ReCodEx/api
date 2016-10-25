@@ -103,7 +103,7 @@ class FileServerProxy {
   /**
    * Send files to remote fileserver
    * @param string   $jobId     Identifier of job for which these files are intended
-   * @param string   $jobConfig Content of job configuration for this submission 
+   * @param string   $jobConfig Content of job configuration for this submission
    * @param string[] $files     Path of files submitted by user
    * @return mixed   List of archive URL at fileserver and URL where results needs to be stored to
    * @throws SubmissionFailedException on any error

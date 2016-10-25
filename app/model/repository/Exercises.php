@@ -41,7 +41,7 @@ class Exercises extends BaseRepository {
 
       return $foundExercises->toArray();
     } else {
-      // no query is present 
+      // no query is present
       return $this->findAll();
     }
   }

@@ -40,7 +40,7 @@ class SkippedStats implements IStats {
   }
 
   /**
-   * Get total amount of consumed memory 
+   * Get total amount of consumed memory
    * @return int The ammout of memory the process allocated
    */
   public function getUsedMemory(): int {
@@ -58,7 +58,7 @@ class SkippedStats implements IStats {
 
   /**
    * Get exit code of examined program
-   * @return int The exit code for the executable 
+   * @return int The exit code for the executable
    */
   public function getExitCode(): int {
     return self::EXIT_CODE;

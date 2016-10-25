@@ -5,7 +5,7 @@ namespace App\Helpers\EvaluationResults;
 use App\Helpers\JobConfig\Limits;
 
 /**
- * Interface for accessing sandbox output of external task.    
+ * Interface for accessing sandbox output of external task.
  */
 interface IStats {
 
@@ -30,7 +30,7 @@ interface IStats {
   public function isTimeOK(float $secondsLimit): bool;
 
   /**
-   * Get total amount of consumed memory 
+   * Get total amount of consumed memory
    * @return int The ammout of memory the process allocated
    */
   public function getUsedMemory(): int;
@@ -44,7 +44,7 @@ interface IStats {
 
   /**
    * Get exit code of examined program
-   * @return int The exit code for the executable 
+   * @return int The exit code for the executable
    */
   public function getExitCode(): int;
 

@@ -9,7 +9,7 @@ class DefaultPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $this->sendJson([
-      "project" => "ReCodEx API", 
+      "project" => "ReCodEx API",
       "version" => "0.3.0",
       "website" => "https://recodex.github.com"
     ]);

@@ -70,7 +70,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public function actionValidatePasswordStrength() {
     $req = $this->getHttpRequest();
     $password = $req->getPost("password");
-    
+
     $zxcvbn = new Zxcvbn;
     $passwordStrength = $zxcvbn->passwordStrength($password);
     $this->sendSuccessResponse([
