@@ -55,4 +55,20 @@ class Role implements JsonSerializable
     return $this->id !== "superadmin";
   }
 
+  protected function isInRole($role) {
+    return $this->id === $role;
+  }
+
+  public function isStudent() {
+    return $this->isInRole(self::STUDENT);
+  }
+
+  public function isSupervisor() {
+    return $this->isInRole(self::SUPERVISOR);
+  }
+
+  public function isSuperadmin() {
+    return $this->isInRole(self::SUPERADMIN);
+  }
+
 }

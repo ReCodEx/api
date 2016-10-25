@@ -406,9 +406,10 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
+      if ($user->getRole()->isStudent()) {
+        $user->setRole($this->roles->get(Role::SUPERVISOR));
+      }
       $user->makeSupervisorOf($group);
-      // TODO: change only if user has smaller than supervisor role
-      $user->setRole($this->roles->get(Role::SUPERVISOR));
       $this->users->flush();
       $this->groups->flush();
     }
@@ -433,10 +434,10 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
-      // if user is not supervisor in any other group, let downgrade his/hers privileges
-      if ($user->findGroupMembershipsAsSupervisor()->isEmpty()) {
-        // TODO: change only if user has global supervisor role
-        $user->setRole($this->roles->get(Role::SUPERVISOR));
+      // if user is not supervisor in any other group, lets downgrade his/hers privileges
+      if ($user->findGroupMembershipsAsSupervisor()->isEmpty()
+          && $user->getRole()->isSupervisor()) {
+        $user->setRole($this->roles->get(Role::STUDENT));
         $this->users->flush();
       }
 
@@ -469,7 +470,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->findGroupOrThrow($id);
 
     // check that the user has rights to join the group
-    if ($group->isAdminOf($currentUser) === FALSE // TODO: is this condition all right?
+    if ($group->isAdminOf($currentUser) === FALSE
       && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
