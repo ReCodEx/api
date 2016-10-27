@@ -60,7 +60,7 @@ class AssignmentsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
-   * Get a list of all assignments for current user
+   * Get a list of all assignments
    * @GET
    * @UserIsAllowed(assignments="view-all")
    */
