@@ -94,8 +94,10 @@ class CAS implements IExternalLoginService {
     $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
     $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
     $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
+    $degreesBeforeName = ""; // @todo
+    $degreesAfterName = ""; // @todo
 
-    return new UserData($ukco, $email, $firstName, $lastName, $this);
+    return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
   }
 
   /**

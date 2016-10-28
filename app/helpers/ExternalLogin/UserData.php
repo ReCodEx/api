@@ -26,6 +26,12 @@ final class UserData {
   /** @var string Last name of user */
   private $lastName;
 
+  /** @var string */
+  protected $degreesBeforeName;
+
+  /** @var string */
+  protected $degreesAfterName;
+
   /** @var string Email address of user */
   private $email;
 
@@ -48,12 +54,16 @@ final class UserData {
     string $firstName,
     string $lastName,
     string $email,
+    string $degreesBeforeName,
+    string $degreesAfterName,
     IExternalLoginService $authService
   ) {
     $this->id = $id;
     $this->firstName = $firstName;
     $this->lastName = $lastName;
     $this->email = $email;
+    $this->degreesBeforeName = $degreesBeforeName;
+    $this->degreesAfterName = $degreesAfterName;
   }
 
   /**
@@ -67,8 +77,8 @@ final class UserData {
       $this->email,
       $this->firstName,
       $this->lastName,
-      "", // @todo
-      "", // @todo
+      $this->degreesBeforeName,
+      $this->degreesAfterName,
       $role,
       $instance
     );
