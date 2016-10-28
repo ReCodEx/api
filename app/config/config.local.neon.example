@@ -3,20 +3,78 @@ parameters:
     leeway: 60
     issuer: https://recodex.projekty.ms.mff.cuni.cz
     audience: https://recodex.projekty.ms.mff.cuni.cz
-    expiration: 86400
-    algorithm: HS256
+    expiration: 86400  # 24 hours in seconds
+    usedAlgorithm: HS256
+    allowedAlgorithms:
+      - HS256
+    verificationKey: "recodex-123"
 
   fileServer:
-    address: http://195.113.17.8:9999
-    username: "usr"
-    password: "passwd"
-    jobConfigFileName: "job-config.yml"
+    address: http://127.0.0.1:9999
+    auth:
+      username: "user"
+      password: "pass"
+    timeouts:
+      connection: 500  # milliseconds
 
   broker:
-    address: tcp://195.113.17.8:9658
+    address: tcp://127.0.0.1:9658
+    auth:
+      username: "user"
+      password: "pass"
+    timeouts:  # in milliseconds
+      ack: 100
+      send: 5000
+      result: 1000
 
   monitor:
-    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws/
+    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws
+
+  CAS:
+    serviceId: "cas-uk"
+    ldapConnection:
+      hostname: "ldap.cuni.cz"
+      base_dn: "ou=people,dc=cuni,dc=cz"
+      port: 389
+      security: SSL
+      bindName: "cunipersonalid"
+    fields:
+      email: "mail"
+      firstName: "givenName"
+      lastName: "sn"
+
+  emails:
+    apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
+    footerUrl: https://recodex.projekty.ms.mff.cuni.cz
+    siteName: "ReCodEx"
+    githubUrl: https://github.com/ReCodEx
+    from: "ReCodEx <noreply@example.com>"
+
+  failures:
+    emails:
+      to: "Administrator <admin@example.com>"
+      from: %emails.from%
+      subjectPrefix: "ReCodEx Failure Report - "
+
+  forgottenPassword:
+    redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/forgotten-password/change"
+    tokenExpiration: 600 # 10 minues
+    emails:
+      from: %emails.from%
+      subjectPrefix: "ReCodEx Forgotten Password Request - "
+
+  mail:
+    smtp: true
+    host: "smtp.ps.stdin.cz"
+    port: 587
+    username: "user"
+    password: "pass"
+    secure: "tls"
+    context:
+      ssl:
+        verify_peer: false
+        verify_peer_name: false
+        allow_self_signed: true
 
 
 doctrine:

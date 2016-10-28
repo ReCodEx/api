@@ -145,6 +145,7 @@ services:
 doctrine:
   user: 'root'
   password: ''
+  host: localhost
   dbname: 'recodex-api'
   metadata:
     App: %appDir%
