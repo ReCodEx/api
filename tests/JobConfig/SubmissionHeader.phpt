@@ -62,6 +62,26 @@ class TestSubmissionHeader extends Tester\TestCase
     );
   }
 
+  public function testAddingHardwareGroups() {
+    $header = new SubmissionHeader(self::$minimalConfig);
+
+    $header->addHardwareGroup("C");
+    Assert::equal([ "A", "B", "C" ], $header->getHardwareGroups());
+
+    $header->addHardwareGroup("B");
+    Assert::equal([ "A", "B", "C" ], $header->getHardwareGroups());
+  }
+
+  public function testRemovingHardwareGroups() {
+    $header = new SubmissionHeader(self::$minimalConfig);
+
+    $header->removeHardwareGroup("B");
+    Assert::equal([ "A" ], $header->getHardwareGroups());
+
+    $header->removeHardwareGroup("C");
+    Assert::equal([ "A" ], $header->getHardwareGroups());
+  }
+
   public function testSetJobId() {
     $header = new SubmissionHeader(self::$minimalConfig);
     Assert::equal("id123", $header->getId());
