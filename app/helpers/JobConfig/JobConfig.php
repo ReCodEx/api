@@ -150,6 +150,7 @@ class JobConfig {
         $task->getSandboxConfig()->removeLimits($hwGroupId);
       }
     }
+    $this->submissionHeader->removeHardwareGroup($hwGroupId);
   }
 
   /**
@@ -175,6 +176,7 @@ class JobConfig {
         }
       }
     }
+    $this->submissionHeader->addHardwareGroup($hwGroupId);
   }
 
   /**
