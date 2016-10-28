@@ -260,7 +260,7 @@ class AssignmentsPresenter extends BasePresenter {
     // detect the runtime configuration if needed
     $runtimeConfigurationId = $req->getPst("runtimeConfigurationId", NULL);
     $runtimeConfiguration = $runtimeConfigurationId === NULL
-      ? $this->detectRuntimeConfigurationOrThrow($assignment, $files)
+      ? $this->solutionRuntimeConfigurations->detectOrThrow($assignment, $files)
       : $this->solutionRuntimeConfigurations->findOrThrow($runtimeConfigurationId);
 
     $note = $req->getPost("note");
@@ -329,41 +329,6 @@ class AssignmentsPresenter extends BasePresenter {
     );
 
     $this->sendSuccessResponse($listTestArray);
-  }
-
-  /**
-   * Detect the configuration of the runtime environment for a given assignment
-   * by the extensions of submitted files.
-   * @param Assignmenet     $assignment   The assignment
-   * @param UploadedFile[]  $files        The files
-   * @return SolutionRuntimeConfig
-   * @throws SubmissionFailedException
-   */
-  public function detectRuntimeConfigurationOrThrow(Assignment $assignment, array $files): SolutionRuntimeConfig {
-    $runtimeEnvironment = $this->detectRuntimeEnvironmentOrThrow($files);
-    $configs = $assignment->getSolutionRuntimeConfigs()->filter(function ($config) use ($runtimeEnvironment) {
-      return $config->getRuntimeEnvironment()->getId() === $runtimeEnvironment->getId();
-    });
-
-    if ($configs->count() === 0) {
-      throw new SubmissionFailedException("There is no suitable runtime configuration for the submitted files.");
-    } else if ($configs->count() > 1) {
-      throw new SubmissionFailedException("There are multiple suitable runtime configurations for the submitted files - it is not possible to determine the correct one automatically.");
-    }
-
-    return $configs->first();
-  }
-
-  /**
-   * Detect runtime environment based on the extensions of the submitted files.
-   * @param UploadedFile[]  $files        The files
-   * @return RuntimeEnvironment
-   * @throws SubmissionFailedException
-   */
-  public function detectRuntimeEnvironmentOrThrow(array $files): RuntimeEnvironment {
-    // @todo: choose one runtime environment based on the filenames (extensions) of submitted files.
-    // - if there are multiple candidates (user submitted files with different extensions) - throw an exception. 
-    throw new SubmissionFailedException("Cannot detect runtime environment for the submitted files.");
   }
 
   /**
