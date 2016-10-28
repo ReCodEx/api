@@ -14,6 +14,8 @@ class SubmissionHeader {
   /** File collector key */
   const FILE_COLLECTOR_KEY = "file-collector";
   /** Language key */
+  const HARDWARE_GROUPS_KEY = "hw-groups";
+  /** Language key */
   const LANGUAGE_KEY = "language";
   /** Log bit key */
   const LOG_KEY = "log";
@@ -28,6 +30,8 @@ class SubmissionHeader {
   private $language = "";
   /** @var bool Logging of job evaluation */
   private $log = FALSE;
+  /** @var array Available hardware groups */
+  private $hardwareGroups = [];
 
   /**
    * Construct submission header from given structured data.
@@ -52,6 +56,14 @@ class SubmissionHeader {
     }
     $this->language = $data[self::LANGUAGE_KEY];
     unset($data[self::LANGUAGE_KEY]);
+
+    if (!isset($data[self::HARDWARE_GROUPS_KEY])) {
+      throw new JobConfigLoadingException("Submission header does not contain the required '" . self::HARDWARE_GROUPS_KEY . "' field.");
+    } else if (!is_array($data[self::HARDWARE_GROUPS_KEY])) {
+      throw new JobConfigLoadingException("Submission header field '" . self::HARDWARE_GROUPS_KEY . "' does not contain an array.");
+    }
+    $this->hardwareGroups = $data[self::HARDWARE_GROUPS_KEY];
+    unset($data[self::HARDWARE_GROUPS_KEY]);
 
     if (isset($data[self::LOG_KEY])) {
       $this->log = filter_var($data[self::LOG_KEY], FILTER_VALIDATE_BOOLEAN);
@@ -159,6 +171,22 @@ class SubmissionHeader {
   }
 
   /**
+   * Set available hardware groups.
+   * @param bool $log
+   */
+  public function setHardwareGroups(array $groups) {
+    $this->hardwareGroups = $groups;
+  }
+
+  /**
+   * Checks if log is on or off.
+   * @return bool
+   */
+  public function getHardwareGroups(): array {
+    return $this->hardwareGroups;
+  }
+
+  /**
    * Get additional data which was not parsed at construction.
    * @return array
    */
@@ -176,6 +204,7 @@ class SubmissionHeader {
     $data[self::FILE_COLLECTOR_KEY] = $this->fileCollector;
     $data[self::LANGUAGE_KEY] = $this->language;
     $data[self::LOG_KEY] = $this->log ? "true" : "false";
+    $data[self::HARDWARE_GROUPS_KEY] = $this->hardwareGroups;
     return $data;
   }
 

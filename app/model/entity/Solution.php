@@ -64,8 +64,8 @@ class Solution implements JsonSerializable
 
     /**
      * @param User $user          The user who submits the solution
-     * @param string $hardwareGroup
      * @param array $files
+     * @param SolutionRuntimeConfig $solutionRuntimeConfig
      */
     public function __construct(User $user, array $files, SolutionRuntimeConfig $solutionRuntimeConfig) {
       $this->user = $user;
