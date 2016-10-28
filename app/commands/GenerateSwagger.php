@@ -7,11 +7,15 @@ use Nette\Application\Routers\Route;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\UI\Presenter;
 use Nette\Reflection\Method;
+use Nette\Utils\ArrayHash;
 use Nette\Utils\Arrays;
+use Nette\Utils\Strings;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -37,6 +41,18 @@ class GenerateSwagger extends Command
   protected function configure()
   {
     $this->setName("swagger:generate")->setDescription("Generate a swagger specification file from existing code");
+    $this->addArgument("source", InputArgument::OPTIONAL, "A YAML Swagger file to use as a template for the generated file", NULL);
+    $this->addOption("save", NULL, InputOption::VALUE_NONE, "Save the output back to the source file");
+  }
+
+  protected function setArrayDefault(&$array, $key, $default)
+  {
+    if (!array_key_exists($key, $array)) {
+      $array[$key] = $default;
+      return TRUE;
+    }
+
+    return FALSE;
   }
 
   protected function execute(InputInterface $input, OutputInterface $output)
@@ -44,48 +60,59 @@ class GenerateSwagger extends Command
     $apiRoutes = $this->findAPIRouteList();
 
     if (!$apiRoutes) {
-      $output->writeln("<error>No suitable router found</error>");
+      $output->writeln("<error>No suitable routes found</error>");
       return;
     }
 
-    $document = [];
-    $paths = [];
+    $source = $input->getArgument("source");
+    $save = $input->getOption("save");
 
-    foreach ($apiRoutes as $route) {
-      if ($route instanceof MethodRoute) {
-        $routeReflection = new ReflectionClass(MethodRoute::class);
-        $method = self::getPropertyValue($routeReflection, $route, "method");
-        $actualRoute = self::getPropertyValue($routeReflection, $route, "route");
-
-        $actualRouteReflection = new ReflectionClass($actualRoute);
-        $metadata = self::getPropertyValue($actualRouteReflection, $actualRoute, "metadata");
-        $mask = self::getPropertyValue($actualRouteReflection, $actualRoute, "mask");
-        $mask = str_replace(["<", ">"], ["{", "}"], $mask);
-
-        if (!array_key_exists($mask, $paths)) {
-          $paths[$mask] = [];
-        }
-
-        $entry = $this->makePathEntry($metadata);
-
-        if ($entry === null) {
-          continue;
-        }
-
-        $paths[$mask][strtolower($method)] = $entry;
-      }
+    if ($save && $source === NULL) {
+      $output->writeln("<error>--save cannot be used without a source file</error>");
+      return;
     }
 
-    $document["paths"] = $paths;
+    $document = $source ? Yaml::parse(file_get_contents($source)) : [];
+    $basePath = ltrim(Arrays::get($document, "basePath", "/v1"), "/");
 
-    $output->write(Yaml::dump($document));
+    $this->setArrayDefault($document, "paths", []);
+    $paths = &$document["paths"];
+
+    foreach ($apiRoutes as $routeData) {
+      $route = $routeData["route"];
+      $parentRoute = $routeData["parent"];
+
+      $method = self::getPropertyValue($route, "method");
+      $actualRoute = self::getPropertyValue($route, "route");
+
+      $metadata = self::getPropertyValue($actualRoute, "metadata");
+      $mask = self::getPropertyValue($actualRoute, "mask");
+
+      if (!Strings::startsWith($mask, $basePath)) {
+        continue;
+      }
+
+      $mask = substr(str_replace(["<", ">"], ["{", "}"], $mask), strlen($basePath));
+
+      $this->setArrayDefault($paths, $mask, []);
+      $this->setArrayDefault($paths[$mask], strtolower($method), []);
+
+      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], self::getPropertyValue($parentRoute, "module"));
+    }
+
+    $yaml = Yaml::dump($document, 10, 2);
+    $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
+    $output->write($yaml);
+
+    if ($save) {
+      file_put_contents($source, $yaml);
+    }
   }
 
-  private function makePathEntry(array $metadata)
+  private function fillPathEntry(array $metadata, array &$entry, $module)
   {
-    $presenterName = "V1:" . $metadata[Route::PRESENTER_KEY]["value"]; # TODO get module name somewhere else
+    $presenterName = $module . $metadata[Route::PRESENTER_KEY]["value"];
     $action = $metadata["action"]["value"] ?: "default";
-    $entry = [];
 
     /** @var Presenter $presenter */
     $presenter = $this->presenterFactory->createPresenter($presenterName);
@@ -94,19 +121,90 @@ class GenerateSwagger extends Command
     try {
       $method = Method::from(get_class($presenter), $methodName);
     } catch (ReflectionException $exception) {
-      return null;
+      return NULL;
     }
 
     $annotations = $method->getAnnotations();
 
-    $entry["description"] = $method->getDescription();
-    $entry["parameters"] = [];
-    $entry["responses"] = [];
+    $entry["description"] = $method->getDescription() ?: "";
+    $this->setArrayDefault($entry, "parameters", []);
+    $this->setArrayDefault($entry, "responses", []);
 
     foreach (Arrays::get($annotations, "Param", []) as $annotation) {
-      $entry["parameters"] = [
-        "name" => $annotation["name"]
-      ];
+      if ($annotation instanceof ArrayHash) {
+        $annotation = get_object_vars($annotation);
+      }
+
+      if (isset($paramEntry)) {
+        unset($paramEntry);
+      }
+
+      $paramEntryFound = FALSE;
+
+      foreach ($entry["parameters"] as $i => $parameter) {
+        if ($parameter["name"] === $annotation["name"]) {
+          $paramEntry = &$entry["parameters"][$i];
+          $paramEntryFound = TRUE;
+          break;
+        }
+      }
+
+      if (!$paramEntryFound) {
+        $entry["parameters"][] = [
+          "name" => $annotation["name"]
+        ];
+
+        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
+      }
+
+      $paramEntry["required"] = Arrays::get($annotation, "required", FALSE);
+      $this->setArrayDefault($paramEntry, "type", $annotation["validation"]); // TODO translate to Swagger types so that we can override values from the file
+
+      if ($annotation["type"] === "post") {
+        $paramEntry["in"] = "formData";
+      } else if ($annotation["type"] === "query") {
+        $paramEntry["in"] = "query";
+      }
+
+      $paramEntry["description"] = Arrays::get($annotation, "description", "");
+    }
+
+    foreach ($method->getParameters() as $methodParameter) {
+      if (isset($paramEntry)) {
+        unset($paramEntry);
+      }
+
+      $paramEntryFound = FALSE;
+
+      foreach ($entry["parameters"] as $i => $parameter) {
+        if ($parameter["name"] === $methodParameter->getName()) {
+          $paramEntry = &$entry["parameters"][$i];
+          $paramEntryFound = TRUE;
+          break;
+        }
+      }
+
+      if (!$paramEntryFound) {
+        $entry["parameters"][] = [
+          "name" => $methodParameter->getName()
+        ];
+
+        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
+      }
+
+      $paramEntry["required"] = !$methodParameter->isOptional();
+      $paramEntry["in"] = "path";
+      $this->setArrayDefault($paramEntry, "type", "string");
+    }
+
+    $this->setArrayDefault($entry["responses"], "200", []);
+
+    $isAuthFailurePossible = $presenter->getReflection()->getAnnotation("LoggedIn")
+      || $method->getAnnotation("LoggedIn")
+      || $method->getAnnotation("UserIsAllowed");
+
+    if ($isAuthFailurePossible) {
+      $this->setArrayDefault($entry["responses"], "403", []);
     }
 
     return $entry;
@@ -120,13 +218,12 @@ class GenerateSwagger extends Command
       $cursor = array_shift($queue);
 
       if ($cursor instanceof RouteList) {
-        if (count($cursor) == 0) {
-          continue;
-        }
-
         foreach ($cursor as $item) {
           if ($item instanceof MethodRoute) {
-            return $cursor;
+            yield [
+              "parent" => $cursor,
+              "route" => $item
+            ];
           }
 
           if ($item instanceof RouteList) {
@@ -136,12 +233,22 @@ class GenerateSwagger extends Command
       }
     }
 
-    return null;
+    return NULL;
   }
 
-  private static function getPropertyValue(ReflectionClass $class, $object, $propertyName)
+  private static function getPropertyValue($object, $propertyName)
   {
-    $property = $class->getProperty($propertyName);
+    $class = new ReflectionClass($object);
+
+    do {
+      try {
+        $property = $class->getProperty($propertyName);
+      } catch (ReflectionException $exception) {
+        $class = $class->getParentClass();
+        $property = NULL;
+      }
+    } while ($property === NULL && $class !== NULL);
+
     $property->setAccessible(TRUE);
     return $property->getValue($object);
   }
