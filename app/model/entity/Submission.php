@@ -76,11 +76,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
     protected $solution;
 
     /**
-     * @ORM\Column(type="string")
-     */
-    protected $hardwareGroup;
-
-    /**
      * @ORM\Column(type="boolean")
      */
     protected $asynchronous;
@@ -159,12 +154,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @param Assignment $assignment
      * @param User $user          The user who submits the solution
      * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
-     * @param string $hardwareGroup
-     * @param array $files
+     * @param array $files        The submitted files
+     * @param SolutionRuntimeConfig $runtime Runtime configuration
      * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE)
      * @return Submission
      */
-    public static function createSubmission(string $note, Assignment $assignment, User $user, User $loggedInUser, string $hardwareGroup, array $files, bool $asynchronous = FALSE) {
+    public static function createSubmission(string $note, Assignment $assignment, User $user, User $loggedInUser, array $files, SolutionRuntimeConfig $runtime, bool $asynchronous = FALSE) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE &&
         ($user->getId() === $loggedInUser->getId()
@@ -193,9 +188,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->user = $user;
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
-      $entity->hardwareGroup = $hardwareGroup;
       $entity->asynchronous = $asynchronous;
-      $entity->solution = new Solution($user, $files); // TODO: third parameter has to be SolutionRuntimeConfig
+      $entity->solution = new Solution($user, $files, $runtime);
 
       return $entity;
     }
