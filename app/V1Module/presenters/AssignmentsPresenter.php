@@ -277,7 +277,7 @@ class AssignmentsPresenter extends BasePresenter {
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
       $submission->getSolution()->getFiles()->getValues(),
-      $hwGroup
+      $runtimeConfiguration->getHardwareGroup()->getId()
     );
 
     if($resultsUrl !== NULL) {
