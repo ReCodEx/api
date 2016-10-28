@@ -120,7 +120,7 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-  - App\Helpers\JobConfigStorage(%jobConfigStorageDir%)
+  - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
 
   # models - repositories
   - App\Model\Repository\Comments

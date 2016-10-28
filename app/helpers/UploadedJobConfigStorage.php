@@ -9,7 +9,7 @@ use Nette\Http\FileUpload;
 /**
  *
  */
-class JobConfigStorage {
+class UploadedJobConfigStorage {
 
   /**
    * Target directory, where the files will be stored
@@ -57,4 +57,5 @@ class JobConfigStorage {
     $uniqueId = uniqid();
     return "{$this->uploadDir}/user_{$userId}/{$fileName}_{$uniqueId}.$ext";
   }
+
 }

@@ -8,7 +8,6 @@ use App\Helpers\MemoryCache;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
-
 /**
  * Storage of job configuration which is designed to load them from
  * given files, parse configuration and of course save it. MemoryCache is used

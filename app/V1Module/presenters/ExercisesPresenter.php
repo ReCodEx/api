@@ -5,7 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Helpers\JobConfigStorage;
+use App\Helpers\UploadedJobConfigStorage;
 
 /**
  * @LoggedIn
@@ -19,19 +19,17 @@ class ExercisesPresenter extends BasePresenter {
   public $exercises;
 
   /**
-   * @var JobConfigStorage
+   * @var UploadedJobConfigStorage
    * @inject
    */
-  public $jobConfigStorage;
+  public $uploadedJobConfigStorage;
 
   /**
    * @GET
    * @UserIsAllowed(exercises="view-all")
    */
   public function actionDefault(string $search = NULL) {
-    $exercises = $search === NULL
-      ? $this->exercises->findAll()
-      : $this->exercises->searchByNameOrId($search);
+    $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByNameOrId($search);
 
     $this->sendSuccessResponse($exercises);
   }
@@ -64,7 +62,7 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if ($exercise->isAuthor($user)) {
-      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+        throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // save changes to database
@@ -83,22 +81,22 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if ($exercise->isAuthor($user)) {
-      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+        throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // get file from request and check if there is only one file
     $files = $this->getHttpRequest()->getFiles();
     if (count($files) === 0) {
-      throw new BadRequestException("No file was uploaded");
+        throw new BadRequestException("No file was uploaded");
     } elseif (count($files) > 1) {
-      throw new BadRequestException("Too many files were uploaded");
+        throw new BadRequestException("Too many files were uploaded");
     }
 
     // store file on application filesystem
     $file = array_pop($files);
-    $uploadedFile = $this->jobConfigStorage->store($file, $user);
+    $uploadedFile = $this->uploadedJobConfigStorage->store($file, $user);
     if ($uploadedFile === NULL) {
-      throw new CannotReceiveUploadedFileException($file->getSanitizedName());
+        throw new CannotReceiveUploadedFileException($file->getSanitizedName());
     }
 
     // make changes to exercise entity
