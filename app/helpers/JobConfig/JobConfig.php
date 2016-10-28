@@ -150,7 +150,10 @@ class JobConfig {
         $task->getSandboxConfig()->removeLimits($hwGroupId);
       }
     }
-    $this->submissionHeader->removeHardwareGroup($hwGroupId);
+    // Don't remove the hardware group from headers, because removeLimits() from
+    // above just sets limits for that particular hwgroup to unlimited, so technically
+    // the limits are still there.
+    //$this->submissionHeader->removeHardwareGroup($hwGroupId);
   }
 
   /**
