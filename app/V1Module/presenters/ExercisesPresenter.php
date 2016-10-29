@@ -33,6 +33,7 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of exercises with an optional filter
    * @GET
    * @UserIsAllowed(exercises="view-all")
    */
@@ -45,6 +46,7 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
    */
