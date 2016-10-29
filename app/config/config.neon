@@ -106,7 +106,7 @@ services:
   - Nette\Mail\SmtpMailer(%mail%)
   - class: App\Console\DoctrineFixtures
     tags: [kdyby.console.command]
-  - class: App\Console\GenerateSwagger
+  - class: App\Console\GenerateSwagger(@router)
     tags: [kdyby.console.command]
 
   # external login services
