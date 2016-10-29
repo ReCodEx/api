@@ -60,6 +60,7 @@ class AssignmentsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
+   * Get a list of all assignments
    * @GET
    * @UserIsAllowed(assignments="view-all")
    */
@@ -88,7 +89,7 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * @POST
    * @UserIsAllowed(assignments="update")
-   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="isPublic", validation="bool")
    * @Param(type="post", name="description", validation="string")
    * @Param(type="post", name="firstDeadline", validation="numericint")

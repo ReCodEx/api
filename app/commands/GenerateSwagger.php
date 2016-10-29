@@ -1,0 +1,255 @@
+<?php
+namespace App\Console;
+
+use App\V1Module\Router\MethodRoute;
+use Nette\Application\IPresenterFactory;
+use Nette\Application\Routers\Route;
+use Nette\Application\Routers\RouteList;
+use Nette\Application\UI\Presenter;
+use Nette\Reflection\Method;
+use Nette\Utils\ArrayHash;
+use Nette\Utils\Arrays;
+use Nette\Utils\Strings;
+use ReflectionClass;
+use ReflectionException;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
+
+class GenerateSwagger extends Command
+{
+  /**
+   * @var RouteList
+   */
+  private $router;
+
+  /**
+   * @var IPresenterFactory
+   */
+  private $presenterFactory;
+
+  public function __construct(RouteList $router, IPresenterFactory $presenterFactory)
+  {
+    parent::__construct();
+    $this->router = $router;
+    $this->presenterFactory = $presenterFactory;
+  }
+
+  protected function configure()
+  {
+    $this->setName("swagger:generate")->setDescription("Generate a swagger specification file from existing code");
+    $this->addArgument("source", InputArgument::OPTIONAL, "A YAML Swagger file to use as a template for the generated file", NULL);
+    $this->addOption("save", NULL, InputOption::VALUE_NONE, "Save the output back to the source file");
+  }
+
+  protected function setArrayDefault(&$array, $key, $default)
+  {
+    if (!array_key_exists($key, $array)) {
+      $array[$key] = $default;
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  protected function execute(InputInterface $input, OutputInterface $output)
+  {
+    $apiRoutes = $this->findAPIRouteList();
+
+    if (!$apiRoutes) {
+      $output->writeln("<error>No suitable routes found</error>");
+      return;
+    }
+
+    $source = $input->getArgument("source");
+    $save = $input->getOption("save");
+
+    if ($save && $source === NULL) {
+      $output->writeln("<error>--save cannot be used without a source file</error>");
+      return;
+    }
+
+    $document = $source ? Yaml::parse(file_get_contents($source)) : [];
+    $basePath = ltrim(Arrays::get($document, "basePath", "/v1"), "/");
+
+    $this->setArrayDefault($document, "paths", []);
+    $paths = &$document["paths"];
+
+    foreach ($apiRoutes as $routeData) {
+      $route = $routeData["route"];
+      $parentRoute = $routeData["parent"];
+
+      $method = self::getPropertyValue($route, "method");
+      $actualRoute = self::getPropertyValue($route, "route");
+
+      $metadata = self::getPropertyValue($actualRoute, "metadata");
+      $mask = self::getPropertyValue($actualRoute, "mask");
+
+      if (!Strings::startsWith($mask, $basePath)) {
+        continue;
+      }
+
+      $mask = substr(str_replace(["<", ">"], ["{", "}"], $mask), strlen($basePath));
+
+      $this->setArrayDefault($paths, $mask, []);
+      $this->setArrayDefault($paths[$mask], strtolower($method), []);
+
+      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], self::getPropertyValue($parentRoute, "module"));
+    }
+
+    $yaml = Yaml::dump($document, 10, 2);
+    $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
+    $output->write($yaml);
+
+    if ($save) {
+      file_put_contents($source, $yaml);
+    }
+  }
+
+  private function fillPathEntry(array $metadata, array &$entry, $module)
+  {
+    $presenterName = $module . $metadata[Route::PRESENTER_KEY]["value"];
+    $action = $metadata["action"]["value"] ?: "default";
+
+    /** @var Presenter $presenter */
+    $presenter = $this->presenterFactory->createPresenter($presenterName);
+    $methodName = $presenter->formatActionMethod($action);
+
+    try {
+      $method = Method::from(get_class($presenter), $methodName);
+    } catch (ReflectionException $exception) {
+      return NULL;
+    }
+
+    $annotations = $method->getAnnotations();
+
+    $entry["description"] = $method->getDescription() ?: "";
+    $this->setArrayDefault($entry, "parameters", []);
+    $this->setArrayDefault($entry, "responses", []);
+
+    foreach (Arrays::get($annotations, "Param", []) as $annotation) {
+      if ($annotation instanceof ArrayHash) {
+        $annotation = get_object_vars($annotation);
+      }
+
+      if (isset($paramEntry)) {
+        unset($paramEntry);
+      }
+
+      $paramEntryFound = FALSE;
+
+      foreach ($entry["parameters"] as $i => $parameter) {
+        if ($parameter["name"] === $annotation["name"]) {
+          $paramEntry = &$entry["parameters"][$i];
+          $paramEntryFound = TRUE;
+          break;
+        }
+      }
+
+      if (!$paramEntryFound) {
+        $entry["parameters"][] = [
+          "name" => $annotation["name"]
+        ];
+
+        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
+      }
+
+      $paramEntry["required"] = Arrays::get($annotation, "required", FALSE);
+      $this->setArrayDefault($paramEntry, "type", $annotation["validation"]); // TODO translate to Swagger types so that we can override values from the file
+
+      if ($annotation["type"] === "post") {
+        $paramEntry["in"] = "formData";
+      } else if ($annotation["type"] === "query") {
+        $paramEntry["in"] = "query";
+      }
+
+      $paramEntry["description"] = Arrays::get($annotation, "description", "");
+    }
+
+    foreach ($method->getParameters() as $methodParameter) {
+      if (isset($paramEntry)) {
+        unset($paramEntry);
+      }
+
+      $paramEntryFound = FALSE;
+
+      foreach ($entry["parameters"] as $i => $parameter) {
+        if ($parameter["name"] === $methodParameter->getName()) {
+          $paramEntry = &$entry["parameters"][$i];
+          $paramEntryFound = TRUE;
+          break;
+        }
+      }
+
+      if (!$paramEntryFound) {
+        $entry["parameters"][] = [
+          "name" => $methodParameter->getName()
+        ];
+
+        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
+      }
+
+      $paramEntry["required"] = !$methodParameter->isOptional();
+      $paramEntry["in"] = "path";
+      $this->setArrayDefault($paramEntry, "type", "string");
+    }
+
+    $this->setArrayDefault($entry["responses"], "200", []);
+
+    $isAuthFailurePossible = $presenter->getReflection()->getAnnotation("LoggedIn")
+      || $method->getAnnotation("LoggedIn")
+      || $method->getAnnotation("UserIsAllowed");
+
+    if ($isAuthFailurePossible) {
+      $this->setArrayDefault($entry["responses"], "403", []);
+    }
+
+    return $entry;
+  }
+
+  private function findAPIRouteList()
+  {
+    $queue = [$this->router];
+
+    while (count($queue) != 0) {
+      $cursor = array_shift($queue);
+
+      if ($cursor instanceof RouteList) {
+        foreach ($cursor as $item) {
+          if ($item instanceof MethodRoute) {
+            yield [
+              "parent" => $cursor,
+              "route" => $item
+            ];
+          }
+
+          if ($item instanceof RouteList) {
+            array_push($queue, $item);
+          }
+        }
+      }
+    }
+
+    return NULL;
+  }
+
+  private static function getPropertyValue($object, $propertyName)
+  {
+    $class = new ReflectionClass($object);
+
+    do {
+      try {
+        $property = $class->getProperty($propertyName);
+      } catch (ReflectionException $exception) {
+        $class = $class->getParentClass();
+        $property = NULL;
+      }
+    } while ($property === NULL && $class !== NULL);
+
+    $property->setAccessible(TRUE);
+    return $property->getValue($object);
+  }
+}
