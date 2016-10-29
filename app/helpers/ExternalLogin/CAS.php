@@ -95,7 +95,8 @@ class CAS implements IExternalLoginService {
     $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
     $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
 
-    return new UserData($ukco, $firstName, $lastName, $email, $this);
+    // It is not possible to get user's degrees from CAS LDAP directory - default to empty string.
+    return new UserData($ukco, $firstName, $lastName, "", "", $email, $this);
   }
 
   /**

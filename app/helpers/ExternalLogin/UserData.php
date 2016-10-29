@@ -26,6 +26,12 @@ final class UserData {
   /** @var string Last name of user */
   private $lastName;
 
+  /** @var string Degrees before user's name' */
+  private $degreesBeforeName;
+
+  /** @var string Degrees after user's name */
+  private $degreesAfterName;
+
   /** @var string Email address of user */
   private $email;
 
@@ -40,6 +46,8 @@ final class UserData {
    * @param string                $id          Identifier of user (inside identity provider)
    * @param string                $firstName   First name of user
    * @param string                $lastName    Last name of user
+   * @param string                $degreesBeforeName   Degrees before user's name
+   * @param string                $degreesAfterName    Degrees after user's name
    * @param string                $email       Email address of user
    * @param IExternalLoginService $authService Used authentification service provider class
    */
@@ -47,12 +55,16 @@ final class UserData {
     string $id,
     string $firstName,
     string $lastName,
+    string $degreesBeforeName,
+    string $degreesAfterName,
     string $email,
     IExternalLoginService $authService
   ) {
     $this->id = $id;
     $this->firstName = $firstName;
     $this->lastName = $lastName;
+    $this->degreesBeforName = $degreesBeforName;
+    $this->degreesAfterName = $degreesAfterName;
     $this->email = $email;
   }
 
@@ -67,8 +79,8 @@ final class UserData {
       $this->email,
       $this->firstName,
       $this->lastName,
-      "", // @todo
-      "", // @todo
+      $this->degreesBeforeName,
+      $this->degreesAfterName,
       $role,
       $instance
     );
