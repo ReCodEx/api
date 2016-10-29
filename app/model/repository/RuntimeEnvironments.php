@@ -3,7 +3,6 @@
 namespace App\Model\Repository;
 
 use Kdyby\Doctrine\EntityManager;
-use Nette\Http\FileUpload;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 use App\Model\Entity\RuntimeEnvironment;
@@ -73,14 +72,13 @@ class RuntimeEnvironments extends BaseRepository {
 
   /**
    * Extract extension from given file and return it.
-   * @param FileUpload $fileUpload
+   * @param UploadedFile $file
    * @return string extension
-   * @throws ApiException if file does not have an extension
    */
-  private function getFileExtension(FileUpload $fileUpload): string {
-    $ext = pathinfo($fileUpload->getSanitizedName(), PATHINFO_EXTENSION);
+  private function getFileExtension(UploadedFile $file): string {
+    $ext = pathinfo($file->getName(), PATHINFO_EXTENSION);
     if ($ext === NULL) {
-      throw new ApiException("File does not containt extension: " . $fileUpload->getSanitizedName());
+      $ext = "";
     }
 
     return $ext;

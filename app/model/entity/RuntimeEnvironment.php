@@ -30,8 +30,8 @@ class RuntimeEnvironment implements JsonSerializable
   protected $language;
 
   /**
-   * List of extensions in YAML format.
-   * Example: [ "cpp", "hpp", "h" ]
+   * List of extensions in YAML format. No extension is also extension.
+   * Example: [ "cpp", "hpp", "h", "" ]
    * @ORM\Column(type="string")
    */
   protected $extensions;
