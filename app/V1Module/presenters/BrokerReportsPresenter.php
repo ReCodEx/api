@@ -83,9 +83,10 @@ class BrokerReportsPresenter extends BasePresenter {
   }
 
   /**
+   * Update the status of a job (meant to be called by the backend)
    * @POST
-   * @Param(name="status", type="post")
-   * @Param(name="message", type="post", required=false)
+   * @Param(name="status", type="post", description="The new status of the job")
+   * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
    */
   public function actionJobStatus($jobId) {
     $status = $this->getHttpRequest()->getPost("status");
@@ -152,8 +153,9 @@ class BrokerReportsPresenter extends BasePresenter {
   }
 
   /**
+   * Announce a backend error that is not related to any job (meant to be called by the backend)
    * @POST
-   * @Param(name="message", type="post")
+   * @Param(name="message", type="post", description="A textual description of the error")
    */
   public function actionError() {
     $req = $this->getHttpRequest();
