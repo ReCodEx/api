@@ -78,11 +78,12 @@ class ForgottenPasswordHelper {
   /**
    * Generate access token and send it to the given email.
    * @param Login $login
+   * @param string $IPaddress IP address of change request client (from request headers)
    * @return bool If sending was successful or not
    */
-  public function process(Login $login) {
+  public function process(Login $login, string $IPaddress) {
     // Stalk forgotten password requests a little bit and store them to database
-    $entry = new ForgottenPassword($login->user, $login->user->email, $this->redirectUrl);
+    $entry = new ForgottenPassword($login->user, $login->user->email, $this->redirectUrl, $IPaddress);
     $this->em->persist($entry);
     $this->em->flush();
 

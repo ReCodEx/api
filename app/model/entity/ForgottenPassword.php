@@ -15,12 +15,14 @@ class ForgottenPassword
   public function __construct(
     User $user,
     string $sentTo,
-    string $redirectUrl
+    string $redirectUrl,
+    string $IPaddress
   ) {
     $this->user = $user;
     $this->sentTo = $sentTo;
     $this->requestedAt = new DateTime;
     $this->redirectUrl = $redirectUrl;
+    $this->IPaddress = $IPaddress;
   }
 
   /**
@@ -49,5 +51,10 @@ class ForgottenPassword
    * @ORM\Column(type="string")
    */
   protected $redirectUrl;
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $IPaddress;
 
 }

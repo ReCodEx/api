@@ -110,6 +110,7 @@ services:
 
   # external login services
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
+  - App\Helpers\ExternalLogin\AuthService(@App\Helpers\ExternalLogin\CAS)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
@@ -142,10 +143,13 @@ services:
   - App\Model\Repository\Users
   - App\Model\Repository\RuntimeEnvironments
   - App\Model\Repository\SolutionRuntimeConfigs
+  - App\Model\Repository\UserActions
+  - App\Model\Repository\GroupMemberships
 
 doctrine:
   user: 'root'
   password: ''
+  host: localhost
   dbname: 'recodex-api'
   metadata:
     App: %appDir%

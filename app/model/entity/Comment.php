@@ -24,7 +24,7 @@ class Comment implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="CommentThread", inversedBy="comments")
    */
   protected $commentThread;
-  
+
   /**
    * @ORM\ManyToOne(targetEntity="User")
    */
@@ -46,7 +46,7 @@ class Comment implements JsonSerializable
     * @ORM\Column(type="datetime")
     */
   protected $postedAt;
-  
+
   /**
     * @ORM\Column(type="string")
     */

@@ -3,9 +3,14 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ApiException;
+use App\Model\Repository\UserActions;
+
 use Nette\Http\IResponse;
+use Nette\Application\Request;
 use Nette\Application\BadRequestException;
+
 use Doctrine\DBAL\Exception\ConnectionException;
+
 use Tracy\Debugger;
 use Tracy\ILogger;
 
@@ -21,11 +26,17 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   public $logger;
 
   /**
+   * @var UserActions
+   * @inject
+   */
+  public $userActions;
+
+  /**
    * @param  Exception
    * @return void
    */
   public function renderDefault($exception) {
-      // first let us log the whole error thingy
+    // first let us log the whole error thingy
     $this->handleLogging($exception);
 
     if ($exception instanceof ApiException) {
@@ -36,7 +47,6 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Database is offline");
     } else {
       $type = get_class($exception);
-      Debugger::log($exception);
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Unexpected Error {$type}");
     }
   }
@@ -60,16 +70,28 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
    * @param \Throwable $exception Exception which should be logged
    */
   protected function handleLogging($exception) {
-      $this->logger->log($exception, ILogger::EXCEPTION);
+    $this->logger->log($exception, ILogger::EXCEPTION);
   }
 
   /**
     * Send a JSON response with a specific HTTP code
-    * @param  int      $code HTTP code of the response
-    * @param  string   $msg  Human readable description of the error
+    * @param  int      $code    HTTP code of the response
+    * @param  string   $msg     Human readable description of the error
     * @return void
     */
-  protected function sendErrorResponse($code, $msg) {
+  protected function sendErrorResponse(int $code, string $msg) {
+    // log the action done by the current user
+    if ($this->user->isLoggedIn()) {
+      // determine the action name from the application request
+      $req = $this->getRequest();
+      $params = $req->getParameters();
+      $action = isset($params[self::ACTION_KEY]) ? $params[self::ACTION_KEY] : self::DEFAULT_ACTION;
+      unset($params[self::ACTION_KEY]);
+      $fullyQualified = ':' . $req->getPresenterName() . ':' . $action;
+      $this->userActions->log($fullyQualified, $params, $code, $msg);
+    }
+
+    // send the error message in the standard format
     $this->getHttpResponse()->setCode($code);
     $this->sendJson([
         "code"      => $code,

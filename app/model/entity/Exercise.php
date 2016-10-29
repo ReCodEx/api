@@ -156,4 +156,18 @@ class Exercise implements JsonSerializable
     ];
   }
 
+    /**
+     * The name of the user
+     * @param  string $name   Name of the exercise
+     * @return User
+     */
+    public static function createExercise($name, $description, User $user) {
+        $entity = new Exercise;
+        $entity->name = $name;
+        $entity->exercise = NULL;
+        $entity->version = 1;
+        $entity->description = $description;
+        $entity->user = $user;
+        return $entity;
+    }
 }

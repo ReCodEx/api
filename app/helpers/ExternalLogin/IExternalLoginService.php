@@ -20,7 +20,7 @@ interface IExternalLoginService {
    * @param  string $username Email or identification number of the person
    * @param  string $password User's password
    * @return UserData Information known about this user
-   */ 
+   */
   function getUser(string $username, string $password): UserData;
 
 }

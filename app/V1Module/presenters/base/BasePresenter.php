@@ -15,6 +15,7 @@ use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
+use App\Model\Repository\UserActions;
 use App\Helpers\Validators;
 //use Nette\Utils\Validators;
 
@@ -30,6 +31,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $users;
+
+  /**
+   * @var UserActions
+   * @inject
+   */
+  public $userActions;
 
   /**
    * @var AccessManager
@@ -196,6 +203,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
+    if ($this->user->isLoggedIn()) {
+      $params = $this->getRequest()->getParameters();
+      unset($params[self::ACTION_KEY]);
+      $this->userActions->log($this->getAction(TRUE), $params, $code);
+    }
+
     $resp = $this->getHttpResponse();
     $resp->setCode($code);
     $this->sendJson([

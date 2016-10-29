@@ -3,7 +3,7 @@
 namespace App\Helpers\EvaluationStatus;
 
 /**
- * Helper class for manipulation with evaluations 
+ * Helper class for manipulation with evaluations
  */
 class EvaluationStatus {
 
@@ -11,7 +11,7 @@ class EvaluationStatus {
   const EVALUATION_STATUS_EVALUATION_FAILED = "evaluation-failed";
   const EVALUATION_STATUS_DONE = "done";
   const EVALUATION_STATUS_FAILED = "failed";
-  
+
   /**
    * Helper method for converting IEvaluable object to human readable string status
    * @param IEvaluable $evaluable Object which state will be returned

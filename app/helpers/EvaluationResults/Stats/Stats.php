@@ -34,7 +34,7 @@ class Stats implements IStats {
   /** @var boolean Whether the process was killed by the evaluation system */
   private $killed;
 
-  /** 
+  /**
    * Constructor
    * @param array $data Raw data from basic parsing of sandbox output
    */
@@ -94,7 +94,7 @@ class Stats implements IStats {
   }
 
   /**
-   * Get memory used by the program 
+   * Get memory used by the program
    * @return int The ammout of memory the process allocated
    */
   public function getUsedMemory(): int {
@@ -112,7 +112,7 @@ class Stats implements IStats {
 
   /**
    * Get code returned by the program
-   * @return int The exit code fo the executable 
+   * @return int The exit code fo the executable
    */
   public function getExitCode(): int {
     return $this->exitcode;
