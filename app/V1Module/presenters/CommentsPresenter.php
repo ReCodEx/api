@@ -34,6 +34,7 @@ class CommentsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a comment thread
    * @GET
    * @UserIsAllowed(comments="view")
    */
@@ -46,10 +47,11 @@ class CommentsPresenter extends BasePresenter {
   }
 
   /**
+   * Add a comment to a thread
    * @POST
    * @UserIsAllowed(comments="alter")
-   * @Param(type="post", name="text", validation="string:1..")
-   * @Param(type="post", name="isPrivate", validation="string")
+   * @Param(type="post", name="text", validation="string:1..", description="Text of the comment")
+   * @Param(type="post", name="isPrivate", validation="string", description="True if the comment is private")
    */
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);
@@ -66,6 +68,7 @@ class CommentsPresenter extends BasePresenter {
   }
 
   /**
+   * Make a private comment public or vice versa
    * @POST
    * @UserIsAllowed(comments="alter")
    */
