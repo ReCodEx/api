@@ -122,7 +122,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
           break;
         case "query":
           $value = $this->getQueryField($name, $required);
-
+          break;
         default:
           throw new InternalServerErrorException("Unknown parameter type '$type'");
       }
