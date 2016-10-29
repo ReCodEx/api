@@ -70,6 +70,7 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of an assignment
    * @GET
    * @UserIsAllowed(assignments="view-detail")
    */
@@ -87,18 +88,19 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Update details of an assignment
    * @POST
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
-   * @Param(type="post", name="isPublic", validation="bool")
-   * @Param(type="post", name="description", validation="string")
-   * @Param(type="post", name="firstDeadline", validation="numericint")
-   * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint")
-   * @Param(type="post", name="submissionsCountLimit", validation="numericint")
-   * @Param(type="post", name="scoreConfig", validation="string")
-   * @Param(type="post", name="allowSecondDeadline", validation="bool")
-   * @Param(type="post", name="secondDeadline", validation="numericint", required=false)
-   * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false)
+   * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
+   * @Param(type="post", name="description", validation="string", description="A description of the assignment")
+   * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
+   * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
+   * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
+   * @Param(type="post", name="scoreConfig", validation="string", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
+   * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
+   * @Param(type="post", name="secondDeadline", validation="numericint", required=false, description="A second deadline for submission of the assignment (with different point award)")
+   * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getHttpRequest();
@@ -139,10 +141,11 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Assign an exercise to a group
    * @POST
    * @UserIsAllowed(assignments="create")
-   * @Param(type="post", name="exerciseId")
-   * @Param(type="post", name="groupId")
+   * @Param(type="post", name="exerciseId", description="Identifier of the exercise")
+   * @Param(type="post", name="groupId", description="Identifier of the group")
    */
   public function actionCreate() {
     $req = $this->getHttpRequest();
@@ -182,6 +185,7 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Delete an assignment
    * @DELETE
    * @UserIsAllowed(assignments="remove")
    */
@@ -199,6 +203,7 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Check if the current user can submit solutions to the assignment
    * @GET
    * @UserIsAllowed(assignments="submit")
    */
@@ -215,6 +220,7 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of submitted solutions of the assignment
    * @GET
    * @UserIsAllowed(assignments="view-submissions")
    */
@@ -225,10 +231,11 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Submit a solution of the assignment
    * @POST
    * @UserIsAllowed(assignments="submit")
-   * @Param(type="post", name="note")
-   * @Param(type="post", name="files")
+   * @Param(type="post", name="note", description="A private note by the author of the solution")
+   * @Param(type="post", name="files", description="Submitted files")
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -283,6 +290,7 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of resource limits for an assignment and a hardware group
    * @GET
    * @UserIsAllowed(assignments="view-limits")
    */
@@ -319,9 +327,10 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Set resource limits for an assignment and a hardware group
    * @POST
    * @UserIsAllowed(assignments="set-limits")
-   * @Param(type="post", name="limits")
+   * @Param(type="post", name="limits", description="A list of resource limits")
    */
   public function actionSetLimits(string $id, string $hardwareGroup) {
     $assignment = $this->assignments->findOrThrow($id);
