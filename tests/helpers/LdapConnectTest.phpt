@@ -53,11 +53,17 @@ class LdapConnectTest extends Tester\TestCase
   }
 
   public function testInvalidArgumentConfig() {
-    Assert::exception(function() {new LdapUserUtils(self::$invalidArgumentConfig);}, 'App\Exceptions\LdapConnectException');
+    Assert::exception(function() {
+        $utils = new LdapUserUtils(self::$invalidArgumentConfig);
+        $utils->getUser("ABC", "XYZ");
+    }, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongConfig() {
-    Assert::exception(function() {new LdapUserUtils(self::$wrongConfig);}, 'App\Exceptions\LdapConnectException');
+    Assert::exception(function() {
+        $utils = new LdapUserUtils(self::$wrongConfig);
+        $utils->getUser("ABC", "XYZ");
+    }, 'App\Exceptions\LdapConnectException');
   }
 
   public function testWrongCredentials() {

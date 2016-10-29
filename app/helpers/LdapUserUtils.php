@@ -42,7 +42,25 @@ class LdapUserUtils {
   private $bindName;
 
   /** @var Manager Anonymous LDAP connection for searching */
-  private $anonymousManager;
+  private $anonymousManager = NULL;
+
+  /**
+   * Access anonymous connection manager.
+   * @return Manager
+   * @throws LdapConnectionException
+   */
+  protected function getAnonymousManager() {
+    if ($this->anonymousManager === NULL) {
+      try {
+        $this->anonymousManager = $this->connect();
+        $this->anonymousManager->bind();
+      } catch (\Exception $e) {
+        throw new LdapConnectException;
+      }
+    }
+
+    return $this->anonymousManager;
+  }
 
   /**
    * Constructor with initialization of config and anonymous connection to LDAP
@@ -65,13 +83,6 @@ class LdapUserUtils {
 
     $this->baseDn = Arrays::get($config, 'base_dn');
     $this->bindName = Arrays::get($config, 'bindName');
-
-    try {
-      $this->anonymousManager = $this->connect();
-      $this->anonymousManager->bind();
-    } catch (\Exception $e) {
-      throw new LdapConnectException;
-    }
   }
 
   /**
@@ -117,7 +128,7 @@ class LdapUserUtils {
    * @return string|NULL Unique user ID or NULL
    */
   public function findUserByMail(string $mail, string $mailField = 'mail') {
-    $results = $this->anonymousManager->search(
+    $results = $this->getAnonymousManager()->search(
       $this->baseDn,
       "(&(objectClass=person)({$mailField}={$mail}))"
     );
