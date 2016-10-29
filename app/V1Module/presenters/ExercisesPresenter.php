@@ -62,7 +62,7 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if ($exercise->isAuthor($user)) {
-        throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // save changes to database
@@ -81,13 +81,13 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if ($exercise->isAuthor($user)) {
-        throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // get file from request and check if there is only one file
     $files = $this->getHttpRequest()->getFiles();
     if (count($files) === 0) {
-        throw new BadRequestException("No file was uploaded");
+      throw new BadRequestException("No file was uploaded");
     } elseif (count($files) > 1) {
         throw new BadRequestException("Too many files were uploaded");
     }
@@ -96,7 +96,7 @@ class ExercisesPresenter extends BasePresenter {
     $file = array_pop($files);
     $uploadedFile = $this->uploadedJobConfigStorage->store($file, $user);
     if ($uploadedFile === NULL) {
-        throw new CannotReceiveUploadedFileException($file->getSanitizedName());
+      throw new CannotReceiveUploadedFileException($file->getSanitizedName());
     }
 
     // make changes to exercise entity
