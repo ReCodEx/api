@@ -25,8 +25,9 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public $forgottenPasswordHelper;
 
   /**
+   * Request a password reset (user will receive an e-mail that prompts them to reset their password)
    * @POST
-   * @Param(type="post", name="username", validation="string:2..")
+   * @Param(type="post", name="username", validation="string:2..", description="An identifier of the user whose password should be reset")
    */
   public function actionDefault() {
     $req = $this->getHttpRequest();
@@ -40,8 +41,9 @@ class ForgottenPasswordPresenter extends BasePresenter {
   }
 
   /**
+   * Change the user's password
    * @POST
-   * @Param(type="post", name="password", validation="string:2..")
+   * @Param(type="post", name="password", validation="string:2..", description="The new password")
    * @LoggedIn
    */
   public function actionChange() {
@@ -64,8 +66,9 @@ class ForgottenPasswordPresenter extends BasePresenter {
   }
 
   /**
+   * Check if a password is strong enough
    * @POST
-   * @Param(type="post", name="password")
+   * @Param(type="post", name="password", description="the password to be checked")
    */
   public function actionValidatePasswordStrength() {
     $req = $this->getHttpRequest();
