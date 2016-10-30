@@ -140,32 +140,17 @@ class Assignment implements JsonSerializable
   }
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment")
    */
-  protected $description;
-
-  public function getDescription() {
-    // @todo: this must be translatable
-
-    $description = $this->description;
-    $parent = $this->exercise;
-    while (empty($description) && $parent !== NULL) {
-      $description = $parent->description;
-      $parent = $parent->exercise;
-    }
-
-    return $description;
-  }
+  protected $localizedAssignments;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
-   * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
    */
   protected $exercise;
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
-   * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
    */
   protected $group;
 
@@ -252,7 +237,7 @@ class Assignment implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "isPublic" => $this->isPublic,
-      "description" => $this->getDescription(),
+      "localizedAssignments" => $this->localizedAssignments->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeaedline" => $this->secondDeadline->getTimestamp(),

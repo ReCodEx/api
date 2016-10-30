@@ -48,9 +48,9 @@ class Exercise implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment")
    */
-  protected $assignment;
+  protected $localizedAssignments;
 
   /**
    * @ORM\Column(type="string")
@@ -90,13 +90,13 @@ class Exercise implements JsonSerializable
   /**
    * Constructor
    */
-  private function __construct($name, $version, $description, $assignment,
+  private function __construct($name, $version, $description,
       $difficulty, $solutionRuntimeConfigs, $exercise, User $user) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
-    $this->description = $description;
+    $this->localizedAssignments = new ArrayCollection;
     $this->assignment = $assignment;
     $this->difficulty = $difficulty;
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
@@ -104,14 +104,15 @@ class Exercise implements JsonSerializable
     $this->author = $user;
   }
 
-  public function update($name, $description, $assignment, $difficulty) {
+  public function update($name, $description, $difficulty) {
     $this->name = $name;
     $this->version++;
     $this->updatedAt = new DateTime;
     $this->description = $description;
-    $this->assignment = $assignment;
     $this->difficulty = $difficulty;
   }
+
+  // @todo: Update localized assignment
 
   public static function create(User $user): Exercise {
     return new self(

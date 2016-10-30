@@ -35,7 +35,7 @@ class SolutionRuntimeConfig implements JsonSerializable
   protected $jobConfigFilePath;
 
   /**
-   * @ORM\ManyToOne(trargetEntity="HardwareGroup")
+   * @ORM\ManyToOne(targetEntity="HardwareGroup")
    */
   protected $hardwareGroup;
 

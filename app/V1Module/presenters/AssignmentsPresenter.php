@@ -17,6 +17,7 @@ use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
+use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
 
@@ -56,7 +57,7 @@ class AssignmentsPresenter extends BasePresenter {
   public $files;
 
   /**
-   * @var SolutionRuntimeConfiguration
+   * @var SolutionRuntimeConfigs
    * @inject
    */
   public $runtimeConfigurations;
@@ -258,7 +259,7 @@ class AssignmentsPresenter extends BasePresenter {
     $files = $this->files->findAllById($req->getPost("files"));
 
     // detect the runtime configuration if needed
-    $runtimeConfigurationId = $req->getPst("runtimeConfigurationId", NULL);
+    $runtimeConfigurationId = $req->getPost("runtimeConfigurationId", NULL);
     $runtimeConfiguration = $runtimeConfigurationId === NULL
       ? $this->solutionRuntimeConfigurations->detectOrThrow($assignment, $files)
       : $this->solutionRuntimeConfigurations->findOrThrow($runtimeConfigurationId);
