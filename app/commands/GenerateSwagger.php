@@ -6,6 +6,7 @@ use Nette\Application\IPresenterFactory;
 use Nette\Application\Routers\Route;
 use Nette\Application\Routers\RouteList;
 use Nette\Application\UI\Presenter;
+use Nette\Reflection\ClassType;
 use Nette\Reflection\Method;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Arrays;
@@ -78,6 +79,9 @@ class GenerateSwagger extends Command
     $this->setArrayDefault($document, "paths", []);
     $paths = &$document["paths"];
 
+    $this->setArrayDefault($document, "tags", []);
+    $tags = &$document["tags"];
+
     foreach ($apiRoutes as $routeData) {
       $route = $routeData["route"];
       $parentRoute = $routeData["parent"];
@@ -97,11 +101,14 @@ class GenerateSwagger extends Command
       $this->setArrayDefault($paths, $mask, []);
       $this->setArrayDefault($paths[$mask], strtolower($method), []);
 
-      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], self::getPropertyValue($parentRoute, "module"));
+      $module = self::getPropertyValue($parentRoute, "module");
+      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module);
+      $this->makePresenterTag($metadata, $module, $tags, $paths[$mask][strtolower($method)]);
     }
 
     $yaml = Yaml::dump($document, 10, 2);
     $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
+    $yaml = Strings::replace($yaml, '/(?<=tags:)\s*\{\s*\}/', " [ ]"); // :-!
     $output->write($yaml);
 
     if ($save) {
@@ -251,5 +258,40 @@ class GenerateSwagger extends Command
 
     $property->setAccessible(TRUE);
     return $property->getValue($object);
+  }
+
+  private function makePresenterTag($metadata, $module, array &$tags, array &$entry)
+  {
+    $presenterName = $metadata[Route::PRESENTER_KEY]["value"];
+    $fullPresenterName = $module . $presenterName;
+
+    /** @var Presenter $presenter */
+    $presenter = $this->presenterFactory->createPresenter($fullPresenterName);
+
+    $tag = strtolower(Strings::replace($presenterName, '/(?!^)([A-Z])/', '-\1'));
+    $tagEntry = [];
+    $tagEntryFound = FALSE;
+
+    foreach ($tags as $i => $tagEntry) {
+      if ($tagEntry["name"] === $tag) {
+        $tagEntryFound = TRUE;
+        $tagEntry = &$tags[$i];
+        break;
+      }
+    }
+
+    if (!$tagEntryFound) {
+      $tags[] = [
+        "name" => $tag
+      ];
+
+      $tagEntry = &$tags[count($tags) - 1];
+    }
+
+    $tagEntry["description"] = (new ClassType($presenter))->getDescription() ?: "";
+
+    $this->setArrayDefault($entry, "tags", []);
+    $entry["tags"][] = $tag;
+    $entry["tags"] = array_unique($entry["tags"]);
   }
 }
