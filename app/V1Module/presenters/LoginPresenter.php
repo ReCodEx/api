@@ -41,7 +41,7 @@ class LoginPresenter extends BasePresenter {
   /**
    * Sends response with an access token, if the user exists.
    * @param User $user
-   * @throws WrongCreedentialsException
+   * @throws WrongCredentialsException
    */
   private function trySendingLoggedInResponse($user) {
     if (!$user) {
@@ -55,9 +55,10 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
+   * Log in using user credentials
    * @POST
-   * @Param(type="post", name="username", validation="email")
-   * @Param(type="post", name="password", validation="string")
+   * @Param(type="post", name="username", validation="email", description="User's E-mail")
+   * @Param(type="post", name="password", validation="string", description="Password")
    */
   public function actionDefault() {
     $req = $this->getHttpRequest();
@@ -69,9 +70,10 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
+   * Log in using an external authentication service
    * @POST
-   * @Param(type="post", name="username", validation="string")
-   * @Param(type="post", name="password", validation="string")
+   * @Param(type="post", name="username", validation="string", description="User name")
+   * @Param(type="post", name="password", validation="string", description="Password")
    */
   public function actionExternal($serviceId) {
     $req = $this->getHttpRequest();
@@ -85,6 +87,7 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
+   * Refresh the access token of current user
    * @GET
    * @LoggedIn
    */
