@@ -40,6 +40,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of all instances
    * @GET
    */
   public function actionDefault() {
@@ -48,12 +49,13 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Create a new instance
    * @POST
    * @LoggedIn
    * @UserIsAllowed(instances="add")
-   * @Param(type="post", name="name", validation="string:2..")
-   * @Param(type="post", name="description", required=FALSE)
-   * @Param(type="post", name="isOpen", validation="bool")
+   * @Param(type="post", name="name", validation="string:2..", description="Name of the instance")
+   * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
+   * @Param(type="post", name="isOpen", validation="bool", description="Should the instance be open for registration?")
    */
   public function actionCreateInstance() {
     $params = $this->parameters;
@@ -69,12 +71,13 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Update an instance
    * @PUT
    * @LoggedIn
    * @UserIsAllowed(instances="update")
-   * @Param(type="post", name="name", validation="string:2..")
-   * @Param(type="post", name="description", required=FALSE)
-   * @Param(type="post", name="isOpen", validation="bool", required=FALSE)
+   * @Param(type="post", name="name", validation="string:2..", required=FALSE, description="Name of the instance")
+   * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
+   * @Param(type="post", name="isOpen", validation="bool", required=FALSE, description="Should the instance be open for registration?")
    */
   public function actionUpdateInstance(string $id) {
     $instance = $this->findInstanceOrThrow($id);
@@ -93,6 +96,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Delete an instance
    * @DELETE
    * @LoggedIn
    * @UserIsAllowed(instances="remove")
@@ -104,6 +108,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of an instance
    * @GET
    */
   public function actionDetail(string $id) {
@@ -112,6 +117,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of groups in an instance
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-groups")
@@ -122,6 +128,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of users registered in an instance
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-users")
@@ -139,6 +146,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of licenses associated with an instance
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-licences")
@@ -149,11 +157,12 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
+   * Create a new license for an instance
    * @POST
    * @LoggedIn
    * @UserIsAllowed(instances="add-licence")
-   * @Param(type="post", name="note", validation="string:2..")
-   * @Param(type="post", name="validUntil", validation="datetime")
+   * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
+   * @Param(type="post", name="validUntil", validation="datetime", description="Expiration date of the license")
    */
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
