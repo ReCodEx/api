@@ -68,12 +68,13 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Create a user account
    * @POST
-   * @Param(type="post", name="email", validation="email")
-   * @Param(type="post", name="firstName", validation="string:2..")
-   * @Param(type="post", name="lastName", validation="string:2..")
-   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.")
-   * @Param(type="post", name="instanceId", validation="string:1..")
+   * @Param(type="post", name="email", validation="email", description="An email that will serve as a login name")
+   * @Param(type="post", name="firstName", validation="string:2..", description="First name")
+   * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
+   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="A password for authentication")
+   * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    */
   public function actionCreateAccount() {
     $req = $this->getHttpRequest();
@@ -112,11 +113,12 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Create an account authenticated with an external service
    * @POST
-   * @Param(type="post", name="username", validation="string:2..")
-   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.")
-   * @Param(type="post", name="instanceId", validation="string:1..")
-   * @Param(type="post", name="serviceId", validation="string:1..")
+   * @Param(type="post", name="username", validation="string:2..", description="Login name")
+   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="Authentication password")
+   * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
+   * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
    */
   public function actionCreateAccountExt() {
     $req = $this->getHttpRequest();
@@ -154,9 +156,10 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Check if the registered E-mail isn't already used and if the password is strong enough
    * @POST
-   * @Param(type="post", name="email")
-   * @Param(type="post", name="password")
+   * @Param(type="post", name="email", description="E-mail address (login name)")
+   * @Param(type="post", name="password", description="Authentication password")
    */
   public function actionValidateRegistrationData() {
     $req = $this->getHttpRequest();
@@ -175,6 +178,7 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of a user account
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-all")
@@ -185,13 +189,14 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Update the profile associated with a user account
    * @POST
    * @LoggedIn
-   * @Param(type="post", name="email", validation="email")
-   * @Param(type="post", name="firstName", validation="string:2..")
-   * @Param(type="post", name="lastName", validation="string:2..")
-   * @Param(type="post", name="degreesBeforeName", validation="string:1..")
-   * @Param(type="post", name="degreesAfterName", validation="string:1..")
+   * @Param(type="post", name="email", validation="email", description="E-mail address")
+   * @Param(type="post", name="firstName", validation="string:2..", description="First name")
+   * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
+   * @Param(type="post", name="degreesBeforeName", validation="string:1..", description="Degrees before name")
+   * @Param(type="post", name="degreesAfterName", validation="string:1..", description="Degrees after name")
    */
   public function actionUpdateProfile() {
     $req = $this->getHttpRequest();
@@ -262,6 +267,7 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of instances where a user is registered
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-instances")
@@ -274,6 +280,7 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of exercises authored by a user
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-exercises")
