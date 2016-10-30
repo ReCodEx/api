@@ -16,7 +16,7 @@ class TaskResult {
 
   const TASK_ID_KEY = "task-id";
   const STATUS_KEY = "status";
-  
+
   /** @var array Raw data */
   protected $data;
 
@@ -25,7 +25,7 @@ class TaskResult {
 
   /** @var string Status of the task */
   private $status;
-  
+
   /**
    * Constructor
    * @param array $data Raw result data
@@ -62,7 +62,7 @@ class TaskResult {
 
   /**
    * If the status of the task is 'OK'
-   * @return boolean The result  
+   * @return boolean The result
    */
   public function isOK() {
     return $this->getStatus() === self::STATUS_OK;
@@ -70,7 +70,7 @@ class TaskResult {
 
   /**
    * If the status of the task is 'SKIPPED'
-   * @return boolean The result  
+   * @return boolean The result
    */
   public function isSkipped() {
     return $this->getStatus() === self::STATUS_SKIPPED;

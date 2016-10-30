@@ -111,7 +111,7 @@ class Instance implements JsonSerializable
 
       return $members;
     } else {
-      // no query is present 
+      // no query is present
       return $this->members;
     }
   }

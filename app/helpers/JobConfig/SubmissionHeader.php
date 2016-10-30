@@ -171,19 +171,39 @@ class SubmissionHeader {
   }
 
   /**
-   * Set available hardware groups.
-   * @param bool $log
+   * Set available hardware groups in this configuration.
+   * @param array $groups List of available hardware groups
    */
   public function setHardwareGroups(array $groups) {
     $this->hardwareGroups = $groups;
   }
 
   /**
-   * Checks if log is on or off.
-   * @return bool
+   * Get hardware groups in this configuration.
+   * @return array List of available hardware groups
    */
   public function getHardwareGroups(): array {
     return $this->hardwareGroups;
+  }
+
+  /**
+   * Add new hardware group to list of available groups (if not present)
+   * @param string $hwGroupId Hardware group identifier we want to be present in header
+   */
+  public function addHardwareGroup(string $hwGroupId) {
+    if (!in_array($hwGroupId, $this->hardwareGroups)) {
+      $this->hardwareGroups[] = $hwGroupId;
+    }
+  }
+  
+  /**
+   * Remove hardware group from list of available groups (if present)
+   * @param string $hwGroupId Hardware group identifier we want not to be present in header
+   */
+  public function removeHardwareGroup(string $hwGroupId) {
+    if(($key = array_search($hwGroupId, $this->hardwareGroups)) !== FALSE) {
+      unset($this->hardwareGroups[$key]);
+    }
   }
 
   /**

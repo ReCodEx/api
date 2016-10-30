@@ -29,5 +29,5 @@ class Loader {
     return new EvaluationResults($parsedResults, $config);
   }
 
-  
+
 }

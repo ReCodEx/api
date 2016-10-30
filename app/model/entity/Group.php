@@ -37,7 +37,7 @@ class Group implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-  
+
   /**
    * @ORM\Column(type="string")
    */
@@ -172,7 +172,7 @@ class Group implements JsonSerializable
   }
 
   /**
-   * User is admin of a group when he is 
+   * User is admin of a group when he is
    * @param User $user
    * @return bool
    */
@@ -274,7 +274,7 @@ class Group implements JsonSerializable
       ],
       "statuses" => $statuses,
       "hasLimit" => $this->threshold !== NULL && $this->threshold > 0,
-      "passesLimit" => $this->threshold === NULL ? TRUE : $gainedPoints >= $maxPoints * $this->threshold 
+      "passesLimit" => $this->threshold === NULL ? TRUE : $gainedPoints >= $maxPoints * $this->threshold
     ];
   }
 

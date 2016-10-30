@@ -83,6 +83,8 @@ submission:  # happy hippoes fence
     language: c
     file-collector: http://localhost:9999/tasks
     log: true
+    hw-groups:
+        - group1
 tasks:
     - task-id: "compilation"
       type: initiation

@@ -8,7 +8,7 @@ use Nette\Utils;
  * Custom validators extension
  */
 class Validators extends Utils\Validators {
-  
+
   /**
    * Registering new validating functions
    */

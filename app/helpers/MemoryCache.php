@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 class MemoryCache {
-  
+
   /** @var array Cached values, indexed by their keys */
   private $cache = [];
 

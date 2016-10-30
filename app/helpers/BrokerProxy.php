@@ -49,7 +49,7 @@ class BrokerProxy {
    * Start evaluation of new job. This means sending proper message to broker that we want this new
    * job to be evaluated, receive confirmation that the message was successfuly received and finally
    * receive confirmation if the evaluation can be processed or not (for example if there is worker
-   * for that hwgroup available). 
+   * for that hwgroup available).
    * @param string $jobId Unique identifier of the new job
    * @param string $hardwareGroup Hardware group of this submission
    * @param string $archiveRemotePath URL of the archive with source codes and job evaluation configuration
@@ -90,7 +90,7 @@ class BrokerProxy {
     }
 
     $ackReceived = $this->pollRead($poll, $queue, $this->ackTimeout);
-    
+
     if (!$ackReceived) {
       throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }

@@ -197,6 +197,7 @@ class RouterFactory {
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");
+    $router[] = new PostRoute("$prefix/ext", "Users:createAccountExt");
     $router[] = new PostRoute("$prefix/validate-registration-data", "Users:validateRegistrationData");
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
@@ -205,6 +206,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/detail", "Users:updateProfile"); // TODO: maybe a bit different route
   }
 
+  /**
+   * Adds all ForgottenPassword endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createForgottenPasswordRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
     $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");

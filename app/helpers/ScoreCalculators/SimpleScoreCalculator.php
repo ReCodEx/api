@@ -18,7 +18,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
  * but every value will work correctly.
  */
 class SimpleScoreCalculator implements IScoreCalculator {
-  
+
   /** @var array Associative array of all weights of named tests */
   private $weights;
 
@@ -50,7 +50,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
         throw new \InvalidArgumentException("There is no weight for a test with name '$name' in score config.");
       }
     }
-    
+
     // now work out the score
     $sum = 0.0;
     $weightsSum = 0.0;

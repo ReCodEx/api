@@ -23,7 +23,8 @@ class TestEvaluationResults extends Tester\TestCase
     "submission" => [
       "job-id" => "student_bla bla bla",
       "file-collector" => "https://collector",
-      "language" => "cpp"
+      "language" => "cpp",
+      "hw-groups" => [ "A" ]
     ],
     "tasks" => [
       [
@@ -122,7 +123,8 @@ class TestEvaluationResults extends Tester\TestCase
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
-        "language" => "php"
+        "language" => "php",
+        "hw-groups" => [ "group1" ]
       ],
       "tasks" => [
         [
@@ -157,7 +159,8 @@ class TestEvaluationResults extends Tester\TestCase
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
-        "language" => "php"
+        "language" => "php",
+        "hw-groups" => [ "group1" ]
       ],
       "tasks" => [
         [
@@ -192,7 +195,8 @@ class TestEvaluationResults extends Tester\TestCase
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
-        "language" => "php"
+        "language" => "php",
+        "hw-groups" => [ "group1" ]
       ],
       "tasks" => [
         [

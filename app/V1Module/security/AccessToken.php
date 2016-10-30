@@ -18,7 +18,7 @@ class AccessToken {
 
   /**
    * Create a wrapper for a given JWT payload.
-   * @param object $payload The decoded payload of the token 
+   * @param object $payload The decoded payload of the token
    */
   public function __construct($payload) {
     if (isset($payload->sub)) {

@@ -30,6 +30,13 @@ class RuntimeEnvironment implements JsonSerializable
   protected $language;
 
   /**
+   * List of extensions in YAML format. No extension is also extension.
+   * Example: [ "cpp", "hpp", "h", "" ]
+   * @ORM\Column(type="string")
+   */
+  protected $extensions;
+
+  /**
    * @ORM\Column(type="string")
    */
   protected $platform;
@@ -43,11 +50,13 @@ class RuntimeEnvironment implements JsonSerializable
   public function __construct(
     $name,
     $language,
+    $extensions,
     $platform,
     $description
   ) {
     $this->name = $name;
     $this->language = $language;
+    $this->extensions = $extensions;
     $this->platform = $platform;
     $this->description = $description;
   }
@@ -57,6 +66,7 @@ class RuntimeEnvironment implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "language" => $this->language,
+      "extensions" => $this->extensions,
       "platform" => $this->platform,
       "description" => $this->description
     ];
