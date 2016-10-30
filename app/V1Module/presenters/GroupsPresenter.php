@@ -64,6 +64,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of all groups
    * @GET
    * @UserIsAllowed(groups="view-all")
    */
@@ -112,11 +113,12 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Add a new group
    * @POST
    * @UserIsAllowed(groups="add")
-   * @Param(name="name", type="post")
-   * @Param(name="instanceId", type="post")
-   * @Param(name="parentGroupId", type="post", required=false)
+   * @Param(name="name", type="post", description="Name of the group")
+   * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
+   * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group (if none is given, a root group is created)")
    */
   public function actionValidateAddGroupData() {
     $req = $this->getHttpRequest();
@@ -130,6 +132,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Delete a group
    * @DELETE
    * @UserIsAllowed(groups="remove")
    */
@@ -151,6 +154,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of a group
    * @GET
    * @UserIsAllowed(groups="view-detail")
    */
@@ -167,6 +171,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of subgroups of a group
    * @GET
    * @UserIsAllowed(groups="view-subgroups")
    */
@@ -183,6 +188,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of members of a group
    * @GET
    * @UserIsAllowed(groups="view-students")
    * @UserIsAllowed(groups="view-supervisors")
@@ -203,6 +209,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of supervisors in a group
    * @GET
    * @UserIsAllowed(groups="view-supervisors")
    */
@@ -219,6 +226,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of students in a group
    * @GET
    * @UserIsAllowed(groups="view-students")
    */
@@ -234,6 +242,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get all exercise assignments for a group
    * @GET
    * @UserIsAllowed(groups="view-detail")
    */
@@ -250,6 +259,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get statistics of a group
    * @GET
    * @UserIsAllowed(groups="view-detail")
    */
@@ -274,6 +284,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get statistics of a single student in a group
    * @GET
    * @UserIsAllowed(groups="view-detail")
    */
@@ -296,6 +307,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get the best solution of an assignment for a group submitted by a student
    * @GET
    * @UserIsAllowed(groups="view-detail")
    */
@@ -335,6 +347,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Add a student to a group
    * @POST
    * @UserIsAllowed(groups="add-student")
    */
@@ -361,6 +374,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Remove a student from a group
    * @DELETE
    * @UserIsAllowed(groups="remove-student")
    */
@@ -390,6 +404,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Add a supervisor to a group
    * @POST
    * @UserIsAllowed(groups="add-supervisor")
    */
@@ -418,6 +433,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Remove a supervisor from a group
    * @DELETE
    * @UserIsAllowed(groups="remove-supervisor")
    */
@@ -450,6 +466,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get identifiers of administrators of a group
    * @GET
    * @UserIsAllowed(groups="view-admin")
    */
@@ -459,9 +476,10 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Make a user an administrator of a group
    * @POST
    * @UserIsAllowed(groups="set-admin")
-   * @Param(type="post", name="userId")
+   * @Param(type="post", name="userId", description="Identifier of a user to be made administrator")
    */
   public function actionMakeAdmin(string $id) {
     $userId = $this->getHttpRequest()->getPost("userId");
