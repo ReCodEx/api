@@ -42,6 +42,7 @@ class UploadedFilesPresenter extends BasePresenter {
   }
 
   /**
+   * Get details of a file
    * @GET
    * @UserIsAllowed(files="view-detail")
    * @todo: Check if this user can access the file
@@ -54,6 +55,7 @@ class UploadedFilesPresenter extends BasePresenter {
   }
 
   /**
+   * Download a file
    * @GET
    * @UserIsAllowed(files="view-detail")
    * @todo: Check if this user can access the file
@@ -65,6 +67,7 @@ class UploadedFilesPresenter extends BasePresenter {
   }
 
   /**
+   * Get the contents of a file
    * @GET
    * @UserIsAllowed(files="view-content")
    * @todo: Check if this user can access the file
@@ -76,6 +79,7 @@ class UploadedFilesPresenter extends BasePresenter {
 
 
   /**
+   * Upload a file
    * @POST
    * @UserIsAllowed(files="upload")
    */
