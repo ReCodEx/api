@@ -10,6 +10,9 @@ use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Licence;
 
+/**
+ * Endpoints for instance manipulation
+ */
 class InstancesPresenter extends BasePresenter {
 
   /**

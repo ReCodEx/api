@@ -15,6 +15,9 @@ use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use Nette\Utils\Arrays;
 
+/**
+ * Endpoints used by the backend to notify the frontend of errors and changes in job status
+ */
 class BrokerReportsPresenter extends BasePresenter {
 
   const STATUS_OK = "OK";

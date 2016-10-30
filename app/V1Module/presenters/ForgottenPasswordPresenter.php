@@ -10,6 +10,9 @@ use App\Security\AccessToken;
 
 use ZxcvbnPhp\Zxcvbn;
 
+/**
+ * Endpoints associated with resetting forgotten passwords
+ */
 class ForgottenPasswordPresenter extends BasePresenter {
 
   /**

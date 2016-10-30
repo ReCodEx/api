@@ -19,6 +19,7 @@ use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
 
 /**
+ * Endpoints for exercise assignment manipulation
  * @LoggedIn
  */
 class AssignmentsPresenter extends BasePresenter {

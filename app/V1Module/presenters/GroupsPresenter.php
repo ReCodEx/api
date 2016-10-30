@@ -14,6 +14,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 
 /**
+ * Endpoints for group manipulation
  * @LoggedIn
  */
 class GroupsPresenter extends BasePresenter {

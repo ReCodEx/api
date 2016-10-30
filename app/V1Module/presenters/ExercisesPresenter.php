@@ -7,6 +7,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 
 /**
+ * Endpoint for exercise manipulation
  * @LoggedIn
  */
 class ExercisesPresenter extends BasePresenter {

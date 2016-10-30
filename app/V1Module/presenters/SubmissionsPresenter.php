@@ -11,6 +11,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
 /**
+ * Endpoints for manipulation of solution submissions
  * @LoggedIn
  */
 class SubmissionsPresenter extends BasePresenter {

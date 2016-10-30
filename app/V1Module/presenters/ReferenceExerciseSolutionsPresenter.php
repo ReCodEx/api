@@ -15,6 +15,9 @@ use App\Helpers\SubmissionHelper;
 
 use Nette\Utils\Arrays;
 
+/**
+ * Endpoints for manipulation of reference solutions of exercises
+ */
 class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
   /**

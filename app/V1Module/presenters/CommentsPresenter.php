@@ -8,6 +8,7 @@ use App\Model\Entity\CommentThread;
 use App\Model\Repository\Comments;
 
 /**
+ * Endpoints for comment manipulation
  * @LoggedIn
  */
 class CommentsPresenter extends BasePresenter {

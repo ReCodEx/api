@@ -20,6 +20,9 @@ use App\Security\AccessToken;
 
 use ZxcvbnPhp\Zxcvbn;
 
+/**
+ * User management endpoints
+ */
 class UsersPresenter extends BasePresenter {
 
   /**

@@ -12,6 +12,9 @@ use App\Model\Repository\ExternalLogins;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
 
+/**
+ * Endpoints used to log a user in
+ */
 class LoginPresenter extends BasePresenter {
 
   /**

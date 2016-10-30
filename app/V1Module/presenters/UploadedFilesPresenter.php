@@ -13,6 +13,7 @@ use App\Model\Repository\UploadedFiles;
 use Nette\Application\Responses\FileResponse;
 
 /**
+ * Endpoints for management of uploaded files
  * @LoggedIn
  */
 class UploadedFilesPresenter extends BasePresenter {
