@@ -48,10 +48,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
-   * @POST
-   * @Param(type="post", name="note")
-   * @Param(type="post", name="files")
-   * @Param(type="post", name="hwGroup")
+   * Get reference solutions for an exercise
+   * @GET
    */
   public function actionExercise($id) {
     // @todo check that this user can access this information
@@ -59,25 +57,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
-  public function actionCreateReferenceSolution() {
-    $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
-
-    // @todo validate user's access
-
-    $req = $this->getHttpRequest();
-    $files = $this->files->findAllById($req->getPost("files"));
-    $note = $req->getPost("note");
-    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files);
-    $this->referenceSolutions->persist($solution);
-
-    // evaluate the solution right now
-    $this->actionSubmit($solution->getId());
-  }
-
   /**
+   * Evaluate reference solutions to an exercise for a hardware group
    * @POST
-   * @Param(type="post", name="hwGroup")
+   * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
