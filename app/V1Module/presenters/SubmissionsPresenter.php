@@ -48,6 +48,7 @@ class SubmissionsPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of all submissions, ever
    * @GET
    * @UserIsAllowed(submissions="view-all")
    */
@@ -57,6 +58,7 @@ class SubmissionsPresenter extends BasePresenter {
   }
 
   /**
+   * Get information about the evaluation of a submission
    * @GET
    * @UserIsAllowed(submissions="view-evaluation")
    * @param string $id
