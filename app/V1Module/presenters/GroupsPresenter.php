@@ -74,6 +74,7 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Create a new group
    * @POST
    * @UserIsAllowed(groups="add")
    * @Param(type="post", name="name", validation="string:2..")

@@ -59,6 +59,7 @@ class UsersPresenter extends BasePresenter {
   public $authService;
 
   /**
+   * Get a list of all users
    * @GET
    * @UserIsAllowed(users="view-all")
    */
