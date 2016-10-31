@@ -2,9 +2,10 @@
 
 namespace App\Model\Repository;
 use Kdyby\Doctrine\EntityManager;
-use App\Model\Entity\SolutionRuntimeConfig;
 
 use App\Exceptions\NotFoundException;
+use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\Assignment;
 
 class SolutionRuntimeConfigs extends BaseRepository {
 
