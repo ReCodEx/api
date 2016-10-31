@@ -5,6 +5,8 @@ php:
 
 before_install:
   - composer self-update
+  - php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"
+  - echo "extension=ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension=ldap.so" >> test.ini
 
 install:
