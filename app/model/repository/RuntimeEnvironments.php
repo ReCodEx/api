@@ -2,12 +2,10 @@
 
 namespace App\Model\Repository;
 
-use Kdyby\Doctrine\EntityManager;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
 use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Entity\UploadedFile;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\ApiException;
+use Kdyby\Doctrine\EntityManager;
 
 class RuntimeEnvironments extends BaseRepository {
 
@@ -23,65 +21,24 @@ class RuntimeEnvironments extends BaseRepository {
    */
   public function detectOrThrow(array $files): RuntimeEnvironment {
     $extensions = array_map(function ($file) {
-      return $this->getFileExtension($file);
+      return $file->getFileExtension();
     }, $files);
 
     // go through all environments and found suitable ones
-    $foundEnvironments = array();
-    foreach ($this->findAll() as $runtimeEnvironment) {
-      $runtimeExtensions = $this->parseYaml($runtimeEnvironment->getExtensions());
-
-      // go through all given extensions and match them against runtime environment ones
-      $allSuitable = true;
-      foreach ($extensions as $ext) {
-        if (!in_array($ext, $runtimeExtensions)) {
-          $allSuitable = false;
-          break;
-        }
+    $foundEnvironments = array_filter(
+      $this->findAll(),
+      function($runtimeEnvironment) use ($extensions) {
+        // if all extensions belong to this runtime environment save it
+        $runtimeExtensions = $runtimeEnvironment->getExtensionsList();
+        return array_intersect($extensions, $runtimeExtensions) == $runtimeExtensions;
       }
-
-      // if all extensions belong to this runtime environment save it
-      if ($allSuitable) {
-        $foundEnvironments[] = $runtimeEnvironment;
-      }
-    }
+    );
 
     // environment has to be only one to avoid ambiguity matches
     if (count($foundEnvironments) == 0 || count($foundEnvironments) > 1) {
       throw new NotFoundException("Cannot detect runtime environment for the submitted files.");
     }
 
-    return $foundEnvironments[0];
+    return current($foundEnvironments);
   }
-
-  /**
-   * Parse given string into yaml structure and return it.
-   * @param string $content
-   * @return array decoded YAML
-   * @throws ApiException in case of parsing error
-   */
-  private function parseYaml(string $content) {
-    try {
-      $parsedConfig = Yaml::parse($content);
-    } catch (ParseException $e) {
-      throw new ApiException("Yaml cannot be parsed: " . $e->getMessage());
-    }
-
-    return $parsedConfig;
-  }
-
-  /**
-   * Extract extension from given file and return it.
-   * @param UploadedFile $file
-   * @return string extension
-   */
-  private function getFileExtension(UploadedFile $file): string {
-    $ext = pathinfo($file->getName(), PATHINFO_EXTENSION);
-    if ($ext === NULL) {
-      $ext = "";
-    }
-
-    return $ext;
-  }
-
 }
