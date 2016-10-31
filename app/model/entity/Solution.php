@@ -46,6 +46,10 @@ class Solution implements JsonSerializable
      */
     protected $solutionRuntimeConfig;
 
+    public function getHardwareGroupId() {
+      return $this->solutionRuntimeConfig->getHardwareGroup()->getId();
+    }
+
     /**
      * @ORM\Column(type="boolean")
      */

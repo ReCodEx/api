@@ -124,7 +124,8 @@ class SolutionEvaluation implements JsonSerializable
 
     // calculate the score and points
     $this->testResults = new ArrayCollection;
-    $this->setTestResults($results->getTestsResults($submission->getHardwareGroup()));
+    $hardwareGroup = $submission->getSolution()->getHardwareGroupId();
+    $this->setTestResults($results->getTestsResults($hardwareGroup));
     $this->score = $calculator->computeScore($this->scores);
     $this->bonusPoints = 0;
     $this->points = $this->score * $submission->getMaxPoints();

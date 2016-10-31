@@ -39,6 +39,10 @@ class EvaluationLoader {
    */
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
+    if (!$results) {
+      return NULL;
+    }
+
     $calculator = ScoreCalculatorFactory::create($submission->getAssignment()->getScoreConfig());
     return new SolutionEvaluation($submission, $results, $calculator);
   }
@@ -58,7 +62,9 @@ class EvaluationLoader {
       $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath);
       $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
-      return EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
+      return $resultsYml === NULL
+        ? NULL
+        : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
     } catch (ResultsLoadingException $e) {
       throw new SubmissionEvaluationFailedException("Cannot load results.");
     } catch (JobConfigLoadingException $e) {
