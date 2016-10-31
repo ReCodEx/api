@@ -245,24 +245,20 @@ class AssignmentsPresenter extends BasePresenter {
 
     $loggedInUser = $this->users->findCurrentUserOrThrow();
     $userId = $req->getPost("userId");
-    if ($userId !== NULL) {
-      $user = $this->users->findOrThrow($userId);
-    } else {
-      $user = $loggedInUser;
-    }
+    $user = $userId !== NULL
+      ? $this->users->findOrThrow($userId)
+      : $user = $loggedInUser;
 
     if (!$assignment->canReceiveSubmissions($loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
     }
 
-    // create the submission record
-    $files = $this->files->findAllById($req->getPost("files"));
-
     // detect the runtime configuration if needed
+    $files = $this->files->findAllById($req->getPost("files"));
     $runtimeConfigurationId = $req->getPost("runtimeConfigurationId", NULL);
     $runtimeConfiguration = $runtimeConfigurationId === NULL
-      ? $this->solutionRuntimeConfigurations->detectOrThrow($assignment, $files)
-      : $this->solutionRuntimeConfigurations->findOrThrow($runtimeConfigurationId);
+      ? $this->runtimeConfigurations->detectOrThrow($assignment, $files)
+      : $this->runtimeConfigurations->findOrThrow($runtimeConfigurationId);
 
     $note = $req->getPost("note");
     $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $files, $runtimeConfiguration);
@@ -271,30 +267,30 @@ class AssignmentsPresenter extends BasePresenter {
     $this->submissions->persist($submission);
 
     // get the job config with correct job id
-    $path = $submission->getAssignment()->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
+    $path = $runtimeConfiguration->getJobConfigFilePath();
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
-
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
       $submission->getSolution()->getFiles()->getValues(),
       $runtimeConfiguration->getHardwareGroup()->getId()
     );
 
-    if($resultsUrl !== NULL) {
-      $submission->setResultsUrl($resultsUrl);
-      $this->submissions->persist($submission);
-      $this->sendSuccessResponse([
-        "submission" => $submission,
-        "webSocketChannel" => [
-          "id" => $jobConfig->getJobId(),
-          "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
-          "expectedTasksCount" => $jobConfig->getTasksCount()
-        ],
-      ]);
-    } else {
+    // if the submission was accepted we now have the URL where to look for the results later
+    if($resultsUrl === NULL) {
       throw new SubmissionFailedException;
     }
+
+    $submission->setResultsUrl($resultsUrl);
+    $this->submissions->persist($submission);
+    $this->sendSuccessResponse([
+      "submission" => $submission,
+      "webSocketChannel" => [
+        "id" => $jobConfig->getJobId(),
+        "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
+        "expectedTasksCount" => $jobConfig->getTasksCount()
+      ]
+    ]);
   }
 
   /**
