@@ -125,9 +125,10 @@ class SolutionEvaluation implements JsonSerializable
     $this->evaluationFailed = !$results;
     $this->initFailed = !!$results && $results->initOK();
     $this->resultYml = (string) $results;
-
+    $this->score = 0;
     $maxPoints = 0;
     $hardwareGroup = "";
+
     if ($submission != NULL) {
       $submission->setEvaluation($this);
       $maxPoints = $submission->getMaxPoints();
@@ -137,10 +138,13 @@ class SolutionEvaluation implements JsonSerializable
       $hardwareGroup = $hwGroup;
     }
 
+    if ($calculator != NULL) {
+      $this->score = $calculator->computeScore($this->scores);
+    }
+
     // calculate the score and points
     $this->testResults = new ArrayCollection;
     $this->setTestResults($results->getTestsResults($hardwareGroup));
-    $this->score = $calculator->computeScore($this->scores);
     $this->bonusPoints = 0;
     $this->points = $this->score * $maxPoints;
   }
