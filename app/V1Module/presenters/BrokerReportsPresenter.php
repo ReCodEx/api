@@ -13,6 +13,7 @@ use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionEvaluations;
 use Nette\Utils\Arrays;
 
 class BrokerReportsPresenter extends BasePresenter {
@@ -49,6 +50,12 @@ class BrokerReportsPresenter extends BasePresenter {
    * @inject
    */
   public $evaluations;
+
+  /**
+   * @var ReferenceSolutionEvaluations
+   * @inject
+   */
+  public $referenceSolutionEvaluations;
 
   /**
    * @param string $id
@@ -95,13 +102,17 @@ class BrokerReportsPresenter extends BasePresenter {
       case self::STATUS_OK:
         switch ($job->getType()) {
           case ReferenceSolutionEvaluation::JOB_TYPE:
-            // @todo load the evaluation of the reference solution
+            // load the evaluation of the reference solution now
+            $referenceSolutionEvaluation = $this->referenceSolutionEvaluations->findOrThrow($job->getId());
+            $this->loadReferenceEvaluation($referenceSolutionEvaluation);
             break;
           case Submission::JOB_TYPE:
-            // @todo load the evaluation only if the submission is "async"
+            $submission = $this->findSubmissionOrThrow($job->getId());
+            // load the evaluation only if the submission is "async"
             // (submitted by other person than the student/author or automatically)
-            $submission = $this->findSubmissionOrThrow($jobId->getId());
-            $this->loadEvaluation($submission);
+            if ($submission->isAsynchronous()) {
+              $this->loadEvaluation($submission);
+            }
             break;
         }
         break;
@@ -128,12 +139,28 @@ class BrokerReportsPresenter extends BasePresenter {
       );
     }
 
+    $submission->setEvaluation($evaluation);
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
-    if ($submission->isAsynchronous()) {
-      $this->notifyEvaluationFinished($submission);
+    // the solution is allways asynchronous here, so send notification to the user
+    $this->notifyEvaluationFinished($submission);
+  }
+
+  private function loadReferenceEvaluation(ReferenceSolutionEvaluation $referenceSolutionEvaluation) {
+    try {
+      $solutionEvaluation = $this->evaluationLoader->loadReference($referenceSolutionEvaluation);
+    } catch (SubmissionEvaluationFailedException $e) {
+      // the result cannot be loaded even though the result MUST be ready at this point
+      $this->failureHelper->report(
+        FailureHelper::TYPE_API_ERROR,
+        "Evaluation results of the job with ID '{$submission->getId()}' could not be processed. {$e->getMessage()}"
+      );
     }
+
+    $referenceSolutionEvaluation->setEvaluation($solutionEvaluation);
+    $this->evaluations->persist($solutionEvaluation);
+    $this->referenceSolutionEvaluations->persist($referenceSolutionEvaluation);
   }
 
   /**

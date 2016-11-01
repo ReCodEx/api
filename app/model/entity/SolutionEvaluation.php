@@ -110,25 +110,39 @@ class SolutionEvaluation implements JsonSerializable
 
   /**
    * Loads and processes the results of the submission.
-   * @param  Submission $submission           The submission
    * @param  EvaluationResults   $results     The interpreted results
+   * @param  Submission          $submission  The submission
    * @param  IScoreCalculator    $calculator  Calculates the score from given test results
+   * @param  string              $hwGroup     Hardware group (if submission is not specified)
    */
-  public function __construct(Submission $submission, EvaluationResults $results, IScoreCalculator $calculator) {
+  public function __construct(EvaluationResults $results, Submission $submission = NULL, IScoreCalculator $calculator = NULL, string $hwGroup = NULL) {
+    if ($submission == NULL && $hwGroup == NULL) {
+      throw new SubmissionEvaluationFailedException("SolutionEvaluation entity needs hwGroup - from submission or directly, but none specified.");
+    }
+
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
     $this->evaluationFailed = !$results;
     $this->initFailed = !!$results && $results->initOK();
     $this->resultYml = (string) $results;
-    $submission->setEvaluation($this);
+
+    $maxPoints = 0;
+    $hardwareGroup = "";
+    if ($submission != NULL) {
+      $submission->setEvaluation($this);
+      $maxPoints = $submission->getMaxPoints();
+      $hardwareGroup = $submission->getSolution()->getHardwareGroupId();
+    }
+    if ($hwGroup != NULL) {
+      $hardwareGroup = $hwGroup;
+    }
 
     // calculate the score and points
     $this->testResults = new ArrayCollection;
-    $hardwareGroup = $submission->getSolution()->getHardwareGroupId();
     $this->setTestResults($results->getTestsResults($hardwareGroup));
     $this->score = $calculator->computeScore($this->scores);
     $this->bonusPoints = 0;
-    $this->points = $this->score * $submission->getMaxPoints();
+    $this->points = $this->score * $maxPoints;
   }
 
 }

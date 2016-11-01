@@ -72,7 +72,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->referenceSolutions->persist($solution);
 
     // evaluate the solution right now
-    $this->actionSubmit($solution->getId());
+    // hwGroup post param is preserved from current endpoint call
+    $this->actionEvaluate($exercise->getId(), $solution->getId());
   }
 
   /**
