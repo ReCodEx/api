@@ -115,12 +115,12 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
-   * Add a new group
+   * Validate group creation data
    * @POST
    * @UserIsAllowed(groups="add")
    * @Param(name="name", type="post", description="Name of the group")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
-   * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group (if none is given, a root group is created)")
+   * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group")
    */
   public function actionValidateAddGroupData() {
     $req = $this->getHttpRequest();
