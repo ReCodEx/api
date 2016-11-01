@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Exceptions\InvalidMembershipException;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
