@@ -123,7 +123,7 @@ class SolutionEvaluation implements JsonSerializable
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
     $this->evaluationFailed = !$results;
-    $this->initFailed = !!$results && $results->initOK();
+    $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
     $this->score = 0;
     $maxPoints = 0;
@@ -140,7 +140,7 @@ class SolutionEvaluation implements JsonSerializable
     }
 
     $this->setTestResults($results->getTestsResults($hardwareGroup));
-    if ($calculator != NULL) {
+    if ($calculator != NULL && !$this->initFailed) {
       $this->score = $calculator->computeScore($this->scores);
     }
 
