@@ -15,7 +15,7 @@ class LocalizedAssignment implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  private function __construct(
+  public function __construct(
     string $name,
     string $description,
     string $locale
@@ -41,7 +41,7 @@ class LocalizedAssignment implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $locale;
-  
+
   /**
    * @ORM\Column(type="text")
    */

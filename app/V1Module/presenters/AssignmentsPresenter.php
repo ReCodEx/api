@@ -9,6 +9,7 @@ use App\Exceptions\JobConfigLoadingException;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
@@ -20,6 +21,9 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
+
+use DateTime;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * @LoggedIn
@@ -99,7 +103,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="isPublic", validation="bool")
-   * @Param(type="post", name="description", validation="string")
+   * @Param(type="post", name="localizedAssignments")
    * @Param(type="post", name="firstDeadline", validation="numericint")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint")
@@ -109,36 +113,51 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false)
    */
   public function actionUpdateDetail(string $id) {
-    $req = $this->getHttpRequest();
-    $name = $req->getPost("name");
-    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-    $description = $req->getPost("description");
-    $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
-    $maxPointsBeforeFirstDeadline = $req->getPost("maxPointsBeforeFirstDeadline");
-    $submissionsLimit = $req->getPost("submissionsCountLimit");
-    $scoreConfig = $req->getPost("scoreConfig");
-    $allowSecondDeadline = (bool) $req->getPost("allowSecondDeadline");
-    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("maxPointsBeforeSecondDeadline", 0));
-    $maxPointsBeforeSecondDeadline = $req->getPost("secondMaxPoints", 0);
-
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
-
     if (!$assignment->canAccessAsSupervisor($user)
       && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
-    $assignment->setName($name);
-    $assignment->setDescription($description);
-    $assignment->setIsPublic($isPublic);
-    $assignment->setFirstDeadline($firstDeadline);
-    $assignment->setSecondDeadline($secondDeadline);
-    $assignment->setMaxPointsBeforeFirstDeadline($maxPointsBeforeFirstDeadline);
-    $assignment->setMaxPointsBeforeSecondDeadline($maxPointsBeforeSecondDeadline);
-    $assignment->setSubmissionsCountLimit($submissionsLimit);
-    $assignment->setScoreConfig($scoreConfig);
-    $assignment->setAllowSecondDeadline($allowSecondDeadline);
+    $req = $this->getHttpRequest();
+    $assignment->setName($req->getPost("name"));
+    $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
+    $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0)));
+    $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));
+    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("secondMaxPoints", 0));
+    $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
+    $assignment->setScoreConfig($req->getPost("scoreConfig"));
+    $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
+
+    // add new and update old localiyations
+    $localizedAssignments = $req->getPost("localizedAssignments");
+    $usedLocale = [];
+    foreach ($localizedAssignments as $localization) {
+      $lang = $localization["locale"];
+      $description = $localization["description"];
+      $name = $localization["name"];
+
+      // update or create the localization
+      $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $lang));
+      $localized = $assignment->getLocalizedAssignments()->matching($criteria)->first();
+      if (!$localized) {
+        $localized = new LocalizedAssignment($name, $description, $lang);
+        $assignment->addLocalizedAssignment($localized);
+      } else {
+        $localized->setName($name);
+        $localized->setDescription($description);
+      }
+      $usedLocale[] = $lang;
+    }
+
+    // remove unused languages
+    foreach ($assignment->getLocalizedAssignments() as $localization) {
+      if (!in_array($localization->getLocale(), $usedLocale)) {
+        $assignment->removeLocalizedAssignment($localization);
+      }
+    }
 
     $this->assignments->persist($assignment);
     $this->assignments->flush();
