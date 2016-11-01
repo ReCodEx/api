@@ -139,7 +139,11 @@ class SolutionEvaluation implements JsonSerializable
     }
 
     if ($calculator != NULL) {
-      $this->score = $calculator->computeScore($this->scores);
+      $scores = [];
+      foreach ($results->getTestsResults() as $result) {
+        $scores[$result->getId()] = $result->getScore();
+      }
+      $this->score = $calculator->computeScore($scores);
     }
 
     // calculate the score and points
