@@ -123,10 +123,10 @@ abstract class UnsuccessfulTestResult implements ITestResult {
 
   /**
    * Get judge output.
-   * @return string NULL
+   * @return string Empty string as no output.
    */
   public function getJudgeOutput(): string {
-    return NULL;
+    return "";
   }
 
 }
