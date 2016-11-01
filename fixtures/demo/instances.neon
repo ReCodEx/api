@@ -1,0 +1,20 @@
+App\Model\Entity\Instance:
+    demoInstance:
+        name: "Frankenstein University, Atlantida"
+        description: "First underwater IT university for fish and shrimps."
+        isOpen: true
+        isAllowed: true
+        createdAt: "<dateTime()>"
+        updatedAt: "<dateTime()>"
+        needsLicence: true
+
+App\Model\Entity\User:
+    demoAdmin:
+        __construct: ["<email()>", "<firstName()>", "<lastName()>", "", "", @superadmin, @demoInstance]
+
+App\Model\Entity\Licence:
+    demoLicense:
+        note: "Year licence for the first Fish University"
+        isValid: true
+        validUntil: "<datetimeThisCentury()>"
+        instance: @demoInstance

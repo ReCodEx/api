@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
@@ -34,6 +35,7 @@ class DoctrineFixtures extends Command {
    */
   protected function configure() {
     $this->setName('db:fill')->setDescription('Fill database with initial data.');
+    $this->addArgument('groups', InputArgument::IS_ARRAY, 'Fixture groups to be loaded', ['base']);
   }
 
   /**
@@ -43,14 +45,13 @@ class DoctrineFixtures extends Command {
    * @return int 0 on success, 1 on error
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    try {
-      // arg can be used file(s) or dir(s) with fixtures
-      $this->aliceLoader->load(__DIR__ . '/../../fixtures');
-      $output->writeLn('<info>[OK] - DB:FILL</info>');
-      return 0; // zero return code means everything is ok
-    } catch (\Exception $exc) {
-      $output->writeLn('<error>DB:FILL - ' . $exc->getMessage() . '</error>');
-      return 1; // non-zero return code means error
+    $groups = $input->getArgument("groups");
+
+    foreach ($groups as $group) {
+      $this->aliceLoader->load(__DIR__ . '/../../fixtures/' . $group);
     }
+
+    $output->writeln('<info>[OK] - DB:FILL</info>');
+    return 0;
   }
 }
