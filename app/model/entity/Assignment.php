@@ -140,7 +140,7 @@ class Assignment implements JsonSerializable
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment")
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", cascade={"persist", "remove"})
    */
   protected $localizedAssignments;
 
@@ -240,7 +240,7 @@ class Assignment implements JsonSerializable
       "localizedAssignments" => $this->localizedAssignments->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
-      "secondDeaedline" => $this->secondDeadline->getTimestamp(),
+      "secondDeadline" => $this->secondDeadline->getTimestamp(),
       "allowSecondDeadline" => $this->allowSecondDeadline,
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
