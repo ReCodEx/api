@@ -1,11 +1,11 @@
 App\Model\Entity\Instance:
     demoInstance:
-        name: "Frankenstein University, Atlantida"
-        description: "First underwater IT university for fish and shrimps."
-        isOpen: true
-        isAllowed: true
-        createdAt: "<dateTime()>"
-        updatedAt: "<dateTime()>"
+        __construct:
+            createInstance:
+                - "Frankenstein University, Atlantida" # name
+                - true # isOpen
+                - null # admin
+                - "First underwater IT university for fish and shrimps." # description
         needsLicence: true
 
 App\Model\Entity\User:
@@ -14,7 +14,8 @@ App\Model\Entity\User:
 
 App\Model\Entity\Licence:
     demoLicense:
-        note: "Year licence for the first Fish University"
-        isValid: true
-        validUntil: "<datetimeThisCentury()>"
-        instance: @demoInstance
+        __construct:
+            createLicence:
+              - "Year licence for the first Fish University" # note
+              - "<dateTimeBetween('+1 years', '+5 years')>" # validUntil
+              - @demoInstance # instance
