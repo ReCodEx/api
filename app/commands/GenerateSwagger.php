@@ -280,7 +280,7 @@ class GenerateSwagger extends Command
     // Load fixtures from the "base" and "demo" groups
     $fixtureDir = __DIR__ . "/../../fixtures";
 
-    $finder = Finder::findFiles("*.neon", "*.yaml", ".yml")
+    $finder = Finder::findFiles("*.neon", "*.yaml", "*.yml")
       ->in($fixtureDir . "/base", $fixtureDir . "/demo");
 
     $files = [];
