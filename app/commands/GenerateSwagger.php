@@ -117,8 +117,8 @@ class GenerateSwagger extends Command
       $this->makePresenterTag($metadata, $module, $tags, $paths[$mask][strtolower($method)]);
     }
 
-    $this->setArrayDefault($document, "entities", []);
-    $this->fillEntityExamples($document["entities"]);
+    $this->setArrayDefault($document, "x-entities", []);
+    $this->fillEntityExamples($document["x-entities"]);
 
     $yaml = Yaml::dump($document, 10, 2);
     $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
