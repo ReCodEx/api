@@ -16,6 +16,7 @@ use Nette\Utils\Finder;
 use Nette\Utils\Strings;
 use ReflectionClass;
 use ReflectionException;
+use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -279,9 +280,17 @@ class GenerateSwagger extends Command
     // Load fixtures from the "base" and "demo" groups
     $fixtureDir = __DIR__ . "/../../fixtures";
 
-    $files = Finder::findFiles("*.neon", "*.yaml", ".yml")
+    $finder = Finder::findFiles("*.neon", "*.yaml", ".yml")
       ->in($fixtureDir . "/base", $fixtureDir . "/demo");
 
+    $files = [];
+
+    /** @var SplFileInfo $file */
+    foreach ($finder as $file) {
+      $files[] = $file->getRealPath();
+    }
+
+    sort($files);
     $entities = [];
 
     foreach ($files as $file) {
@@ -326,7 +335,11 @@ class GenerateSwagger extends Command
       }
     } else if ($type === "array") {
       $entry[$key]["type"] = "array";
-      $entry[$key]["items"] = $value;
+      $this->setArrayDefault($entry[$key], "items", []);
+
+      if (count($value) > 0) {
+        $this->updateEntityEntry($entry[$key], "items", $value[0]);
+      }
     } else {
       $this->setArrayDefault($entry[$key], "type", $type);
       $entry[$key]["example"] = $value;
