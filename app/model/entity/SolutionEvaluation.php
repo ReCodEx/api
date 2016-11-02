@@ -89,7 +89,7 @@ class SolutionEvaluation implements JsonSerializable
     foreach ($testResults as $result) {
       $testResult = new TestResult($this, $result);
       $this->testResults->add($testResult);
-      $this->scores[$testResult->getId()] = $testResult->getScore();
+      $this->scores[$testResult->getTestName()] = $testResult->getScore();
     }
   }
 
