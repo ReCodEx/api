@@ -103,8 +103,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/can-submit", "Assignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
     $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
-    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:setLimits");
+    $router[] = new GetRoute("$prefix/<id>/limits", "Assignments:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/limits", "Assignments:setLimits");
   }
 
   /**

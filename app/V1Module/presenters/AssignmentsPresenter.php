@@ -316,35 +316,22 @@ class AssignmentsPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(assignments="view-limits")
    */
-  public function actionGetLimits(string $id, string $hardwareGroup) {
+  public function actionGetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
 
     // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
-    $jobConfig = JobConfig\Storage::getJobConfig($path);
-    $tests = $jobConfig->getTests();
-
-    // Array of test-id as a key and the value is another array of task-id and limits as Limits type
-    $listTestLimits = array_map(
-      function ($test) use ($hardwareGroup) {
-        return $test->getLimits($hardwareGroup);
-      },
-      $tests
+    $environments = $assignment->getSolutionRuntimeConfigs()->map(
+      function ($environment) {
+        $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        return [
+          "environment" => $environment,
+          "hardwareGroups" => $jobConfig->getHardwareGroups(),
+          "limits" => $jobConfig->getLimits()
+        ];
+      }
     );
 
-    // Convert the Limits type (as said above) to array representation
-    $listTestArray = array_map(
-      function ($limits) {
-        $arrayLimits = [];
-        foreach ($limits as $taskId => $limit) {
-          $arrayLimits[$taskId] = $limit->toArray();
-        }
-        return $arrayLimits;
-      },
-      $listTestLimits
-    );
-
-    $this->sendSuccessResponse($listTestArray);
+    $this->sendSuccessResponse($environments->getValues());
   }
 
   /**
@@ -352,13 +339,15 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="limits")
    */
-  public function actionSetLimits(string $id, string $hardwareGroup) {
+  public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $limits = $this->getHttpRequest()->getPost("limits");
 
     if ($limits === NULL || !is_array($limits)) {
       throw new InvalidArgumentException("limits");
     }
+
+    // @todo: ...!!
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity

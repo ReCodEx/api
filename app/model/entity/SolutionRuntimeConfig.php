@@ -55,7 +55,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->customName,
-      "runtimeEnvironmentId" => $this->runtimeEnvironment->getId(),
+      "runtimeEnvironment" => $this->runtimeEnvironment,
       "hardwareGroup" => $this->hardwareGroup->getId()
     ];
   }
