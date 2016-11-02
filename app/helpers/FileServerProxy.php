@@ -67,7 +67,7 @@ class FileServerProxy {
     try {
       $response = $this->client->request("GET", $url);
     } catch (ClientException $e) {
-      throw new SubmissionEvaluationFailedException("Results are not available.");
+      return NULL;
     }
     $zip = $response->getBody();
     return $this->getResultYmlContent($zip);

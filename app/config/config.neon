@@ -4,6 +4,7 @@
 #
 parameters:
   uploadDir: %appDir%/../uploaded_data
+  jobConfigStorageDir: %appDir%/../job_config
 
   accessManager:
     leeway: 60
@@ -122,6 +123,7 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
+  - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -141,6 +143,8 @@ services:
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
+  - App\Model\Repository\RuntimeEnvironments
+  - App\Model\Repository\SolutionRuntimeConfigs
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships
 

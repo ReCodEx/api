@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
-use App\Exceptions\MalformedJobConfigException;
 
 /**
  * @ORM\Entity
@@ -16,7 +15,7 @@ class Assignment implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  public function __construct(
+  private function __construct(
     string $name,
     string $description,
     DateTime $firstDeadline,
@@ -24,7 +23,7 @@ class Assignment implements JsonSerializable
     Exercise $exercise,
     Group $group,
     bool $isPublic,
-    string $jobConfigFilePath,
+    ArrayCollection $solutionRuntimeConfigs,
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
@@ -45,8 +44,8 @@ class Assignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->submissionsCountLimit = $submissionsCountLimit;
-    $this->jobConfigFilePath = $jobConfigFilePath;
     $this->scoreConfig = "";
   }
 
@@ -59,7 +58,7 @@ class Assignment implements JsonSerializable
       $exercise,
       $group,
       $isPublic,
-      $exercise->getJobConfigFilePath(),
+      $exercise->getSolutionRuntimeConfigs(),
       50,
       FALSE
     );
@@ -92,22 +91,9 @@ class Assignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\Column(type="string", nullable=true)
+   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
    */
-  protected $jobConfigFilePath;
-
-  /**
-   *
-   * @return string File path of the
-   */
-  public function getJobConfigFilePath(): string {
-    if (!$this->jobConfigFilePath) {
-      return $this->getExercise()->getJobConfigFilePath();
-    }
-
-    // @todo: Make dependable on the programming language/technology used by the user
-    return $this->jobConfigFilePath;
-  }
+  protected $solutionRuntimeConfigs;
 
   /**
    * @ORM\Column(type="text", nullable=true)
@@ -158,32 +144,17 @@ class Assignment implements JsonSerializable
   }
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", cascade={"persist", "remove"})
    */
-  protected $description;
-
-  public function getDescription() {
-    // @todo: this must be translatable
-
-    $description = $this->description;
-    $parent = $this->exercise;
-    while (empty($description) && $parent !== NULL) {
-      $description = $parent->description;
-      $parent = $parent->exercise;
-    }
-
-    return $description;
-  }
+  protected $localizedAssignments;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
-   * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
    */
   protected $exercise;
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
-   * @ORM\JoinColumn(name="group_id", referencedColumnName="id")
    */
   protected $group;
 
@@ -270,20 +241,17 @@ class Assignment implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "isPublic" => $this->isPublic,
-      "description" => $this->getDescription(),
+      "localizedAssignments" => $this->localizedAssignments->getValues(),
       "groupId" => $this->group->getId(),
-      "deadline" => [
-        "first" => $this->firstDeadline->getTimestamp(),
-        "second" => $this->secondDeadline->getTimestamp()
-      ],
+      "firstDeadline" => $this->firstDeadline->getTimestamp(),
+      "secondDeadline" => $this->secondDeadline->getTimestamp(),
       "allowSecondDeadline" => $this->allowSecondDeadline,
-      "maxPoints" => [
-        "first" => $this->maxPointsBeforeFirstDeadline,
-        "second" => $this->maxPointsBeforeSecondDeadline
-      ],
+      "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
+      "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => FALSE // the app must perform a special request to get the valid information
+      "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues()
     ];
   }
 }

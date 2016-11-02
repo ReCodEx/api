@@ -9,14 +9,21 @@ use App\Exceptions\JobConfigLoadingException;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\LocalizedAssignment;
+use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
+use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
+
+use DateTime;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -53,6 +60,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $files;
+
+  /**
+   * @var SolutionRuntimeConfigs
+   * @inject
+   */
+  public $runtimeConfigurations;
 
   /**
    * @var SubmissionHelper
@@ -94,7 +107,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-   * @Param(type="post", name="description", validation="string", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -104,36 +117,51 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    */
   public function actionUpdateDetail(string $id) {
-    $req = $this->getHttpRequest();
-    $name = $req->getPost("name");
-    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-    $description = $req->getPost("description");
-    $firstDeadline = \DateTime::createFromFormat('U', $req->getPost("firstDeadline"));
-    $firstMaxPoints = $req->getPost("maxPointsBeforeFirstDeadline");
-    $submissionsLimit = $req->getPost("submissionsCountLimit");
-    $scoreConfig = $req->getPost("scoreConfig");
-    $allowSecondDeadline = $req->getPost("allowSecondDeadline");
-    $secondDeadline = \DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0));
-    $secondMaxPoints = $req->getPost("maxPointsBeforeSecondDeadline", 0);
-
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
-
     if (!$assignment->canAccessAsSupervisor($user)
       && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
-    $assignment->setName($name);
-    $assignment->setDescription($description);
-    $assignment->setIsPublic($isPublic);
-    $assignment->setFirstDeadline($firstDeadline);
-    $assignment->setSecondDeadline($secondDeadline);
-    $assignment->setMaxPointsBeforeFirstDeadline($firstMaxPoints);
-    $assignment->setMaxPointsBeforeSecondDeadline($secondMaxPoints);
-    $assignment->setSubmissionsCountLimit($submissionsLimit);
-    $assignment->setScoreConfig($scoreConfig);
-    $assignment->setAllowSecondDeadline($allowSecondDeadline);
+    $req = $this->getHttpRequest();
+    $assignment->setName($req->getPost("name"));
+    $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
+    $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0)));
+    $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));
+    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("secondMaxPoints", 0));
+    $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
+    $assignment->setScoreConfig($req->getPost("scoreConfig"));
+    $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
+
+    // add new and update old localiyations
+    $localizedAssignments = $req->getPost("localizedAssignments");
+    $usedLocale = [];
+    foreach ($localizedAssignments as $localization) {
+      $lang = $localization["locale"];
+      $description = $localization["description"];
+      $name = $localization["name"];
+
+      // update or create the localization
+      $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $lang));
+      $localized = $assignment->getLocalizedAssignments()->matching($criteria)->first();
+      if (!$localized) {
+        $localized = new LocalizedAssignment($name, $description, $lang);
+        $assignment->addLocalizedAssignment($localized);
+      } else {
+        $localized->setName($name);
+        $localized->setDescription($description);
+      }
+      $usedLocale[] = $lang;
+    }
+
+    // remove unused languages
+    foreach ($assignment->getLocalizedAssignments() as $localization) {
+      if (!in_array($localization->getLocale(), $usedLocale)) {
+        $assignment->removeLocalizedAssignment($localization);
+      }
+    }
 
     $this->assignments->persist($assignment);
     $this->assignments->flush();
@@ -170,7 +198,7 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
-  private static function getDefaultScoreConfig(Assignment $assignment): string {
+  private static function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
     $jobConfigPath = $assignment->getJobConfigFilePath();
     try {
       $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
@@ -237,6 +265,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="files", description="Submitted files")
+   * @Param(type="post", name="runtimeConfigurationId", required=false)
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -244,50 +273,52 @@ class AssignmentsPresenter extends BasePresenter {
 
     $loggedInUser = $this->users->findCurrentUserOrThrow();
     $userId = $req->getPost("userId");
-    if ($userId !== NULL) {
-      $user = $this->users->findOrThrow($userId);
-    } else {
-      $user = $loggedInUser;
-    }
+    $user = $userId !== NULL
+      ? $this->users->findOrThrow($userId)
+      : $user = $loggedInUser;
 
     if (!$assignment->canReceiveSubmissions($loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
     }
 
-    // create the submission record
-    $hwGroup = "group1";
+    // detect the runtime configuration if needed
     $files = $this->files->findAllById($req->getPost("files"));
+    $runtimeConfigurationId = $req->getPost("runtimeConfigurationId", NULL);
+    $runtimeConfiguration = $runtimeConfigurationId === NULL
+      ? $this->runtimeConfigurations->detectOrThrow($assignment, $files)
+      : $this->runtimeConfigurations->findOrThrow($runtimeConfigurationId);
+
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $hwGroup, $files);
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $files, $runtimeConfiguration);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
 
     // get the job config with correct job id
-    $path = $submission->getAssignment()->getJobConfigFilePath();
+    $path = $runtimeConfiguration->getJobConfigFilePath();
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
-
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
       $submission->getSolution()->getFiles()->getValues(),
-      $hwGroup
+      $runtimeConfiguration->getHardwareGroup()->getId()
     );
 
-    if($resultsUrl !== NULL) {
-      $submission->setResultsUrl($resultsUrl);
-      $this->submissions->persist($submission);
-      $this->sendSuccessResponse([
-        "submission" => $submission,
-        "webSocketChannel" => [
-          "id" => $jobConfig->getJobId(),
-          "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
-          "expectedTasksCount" => $jobConfig->getTasksCount()
-        ],
-      ]);
-    } else {
+    // if the submission was accepted we now have the URL where to look for the results later
+    if($resultsUrl === NULL) {
       throw new SubmissionFailedException;
     }
+
+    $submission->setResultsUrl($resultsUrl);
+    $this->submissions->persist($submission);
+    $this->sendSuccessResponse([
+      "submission" => $submission,
+      "webSocketChannel" => [
+        "id" => $jobConfig->getJobId(),
+        "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
+        "expectedTasksCount" => $jobConfig->getTasksCount()
+      ]
+    ]);
   }
 
   /**
@@ -295,36 +326,22 @@ class AssignmentsPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(assignments="view-limits")
    */
-  public function actionGetLimits(string $id, string $hardwareGroup) {
+  public function actionGetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
 
     // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath();
-    $jobConfig = JobConfig\Storage::getJobConfig($path);
-    $tests = $jobConfig->getTests();
-
-    // Array of test-id as a key and the value is another array of task-id and limits as Limits type
-    $listTestLimits = array_map(
-      function ($test) use ($hardwareGroup) {
-        return $test->getLimits($hardwareGroup);
-      },
-      $tests
+    $environments = $assignment->getSolutionRuntimeConfigs()->map(
+      function ($environment) {
+        $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        return [
+          "environment" => $environment,
+          "hardwareGroups" => $jobConfig->getHardwareGroups(),
+          "limits" => $jobConfig->getLimits()
+        ];
+      }
     );
 
-    // Convert the Limits type (as said above) to array representation
-    $listTestArray = array_map(
-      function ($limits) {
-        $arrayLimits = [];
-        foreach ($limits as $taskId => $limit) {
-          $arrayLimits[$taskId] = $limit->toArray();
-        }
-        return $arrayLimits;
-      },
-      $listTestLimits
-    );
-
-    $this->sendSuccessResponse($listTestArray);
-
+    $this->sendSuccessResponse($environments->getValues());
   }
 
   /**
@@ -333,7 +350,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="limits", description="A list of resource limits")
    */
-  public function actionSetLimits(string $id, string $hardwareGroup) {
+  public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $limits = $this->getHttpRequest()->getPost("limits");
 
@@ -341,8 +358,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new InvalidArgumentException("limits");
     }
 
+    // @todo: ...!!
+
     // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath();
+    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
     $jobConfig = JobConfig\Storage::getJobConfig($path);
     $jobConfig->setLimits($hardwareGroup, $limits);
 

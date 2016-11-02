@@ -12,7 +12,8 @@ class TestSubmissionHeader extends Tester\TestCase
   static $minimalConfig = [
     "job-id" => "id123",
     "file-collector" => "https://collector",
-    "language" => "cpp"
+    "language" => "cpp",
+    "hw-groups" => [ "A", "B" ]
   ];
 
   public function testValidConstructionRequired() {
@@ -39,6 +40,46 @@ class TestSubmissionHeader extends Tester\TestCase
         new SubmissionHeader($config);
       }, JobConfigLoadingException::CLASS
     );
+  }
+
+  public function testInvalidHardwareGroups() {
+    $config = self::$minimalConfig;
+    $config["hw-groups"] = "bla bla";
+    Assert::exception(
+      function() use ($config) {
+        new SubmissionHeader($config);
+      }, JobConfigLoadingException::CLASS
+    );
+  }
+
+  public function testMissingHardwareGroups() {
+    $config = self::$minimalConfig;
+    unset($config["hw-groups"]);
+    Assert::exception(
+      function() use ($config) {
+        new SubmissionHeader($config);
+      }, JobConfigLoadingException::CLASS
+    );
+  }
+
+  public function testAddingHardwareGroups() {
+    $header = new SubmissionHeader(self::$minimalConfig);
+
+    $header->addHardwareGroup("C");
+    Assert::equal([ "A", "B", "C" ], $header->getHardwareGroups());
+
+    $header->addHardwareGroup("B");
+    Assert::equal([ "A", "B", "C" ], $header->getHardwareGroups());
+  }
+
+  public function testRemovingHardwareGroups() {
+    $header = new SubmissionHeader(self::$minimalConfig);
+
+    $header->removeHardwareGroup("B");
+    Assert::equal([ "A" ], $header->getHardwareGroups());
+
+    $header->removeHardwareGroup("C");
+    Assert::equal([ "A" ], $header->getHardwareGroups());
   }
 
   public function testSetJobId() {
@@ -72,6 +113,13 @@ class TestSubmissionHeader extends Tester\TestCase
     Assert::equal("newspeak", $header->getLanguage());
   }
 
+  public function testSetHardwareGroups() {
+    $header = new SubmissionHeader(self::$minimalConfig);
+    Assert::equal(["A", "B"], $header->getHardwareGroups());
+    $header->setHardwareGroups(["A", "C"]);
+    Assert::equal(["A", "C"], $header->getHardwareGroups());
+  }
+
   public function testSetLog() {
     $header = new SubmissionHeader(self::$minimalConfig);
     Assert::false($header->getLog());
@@ -90,6 +138,7 @@ class TestSubmissionHeader extends Tester\TestCase
       "file-collector" => "https://collector",
       "language" => "cpp",
       "log" => "false",
+      "hw-groups" => [ "A", "B" ],
       "somekey" => "somevalue",
       "otherkey" => "othervalue"
     ];

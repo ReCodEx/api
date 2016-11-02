@@ -25,13 +25,14 @@ class Licence implements JsonSerializable
    */
   protected $instance;
 
-
   /**
+   * A licence can be manually marked as invalid by the admins.
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
 
   /**
+   * The very last date on which this licence is valid (unless invalidated manually)
    * @ORM\Column(type="datetime")
    */
   protected $validUntil;
@@ -49,6 +50,7 @@ class Licence implements JsonSerializable
   }
 
   /**
+   * Internal note for the licence.
    * @ORM\Column(type="string")
    */
   protected $note;
@@ -62,11 +64,11 @@ class Licence implements JsonSerializable
     ];
   }
 
-  public static function createLicence(string $note, \DateTime $validUntil, Instance $instance) {
+  public static function createLicence(string $note, \DateTime $validUntil, Instance $instance, bool $isValid = TRUE) {
     $licence = new Licence();
     $licence->note = $note;
     $licence->validUntil = $validUntil;
-    $licence->isValid = TRUE; //@todo ask Simon the meaning of this
+    $licence->isValid = $isValid;
     $licence->instance = $instance;
     $instance->addLicence($licence);
     return $licence;

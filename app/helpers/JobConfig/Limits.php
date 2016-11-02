@@ -3,13 +3,14 @@
 namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
+use JsonSerializable;
 
 
 /**
  * Limits helper holder structure which holds every possible information about
  * limits and keep forward compatibility.
  */
-class Limits {
+class Limits implements JsonSerializable {
   /** Hardware group identification key */
   const HW_GROUP_ID_KEY = "hw-group-id";
   /** Time limit key */
@@ -270,4 +271,11 @@ class Limits {
     return Yaml::dump($this->toArray());
   }
 
+  /**
+   * Enable automatic serialization to JSON
+   * @return array
+   */
+  public function jsonSerialize() {
+    return $this->toArray();
+  }
 }

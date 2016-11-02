@@ -103,8 +103,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/can-submit", "Assignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
     $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
-    $router[] = new GetRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/limits/<hardwareGroup>", "Assignments:setLimits");
+    $router[] = new GetRoute("$prefix/<id>/limits", "Assignments:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/limits", "Assignments:setLimits");
   }
 
   /**
@@ -206,6 +206,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/detail", "Users:updateProfile"); // TODO: maybe a bit different route
   }
 
+  /**
+   * Adds all ForgottenPassword endpoints to given router.
+   * @param type $router
+   * @param type $prefix Route prefix
+   */
   private static function createForgottenPasswordRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
     $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");

@@ -97,6 +97,14 @@ class JobConfig {
   }
 
   /**
+   * Get list of available hardware groups in this job configuration
+   * @return array
+   */
+  public function getHardwareGroups(): array {
+    return $this->submissionHeader->getHardwareGroups();
+  }
+
+  /**
    * Returns the tasks of this configuration
    * @return TaskBase[] The tasks with instances of InternalTask and ExternalTask
    */
@@ -140,6 +148,24 @@ class JobConfig {
     return count($this->tasks);
   }
 
+  public function getLimits(): array {
+    // Array of test-id as a key and the value is another array of task-id and limits as Limits type
+    return array_map(
+      function ($hardwareGroup) {
+        return [
+          "hardwareGroup" => $hardwareGroup,
+          "tests" => array_map(
+            function ($test) use ($hardwareGroup) {
+              return $test->getLimits($hardwareGroup);
+            },
+            $this->getTests()
+          )
+        ];
+      },
+      $this->getHardwareGroups()
+    );
+  }
+
   /**
    * Removes limits for all execution tasks (only specified hwgroup).
    * @param string $hwGroupId Hardware group identification
@@ -150,6 +176,10 @@ class JobConfig {
         $task->getSandboxConfig()->removeLimits($hwGroupId);
       }
     }
+    // Don't remove the hardware group from headers, because removeLimits() from
+    // above just sets limits for that particular hwgroup to unlimited, so technically
+    // the limits are still there.
+    // $this->submissionHeader->removeHardwareGroup($hwGroupId);
   }
 
   /**
@@ -175,6 +205,7 @@ class JobConfig {
         }
       }
     }
+    $this->submissionHeader->addHardwareGroup($hwGroupId);
   }
 
   /**

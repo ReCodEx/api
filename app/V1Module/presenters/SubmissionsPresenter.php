@@ -68,11 +68,11 @@ class SubmissionsPresenter extends BasePresenter {
   public function actionEvaluation(string $id) {
     $submission = $this->findSubmissionOrThrow($id);
     if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
-      try {
-        $evaluation = $this->evaluationLoader->load($submission);
+      $evaluation = $this->evaluationLoader->load($submission);
+      if ($evaluation !== NULL) {
         $this->evaluations->persist($evaluation);
         $this->submissions->persist($submission);
-      } catch (SubmissionEvaluationFailedException $e) {
+      } else {
         // the evaluation is probably not ready yet
         // - display partial information about the submission, do not throw an error
       }

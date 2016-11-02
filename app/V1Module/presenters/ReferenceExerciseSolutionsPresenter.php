@@ -60,6 +60,23 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
+  public function actionCreateReferenceSolution() {
+    $exercise = $this->exercises->findOrThrow($id);
+    $user = $this->users->findCurrentUserOrThrow();
+
+    // @todo validate user's access
+
+    $req = $this->getHttpRequest();
+    $files = $this->files->findAllById($req->getPost("files"));
+    $note = $req->getPost("note");
+    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files);
+    $this->referenceSolutions->persist($solution);
+
+    // evaluate the solution right now
+    // hwGroup post param is preserved from current endpoint call
+    $this->actionEvaluate($exercise->getId(), $solution->getId());
+  }
+
   /**
    * Evaluate reference solutions to an exercise for a hardware group
    * @POST
@@ -81,7 +98,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
-    $jobConfig = JobConfig\Storage::getJobConfig($referenceSolution->getExercise()->getJobConfigFilePath());
+    $jobConfig = JobConfig\Storage::getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
     $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);

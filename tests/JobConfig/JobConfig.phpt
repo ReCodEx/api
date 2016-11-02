@@ -18,7 +18,8 @@ class TestJobConfig extends Tester\TestCase
       "job-id" => "student_bla bla bla",
       "file-collector" => "url://url.url",
       "language" => "cpp",
-      "log" => "true"
+      "log" => "true",
+      "hw-groups" => [ "A" ]
     ],
     "tasks" => [
       [ "task-id" => "X", "test-id" => "A", "type" => "evaluation", "priority" => 1, "fatal-failure" => "false", "cmd" => [ "bin" => "a.out" ] ],

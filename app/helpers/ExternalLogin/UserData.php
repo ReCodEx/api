@@ -44,28 +44,28 @@ final class UserData {
   /**
    * Constructor
    * @param string                $id          Identifier of user (inside identity provider)
+   * @param string                $email       Email address of user
    * @param string                $firstName   First name of user
    * @param string                $lastName    Last name of user
    * @param string                $degreesBeforeName   Degrees before user's name
    * @param string                $degreesAfterName    Degrees after user's name
-   * @param string                $email       Email address of user
    * @param IExternalLoginService $authService Used authentification service provider class
    */
   public function __construct(
     string $id,
+    string $email,
     string $firstName,
     string $lastName,
     string $degreesBeforeName,
     string $degreesAfterName,
-    string $email,
     IExternalLoginService $authService
   ) {
     $this->id = $id;
     $this->firstName = $firstName;
     $this->lastName = $lastName;
-    $this->degreesBeforName = $degreesBeforName;
-    $this->degreesAfterName = $degreesAfterName;
     $this->email = $email;
+    $this->degreesBeforeName = $degreesBeforeName;
+    $this->degreesAfterName = $degreesAfterName;
   }
 
   /**

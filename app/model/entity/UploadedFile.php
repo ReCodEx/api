@@ -37,6 +37,19 @@ class UploadedFile implements JsonSerializable
     }
 
     /**
+    * Extract extension from this file and return it.
+    * @return string extension
+    */
+    public function getFileExtension(): string {
+      $ext = pathinfo($this->name, PATHINFO_EXTENSION);
+      if ($ext === NULL) {
+        $ext = "";
+      }
+
+      return $ext;
+    }
+
+    /**
      * @ORM\Column(type="datetime")
      */
     protected $uploadedAt;

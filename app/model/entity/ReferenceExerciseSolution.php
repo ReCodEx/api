@@ -64,6 +64,6 @@ class ReferenceExerciseSolution implements JsonSerializable
     $this->exercise = $exercise;
     $this->uploadedAt = new \DateTime;
     $this->description = $description;
-    $this->solution = new Solution($user, $files);
+    $this->solution = new Solution($user, $files); // TODO: third parameter has to be SolutionRuntimeConfig
   }
 }

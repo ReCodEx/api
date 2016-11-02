@@ -30,9 +30,9 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $referenceSolution;
 
   /**
-    * @ORM\Column(type="string")
-    */
-  protected $hardwareGroup;
+   * @ORM\Column(type="string")
+   */
+  protected $hwGroup;
 
   /**
    * @ORM\Column(type="string", nullable=true)
@@ -64,15 +64,14 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "hardwareGroup" => $this->hardwareGroup,
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "evaluation" => $this->evaluation
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hardwareGroup) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hwGroup) {
     $this->referenceSolution = $referenceSolution;
-    $this->hardwareGroup = $hardwareGroup;
+    $this->hwGroup = $hwGroup;
   }
 
 }

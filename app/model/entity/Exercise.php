@@ -2,9 +2,9 @@
 
 namespace App\Model\Entity;
 
+use \DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use DateTime;
 use JsonSerializable;
 
 /**
@@ -12,104 +12,145 @@ use JsonSerializable;
  */
 class Exercise implements JsonSerializable
 {
-    use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
-    protected $id;
+  /**
+   * @ORM\Id
+   * @ORM\Column(type="guid")
+   * @ORM\GeneratedValue(strategy="UUID")
+   */
+  protected $id;
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    protected $name;
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $name;
 
-    /**
-     * @ORM\Column(type="integer")
-     */
-    protected $version;
+  /**
+   * @ORM\Column(type="integer")
+   */
+  protected $version;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $createdAt;
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $createdAt;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $updatedAt;
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $updatedAt;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    protected $description;
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $description;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    protected $assignment;
+  /**
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment")
+   */
+  protected $localizedAssignments;
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    protected $difficulty;
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $difficulty;
 
-    /**
-     * @ORM\Column(type="string")
-     */
-    protected $jobConfigFilePath;
+  /**
+   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
+   */
+  protected $solutionRuntimeConfigs;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Exercise")
-     * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
-     */
-    protected $exercise;
+  /**
+   * @ORM\ManyToOne(targetEntity="Exercise")
+   * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
+   */
+  protected $exercise;
 
-    public function getForkedFrom() {
-        return $this->exercise;
-    }
+  public function getForkedFrom() {
+      return $this->exercise;
+  }
 
-    /**
-     * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
-     */
-    protected $referenceSolutions;
+  /**
+   * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
+   */
+  protected $referenceSolutions;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    protected $author;
+  /**
+   * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
+   * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+   */
+  protected $author;
 
-    public function jsonSerialize() {
-      return [
-        "id" => $this->id,
-        "name" => $this->name,
-        "version" => $this->version,
-        "authorId" => $this->author->getId(),
-        "forkedFrom" => $this->getForkedFrom(),
-        "description" => $this->description,
-        "assignment" => $this->assignment,
-        "difficulty" => $this->difficulty,
-        "createdAt" => $this->createdAt,
-        "updatedAt" => $this->updatedAt
-      ];
-    }
+  public function isAuthor(User $user) {
+    return $this->author->id === $user->id;
+  }
 
-    /**
-     * The name of the user
-     * @param  string $name   Name of the exercise
-     * @return Exercise
-     */
-    public static function createExercise($name, $description, User $author) {
-      $exercise = new Exercise;
-      $exercise->name = $name;
-      $exercise->exercise = NULL;
-      $exercise->version = 1;
-      $exercise->description = $description;
-      $exercise->author = $author;
-      $exercise->createdAt = $exercise->updatedAt = new DateTime();
-      return $exercise;
-    }
+  /**
+   * Constructor
+   */
+  private function __construct($name, $version, $description,
+      $difficulty, $solutionRuntimeConfigs, $exercise, User $user) {
+    $this->name = $name;
+    $this->version = $version;
+    $this->createdAt = new DateTime;
+    $this->updatedAt = new DateTime;
+    $this->localizedAssignments = new ArrayCollection;
+    $this->description = $description;
+    $this->difficulty = $difficulty;
+    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
+    $this->exercise = $exercise;
+    $this->author = $user;
+  }
+
+  public function update($name, $description, $difficulty) {
+    $this->name = $name;
+    $this->version++;
+    $this->updatedAt = new DateTime;
+    $this->description = $description;
+    $this->difficulty = $difficulty;
+  }
+
+  // @todo: Update localized assignment
+
+  public static function create(User $user): Exercise {
+    return new self(
+      "",
+      1,
+      "",
+      "",
+      new ArrayCollection,
+      NULL,
+      $user
+    );
+  }
+
+  public static function forkFrom(Exercise $exercise, User $user): Exercise {
+    return new self(
+      $exercise->name,
+      $exercise->version + 1,
+      $exercise->description,
+      $exercise->difficulty,
+      $exercise->getSolutionRuntimeConfigs(),
+      $exercise,
+      $user
+    );
+  }
+
+  public function jsonSerialize() {
+    return [
+      "id" => $this->id,
+      "name" => $this->name,
+      "version" => $this->version,
+      "createdAt" => $this->createdAt,
+      "updatedAt" => $this->updatedAt,
+      "description" => $this->description,
+      "localizedAssignments" => $this->localizedAssignments->map(function($localized) { return $localized->getId(); })->getValues(),
+      "difficulty" => $this->difficulty,
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
+      "forkedFrom" => $this->getForkedFrom(),
+      "authorId" => $this->author->getId()
+    ];
+  }
+
 }
