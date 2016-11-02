@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use DateTime;
 use JsonSerializable;
 
 /**
@@ -99,15 +100,16 @@ class Exercise implements JsonSerializable
     /**
      * The name of the user
      * @param  string $name   Name of the exercise
-     * @return User
+     * @return Exercise
      */
-    public static function createExercise($name, $description, User $user) {
-        $entity = new Exercise;
-        $entity->name = $name;
-        $entity->exercise = NULL;
-        $entity->version = 1;
-        $entity->description = $description;
-        $entity->user = $user;
-        return $entity;
+    public static function createExercise($name, $description, User $author) {
+      $exercise = new Exercise;
+      $exercise->name = $name;
+      $exercise->exercise = NULL;
+      $exercise->version = 1;
+      $exercise->description = $description;
+      $exercise->author = $author;
+      $exercise->createdAt = $exercise->updatedAt = new DateTime();
+      return $exercise;
     }
 }

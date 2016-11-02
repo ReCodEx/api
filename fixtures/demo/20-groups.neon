@@ -1,0 +1,20 @@
+App\Model\Entity\Group:
+    demoGroup:
+        __construct:
+            - Demo group
+            - A group meant solely for the purpose of demonstration
+            - @demoInstance
+            - @demoAdmin
+
+App\Model\Entity\User:
+    'demoGroupMember{1..10}':
+        __construct:
+            - "<email()>"
+            - "<firstName()>"
+            - "<lastName()>"
+            - ""
+            - ""
+            - @student
+            - @demoInstance
+        makeStudentOf:
+            - @demoGroup

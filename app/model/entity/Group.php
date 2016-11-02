@@ -190,6 +190,11 @@ class Group implements JsonSerializable
    */
   protected $assignments;
 
+  public function addAssignment($assignment)
+  {
+    $this->assignments->add($assignment);
+  }
+
   public function getAssignmentsIds(): array {
     return $this->getAssignments()->map(function($a) { return $a->id; })->getValues();
   }
@@ -297,5 +302,4 @@ class Group implements JsonSerializable
       "publicStats" => $this->publicStats
     ];
   }
-
 }

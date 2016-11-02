@@ -1,0 +1,9 @@
+App\Model\Entity\Assignment:
+    demoAssignment:
+        __construct:
+            assignToGroup:
+                - @demoExercise
+                - @demoGroup
+                - true
+        firstDeadline: "<dateTimeBetween('+1 years', '+3 years')>"
+        secondDeadline: "<dateTimeBetween($firstDeadline, '+5 years')>"
