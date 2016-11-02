@@ -97,7 +97,7 @@ class Exercise implements JsonSerializable
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
     $this->localizedAssignments = new ArrayCollection;
-    $this->assignment = $assignment;
+    $this->description = $description;
     $this->difficulty = $difficulty;
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->exercise = $exercise;
@@ -120,8 +120,6 @@ class Exercise implements JsonSerializable
       1,
       "",
       "",
-      "",
-      "",
       new ArrayCollection,
       NULL,
       $user
@@ -133,7 +131,6 @@ class Exercise implements JsonSerializable
       $exercise->name,
       $exercise->version + 1,
       $exercise->description,
-      $exercise->assignment,
       $exercise->difficulty,
       $exercise->getSolutionRuntimeConfigs(),
       $exercise,
@@ -149,7 +146,7 @@ class Exercise implements JsonSerializable
       "createdAt" => $this->createdAt,
       "updatedAt" => $this->updatedAt,
       "description" => $this->description,
-      "assignment" => $this->assignment,
+      "localizedAssignments" => $this->localizedAssignments->map(function($localized) { return $localized->getId(); })->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
       "forkedFrom" => $this->getForkedFrom(),

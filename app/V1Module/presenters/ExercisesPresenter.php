@@ -51,7 +51,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="assignment")
    * @Param(type="post", name="difficulty")
    */
-  public function actionUpdateDetail(string $id) {
+  public function actionUpdateDetail(string $id) { // TODO: this has to be change to reflect localizedAssignment structures
     $req = $this->getHttpRequest();
     $name = $req->getPost("name");
     $description = $req->getPost("description");
