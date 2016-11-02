@@ -2,6 +2,8 @@
 namespace App\Console;
 
 use App\V1Module\Router\MethodRoute;
+use Faker;
+use JsonSerializable;
 use Nette\Application\IPresenterFactory;
 use Nette\Application\Routers\Route;
 use Nette\Application\Routers\RouteList;
@@ -10,6 +12,7 @@ use Nette\Reflection\ClassType;
 use Nette\Reflection\Method;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Arrays;
+use Nette\Utils\Finder;
 use Nette\Utils\Strings;
 use ReflectionClass;
 use ReflectionException;
@@ -19,6 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
+use Nelmio\Alice\Fixtures;
 
 class GenerateSwagger extends Command
 {
@@ -32,11 +36,17 @@ class GenerateSwagger extends Command
    */
   private $presenterFactory;
 
-  public function __construct(RouteList $router, IPresenterFactory $presenterFactory)
+  /**
+   * @var Fixtures\Loader
+   */
+  private $fixtureLoader;
+
+  public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader)
   {
     parent::__construct();
     $this->router = $router;
     $this->presenterFactory = $presenterFactory;
+    $this->fixtureLoader = $loader;
   }
 
   protected function configure()
@@ -106,9 +116,13 @@ class GenerateSwagger extends Command
       $this->makePresenterTag($metadata, $module, $tags, $paths[$mask][strtolower($method)]);
     }
 
+    $this->setArrayDefault($document, "entities", []);
+    $this->fillEntityExamples($document["entities"]);
+
     $yaml = Yaml::dump($document, 10, 2);
     $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
     $yaml = Strings::replace($yaml, '/(?<=tags:)\s*\{\s*\}/', " [ ]"); // :-!
+    $yaml = Strings::replace($yaml, '/(?<=items:)\s*\{\s*\}/', " [ ]"); // :-!
     $output->write($yaml);
 
     if ($save) {
@@ -258,6 +272,65 @@ class GenerateSwagger extends Command
 
     $property->setAccessible(TRUE);
     return $property->getValue($object);
+  }
+
+  private function fillEntityExamples(array &$target)
+  {
+    // Load fixtures from the "base" and "demo" groups
+    $fixtureDir = __DIR__ . "/../../fixtures";
+
+    $files = Finder::findFiles("*.neon", "*.yaml", ".yml")
+      ->in($fixtureDir . "/base", $fixtureDir . "/demo");
+
+    $entities = [];
+
+    foreach ($files as $file) {
+      $entities = array_merge($this->fixtureLoader->load($file), $entities);
+    }
+
+    // Traverse all entities and fill in identifiers first so that we don't try to serialize an entity without an ID
+    $faker = Faker\Factory::create();
+
+    foreach ($entities as $entity) {
+      $entity->id = $faker->unique()->uuid;
+    }
+
+    // Dump serializable entities into the document
+    foreach ($entities as $entity) {
+      if ($entity instanceof JsonSerializable) {
+        $class = ClassType::from($entity);
+        $this->updateEntityEntry($target, $class->getShortName(), $entity->jsonSerialize());
+      }
+    }
+  }
+
+  private function updateEntityEntry(array &$entry, $key, $value)
+  {
+    $type = is_array($value)
+      ? (Arrays::isList($value) ? "array" : "object")
+      : gettype($value);
+
+    $this->setArrayDefault($entry, $key, []);
+
+    // If a property value is a reference, just skip it
+    if (count($entry[$key]) == 1 && array_key_exists('$ref', $entry[$key])) {
+      return;
+    }
+
+    if ($type === "object") {
+      $entry[$key]["type"] = "object";
+      $this->setArrayDefault($entry[$key], "properties", []);
+
+      foreach ($value as $objectKey => $objectValue) {
+        $this->updateEntityEntry($entry[$key]["properties"], $objectKey, $objectValue);
+      }
+    } else if ($type === "array") {
+      $entry[$key]["type"] = "array";
+      $entry[$key]["items"] = $value;
+    } else {
+      $this->setArrayDefault($entry[$key], "type", $type);
+      $entry[$key]["example"] = $value;
+    }
   }
 
   private function makePresenterTag($metadata, $module, array &$tags, array &$entry)
