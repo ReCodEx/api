@@ -214,7 +214,7 @@ class User implements JsonSerializable
       "instanceId" => $this->instance->getId(),
       "avatarUrl" => $this->avatarUrl,
       "isVerified" => $this->isVerified,
-      "role" => $this->role,
+      "role" => $this->role->jsonSerialize(),
       "groups" => [
         "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->getValues(),
         "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->getValues()
