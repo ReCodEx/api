@@ -62,10 +62,15 @@ class Instance implements JsonSerializable
   protected $needsLicence;
 
   /**
+   * @var ArrayCollection
    * @ORM\OneToMany(targetEntity="Licence", mappedBy="instance")
    */
   protected $licences;
 
+  public function addLicence(Licence $licence)
+  {
+    $this->licences->add($licence);
+  }
 
   public function getValidLicences() {
     return $this->licences->filter(function ($licence) {
@@ -141,7 +146,7 @@ class Instance implements JsonSerializable
     ];
   }
 
-  public static function createInstance(string $name, bool $isOpen, User $admin, string $description = NULL) {
+  public static function createInstance(string $name, bool $isOpen, User $admin = NULL, string $description = NULL) {
     $instance = new Instance;
     $instance->name = $name;
     $instance->description = $description;

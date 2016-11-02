@@ -68,7 +68,7 @@ class Licence implements JsonSerializable
     $licence->validUntil = $validUntil;
     $licence->isValid = TRUE; //@todo ask Simon the meaning of this
     $licence->instance = $instance;
-    $instance->licences->add($licence);
+    $instance->addLicence($licence);
     return $licence;
   }
 
