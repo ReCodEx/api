@@ -126,6 +126,10 @@ class Instance implements JsonSerializable
    */
   protected $groups;
 
+  public function addGroup(Group $group) {
+    $this->groups->add($group);
+  }
+
   public function getTopLevelGroups() {
     $filter = Criteria::create()->where(Criteria::expr()->eq("parentGroup", NULL));
     return $this->groups->matching($filter);
@@ -141,7 +145,7 @@ class Instance implements JsonSerializable
       "isAllowed" => $this->isAllowed,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "admin" => $this->admin,
+      "admin" => $this->admin ? $this->admin->getId() : NULL,
       "topLevelGroups" => $this->getTopLevelGroups()->map(function($group) { return $group->getId(); })->getValues()
     ];
   }

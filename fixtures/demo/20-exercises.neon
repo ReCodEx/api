@@ -1,10 +1,9 @@
 App\Model\Entity\Exercise:
     demoExercise:
         __construct:
-            createExercise:
-                - "P ?= NP"
-                - It's time to crack this one already
+            create:
                 - @demoAdmin
-        assignment: "Decide if P equals NP"
-        jobConfigFilePath: "job-config.yml"
-        difficulty: "moderate"
+        update:
+            - "P ?= NP"
+            - It's time to crack this one already
+            - "moderate"

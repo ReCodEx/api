@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -17,13 +18,12 @@ class Assignment implements JsonSerializable
 
   private function __construct(
     string $name,
-    string $description,
     DateTime $firstDeadline,
     int $maxPointsBeforeFirstDeadline,
     Exercise $exercise,
     Group $group,
     bool $isPublic,
-    ArrayCollection $solutionRuntimeConfigs,
+    Collection $solutionRuntimeConfigs,
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
@@ -34,7 +34,6 @@ class Assignment implements JsonSerializable
     }
 
     $this->name = $name;
-    $this->description = $description;
     $this->exercise = $exercise;
     $this->group = $group;
     $this->firstDeadline = $firstDeadline;
@@ -47,12 +46,12 @@ class Assignment implements JsonSerializable
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
+    $this->localizedAssignments = new ArrayCollection();
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
     $assignment = new self(
       $exercise->name,
-      $exercise->assignment,
       new DateTime,
       0,
       $exercise,

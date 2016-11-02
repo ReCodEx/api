@@ -29,6 +29,8 @@ class Group implements JsonSerializable
     if ($parentGroup !== NULL) {
       $this->parentGroup->addChildGroup($this);
     }
+
+    $instance->addGroup($this);
   }
 
   /**
