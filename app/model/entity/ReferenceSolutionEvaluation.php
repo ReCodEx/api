@@ -30,6 +30,11 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $referenceSolution;
 
   /**
+   * @ORM\Column(type="string")
+   */
+  protected $hwGroup;
+
+  /**
    * @ORM\Column(type="string", nullable=true)
    */
   protected $resultsUrl;
@@ -64,8 +69,9 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hwGroup) {
     $this->referenceSolution = $referenceSolution;
+    $this->hwGroup = $hwGroup;
   }
 
 }
