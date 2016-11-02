@@ -50,8 +50,8 @@ class Permission implements JsonSerializable
 
   public function jsonSerialize() {
     return [
-      "role" => $this->role,
-      "resource" => $this->resource,
+      "role" => $this->role->jsonSerialize(),
+      "resource" => $this->resource->jsonSerialize(),
       "action" => $this->action,
       "isAllowed" => $this->isAllowed
     ];
