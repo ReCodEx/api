@@ -93,6 +93,17 @@ class GenerateSwagger extends Command
     $this->setArrayDefault($document, "tags", []);
     $tags = &$document["tags"];
 
+    $defaultSecurity = NULL;
+    $securityDefinitions = [];
+
+    if (array_key_exists('securityDefinitions', $document)) {
+      $securityDefinitions = array_keys($document['securityDefinitions']);
+
+      if (count($securityDefinitions) > 0) {
+        $defaultSecurity = $securityDefinitions[0];
+      }
+    }
+
     foreach ($apiRoutes as $routeData) {
       $route = $routeData["route"];
       $parentRoute = $routeData["parent"];
@@ -113,7 +124,9 @@ class GenerateSwagger extends Command
       $this->setArrayDefault($paths[$mask], strtolower($method), []);
 
       $module = self::getPropertyValue($parentRoute, "module");
-      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module);
+      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module, $defaultSecurity, function ($text) use ($output) {
+        $output->writeln("<error>$text</error>");
+      });
       $this->makePresenterTag($metadata, $module, $tags, $paths[$mask][strtolower($method)]);
     }
 
@@ -123,7 +136,11 @@ class GenerateSwagger extends Command
     $yaml = Yaml::dump($document, 10, 2);
     $yaml = Strings::replace($yaml, '/(?<=parameters:)\s*\{\s*\}/', " [ ]"); // :-!
     $yaml = Strings::replace($yaml, '/(?<=tags:)\s*\{\s*\}/', " [ ]"); // :-!
-    $yaml = Strings::replace($yaml, '/(?<=items:)\s*\{\s*\}/', " [ ]"); // :-!
+
+    foreach ($securityDefinitions as $definition) {
+      $yaml = Strings::replace($yaml, '/(?<=' . $definition . ':)\s*\{\s*\}/', " [ ]"); // :-!
+    }
+
     $output->write($yaml);
 
     if ($save) {
@@ -131,8 +148,12 @@ class GenerateSwagger extends Command
     }
   }
 
-  private function fillPathEntry(array $metadata, array &$entry, $module)
+  private function fillPathEntry(array $metadata, array &$entry, $module, $defaultSecurity = NULL, callable $warning = NULL)
   {
+    if ($warning === NULL) {
+      $warning = function ($text) {};
+    }
+
     $presenterName = $module . $metadata[Route::PRESENTER_KEY]["value"];
     $action = $metadata["action"]["value"] ?: "default";
 
@@ -221,12 +242,27 @@ class GenerateSwagger extends Command
 
     $this->setArrayDefault($entry["responses"], "200", []);
 
-    $isAuthFailurePossible = $presenter->getReflection()->getAnnotation("LoggedIn")
-      || $method->getAnnotation("LoggedIn")
-      || $method->getAnnotation("UserIsAllowed");
+    $isLoginNeeded = $presenter->getReflection()->getAnnotation("LoggedIn")
+      || $method->getAnnotation("LoggedIn");
+
+    if ($isLoginNeeded) {
+      $this->setArrayDefault($entry["responses"], "401", []);
+
+      if ($defaultSecurity !== NULL) {
+        $this->setArrayDefault($entry, 'security', [$defaultSecurity => []]);
+      }
+    } else if (array_key_exists($entry["responses"], "401")) {
+      $warning(sprintf("Method %s is not annotated with @LoggedIn, but corresponding endpoint has 401 in its response list", $method->name));
+    }
+
+    $isAuthFailurePossible = $method->getAnnotation("UserIsAllowed")
+      || $presenter->getReflection()->getAnnotation("Role")
+      || $method->getAnnotation("Role");
 
     if ($isAuthFailurePossible) {
       $this->setArrayDefault($entry["responses"], "403", []);
+    } else if (array_key_exists($entry["responses"], "403")) {
+      $warning(sprintf("Method %s is not annotated with @UserIsAllowed, but corresponding endpoint has 403 in its response list", $method->name));
     }
 
     return $entry;
