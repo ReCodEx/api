@@ -357,24 +357,25 @@ class AssignmentsPresenter extends BasePresenter {
       }
     );
 
-    $this->sendSuccessResponse($environments->getValues());
+    $this->sendSuccessResponse([ "environments" => $environments->getValues() ]);
   }
 
   /**
    * Set resource limits for an assignment and a hardware group
    * @PUT
    * @UserIsAllowed(assignments="set-limits")
-   * @Param(type="post", name="limits", description="A list of resource limits")
+   * @Param(type="post", name="environments", description="A list of resource limits")
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $limits = $this->getHttpRequest()->getPost("limits");
+    $limits = $this->getHttpRequest()->getPost("environments");
 
     if ($limits === NULL || !is_array($limits)) {
-      throw new InvalidArgumentException("limits");
+      throw new InvalidArgumentException("environments");
     }
 
     // @todo: ...!!
+    // - the environments array holds the same structure as the array in 'actionGetLimits'
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
