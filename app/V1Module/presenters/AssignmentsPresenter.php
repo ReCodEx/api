@@ -362,7 +362,7 @@ class AssignmentsPresenter extends BasePresenter {
 
   /**
    * Set resource limits for an assignment and a hardware group
-   * @POST
+   * @PUT
    * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="limits", description="A list of resource limits")
    */
