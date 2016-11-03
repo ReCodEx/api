@@ -36,12 +36,21 @@ class Authorizator implements NS\IAuthorizator {
   private function setup() {
     $this->acl = new NS\Permission();
 
-    foreach ($this->roles->findLowestLevelRoles() as $lowestLevelRole) {
-      $roles = [$lowestLevelRole];
-      while (count($roles) > 0) {
-        $role = array_pop($roles);
-        $this->acl->addRole($role->getId(), $role->getParentRoleId());
-        $roles = array_merge($roles, $role->getChildRoles()->getValues());
+    $roles = $this->roles->findAll();
+    $insertedRoleIds = [];
+    while (count($insertedRoleIds) < count($roles)) {
+      $insertedRoles = 0;
+
+      foreach ($roles as $role) {
+        if ($role->getParentRoleId() === NULL || in_array($role->getParentRoleId(), $insertedRoleIds)) {
+          $this->acl->addRole($role->getId(), $role->getParentRoleId());
+          $insertedRoleIds[] = $role->getId();
+          $insertedRoles += 1;
+        }
+      }
+
+      if ($insertedRoles === 0) {
+        throw new Nette\InvalidStateException("Cycle detected in Role hierarchy");
       }
     }
 
