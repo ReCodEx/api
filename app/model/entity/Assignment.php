@@ -46,7 +46,7 @@ class Assignment implements JsonSerializable
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
-    $this->localizedAssignments = new ArrayCollection();
+    $this->localizedAssignments = new ArrayCollection;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -143,7 +143,7 @@ class Assignment implements JsonSerializable
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", cascade={"persist", "remove"})
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments", cascade={"persist"})
    */
   protected $localizedAssignments;
 

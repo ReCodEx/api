@@ -23,6 +23,7 @@ class LocalizedAssignment implements JsonSerializable
     $this->name = $name;
     $this->description = $description;
     $this->locale = $locale;
+    $this->assignments = new ArrayCollection;
   }
 
   /**
@@ -46,6 +47,38 @@ class LocalizedAssignment implements JsonSerializable
    * @ORM\Column(type="text")
    */
   protected $description;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="localizedAssignments")
+   */
+  protected $assignments;
+
+  public function addAssignment(Assignment $assignment) {
+    $this->assignments[] = $assignment;
+    $assignment->addLocalizedAssignment($this);
+    return $this;
+  }
+
+  public function removeAssignment(Assignment $assignment) {
+    $this->assignments->removeElement($assignment);
+    $assignment->removeLocalizedAssignment($this);
+  }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="localizedAssignments")
+   */
+  protected $exercises;
+
+  public function addExercise(Exercise $exercise) {
+    $this->exercises[] = $exercise;
+    $exercise->addLocalizedAssignment($this);
+    return $this;
+  }
+
+  public function removeExercise(Exercise $exercise) {
+    $this->exercises->removeElement($exercise);
+    $exercise->removeLocalizedAssignment($this);
+  }
 
   public function jsonSerialize() {
     return [

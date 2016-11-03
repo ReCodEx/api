@@ -47,7 +47,7 @@ class Exercise implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment")
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises", cascade={"persist"})
    */
   protected $localizedAssignments;
 
