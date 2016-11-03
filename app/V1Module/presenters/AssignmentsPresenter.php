@@ -7,6 +7,7 @@ use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
 
+use App\Helpers\MonitorConfig;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
@@ -72,6 +73,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionHelper;
+
+  /**
+   * @var MonitorConfig
+   * @inject
+   */
+  public $monitorConfig;
 
   /**
    * Get a list of all assignments
@@ -315,7 +322,7 @@ class AssignmentsPresenter extends BasePresenter {
       "submission" => $submission,
       "webSocketChannel" => [
         "id" => $jobConfig->getJobId(),
-        "monitorUrl" => $this->getContext()->parameters['monitor']['address'],
+        "monitorUrl" => $this->monitorConfig->getAddress(),
         "expectedTasksCount" => $jobConfig->getTasksCount()
       ]
     ]);

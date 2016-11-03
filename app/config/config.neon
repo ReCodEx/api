@@ -114,6 +114,10 @@ services:
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
   - App\Helpers\ExternalLogin\AuthService(@App\Helpers\ExternalLogin\CAS)
 
+  # config objects
+  - App\Helpers\MonitorConfig(%monitor%)
+  - App\Helpers\BrokerConfig(%broker%)
+
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)

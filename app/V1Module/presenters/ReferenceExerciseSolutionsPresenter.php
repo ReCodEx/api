@@ -2,18 +2,16 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\MonitorConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 
 use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
-
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -49,6 +47,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionHelper;
+
+  /**
+   * @var MonitorConfig
+   * @inject
+   */
+  public $monitorConfig;
 
   /**
    * Get reference solutions for an exercise
@@ -110,7 +114,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         "evaluation" => $evaluation,
         "webSocketChannel" => [
           "id" => $jobConfig->getJobId(),
-          "monitorUrl" => $this->getMonitorUrl(),
+          "monitorUrl" => $this->monitorConfig->getAddress(),
           "expectedTasksCount" => $jobConfig->getTasksCount()
         ],
       ]);
@@ -118,9 +122,4 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new SubmissionFailedException;
     }
   }
-
-  private function getMonitorUrl() {
-    return Arrays::get($this->getContext()->parameters, ["monitor", "address"], NULL);
-  }
-
 }
