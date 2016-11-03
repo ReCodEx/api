@@ -1,0 +1,4 @@
+doctrine:
+    # url: 'sqlite://notused:inthis@case//tmp/db.sqlite'
+    url: 'sqlite://:memory:'
+    charset: UTF-8
