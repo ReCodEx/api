@@ -257,7 +257,8 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
     }
 
-    $this->sendSuccessResponse($group->getAssignments()->getValues());
+    $assignments = $group->getAssignmentsForUser($user);
+    $this->sendSuccessResponse($assignments);
   }
 
   /**

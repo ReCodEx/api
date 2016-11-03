@@ -73,11 +73,6 @@ App\Model\Entity\Permission:
     "resource": @assignments
     "action": "submit"
     "isAllowed": 1
-  "student-assignments-view-all":
-    "role": @student
-    "resource": @assignments
-    "action": "view-all"
-    "isAllowed": 1
   "student-assignments-view-detail":
     "role": @student
     "resource": @assignments

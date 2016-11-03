@@ -285,6 +285,27 @@ class Group implements JsonSerializable
     ];
   }
 
+  /**
+   * Get all possible assignment for user based on his/hers role.
+   * @param User $user
+   * @return array list of assignments
+   */
+  public function getAssignmentsForUser(User $user) {
+    if ($this->isAdminOf($user) || $this->isSupervisorOf($user)) {
+      return $this->getAssignments()->getValues();
+    } else {
+      // student can view only public assignments
+      $studentAssignments = function ($assignment) use ($user) {
+        if ($assignment->canAccessAsStudent($user)) {
+          return TRUE;
+        }
+        return FALSE;
+      };
+
+      return $this->getAssignments()->filter($studentAssignments)->getValues();
+    }
+  }
+
   public function jsonSerialize() {
     $instance = $this->getInstance();
     $admin = $this->admin;
