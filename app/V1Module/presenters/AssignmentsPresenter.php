@@ -10,8 +10,6 @@ use App\Exceptions\JobConfigLoadingException;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
-use App\Model\Entity\RuntimeEnvironment;
-use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ScoreCalculatorFactory;
@@ -368,23 +366,42 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $limits = $this->getHttpRequest()->getPost("environments");
+    // environments array holds the same structure as the array in 'actionGetLimits'
+    $environments = $this->getHttpRequest()->getPost("environments");
 
-    if ($limits === NULL || !is_array($limits)) {
+    if ($environments === NULL || !is_array($environments)) {
       throw new InvalidArgumentException("environments");
     }
 
-    // @todo: ...!!
-    // - the environments array holds the same structure as the array in 'actionGetLimits'
+    $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
+    foreach ($environments as $environment) {
+      $runtimeConfig = $this->runtimeConfigurations->get($environment["environment"]["id"]);
+      if (!in_array($runtimeConfig->getId(), $assignmentRuntimeConfigsIds)) {
+        // runtime config which is not relevant to this assignment was given... omitting
+        continue;
+      }
 
-    // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
-    $jobConfig = JobConfig\Storage::getJobConfig($path);
-    $jobConfig->setLimits($hardwareGroup, $limits);
+      // get job config and its test cases
+      $path = $runtimeConfig->getJobConfigFilePath();
+      $jobConfig = JobConfig\Storage::getJobConfig($path);
 
-    // save the new & archive the old config
-    JobConfig\Storage::saveJobConfig($jobConfig, $path);
+      // get through all defined limits indexed by hwgroup
+      foreach ($environment["limits"] as $hwGroupLimits) {
+        $tests = $hwGroupLimits["tests"];
+        $limits = array();
 
-    $this->sendSuccessResponse($jobConfig->getValues());
+        // inside defined limits go through tests and merge limits indexed by task-id
+        foreach ($tests as $test) {
+          $limits = array_merge($limits, $test);
+        }
+
+        $jobConfig->setLimits($hwGroupLimits["hardwareGroup"], $limits);
+      }
+
+      // save the new & archive the old config
+      JobConfig\Storage::saveJobConfig($jobConfig, $path);
+    }
+
+    $this->sendSuccessResponse($assignment);
   }
 }

@@ -235,6 +235,10 @@ class Assignment implements JsonSerializable
     );
   }
 
+  public function getSolutionRuntimeConfigsIds() {
+    return $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -250,7 +254,7 @@ class Assignment implements JsonSerializable
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
-      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues()
+      "solutionRuntimeConfigs" => $this->getSolutionRuntimeConfigsIds()
     ];
   }
 }
