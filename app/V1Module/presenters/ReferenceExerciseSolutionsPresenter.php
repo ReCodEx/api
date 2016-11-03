@@ -80,7 +80,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Evaluate reference solutions to an exercise for a hardware group
    * @POST
-   * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
+   * @Param(type="post", name="hwGroup", description="Identififer of a hardware group", required=false)
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
@@ -93,16 +93,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     // @todo validate that user can do this action
 
     // create the entity and generate the ID
-    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
+    $hwGroup = $this->getHttpRequest()->getPost("hwGroup", $runtimeConfig->getHardwareGroup()->getId());
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
-    $jobConfig = JobConfig\Storage::getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
+    $runtimeConfig = $referenceSolution->getSolution()->getSolutionRuntimeConfig();
+    $jobConfig = JobConfig\Storage::getJobConfig($runtimeConfig->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
-    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
 
+    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
     if($resultsUrl !== NULL) {
       $evaluation->setResultsUrl($resultsUrl);
       $this->referenceEvaluations->flush();

@@ -15,9 +15,10 @@ use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ScoreCalculatorFactory;
-use App\Model\Repository\Exercises;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
+use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -66,6 +67,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $runtimeConfigurations;
+
+  /**
+   * @var ReferenceSolutionEvaluations
+   * @inject
+   */
+  public $referenceSolutionEvaluations;
 
   /**
    * @var SubmissionHelper
@@ -331,12 +338,21 @@ class AssignmentsPresenter extends BasePresenter {
 
     // get job config and its test cases
     $environments = $assignment->getSolutionRuntimeConfigs()->map(
-      function ($environment) {
+      function ($environment) use ($assignment) {
         $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        $referenceEvaluations = $this->referenceSolutionEvaluations->find(
+          $assignment->getExercise(),
+          $environment->getRuntimeEnvironment(),
+          $environment->getHardwareGroup()
+        );
         return [
           "environment" => $environment,
           "hardwareGroups" => $jobConfig->getHardwareGroups(),
-          "limits" => $jobConfig->getLimits()
+          "limits" => $jobConfig->getLimits(),
+          "referenceSolutionsEvaluations" => array_map(
+            function ($ref) { return $ref->getEvaluation(); },
+            $referenceEvaluations
+          )
         ];
       }
     );
