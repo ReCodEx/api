@@ -158,7 +158,7 @@ doctrine:
   host: localhost
   dbname: 'recodex-api'
   metadata:
-    App: %appDir%
+    App\Model\Entity: %appDir%/model/entity
 
 fixtures:
   locale: "en_US"
