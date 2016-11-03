@@ -139,7 +139,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   private function getPostField($param, $required = TRUE) {
 
     if ($this->post === NULL) {
-      $req = $this->getHttpRequest();
+      $req = $this->getRequest();
       if ($req->isMethod("POST")) {
         $this->post = $req->post;
       } else if ($req->isMethod("PUT") || $req->isMethod("DELETE")) {
