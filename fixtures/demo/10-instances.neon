@@ -10,7 +10,15 @@ App\Model\Entity\Instance:
 
 App\Model\Entity\User:
     demoAdmin:
-        __construct: ["<email()>", "<firstName()>", "<lastName()>", "", "", @superadmin, @demoInstance]
+        __construct: ["admin@admin.com", "<firstName()>", "<lastName()>", "", "", @superadmin, @demoInstance]
+
+App\Model\Entity\Login:
+    demoAdminLogin:
+        __construct:
+            createLogin:
+                - @demoAdmin
+                - "admin@admin.com"
+                - "admin"
 
 App\Model\Entity\Licence:
     demoLicense:

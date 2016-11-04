@@ -85,14 +85,38 @@ class DoctrineFixtures extends Command {
    */
   protected function clearDatabase()
   {
-    $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 0");
+    $platform = $this->dbConnection->getDatabasePlatform()->getName();
 
-    foreach ($this->dbConnection->getSchemaManager()->listTables() as $table) {
-      $tableName = $table->getQuotedName($this->dbConnection->getDatabasePlatform());
-      $tableName = Strings::replace($tableName, "/``(.*)``/", "`\1``");
-      $this->dbConnection->executeQuery(sprintf("TRUNCATE %s", $tableName));
+    if ($platform === 'mysql') {
+      $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 0");
+    } else if ($platform === 'sqlite') {
+      $this->dbConnection->executeQuery("PRAGMA foreign_keys = OFF");
     }
 
-    $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 1");
+    foreach ($this->dbConnection->getSchemaManager()->listTables() as $table) {
+      $tableName = $table->getName();
+
+      if ($platform === 'mysql') {
+        if (!Strings::startsWith($tableName, '``')) {
+          $tableName = '`' . $tableName . '`';
+        }
+      } else if ($platform === 'sqlite') {
+        if (!Strings::startsWith($tableName, '``')) {
+          $tableName = '"' . $tableName . '"';
+        }
+      }
+
+      if ($platform === "mysql") {
+        $this->dbConnection->executeQuery(sprintf("TRUNCATE %s", $tableName));
+      } else if ($platform === "sqlite") {
+        $this->dbConnection->executeQuery(sprintf("DELETE FROM %s", $tableName));
+      }
+    }
+
+    if ($platform === 'pdo_mysql') {
+      $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 1");
+    } else if ($platform === 'sqlite') {
+      $this->dbConnection->executeQuery("PRAGMA foreign_keys = ON");
+    }
   }
 }

@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\WrongCredentialsException;
+use App\Helpers\BrokerConfig;
 use App\Helpers\FailureHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\EvaluationLoader;
@@ -61,6 +62,12 @@ class BrokerReportsPresenter extends BasePresenter {
   public $referenceSolutionEvaluations;
 
   /**
+   * @var BrokerConfig
+   * @inject
+   */
+  public $brokerConfig;
+
+  /**
    * @param string $id
    * @return mixed
    * @throws NotFoundException
@@ -81,11 +88,10 @@ class BrokerReportsPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
     list($username, $password) = BasicAuthHelper::getCredentials($req);
 
-    $params = $this->getContext()->getParameters();
-    $expectedUsername = Arrays::get($params, ["broker", "auth", "username"], NULL);
-    $expectedPassword = Arrays::get($params, ["broker", "auth", "password"], NULL);
+    $isAuthCorrect = $username === $this->brokerConfig->getAuthUsername()
+      && $password === $this->brokerConfig->getAuthPassword();
 
-    if ($username !== $expectedUsername || $password !== $expectedPassword) {
+    if (!$isAuthCorrect) {
       throw new WrongCredentialsException;
     }
 
