@@ -28,12 +28,13 @@ class ReferenceSolutionEvaluations extends BaseRepository {
    * @return array
    */
   public function find(Exercise $exercise, RuntimeEnvironment $environment, HardwareGroup $hardwareGroup) {
+    $eva = ReferenceSolutionEvaluation::CLASS;
     $query = $this->em->createQuery(
-      "SELECT eva FROM ReferenceSolutionEvaluation eva INNER JOIN eva.referenceSolution ref " .
-      "  INNER JOIN ref.solution sol INNER JOIN sol.runtimeConfig rc " .
+      "SELECT eva FROM $eva eva INNER JOIN eva.referenceSolution ref " .
+      "  INNER JOIN ref.solution sol INNER JOIN sol.solutionRuntimeConfig rc " .
       "WHERE IDENTITY(ref.exercise) = :exercise " .
       "  AND IDENTITY(rc.runtimeEnvironment) = :environment " .
-      "  AND IDENTITY(eva.hardwareGroup) = :hwGroup "
+      "  AND eva.hwGroup = :hwGroup"
     );
 
     $query->setParameters([
