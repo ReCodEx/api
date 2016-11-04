@@ -23,6 +23,7 @@ use App\Model\Repository\UploadedFiles;
 
 use DateTime;
 use Doctrine\Common\Collections\Criteria;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -362,46 +363,46 @@ class AssignmentsPresenter extends BasePresenter {
    * Set resource limits for an assignment and a hardware group
    * @PUT
    * @UserIsAllowed(assignments="set-limits")
-   * @Param(type="post", name="environments", description="A list of resource limits")
+   * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    // environments array holds the same structure as the array in 'actionGetLimits'
-    $environments = $this->getHttpRequest()->getPost("environments");
-
-    if ($environments === NULL || !is_array($environments)) {
-      throw new InvalidArgumentException("environments");
-    }
-
     $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
+
     foreach ($environments as $environment) {
-      $runtimeConfig = $this->runtimeConfigurations->get($environment["environment"]["id"]);
-      if (!in_array($runtimeConfig->getId(), $assignmentRuntimeConfigsIds)) {
-        // runtime config which is not relevant to this assignment was given... omitting
-        continue;
+      $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
+      $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
+      if (!in_array($runtimeId, $assignmentRuntimeConfigsIds)) {
+        throw new ForbiddenRequestException("Cannot configure solution runtime configuration $runtimeId for assignment $id");
       }
 
-      // get job config and its test cases
+      // open the job config and update the limits for all hardware groups
       $path = $runtimeConfig->getJobConfigFilePath();
       $jobConfig = JobConfig\Storage::getJobConfig($path);
 
       // get through all defined limits indexed by hwgroup
-      foreach ($environment["limits"] as $hwGroupLimits) {
-        $tests = $hwGroupLimits["tests"];
-        $limits = array();
-
-        // inside defined limits go through tests and merge limits indexed by task-id
-        foreach ($tests as $test) {
-          $limits = array_merge($limits, $test);
+      $limits = Arrays::get($environment, ["limits"], []);
+      foreach ($limits as $hwGroupLimits) {
+        if (!isset($hwGroupLimits["hardwareGroup"])) {
+          throw new InvalidArgumentException("environments[][limits][][hardwareGroup]");
         }
 
-        $jobConfig->setLimits($hwGroupLimits["hardwareGroup"], $limits);
+        $hardwareGroup = $hwGroupLimits["hardwareGroup"];
+        $tests = Arrays::get($hwGroupLimits, ["tests"], []);
+        $limits = array_reduce($tests, array_merge, []);
+        $jobConfig->setLimits($hardwareGroup, $limits);
       }
 
       // save the new & archive the old config
       JobConfig\Storage::saveJobConfig($jobConfig, $path);
     }
 
-    $this->sendSuccessResponse($assignment);
+    // save the current selected hardware group
+    $hardwareGroup = Arrays::get($environment, ["environment", "hardwareGroup"], $runtimeConfig->getHardwareGroup());
+    $runtimeConfig->setHardwareGroup($hardwareGroup);
+    $this->runtimeConfigurations->persist($runtimeConfig);
+
+    // the same output as get limits
+    $this->forward("getLimits", $id);
   }
 }
