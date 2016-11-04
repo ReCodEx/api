@@ -43,7 +43,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     string $name,
     RuntimeEnvironment $runtimeEnvironment,
     string $jobConfigFilePath,
-    string $hardwareGroup
+    HardwareGroup $hardwareGroup
   ) {
     $this->customName = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;

@@ -4,6 +4,8 @@ App\Model\Entity\Exercise:
             create:
                 - @demoAdmin
         update:
-            - "P ?= NP"
-            - It's time to crack this one already
+            - "Convex hull"
+            - A true classic
             - "moderate"
+        addRuntimeConfig:
+            - @demoRuntimeConfig

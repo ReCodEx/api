@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use \DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -90,7 +91,7 @@ class Exercise implements JsonSerializable
    * Constructor
    */
   private function __construct($name, $version, $description,
-      $difficulty, $solutionRuntimeConfigs, $exercise, User $user) {
+      $difficulty, Collection $solutionRuntimeConfigs, $exercise, User $user) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -135,6 +136,11 @@ class Exercise implements JsonSerializable
       $exercise,
       $user
     );
+  }
+
+  public function addRuntimeConfig(SolutionRuntimeConfig $config)
+  {
+    $this->solutionRuntimeConfigs->add($config);
   }
 
   public function jsonSerialize() {

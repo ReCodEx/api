@@ -56,7 +56,7 @@ class HardwareGroup implements JsonSerializable
     string $description
   ) {
     $this->id = $id;
-    $this->desciption = $description;
+    $this->description = $description;
     $this->availabilityLog = new ArrayCollection;
   }
 

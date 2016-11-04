@@ -1,0 +1,22 @@
+App\Model\Entity\RuntimeEnvironment:
+    CRuntime:
+        __construct:
+            - "C (GCC)"
+            - C
+            - "[c, h]"
+            - "GNU/Linux"
+            - "Good ol' C"
+
+App\Model\Entity\HardwareGroup:
+    demoHWGroup:
+        __construct:
+            - group1
+            - Our only hardware group
+
+App\Model\Entity\SolutionRuntimeConfig:
+    demoRuntimeConfig:
+        __construct:
+            - A demo runtime config
+            - @CRuntime
+            - "job-config.yml"
+            - @demoHWGroup
