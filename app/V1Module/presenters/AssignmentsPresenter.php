@@ -25,6 +25,7 @@ use App\Model\Repository\UploadedFiles;
 
 use DateTime;
 use Doctrine\Common\Collections\Criteria;
+use Nette\InvalidStateException;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -217,8 +218,13 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
-  private function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
-    $jobConfigPath = $assignment->getJobConfigFilePath();
+  private function getDefaultScoreConfig(Assignment $assignment): string {
+    if (count($assignment->solutionRuntimeConfigs) === 0) {
+      throw new InvalidStateException("Assignment has no runtime configurations");
+    }
+
+    $runtimeConfig = $assignment->solutionRuntimeConfigs->first();
+    $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
     try {
       $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
       $tests = array_map(
