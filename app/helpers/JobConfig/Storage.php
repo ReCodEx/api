@@ -4,7 +4,8 @@ namespace App\Helpers\JobConfig;
 
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\JobConfigStorageException;
-use App\Helpers\MemoryCache;
+use Nette\Caching\Cache;
+use Nette\Caching\Storages\MemoryStorage;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -15,16 +16,16 @@ use Symfony\Component\Yaml\Exception\ParseException;
  */
 class Storage {
 
-  /** @var MemoryCache Run-time memory cache for job configurations */
+  /** @var Cache Run-time memory cache for job configurations */
   private static $cache = NULL;
 
   /**
-   * Lazy construction of MemoryCache.
-   * @return MemoryCache
+   * Lazy construction of configuration cache.
+   * @return Cache
    */
-  protected static function getCache(): MemoryCache {
+  protected function getCache(): Cache {
     if (self::$cache === NULL) {
-      self::$cache = new MemoryCache(NULL);
+      self::$cache = new Cache(new MemoryStorage());
     }
 
     return self::$cache;
@@ -35,15 +36,11 @@ class Storage {
    * path and parse it info JobConfig structure.
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
-  public static function getJobConfig(string $path): JobConfig {
-    $cached = self::getCache()->load($path);
-    if ($cached === NULL) {
-      $yml = self::loadConfig($path);
-      $jobConfig = self::parseJobConfig($yml);
-      $cached = self::getCache()->store($path, $jobConfig);
-    }
-
-    return $cached;
+  public function getJobConfig(string $path): JobConfig {
+    return $this->getCache()->load($path, function () use ($path) {
+      $yml = $this->loadConfig($path);
+      return $this->parseJobConfig($yml);
+    });
   }
 
   /**
@@ -54,10 +51,10 @@ class Storage {
    * @return string|NULL                Path of the archived configuration file.
    * @throws JobConfigStorageException In case of any error
    */
-  public static function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
+  public function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
     $archivedConfigPath = NULL;
     if (is_file($path) && $doNotArchive !== TRUE) {
-      $archivedConfigPath = self::archiveJobConfig($path);
+      $archivedConfigPath = $this->archiveJobConfig($path);
     }
 
     // make sure the directory exists and that the file is stored correctly
@@ -71,7 +68,7 @@ class Storage {
     }
 
     // save the config to the cache
-    self::getCache()->store($path, $config);
+    $this->getCache()->save($path, $config);
 
     return $archivedConfigPath;
   }
@@ -83,7 +80,7 @@ class Storage {
    * @return string           New file path
    * @throws JobConfigStorageException  When the file cannot be renamed (within in the same directory)
    */
-  public static function archiveJobConfig(string $path, string $prefix = "arch_") {
+  public function archiveJobConfig(string $path, string $prefix = "arch_") {
     $dirname = dirname($path);
     $filename = pathinfo($path, PATHINFO_FILENAME);
     $ext = pathinfo($path, PATHINFO_EXTENSION);
@@ -107,7 +104,7 @@ class Storage {
    * @throws MalformedJobConfigException In case of file reading error
    * @return string YAML config file contents
    */
-  private static function loadConfig(string $path): string {
+  private function loadConfig(string $path): string {
     $configFileName = realpath($path);
     if ($configFileName === FALSE) {
       throw new MalformedJobConfigException("The configuration file does not exist on the server.");
@@ -127,7 +124,7 @@ class Storage {
    * @throws MalformedJobConfigException In case of YAML parsing error
    * @return array Parsed YAML config
    */
-  public static function parseJobConfig(string $config): JobConfig {
+  public function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {
