@@ -130,9 +130,9 @@ services:
   - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
   - App\Helpers\JobConfig\Storage
   - App\Helpers\SimpleScoreCalculator
-  - App\Helpers\ScoreCalculatorAccessor(
+  - App\Helpers\ScoreCalculatorAccessor({
     simple: @App\Helpers\SimpleScoreCalculator
-  )
+  })
 
   # models - repositories
   - App\Model\Repository\Comments

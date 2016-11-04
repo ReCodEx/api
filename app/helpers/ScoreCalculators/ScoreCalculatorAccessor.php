@@ -11,6 +11,11 @@ class ScoreCalculatorAccessor extends Nette\Object
 {
   private $calculators;
 
+  /**
+   * ScoreCalculatorAccessor constructor.
+   * @param array $calculators array where keys are identifiers of calculators and values are instances of {@link IScoreCalculator}
+   * @throws InvalidArgumentException
+   */
   public function __construct(array $calculators)
   {
     if (count($calculators) === 0) {
