@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
 
 use App\Helpers\MonitorConfig;
+use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
@@ -15,7 +16,6 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
-use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Groups;
@@ -79,6 +79,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $monitorConfig;
+
+  /**
+   * @var ScoreCalculatorAccessor
+   * @inject
+   */
+  public $calculators;
 
   /**
    * Get a list of all assignments
@@ -200,12 +206,12 @@ class AssignmentsPresenter extends BasePresenter {
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
-    $assignment->setScoreConfig(self::getDefaultScoreConfig($assignment));
+    $assignment->setScoreConfig($this->getDefaultScoreConfig($assignment));
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }
 
-  private static function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
+  private function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
     $jobConfigPath = $assignment->getJobConfigFilePath();
     try {
       $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
@@ -213,8 +219,7 @@ class AssignmentsPresenter extends BasePresenter {
         function ($test) { return $test->getId(); },
         $jobConfig->getTests()
       );
-      $defaultCalculatorClass = ScoreCalculatorFactory::getDefaultCalculatorClass();
-      return $defaultCalculatorClass::getDefaultConfig($tests);
+      return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
     } catch (JobConfigLoadingException $e) {
       return "";
     }

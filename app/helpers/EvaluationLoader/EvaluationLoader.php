@@ -8,7 +8,6 @@ use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
-use App\Helpers\ScoreCalculatorFactory;
 
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
@@ -23,12 +22,17 @@ class EvaluationLoader {
   /** @var FileServerProxy Authorized instance providing operations with fileserver */
   private $fileServer;
 
+  /** @var ScoreCalculatorAccessor */
+  private $calculators;
+
   /**
    * Constructor
    * @param FileServerProxy $fsp Configured class instance providing access to remote fileserver
+   * @param ScoreCalculatorAccessor $calculators
    */
-  public function __construct(FileServerProxy $fsp) {
+  public function __construct(FileServerProxy $fsp, ScoreCalculatorAccessor $calculators) {
     $this->fileServer = $fsp;
+    $this->calculators = $calculators;
   }
 
   /**
@@ -43,7 +47,7 @@ class EvaluationLoader {
       return NULL;
     }
 
-    $calculator = ScoreCalculatorFactory::create($submission->getAssignment()->getScoreConfig());
+    $calculator = $this->calculators->getCalculator($submission->assignment->scoreCalculator);
     return new SolutionEvaluation($results, $submission, $calculator);
   }
 

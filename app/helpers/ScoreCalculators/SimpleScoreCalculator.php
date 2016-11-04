@@ -18,35 +18,27 @@ use Symfony\Component\Yaml\Exception\ParseException;
  * but every value will work correctly.
  */
 class SimpleScoreCalculator implements IScoreCalculator {
-
-  /** @var array Associative array of all weights of named tests */
-  private $weights;
-
   /**
-   * Constructor. Parse and validate the configuration.
-   * @param string $scoreConfig Score configuration fetched from database
+   * Function that computes the resulting score from simple YML config and test results score
+   * @param string $scoreConfig
+   * @param array $testResults Results of individual tests, array of test-id => float score
+   * @return float Percentage of total points assigned to the solution
+   * @throws SubmissionEvaluationFailedException
    */
-  public function __construct(string $scoreConfig) {
+  public function computeScore(string $scoreConfig, array $testResults): float {
     if (!self::isScoreConfigValid($scoreConfig)) {
       throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
     }
 
     $config = Yaml::parse($scoreConfig);
-    $this->weights = $config['testWeights'];
-  }
+    $weights = $config['testWeights'];
 
-  /**
-   * Function that computes the resulting score from simple YML config and test results score
-   * @param array $testResults Results of individual tests, array of test-id => float score
-   * @return float Percentage of total points assigned to the solution
-   */
-  public function computeScore(array $testResults): float {
-    if (count($this->weights) != count($testResults)) {
+    if (count($weights) != count($testResults)) {
       throw new \InvalidArgumentException("Score config has different number of test weights than the number of test results.");
     }
 
     foreach ($testResults as $name => $score) {
-      if (!array_key_exists($name, $this->weights)) {
+      if (!array_key_exists($name, $weights)) {
         throw new \InvalidArgumentException("There is no weight for a test with name '$name' in score config.");
       }
     }
@@ -55,7 +47,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
     $sum = 0.0;
     $weightsSum = 0.0;
     foreach ($testResults as $name => $score) {
-      $weight = $this->weights[$name];
+      $weight = $weights[$name];
       $sum += $score * $weight;
       $weightsSum += $weight;
     }
@@ -80,7 +72,6 @@ class SimpleScoreCalculator implements IScoreCalculator {
         }
       } else {
         throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
-        return FALSE;
       }
     } catch (ParseException $e) {
       // throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");

@@ -4,7 +4,6 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\SimpleScoreCalculator;
-use App\Helpers\ScoreCalculatorFactory;
 use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Model\Entity\TestResult;
@@ -20,10 +19,10 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   f: 200";
   private $testNames = ["a", "b", "c", "d", "e", "f"];
 
-  private function getCalc() { return new SimpleScoreCalculator($this->scoreConfig); }
+  private function getCalc() { return new SimpleScoreCalculator(); }
 
   private function computeScore(array $scoreList) {
-    return $this->getCalc()->computeScore($this->getCfg($scoreList));
+    return $this->getCalc()->computeScore($this->scoreConfig, $this->getCfg($scoreList));
   }
 
   private function getCfg(array $scoreList) {
@@ -52,7 +51,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   public function testScoreConfigDifferentWeightCount() {
     $cfg = "testWeights:\n  a: 1";
     $calc = new SimpleScoreCalculator($cfg);
-    Assert::exception(function() use ($calc) { $calc->computeScore([ "a" => 0.5, "b" => 1 ]); }, \InvalidArgumentException::CLASS);
+    Assert::exception(function() use ($calc) { $calc->computeScore($this->scoreConfig, [ "a" => 0.5, "b" => 1 ]); }, \InvalidArgumentException::CLASS);
   }
 
   public function testScoreConfigWrongTestName() {
@@ -74,12 +73,6 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
   public function testScoreConfigValid() {
     Assert::true(SimpleScoreCalculator::isScoreConfigValid($this->scoreConfig));
-  }
-
-  public function testFactory() {
-    $calc = ScoreCalculatorFactory::create($this->scoreConfig);
-    Assert::type(SimpleScoreCalculator::CLASS, $calc);
-    Assert::equal(0.6, $calc->computeScore($this->getCfg([1, 1, 1, 0, 0, 0])));
   }
 }
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers;
+use App\Exceptions\SubmissionEvaluationFailedException;
 
 /**
  * Interface for score computations. Purpose is to merge scores of all
@@ -9,10 +10,12 @@ namespace App\Helpers;
 interface IScoreCalculator {
   /**
    * Compute the score from tests results
+   * @param string $scoreConfig Configuration of the calculator (format depends on implementation)
    * @param array $testResults Array of scores (float) indexed by test ids
    * @return float Percentage of points, that should be assigned to the solution
+   * @throws SubmissionEvaluationFailedException
    */
-  public function computeScore(array $testResults): float;
+  public function computeScore(string $scoreConfig, array $testResults): float;
 
   /**
    * Validate score configuration from database.

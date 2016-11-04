@@ -95,6 +95,11 @@ class Assignment implements JsonSerializable
   protected $solutionRuntimeConfigs;
 
   /**
+   * @ORM\Column(type="string", nullable=true)
+   */
+  protected $scoreCalculator;
+
+  /**
    * @ORM\Column(type="text", nullable=true)
    */
   protected $scoreConfig;
