@@ -3,12 +3,12 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
+use App\Helpers\JobConfig;
 
 class TestAssignmentsPresenter extends Tester\TestCase
 {
   private $adminLogin = "admin@admin.com";
   private $adminPassword = "admin";
-  use MockeryTrait;
 
   /** @var AssignmentsPresenter */
   protected $presenter;
@@ -41,6 +41,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   protected function tearDown()
   {
+    Mockery::close();
+
     if ($this->user->isLoggedIn()) {
       $this->user->logout(TRUE);
     }
@@ -64,6 +66,32 @@ class TestAssignmentsPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
+
+    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    $mockJobConfig = Mockery::mock(JobConfig\TestConfig::class);
+    $baseTaskData = [
+      'task-id' => 'anything',
+      'priority' => 42,
+      'fatal-failure' => false,
+      'cmd' => ['bin' => 'echo'],
+    ];
+
+    $mockJobConfig->shouldReceive("getTests")->withAnyArgs()->andReturn([
+      new JobConfig\TestConfig("test1", [
+        new JobConfig\Tasks\ExecutionTaskType(new JobConfig\Tasks\ExternalTask($baseTaskData + [
+          'type' => 'execution',
+          'sandbox' => ['name' => 'isolate', 'limits' => []]
+        ])),
+        new JobConfig\Tasks\EvaluationTaskType(new JobConfig\Tasks\InternalTask($baseTaskData + [
+          'type' => 'evaluation'
+        ]))
+      ])
+    ]);
+
+    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
+    $mockStorage = Mockery::mock(JobConfig\Storage::class);
+    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig);
+    $this->presenter->jobConfigs = $mockStorage;
 
     $exercise = $this->presenter->exercises->findAll()[0];
     $group = $this->presenter->groups->findAll()[0];
