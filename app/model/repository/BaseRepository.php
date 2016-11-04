@@ -2,6 +2,7 @@
 
 namespace App\Model\Repository;
 
+use App\Exceptions\NotFoundException;
 use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
