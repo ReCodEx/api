@@ -55,6 +55,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $monitorConfig;
 
   /**
+   * @var JobConfig\Storage
+   * @inject
+   */
+  public $jobConfigs;
+
+  /**
    * Get reference solutions for an exercise
    * @GET
    */
@@ -102,7 +108,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
-    $jobConfig = JobConfig\Storage::getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
+    $jobConfig = $this->jobConfigs->getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
     $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);

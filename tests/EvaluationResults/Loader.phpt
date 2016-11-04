@@ -19,15 +19,23 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 
 class TestEvaluationResultsLoader extends Tester\TestCase
 {
+  /**
+   * @var JobConfigStorage
+   */
+  private $jobConfigStorage;
+
+  protected function setUp() {
+    $this->jobConfigStorage = new JobConfigStorage();
+  }
 
   public function testCanLoadSuccessResult() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$successResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
   }
 
   public function testCanLoadInitFailedResult() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$initFailedResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
     Assert::false($results->initOK());
@@ -38,13 +46,13 @@ class TestEvaluationResultsLoader extends Tester\TestCase
   }
 
   public function testCanLoadFailedResult() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$failedResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
   }
 
   public function testRejectsInvalidYaml() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
       Loader::parseResults('
 a:
@@ -55,14 +63,14 @@ b:
   }
 
   public function testCorrectInterpretation() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$successResult, $jobConfig);
     Assert::true($results->initOK());
     Assert::equal(6, count($results->getTestsResults("group1")));
   }
 
   public function testCorrectInterpretationOfFailedSubmission() {
-    $jobConfig = JobConfigStorage::parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$failedResult, $jobConfig);
     Assert::true($results->initOK());
     Assert::equal(6, count($results->getTestsResults("group1")));

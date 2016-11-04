@@ -87,6 +87,12 @@ class AssignmentsPresenter extends BasePresenter {
   public $calculators;
 
   /**
+   * @var JobConfig\Storage
+   * @inject
+   */
+  public $jobConfigs;
+
+  /**
    * Get a list of all assignments
    * @GET
    * @UserIsAllowed(assignments="view-all")
@@ -214,7 +220,7 @@ class AssignmentsPresenter extends BasePresenter {
   private function getDefaultScoreConfig(Assignment $assignment): string { // TODO: solve this with new RuntimeConfig entity
     $jobConfigPath = $assignment->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfig\Storage::getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
       $tests = array_map(
         function ($test) { return $test->getId(); },
         $jobConfig->getTests()
@@ -308,7 +314,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     // get the job config with correct job id
     $path = $runtimeConfiguration->getJobConfigFilePath();
-    $jobConfig = JobConfig\Storage::getJobConfig($path);
+    $jobConfig = $this->jobConfigs->getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
@@ -344,7 +350,7 @@ class AssignmentsPresenter extends BasePresenter {
     // get job config and its test cases
     $environments = $assignment->getSolutionRuntimeConfigs()->map(
       function ($environment) {
-        $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         return [
           "environment" => $environment,
           "hardwareGroups" => $jobConfig->getHardwareGroups(),
@@ -374,11 +380,11 @@ class AssignmentsPresenter extends BasePresenter {
 
     // get job config and its test cases
     $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
-    $jobConfig = JobConfig\Storage::getJobConfig($path);
+    $jobConfig = $this->jobConfigs->getJobConfig($path);
     $jobConfig->setLimits($hardwareGroup, $limits);
 
     // save the new & archive the old config
-    JobConfig\Storage::saveJobConfig($jobConfig, $path);
+    $this->jobConfigs->saveJobConfig($jobConfig, $path);
 
     $this->sendSuccessResponse($jobConfig->getValues());
   }
