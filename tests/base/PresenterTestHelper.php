@@ -27,10 +27,17 @@ class PresenterTestHelper
     return;
   }
 
+  public static function createPresenter(Nette\DI\Container $container, string $class): Nette\Application\UI\Presenter
+  {
+    /** @var $presenter Nette\Application\UI\Presenter */
+    $presenter = $container->getByType($class);
+    $presenter->autoCanonicalize = FALSE;
+    return $presenter;
+  }
+
   public static function login(\Nette\DI\Container $container, string $login, string $password): string
   {
-    $presenter = $container->getByType(\App\V1Module\Presenters\LoginPresenter::class);
-    $presenter->autoCanonicalize = FALSE;
+    $presenter = self::createPresenter($container, \App\V1Module\Presenters\LoginPresenter::class);
     $response = $presenter->run(new \Nette\Application\Request("V1:Login", "POST", ["action" => "default"], ["username" => $login, "password" => $password]));
     $payload = $response->getPayload();
     return Arrays::get($payload, ["payload", "accessToken"]);
