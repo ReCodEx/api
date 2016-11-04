@@ -98,6 +98,9 @@ class TestCommentsPresenter extends Tester\TestCase
     Assert::false($comment->isPrivate);
     Assert::equal("some comment text", $comment->text);
     Assert::equal("mainThread", $comment->commentThread->id);
+
+    // Make sure the assignment was persisted
+    Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
   }
 
   public function testAddCommentIntoNonexistingThread()

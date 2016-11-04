@@ -71,7 +71,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
   /**
    * Check if a password is strong enough
    * @POST
-   * @Param(type="post", name="password", description="the password to be checked")
+   * @Param(type="post", name="password", description="The password to be checked")
    */
   public function actionValidatePasswordStrength() {
     $req = $this->getHttpRequest();
