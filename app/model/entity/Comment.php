@@ -67,7 +67,7 @@ class Comment implements JsonSerializable
     ];
   }
 
-  public static function createComment(CommentThread $thread, User $user, $text, $isPrivate = FALSE) {
+  public static function createComment(CommentThread $thread, User $user, string $text, bool $isPrivate = FALSE) {
     $comment = new Comment;
     $comment->commentThread = $thread;
     $comment->user = $user;

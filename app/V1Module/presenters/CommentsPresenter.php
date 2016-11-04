@@ -57,8 +57,8 @@ class CommentsPresenter extends BasePresenter {
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);
     $user = $this->users->findCurrentUserOrThrow();
-    $text = $this->getHttpRequest()->getPost("text");
-    $isPrivate = $this->getHttpRequest()->getPost("isPrivate") === "yes";
+    $text = $this->getRequest()->getPost("text");
+    $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
     $comment = Comment::createComment($thread, $user, $text, $isPrivate);
 
     $this->comments->persistComment($comment);

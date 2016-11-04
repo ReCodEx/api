@@ -1,0 +1,15 @@
+App\Model\Entity\CommentThread:
+    mainThread:
+        __construct:
+            createThread: [ "mainThread" ]
+    emptyThread:
+        __construct:
+            createThread: [ "emptyThread" ]
+
+App\Model\Entity\Comment:
+    privateComment:
+        __construct:
+            createComment: [ @mainThread, @demoUser1, "comment text", TRUE ]
+    publicComment:
+        __construct:
+            createComment: [ @mainThread, @demoUser1, "public text in main thread", FALSE ]

@@ -11,6 +11,8 @@ App\Model\Entity\Instance:
 App\Model\Entity\User:
     demoAdmin:
         __construct: ["admin@admin.com", "<firstName()>", "<lastName()>", "", "", @superadmin, @demoInstance]
+    "demoUser{1..2}":
+        __construct: ["user<current()>@example.com", "<firstName()>", "<lastName()>", "", "", @student, @demoInstance]
 
 App\Model\Entity\Login:
     demoAdminLogin:
@@ -19,6 +21,12 @@ App\Model\Entity\Login:
                 - @demoAdmin
                 - "admin@admin.com"
                 - "admin"
+    "demoUserLogin{1..2}":
+        __construct:
+            createLogin:
+                - "@demoUser<current()>"
+                - "user<current()>@example.com"
+                - "password<current()>"
 
 App\Model\Entity\Licence:
     demoLicense:
