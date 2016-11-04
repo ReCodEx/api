@@ -131,13 +131,13 @@ class AssignmentsPresenter extends BasePresenter {
         throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $assignment->setName($req->getPost("name"));
     $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
-    $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline", 0)));
+    $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));
     $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));
-    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("secondMaxPoints", 0));
+    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("secondMaxPoints") ?: 0);
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
@@ -184,7 +184,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="groupId", description="Identifier of the group")
    */
   public function actionCreate() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $exerciseId = $req->getPost("exerciseId");
     $groupId = $req->getPost("groupId");
 
@@ -276,7 +276,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
 
     $loggedInUser = $this->users->findCurrentUserOrThrow();
     $userId = $req->getPost("userId");
@@ -290,7 +290,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     // detect the runtime configuration if needed
     $files = $this->files->findAllById($req->getPost("files"));
-    $runtimeConfigurationId = $req->getPost("runtimeConfigurationId", NULL);
+    $runtimeConfigurationId = $req->getPost("runtimeConfigurationId");
     $runtimeConfiguration = $runtimeConfigurationId === NULL
       ? $this->runtimeConfigurations->detectOrThrow($assignment, $files)
       : $this->runtimeConfigurations->findOrThrow($runtimeConfigurationId);
@@ -359,7 +359,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $limits = $this->getHttpRequest()->getPost("limits");
+    $limits = $this->getRequest()->getPost("limits");
 
     if ($limits === NULL || !is_array($limits)) {
       throw new InvalidArgumentException("limits");
