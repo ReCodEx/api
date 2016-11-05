@@ -9,3 +9,13 @@ App\Model\Entity\Exercise:
             - "moderate"
         addRuntimeConfig:
             - @demoRuntimeConfig
+    "sampleExercise_{alfa, beta, alfred, aloha}":
+        __construct:
+            create:
+                - @demoAdmin
+        update:
+            - "<current()> exercise"
+            - A true classic
+            - "easy"
+        addRuntimeConfig:
+            - @demoRuntimeConfig

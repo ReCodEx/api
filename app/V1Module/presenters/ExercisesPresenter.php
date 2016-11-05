@@ -51,29 +51,27 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="name")
    * @Param(type="post", name="description")
-   * @Param(type="post", name="assignment")
    * @Param(type="post", name="difficulty")
    */
   public function actionUpdateDetail(string $id) { // TODO: this has to be change to reflect localizedAssignment structures
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $name = $req->getPost("name");
     $description = $req->getPost("description");
-    $assignment = $req->getPost("assignment");
     $difficulty = $req->getPost("difficulty");
 
     // check if user can modify requested exercise
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
-    if ($exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user)) {
       throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // save changes to database
-    $exercise->update($name, $description, $assignment, $difficulty);
+    $exercise->update($name, $description, $difficulty);
     $this->exercises->persist($exercise);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse();
+    $this->sendSuccessResponse($exercise);
   }
 
   /**

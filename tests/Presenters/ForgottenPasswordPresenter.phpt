@@ -102,7 +102,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     Assert::type("int", $result['payload']['passwordScore']);
   }
 
-  public function testPasswordReset()
+  public function testCorrectPasswordReset()
   {
     // issue token for password change in proper scope
     // first log in regulary to find out user ID
@@ -123,6 +123,15 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
+  }
+
+  public function testWrongPasswordReset()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
+    Assert::exception(function() use ($request) { $this->presenter->run($request); }, App\Exceptions\ForbiddenRequestException::class);
   }
 }
 
