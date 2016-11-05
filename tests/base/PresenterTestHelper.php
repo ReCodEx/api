@@ -29,9 +29,13 @@ class PresenterTestHelper
 
   public static function createPresenter(Nette\DI\Container $container, string $class): Nette\Application\UI\Presenter
   {
+    $names = $container->findByType($class);
+    $name = reset($names);
+
     /** @var $presenter Nette\Application\UI\Presenter */
-    $presenter = $container->getByType($class);
+    $presenter = $container->createService($name);
     $presenter->autoCanonicalize = FALSE;
+
     return $presenter;
   }
 
