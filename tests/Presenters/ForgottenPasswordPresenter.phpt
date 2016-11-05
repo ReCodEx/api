@@ -8,7 +8,6 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
 {
   private $userLogin = "user2@example.com";
   private $userPassword = "password2";
-  use MockeryTrait;
 
   /** @var ForgottenPasswordPresenter */
   protected $presenter;
@@ -22,6 +21,9 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
   /** @var Nette\Security\User */
   private $user;
 
+  /** @var App\Security\AccessManager */
+  private $accessManager;
+
   private $originalHttpRequest;
 
   public function __construct()
@@ -30,13 +32,41 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $this->container = $container;
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
+    $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
     $this->originalHttpRequest = $this->container->getService("http.request");
   }
 
   protected function setUp()
   {
     PresenterTestHelper::fillDatabase($this->container);
+    $this->presenter = PresenterTestHelper::createPresenter($this->container, ForgottenPasswordPresenter::class);
+  }
 
+  protected function tearDown()
+  {
+    if ($this->user->isLoggedIn()) {
+      $this->user->logout(TRUE);
+    }
+    Mockery::close();
+  }
+
+  public function testResetRequest()
+  {
+    $this->resetCustomSetup();
+
+    $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'default'], ['username' => $this->userLogin]);
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    $this->resetCustomTeardown();
+  }
+
+  private function resetCustomSetup()
+  {
     $this->container->removeService("http.request");
     $mockRequest = Mockery::mock($this->originalHttpRequest)  // create proxied partial mock
         ->shouldDeferMissing()
@@ -55,23 +85,10 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
         ->getMock();
   }
 
-  protected function tearDown()
+  private function resetCustomTeardown()
   {
-    if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
-    }
-    Mockery::close();
-  }
-
-  public function testResetRequest()
-  {
-    $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'default'], ['username' => $this->userLogin]);
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
+    $this->container->removeService("http.request");
+    $this->container->addService("http.request", $this->originalHttpRequest);
   }
 
   public function testPasswordStrength()
@@ -83,6 +100,29 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::type("int", $result['payload']['passwordScore']);
+  }
+
+  public function testPasswordReset()
+  {
+    // issue token for password change in proper scope
+    // first log in regulary to find out user ID
+    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $userId = $this->accessManager->getUser($this->accessManager->decodeToken($token))->getId();
+
+    // create fake user entity to return the right user ID
+    $userMock = Mockery::mock('\App\Model\Entity\User')->shouldReceive('getId')->withNoArgs()->andReturn($userId)->getMock();
+    // issue token for changing password
+    $token = $this->accessManager->issueToken($userMock, [ \App\Security\AccessToken::SCOPE_CHANGE_PASSWORD ], 600);
+    // login with obtained token
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
   }
 }
 
