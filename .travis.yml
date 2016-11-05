@@ -8,6 +8,11 @@ before_install:
   - php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"
   - echo "extension=ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension=ldap.so" >> test.ini
+  - echo "zend_extension=xdebug.so" >> test.ini
+  - echo "xdebug.remote_enable=on" >> test.ini
+  - echo "xdebug.remote_host=127.0.0.1" >> test.ini
+  - echo "xdebug.remote_port=9000" >> test.ini
+  - echo "xdebug.remote_handler=dbgp" >> test.ini
 
 install:
   - composer install --no-interaction --prefer-source
