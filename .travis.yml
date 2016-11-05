@@ -8,9 +8,18 @@ before_install:
   - php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"
   - echo "extension=ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension=ldap.so" >> test.ini
+  - echo "zend_extension=xdebug.so" >> test.ini
+  - echo "xdebug.remote_enable=on" >> test.ini
+  - echo "xdebug.remote_host=127.0.0.1" >> test.ini
+  - echo "xdebug.remote_port=9000" >> test.ini
+  - echo "xdebug.remote_handler=dbgp" >> test.ini
 
 install:
   - composer install --no-interaction --prefer-source
+  - travis_retry wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
 
 script:
-  - ./vendor/bin/tester -c test.ini tests
+  - ./vendor/bin/tester -c test.ini tests --coverage ./coverage.xml --coverage-src ./app
+
+after_script:
+  - php /tmp/coveralls.phar --verbose --config tests/.coveralls.yml || true
