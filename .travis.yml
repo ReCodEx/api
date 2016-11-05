@@ -11,6 +11,10 @@ before_install:
 
 install:
   - composer install --no-interaction --prefer-source
+  - travis_retry wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
 
 script:
-  - ./vendor/bin/tester -c test.ini tests
+  - ./vendor/bin/tester -c test.ini tests --coverage ./coverage.xml --coverage-src ./app TESTER_RUNTIME="phpdbg"
+
+after_script:
+  - php /tmp/coveralls.phar --verbose --config tests/.coveralls.yml || true
