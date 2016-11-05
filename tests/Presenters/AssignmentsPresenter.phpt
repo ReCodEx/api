@@ -68,7 +68,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::setToken($this->presenter, $token);
 
     /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
-    $mockJobConfig = Mockery::mock(JobConfig\TestConfig::class);
+    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
     $baseTaskData = [
       'task-id' => 'anything',
       'priority' => 42,
@@ -78,13 +78,13 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $mockJobConfig->shouldReceive("getTests")->withAnyArgs()->andReturn([
       new JobConfig\TestConfig("test1", [
-        new JobConfig\Tasks\ExecutionTaskType(new JobConfig\Tasks\ExternalTask($baseTaskData + [
+        new JobConfig\Tasks\ExternalTask($baseTaskData + [
           'type' => 'execution',
           'sandbox' => ['name' => 'isolate', 'limits' => []]
-        ])),
-        new JobConfig\Tasks\EvaluationTaskType(new JobConfig\Tasks\InternalTask($baseTaskData + [
+        ]),
+        new JobConfig\Tasks\InternalTask($baseTaskData + [
           'type' => 'evaluation'
-        ]))
+        ])
       ])
     ]);
 
