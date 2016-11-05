@@ -156,6 +156,7 @@ class Instance implements JsonSerializable
     $instance->description = $description;
     $instance->isOpen = $isOpen;
     $instance->isAllowed = TRUE; //@todo - find out who should set this and how
+    $instance->needsLicence = TRUE;
     $now = new \DateTime;
     $instance->createdAt = $now;
     $instance->updatedAt = $now;

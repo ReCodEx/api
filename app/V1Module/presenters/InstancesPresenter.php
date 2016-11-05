@@ -60,7 +60,7 @@ class InstancesPresenter extends BasePresenter {
 
   /**
    * Update an instance
-   * @PUT
+   * @POST
    * @LoggedIn
    * @UserIsAllowed(instances="update")
    * @Param(type="post", name="name", validation="string:2..", required=FALSE, description="Name of the instance")
@@ -92,7 +92,8 @@ class InstancesPresenter extends BasePresenter {
   public function actionDeleteInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
     $this->instances->remove($instance);
-    $this->sendSuccessResponse([]);
+    $this->instances->flush();
+    $this->sendSuccessResponse("OK");
   }
 
   /**

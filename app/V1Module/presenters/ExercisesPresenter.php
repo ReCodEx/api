@@ -81,7 +81,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionUploadJobConfig(string $id) {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
-    if ($exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user)) {
       throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 

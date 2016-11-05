@@ -147,7 +147,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix", "Instances:");
     $router[] = new PostRoute("$prefix", "Instances:createInstance");
     $router[] = new GetRoute("$prefix/<id>", "Instances:detail");
-    $router[] = new PutRoute("$prefix/<id>", "Instances:updateInstance");
+    $router[] = new PostRoute("$prefix/<id>", "Instances:updateInstance");
     $router[] = new DeleteRoute("$prefix/<id>", "Instances:deleteInstance");
     $router[] = new GetRoute("$prefix/<id>/groups", "Instances:groups");
     $router[] = new GetRoute("$prefix/<id>/users", "Instances:users");
