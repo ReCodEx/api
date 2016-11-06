@@ -151,14 +151,38 @@ class InstancesPresenter extends BasePresenter {
    * @LoggedIn
    * @UserIsAllowed(instances="add-licence")
    * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
-   * @Param(type="post", name="validUntil", validation="datetime", description="Expiration date of the license")
+   * @Param(type="post", name="validUntil", validation="string", description="Expiration date of the license")
    */
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
     $instance = $this->instances->findOrThrow($id);
-    $licence = Licence::createLicence($params->note, $params->validUntil, $instance);
+    $validUntil = new \DateTime($params->validUntil);
+    $licence = Licence::createLicence($params->note, $validUntil, $instance);
     $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);
+  }
+
+  /**
+   * Update existing license for an instance
+   * @POST
+   * @LoggedIn
+   * @UserIsAllowed(instances="update-licence")
+   * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
+   * @Param(type="post", name="validUntil", validation="string", description="Expiration date of the license")
+   * @Param(type="post", name="isValid", validation="bool", required="false", description="Administrator switch to toggle licence validity")
+   */
+  public function actionUpdateLicence(string $id, string $licenceId) {
+    // TODO:
+  }
+
+  /**
+   * Remove existing license for an instance
+   * @DELETE
+   * @LoggedIn
+   * @UserIsAllowed(instances="remove-licence")
+   */
+  public function actionDeleteLicence(string $id, string $licenceId) {
+    // TODO:
   }
 
 }

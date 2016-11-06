@@ -24,7 +24,6 @@ class User implements JsonSerializable
     Role $role,
     Instance $instance
   ) {
-    $this->instance = $instance;
     $this->firstName = $firstName;
     $this->lastName = $lastName;
     $this->degreesBeforeName = $degreesBeforeName;
@@ -37,6 +36,8 @@ class User implements JsonSerializable
     $this->exercises = new ArrayCollection;
     $this->role = $role;
     $this->createdAt = new \DateTime;
+    $this->instance = $instance;
+    $instance->addMember($this);
   }
 
   /**
@@ -98,7 +99,7 @@ class User implements JsonSerializable
   protected $createdAt;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Instance")
+   * @ORM\ManyToOne(targetEntity="Instance", inversedBy="members")
    */
   protected $instance;
 

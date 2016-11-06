@@ -121,6 +121,10 @@ class Instance implements JsonSerializable
     }
   }
 
+  public function addMember(User $user) {
+    $this->members->add($user);
+  }
+
   /**
    * @ORM\OneToMany(targetEntity="Group", mappedBy="instance")
    */
@@ -163,6 +167,7 @@ class Instance implements JsonSerializable
     $instance->admin = $admin;
     $instance->licences = new ArrayCollection;
     $instance->groups = new ArrayCollection;
+    $instance->members = new ArrayCollection;
     return $instance;
   }
 

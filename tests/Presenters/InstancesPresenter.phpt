@@ -136,6 +136,121 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal("OK", $result['payload']);
     Assert::equal(1, count($this->presenter->instances->findAll()));
   }
+
+  public function testGetGroups()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+
+    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'groups', 'id' => $instance->id]);
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $groups = $result['payload'];
+    Assert::equal(1, count($groups));
+    Assert::equal("Demo group", array_pop($groups)->name);
+  }
+
+  public function testGetUsers()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+
+    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'users', 'id' => $instance->id]);
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal($this->presenter->instances->get($instance->id)->getMembers(NULL)->getValues(), $result['payload']);
+  }
+
+  public function testGetLicences()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+
+    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'licences', 'id' => $instance->id]);
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal($this->presenter->instances->get($instance->id)->getLicences()->getValues(), $result['payload']);
+  }
+
+  public function testCreateLicences()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+
+    $request = new Nette\Application\Request('V1:Instances',
+        'POST',
+        ['action' => 'createLicence', 'id' => $instance->id],
+        ['note' => 'Another year', 'validUntil' => '2017-05-12 13:02:56']
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $licence = $result['payload'];
+    Assert::equal($instance->id, $licence->instance->id);
+    Assert::equal('Another year', $licence->note);
+    Assert::equal(new DateTime('2017-05-12 13:02:56'), $licence->validUntil);
+  }
+
+  public function testUpdateLicences()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $request = new Nette\Application\Request('V1:Instances',
+        'POST',
+        ['action' => 'updateLicence', 'id' => ''],
+        ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => 'false']
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $licence = $result['payload'];
+    Assert::equal('Changed description', $licence->note);
+    Assert::equal(new DateTime('2020-01-01 13:02:56'), $licence->validUntil);
+    Assert::false($licence->isValid);
+  }
+
+  public function testRemoveLicences()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $request = new Nette\Application\Request('V1:Instances',
+        'DELETE',
+        ['action' => 'deleteLicence', 'id' => '']
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+  }
 }
 
 $testCase = new TestInstancesPresenter();
