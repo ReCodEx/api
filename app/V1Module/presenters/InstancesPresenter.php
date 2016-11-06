@@ -9,6 +9,7 @@ use App\Model\Repository\Instances;
 use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Licence;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for instance manipulation
@@ -167,12 +168,26 @@ class InstancesPresenter extends BasePresenter {
    * @POST
    * @LoggedIn
    * @UserIsAllowed(instances="update-licence")
-   * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
-   * @Param(type="post", name="validUntil", validation="string", description="Expiration date of the license")
-   * @Param(type="post", name="isValid", validation="bool", required="false", description="Administrator switch to toggle licence validity")
+   * @Param(type="post", name="note", validation="string:2..", required=FALSE, description="A note for users or administrators")
+   * @Param(type="post", name="validUntil", validation="string", required=FALSE, description="Expiration date of the license")
+   * @Param(type="post", name="isValid", validation="bool", required=FALSE, description="Administrator switch to toggle licence validity")
    */
-  public function actionUpdateLicence(string $id, string $licenceId) {
-    // TODO:
+  public function actionUpdateLicence(string $licenceId) {
+    $params = $this->parameters;
+    $licence = $this->licences->findOrThrow($licenceId);
+
+    if (isset($params->note)) {
+      $licence->note = $params->note;
+    }
+    if (isset($params->validUntil)) {
+      $licence->validUntil = new \DateTime($params->validUntil);
+    }
+    if (isset($params->isValid)) {
+      $licence->isValid = filter_var($params->isValid, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    $this->licences->persist($licence);
+    $this->sendSuccessResponse($licence);
   }
 
   /**
@@ -181,8 +196,11 @@ class InstancesPresenter extends BasePresenter {
    * @LoggedIn
    * @UserIsAllowed(instances="remove-licence")
    */
-  public function actionDeleteLicence(string $id, string $licenceId) {
-    // TODO:
+  public function actionDeleteLicence(string $licenceId) {
+    $licence = $this->licences->findOrThrow($licenceId);
+    $this->licences->remove($licence);
+    $this->licences->flush();
+    $this->sendSuccessResponse("OK");
   }
 
 }

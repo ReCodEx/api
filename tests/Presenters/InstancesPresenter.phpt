@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\V1Module\Presenters\InstancesPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
+use App\Model\Entity\Licence;
 
 /**
  * @httpCode any
@@ -190,7 +191,7 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal($this->presenter->instances->get($instance->id)->getLicences()->getValues(), $result['payload']);
   }
 
-  public function testCreateLicences()
+  public function testCreateLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
@@ -214,42 +215,63 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(new DateTime('2017-05-12 13:02:56'), $licence->validUntil);
   }
 
-  public function testUpdateLicences()
+  public function testUpdateLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
 
+    // create testing licence
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+    $newLicence = Licence::createLicence('Another year', new \DateTime('2017-05-12 13:02:56'), $instance);
+    $this->presenter->licences->persist($newLicence);
+
+    // actual test to update the licence
     $request = new Nette\Application\Request('V1:Instances',
         'POST',
-        ['action' => 'updateLicence', 'id' => ''],
+        ['action' => 'updateLicence', 'licenceId' => $newLicence->id],
         ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => 'false']
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
 
+    // check invariants
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     $licence = $result['payload'];
     Assert::equal('Changed description', $licence->note);
     Assert::equal(new DateTime('2020-01-01 13:02:56'), $licence->validUntil);
     Assert::false($licence->isValid);
+    Assert::equal($newLicence->note, $licence->note);
   }
 
-  public function testRemoveLicences()
+  public function testRemoveLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
 
+    // create testing licence
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+    $newLicence = Licence::createLicence('Another year', new \DateTime('2017-05-12 13:02:56'), $instance);
+    $this->presenter->licences->persist($newLicence);
+
+    // check there are two licences for this instance
+    Assert::equal(2, $instance->licences->count());
+
+    // perform delete request
     $request = new Nette\Application\Request('V1:Instances',
         'DELETE',
-        ['action' => 'deleteLicence', 'id' => '']
+        ['action' => 'deleteLicence', 'licenceId' => $newLicence->id]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
 
+    // check invariants
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
+    Assert::equal(1, $instance->licences->count());
   }
 }
 
