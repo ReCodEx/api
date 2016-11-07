@@ -53,7 +53,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -68,7 +68,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'al']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -85,7 +85,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'detail', 'id' => $exercise->id]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -106,7 +106,7 @@ class TestExercisesPresenter extends Tester\TestCase
       ['name' => 'new name', 'description' => 'new descr', 'difficulty' => 'super hard']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -122,7 +122,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'create']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -139,7 +139,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'forkFrom', 'id' => $exercise->id]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);

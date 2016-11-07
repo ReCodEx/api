@@ -144,11 +144,15 @@ class User implements JsonSerializable
   protected function findGroupMemberships($type) {
     $filter = Criteria::create()
             ->where(Criteria::expr()->eq("type", $type));
-    return $this->memberships->matching($filter);
+    return $this->memberships->matching($filter)->getValues();
   }
 
   public function findGroupMembershipsAsSupervisor() {
     return $this->findGroupMemberships(GroupMembership::TYPE_SUPERVISOR);
+  }
+
+  public function findGroupMembershipsAsStudent() {
+    return $this->findGroupMemberships(GroupMembership::TYPE_STUDENT);
   }
 
   protected function addMembership(Group $group, string $type) {

@@ -79,9 +79,11 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="A password for authentication")
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
+   * @Param(type="post", name="degreesBeforeName", required=false, validation="string:1..", description="Degrees which is placed before user name")
+   * @Param(type="post", name="degreesAfterName", required=false, validation="string:1..", description="Degrees which is placed after user name")
    */
   public function actionCreateAccount() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
 
     // check if the email is free
     $email = $req->getPost("email");
@@ -95,12 +97,15 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("Such instance does not exist.");
     }
 
+    $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
+    $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
+
     $user = new User(
       $email,
       $req->getPost("firstName"),
       $req->getPost("lastName"),
-      $req->getPost("degreesBeforeName", ""),
-      $req->getPost("degreesAfterName", ""),
+      $degreesBeforeName,
+      $degreesAfterName,
       $role,
       $instance
     );
@@ -125,7 +130,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
    */
   public function actionCreateAccountExt() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $serviceId = $req->getPost("serviceId");
 
     $role = $this->roles->get(Role::STUDENT);
@@ -166,7 +171,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="password", description="Authentication password")
    */
   public function actionValidateRegistrationData() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $email = $req->getPost("email");
     $emailParts = explode("@", $email);
     $password = $req->getPost("password");
@@ -201,9 +206,11 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", validation="string:1..", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", validation="string:1..", description="Degrees after name")
+   * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $email = $req->getPost("email");
     $firstName = $req->getPost("firstName");
     $lastName = $req->getPost("lastName");

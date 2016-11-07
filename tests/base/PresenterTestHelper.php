@@ -4,6 +4,12 @@ use Nette\Utils\Arrays;
 
 class PresenterTestHelper
 {
+  const ADMIN_LOGIN = "admin@admin.com";
+  const ADMIN_PASSWORD = "admin";
+
+  const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
+  const STUDENT_GROUP_MEMBER_PASSWORD = "";
+
   public static function prepareDatabase(\Nette\DI\Container $container): Kdyby\Doctrine\EntityManager
   {
     $em = $container->getByType(Kdyby\Doctrine\EntityManager::class);
@@ -24,6 +30,9 @@ class PresenterTestHelper
 
     $command->run($input, $output);
 
+    // destroy EntityManager to safely save all work and start with new one on demand
+    $container->getByType(Kdyby\Doctrine\EntityManager::class)->clear();
+
     return;
   }
 
@@ -43,6 +52,13 @@ class PresenterTestHelper
   {
     $presenter = self::createPresenter($container, \App\V1Module\Presenters\LoginPresenter::class);
     $response = $presenter->run(new \Nette\Application\Request("V1:Login", "POST", ["action" => "default"], ["username" => $login, "password" => $password]));
+    $payload = $response->getPayload();
+    return Arrays::get($payload, ["payload", "accessToken"]);
+  }
+
+  public static function loginDefaultAdmin(\Nette\DI\Container $container): string {
+    $presenter = self::createPresenter($container, \App\V1Module\Presenters\LoginPresenter::class);
+    $response = $presenter->run(new \Nette\Application\Request("V1:Login", "POST", ["action" => "default"], ["username" => self::ADMIN_LOGIN, "password" => self::ADMIN_PASSWORD]));
     $payload = $response->getPayload();
     return Arrays::get($payload, ["payload", "accessToken"]);
   }

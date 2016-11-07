@@ -56,7 +56,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -76,7 +76,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => 'true']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(201, $result['code']);
@@ -100,7 +100,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['name' => 'Frankenstein UNI', 'description' => 'Edited intence', 'isOpen' => 'true']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -130,7 +130,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['action' => 'deleteInstance', 'id' => $newInstanceId]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -148,7 +148,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'groups', 'id' => $instance->id]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -167,7 +167,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'users', 'id' => $instance->id]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -184,7 +184,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'licences', 'id' => $instance->id]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -205,7 +205,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['note' => 'Another year', 'validUntil' => '2017-05-12 13:02:56']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -233,7 +233,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['note' => 'Changed description', 'validUntil' => '2020-01-01 13:02:56', 'isValid' => 'false']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     // check invariants
     $result = $response->getPayload();
@@ -265,7 +265,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['action' => 'deleteLicence', 'licenceId' => $newLicence->id]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     // check invariants
     $result = $response->getPayload();
