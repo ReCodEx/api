@@ -56,7 +56,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'default'], ['username' => $this->userLogin]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -95,7 +95,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
   {
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'validatePasswordStrength'], ['password' => $this->userPassword]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
     
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -118,7 +118,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
     
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);

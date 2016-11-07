@@ -50,7 +50,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'mainThread']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -70,7 +70,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'emptyThread']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -90,7 +90,7 @@ class TestCommentsPresenter extends Tester\TestCase
       ['text' => 'some comment text', 'isPrivate' => 'false']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -115,7 +115,7 @@ class TestCommentsPresenter extends Tester\TestCase
       ['text' => 'some comment text', 'isPrivate' => 'false']
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -123,7 +123,7 @@ class TestCommentsPresenter extends Tester\TestCase
     Assert::equal("dummyThreadId", $comment->commentThread->id);
   }
 
-  public function testTooglePrivate()
+  public function testTogglePrivate()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
@@ -139,7 +139,7 @@ class TestCommentsPresenter extends Tester\TestCase
       ['action' => 'togglePrivate', 'threadId' => 'mainThread', 'commentId' => $exampleComment->id]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
