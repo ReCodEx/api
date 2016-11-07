@@ -116,7 +116,7 @@ class SolutionEvaluation implements JsonSerializable
    * @param  string              $hwGroup     Hardware group (if submission is not specified)
    */
   public function __construct(EvaluationResults $results, Submission $submission = NULL, IScoreCalculator $calculator = NULL, string $hwGroup = NULL) {
-    if ($submission == NULL && $hwGroup == NULL) {
+    if ($submission === NULL && $hwGroup === NULL) {
       throw new SubmissionEvaluationFailedException("SolutionEvaluation entity needs hwGroup - from submission or directly, but none specified.");
     }
 
@@ -130,18 +130,18 @@ class SolutionEvaluation implements JsonSerializable
     $hardwareGroup = "";
     $this->testResults = new ArrayCollection;
 
-    if ($submission != NULL) {
+    if ($submission !== NULL) {
       $submission->setEvaluation($this);
       $maxPoints = $submission->getMaxPoints();
       $hardwareGroup = $submission->getSolution()->getHardwareGroupId();
     }
-    if ($hwGroup != NULL) {
+    if ($hwGroup !== NULL) {
       $hardwareGroup = $hwGroup;
     }
 
     $this->setTestResults($results->getTestsResults($hardwareGroup));
-    if ($calculator != NULL && !$this->initFailed) {
-      $this->score = $calculator->computeScore($this->scores);
+    if ($submission !== NULL && $calculator !== NULL && !$this->initFailed) {
+      $this->score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $this->scores);
     }
 
     // calculate the score and points

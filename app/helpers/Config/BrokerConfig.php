@@ -13,8 +13,8 @@ class BrokerConfig
 
   public function __construct($config)
   {
-    $this->authUsername = Arrays::get($config, "auth", "username");
-    $this->authPassword = Arrays::get($config, "auth", "password");
+    $this->authUsername = Arrays::get($config, ["auth", "username"]);
+    $this->authPassword = Arrays::get($config, ["auth", "password"]);
   }
 
   public function getAuthUsername()

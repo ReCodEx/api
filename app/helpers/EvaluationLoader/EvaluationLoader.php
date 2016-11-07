@@ -25,14 +25,19 @@ class EvaluationLoader {
   /** @var ScoreCalculatorAccessor */
   private $calculators;
 
+  /** @var JobConfigStorage */
+  private $jobConfigStorage;
+
   /**
    * Constructor
    * @param FileServerProxy $fsp Configured class instance providing access to remote fileserver
    * @param ScoreCalculatorAccessor $calculators
+   * @param JobConfigStorage
    */
-  public function __construct(FileServerProxy $fsp, ScoreCalculatorAccessor $calculators) {
+  public function __construct(FileServerProxy $fsp, ScoreCalculatorAccessor $calculators, JobConfigStorage $storage) {
     $this->fileServer = $fsp;
     $this->calculators = $calculators;
+    $this->jobConfigStorage = $storage;
   }
 
   /**
@@ -46,8 +51,11 @@ class EvaluationLoader {
     if (!$results) {
       return NULL;
     }
-
-    $calculator = $this->calculators->getCalculator($submission->assignment->scoreCalculator);
+    if ($submission->assignment->scoreCalculator) {
+      $calculator = $this->calculators->getCalculator();
+    } else {
+      $calculator = $this->calculators->getDefaultCalculator();
+    }
     return new SolutionEvaluation($results, $submission, $calculator);
   }
 
@@ -63,7 +71,7 @@ class EvaluationLoader {
 
     $jobConfigPath = $submission->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
       $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
       $resultsYml = $this->fileServer->downloadResults($submission->resultsUrl);
       return $resultsYml === NULL
@@ -103,7 +111,7 @@ class EvaluationLoader {
 
     $jobConfigPath = $referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath();
     try {
-      $jobConfig = JobConfigStorage::getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
       $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $referenceSolution->getId());
       $resultsYml = $this->fileServer->downloadResults($referenceSolution->resultsUrl);
       return $resultsYml === NULL
