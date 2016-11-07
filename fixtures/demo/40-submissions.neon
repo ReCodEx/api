@@ -1,0 +1,11 @@
+App\Model\Entity\Submission:
+    firstSubmission:
+        __construct:
+            createSubmission:
+                - "Random note"
+                - @demoAssignment
+                - @submitUser1
+                - @submitUser1
+                - []
+                - @demoRuntimeConfig
+                - false

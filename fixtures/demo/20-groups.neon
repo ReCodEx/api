@@ -18,3 +18,15 @@ App\Model\Entity\User:
             - @demoInstance
         makeStudentOf:
             - @demoGroup
+
+    "submitUser1":
+        __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", @student, @demoInstance]
+        makeStudentOf: [@demoGroup]
+
+App\Model\Entity\Login:
+    submitUser1Login:
+        __construct:
+            createLogin:
+                - "@submitUser1"
+                - "submitUser1@example.com"
+                - "password"
