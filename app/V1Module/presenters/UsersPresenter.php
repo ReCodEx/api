@@ -81,7 +81,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    */
   public function actionCreateAccount() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
 
     // check if the email is free
     $email = $req->getPost("email");
@@ -95,12 +95,15 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("Such instance does not exist.");
     }
 
+    $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
+    $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
+
     $user = new User(
       $email,
       $req->getPost("firstName"),
       $req->getPost("lastName"),
-      $req->getPost("degreesBeforeName", ""),
-      $req->getPost("degreesAfterName", ""),
+      $degreesBeforeName,
+      $degreesAfterName,
       $role,
       $instance
     );
