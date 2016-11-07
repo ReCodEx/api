@@ -9,7 +9,7 @@ App\Model\Entity\Group:
 App\Model\Entity\User:
     'demoGroupMember{1..10}':
         __construct:
-            - "<email()>"
+            - "demoGroupMember<current()>@example.com"
             - "<firstName()>"
             - "<lastName()>"
             - ""

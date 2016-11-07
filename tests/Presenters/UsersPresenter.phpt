@@ -24,11 +24,17 @@ class TestUsersPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Users */
   protected $users;
 
+  /** @var App\Model\Repository\GroupMemberships */
+  protected $groupMemberships;
+
   /** @var  Nette\DI\Container */
   protected $container;
 
   /** @var Nette\Security\User */
   private $user;
+
+  /** @var string */
+  private $presenterPath = "V1:Users";
 
   public function __construct()
   {
@@ -39,6 +45,7 @@ class TestUsersPresenter extends Tester\TestCase
     $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->users = $container->getByType(\App\Model\Repository\Users::class);
+    $this->groupMemberships = $container->getByType(\App\Model\Repository\GroupMemberships::class);
   }
 
   protected function setUp()
@@ -61,9 +68,9 @@ class TestUsersPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
-    $request = new Nette\Application\Request('V1:Users', 'GET', ['action' => 'default']);
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -71,7 +78,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $users = array_pop($result['payload']);
     foreach ($users as $user) {
-      Assert::same(App\Model\Entity\User::class, get_class($user));
+      Assert::type(App\Model\Entity\User::class, $user);
     }
   }
 
@@ -89,7 +96,7 @@ class TestUsersPresenter extends Tester\TestCase
     $degreesBeforeName = "degreesBeforeName";
     $degreesAfterName = "degreesAfterName";
 
-    $request = new Nette\Application\Request('V1:Users', 'POST',
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createAccount'],
       [
         'email' => $email,
@@ -102,7 +109,7 @@ class TestUsersPresenter extends Tester\TestCase
       ]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(201, $result['code']);
@@ -112,7 +119,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::same(\App\Model\Entity\User::class, get_class($user));
+    Assert::type(\App\Model\Entity\User::class, $user);
     Assert::equal($email, $user->getEmail());
     Assert::equal($firstName, $user->getFirstName());
     Assert::equal($lastName, $user->getLastName());
@@ -122,6 +129,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     // check created login
     $login = $this->logins->findByUserId($user->getId());
+    Assert::same($user, $login->getUser());
     Assert::true($login->passwordsMatch($password));
   }
 
@@ -132,52 +140,156 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testValidateRegistrationData()
   {
-    // TODO
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'validateRegistrationData'],
+      [
+        'email' => "totallyFreeEmail@EmailFreeTotally.freeEmailTotally",
+        'password' => "totallySecurePasswordWhichIsNot123456"
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+
+    Assert::true(array_key_exists("usernameIsFree", $result["payload"]));
+    Assert::true($result["payload"]["usernameIsFree"]);
+
+    Assert::true(array_key_exists("passwordScore", $result["payload"]));
+    Assert::type('int', $result["payload"]["passwordScore"]);
   }
 
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
-
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $request = new Nette\Application\Request('V1:Users', 'GET',
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
       ['action' => 'detail', 'id' => $user->getId()]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal(1, count($result["payload"]));
 
-    Assert::same(\App\Model\Entity\User::class, get_class($result["payload"]));
-    Assert::equal($user, $result["payload"]);
+    Assert::type(\App\Model\Entity\User::class, $result["payload"]);
+    Assert::same($user, $result["payload"]);
   }
 
   public function testUpdateProfile()
   {
-    // TODO
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $email = "emailUpdated@emailUpdated.emailUpdated";
+    $firstName = "firstNameUpdated";
+    $lastName = "lastNameUpdated";
+    $degreesBeforeName = "degreesBeforeNameUpdated";
+    $degreesAfterName = "degreesAfterNameUpdated";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile'],
+      [
+        'email' => $email,
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::equal($email, $updatedUser->getEmail());
+    Assert::equal($firstName, $updatedUser->getFirstName());
+    Assert::equal($lastName, $updatedUser->getLastName());
+    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
+    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
+
+    $storedUpdatedUser = $this->users->get($user->getId());
+    Assert::same($updatedUser, $storedUpdatedUser);
   }
 
-  public function testGroups()
+  public function testSupervisorGroups()
   {
-    // TODO
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'groups', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(3, $result["payload"]);
+
+    Assert::true(array_key_exists("supervisor", $result["payload"]));
+    $supervisorIn = $result["payload"]["supervisor"];
+    $expectedSupervisorIn = $user->getGroupsAsSupervisor()->getValues();
+    Assert::equal($expectedSupervisorIn, $supervisorIn);
+  }
+
+  public function testStudentGroups()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+    $user = $this->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'groups', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(3, $result["payload"]);
+
+    Assert::true(array_key_exists("student", $result["payload"]));
+    $studentIn = $result["payload"]["student"];
+    $expectedStudentIn = $user->getGroupsAsStudent()->getValues();
+    Assert::equal($expectedStudentIn, $studentIn);
+
+    Assert::true(array_key_exists("stats", $result["payload"]));
+    $stats = $result["payload"]["stats"];
+    Assert::count(count($expectedStudentIn), $stats);
+
+    foreach ($stats as $stat) {
+      Assert::count(3, $stat);
+      Assert::true(array_key_exists("id", $stat));
+      Assert::true(array_key_exists("name", $stat));
+      Assert::true(array_key_exists("stats", $stat));
+    }
   }
 
   public function testInstances()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
-
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $request = new Nette\Application\Request('V1:Users', 'GET',
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
       ['action' => 'instances', 'id' => $user->getId()]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
@@ -186,13 +298,32 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(1, count($instances));
 
     $instance = array_pop($instances);
-    Assert::same(\App\Model\Entity\Instance::class, get_class($instance));
+    Assert::type(\App\Model\Entity\Instance::class, $instance);
     Assert::equal($user->getInstance()->getId(), $instance->getId());
   }
 
   public function testExercises()
   {
-    // TODO
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'exercises', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $exercises = $result["payload"];
+    Assert::equal($user->getExercises()->getValues(), $exercises);
+
+    foreach ($exercises as $exercise) {
+      Assert::type(\App\Model\Entity\Exercise::class, $exercise);
+      Assert::true($exercise->isAuthor($user));
+    }
   }
 
 }

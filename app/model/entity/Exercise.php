@@ -79,7 +79,6 @@ class Exercise implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
-   * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
    */
   protected $author;
 

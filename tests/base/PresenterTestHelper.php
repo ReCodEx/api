@@ -7,6 +7,9 @@ class PresenterTestHelper
   const ADMIN_LOGIN = "admin@admin.com";
   const ADMIN_PASSWORD = "admin";
 
+  const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
+  const STUDENT_GROUP_MEMBER_PASSWORD = "";
+
   public static function prepareDatabase(\Nette\DI\Container $container): Kdyby\Doctrine\EntityManager
   {
     $em = $container->getByType(Kdyby\Doctrine\EntityManager::class);
@@ -26,6 +29,9 @@ class PresenterTestHelper
     $output = new Symfony\Component\Console\Output\NullOutput();
 
     $command->run($input, $output);
+
+    // destroy EntityManager to safely save all work and start with new one on demand
+    $container->getByType(Kdyby\Doctrine\EntityManager::class)->clear();
 
     return;
   }
