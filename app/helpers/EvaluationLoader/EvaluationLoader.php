@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Model\Entity\Submission;
 use App\Model\Entity\SolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\EvaluationResults\EvaluationResults;
