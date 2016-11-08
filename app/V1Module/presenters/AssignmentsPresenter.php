@@ -397,6 +397,11 @@ class AssignmentsPresenter extends BasePresenter {
     $req = $this->getRequest();
     $environments = $req->getPost("environments");
 
+    if (count($environments) === 0) {
+      throw new NotFoundException("No environment specified");
+    }
+
+    $runtimeConfig = NULL;
     foreach ($environments as $environment) {
       $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
       $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
@@ -423,12 +428,8 @@ class AssignmentsPresenter extends BasePresenter {
 
       // save the new & archive the old config
       JobConfig\Storage::saveJobConfig($jobConfig, $path);
+      $this->runtimeConfigurations->persist($runtimeConfig);
     }
-
-    // save the current selected hardware group
-    $hardwareGroup = Arrays::get($environment, ["environment", "hardwareGroup"], $runtimeConfig->getHardwareGroup());
-    $runtimeConfig->setHardwareGroup($hardwareGroup);
-    $this->runtimeConfigurations->persist($runtimeConfig);
 
     // the same output as get limits
     $this->forward("getLimits", $id);
