@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use App\Model\Entity\User;
+use App\Model\Entity\Assignment;
+use App\Exceptions\JobConfigStorageException;
 use Nette;
 use Nette\Http\FileUpload;
 
@@ -10,6 +12,8 @@ use Nette\Http\FileUpload;
  *
  */
 class UploadedJobConfigStorage {
+
+  const DEFAULT_MKDIR_MODE = 0777;
 
   /**
    * Target directory, where the files will be stored
@@ -53,12 +57,23 @@ class UploadedJobConfigStorage {
    */
   public function storeContent(string $content, User $user) {
     $filePath = $this->getFilePath($user->getId());
-    @mkdir(dirname($filePath), 0777, TRUE);
+    @mkdir(dirname($filePath), self::DEFAULT_MKDIR_MODE, TRUE);
     if (!file_put_contents($filePath, $content)) {
       return NULL;
     }
 
     return $filePath;
+  }
+
+  public function copyToUserAndUpdateRuntimeConfigs(Assignment $assignment, User $user) {
+    foreach ($assignment->getSolutionRuntimeConfigs() as $config) {
+      $filePath = $this->getFilePath($user->getId(), $config->getJobConfigFilePath());
+      @mkdir(dirname($filePath), self::DEFAULT_MKDIR_MODE, TRUE);
+      if (!@copy($config->getJobConfigFilePath(), $filePath)) {
+        throw new JobConfigStorageException;
+      }
+      $config->setJobConfigFilePath($filePath);
+    }
   }
 
   /**
@@ -68,9 +83,11 @@ class UploadedJobConfigStorage {
    * @param type $ext
    * @return string Path, where the newly stored file will be saved (including configured uploadDir)
    */
-  protected function getFilePath($userId, $fileName = "job-config", $ext = "yml"): string {
+  protected function getFilePath($userId, $fileName = "job-config.yml"): string {
+    $fileNameOnly = pathinfo($fileName, PATHINFO_FILENAME);
+    $ext = pathinfo($fileName, PATHINFO_EXTENSION);
     $uniqueId = uniqid();
-    return "{$this->uploadDir}/user_{$userId}/{$fileName}_{$uniqueId}.$ext";
+    return "{$this->uploadDir}/user_{$userId}/{$fileNameOnly}_{$uniqueId}.$ext";
   }
 
   /**
@@ -80,9 +97,7 @@ class UploadedJobConfigStorage {
    * @return string Path, where the newly stored file will be saved (including configured uploadDir)
    */
   protected function getFilePathFromUpload($userId, FileUpload $file): string {
-    $fileName = pathinfo($file->getSanitizedName(), PATHINFO_FILENAME);
-    $ext = pathinfo($file->getSanitizedName(), PATHINFO_EXTENSION);
-    return $this->getFilePath($userId, $fileName, $ext);
+    return $this->getFilePath($userId, $file->getSanitizedName());
   }
 
 }

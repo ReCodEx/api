@@ -93,6 +93,10 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig);
     $this->presenter->jobConfigs = $mockStorage;
 
+    $mockUploadedStorage = Mockery::mock(\App\Helpers\UploadedJobConfigStorage::class);
+    $mockUploadedStorage->shouldReceive("copyToUserAndUpdateRuntimeConfigs")->withAnyArgs()->andReturn();
+    $this->presenter->uploadedJobConfigStorage = $mockUploadedStorage;
+
     $exercise = $this->presenter->exercises->findAll()[0];
     $group = $this->presenter->groups->findAll()[0];
 

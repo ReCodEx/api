@@ -14,7 +14,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
-use App\Helpers\ScoreCalculatorFactory;
+use App\Helpers\UploadedJobConfigStorage;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
@@ -99,6 +99,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $jobConfigs;
+
+  /**
+   * @var UploadedJobConfigStorage
+   * @inject
+   */
+  public $uploadedJobConfigStorage;
 
   /**
    * Get a list of all assignments
@@ -220,6 +226,7 @@ class AssignmentsPresenter extends BasePresenter {
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
+    $this->uploadedJobConfigStorage->copyToUserAndUpdateRuntimeConfigs($assignment, $user);
     $assignment->setScoreConfig($this->getDefaultScoreConfig($assignment));
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
