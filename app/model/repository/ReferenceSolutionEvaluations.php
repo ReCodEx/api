@@ -22,12 +22,12 @@ class ReferenceSolutionEvaluations extends BaseRepository {
 
   /**
    * Find all the reference solutions' evaluations for a given exercise, runtime environment and hardware group.
-   * @param Exercise            $exercise       The exercise
-   * @param RuntimeEnvironment  $environment    The runtime environment
-   * @param HardwareGroup       $hardwareGroup  Hardware group
+   * @param Exercise            $exercise         The exercise
+   * @param RuntimeEnvironment  $environment      The runtime environment
+   * @param string              $hardwareGroupId  Hardware group
    * @return array
    */
-  public function find(Exercise $exercise, RuntimeEnvironment $environment, HardwareGroup $hardwareGroup) {
+  public function find(Exercise $exercise, RuntimeEnvironment $environment, string $hardwareGroupId) {
     $eva = ReferenceSolutionEvaluation::CLASS;
     $query = $this->em->createQuery(
       "SELECT eva FROM $eva eva INNER JOIN eva.referenceSolution ref " .
@@ -40,7 +40,7 @@ class ReferenceSolutionEvaluations extends BaseRepository {
     $query->setParameters([
       "exercise" => $exercise->id,
       "environment" => $environment->id,
-      "hwGroup" => $hardwareGroup->id
+      "hwGroup" => $hardwareGroupId
     ]);
 
     return $query->getResult();

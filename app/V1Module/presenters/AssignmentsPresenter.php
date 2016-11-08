@@ -364,19 +364,20 @@ class AssignmentsPresenter extends BasePresenter {
     $environments = $assignment->getSolutionRuntimeConfigs()->map(
       function ($environment) use ($assignment) {
         $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
-        $referenceEvaluations = $this->referenceSolutionEvaluations->find(
-          $assignment->getExercise(),
-          $environment->getRuntimeEnvironment(),
-          $environment->getHardwareGroup()
-        );
+        $referenceEvaluations = [];
+        foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
+          $evaluations = $this->referenceSolutionEvaluations->find(
+            $assignment->getExercise(),
+            $environment->getRuntimeEnvironment(),
+            $hwGroup
+          );
+        }
+
         return [
           "environment" => $environment,
           "hardwareGroups" => $jobConfig->getHardwareGroups(),
           "limits" => $jobConfig->getLimits(),
-          "referenceSolutionsEvaluations" => array_map(
-            function ($ref) { return $ref->getEvaluation(); },
-            $referenceEvaluations
-          )
+          "referenceSolutionsEvaluations" => $referenceEvaluations
         ];
       }
     );
