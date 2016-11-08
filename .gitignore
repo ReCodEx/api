@@ -15,4 +15,5 @@ test.ini
 docs/*
 phpDocumentor.phar
 .vscode
+/job_config
 
