@@ -15,6 +15,15 @@ class ExternalLogins extends BaseRepository {
   }
 
   /**
+   * Find external login based on external id
+   * @param   string $externalId ID of the user
+   * @return  User|NULL
+   */
+  public function findByExternalId($externalId) {
+    return $this->findOneBy([ "externalId" => $externalId ]);
+  }
+
+  /**
    * @param string $authService
    * @param string $externalId
    * @return User|NULL
