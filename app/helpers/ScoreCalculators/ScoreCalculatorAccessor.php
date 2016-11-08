@@ -31,7 +31,7 @@ class ScoreCalculatorAccessor extends Nette\Object
       return $this->getDefaultCalculator();
     }
 
-    return Arrays::get($this->calculators, $name, NULL);
+    return Arrays::get($this->calculators, $name, $this->getDefaultCalculator());
   }
 
   public function getDefaultCalculator(): IScoreCalculator

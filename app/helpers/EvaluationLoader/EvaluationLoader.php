@@ -52,8 +52,9 @@ class EvaluationLoader {
     if (!$results) {
       return NULL;
     }
-    if ($submission->assignment->scoreCalculator) {
-      $calculator = $this->calculators->getCalculator();
+    $assignmentScoreCalculator = $submission->assignment->scoreCalculator;
+    if ($assignmentScoreCalculator) {
+      $calculator = $this->calculators->getCalculator($assignmentScoreCalculator);
     } else {
       $calculator = $this->calculators->getDefaultCalculator();
     }
