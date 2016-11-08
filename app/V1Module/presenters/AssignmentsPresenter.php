@@ -324,8 +324,7 @@ class AssignmentsPresenter extends BasePresenter {
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getSolution()->getFiles()->getValues(),
-      $runtimeConfiguration->getHardwareGroup()->getId()
+      $submission->getSolution()->getFiles()->getValues()
     );
 
     // if the submission was accepted we now have the URL where to look for the results later

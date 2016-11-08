@@ -51,13 +51,13 @@ class BrokerProxy {
    * receive confirmation if the evaluation can be processed or not (for example if there is worker
    * for that hwgroup available).
    * @param string $jobId Unique identifier of the new job
-   * @param string $hardwareGroup Hardware group of this submission
+   * @param array $hardwareGroups Hardware groups of this submission
    * @param string $archiveRemotePath URL of the archive with source codes and job evaluation configuration
    * @param string $resultRemotePath URL where to store resulting archive of whole evaluation
    * @return bool Evaluation has been started on remote server when returns TRUE.
    * @throws SubmissionFailedException on any error
    */
-  public function startEvaluation(string $jobId, string $hardwareGroup, string $archiveRemotePath, string $resultRemotePath) {
+  public function startEvaluation(string $jobId, array $hardwareGroups, string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
     $poll = NULL;
 
@@ -75,12 +75,14 @@ class BrokerProxy {
       throw new SubmissionFailedException("Cannot create ZMQ poll.");
     }
 
+    $hwGroup = implode('|', $hardwareGroups);
+
     try {
       $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti([
         "eval",
         $jobId,
-        "hwgroup=$hardwareGroup",
+        "hwgroup=$hwGroup",
         "",
         $archiveRemotePath,
         $resultRemotePath

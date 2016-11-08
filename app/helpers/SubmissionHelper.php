@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\SubmissionFailedException;
 use App\Helpers\JobConfig\JobConfig;
 
 /**
@@ -30,11 +31,12 @@ class SubmissionHelper {
    * Upload the files to the fileserver and initiates evaluation on backend
    * @param JobConfig $jobConfig     The submission configuration file content
    * @param array     $files         Paths to submitted files
-   * @param string    $hardwareGroup Harware group to evaluate this submission with
+   * @param string    $hardwareGroup Hardware group to evaluate this submission with
+   *                                 (if none is given, all hardware groups associated with the assignment can be used)
    * @return string|NULL  URL of the results when the submission was accepted and evaluation started, otherwise NULL
    * @throws SubmissionFailedException if the job cannot be submitted
    */
-  public function initiateEvaluation(JobConfig $jobConfig, array $files, string $hardwareGroup) {
+  public function initiateEvaluation(JobConfig $jobConfig, array $files, string $hardwareGroup = NULL) {
     // firstly let us set address of fileserver to job configuration
     $jobConfig->setFileCollector($this->fileServer->getFileserverTasksUrl());
 
@@ -48,7 +50,7 @@ class SubmissionHelper {
     // tell broker that we have new job which has to be executed
     $evaluationStarted = $this->broker->startEvaluation(
       $jobConfig->getJobId(),
-      $hardwareGroup,
+      $hardwareGroup !== NULL ? [$hardwareGroup] : $jobConfig->getHardwareGroups(),
       $archiveUrl,
       $resultsUrl
     );
