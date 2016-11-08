@@ -257,9 +257,19 @@ class GenerateSwagger extends Command
         $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
       }
 
-      $paramEntry["required"] = !$methodParameter->isOptional();
-      $paramEntry["in"] = "path";
+      if ($methodParameter->isOptional()) {
+        $paramEntry["in"] = "query";
+        $this->setArrayDefault($paramEntry, "required", FALSE);
+      } else {
+        $paramEntry["in"] = "path";
+        $paramEntry["required"] = TRUE;
+      }
+
       $this->setArrayDefault($paramEntry, "type", "string");
+
+      if (!Arrays::get($paramEntry, "description")) {
+        $paramEntry["description"] = ""; // TODO put something meaningful in here
+      }
     }
 
     $this->setArrayDefault($entry["responses"], "200", []);

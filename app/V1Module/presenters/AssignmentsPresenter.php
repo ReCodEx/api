@@ -12,13 +12,13 @@ use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
-use App\Model\Entity\RuntimeEnvironment;
-use App\Model\Entity\SolutionRuntimeConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
-use App\Model\Repository\Exercises;
+use App\Helpers\ScoreCalculatorFactory;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
+use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
@@ -26,6 +26,7 @@ use App\Model\Repository\UploadedFiles;
 use DateTime;
 use Doctrine\Common\Collections\Criteria;
 use Nette\InvalidStateException;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -68,6 +69,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $runtimeConfigurations;
+
+  /**
+   * @var ReferenceSolutionEvaluations
+   * @inject
+   */
+  public $referenceSolutionEvaluations;
 
   /**
    * @var SubmissionHelper
@@ -155,7 +162,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
 
-    // add new and update old localiyations
+    // add new and update old localizations
     $localizedAssignments = $req->getPost("localizedAssignments");
     $usedLocale = [];
     foreach ($localizedAssignments as $localization) {
@@ -354,43 +361,75 @@ class AssignmentsPresenter extends BasePresenter {
 
     // get job config and its test cases
     $environments = $assignment->getSolutionRuntimeConfigs()->map(
-      function ($environment) {
-        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
+      function ($environment) use ($assignment) {
+        $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        $referenceEvaluations = $this->referenceSolutionEvaluations->find(
+          $assignment->getExercise(),
+          $environment->getRuntimeEnvironment(),
+          $environment->getHardwareGroup()
+        );
         return [
           "environment" => $environment,
           "hardwareGroups" => $jobConfig->getHardwareGroups(),
-          "limits" => $jobConfig->getLimits()
+          "limits" => $jobConfig->getLimits(),
+          "referenceSolutionsEvaluations" => array_map(
+            function ($ref) { return $ref->getEvaluation(); },
+            $referenceEvaluations
+          )
         ];
       }
     );
 
-    $this->sendSuccessResponse($environments->getValues());
+    $this->sendSuccessResponse([ "environments" => $environments->getValues() ]);
   }
 
   /**
    * Set resource limits for an assignment and a hardware group
-   * @POST
+   * @PUT
    * @UserIsAllowed(assignments="set-limits")
-   * @Param(type="post", name="limits", description="A list of resource limits")
+   * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $limits = $this->getRequest()->getPost("limits");
+    $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
 
-    if ($limits === NULL || !is_array($limits)) {
-      throw new InvalidArgumentException("limits");
+    $req = $this->getRequest();
+    $environments = $req->getPost("environments");
+
+    foreach ($environments as $environment) {
+      $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
+      $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
+      if (!in_array($runtimeId, $assignmentRuntimeConfigsIds)) {
+        throw new ForbiddenRequestException("Cannot configure solution runtime configuration $runtimeId for assignment $id");
+      }
+
+      // open the job config and update the limits for all hardware groups
+      $path = $runtimeConfig->getJobConfigFilePath();
+      $jobConfig = JobConfig\Storage::getJobConfig($path);
+
+      // get through all defined limits indexed by hwgroup
+      $limits = Arrays::get($environment, ["limits"], []);
+      foreach ($limits as $hwGroupLimits) {
+        if (!isset($hwGroupLimits["hardwareGroup"])) {
+          throw new InvalidArgumentException("environments[][limits][][hardwareGroup]");
+        }
+
+        $hardwareGroup = $hwGroupLimits["hardwareGroup"];
+        $tests = Arrays::get($hwGroupLimits, ["tests"], []);
+        $limits = array_reduce($tests, array_merge, []);
+        $jobConfig->setLimits($hardwareGroup, $limits);
+      }
+
+      // save the new & archive the old config
+      JobConfig\Storage::saveJobConfig($jobConfig, $path);
     }
 
-    // @todo: ...!!
+    // save the current selected hardware group
+    $hardwareGroup = Arrays::get($environment, ["environment", "hardwareGroup"], $runtimeConfig->getHardwareGroup());
+    $runtimeConfig->setHardwareGroup($hardwareGroup);
+    $this->runtimeConfigurations->persist($runtimeConfig);
 
-    // get job config and its test cases
-    $path = $assignment->getJobConfigFilePath(); // TODO: solve this with new RuntimeConfig entity
-    $jobConfig = $this->jobConfigs->getJobConfig($path);
-    $jobConfig->setLimits($hardwareGroup, $limits);
-
-    // save the new & archive the old config
-    $this->jobConfigs->saveJobConfig($jobConfig, $path);
-
-    $this->sendSuccessResponse($jobConfig->getValues());
+    // the same output as get limits
+    $this->forward("getLimits", $id);
   }
 }

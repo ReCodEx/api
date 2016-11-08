@@ -12,6 +12,9 @@ use App\Model\Entity\ReferenceSolutionEvaluation;
 
 use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -63,56 +66,74 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Get reference solutions for an exercise
    * @GET
+   * @UserIsAllowed(exercises="view-detail")
    */
-  public function actionExercise($id) {
+  public function actionExercise(string $id) {
     // @todo check that this user can access this information
     $exercise = $this->findExerciseOrThrow($id);
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
-  public function actionCreateReferenceSolution() {
+  /**
+   * Add new reference solution to existing exercise
+   * @POST
+   * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
+   * @Param(type="post", name="files", description="Files of the reference solution")
+   * @Param(type="post", name="runtime", description="ID of runtime for this solution")
+   * @UserIsAllowed(exercises="create")
+   */
+  public function actionCreateReferenceSolution(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 
-    // @todo validate user's access
+    if (!$exercise->isAuthor($user)) {
+      throw new ForbiddenRequestException("Only author can create reference assignments");
+    }
 
     $req = $this->getHttpRequest();
     $files = $this->files->findAllById($req->getPost("files"));
     $note = $req->getPost("note");
-    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files);
+    $runtimeId = $req->getPost("runtime");
+
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $runtimeId));
+    $configsFound = $exercise->getSolutionRuntimeConfigs()->matching($criteria);
+    $numOfResults = $configsFound->count();
+    if ($numOfResults !== 1) {
+      throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
+    }
+    $runtime = $configsFound->first();
+
+    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files, $runtime);
     $this->referenceSolutions->persist($solution);
 
-    // evaluate the solution right now
-    // hwGroup post param is preserved from current endpoint call
-    $this->actionEvaluate($exercise->getId(), $solution->getId());
+    $this->sendSuccessResponse($solution);
   }
 
   /**
    * Evaluate reference solutions to an exercise for a hardware group
    * @POST
    * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
+   * @UserIsAllowed(assignments="create")
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
-
+    
     if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
       throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
     }
 
-    // @todo validate that user can do this action
-
     // create the entity and generate the ID
-    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
+    $hwGroup = $this->getHttpRequest()->getPost("hwGroup", $runtimeConfig->getHardwareGroup()->getId());
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
-    $jobConfig = $this->jobConfigs->getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
+    $jobConfig = $this->jobConfigs->getJobConfig(
+      $referenceSolution->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
-    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
 
+    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
     if($resultsUrl !== NULL) {
       $evaluation->setResultsUrl($resultsUrl);
       $this->referenceEvaluations->flush();

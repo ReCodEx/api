@@ -3,19 +3,19 @@ App\Model\Entity\Exercise:
         __construct:
             create:
                 - @demoAdmin
-        update:
-            - "Convex hull"
-            - A true classic
-            - "moderate"
+        difficulty: "moderate"
+        name: "Convex hull"
+        addLocalizedAssignment:
+            - @demoLocalizedAssignment
         addRuntimeConfig:
             - @demoRuntimeConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
                 - @demoAdmin
-        update:
-            - "<current()> exercise"
-            - A true classic
-            - "easy"
+        difficulty: "easy"
+        name: "<current()> exercise"
+        addLocalizedAssignment:
+            - @demoLocalizedAssignment
         addRuntimeConfig:
             - @demoRuntimeConfig
