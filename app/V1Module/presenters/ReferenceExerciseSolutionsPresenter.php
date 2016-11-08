@@ -130,9 +130,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     // configure the job and start evaluation
     $jobConfig = $this->jobConfigs->getJobConfig(
-      $referenceSolution->getReferenceSolution()
-      ->getSolution()->getSolutionRuntimeConfig()
-      ->getJobConfigFilePath());
+      $referenceSolution->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
     $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);

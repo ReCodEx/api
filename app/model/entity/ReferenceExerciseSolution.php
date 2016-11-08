@@ -65,5 +65,6 @@ class ReferenceExerciseSolution implements JsonSerializable
     $this->uploadedAt = new \DateTime;
     $this->description = $description;
     $this->solution = new Solution($user, $files, $runtime);
+    $this->evaluations = new ArrayCollection;
   }
 }
