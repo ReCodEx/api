@@ -117,14 +117,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
-
+    
     if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
       throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
     }
 
     // create the entity and generate the ID
-    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
+    $hwGroup = $this->getHttpRequest()->getPost("hwGroup", $runtimeConfig->getHardwareGroup()->getId());
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
     $this->referenceEvaluations->persist($evaluation);
 
@@ -135,8 +134,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       ->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
-    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
 
+    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
     if($resultsUrl !== NULL) {
       $evaluation->setResultsUrl($resultsUrl);
       $this->referenceEvaluations->flush();
