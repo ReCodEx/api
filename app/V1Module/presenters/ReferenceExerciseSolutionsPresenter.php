@@ -13,6 +13,8 @@ use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -77,6 +79,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
+   * @Param(type="post", name="runtime", description="ID of runtime for this solution")
    * @UserIsAllowed(exercises="create")
    */
   public function actionCreateReferenceSolution(string $id) {
@@ -90,7 +93,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
     $files = $this->files->findAllById($req->getPost("files"));
     $note = $req->getPost("note");
-    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files);
+    $runtimeId = $req->getPost("runtime");
+
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $runtimeId));
+    $configsFound = $exercise->getSolutionRuntimeConfigs()->matching($criteria);
+    $numOfResults = $configsFound->count();
+    if ($numOfResults !== 1) {
+      throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
+    }
+    $runtime = $configsFound->first();
+
+    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files, $runtime);
     $this->referenceSolutions->persist($solution);
 
     $this->sendSuccessResponse($solution);
