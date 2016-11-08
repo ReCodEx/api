@@ -42,6 +42,28 @@ class GenerateSwagger extends Command
    */
   private $fixtureLoader;
 
+  private $typeMap = [
+    'bool' => 'boolean',
+    'boolean' => 'boolean',
+    'int' => 'integer',
+    'integer' => 'integer',
+    'float' => 'number',
+    'number' => 'number',
+    'numeric' => 'number',
+    'numericint' => 'integer',
+    'string' => 'string',
+    'unicode' => ['string', 'unicode'],
+    'email' => ['string', 'email'],
+    'url' => ['string', 'url'],
+    'uri' => ['string', 'uri'],
+    'pattern' => NULL,
+    'alnum' => ['string', 'alphanumeric'],
+    'alpha' => ['string', 'alphabetic'],
+    'digit' => ['string', 'numeric'],
+    'lower' => ['string', 'lowercase'],
+    'upper' => ['string', 'uppercase']
+  ];
+
   public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader)
   {
     parent::__construct();
@@ -201,7 +223,7 @@ class GenerateSwagger extends Command
       }
 
       $paramEntry["required"] = Arrays::get($annotation, "required", FALSE);
-      $this->setArrayDefault($paramEntry, "type", $annotation["validation"]); // TODO translate to Swagger types so that we can override values from the file
+      $paramEntry = array_merge($paramEntry, $this->translateType(Arrays::get($annotation, "validation", "")));
 
       if ($annotation["type"] === "post") {
         $paramEntry["in"] = "formData";
@@ -311,6 +333,47 @@ class GenerateSwagger extends Command
     return $property->getValue($object);
   }
 
+  private function translateType(string $type): array
+  {
+    if (!$type) {
+      return [];
+    }
+
+    $validation = NULL;
+
+    if (Strings::contains($type, ':')) {
+      list($type, $validation) = explode(':', $type);
+    }
+
+    $translation = Arrays::get($this->typeMap, $type);
+    if (is_array($translation)) {
+      $typeInfo = [
+        'type' => $translation[0],
+        'format' => $translation[1]
+      ];
+    } else {
+      $typeInfo = [
+        'type' => $translation
+      ];
+    }
+
+    if ($validation && Strings::contains($validation, '..')) {
+      list($min, $max) = explode('..', $validation);
+      if ($min) {
+        $typeInfo['minLength'] = intval($min);
+      }
+
+      if ($max) {
+        $typeInfo['maxLength'] = intval($max);
+      }
+    } else if ($validation) {
+      $typeInfo['minLength'] = intval($validation);
+      $typeInfo['maxLength'] = intval($validation);
+    }
+
+    return $typeInfo;
+  }
+
   private function fillEntityExamples(array &$target)
   {
     // Load fixtures from the "base" and "demo" groups
@@ -378,7 +441,9 @@ class GenerateSwagger extends Command
       }
     } else {
       $this->setArrayDefault($entry[$key], "type", $type);
-      $entry[$key]["example"] = $value;
+      if ($entry[$key]["type"] === $type && $value !== NULL) {
+        $entry[$key]["example"] = $value;
+      }
     }
   }
 
