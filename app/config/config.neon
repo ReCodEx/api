@@ -156,6 +156,7 @@ services:
   - App\Model\Repository\SolutionRuntimeConfigs
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships
+  - App\Model\Repository\HardwareGroups
 
 doctrine:
   user: 'root'

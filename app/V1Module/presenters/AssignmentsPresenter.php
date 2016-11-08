@@ -155,7 +155,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
 
-    // add new and update old localiyations
+    // add new and update old localizations
     $localizedAssignments = $req->getPost("localizedAssignments");
     $usedLocale = [];
     foreach ($localizedAssignments as $localization) {

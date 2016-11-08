@@ -91,7 +91,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::same($exercise, $result['payload']);
   }
-  
+
   public function testUpdateDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
@@ -103,7 +103,17 @@ class TestExercisesPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:Exercises',
       'POST',
       ['action' => 'updateDetail', 'id' => $exercise->id],
-      ['name' => 'new name', 'description' => 'new descr', 'difficulty' => 'super hard']
+      [
+        'name' => 'new name',
+        'difficulty' => 'super hard',
+        'localizedAssignments' => [
+          [
+            'locale' => 'cs-CZ',
+            'description' => 'new descr',
+            'name' => 'SomeNeatyName'
+          ]
+        ]
+      ]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -111,8 +121,23 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal('new name', $result['payload']->name);
-    Assert::equal('new descr', $result['payload']->description);
     Assert::equal('super hard', $result['payload']->difficulty);
+
+    $updatedLocalizedAssignments = $result['payload']->localizedAssignments;
+    Assert::count(count($exercise->localizedAssignments) + 1, $updatedLocalizedAssignments);
+
+    foreach ($exercise->localizedAssignments as $localized) {
+      Assert::true($updatedLocalizedAssignments->contains($localized));
+    }
+    Assert::true($updatedLocalizedAssignments->exists(function ($key, $localized) {
+      if ($localized->locale == "cs-CZ"
+          && $localized->description == "new descr"
+          && $localized->name == "SomeNeatyName") {
+        return TRUE;
+      }
+
+      return FALSE;
+    }));
   }
 
   public function testCreate()
@@ -145,10 +170,15 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal($this->adminLogin, $result['payload']->getAuthor()->email);
     Assert::notEqual($exercise->id, $result['payload']->id);
-    Assert::equal($exercise->description, $result['payload']->description);
+    Assert::equal(count($exercise->localizedAssignments), count($result['payload']->localizedAssignments));
     Assert::equal($exercise->difficulty, $result['payload']->difficulty);
   }
-  
+
+  public function testUpdateRuntimeConfigs()
+  {
+    // TODO
+  }
+
 }
 
 $testCase = new TestExercisesPresenter();

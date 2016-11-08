@@ -51,7 +51,7 @@ class Assignment implements JsonSerializable
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
     $assignment = new self(
-      $exercise->name,
+      $exercise->getName(),
       new DateTime,
       0,
       $exercise,

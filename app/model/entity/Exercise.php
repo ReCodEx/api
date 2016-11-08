@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use \DateTime;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -41,11 +42,6 @@ class Exercise implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $updatedAt;
-
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $description;
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises", cascade={"persist"})
@@ -89,36 +85,26 @@ class Exercise implements JsonSerializable
   /**
    * Constructor
    */
-  private function __construct($name, $version, $description,
-      $difficulty, Collection $solutionRuntimeConfigs, $exercise, User $user) {
+  private function __construct($name, $version, $difficulty,
+      Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
+      $exercise, User $user) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
-    $this->localizedAssignments = new ArrayCollection;
-    $this->description = $description;
+    $this->localizedAssignments = $localizedAssignments;
     $this->difficulty = $difficulty;
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->exercise = $exercise;
     $this->author = $user;
   }
 
-  public function update($name, $description, $difficulty) {
-    $this->name = $name;
-    $this->version++;
-    $this->updatedAt = new DateTime;
-    $this->description = $description;
-    $this->difficulty = $difficulty;
-  }
-
-  // @todo: Update localized assignment
-
   public static function create(User $user): Exercise {
     return new self(
       "",
       1,
       "",
-      "",
+      new ArrayCollection,
       new ArrayCollection,
       NULL,
       $user
@@ -129,9 +115,9 @@ class Exercise implements JsonSerializable
     return new self(
       $exercise->name,
       $exercise->version + 1,
-      $exercise->description,
       $exercise->difficulty,
-      $exercise->getSolutionRuntimeConfigs(),
+      new ArrayCollection($exercise->getLocalizedAssignments()->getValues()),
+      new ArrayCollection($exercise->getSolutionRuntimeConfigs()->getValues()),
       $exercise,
       $user
     );
@@ -142,6 +128,30 @@ class Exercise implements JsonSerializable
     $this->solutionRuntimeConfigs->add($config);
   }
 
+  public function addLocalizedAssignment(LocalizedAssignment $localizedAssignment) {
+    $this->localizedAssignments->add($localizedAssignment);
+  }
+
+  /**
+   * Get localized assignment based on given locale.
+   * @param string $locale
+   * @return LocalizedAssignment|NULL
+   */
+  public function getLocalizedAssignmentByLocale(string $locale) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+    return $this->getLocalizedAssignments()->matching($criteria)->first();
+  }
+
+  /**
+   * Get runtime configuration based on environment identification.
+   * @param string $environmentId
+   * @return SolutionRuntimeConfig|NULL
+   */
+  public function getRuntimeConfigByEnvironment(string $environmentId) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("runtime_environment_id", $environmentId));
+    return $this->getSolutionRuntimeConfigs()->matching($criteria)->first();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -149,7 +159,6 @@ class Exercise implements JsonSerializable
       "version" => $this->version,
       "createdAt" => $this->createdAt,
       "updatedAt" => $this->updatedAt,
-      "description" => $this->description,
       "localizedAssignments" => $this->localizedAssignments->map(function($localized) { return $localized->getId(); })->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
