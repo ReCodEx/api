@@ -135,22 +135,20 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private $post = NULL;
   private function getPostField($param, $required = TRUE) {
+    $req = $this->getRequest();
+    $post = $req->getPost();
 
-    if ($this->post === NULL) {
-      $req = $this->getRequest();
-      if ($req->isMethod("POST")) {
-        $this->post = $req->post;
-      } else if ($req->isMethod("PUT") || $req->isMethod("DELETE")) {
-        parse_str(file_get_contents('php://input'), $this->post);
-      } else {
-        throw new WrongHttpMethodException("Cannot get the post parameters in method '" . $req->getMethod() . "'.");
-      }
+    if ($req->isMethod("POST")) {
+      // nothing to see here...
+    } else if ($req->isMethod("PUT") || $req->isMethod("DELETE")) {
+      parse_str(file_get_contents('php://input'), $post);
+    } else {
+      throw new WrongHttpMethodException("Cannot get the post parameters in method '" . $req->getMethod() . "'.");
     }
 
-    if (isset($this->post[$param])) {
-      return $this->post[$param];
+    if (isset($post[$param])) {
+      return $post[$param];
     } else if ($required) {
       throw new BadRequestException("Missing required POST field $param");
     } else {
