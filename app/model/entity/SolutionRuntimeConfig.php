@@ -34,29 +34,21 @@ class SolutionRuntimeConfig implements JsonSerializable
    */
   protected $jobConfigFilePath;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="HardwareGroup")
-   */
-  protected $hardwareGroup;
-
   public function __construct(
     string $name,
     RuntimeEnvironment $runtimeEnvironment,
-    string $jobConfigFilePath,
-    HardwareGroup $hardwareGroup
+    string $jobConfigFilePath
   ) {
     $this->customName = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->jobConfigFilePath = $jobConfigFilePath;
-    $this->hardwareGroup = $hardwareGroup;
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "name" => $this->customName,
-      "runtimeEnvironment" => $this->runtimeEnvironment,
-      "hardwareGroup" => $this->hardwareGroup->getId()
+      "runtimeEnvironment" => $this->runtimeEnvironment
     ];
   }
 

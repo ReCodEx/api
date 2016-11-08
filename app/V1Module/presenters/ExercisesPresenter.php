@@ -132,9 +132,7 @@ class ExercisesPresenter extends BasePresenter {
       $customName = $runtimeConfig["customName"];
       $environmentId = $runtimeConfig["environmentId"];
       $jobConfig = $runtimeConfig["jobConfig"];
-      $hwGroupId = $runtimeConfig["hardwareGroupId"];
       $environment = $this->runtimeEnvironments->get($environmentId);
-      $hwGroup = $this->hardwareGroups->get($hwGroupId);
 
       // store job configuration into file
       $jobConfigPath = $this->uploadedJobConfigStorage->storeContent($jobConfig, $user);
@@ -145,12 +143,11 @@ class ExercisesPresenter extends BasePresenter {
       // update or create the runtime config
       $config = $exercise->getRuntimeConfigByEnvironment($environmentId);
       if (!$config) {
-        $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath, $hwGroup);
+        $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath);
         $exercise->addSolutionRuntimeConfigs($config);
       } else {
         $config->setCustomName($customName);
         $config->setJobConfigFilePath($jobConfigPath);
-        $config->setHardwareGroup($hwGroup);
       }
       $currentConfigs[] = $environmentId;
     }
