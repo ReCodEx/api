@@ -53,7 +53,8 @@ class UploadedJobConfigStorage {
    */
   public function storeContent(string $content, User $user) {
     $filePath = $this->getFilePath($user->getId());
-    if (!file_put_contents($content, $filePath)) {
+    @mkdir(dirname($filePath), 0777, TRUE);
+    if (!file_put_contents($filePath, $content)) {
       return NULL;
     }
 

@@ -18,12 +18,14 @@ class LocalizedAssignment implements JsonSerializable
   public function __construct(
     string $name,
     string $description,
-    string $locale
+    string $locale,
+    $createdFrom = NULL
   ) {
     $this->name = $name;
     $this->description = $description;
     $this->locale = $locale;
     $this->assignments = new ArrayCollection;
+    $this->localizedAssignment = $createdFrom;
   }
 
   /**
@@ -32,6 +34,12 @@ class LocalizedAssignment implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
+
+  /**
+   * Created from.
+   * @ORM\ManyToOne(targetEntity="LocalizedAssignment")
+   */
+  protected $localizedAssignment;
 
   /**
    * @ORM\Column(type="string")
@@ -86,6 +94,7 @@ class LocalizedAssignment implements JsonSerializable
       "name" => $this->name,
       "locale" => $this->locale,
       "description" => $this->getDescription(),
+      "createdFrom" => $this->localizedAssignment
     ];
   }
 }

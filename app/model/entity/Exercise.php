@@ -54,7 +54,7 @@ class Exercise implements JsonSerializable
   protected $difficulty;
 
   /**
-   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
+   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig", cascade={"persist"})
    */
   protected $solutionRuntimeConfigs;
 
@@ -112,12 +112,33 @@ class Exercise implements JsonSerializable
   }
 
   public static function forkFrom(Exercise $exercise, User $user): Exercise {
+    $localized = new ArrayCollection;
+    foreach ($exercise->getLocalizedAssignments() as $localizedAssignment) {
+      $localized->add(new LocalizedAssignment(
+        $localizedAssignment->getName(),
+        $localizedAssignment->getDescription(),
+        $localizedAssignment->getLocale(),
+        $localizedAssignment
+      ));
+    }
+
+    $runtimeConfigs = new ArrayCollection;
+    foreach ($exercise->getSolutionRuntimeConfigs() as $runtimeConfig) {
+      $runtimeConfigs->add(new SolutionRuntimeConfig(
+        $runtimeConfig->getCustomName(),
+        $runtimeConfig->getRuntimeEnvironment(),
+        $runtimeConfig->getJobConfigFilePath(),
+        $runtimeConfig->getHardwareGroup(),
+        $runtimeConfig
+      ));
+    }
+
     return new self(
       $exercise->name,
       $exercise->version + 1,
       $exercise->difficulty,
-      new ArrayCollection($exercise->getLocalizedAssignments()->getValues()),
-      new ArrayCollection($exercise->getSolutionRuntimeConfigs()->getValues()),
+      $localized,
+      $runtimeConfigs,
       $exercise,
       $user
     );

@@ -19,6 +19,12 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var  Nette\DI\Container */
   protected $container;
 
+  /** @var App\Model\Repository\RuntimeEnvironment */
+  protected $runtimeEnvironments;
+
+  /** @var App\Model\Repository\HardwareGroups */
+  protected $hardwareGroups;
+
   /** @var Nette\Security\User */
   private $user;
 
@@ -28,6 +34,8 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->container = $container;
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
+    $this->runtimeEnvironments = $container->getByType(\App\Model\Repository\RuntimeEnvironments::class);
+    $this->hardwareGroups = $container->getByType(\App\Model\Repository\HardwareGroups::class);
   }
 
   protected function setUp()
@@ -124,7 +132,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal('super hard', $result['payload']->difficulty);
 
     $updatedLocalizedAssignments = $result['payload']->localizedAssignments;
-    Assert::count(count($exercise->localizedAssignments) + 1, $updatedLocalizedAssignments);
+    Assert::count(count($exercise->localizedAssignments), $updatedLocalizedAssignments);
 
     foreach ($exercise->localizedAssignments as $localized) {
       Assert::true($updatedLocalizedAssignments->contains($localized));
@@ -176,7 +184,48 @@ class TestExercisesPresenter extends Tester\TestCase
 
   public function testUpdateRuntimeConfigs()
   {
-    // TODO
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allExercises = $this->presenter->exercises->findAll();
+    $exercise = array_pop($allExercises);
+
+    $environments = $this->runtimeEnvironments->findAll();
+    $hardwareGroups = $this->hardwareGroups->findAll();
+    $environmentId = array_pop($environments)->getId();
+    $hardwareGroupId = array_pop($hardwareGroups)->getId();
+
+    $request = new Nette\Application\Request('V1:Exercises',
+      'POST',
+      ['action' => 'updateRuntimeConfigs', 'id' => $exercise->id],
+      [
+        'runtimeConfigs' => [
+          [
+            'customName' => 'runtimeConfigName',
+            'environmentId' => $environmentId,
+            'jobConfig' => 'JobConfiguration',
+            'hardwareGroupId' => $hardwareGroupId
+          ]
+        ]
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
+
+    $updatedRuntimeConfigs = $result["payload"]->getSolutionRuntimeConfigs();
+    Assert::true($updatedRuntimeConfigs->exists(function ($key, $config) use ($environmentId, $hardwareGroupId) {
+      if ($config->customName == "runtimeConfigName"
+          && $config->runtimeEnvironment->getId() == $environmentId
+          && $config->hardwareGroup->getId() == $hardwareGroupId) {
+        return TRUE;
+      }
+
+      return FALSE;
+    }));
   }
 
 }

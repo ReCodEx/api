@@ -83,33 +83,38 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     // make changes to newly created excercise
-    $forkedExercise = Exercise::forkFrom($exercise, $user);
-    $forkedExercise->setName($name);
-    $forkedExercise->setDifficulty($difficulty);
+    $exercise->setName($name);
+    $exercise->setDifficulty($difficulty);
 
     // add new and update old localizations
     $localizedAssignments = $req->getPost("localizedAssignments");
+    $usedLocale = [];
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
       $description = $localization["description"];
       $localizationName = $localization["name"];
 
-      // update or create the localization
-      $localized = $forkedExercise->getLocalizedAssignmentByLocale($lang);
-      if (!$localized) {
-        $localized = new LocalizedAssignment($localizationName, $description, $lang);
-        $forkedExercise->addLocalizedAssignment($localized);
-      } else {
-        $forkedLocalized = new LocalizedAssignment($localized->getName(), $localized->getDescription(), $localized->getLocale());
-        $forkedExercise->addLocalizedAssignment($forkedLocalized);
+      // create all new localized assignments
+      $originalLocalized = $exercise->getLocalizedAssignmentByLocale($lang);
+      $localized = new LocalizedAssignment($localizationName, $description, $lang);
+      if ($originalLocalized) {
+        $localized->setLocalizedAssignment($originalLocalized);
+      }
+      $exercise->addLocalizedAssignment($localized);
+      $usedLocale[] = $lang;
+    }
+
+    // remove unused languages
+    foreach ($exercise->getLocalizedAssignments() as $localization) {
+      if (!in_array($localization->getLocale(), $usedLocale)) {
+        $exercise->removeLocalizedAssignment($localization);
       }
     }
 
     // make changes to database
-    $this->exercises->persist($forkedExercise);
+    $this->exercises->persist($exercise);
     $this->exercises->flush();
-
-    $this->sendSuccessResponse($forkedExercise);
+    $this->sendSuccessResponse($exercise);
   }
 
   /**
@@ -127,7 +132,7 @@ class ExercisesPresenter extends BasePresenter {
     // add new and update old runtime configs
     $req = $this->getRequest();
     $runtimeConfigs = $req->getPost("runtimeConfigs");
-    $currentConfigs = [];
+    $usedConfigs = [];
     foreach ($runtimeConfigs as $runtimeConfig) {
       $customName = $runtimeConfig["customName"];
       $environmentId = $runtimeConfig["environmentId"];
@@ -142,27 +147,25 @@ class ExercisesPresenter extends BasePresenter {
         throw new JobConfigStorageException;
       }
 
-      // update or create the runtime config
-      $config = $exercise->getRuntimeConfigByEnvironment($environmentId);
-      if (!$config) {
-        $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath, $hwGroup);
-        $exercise->addSolutionRuntimeConfigs($config);
-      } else {
-        $config->setCustomName($customName);
-        $config->setJobConfigFilePath($jobConfigPath);
-        $config->setHardwareGroup($hwGroup);
+      // create all new runtime configs
+      $originalConfig = $exercise->getRuntimeConfigByEnvironment($environmentId);
+      $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath, $hwGroup);
+      if ($originalConfig) {
+        $config->setSolutionRuntimeConfig($originalConfig);
       }
-      $currentConfigs[] = $environmentId;
+      $exercise->addSolutionRuntimeConfig($config);
+      $usedConfigs[] = $environmentId;
     }
 
     // remove unused configs
     foreach ($exercise->getSolutionRuntimeConfigs() as $runtimeConfig) {
-      if (!in_array($runtimeConfig->getRuntimeEnvironment()->getId(), $currentConfigs)) {
-        $exercise->removeSolutionRuntimeConfigs($runtimeConfig);
+      if (!in_array($runtimeConfig->getRuntimeEnvironment()->getId(), $usedConfigs)) {
+        $exercise->removeSolutionRuntimeConfig($runtimeConfig);
       }
     }
 
     // make changes to database
+    $this->exercises->persist($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }
