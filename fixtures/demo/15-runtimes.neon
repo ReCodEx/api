@@ -1,6 +1,7 @@
 App\Model\Entity\RuntimeEnvironment:
     CRuntime:
         __construct:
+            - c-gcc-linux
             - "C (GCC)"
             - C
             - "[c, h]"

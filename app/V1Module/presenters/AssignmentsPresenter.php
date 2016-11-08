@@ -331,7 +331,8 @@ class AssignmentsPresenter extends BasePresenter {
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
-      $submission->getSolution()->getFiles()->getValues()
+      $submission->getSolution()->getFiles()->getValues(),
+      ['env' => $runtimeConfiguration->runtimeEnvironment->id]
     );
 
     // if the submission was accepted we now have the URL where to look for the results later
@@ -362,7 +363,7 @@ class AssignmentsPresenter extends BasePresenter {
     // get job config and its test cases
     $environments = $assignment->getSolutionRuntimeConfigs()->map(
       function ($environment) use ($assignment) {
-        $jobConfig = JobConfig\Storage::getJobConfig($environment->getJobConfigFilePath());
+        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         $referenceEvaluations = $this->referenceSolutionEvaluations->find(
           $assignment->getExercise(),
           $environment->getRuntimeEnvironment(),
@@ -405,7 +406,7 @@ class AssignmentsPresenter extends BasePresenter {
 
       // open the job config and update the limits for all hardware groups
       $path = $runtimeConfig->getJobConfigFilePath();
-      $jobConfig = JobConfig\Storage::getJobConfig($path);
+      $jobConfig = $this->jobConfigs->getJobConfig($path);
 
       // get through all defined limits indexed by hwgroup
       $limits = Arrays::get($environment, ["limits"], []);
@@ -421,7 +422,7 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // save the new & archive the old config
-      JobConfig\Storage::saveJobConfig($jobConfig, $path);
+      $this->jobConfigs->saveJobConfig($jobConfig, $path);
     }
 
     // save the current selected hardware group

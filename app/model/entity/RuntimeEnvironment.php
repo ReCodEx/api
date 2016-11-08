@@ -17,8 +17,7 @@ class RuntimeEnvironment implements JsonSerializable
 
   /**
    * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
+   * @ORM\Column(type="string")
    */
   protected $id;
 
@@ -66,12 +65,14 @@ class RuntimeEnvironment implements JsonSerializable
 
 
   public function __construct(
+    $id,
     $name,
     $language,
     $extensions,
     $platform,
     $description
   ) {
+    $this->id = $id;
     $this->name = $name;
     $this->language = $language;
     $this->extensions = $extensions;

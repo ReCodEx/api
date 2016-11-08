@@ -52,12 +52,13 @@ class BrokerProxy {
    * for that hwgroup available).
    * @param string $jobId Unique identifier of the new job
    * @param array $hardwareGroups Hardware groups of this submission
+   * @param array $headers Headers used to further specify which workers can process the job
    * @param string $archiveRemotePath URL of the archive with source codes and job evaluation configuration
    * @param string $resultRemotePath URL where to store resulting archive of whole evaluation
    * @return bool Evaluation has been started on remote server when returns TRUE.
    * @throws SubmissionFailedException on any error
    */
-  public function startEvaluation(string $jobId, array $hardwareGroups, string $archiveRemotePath, string $resultRemotePath) {
+  public function startEvaluation(string $jobId, array $hardwareGroups, array $headers = [], string $archiveRemotePath, string $resultRemotePath) {
     $queue = NULL;
     $poll = NULL;
 
@@ -76,17 +77,22 @@ class BrokerProxy {
     }
 
     $hwGroup = implode('|', $hardwareGroups);
+    $message = [];
+    $message[] = "eval";
+    $message[] = $jobId;
+    $message[] = "hwgroup=$hwGroup";
+
+    foreach ($headers as $key => $value) {
+      $message[] = sprintf("%s=%s", $key, $value);
+    }
+
+    $message[] = "";
+    $message[] = $archiveRemotePath;
+    $message[] = $resultRemotePath;
 
     try {
       $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
-      $queue->sendmulti([
-        "eval",
-        $jobId,
-        "hwgroup=$hwGroup",
-        "",
-        $archiveRemotePath,
-        $resultRemotePath
-      ]);
+      $queue->sendmulti($message);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
     }

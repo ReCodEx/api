@@ -29,14 +29,14 @@ class SubmissionHelper {
 
   /**
    * Upload the files to the fileserver and initiates evaluation on backend
-   * @param JobConfig $jobConfig     The submission configuration file content
-   * @param array     $files         Paths to submitted files
-   * @param string    $hardwareGroup Hardware group to evaluate this submission with
-   *                                 (if none is given, all hardware groups associated with the assignment can be used)
-   * @return string|NULL  URL of the results when the submission was accepted and evaluation started, otherwise NULL
-   * @throws SubmissionFailedException if the job cannot be submitted
+   * @param JobConfig $jobConfig The submission configuration file content
+   * @param array $files Paths to submitted files
+   * @param array $headers Headers used to further specify which workers can evaluate the submission
+   * @param string $hardwareGroup Hardware group to evaluate this submission with
+   *                              (if none is given, all hardware groups associated with the assignment can be used)
+   * @return NULL|string URL of the results when the submission was accepted and evaluation started, otherwise NULL
    */
-  public function initiateEvaluation(JobConfig $jobConfig, array $files, string $hardwareGroup = NULL) {
+  public function initiateEvaluation(JobConfig $jobConfig, array $files, array $headers = [], string $hardwareGroup = NULL) {
     // firstly let us set address of fileserver to job configuration
     $jobConfig->setFileCollector($this->fileServer->getFileserverTasksUrl());
 
@@ -51,6 +51,7 @@ class SubmissionHelper {
     $evaluationStarted = $this->broker->startEvaluation(
       $jobConfig->getJobId(),
       $hardwareGroup !== NULL ? [$hardwareGroup] : $jobConfig->getHardwareGroups(),
+      $headers,
       $archiveUrl,
       $resultsUrl
     );
