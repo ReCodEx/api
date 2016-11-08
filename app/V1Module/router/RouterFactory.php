@@ -164,6 +164,7 @@ class RouterFactory {
    */
   private static function createReferenceSolutionsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
+    $router[] = new PostRoute("$prefix/<id>", "ReferenceExerciseSolutions:createReferenceSolution");
     $router[] = new PostRoute("$prefix/<exerciseId>/evaluate/<id>", "ReferenceExerciseSolutions:evaluate");
   }
 

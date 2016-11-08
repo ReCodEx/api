@@ -12,6 +12,7 @@ use App\Model\Entity\ReferenceSolutionEvaluation;
 
 use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
+use App\Exceptions\ForbiddenRequestException;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -63,18 +64,28 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Get reference solutions for an exercise
    * @GET
+   * @UserIsAllowed(exercises="view-detail")
    */
-  public function actionExercise($id) {
+  public function actionExercise(string $id) {
     // @todo check that this user can access this information
     $exercise = $this->findExerciseOrThrow($id);
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
-  public function actionCreateReferenceSolution() {
+  /**
+   * Add new reference solution to existing exercise
+   * @POST
+   * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
+   * @Param(type="post", name="files", description="Files of the reference solution")
+   * @UserIsAllowed(exercises="create")
+   */
+  public function actionCreateReferenceSolution(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
 
-    // @todo validate user's access
+    if (!$exercise->isAuthor($user)) {
+      throw new ForbiddenRequestException("Only author can create reference assignments");
+    }
 
     $req = $this->getHttpRequest();
     $files = $this->files->findAllById($req->getPost("files"));
@@ -82,15 +93,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files);
     $this->referenceSolutions->persist($solution);
 
-    // evaluate the solution right now
-    // hwGroup post param is preserved from current endpoint call
-    $this->actionEvaluate($exercise->getId(), $solution->getId());
+    $this->sendSuccessResponse($solution);
   }
 
   /**
    * Evaluate reference solutions to an exercise for a hardware group
    * @POST
    * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
+   * @UserIsAllowed(assignments="create")
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
@@ -100,15 +110,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
     }
 
-    // @todo validate that user can do this action
-
     // create the entity and generate the ID
     $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
-    $jobConfig = $this->jobConfigs->getJobConfig($referenceSolution->getReferenceSolution()->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
+    $jobConfig = $this->jobConfigs->getJobConfig(
+      $referenceSolution->getReferenceSolution()
+      ->getSolution()->getSolutionRuntimeConfig()
+      ->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
     $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
