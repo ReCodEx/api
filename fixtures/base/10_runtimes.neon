@@ -1,0 +1,41 @@
+App\Model\Entity\RuntimeEnvironment:
+    CRuntime:
+        __construct:
+            - c-gcc-linux
+            - "C (GCC)"
+            - C
+            - "[c, h]"
+            - "GNU/Linux"
+            - "C compiled with GCC"
+    PascalRuntime:
+        __construct:
+            - freepascal-linux
+            - "Pascal (FreePascal)"
+            - Pascal
+            - "[pas]"
+            - "GNU/Linux"
+            - "Pascal compiled with FreePascal"
+    CPP11Runtime:
+        __construct:
+            - cxx11-gcc-linux
+            - "C++11 (GCC)"
+            - 'C++'
+            - "[cpp, h, hpp]"
+            - "GNU/Linux"
+            - C++11 compiled with G++
+    MonoRuntime:
+        __construct:
+            - mono46
+            - "C# (Mono)"
+            - 'C#'
+            - "[cs]"
+            - "GNU/Linux"
+            - "C# run in Mono"
+    Java8Runtime:
+        __construct:
+            - java8
+            - "Java 8"
+            - 'Java 8'
+            - "[java]"
+            - "GNU/Linux"
+            - "Java 8"
