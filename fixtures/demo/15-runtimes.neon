@@ -1,13 +1,3 @@
-App\Model\Entity\RuntimeEnvironment:
-    CRuntime:
-        __construct:
-            - c-gcc-linux
-            - "C (GCC)"
-            - C
-            - "[c, h]"
-            - "GNU/Linux"
-            - "Good ol' C"
-
 App\Model\Entity\HardwareGroup:
     demoHWGroup:
         __construct:
