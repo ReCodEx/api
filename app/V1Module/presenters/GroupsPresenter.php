@@ -266,7 +266,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot view these stats.");
     }
 
-    if (!$group->canUserAccessGroup($currentUser)) {
+    if (!$group->canUserAccessGroupDetail($currentUser)) {
       throw new ForbiddenRequestException("You are not allowed to view this group detail.");
     }
 
