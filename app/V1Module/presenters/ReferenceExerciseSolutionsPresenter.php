@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MonitorConfig;
+use App\Model\Entity\SolutionRuntimeConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
@@ -130,17 +131,25 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     // create the entity and generate the ID
-    $hwGroup = $this->getHttpRequest()->getPost("hwGroup", $runtimeConfig->getHardwareGroup()->getId());
+    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
     $this->referenceEvaluations->persist($evaluation);
 
+    /** @var SolutionRuntimeConfig $runtimeConfig */
+    $runtimeConfig = $referenceSolution->getSolution()->getSolutionRuntimeConfig();
+
     // configure the job and start evaluation
-    $jobConfig = $this->jobConfigs->getJobConfig(
-      $referenceSolution->getSolution()->getSolutionRuntimeConfig()->getJobConfigFilePath());
+    $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());
     $jobConfig->setJobId(ReferenceSolutionEvaluation::JOB_TYPE, $evaluation->getId());
     $files = $referenceSolution->getFiles()->getValues();
 
-    $resultsUrl = $this->submissionHelper->initiateEvaluation($jobConfig, $files, $hwGroup);
+    $resultsUrl = $this->submissionHelper->initiateEvaluation(
+      $jobConfig,
+      $files,
+      ['env' => $runtimeConfig->runtimeEnvironment->id],
+      $hwGroup
+    );
+
     if($resultsUrl !== NULL) {
       $evaluation->setResultsUrl($resultsUrl);
       $this->referenceEvaluations->flush();
