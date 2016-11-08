@@ -113,8 +113,9 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="view-groups")
    */
   public function actionGroups(string $id) {
+    $user = $this->users->findCurrentUserOrThrow();
     $instance = $this->instances->findOrThrow($id);
-    $this->sendSuccessResponse($instance->getGroups()->getValues());
+    $this->sendSuccessResponse($instance->getGroupsForUser($user));
   }
 
   /**

@@ -132,6 +132,16 @@ class Instance implements JsonSerializable
     $this->groups->add($group);
   }
 
+  public function getGroupsForUser(User $user) {
+    return $this->groups->filter(function ($group) use ($user) {
+      if ($group->canUserAccessGroupDetail($user)) {
+        return TRUE;
+      }
+
+      return FALSE;
+    })->getValues();
+  }
+
   public function getTopLevelGroups() {
     $filter = Criteria::create()->where(Criteria::expr()->eq("parentGroup", NULL));
     return $this->groups->matching($filter);

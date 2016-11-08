@@ -15,13 +15,21 @@ class Group implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  public function __construct(string $name, string $description, Instance $instance, User $admin, Group $parentGroup = NULL, bool $publicStats = TRUE) {
+  public function __construct(
+      string $name,
+      string $description,
+      Instance $instance,
+      User $admin,
+      Group $parentGroup = NULL,
+      bool $publicStats = TRUE,
+      bool $isPublic = TRUE) {
     $this->name = $name;
     $this->description = $description;
     $this->memberships = new ArrayCollection;
     $this->admin = $admin;
     $this->instance = $instance;
     $this->publicStats = $publicStats;
+    $this->isPublic = $isPublic;
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
     $admin->makeSupervisorOf($this);
@@ -59,6 +67,11 @@ class Group implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $publicStats;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isPublic;
 
   public function statsArePublic(): bool {
     return $this->publicStats;
@@ -152,6 +165,21 @@ class Group implements JsonSerializable
 
   public function isMemberOf(User $user) {
     return $this->getActiveMembers(GroupMembership::TYPE_ALL)->contains($user);
+  }
+
+  /**
+   * Can given user access information about this group.
+   * @param User $user
+   * @return bool true if user can access group
+   */
+  public function canUserAccessGroupDetail(User $user) {
+    if ($this->isMemberOf($user)
+        || $user->getRole()->isSuperadmin()
+        || $this->isPublic === TRUE) {
+      return TRUE;
+    }
+
+    return FALSE;
   }
 
   /**
@@ -322,7 +350,8 @@ class Group implements JsonSerializable
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
       "assignments" => $this->getAssignmentsIds(),
-      "publicStats" => $this->publicStats
+      "publicStats" => $this->publicStats,
+      "isPublic" => $this->isPublic
     ];
   }
 }

@@ -128,7 +128,6 @@ class Exercise implements JsonSerializable
         $runtimeConfig->getCustomName(),
         $runtimeConfig->getRuntimeEnvironment(),
         $runtimeConfig->getJobConfigFilePath(),
-        $runtimeConfig->getHardwareGroup(),
         $runtimeConfig
       ));
     }

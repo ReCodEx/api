@@ -219,8 +219,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $updatedRuntimeConfigs = $result["payload"]->getSolutionRuntimeConfigs();
     Assert::true($updatedRuntimeConfigs->exists(function ($key, $config) use ($environmentId, $hardwareGroupId) {
       if ($config->customName == "runtimeConfigName"
-          && $config->runtimeEnvironment->getId() == $environmentId
-          && $config->hardwareGroup->getId() == $hardwareGroupId) {
+          && $config->runtimeEnvironment->getId() == $environmentId) {
         return TRUE;
       }
 
