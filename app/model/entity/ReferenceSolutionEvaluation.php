@@ -30,7 +30,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $referenceSolution;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\ManyToOne(targetEntity="HardwareGroup")
    */
   protected $hwGroup;
 
@@ -69,7 +69,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, string $hwGroup) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution, HardwareGroup $hwGroup) {
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
   }

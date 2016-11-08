@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Helpers\MonitorConfig;
 use App\Model\Repository\Exercises;
+use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
@@ -62,6 +63,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $jobConfigs;
+
+  /**
+   * @var HardwareGroups
+   * @inject
+   */
+  public $hardwareGroups;
 
   /**
    * Get reference solutions for an exercise
@@ -124,7 +131,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     // create the entity and generate the ID
     $hwGroup = $this->getHttpRequest()->getPost("hwGroup", $runtimeConfig->getHardwareGroup()->getId());
-    $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
+    $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
     $this->referenceEvaluations->persist($evaluation);
 
     // configure the job and start evaluation
