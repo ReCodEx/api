@@ -48,7 +48,7 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="view-all")
    */
   public function actionDefault(string $search = NULL) {
-    $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByNameOrId($search);
+    $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByName($search);
 
     $this->sendSuccessResponse($exercises);
   }

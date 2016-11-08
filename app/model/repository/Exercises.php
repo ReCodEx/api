@@ -15,11 +15,10 @@ class Exercises extends BaseRepository {
     parent::__construct($em, Exercise::CLASS);
   }
 
-  public function searchByNameOrId(string $search) {
+  public function searchByName(string $search) {
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()
-                  ->where(Criteria::expr()->contains("id", $search))
-                  ->orWhere(Criteria::expr()->contains("name", $search));
+                  ->where(Criteria::expr()->contains("name", $search));
       $foundExercises = $this->matching($filter);
       if ($foundExercises->count() > 0) {
         return $foundExercises->toArray();
@@ -34,8 +33,7 @@ class Exercises extends BaseRepository {
         }
 
         $filter = Criteria::create()
-                    ->orWhere(Criteria::expr()->contains("id", $part))
-                    ->orWhere(Criteria::expr()->contains("name", $part));
+                    ->where(Criteria::expr()->contains("name", $part));
         $foundExercises = $this->matching($filter);
       }
 

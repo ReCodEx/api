@@ -91,8 +91,7 @@ class Instance implements JsonSerializable
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()
                   ->where(Criteria::expr()->contains("firstName", $search))
-                  ->orWhere(Criteria::expr()->contains("lastName", $search))
-                  ->orWhere(Criteria::expr()->contains("email", $search));
+                  ->orWhere(Criteria::expr()->contains("lastName", $search));
       $members = $this->members->matching($filter);
       if ($members->count() > 0) {
         return $members;
@@ -109,8 +108,7 @@ class Instance implements JsonSerializable
 
         $filter = Criteria::create()
                       ->orWhere(Criteria::expr()->contains("firstName", $part))
-                      ->orWhere(Criteria::expr()->contains("lastName", $part))
-                      ->orWhere(Criteria::expr()->contains("email", $part));
+                      ->orWhere(Criteria::expr()->contains("lastName", $part));
         $members = $members->matching($filter);
       }
 
