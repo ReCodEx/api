@@ -93,7 +93,11 @@ class SolutionEvaluation implements JsonSerializable
     }
   }
 
-  public function jsonSerialize() {
+  public function getData(bool $canViewRatios) {
+    $testResults = $this->testResults->map(
+      function ($res) use ($canViewRatios) { return $res->getData($canViewRatios); }
+    )->getValues();
+
     return [
       "id" => $this->id,
       "evaluatedAt" => $this->evaluatedAt->getTimestamp(),
@@ -104,8 +108,12 @@ class SolutionEvaluation implements JsonSerializable
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
       "evaluationFailed" => $this->evaluationFailed,
-      "testResults" => $this->testResults->getValues()
+      "testResults" => $testResults
     ];
+  }
+
+  public function jsonSerialize() {
+    return $this->getData(FALSE);
   }
 
   /**

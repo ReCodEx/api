@@ -135,6 +135,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @return array
      */
     public function jsonSerialize() {
+      $evaluation = $this->hasEvaluation() ? $this->getEvaluation()->getData($this->assignment->getCanViewLimitRatios()) : NULL;
       return [
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
@@ -142,7 +143,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "exerciseAssignmentId" => $this->assignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-        "evaluation" => $this->hasEvaluation() ? $this->getEvaluation() : NULL,
+        "evaluation" => $evaluation,
         "files" => $this->getSolution()->getFiles()->getValues(),
         "maxPoints" => $this->getMaxPoints()
       ];

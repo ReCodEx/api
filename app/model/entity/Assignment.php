@@ -27,7 +27,8 @@ class Assignment implements JsonSerializable
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
-    int $maxPointsBeforeSecondDeadline = 0
+    int $maxPointsBeforeSecondDeadline = 0,
+    bool $canViewLimitRatios = FALSE
   ) {
     if ($secondDeadline == null) {
       $secondDeadline = $firstDeadline;
@@ -47,6 +48,7 @@ class Assignment implements JsonSerializable
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
     $this->localizedAssignments = new ArrayCollection;
+    $this->canViewLimitRatios = $canViewLimitRatios;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -146,6 +148,11 @@ class Assignment implements JsonSerializable
       return 0;
     }
   }
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $canViewLimitRatios;
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments", cascade={"persist"})
@@ -259,7 +266,8 @@ class Assignment implements JsonSerializable
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
-      "solutionRuntimeConfigs" => $this->getSolutionRuntimeConfigsIds()
+      "solutionRuntimeConfigs" => $this->getSolutionRuntimeConfigsIds(),
+      "canViewLimitRatios" => $this->canViewLimitRatios
     ];
   }
 }

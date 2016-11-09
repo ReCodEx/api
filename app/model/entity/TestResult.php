@@ -99,7 +99,14 @@ class TestResult implements JsonSerializable
    */
   protected $judgeOutput;
 
-  public function jsonSerialize() {
+  public function getData(bool $canViewRatios) {
+    $timeRatio = NULL;
+    $memoryRatio = NULL;
+    if ($canViewRatios) {
+      $timeRatio = $this->usedTimeRatio;
+      $memoryRatio = $this->usedMemoryRatio;
+    }
+
     return [
       "id" => $this->id,
       "testName" => $this->testName,
@@ -108,8 +115,14 @@ class TestResult implements JsonSerializable
       "score" => $this->score,
       "memoryExceeded" => $this->memoryExceeded,
       "timeExceeded" => $this->timeExceeded,
-      "message" => $this->message
+      "message" => $this->message,
+      "timeRatio" => $timeRatio,
+      "memoryRatio" => $memoryRatio
     ];
+  }
+
+  public function jsonSerialize() {
+    return $this->getData(FALSE);
   }
 
 }
