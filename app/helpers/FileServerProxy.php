@@ -2,7 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Model\Entity\UploadedFile;
 use Doctrine\Common\Collections\ArrayCollection;
+use GuzzleHttp\Psr7\Response;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 
@@ -12,6 +14,7 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
+use Psr\Http\Message\ResponseInterface;
 use ZipArchive;
 
 use Nette\Utils\Arrays;
@@ -104,7 +107,7 @@ class FileServerProxy {
    * Send files to remote fileserver
    * @param string   $jobId     Identifier of job for which these files are intended
    * @param string   $jobConfig Content of job configuration for this submission
-   * @param string[] $files     Path of files submitted by user
+   * @param UploadedFile[] $files Files submitted by user
    * @return mixed   List of archive URL at fileserver and URL where results needs to be stored to
    * @throws SubmissionFailedException on any error
    */
@@ -118,29 +121,82 @@ class FileServerProxy {
         [ "multipart" => $filesToSubmit ]
       );
 
-      if ($response->getStatusCode() === 200) {
-        try {
-          $paths = Json::decode($response->getBody());
-        } catch (JsonException $e) {
-          throw new SubmissionFailedException("Remote file server did not respond with a valid JSON response.");
-        }
+      $paths = $this->decodeJsonResponse($response);
 
-        if (!isset($paths->archive_path) || !isset($paths->result_path)) {
-          throw new SubmissionFailedException("Remote file server broke the communication protocol");
-        }
-
-        return [
-          $this->remoteServerAddress . $paths->archive_path,
-          $this->remoteServerAddress . $paths->result_path
-        ];
-      } else {
-        throw new SubmissionFailedException("Remote file server is not working correctly");
+      if (!isset($paths->archive_path) || !isset($paths->result_path)) {
+        throw new SubmissionFailedException("Remote file server broke the communication protocol");
       }
+
+      return [
+        $this->remoteServerAddress . $paths->archive_path,
+        $this->remoteServerAddress . $paths->result_path
+      ];
     } catch (RequestException $e) {
       throw new SubmissionFailedException("Cannot connect to remote file server");
     }
   }
 
+  /**
+   * Send supplementary task files (e.g. test inputs) to the file server
+   * @param UploadedFile[] $files files to be uploaded
+   * @return array
+   * @throws SubmissionFailedException
+   */
+  public function sendSupplementaryFiles(array $files) {
+    $fileData = array_map([$this, 'prepareFileData'], $files);
+    $httpResponse = $this->client->post(self::TASKS_ROUTE, [
+      'multipart' => $fileData
+    ]);
+    $response = $this->decodeJsonResponse($httpResponse);
+
+    if (!isset($response->files)) {
+      throw new SubmissionFailedException("Remote file server broke the communication protocol");
+    }
+
+    $result = [];
+
+    foreach ($response->files as $name => $path) {
+      $result[$name] = $this->remoteServerAddress . $path;
+    }
+
+    return $result;
+  }
+
+  /**
+   * Decode a JSON-encoded HTTP response body
+   * @param ResponseInterface $response
+   * @return mixed
+   * @throws SubmissionFailedException
+   */
+  private function decodeJsonResponse(ResponseInterface $response) {
+    if ($response->getStatusCode() !== 200) {
+      throw new SubmissionFailedException("Request on file server failed");
+    }
+
+    try {
+      return Json::decode($response->getBody());
+    } catch (JsonException $e) {
+      throw new SubmissionFailedException("Remote file server did not respond with a valid JSON response.");
+    }
+  }
+
+  /**
+   * Convert an uploaded file to an array that can be passed to Guzzle
+   * @param $file
+   * @return array
+   * @throws SubmissionFailedException
+   */
+  private function prepareFileData(UploadedFile $file) {
+      if (!file_exists($file->filePath)) {
+        throw new SubmissionFailedException("File $file->filePath does not exist on the server.");
+      }
+
+      return [
+        "name" => $file->name,
+        "filename" => $file->name,
+        "contents" => fopen($file->filePath, "r")
+      ];
+  }
 
   /**
    * Prepare files for sending to fileserver.
@@ -151,19 +207,11 @@ class FileServerProxy {
    */
   private function prepareFiles(string $jobConfig, array $files) {
     $filesToSubmit = array_map(function ($file) {
-      if (!file_exists($file->filePath)) {
-        throw new SubmissionFailedException("File $file->filePath does not exist on the server.");
-      }
-
       if ($file->name === self::JOB_CONFIG_FILENAME) {
         throw new SubmissionFailedException("User is not allowed to upload a file with the name of " . self::JOB_CONFIG_FILENAME);
       }
 
-      return [
-        "name" => $file->name,
-        "filename" => $file->name,
-        "contents" => fopen($file->filePath, "r")
-      ];
+      return $this->prepareFileData($file);
     }, $files);
 
     // the job config must be among the uploaded files as well

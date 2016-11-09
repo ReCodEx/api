@@ -3,7 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
+use App\Helpers\FileServerProxy;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
@@ -11,6 +13,7 @@ use App\Model\Entity\SolutionRuntimeConfig;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedAssignment;
+use App\Model\Repository\UploadedFiles;
 
 /**
  * Endpoint for exercise manipulation
@@ -41,6 +44,18 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $hardwareGroups;
+
+  /**
+   * @var FileServerProxy
+   * @inject
+   */
+  public $fileServer;
+
+  /**
+   * @var UploadedFiles
+   * @inject
+   */
+  public $uploadedFiles;
 
   /**
    * Get a list of exercises with an optional filter
@@ -126,7 +141,7 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
-      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
     // add new and update old runtime configs
@@ -166,6 +181,25 @@ class ExercisesPresenter extends BasePresenter {
     $this->exercises->persist($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="files", description="Identifiers of uploaded files")
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionUploadSupplementaryFiles(string $id) {
+    $user = $this->users->findCurrentUserOrThrow();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user)) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
+    }
+
+    $uploadedFiles = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
+    $paths = $this->fileServer->sendSupplementaryFiles($uploadedFiles);
+    $this->sendSuccessResponse($paths);
   }
 
   /**
