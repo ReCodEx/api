@@ -43,7 +43,8 @@
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
-		"mockery/mockery": "@stable"
+		"mockery/mockery": "@stable",
+		"mikey179/vfsStream": "@stable"
 	},
 	"minimum-stability": "stable"
 }

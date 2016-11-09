@@ -1,9 +1,12 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Model\Entity\UploadedFile;
+use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\Users;
 use App\V1Module\Presenters\ExercisesPresenter;
+use org\bovigo\vfs\vfsStream;
 use Tester\Assert;
-use App\Helpers\JobConfig;
 
 class TestExercisesPresenter extends Tester\TestCase
 {
@@ -227,6 +230,67 @@ class TestExercisesPresenter extends Tester\TestCase
     }));
   }
 
+  public function testSupplementaryFilesUpload() {
+    // File system setup
+    $structure = [
+      "file1.txt" => "Lorem ipsum",
+      "file2.txt" => "Dolor sit amet",
+      "file3.txt" => "Consectetuer adipiscing elit"
+    ];
+
+    $fs = vfsStream::setup("root", NULL, $structure);
+
+    // Database setup
+
+    /** @var UploadedFiles $fileRepository */
+    $fileRepository = $this->container->getByType(UploadedFiles::class);
+    $files = [];
+
+    foreach (array_keys($structure) as $name) {
+      $uploadedFile = new UploadedFile(
+        vfsStream::path("root"),
+        $name,
+        new DateTime(),
+        42,
+        $this->container->getByType(Users::class)->getByEmail($this->adminLogin)
+      );
+
+      $fileRepository->persist($uploadedFile, FALSE);
+      $files[] = $uploadedFile;
+    }
+
+    $fileRepository->flush();
+
+    // Mock file server setup
+    $fileServerResponse = [
+      "task1.txt" => "https://fs/tasks/hash1",
+      "task2.txt" => "https://fs/tasks/hash2",
+      "task3.txt" => "https://fs/tasks/hash3",
+    ];
+
+    /** @var Mockery\Mock $fileServerMock */
+    $fileServerMock = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withArgs([$files])->andReturn($fileServerResponse);
+
+    // Finally, the test itself
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allExercises = $this->presenter->exercises->findAll();
+    $exercise = array_pop($allExercises);
+
+    $this->presenter->fileServer = $fileServerMock;
+
+    $response = $this->presenter->run(new Nette\Application\Request("V1:Exercises", "POST", [
+      "action" => 'uploadSupplementaryFiles',
+      'id' => $exercise->id
+    ], [
+      'files' => array_map(function (UploadedFile $file) { return $file->id; }, $files)
+    ]));
+
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+    Assert::equal($fileServerResponse, $response->getPayload()->payload);
+  }
 }
 
 $testCase = new TestExercisesPresenter();
