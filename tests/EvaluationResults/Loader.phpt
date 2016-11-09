@@ -39,8 +39,8 @@ class TestEvaluationResultsLoader extends Tester\TestCase
     $results = Loader::parseResults(self::$initFailedResult, $jobConfig);
     Assert::type(EvaluationResults::CLASS, $results);
     Assert::false($results->initOK());
-    Assert::equal(6, count($results->getTestsResults("group1")));
-    foreach ($results->getTestsResults("group1") as $testResult) {
+    Assert::equal(6, count($results->getTestsResults()));
+    foreach ($results->getTestsResults() as $testResult) {
       Assert::type(SkippedTestResult::CLASS, $testResult);
     }
   }
@@ -66,15 +66,15 @@ b:
     $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$successResult, $jobConfig);
     Assert::true($results->initOK());
-    Assert::equal(6, count($results->getTestsResults("group1")));
+    Assert::equal(6, count($results->getTestsResults()));
   }
 
   public function testCorrectInterpretationOfFailedSubmission() {
     $jobConfig = $this->jobConfigStorage->parseJobConfig(self::$jobConfig);
     $results = Loader::parseResults(self::$failedResult, $jobConfig);
     Assert::true($results->initOK());
-    Assert::equal(6, count($results->getTestsResults("group1")));
-    foreach ($results->getTestsResults("group1") as $result) {
+    Assert::equal(6, count($results->getTestsResults()));
+    foreach ($results->getTestsResults() as $result) {
       Assert::type(SkippedTestResult::CLASS, $result);
     }
   }
@@ -559,6 +559,7 @@ EOS;
 
     static $successResult = <<<'EOS'
 job-id: hippoes
+hw-group: group1
 results:
     - { status: OK, task-id: compilation, sandbox_results: { message: '', memory: 5996, exitsig: 0, wall-time: 0.187, max-rss: 20968, status: OK, exitcode: 0, time: 0.055, killed: false } }
     - { task-id: fetch_test_1, status: OK }
@@ -597,6 +598,7 @@ EOS;
 results:
     - { status: FAILED, sandbox_results: { killed: false, status: OK, wall-time: 0.08, message: '', max-rss: 9944, memory: 6508, exitcode: 0, time: 0.072, exitsig: 0 }, task-id: compilation }
 job-id: hippoes
+hw-group: group1
 EOS;
 
     static $failedResult = <<<'EOS'
@@ -633,6 +635,7 @@ results:
     - { task-id: judging_test_6, status: SKIPPED }
     - { task-id: rm_junk_test_6, status: SKIPPED }
 job-id: hippoes
+hw-group: group1
 EOS;
 
 }

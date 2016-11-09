@@ -60,20 +60,24 @@ class TestEvaluationResults extends Tester\TestCase
   public function testMissingParams() {
     $jobConfig = new JobConfig(self::$jobConfig);
 
+    // empty document
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
+    // job id different from the one in config
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([ "job-id" => "student_ratata" ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
+    // missing task results
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "student_bla bla bla"
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
+    // missing task results vol. 2
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "student_bla bla bla",
@@ -81,9 +85,19 @@ class TestEvaluationResults extends Tester\TestCase
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
+    // missing hardware group id
+    Assert::exception(function () use ($jobConfig) {
+      new EvaluationResults([
+        "job-id" => "student_bla bla bla",
+        "results" => []
+      ], $jobConfig);
+    }, ResultsLoadingException::class);
+
+    // this should be fine
     Assert::noError(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "student_bla bla bla",
+        "hw-group" => "somegroup",
         "results" => []
       ], $jobConfig);
     });
@@ -96,6 +110,7 @@ class TestEvaluationResults extends Tester\TestCase
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 
+    // wrong result format
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "student_bla bla bla",
@@ -108,6 +123,7 @@ class TestEvaluationResults extends Tester\TestCase
     $jobConfig = new JobConfig(self::$jobConfig);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
+      "hw-group" => "whatever",
       "results" => [
         [ "task-id" => "W", "status" => "OK" ],
         [ "task-id" => "X", "status" => "OK" ],
@@ -145,6 +161,7 @@ class TestEvaluationResults extends Tester\TestCase
     ]);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
+      "hw-group" => "whatever",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ],
         [ "task-id" => "B", "status" => "SKIPPED" ]
@@ -181,6 +198,7 @@ class TestEvaluationResults extends Tester\TestCase
     ]);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
+      "hw-group" => "whatever",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ],
         [ "task-id" => "B", "status" => "FAILED" ]
@@ -217,6 +235,7 @@ class TestEvaluationResults extends Tester\TestCase
     ]);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
+      "hw-group" => "whatever",
       "results" => [
         [ "task-id" => "A", "status" => "OK" ]
       ]
@@ -246,10 +265,14 @@ class TestEvaluationResults extends Tester\TestCase
     ];
 
     $evalRes = [ "task-id" => "Y", "status" => "OK", "judge_output" => "0.456" ];
-    $results = new EvaluationResults([ "job-id" => "student_bla bla bla", "results" => [ $initRes, $evalRes, $execRes ] ], $jobConfig);
+    $results = new EvaluationResults([
+      "job-id" => "student_bla bla bla",
+      "hw-group" => "A",
+      "results" => [ $initRes, $evalRes, $execRes ]
+    ], $jobConfig);
     $testConfig = $jobConfig->getTests()["A"];
 
-    $testResult = $results->getTestResult($testConfig, "A");
+    $testResult = $results->getTestResult($testConfig);
     Assert::type(TestResult::CLASS, $testResult);
     Assert::equal("A", $testResult->getId());
     Assert::equal("OK", $testResult->getStatus());
@@ -259,7 +282,7 @@ class TestEvaluationResults extends Tester\TestCase
     Assert::equal("0.456", $testResult->getJudgeOutput());
     Assert::equal(0.456, $testResult->getScore());
 
-    Assert::equal(1, count($results->getTestsResults("A")));
+    Assert::equal(1, count($results->getTestsResults()));
   }
 
 }
