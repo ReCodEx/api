@@ -270,7 +270,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock $fileServerMock */
     $fileServerMock = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withArgs([$files])->andReturn($fileServerResponse);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withAnyArgs()->andReturn($fileServerResponse);
 
     // Finally, the test itself
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
@@ -281,6 +281,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $this->presenter->fileServer = $fileServerMock;
 
+    /** @var Nette\Application\Responses\JsonResponse $response */
     $response = $this->presenter->run(new Nette\Application\Request("V1:Exercises", "POST", [
       "action" => 'uploadSupplementaryFiles',
       'id' => $exercise->id
@@ -289,7 +290,7 @@ class TestExercisesPresenter extends Tester\TestCase
     ]));
 
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-    Assert::equal($fileServerResponse, $response->getPayload()->payload);
+    Assert::equal($fileServerResponse, $response->getPayload()['payload']);
   }
 }
 
