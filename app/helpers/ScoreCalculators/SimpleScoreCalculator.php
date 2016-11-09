@@ -33,8 +33,10 @@ class SimpleScoreCalculator implements IScoreCalculator {
     $config = Yaml::parse($scoreConfig);
     $weights = $config['testWeights'];
 
-    if (count($weights) != count($testResults)) {
-      throw new \InvalidArgumentException("Score config has different number of test weights than the number of test results.");
+    $weightsCount = count($weights);
+    $testResultsCount = count($testResults);
+    if ($weightsCount != $testResultsCount) {
+      throw new \InvalidArgumentException("Score config has different number of test weights (${weightsCount}) than the number of test results (${testResultsCount}).");
     }
 
     foreach ($testResults as $name => $score) {
