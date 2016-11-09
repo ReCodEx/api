@@ -14,8 +14,12 @@ use Symfony\Component\Yaml\Yaml;
  */
 class EvaluationResults {
   const JOB_ID_KEY = "job-id";
+  const HARDWARE_GROUP_KEY = "hw-group";
   const RESULTS_KEY = "results";
   const TASK_ID_KEY = "task-id";
+
+  /** @var string Hardware group identifier of the worker that processed the job */
+  private $hardwareGroup;
 
   /** @var array Raw data from the results */
   private $rawResults;
@@ -31,8 +35,8 @@ class EvaluationResults {
 
   /**
    * Constructor
-   * @param array      $rawResults  Raw results of evaluation from backend (just after basic parsing)
-   * @param JobCOnfig  $config      Configuration of this job
+   * @param array      $rawResults  Raw results of evaluation from backend (just parsed YAML)
+   * @param JobConfig  $config      Configuration of this job
    */
   public function __construct(array $rawResults, JobConfig $config) {
     if (!isset($rawResults[self::JOB_ID_KEY])) {
@@ -43,6 +47,12 @@ class EvaluationResults {
     if ((string) $jobId !== $config->getJobId()) {
       throw new ResultsLoadingException("Job ID of the configuration and the result do not match.");
     }
+
+    if (!isset($rawResults[self::HARDWARE_GROUP_KEY])) {
+      throw new ResultsLoadingException("Hardware group ID is not set in the result.");
+    }
+
+    $this->hardwareGroup = $rawResults[self::HARDWARE_GROUP_KEY];
 
     if (!isset($rawResults[self::RESULTS_KEY])) {
       throw new ResultsLoadingException("Results are missing required field 'results'.");
@@ -90,23 +100,29 @@ class EvaluationResults {
   }
 
   /**
-   * Get results for all logical tests, one result per test
-   * @param string $hardwareGroupId Hardware group
-   * @return TestResult[] Results of all test inside job
+   * Get the hardware group identifier of the worker responsible for the evaluation
    */
-  public function getTestsResults($hardwareGroupId) {
-    return array_map(function($test) use ($hardwareGroupId) {
-      return $this->getTestResult($test, $hardwareGroupId);
+  public function getHardwareGroupId(): string {
+    return $this->hardwareGroup;
+  }
+
+  /**
+   * Get results for all logical tests, one result per test
+   * @return TestResult[] Results of all test inside job
+   * @internal param string $hardwareGroupId Hardware group
+   */
+  public function getTestsResults() {
+    return array_map(function($test) {
+      return $this->getTestResult($test);
     }, $this->config->getTests());
   }
 
   /**
    * Get (aggregate) result for one test
-   * @param TestConfig  $test       Configuration of the test
-   * @param string $hardwareGroupId Hardware group
+   * @param TestConfig $test Configuration of the test
    * @return TestResult Results for specified test
    */
-  public function getTestResult(TestConfig $test, $hardwareGroupId) {
+  public function getTestResult(TestConfig $test) {
     if ($this->initOK === FALSE) {
       return new SkippedTestResult($test);
     }
@@ -126,7 +142,7 @@ class EvaluationResults {
       return new FailedTestResult($test);
     }
 
-    return new TestResult($test, $execTasks, $eval, $hardwareGroupId);
+    return new TestResult($test, $execTasks, $eval, $this->hardwareGroup);
   }
 
   /**

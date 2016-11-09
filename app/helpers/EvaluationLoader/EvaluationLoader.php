@@ -98,7 +98,7 @@ class EvaluationLoader {
       return NULL;
     }
 
-    return new SolutionEvaluation($results, NULL, NULL, $referenceSolution->getHwGroup());
+    return new SolutionEvaluation($results, NULL, NULL);
   }
 
   /**
