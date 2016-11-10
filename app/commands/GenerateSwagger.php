@@ -267,7 +267,7 @@ class GenerateSwagger extends Command
 
       $this->setArrayDefault($paramEntry, "type", "string");
 
-      if (!Arrays::get($paramEntry, "description")) {
+      if (!Arrays::get($paramEntry, "description", NULL)) {
         $paramEntry["description"] = ""; // TODO put something meaningful in here
       }
     }
@@ -281,7 +281,7 @@ class GenerateSwagger extends Command
       $this->setArrayDefault($entry["responses"], "401", []);
 
       if ($defaultSecurity !== NULL) {
-        $this->setArrayDefault($entry, 'security', [$defaultSecurity => []]);
+        $this->setArrayDefault($entry, 'security', [[$defaultSecurity => []]]);
       }
     } else if (array_key_exists($entry["responses"], "401")) {
       $warning(sprintf("Method %s is not annotated with @LoggedIn, but corresponding endpoint has 401 in its response list", $method->name));
@@ -355,16 +355,18 @@ class GenerateSwagger extends Command
       list($type, $validation) = explode(':', $type);
     }
 
-    $translation = Arrays::get($this->typeMap, $type);
+    $translation = Arrays::get($this->typeMap, $type, NULL);
     if (is_array($translation)) {
       $typeInfo = [
         'type' => $translation[0],
         'format' => $translation[1]
       ];
-    } else {
+    } else if ($translation !== NULL) {
       $typeInfo = [
         'type' => $translation
       ];
+    } else {
+      return [];
     }
 
     if ($validation && Strings::contains($validation, '..')) {
