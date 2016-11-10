@@ -9,7 +9,7 @@ use App\Exceptions\ResultsLoadingException;
 class ExecutionTaskResult extends TaskResult {
   const SANDBOX_RESULTS_KEY = "sandbox_results";
 
-  /** @var Stats Statistics of the execution */
+  /** @var IStats Statistics of the execution */
   private $stats = NULL;
 
   /**
@@ -29,14 +29,16 @@ class ExecutionTaskResult extends TaskResult {
       }
 
       $this->stats = new Stats($data[self::SANDBOX_RESULTS_KEY]);
+    } else {
+      $this->stats = new SkippedStats();
     }
   }
 
   /**
    * Get parsed statistics of execution
-   * @return Stats Statistics of the execution
+   * @return Stats|NULL Statistics of the execution
    */
-  public function getStats(): Stats {
+  public function getStats(): IStats {
     return $this->stats;
   }
 

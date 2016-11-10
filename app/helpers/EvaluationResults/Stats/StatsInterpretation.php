@@ -20,7 +20,7 @@ class StatsInterpretation {
    * @param Stats $stats    Output data from sandbox evaluation
    * @param Limits $limits  Restrictions for current task evaluation
    */
-  public function __construct(Stats $stats, Limits $limits) {
+  public function __construct(IStats $stats, Limits $limits) {
     $this->stats = $stats;
     $this->limits = $limits;
   }

@@ -26,15 +26,16 @@ class TestExecutionTask extends Tester\TestCase
     Assert::exception(function() { new ExecutionTaskResult([]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC' ]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new ExecutionTaskResult([ 'status' => 'XYZ' ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ' ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'sample_stats' => NULL ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK' ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK', 'sample_stats' => NULL ]); }, ResultsLoadingException::CLASS);
     Assert::noError(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'sandbox_results' => self::$sampleStats ]); });
   }
 
   public function testParsingParams() {
-    $result = new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'sandbox_results' => self::$sampleStats ]);
+    $result = new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK', 'sandbox_results' => self::$sampleStats ]);
     Assert::same("ABC", $result->getId());
-    Assert::same("XYZ", $result->getStatus());
+    Assert::same("OK", $result->getStatus());
+    Assert::true($result->isOk());
     Assert::equal(new Stats(self::$sampleStats), $result->getStats());
   }
 
