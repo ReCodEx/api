@@ -73,6 +73,10 @@ class Group implements JsonSerializable
    */
   protected $isPublic;
 
+  public function isPrivate(): bool {
+    return !$this->isPublic;
+  }
+
   public function statsArePublic(): bool {
     return $this->publicStats;
   }
