@@ -157,8 +157,7 @@ class Instance implements JsonSerializable
       "isAllowed" => $this->isAllowed,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "admin" => $this->admin ? $this->admin->getId() : NULL,
-      "topLevelGroups" => $this->getTopLevelGroups()->map(function($group) { return $group->getId(); })->getValues()
+      "admin" => $this->admin ? $this->admin->getId() : NULL
     ];
   }
 

@@ -303,24 +303,6 @@ class TestInstancesPresenter extends Tester\TestCase
     foreach ($response->getPayload()["payload"] as $group) {
       Assert::true($group->isPublic);
     }
-
-    // Make sure instance detail doesn't contain private groups
-    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'detail', 'id' => $user->instance->id]);
-
-    /** @var \Nette\Application\Responses\JsonResponse $response */
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    /** @var \App\Model\Repository\Groups $groupsRepository */
-    $groupsRepository = $this->container->getByType(\App\Model\Repository\Groups::class);
-
-    $result = $response->getPayload()["payload"]->jsonSerialize();
-    $groups = Arrays::get($result, "topLevelGroups", NULL);
-    Assert::type("array", $groups);
-
-    foreach ($groups as $groupId) {
-      Assert::true($groupsRepository->get($groupId)->isPublic, "Group list shouldn't contain private groups");
-    }
   }
 }
 
