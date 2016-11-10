@@ -30,13 +30,20 @@ class RuntimeEnvironments extends BaseRepository {
       function($runtimeEnvironment) use ($extensions) {
         // if all extensions belong to this runtime environment save it
         $runtimeExtensions = $runtimeEnvironment->getExtensionsList();
-        return array_intersect($extensions, $runtimeExtensions) == $runtimeExtensions;
+        foreach ($extensions as $ext) {
+          if (!in_array($ext, $runtimeExtensions)) {
+            return FALSE;
+          }
+        }
+        return TRUE;
       }
     );
 
     // environment has to be only one to avoid ambiguity matches
-    if (count($foundEnvironments) == 0 || count($foundEnvironments) > 1) {
-      throw new NotFoundException("Cannot detect runtime environment for the submitted files.");
+    if (count($foundEnvironments) == 0) {
+      throw new NotFoundException("There is no suitable runtime environment for the submitted files");
+    } else if (count($foundEnvironments) > 1) {
+      throw new NotFoundException("There are multiple suitable runtime environments for the submitted files.");
     }
 
     return current($foundEnvironments);
