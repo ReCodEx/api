@@ -19,15 +19,17 @@ class ExecutionTaskResult extends TaskResult {
   public function __construct(array $data) {
     parent::__construct($data);
 
-    if (!isset($data[self::SANDBOX_RESULTS_KEY])) {
-      throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain sandbox results.");
-    }
+    if ($this->isOK()) {
+      if(!isset($data[self::SANDBOX_RESULTS_KEY])) {
+        throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain sandbox results.");
+      }
 
-    if (!is_array($data[self::SANDBOX_RESULTS_KEY])) {
-      throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain array of sandbox results.");
-    }
+      if (!is_array($data[self::SANDBOX_RESULTS_KEY])) {
+        throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain array of sandbox results.");
+      }
 
-    $this->stats = new Stats($data[self::SANDBOX_RESULTS_KEY]);
+      $this->stats = new Stats($data[self::SANDBOX_RESULTS_KEY]);
+    }
   }
 
   /**
