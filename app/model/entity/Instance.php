@@ -142,12 +142,24 @@ class Instance implements JsonSerializable
     })->getValues();
   }
 
-  public function getTopLevelGroups() {
+  public function getTopLevelGroups(User $user = NULL) {
     $filter = Criteria::create()->where(Criteria::expr()->eq("parentGroup", NULL));
-    return $this->groups->matching($filter);
+    $result = $this->groups->matching($filter);
+
+    if ($user) {
+      $result = $result->filter(function (Group $group) use ($user) {
+        return $group->canUserAccessGroupDetail($user);
+      });
+    } else {
+      $result = $result->filter(function (Group $group) use ($user) {
+        return $group->isPublic;
+      });
+    }
+
+    return $result;
   }
 
-  public function jsonSerialize() {
+  public function getData(User $user = NULL) {
     return [
       "id" => $this->id,
       "name" => $this->name,
@@ -158,8 +170,12 @@ class Instance implements JsonSerializable
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "admin" => $this->admin ? $this->admin->getId() : NULL,
-      "topLevelGroups" => $this->getTopLevelGroups()->map(function($group) { return $group->getId(); })->getValues()
+      "topLevelGroups" => $this->getTopLevelGroups($user)->map(function($group) { return $group->getId(); })->getValues()
     ];
+  }
+
+  public function jsonSerialize() {
+    return $this->getData(NULL);
   }
 
   public static function createInstance(string $name, bool $isOpen, User $admin = NULL, string $description = NULL) {

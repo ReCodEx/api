@@ -72,7 +72,7 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal(1, count($result['payload']));
     $instance = array_pop($result['payload']);
-    Assert::equal("Frankenstein University, Atlantida", $instance->name);
+    Assert::equal("Frankenstein University, Atlantida", $instance['name']);
   }
 
   public function testCreateInstance()
@@ -91,9 +91,9 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(201, $result['code']);
     $instance = $result['payload'];
-    Assert::equal("NIOT", $instance->name);
-    Assert::true($instance->isOpen);
-    Assert::equal("Just a new instance", $instance->description);
+    Assert::equal("NIOT", $instance['name']);
+    Assert::true($instance['isOpen']);
+    Assert::equal("Just a new instance", $instance['description']);
   }
 
   public function testUpdateInstance()
@@ -115,7 +115,7 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     $instance = $result['payload'];
-    Assert::equal("Frankenstein UNI", $instance->name);
+    Assert::equal("Frankenstein UNI", $instance['name']);
   }
 
   public function testDeleteInstance()
@@ -130,7 +130,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => 'true']
     );
     $response = $this->presenter->run($request);
-    $newInstanceId = $response->getPayload()['payload']->id;
+    $newInstanceId = $response->getPayload()['payload']['id'];
 
     $allInstances = $this->presenter->instances->findAll();
     Assert::equal(2, count($allInstances));
@@ -314,7 +314,7 @@ class TestInstancesPresenter extends Tester\TestCase
     /** @var \App\Model\Repository\Groups $groupsRepository */
     $groupsRepository = $this->container->getByType(\App\Model\Repository\Groups::class);
 
-    $result = $response->getPayload()["payload"]->jsonSerialize();
+    $result = Json::decode(Json::encode($response->getPayload()["payload"]), Json::FORCE_ARRAY);
     $groups = Arrays::get($result, "topLevelGroups", NULL);
     Assert::type("array", $groups);
 
