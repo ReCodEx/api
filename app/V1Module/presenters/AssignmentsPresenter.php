@@ -278,8 +278,8 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$assignment->canAccessAsStudent($user)
-      && !$assignment->canAccessAsSupervisor($user)) {
-        throw new ForbiddenRequestException("You cannot access this assignment.");
+        && !$assignment->canAccessAsSupervisor($user)) {
+      throw new ForbiddenRequestException("You cannot access this assignment.");
     }
 
     $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
@@ -372,7 +372,7 @@ class AssignmentsPresenter extends BasePresenter {
         $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         $referenceEvaluations = [];
         foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
-          $evaluations = $this->referenceSolutionEvaluations->find(
+          $referenceEvaluations[] = $this->referenceSolutionEvaluations->find(
             $assignment->getExercise(),
             $environment->getRuntimeEnvironment(),
             $hwGroup
@@ -393,7 +393,7 @@ class AssignmentsPresenter extends BasePresenter {
 
   /**
    * Set resource limits for an assignment and a hardware group
-   * @PUT
+   * @POST
    * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
    */
@@ -408,7 +408,6 @@ class AssignmentsPresenter extends BasePresenter {
       throw new NotFoundException("No environment specified");
     }
 
-    $runtimeConfig = NULL;
     foreach ($environments as $environment) {
       $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
       $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
@@ -429,13 +428,12 @@ class AssignmentsPresenter extends BasePresenter {
 
         $hardwareGroup = $hwGroupLimits["hardwareGroup"];
         $tests = Arrays::get($hwGroupLimits, ["tests"], []);
-        $limits = array_reduce($tests, array_merge, []);
+        $limits = array_reduce($tests, 'array_merge', []);
         $jobConfig->setLimits($hardwareGroup, $limits);
       }
 
       // save the new & archive the old config
       $this->jobConfigs->saveJobConfig($jobConfig, $path);
-      $this->runtimeConfigurations->persist($runtimeConfig);
     }
 
     // the same output as get limits

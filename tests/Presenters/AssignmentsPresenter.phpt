@@ -204,24 +204,66 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::same($this->presenter->assignments->findOneBy(['id' => $result['payload']->id]), $result['payload']);
   }
 
-  public function testGetDefaultScoreConfig()
-  {
-    // TODO:
-  }
-
   public function testRemove()
   {
-    // TODO:
+    // TODO: not working, Integrity constraint violation: 19 FOREIGN KEY constraint failed
+    // TODO: do we really need to delete assignments directly from database?
+
+    /*$token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignment = current($this->assignments->findAll());
+
+    $request = new Nette\Application\Request('V1:Assignments', 'DELETE',
+      ['action' => 'remove', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+    Assert::exception($this->assignments->findOrThrow($assignment->getId()), \App\Exceptions\NotFoundException::class);*/
   }
 
   public function testCanSubmit()
   {
-    // TODO:
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignment = current($this->assignments->findAll());
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'canSubmit', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal(true, $result['payload']);
   }
 
   public function testSubmissions()
   {
-    // TODO:
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $submission = current($this->presenter->submissions->findAll());
+    $user = $submission->getUser();
+    $assignment = $submission->getAssignment();
+    $submissions = $this->presenter->submissions->findSubmissions($assignment, $user->getId());
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'submissions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(count($submissions), $result['payload']);
+    Assert::same($submissions, $result['payload']);
   }
 
   public function testSubmit()
@@ -231,12 +273,103 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testGetLimits()
   {
-    // TODO:
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignment = current($this->assignments->findAll());
+
+    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
+    $limits = [
+      [
+        'hardwareGroup' => 'group1',
+        'tests' => []
+      ]
+    ];
+
+    $mockJobConfig->shouldReceive("getHardwareGroups")->withAnyArgs()->andReturn(["group1", "group2"])->atLeast(1)
+      ->shouldReceive("getLimits")->withAnyArgs()->andReturn($limits)->atLeast(1);
+
+    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
+    $mockStorage = Mockery::mock(JobConfig\Storage::class);
+    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig);
+    $this->presenter->jobConfigs = $mockStorage;
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'getLimits', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(1, $result['payload']);
+
+    $environments = $result['payload']['environments'];
+    Assert::count(1, $environments);
+
+    $environment = current($environments);
+    Assert::equal(["group1", "group2"], $environment['hardwareGroups']);
+    Assert::equal($limits, $environment['limits']);
   }
 
   public function testSetLimits()
   {
-    // TODO:
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignment = current($this->assignments->findAll());
+    $setLimitsCallCount = count($assignment->getSolutionRuntimeConfigs());
+
+    // prepare limits arrays
+    $limit1 = [
+      'task1' => ['hw-group-id' => 'group1'],
+      'task2' => ['hw-group-id' => 'group1']
+    ];
+    $limit2 = [
+      'task1' => ['hw-group-id' => 'group2'],
+      'task2' => ['hw-group-id' => 'group2']
+    ];
+
+    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
+    $mockJobConfig->shouldReceive("setLimits")->withArgs(['group1', $limit1])->andReturn()->times($setLimitsCallCount)
+      ->shouldReceive("setLimits")->withArgs(['group2', $limit2])->andReturn()->times($setLimitsCallCount);
+
+    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
+    $mockStorage = Mockery::mock(JobConfig\Storage::class);
+    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->times($setLimitsCallCount);
+    $mockStorage->shouldReceive("saveJobConfig")->withAnyArgs()->andReturn()->times($setLimitsCallCount);
+    $this->presenter->jobConfigs = $mockStorage;
+
+    // construct post parameter environments
+    $environments = [];
+    foreach ($assignment->getSolutionRuntimeConfigs() as $runtimeConfig) {
+      $environments[] = [
+        'environment' => ['id' => $runtimeConfig->getId()],
+        'limits' => [
+          [
+            'hardwareGroup' => 'group1',
+            'tests' => ['testA' => $limit1]
+          ],
+          [
+            'hardwareGroup' => 'group2',
+            'tests' => ['testB' => $limit2]
+          ]
+        ]
+      ];
+    }
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'setLimits', 'id' => $assignment->getId()],
+      ['environments' => $environments]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\ForwardResponse::class, $response);
+
+    // result of setLimits is forward response which is set to getLimits action
+    $req = $response->getRequest();
+    Assert::equal(Nette\Application\Request::FORWARD, $req->getMethod());
   }
 }
 
