@@ -2,7 +2,7 @@
 namespace App\Console;
 
 use App\V1Module\Router\MethodRoute;
-use Faker;
+use Doctrine\ORM\Tools\SchemaTool;
 use JsonSerializable;
 use Nette\Application\IPresenterFactory;
 use Nette\Application\Routers\Route;
@@ -13,6 +13,7 @@ use Nette\Reflection\Method;
 use Nette\Utils\ArrayHash;
 use Nette\Utils\Arrays;
 use Nette\Utils\Finder;
+use Nette\Utils\Json;
 use Nette\Utils\Strings;
 use ReflectionClass;
 use ReflectionException;
@@ -24,6 +25,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 use Nelmio\Alice\Fixtures;
+use Kdyby;
 
 class GenerateSwagger extends Command
 {
@@ -41,6 +43,11 @@ class GenerateSwagger extends Command
    * @var Fixtures\Loader
    */
   private $fixtureLoader;
+
+  /**
+   * @var Kdyby\Doctrine\EntityManager
+   */
+  private $em;
 
   private $typeMap = [
     'bool' => 'boolean',
@@ -64,12 +71,13 @@ class GenerateSwagger extends Command
     'upper' => ['string', 'uppercase']
   ];
 
-  public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader)
+  public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader, Kdyby\Doctrine\EntityManager $em)
   {
     parent::__construct();
     $this->router = $router;
     $this->presenterFactory = $presenterFactory;
     $this->fixtureLoader = $loader;
+    $this->em = $em;
   }
 
   protected function configure()
@@ -402,24 +410,47 @@ class GenerateSwagger extends Command
     }
 
     sort($files);
-    $entities = [];
+
+    // Create a DB in memory so that we don't mess up the default one
+    $em = Kdyby\Doctrine\EntityManager::create(
+      Kdyby\Doctrine\Connection::create(
+        ['url' => 'sqlite://:memory:'],
+        $this->em->getConfiguration(),
+        $this->em->getEventManager()
+      ),
+      $this->em->getConfiguration(),
+      $this->em->getEventManager()
+    );
+
+    $schemaTool = new SchemaTool($em);
+    $schemaTool->createSchema($em->getMetadataFactory()->getAllMetadata());
+
+    // Load fixtures and persist them
+    $entityClasses = [];
 
     foreach ($files as $file) {
-      $entities = array_merge($this->fixtureLoader->load($file), $entities);
+      $loadedEntities = $this->fixtureLoader->load($file);
+
+      foreach ($loadedEntities as $entity) {
+        $em->persist($entity);
+        $entityClasses[get_class($entity)] = TRUE;
+      }
     }
 
-    // Traverse all entities and fill in identifiers first so that we don't try to serialize an entity without an ID
-    $faker = Faker\Factory::create();
+    $em->flush();
+    $em->clear();
 
-    foreach ($entities as $entity) {
-      $entity->id = $faker->unique()->uuid;
+    $entityExamples = [];
+    foreach (array_keys($entityClasses) as $entityClass) {
+      $entityExamples[] = $em->getRepository($entityClass)->findAll()[0];
     }
 
     // Dump serializable entities into the document
-    foreach ($entities as $entity) {
+    foreach ($entityExamples as $entity) {
       if ($entity instanceof JsonSerializable) {
-        $class = ClassType::from($entity);
-        $this->updateEntityEntry($target, $class->getShortName(), $entity->jsonSerialize());
+        $entityClass = ClassType::from($entity);
+        $entityData = Json::decode(Json::encode($entity), Json::FORCE_ARRAY);
+        $this->updateEntityEntry($target, $entityClass->getShortName(), $entityData);
       }
     }
   }
