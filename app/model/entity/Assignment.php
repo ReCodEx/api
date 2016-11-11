@@ -163,6 +163,11 @@ class Assignment implements JsonSerializable
     $this->localizedAssignments->add($assignment);
   }
 
+  public function getLocalizedAssignmentByLocale($locale) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+    return $this->getLocalizedAssignments()->matching($criteria)->first();
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
    */

@@ -68,20 +68,6 @@ class BrokerReportsPresenter extends BasePresenter {
   public $brokerConfig;
 
   /**
-   * @param string $id
-   * @return mixed
-   * @throws NotFoundException
-   */
-  protected function findSubmissionOrThrow(string $id) {
-    $submission = $this->submissions->get($id);
-    if (!$submission) {
-      throw new NotFoundException("Submission $id");
-    }
-
-    return $submission;
-  }
-
-  /**
    * The actions of this presenter have specific
    */
   public function startup() {
@@ -117,7 +103,7 @@ class BrokerReportsPresenter extends BasePresenter {
             $this->loadReferenceEvaluation($referenceSolutionEvaluation);
             break;
           case Submission::JOB_TYPE:
-            $submission = $this->findSubmissionOrThrow($job->getId());
+            $submission = $this->submissions->findOrThrow($job->getId());
             // load the evaluation only if the submission is "async"
             // (submitted by other person than the student/author or automatically)
             if ($submission->isAsynchronous()) {
