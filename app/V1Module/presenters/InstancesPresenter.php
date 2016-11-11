@@ -34,7 +34,9 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $instances = $this->instances->findAll(); // @todo: Filter out the non-public
-    $this->sendSuccessResponse($instances);
+    $this->sendSuccessResponse(array_map(function (Instance $instance) {
+      return $instance->getData($this->users->findCurrentUser());
+    }, $instances));
   }
 
   /**
@@ -56,7 +58,7 @@ class InstancesPresenter extends BasePresenter {
       $params->description
     );
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance, IResponse::S201_CREATED);
+    $this->sendSuccessResponse($instance->getData($this->users->findCurrentUser()), IResponse::S201_CREATED);
   }
 
   /**
@@ -81,7 +83,7 @@ class InstancesPresenter extends BasePresenter {
       $instance->isOpen = $params->isOpen;
     }
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance);
+    $this->sendSuccessResponse($instance->getData($this->users->findCurrentUser()));
   }
 
   /**
@@ -103,7 +105,8 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    $this->sendSuccessResponse($instance);
+    $user = $this->users->findCurrentUser();
+    $this->sendSuccessResponse($instance->getData($user));
   }
 
   /**

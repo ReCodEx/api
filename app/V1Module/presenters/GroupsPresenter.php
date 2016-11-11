@@ -353,10 +353,15 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->users->findCurrentUserOrThrow();
     $group = $this->groups->findOrThrow($id);
 
+    // check if current user isn't trying to add someone to a private group without sufficient rights
+    $currentUserHasRights = $group->isSupervisorOf($currentUser) || !$currentUser->role->hasLimitedRights();
+
+    if ($group->isPrivate() && !$currentUserHasRights) {
+      throw new ForbiddenRequestException("You cannot add user '$userId' to private group '$id'.");
+    }
+
     // check that the user has rights to join the group
-    if ($user->getId() !== $currentUser->getId()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
+    if ($user->getId() !== $currentUser->getId() && !$currentUserHasRights) {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 

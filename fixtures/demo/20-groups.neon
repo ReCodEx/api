@@ -12,6 +12,15 @@ App\Model\Entity\Group:
             - @demoInstance
             - @demoAdmin
             - @demoGroup
+    demoPrivateGroup:
+        __construct:
+            - Private group
+            - A group meant solely for the purpose of demonstration of private groups
+            - @demoInstance
+            - @demoAdmin
+            - NULL
+            - TRUE
+            - FALSE
 
 App\Model\Entity\User:
     'demoGroupMember{1..10}':
