@@ -179,7 +179,7 @@ class Exercise implements JsonSerializable
       "version" => $this->version,
       "createdAt" => $this->createdAt,
       "updatedAt" => $this->updatedAt,
-      "localizedAssignments" => $this->localizedAssignments->map(function($localized) { return $localized->getId(); })->getValues(),
+      "localizedAssignments" => $this->localizedAssignments->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
       "forkedFrom" => $this->getForkedFrom(),

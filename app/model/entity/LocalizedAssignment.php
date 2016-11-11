@@ -94,7 +94,7 @@ class LocalizedAssignment implements JsonSerializable
       "name" => $this->name,
       "locale" => $this->locale,
       "description" => $this->getDescription(),
-      "createdFrom" => $this->localizedAssignment
+      "createdFrom" => $this->localizedAssignment ? $this->localizedAssignment->id : ""
     ];
   }
 }

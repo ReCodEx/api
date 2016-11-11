@@ -22,7 +22,8 @@ class User implements JsonSerializable
     string $degreesBeforeName,
     string $degreesAfterName,
     Role $role,
-    Instance $instance
+    Instance $instance,
+    bool $instanceAdmin = FALSE
   ) {
     $this->firstName = $firstName;
     $this->lastName = $lastName;
@@ -38,6 +39,10 @@ class User implements JsonSerializable
     $this->createdAt = new \DateTime;
     $this->instance = $instance;
     $instance->addMember($this);
+
+    if ($instanceAdmin) {
+      $instance->admin = $this;
+    }
   }
 
   /**

@@ -159,6 +159,10 @@ class Assignment implements JsonSerializable
    */
   protected $localizedAssignments;
 
+  public function addLocalizedAssignment(LocalizedAssignment $assignment) {
+    $this->localizedAssignments->add($assignment);
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
    */
