@@ -126,9 +126,9 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $this->users->findCurrentUserOrThrow();
 
     if (!$assignment->canAccessAsStudent($user)
-      && !$assignment->canAccessAsSupervisor($user)
-      && $user->getRole()->hasLimitedRights()) {
-        throw new ForbiddenRequestException("You cannot view this assignment.");
+        && !$assignment->canAccessAsSupervisor($user)
+        && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You cannot view this assignment.");
     }
 
     $this->sendSuccessResponse($assignment);
@@ -140,7 +140,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -154,8 +154,8 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findCurrentUserOrThrow();
     if (!$assignment->canAccessAsSupervisor($user)
-      && $user->getRole()->hasLimitedRights()) {
-        throw new ForbiddenRequestException("You cannot update this assignment.");
+        && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
     $req = $this->getRequest();
@@ -164,7 +164,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));
     $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));
-    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("secondMaxPoints") ?: 0);
+    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("maxPointsBeforeSecondDeadline") ?: 0);
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
@@ -176,18 +176,15 @@ class AssignmentsPresenter extends BasePresenter {
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
       $description = $localization["description"];
-      $name = $localization["name"];
+      $localizationName = $localization["name"];
 
-      // update or create the localization
-      $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $lang));
-      $localized = $assignment->getLocalizedAssignments()->matching($criteria)->first();
-      if (!$localized) {
-        $localized = new LocalizedAssignment($name, $description, $lang);
-        $assignment->addLocalizedAssignment($localized);
-      } else {
-        $localized->setName($name);
-        $localized->setDescription($description);
+      // create all new localized assignments
+      $originalLocalized = $assignment->getLocalizedAssignmentByLocale($lang);
+      $localized = new LocalizedAssignment($localizationName, $description, $lang);
+      if ($originalLocalized) {
+        $localized->setLocalizedAssignment($originalLocalized);
       }
+      $assignment->addLocalizedAssignment($localized);
       $usedLocale[] = $lang;
     }
 

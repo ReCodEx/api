@@ -7,9 +7,6 @@ use App\Helpers\JobConfig;
 
 class TestAssignmentsPresenter extends Tester\TestCase
 {
-  private $adminLogin = "admin@admin.com";
-  private $adminPassword = "admin";
-
   /** @var AssignmentsPresenter */
   protected $presenter;
 
@@ -18,6 +15,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   /** @var  Nette\DI\Container */
   protected $container;
+
+  /** @var App\Model\Repository\Assignments */
+  protected $assignments;
 
   /** @var Nette\Security\User */
   private $user;
@@ -28,6 +28,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $this->container = $container;
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
+    $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
   }
 
   protected function setUp()
@@ -50,7 +51,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testListAssignments()
   {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET', ['action' => 'default']);
@@ -62,9 +63,95 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($this->presenter->assignments->findAll(), $result['payload']);
   }
 
+  public function testDetail()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignments = $this->assignments->findAll();
+    $assignment = array_pop($assignments);
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'detail', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal($assignment, $result['payload']);
+  }
+
+  public function testUpdateDetail()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $assignments = $this->assignments->findAll();
+    $assignment = array_pop($assignments);
+
+    $name = "newAssignmentName";
+    $isPublic = true;
+    $localizedAssignments = [
+      [ "locale" => "locA", "description" => "descA", "name" => "nameA" ]
+    ];
+    $firstDeadline = (new \DateTime())->getTimestamp();
+    $maxPointsBeforeFirstDeadline = 123;
+    $submissionsCountLimit = 321;
+    $scoreConfig = "scoreConfiguration in yaml";
+    $allowSecondDeadline = true;
+    $canViewLimitRatios = false;
+    $secondDeadline = (new \DateTime)->getTimestamp();
+    $maxPointsBeforeSecondDeadline = 543;
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'updateDetail', 'id' => $assignment->getId()],
+      [
+        'name' => $name,
+        'isPublic' => $isPublic,
+        'localizedAssignments' => $localizedAssignments,
+        'firstDeadline' => $firstDeadline,
+        'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
+        'submissionsCountLimit' => $submissionsCountLimit,
+        'scoreConfig' => $scoreConfig,
+        'allowSecondDeadline' => $allowSecondDeadline,
+        'canViewLimitRatios' => $canViewLimitRatios,
+        'secondDeadline' => $secondDeadline,
+        'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    // check updated assignment
+    $updatedAssignment = $result['payload'];
+    Assert::type(\App\Model\Entity\Assignment::class, $updatedAssignment);
+    Assert::equal($name, $updatedAssignment->getName());
+    Assert::equal($isPublic, $updatedAssignment->getIsPublic());
+    Assert::equal($firstDeadline, $updatedAssignment->getFirstDeadline()->getTimestamp());
+    Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment->getMaxPointsBeforeFirstDeadline());
+    Assert::equal($submissionsCountLimit, $updatedAssignment->getSubmissionsCountLimit());
+    Assert::equal($scoreConfig, $updatedAssignment->getScoreConfig());
+    Assert::equal($allowSecondDeadline, $updatedAssignment->getAllowSecondDeadline());
+    Assert::equal($canViewLimitRatios, $updatedAssignment->getCanViewLimitRatios());
+    Assert::equal($secondDeadline, $updatedAssignment->getSecondDeadline()->getTimestamp());
+    Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment->getMaxPointsBeforeSecondDeadline());
+
+    // check localized assignment
+    Assert::count(1, $updatedAssignment->getLocalizedAssignments());
+    $localized = current($localizedAssignments);
+    $updatedLocalized = $updatedAssignment->getLocalizedAssignments()->first();
+    Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
+    Assert::equal($updatedLocalized->getDescription(), $localized["description"]);
+    Assert::equal($updatedLocalized->getName(), $localized["name"]);
+  }
+
   public function testCreateAssignment()
   {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
@@ -115,6 +202,41 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     // Make sure the assignment was persisted
     Assert::same($this->presenter->assignments->findOneBy(['id' => $result['payload']->id]), $result['payload']);
+  }
+
+  public function testGetDefaultScoreConfig()
+  {
+    // TODO:
+  }
+
+  public function testRemove()
+  {
+    // TODO:
+  }
+
+  public function testCanSubmit()
+  {
+    // TODO:
+  }
+
+  public function testSubmissions()
+  {
+    // TODO:
+  }
+
+  public function testSubmit()
+  {
+    // TODO:
+  }
+
+  public function testGetLimits()
+  {
+    // TODO:
+  }
+
+  public function testSetLimits()
+  {
+    // TODO:
   }
 }
 
