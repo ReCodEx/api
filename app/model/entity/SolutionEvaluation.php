@@ -145,7 +145,7 @@ class SolutionEvaluation implements JsonSerializable
 
     // calculate the score and points
     $this->bonusPoints = 0;
-    $this->points = $this->score * $maxPoints;
+    $this->points = floor($this->score * $maxPoints);
   }
 
 }
