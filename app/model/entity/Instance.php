@@ -27,7 +27,7 @@ class Instance implements JsonSerializable
   protected $name;
 
   /**
-   * @ORM\Column(type="string", nullable=true)
+   * @ORM\Column(type="text", nullable=true)
    */
   protected $description;
 

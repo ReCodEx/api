@@ -34,7 +34,7 @@ class Users extends BaseRepository {
     return $this->findOrThrow($id);
   }
 
-  public function findCurrentUser(): User {
+  public function findCurrentUser() {
     if (!$this->userSession->isLoggedIn()) {
       return NULL;
     }

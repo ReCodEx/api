@@ -22,7 +22,7 @@ class HardwareGroup implements JsonSerializable
   protected $id;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="text")
    */
   protected $description;
 
@@ -33,7 +33,7 @@ class HardwareGroup implements JsonSerializable
   protected $availabilityLog;
 
   /**
-   * Find out whether the hardware group is available now or was available at a given time. 
+   * Find out whether the hardware group is available now or was available at a given time.
    * @param DateTime $when Explicit time
    * @return bool
    */
