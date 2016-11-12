@@ -232,11 +232,11 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   private function getDefaultScoreConfig(Assignment $assignment): string {
-    if (count($assignment->solutionRuntimeConfigs) === 0) {
+    if (count($assignment->getSolutionRuntimeConfigs()) === 0) {
       throw new InvalidStateException("Assignment has no runtime configurations");
     }
 
-    $runtimeConfig = $assignment->solutionRuntimeConfigs->first();
+    $runtimeConfig = $assignment->getSolutionRuntimeConfigs()->first();
     $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
     try {
       $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);

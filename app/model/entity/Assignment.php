@@ -174,7 +174,7 @@ class Assignment implements JsonSerializable
   protected $exercise;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments", cascade={"persist"})
    */
   protected $group;
 
