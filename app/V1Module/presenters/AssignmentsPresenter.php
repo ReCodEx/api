@@ -183,6 +183,7 @@ class AssignmentsPresenter extends BasePresenter {
       $localized = new LocalizedAssignment($localizationName, $description, $lang);
       if ($originalLocalized) {
         $localized->setLocalizedAssignment($originalLocalized);
+        $assignment->removeLocalizedAssignment($originalLocalized);
       }
       $assignment->addLocalizedAssignment($localized);
       $usedLocale[] = $lang;
