@@ -2,6 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\UnauthorizedException;
+use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ApiException;
 use App\Model\Repository\UserActions;
 
@@ -11,7 +13,6 @@ use Nette\Application\BadRequestException;
 
 use Doctrine\DBAL\Exception\ConnectionException;
 
-use Tracy\Debugger;
 use Tracy\ILogger;
 
 /**
@@ -69,8 +70,15 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
    * further modifications can be engaged.
    * @param \Throwable $exception Exception which should be logged
    */
-  protected function handleLogging($exception) {
-    $this->logger->log($exception, ILogger::EXCEPTION);
+  protected function handleLogging(\Throwable $exception) {
+    if ($exception instanceof BadRequestException) {
+      // nothing to log here
+    } else if ($exception instanceof UnauthorizedException
+        || $exception instanceof WrongCredentialsException) {
+      $this->logger->log("HTTP code {$exception->getCode()}: {$exception->getMessage()} in {$exception->getFile()}:{$exception->getLine()}", 'access');
+    } else {
+      $this->logger->log($exception, ILogger::EXCEPTION);
+    }
   }
 
   /**
