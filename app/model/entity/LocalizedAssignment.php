@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
 
@@ -26,6 +25,7 @@ class LocalizedAssignment implements JsonSerializable
     $this->locale = $locale;
     $this->assignments = new ArrayCollection;
     $this->localizedAssignment = $createdFrom;
+    $this->createdAt = new DateTime;
   }
 
   /**
@@ -55,6 +55,11 @@ class LocalizedAssignment implements JsonSerializable
    * @ORM\Column(type="text")
    */
   protected $description;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $createdAt;
 
   /**
    * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="localizedAssignments")
@@ -93,7 +98,8 @@ class LocalizedAssignment implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "locale" => $this->locale,
-      "description" => $this->getDescription(),
+      "description" => $this->description,
+      "createdAt" => $this->createdAt,
       "createdFrom" => $this->localizedAssignment ? $this->localizedAssignment->id : ""
     ];
   }

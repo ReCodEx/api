@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\UploadedFile;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\SubmissionFailedException;
 use Kdyby\Doctrine\EntityManager;
 
 class RuntimeEnvironments extends BaseRepository {
@@ -20,6 +21,10 @@ class RuntimeEnvironments extends BaseRepository {
    * @throws NotFoundException if suitable environment was not found
    */
   public function detectOrThrow(array $files): RuntimeEnvironment {
+    if (count($files) == 0) {
+      throw new SubmissionFailedException("No uploaded files were provided");
+    }
+
     $extensions = array_map(function ($file) {
       return $file->getFileExtension();
     }, $files);

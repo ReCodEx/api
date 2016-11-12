@@ -15,7 +15,6 @@ use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\ReferenceSolutionEvaluations;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints used by the backend to notify the frontend of errors and changes in job status

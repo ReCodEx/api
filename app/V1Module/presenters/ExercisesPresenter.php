@@ -114,6 +114,7 @@ class ExercisesPresenter extends BasePresenter {
       $localized = new LocalizedAssignment($localizationName, $description, $lang);
       if ($originalLocalized) {
         $localized->setLocalizedAssignment($originalLocalized);
+        $exercise->removeLocalizedAssignment($originalLocalized);
       }
       $exercise->addLocalizedAssignment($localized);
       $usedLocale[] = $lang;
@@ -165,6 +166,7 @@ class ExercisesPresenter extends BasePresenter {
       $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath);
       if ($originalConfig) {
         $config->setSolutionRuntimeConfig($originalConfig);
+        $exercise->removeSolutionRuntimeConfig($originalConfig);
       }
       $exercise->addSolutionRuntimeConfig($config);
       $usedConfigs[] = $environmentId;

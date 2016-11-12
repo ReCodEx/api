@@ -3,21 +3,13 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
-use Nette\Utils\Json;
-use Nette\Utils\Arrays;
 use Nette\Http\IResponse;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\MalformedJobConfigException;
-use App\Exceptions\SubmissionFailedException;
-
 use App\Helpers\EvaluationStatus as ES;
 
-use GuzzleHttp\Exception\RequestException;
 
 /**
  * @ORM\Entity
@@ -26,7 +18,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 {
     use MagicAccessors;
 
-    const JOB_TYPE = "student"; // TODO: make this changeable
+    const JOB_TYPE = "student";
 
     /**
      * @ORM\Id

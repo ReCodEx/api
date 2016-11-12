@@ -35,6 +35,7 @@ class SubmissionHelper {
    * @param string $hardwareGroup Hardware group to evaluate this submission with
    *                              (if none is given, all hardware groups associated with the assignment can be used)
    * @return NULL|string URL of the results when the submission was accepted and evaluation started, otherwise NULL
+   * @throws SubmissionFailedException
    */
   public function initiateEvaluation(JobConfig $jobConfig, array $files, array $headers = [], string $hardwareGroup = NULL) {
     // firstly let us set address of fileserver to job configuration

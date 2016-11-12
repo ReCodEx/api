@@ -16,6 +16,12 @@ class TestUsersPresenter extends Tester\TestCase
   /** @var Kdyby\Doctrine\EntityManager */
   protected $em;
 
+  /** @var Nette\Security\User */
+  private $user;
+
+  /** @var string */
+  private $presenterPath = "V1:Users";
+
   /** @var App\Model\Repository\Instances */
   protected $instances;
 
@@ -33,12 +39,6 @@ class TestUsersPresenter extends Tester\TestCase
 
   /** @var  Nette\DI\Container */
   protected $container;
-
-  /** @var Nette\Security\User */
-  private $user;
-
-  /** @var string */
-  private $presenterPath = "V1:Users";
 
   public function __construct()
   {

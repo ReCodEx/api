@@ -1,3 +1,12 @@
+App\Model\Entity\UploadedFile:
+    firstUploadedFile:
+        __construct:
+            - "some/file/path"
+            - "filename.ext"
+            - "<dateTime()>"
+            - 0
+            - @submitUser1
+
 App\Model\Entity\Submission:
     firstSubmission:
         __construct:
