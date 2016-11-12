@@ -8,7 +8,6 @@ use App\Exceptions\ForbiddenRequestException;
 
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
-use App\Model\Entity\User;
 use App\Model\Repository\UploadedFiles;
 use Nette\Application\Responses\FileResponse;
 
@@ -64,7 +63,7 @@ class UploadedFilesPresenter extends BasePresenter {
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
-    $this->send(new FileResponse($file->getFilePath(), $file->getName()));
+    $this->sendResponse(new FileResponse($file->getFilePath(), $file->getName()));
   }
 
   /**
@@ -86,7 +85,7 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   public function actionUpload() {
     $user = $this->users->findCurrentUserOrThrow();
-    $files = $this->getHttpRequest()->getFiles();
+    $files = $this->getRequest()->getFiles();
     if (count($files) === 0) {
       throw new BadRequestException("No file was uploaded");
     } elseif (count($files) > 1) {
