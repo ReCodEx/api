@@ -34,6 +34,10 @@ class SolutionRuntimeConfig implements JsonSerializable
    */
   protected $jobConfigFilePath;
 
+  public function getJobConfigFileContent() {
+    return @file_get_contents($this->jobConfigFilePath);
+  }
+
   /**
    * @ORM\Column(type="datetime")
    */
@@ -61,9 +65,10 @@ class SolutionRuntimeConfig implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "name" => $this->customName,
+      "customName" => $this->customName,
       "createdAt" => $this->createdAt,
-      "runtimeEnvironment" => $this->runtimeEnvironment
+      "jobConfig" => $this->getJobConfigFileContent(),
+      "runtimeEnvironmentId" => $this->runtimeEnvironment->getId()
     ];
   }
 

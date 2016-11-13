@@ -164,11 +164,11 @@ class Exercise implements JsonSerializable
 
   /**
    * Get runtime configuration based on environment identification.
-   * @param string $environmentId
+   * @param RuntimeEnvironment $environment
    * @return SolutionRuntimeConfig|NULL
    */
-  public function getRuntimeConfigByEnvironment(string $environmentId) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("runtime_environment_id", $environmentId));
+  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("runtimeEnvironment", $environment));
     return $this->getSolutionRuntimeConfigs()->matching($criteria)->first();
   }
 
@@ -181,7 +181,7 @@ class Exercise implements JsonSerializable
       "updatedAt" => $this->updatedAt,
       "localizedAssignments" => $this->localizedAssignments->getValues(),
       "difficulty" => $this->difficulty,
-      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues(),
+      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId()
     ];

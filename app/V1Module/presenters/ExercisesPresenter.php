@@ -152,7 +152,7 @@ class ExercisesPresenter extends BasePresenter {
     $usedConfigs = [];
     foreach ($runtimeConfigs as $runtimeConfig) {
       $customName = $runtimeConfig["customName"];
-      $environmentId = $runtimeConfig["environmentId"];
+      $environmentId = $runtimeConfig["runtimeEnvironmentId"];
       $jobConfig = $runtimeConfig["jobConfig"];
       $environment = $this->runtimeEnvironments->get($environmentId);
 
@@ -163,7 +163,7 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new runtime configs
-      $originalConfig = $exercise->getRuntimeConfigByEnvironment($environmentId);
+      $originalConfig = $exercise->getRuntimeConfigByEnvironment($environment);
       $config = new SolutionRuntimeConfig($customName, $environment, $jobConfigPath);
       if ($originalConfig) {
         $config->setSolutionRuntimeConfig($originalConfig);
