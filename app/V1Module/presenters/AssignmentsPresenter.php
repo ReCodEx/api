@@ -140,7 +140,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -171,7 +171,8 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
 
     // add new and update old localizations
-    $localizedAssignments = $req->getPost("localizedAssignments");
+    $postLocalized = $req->getPost("localizedAssignments");
+    $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
     $usedLocale = [];
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];

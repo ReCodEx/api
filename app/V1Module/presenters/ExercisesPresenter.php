@@ -102,7 +102,8 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setDifficulty($difficulty);
 
     // add new and update old localizations
-    $localizedAssignments = $req->getPost("localizedAssignments");
+    $postLocalized = $req->getPost("localizedAssignments");
+    $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
     $usedLocale = [];
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
