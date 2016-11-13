@@ -205,7 +205,7 @@ class TestExercisesPresenter extends Tester\TestCase
         'runtimeConfigs' => [
           [
             'customName' => 'runtimeConfigName',
-            'environmentId' => $environmentId,
+            'runtimeEnvironmentId' => $environmentId,
             'jobConfig' => 'JobConfiguration',
             'hardwareGroupId' => $hardwareGroupId
           ]
