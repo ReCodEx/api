@@ -125,7 +125,7 @@ class Exercise implements JsonSerializable
     $runtimeConfigs = new ArrayCollection;
     foreach ($exercise->getSolutionRuntimeConfigs() as $runtimeConfig) {
       $runtimeConfigs->add(new SolutionRuntimeConfig(
-        $runtimeConfig->getCustomName(),
+        $runtimeConfig->getName(),
         $runtimeConfig->getRuntimeEnvironment(),
         $runtimeConfig->getJobConfigFilePath(),
         $runtimeConfig

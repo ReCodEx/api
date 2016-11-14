@@ -22,7 +22,7 @@ class SolutionRuntimeConfig implements JsonSerializable
   /**
    * @ORM\Column(type="string")
    */
-  protected $customName;
+  protected $name;
 
   /**
    * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
@@ -55,7 +55,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     string $jobConfigFilePath,
     $createdFrom = NULL
   ) {
-    $this->customName = $name;
+    $this->name = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->jobConfigFilePath = $jobConfigFilePath;
     $this->solutionRuntimeConfig = $createdFrom;
@@ -65,10 +65,10 @@ class SolutionRuntimeConfig implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "customName" => $this->customName,
+      "name" => $this->name,
       "createdAt" => $this->createdAt,
       "jobConfig" => $this->getJobConfigFileContent(),
-      "runtimeEnvironmentId" => $this->runtimeEnvironment->getId()
+      "runtimeEnvironment" => $this->runtimeEnvironment
     ];
   }
 
