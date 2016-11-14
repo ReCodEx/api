@@ -5,10 +5,10 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ApiException;
+use App\Exceptions as AE;
 use App\Model\Repository\UserActions;
 
 use Nette\Http\IResponse;
-use Nette\Application\Request;
 use Nette\Application\BadRequestException;
 
 use Doctrine\DBAL\Exception\ConnectionException;
@@ -74,7 +74,8 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     if ($exception instanceof BadRequestException) {
       // nothing to log here
     } else if ($exception instanceof UnauthorizedException
-        || $exception instanceof WrongCredentialsException) {
+        || $exception instanceof WrongCredentialsException
+        || $exception instanceof AE\BadRequestException) {
       $this->logger->log("HTTP code {$exception->getCode()}: {$exception->getMessage()} in {$exception->getFile()}:{$exception->getLine()}", 'access');
     } else {
       $this->logger->log($exception, ILogger::EXCEPTION);

@@ -26,6 +26,8 @@ App\Model\Entity\Resource:
     __construct: ["submissions"]
   "users":
     __construct: ["users"]
+  "runtimeEnvironments":
+    __construct: ["runtimeEnvironments"]
 
 App\Model\Entity\Permission:
   "superadmin-assignments":
@@ -237,4 +239,9 @@ App\Model\Entity\Permission:
     "role": @supervisor
     "resource": @exercises
     "action": "update"
+    "isAllowed": 1
+  "supervisor-runtimeEnvironments-view-all":
+    "role": @supervisor
+    "resource": @runtimeEnvironments
+    "action": "view-all"
     "isAllowed": 1

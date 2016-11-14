@@ -43,6 +43,7 @@ class RouterFactory {
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
     self::createForgottenPasswordRoutes($router, "$prefix/forgotten-password");
+    self::createRuntimeEnvironmentsRoutes($router, "$prefix/runtime-environments");
 
     return $router;
   }
@@ -221,6 +222,10 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
     $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");
     $router[] = new PostRoute("$prefix/validate-password-strength", "ForgottenPassword:validatePasswordStrength");
+  }
+
+  private static function createRuntimeEnvironmentsRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix", "RuntimeEnvironments:");
   }
 
 }
