@@ -204,7 +204,7 @@ class TestExercisesPresenter extends Tester\TestCase
       [
         'runtimeConfigs' => [
           [
-            'customName' => 'runtimeConfigName',
+            'name' => 'runtimeConfigName',
             'runtimeEnvironmentId' => $environmentId,
             'jobConfig' => 'JobConfiguration',
             'hardwareGroupId' => $hardwareGroupId
@@ -220,8 +220,8 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
 
     $updatedRuntimeConfigs = $result["payload"]->getSolutionRuntimeConfigs();
-    Assert::true($updatedRuntimeConfigs->exists(function ($key, $config) use ($environmentId, $hardwareGroupId) {
-      if ($config->customName == "runtimeConfigName"
+    Assert::true($updatedRuntimeConfigs->exists(function ($key, $config) use ($environmentId) {
+      if ($config->name == "runtimeConfigName"
           && $config->runtimeEnvironment->getId() == $environmentId) {
         return TRUE;
       }
