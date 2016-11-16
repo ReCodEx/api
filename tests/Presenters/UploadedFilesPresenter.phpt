@@ -17,6 +17,12 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   private $userLogin = "submitUser1@example.com";
   private $userPassword = "password";
 
+  private $otherUserLogin = "user1@example.com";
+  private $otherUserPassword = "password1";
+
+  private $supervisorLogin = "demoGroupSupervisor@example.com";
+  private $supervisorPassword = "password";
+
   /** @var UploadedFilesPresenter */
   protected $presenter;
 
@@ -58,7 +64,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testUserCannotAccessDetail()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $token = PresenterTestHelper::login($this->container, $this->otherUserLogin, $this->otherUserPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
@@ -72,7 +78,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testDetail()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
@@ -90,7 +96,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testNotFoundDownload()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
@@ -140,7 +146,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $vfsFile = $vfs->getChild($filename);
 
     // create new file upload
-    $user = current($this->presenter->users->findAll());
+    $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
     $uploadedFile = new UploadedFile($vfsFile->url(), $filename, new \DateTime, 1, $user);
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
@@ -191,6 +197,27 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     Assert::type(UploadedFile::class, $result['payload']);
   }
 
+  public function testGroupSupervisorCanDownloadSubmissions()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->supervisorLogin, $this->supervisorPassword);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $filename = "file.ext";
+    $content = "ContentOfContentedFile";
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+
+    $file = current($this->presenter->uploadedFiles->findAll());
+    $file->filePath = $vfs->getChild($filename)->url();
+    $this->em->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', [
+      'action' => 'download',
+      'id' => $file->id
+    ]);
+    $response = $this->presenter->run($request);
+
+    Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+  }
 }
 
 $testCase = new TestUploadedFilesPresenter();

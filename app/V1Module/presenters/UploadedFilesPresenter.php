@@ -7,7 +7,9 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
 use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
+use App\Model\Repository\Groups;
 use App\Model\Repository\UploadedFiles;
 use Nette\Application\Responses\FileResponse;
 
@@ -36,7 +38,17 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   private function throwIfUserCantAccessFile(UploadedFile $file) {
     $user = $this->users->findCurrentUserOrThrow();
-    if ($file->getUser()->getId() !== $user->getId()) { // @todo the admins and supervisors of the group, into which the assignment for which this file was submitted as solution should be able to access this file
+    $isUserSupervisor = FALSE;
+
+    /** @var Group $group */
+    $group = $this->uploadedFiles->findGroupForFile($file);
+    if ($group && ($group->isSupervisorOf($user) || $group->isAdminOf($user))) {
+      $isUserSupervisor = TRUE;
+    }
+
+    $isUserOwner = $file->getUser()->getId() === $user->getId();
+
+    if (!$isUserOwner && !$isUserSupervisor) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
   }
@@ -45,7 +57,6 @@ class UploadedFilesPresenter extends BasePresenter {
    * Get details of a file
    * @GET
    * @UserIsAllowed(files="view-detail")
-   * @todo: Check if this user can access the file
    */
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
@@ -58,7 +69,6 @@ class UploadedFilesPresenter extends BasePresenter {
    * Download a file
    * @GET
    * @UserIsAllowed(files="view-detail")
-   * @todo: Check if this user can access the file
    */
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
@@ -70,10 +80,10 @@ class UploadedFilesPresenter extends BasePresenter {
    * Get the contents of a file
    * @GET
    * @UserIsAllowed(files="view-content")
-   * @todo: Check if this user can access the file
    */
   public function actionContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
+    $this->throwIfUserCantAccessFile($file);
     $this->sendSuccessResponse($file->getContent());
   }
 

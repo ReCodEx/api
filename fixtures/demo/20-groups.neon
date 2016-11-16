@@ -35,6 +35,18 @@ App\Model\Entity\User:
         makeStudentOf:
             - @demoGroup
 
+    demoGroupSupervisor:
+        __construct:
+            - "demoGroupSupervisor@example.com"
+            - "<firstName()>"
+            - "<lastName()>"
+            - ""
+            - ""
+            - @supervisor
+            - @demoInstance
+        makeSupervisorOf:
+            - @demoGroup
+
     "submitUser1":
         __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", @student, @demoInstance]
         makeStudentOf: [@demoGroup]
@@ -45,4 +57,10 @@ App\Model\Entity\Login:
             createLogin:
                 - "@submitUser1"
                 - "submitUser1@example.com"
+                - "password"
+    demoGroupSupervisorLogin:
+        __construct:
+            createLogin:
+                - @demoGroupSupervisor
+                - "demoGroupSupervisor@example.com"
                 - "password"
