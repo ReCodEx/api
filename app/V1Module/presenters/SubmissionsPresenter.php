@@ -5,7 +5,9 @@ namespace App\V1Module\Presenters;
 use App\Helpers\EvaluationLoader;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
+use App\Model\Repository\Users;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\ForbiddenRequestException;
 
 /**
  * Endpoints for manipulation of solution submissions
@@ -32,6 +34,12 @@ class SubmissionsPresenter extends BasePresenter {
   public $evaluationLoader;
 
   /**
+   * @var Users
+   * @inject
+   */
+  public $users;
+
+  /**
    * Get a list of all submissions, ever
    * @GET
    * @UserIsAllowed(submissions="view-all")
@@ -50,6 +58,17 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionEvaluation(string $id) {
     $submission = $this->submissions->findOrThrow($id);
+    $currentUser = $this->users->findCurrentUserOrThrow();
+    $groupOfSubmission = $submission->getAssignment()->getGroup();
+
+    $isFileOwner = $submission->getUser()->getId() === $currentUser->getId();
+    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
+    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+
+    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot access this file");
+    }
+
     if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
       $evaluation = $this->evaluationLoader->load($submission);
       if ($evaluation !== NULL) {
