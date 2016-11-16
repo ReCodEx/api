@@ -295,6 +295,16 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
+    $currentUser = $this->users->findCurrentUserOrThrow();
+
+    $isFileOwner = $userId === $currentUser->getId();
+    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
+    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+
+    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot access these submissions");
+    }
+
     $this->sendSuccessResponse($submissions);
   }
 

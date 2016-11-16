@@ -154,7 +154,7 @@ App\Model\Entity\Permission:
     "role": @student
     "resource": @submissions
     "action": "view-all"
-    "isAllowed": 1
+    "isAllowed": 0
   "student-submissions-view-evaluation":
     "role": @student
     "resource": @submissions

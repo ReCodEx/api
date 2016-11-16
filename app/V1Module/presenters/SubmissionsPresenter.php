@@ -66,7 +66,7 @@ class SubmissionsPresenter extends BasePresenter {
     $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
     if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
-      throw new ForbiddenRequestException("You cannot access this file");
+      throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
     if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
