@@ -5,15 +5,17 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
-use App\Helpers\FileServerProxy;
+use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
+use App\Helpers\SupplementaryFileStorage;
 use App\Model\Entity\SolutionRuntimeConfig;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\SupplementaryFiles;
 
 /**
  * Endpoint for exercise manipulation
@@ -46,16 +48,22 @@ class ExercisesPresenter extends BasePresenter {
   public $hardwareGroups;
 
   /**
-   * @var FileServerProxy
-   * @inject
-   */
-  public $fileServer;
-
-  /**
    * @var UploadedFiles
    * @inject
    */
   public $uploadedFiles;
+
+  /**
+   * @var SupplementaryFiles
+   * @inject
+   */
+  public $supplementaryFiles;
+
+  /**
+   * @var SupplementaryFileStorage
+   * @inject
+   */
+  public $supplementaryFileStorage;
 
   /**
    * Get a list of exercises with an optional filter
@@ -187,22 +195,52 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   *
    * @POST
    * @UserIsAllowed(exercises="update")
-   * @Param(type="post", name="files", description="Identifiers of uploaded files")
    * @param string $id
    * @throws ForbiddenRequestException
    */
-  public function actionUploadSupplementaryFiles(string $id) {
+  public function actionUploadSupplementaryFile(string $id) {
     $user = $this->users->findCurrentUserOrThrow();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
     }
 
-    $uploadedFiles = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $paths = $this->fileServer->sendSupplementaryFiles($uploadedFiles);
-    $this->sendSuccessResponse($paths);
+    $files = $this->getRequest()->getFiles();
+    if (count($files) === 0) {
+      throw new BadRequestException("No file was uploaded");
+    } elseif (count($files) > 1) {
+      throw new BadRequestException("Too many files were uploaded");
+    }
+
+    $file = array_pop($files);
+    $supplementaryFile = $this->supplementaryFileStorage->store($file, $user, $exercise);
+    if ($supplementaryFile !== NULL) {
+      $this->supplementaryFiles->persist($supplementaryFile);
+      $this->supplementaryFiles->flush();
+      $this->sendSuccessResponse($supplementaryFile);
+    } else {
+      throw new CannotReceiveUploadedFileException($file->getSanitizedName());
+    }
+  }
+
+  /**
+   *
+   * @GET
+   * @UserIsAllowed(exercises="update")
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetSupplementaryFiles(string $id) {
+    $user = $this->users->findCurrentUserOrThrow();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user)) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
+    }
+
+    $this->sendSuccessResponse($exercise->getSupplementaryFiles()->getValues());
   }
 
   /**

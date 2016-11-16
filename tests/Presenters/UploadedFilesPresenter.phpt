@@ -178,7 +178,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $user = current($this->presenter->users->findAll());
-    $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname', 'error' => ''];
+    $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname'];
     $fileUpload = new Nette\Http\FileUpload($file);
     $uploadedFile = new UploadedFile('filepath', 'name', new \DateTime, 1, $user);
 

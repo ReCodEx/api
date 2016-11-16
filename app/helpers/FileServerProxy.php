@@ -7,17 +7,18 @@ use Doctrine\Common\Collections\ArrayCollection;
 use GuzzleHttp\Psr7\Response;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use Nette\Utils\Arrays;
+use Nette\Http\FileUpload;
 
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\CannotReceiveUploadedFileException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
 use ZipArchive;
-
-use Nette\Utils\Arrays;
 
 /**
  * Helper class for communication with dedicated fileserver. The fileserver uses HTTP Basic Auth,
@@ -138,12 +139,12 @@ class FileServerProxy {
 
   /**
    * Send supplementary task files (e.g. test inputs) to the file server
-   * @param UploadedFile[] $files files to be uploaded
+   * @param FileUpload[] $files files to be uploaded
    * @return array
    * @throws SubmissionFailedException
    */
   public function sendSupplementaryFiles(array $files) {
-    $fileData = array_map([$this, 'prepareFileData'], $files);
+    $fileData = array_map([$this, 'prepareSupplementaryFileData'], $files);
     $httpResponse = $this->client->post(self::TASKS_ROUTE, [
       'multipart' => $fileData
     ]);
@@ -160,6 +161,24 @@ class FileServerProxy {
     }
 
     return $result;
+  }
+
+  /**
+   *
+   * @param FileUpload $file
+   * @return type
+   * @throws SubmissionFailedException
+   */
+  private function prepareSupplementaryFileData(FileUpload $file) {
+    if (!$file->isOk()) {
+      throw new CannotReceiveUploadedFileException($file->getName());
+    }
+
+    return [
+      "name" => $file->getName(),
+      "filename" => $file->getName(),
+      "contents" => $file->getContents()
+    ];
   }
 
   /**

@@ -74,6 +74,11 @@ class Exercise implements JsonSerializable
   protected $referenceSolutions;
 
   /**
+   * @ORM\OneToMany(targetEntity="SupplementaryFile", mappedBy="exercise")
+   */
+  protected $supplementaryFiles;
+
+  /**
    * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
    */
   protected $author;
@@ -97,6 +102,7 @@ class Exercise implements JsonSerializable
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->exercise = $exercise;
     $this->author = $user;
+    $this->supplementaryFiles = new ArrayCollection;
   }
 
   public static function create(User $user): Exercise {

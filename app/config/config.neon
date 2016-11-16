@@ -133,6 +133,7 @@ services:
   - App\Helpers\ScoreCalculatorAccessor({
     simple: @App\Helpers\SimpleScoreCalculator
   })
+  - App\Helpers\SupplementaryFileStorage
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -157,6 +158,7 @@ services:
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
+  - App\Model\Repository\SupplementaryFiles
 
 doctrine:
   user: 'root'

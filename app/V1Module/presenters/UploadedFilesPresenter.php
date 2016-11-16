@@ -9,7 +9,6 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
-use App\Model\Repository\Groups;
 use App\Model\Repository\UploadedFiles;
 use Nette\Application\Responses\FileResponse;
 

@@ -1,11 +1,9 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Model\Entity\UploadedFile;
-use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\Users;
+use App\Helpers\SupplementaryFileStorage;
 use App\V1Module\Presenters\ExercisesPresenter;
-use org\bovigo\vfs\vfsStream;
+use App\Model\Entity\SupplementaryFile;
 use Tester\Assert;
 
 class TestExercisesPresenter extends Tester\TestCase
@@ -28,6 +26,12 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\HardwareGroups */
   protected $hardwareGroups;
 
+  /** @var App\Model\Repository\SupplementaryFiles */
+  protected $supplementaryFiles;
+
+  /** @var App\Model\Repository\Logins */
+  protected $logins;
+
   /** @var Nette\Security\User */
   private $user;
 
@@ -39,6 +43,8 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->runtimeEnvironments = $container->getByType(\App\Model\Repository\RuntimeEnvironments::class);
     $this->hardwareGroups = $container->getByType(\App\Model\Repository\HardwareGroups::class);
+    $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryFiles::class);
+    $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
   }
 
   protected function setUp()
@@ -231,66 +237,64 @@ class TestExercisesPresenter extends Tester\TestCase
   }
 
   public function testSupplementaryFilesUpload() {
-    // File system setup
-    $structure = [
-      "file1.txt" => "Lorem ipsum",
-      "file2.txt" => "Dolor sit amet",
-      "file3.txt" => "Consectetuer adipiscing elit"
-    ];
-
-    $fs = vfsStream::setup("root", NULL, $structure);
-
-    // Database setup
-
-    /** @var UploadedFiles $fileRepository */
-    $fileRepository = $this->container->getByType(UploadedFiles::class);
-    $files = [];
-
-    foreach (array_keys($structure) as $name) {
-      $uploadedFile = new UploadedFile(
-        vfsStream::path("root"),
-        $name,
-        new DateTime(),
-        42,
-        $this->container->getByType(Users::class)->getByEmail($this->adminLogin)
-      );
-
-      $fileRepository->persist($uploadedFile, FALSE);
-      $files[] = $uploadedFile;
-    }
-
-    $fileRepository->flush();
-
     // Mock file server setup
+    $filename = "task1.txt";
     $fileServerResponse = [
-      "task1.txt" => "https://fs/tasks/hash1",
-      "task2.txt" => "https://fs/tasks/hash2",
-      "task3.txt" => "https://fs/tasks/hash3",
+      $filename => "https://fs/tasks/hash1"
     ];
 
     /** @var Mockery\Mock $fileServerMock */
     $fileServerMock = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withAnyArgs()->andReturn($fileServerResponse);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withAnyArgs()->andReturn($fileServerResponse)->once();
+    $this->presenter->supplementaryFileStorage = new SupplementaryFileStorage($fileServerMock);
 
     // Finally, the test itself
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
     PresenterTestHelper::setToken($this->presenter, $token);
 
-    $allExercises = $this->presenter->exercises->findAll();
-    $exercise = array_pop($allExercises);
-
-    $this->presenter->fileServer = $fileServerMock;
+    $exercise = current($this->presenter->exercises->findAll());
+    $file = ['name' => $filename, 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname', 'error' => UPLOAD_ERR_OK];
+    $fileUpload = new Nette\Http\FileUpload($file);
 
     /** @var Nette\Application\Responses\JsonResponse $response */
     $response = $this->presenter->run(new Nette\Application\Request("V1:Exercises", "POST", [
-      "action" => 'uploadSupplementaryFiles',
+      "action" => 'uploadSupplementaryFile',
       'id' => $exercise->id
-    ], [
-      'files' => array_map(function (UploadedFile $file) { return $file->id; }, $files)
-    ]));
+    ], [], [$fileUpload]));
 
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-    Assert::equal($fileServerResponse, $response->getPayload()['payload']);
+
+    $payload = $response->getPayload()['payload'];
+    Assert::type(App\Model\Entity\SupplementaryFile::class, $payload);
+    Assert::equal($filename, $payload->getName());
+  }
+
+  public function testGetSupplementaryFiles() {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    // prepare files into exercise
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = current($this->presenter->exercises->findAll());
+    $expectedFile1 = new SupplementaryFile("name1", "hashName1", "fileServerPath1", 1, $user, $exercise);
+    $expectedFile2 = new SupplementaryFile("name2", "hashName2", "fileServerPath2", 2, $user, $exercise);
+    $this->supplementaryFiles->persist($expectedFile1);
+    $this->supplementaryFiles->persist($expectedFile2);
+    $this->supplementaryFiles->flush();
+
+    $request = new Nette\Application\Request("V1:Exercises", 'GET',
+      ['action' => 'getSupplementaryFiles', 'id' => $exercise->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+
+    $file1 = $result['payload'][0];
+    $file2 = $result['payload'][1];
+    Assert::same($expectedFile1, $file1);
+    Assert::same($expectedFile2, $file2);
   }
 }
 

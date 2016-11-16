@@ -90,9 +90,11 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Exercises:create");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
-    $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
     $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
+
+    $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
+    $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFile");
   }
 
   /**
