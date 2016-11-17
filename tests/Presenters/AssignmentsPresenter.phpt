@@ -6,6 +6,7 @@ use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\Submission;
+use App\Exceptions\NotFoundException;
 
 class TestAssignmentsPresenter extends Tester\TestCase
 {
@@ -208,10 +209,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testRemove()
   {
-    // TODO: not working, Integrity constraint violation: 19 FOREIGN KEY constraint failed
-    // TODO: do we really need to delete assignments directly from database?
-
-    /*$token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignment = current($this->assignments->findAll());
@@ -225,7 +223,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
-    Assert::exception($this->assignments->findOrThrow($assignment->getId()), \App\Exceptions\NotFoundException::class);*/
+    Assert::exception(function () use ($assignment) {
+      $this->assignments->findOrThrow($assignment->getId());
+    }, NotFoundException::class);
   }
 
   public function testCanSubmit()

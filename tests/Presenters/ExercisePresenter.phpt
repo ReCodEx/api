@@ -171,26 +171,6 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($this->adminLogin, $result['payload']->getAuthor()->email);
   }
 
-  public function testForkFrom()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
-
-    $allExercises = $this->presenter->exercises->findAll();
-    $exercise = array_pop($allExercises);
-
-    $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'forkFrom', 'id' => $exercise->id]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal($this->adminLogin, $result['payload']->getAuthor()->email);
-    Assert::notEqual($exercise->id, $result['payload']->id);
-    Assert::equal(count($exercise->localizedAssignments), count($result['payload']->localizedAssignments));
-    Assert::equal($exercise->difficulty, $result['payload']->difficulty);
-  }
-
   public function testUpdateRuntimeConfigs()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
