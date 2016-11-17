@@ -136,7 +136,7 @@ class GroupsPresenter extends BasePresenter {
     $publicStats = $req->getPost("publicStats");
     $isPublic = $req->getPost("isPublic");
 
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if (!$group->isAdminOf($user) && !$user->getRole()->hasLimitedRights()) {
