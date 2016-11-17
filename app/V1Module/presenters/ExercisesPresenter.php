@@ -18,7 +18,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\SupplementaryFiles;
 
 /**
- * Endpoint for exercise manipulation
+ * Endpoints for exercise manipulation
  * @LoggedIn
  */
 class ExercisesPresenter extends BasePresenter {
@@ -69,6 +69,7 @@ class ExercisesPresenter extends BasePresenter {
    * Get a list of exercises with an optional filter
    * @GET
    * @UserIsAllowed(exercises="view-all")
+   * @param string $search text which will be searched in exercises names
    */
   public function actionDefault(string $search = NULL) {
     $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByName($search);
@@ -80,6 +81,7 @@ class ExercisesPresenter extends BasePresenter {
    * Get details of an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
+   * @param string $id identification of exercise
    */
   public function actionDetail(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -87,11 +89,13 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Update detail of an exercise
    * @POST
    * @UserIsAllowed(exercises="update")
-   * @Param(type="post", name="name")
-   * @Param(type="post", name="difficulty")
-   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
+   * @param string $id identification of exercise
+   * @Param(type="post", name="name", description="Name of exercise")
+   * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
+   * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
@@ -143,9 +147,12 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Change runtime configuration of exercise.
+   * Configurations can be added or deleted here, based on what is provided in arguments.
    * @POST
    * @UserIsAllowed(exercises="update")
-   * @Param(type="post", name="runtimeConfigs", description="A description of the assignment")
+   * @param string $id identification of exercise
+   * @Param(type="post", name="runtimeConfigs", description="Runtime configurations for the exercise")
    */
   public function actionUpdateRuntimeConfigs(string $id) {
     $user = $this->getCurrentUser();
@@ -195,10 +202,10 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   *
+   * Upload one supplementary file for the exercise
    * @POST
    * @UserIsAllowed(exercises="update")
-   * @param string $id
+   * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
   public function actionUploadSupplementaryFile(string $id) {
@@ -227,10 +234,10 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   *
+   * Get list of all supplementary files for an exercise
    * @GET
    * @UserIsAllowed(exercises="update")
-   * @param string $id
+   * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
   public function actionGetSupplementaryFiles(string $id) {
@@ -244,6 +251,8 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Create exercise with all default values.
+   * Exercise detail can be then changed in appropriate endpoint.
    * @POST
    * @UserIsAllowed(exercises="create")
    */
@@ -256,20 +265,4 @@ class ExercisesPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($exercise);
   }
-
-  /**
-   * @POST
-   * @UserIsAllowed(exercises="fork")
-   */
-  public function actionForkFrom(string $id) {
-    $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
-    $forkedExercise = Exercise::forkFrom($exercise, $user);
-    $this->exercises->persist($forkedExercise);
-    $this->exercises->flush();
-
-    $this->sendSuccessResponse($forkedExercise);
-  }
-
 }

@@ -83,4 +83,29 @@ class SubmissionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submission);
   }
 
+  /**
+   * Set new amount of bonus points for this submission
+   * @POST
+   * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
+   * @UserIsAllowed(submissions="set-bonus-points")
+   */
+  public function actionSetBonusPoints(string $id) {
+    $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
+    $submission = $this->submissions->findOrThrow($id);
+    $evaluation = $submission->getEvaluation();
+
+    $currentUser = $this->users->findCurrentUserOrThrow();
+    $groupOfSubmission = $submission->getAssignment()->getGroup();
+    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
+    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+    if (!$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
+    }
+
+    $evaluation->setBonusPoints($newBonusPoints);
+    $this->evaluations->persist($evaluation);
+
+    $this->sendSuccessResponse("OK");
+  }
+
 }

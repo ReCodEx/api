@@ -6,7 +6,7 @@ use App\Model\Repository\RuntimeEnvironments;
 
 
 /**
- * Runtime environemnts endpoints
+ * Runtime environments endpoints
  */
 class RuntimeEnvironmentsPresenter extends BasePresenter {
 

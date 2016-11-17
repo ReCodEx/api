@@ -91,7 +91,6 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
-    $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
 
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFile");
@@ -125,6 +124,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
     $router[] = new PostRoute("$prefix/validate-add-group-data", "Groups:validateAddGroupData");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
+    $router[] = new PostRoute("$prefix/<id>", "Groups:updateGroup");
     $router[] = new DeleteRoute("$prefix/<id>", "Groups:removeGroup");
     $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
@@ -184,6 +184,7 @@ class RouterFactory {
   private static function createSubmissionRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Submissions:");
     $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
+    $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
   }
 
   /**

@@ -245,3 +245,8 @@ App\Model\Entity\Permission:
     "resource": @runtimeEnvironments
     "action": "view-all"
     "isAllowed": 1
+  "supervisor-submissions-set-bonus-points":
+    "role": @supervisor
+    "resource": @submissions
+    "action": "set-bonus-points"
+    "isAllowed": 1

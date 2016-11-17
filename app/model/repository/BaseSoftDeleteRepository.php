@@ -31,6 +31,14 @@ class BaseSoftDeleteRepository extends BaseRepository {
     ]));
   }
 
+  public function findOrThrow($id) {
+    $entity = $this->findOneBy(['id' => $id]);
+    if (!$entity) {
+      throw new NotFoundException("Cannot find '$id'");
+    }
+    return $entity;
+  }
+
   public function matching(Criteria $params) {
     $params->andWhere(Criteria::expr()->isNull($this->softDeleteColumn));
     return $this->repository->matching($params);

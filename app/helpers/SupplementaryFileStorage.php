@@ -9,7 +9,7 @@ use Nette;
 use Nette\Http\FileUpload;
 
 /**
- * Stores uploaded files in a configured directory
+ * Stores uploaded supplementary files on fileserver
  */
 class SupplementaryFileStorage extends Nette\Object {
 
@@ -27,7 +27,7 @@ class SupplementaryFileStorage extends Nette\Object {
   }
 
   /**
-   * Save the file into fileserver
+   * Save the file into fileserver and return database entity
    * @param FileUpload $file The file to be stored
    * @param User       $user User, who uploaded the file
    * @param Exercise   $exercise
