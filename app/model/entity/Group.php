@@ -301,7 +301,8 @@ class Group implements JsonSerializable
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
       "assignments" => $this->getAssignmentsIds(),
-      "publicStats" => $this->publicStats
+      "publicStats" => $this->publicStats,
+      "threshold" => $this->threshold
     ];
   }
 }
