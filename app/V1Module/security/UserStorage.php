@@ -46,8 +46,9 @@ class UserStorage extends Nette\Object implements IUserStorage
   }
 
   /**
-   * No-op - you have to send the access token to the user yourself
-   * @return void
+   * Set user identity (after login or for testing purposes)
+   * @param IIdentity $identity
+   * @throws InvalidArgumentException
    */
   function setIdentity(IIdentity $identity = NULL)
   {
