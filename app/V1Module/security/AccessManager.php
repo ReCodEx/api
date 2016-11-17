@@ -54,22 +54,6 @@ class AccessManager {
   }
 
   /**
-   * Extract user information from the
-   * @param   IRequest       $req    HTTP request
-   * @return  Identity|NULL
-   */
-  public function getIdentity(IRequest $req) {
-    try {
-      $token = self::getGivenAccessTokenOrThrow($req);
-      $decodedToken = $this->decodeToken($token);
-      $user = $this->getUser($decodedToken);
-      return new Identity($user->getId(), $user->getRole()->getId(), [ "info" => $user->jsonSerialize(), "token" => $decodedToken ]);
-    } catch (ApiException $e) {
-      return NULL;
-    }
-  }
-
-  /**
    * Parse and validate a JWT token and extract the payload.
    * @param string The potential JWT token
    * @return object The decoded payload
@@ -137,19 +121,6 @@ class AccessManager {
     ];
 
     return JWT::encode($tokenPayload, $this->verificationKey, $this->usedAlgorithm);
-  }
-
-  /**
-   * Extract the access token from the request and throw an exception if there is none.
-   * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
-   * @throws NoAccessTokenException
-   */
-  public static function getGivenAccessTokenOrThrow(IRequest $request) {
-    $token = self::getGivenAccessToken($request);
-    if ($token === NULL) {
-      throw new NoAccessTokenException;
-    }
-    return $token;
   }
 
   /**

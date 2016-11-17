@@ -16,19 +16,6 @@ use App\Security\Identity;
  * Endpoints used to log a user in
  */
 class LoginPresenter extends BasePresenter {
-
-  /**
-   * @var Logins
-   * @inject
-   */
-  public $logins;
-
-  /**
-   * @var ExternalLogins
-   * @inject
-   */
-  public $externalLogins;
-
   /**
    * @var AccessManager
    * @inject

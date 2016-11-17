@@ -14,7 +14,6 @@ use App\Exceptions\NotImplementedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InternalServerErrorException;
 
-use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
@@ -46,12 +45,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $accessManager;
-
-  /**
-   * @var Authorizator
-   * @inject
-   */
-  public $authorizator;
 
   /**
    * @var Application
