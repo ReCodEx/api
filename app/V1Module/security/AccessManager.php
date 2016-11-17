@@ -49,7 +49,7 @@ class AccessManager {
     $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.projekty.ms.mff.cuni.cz");
     $this->audience = Arrays::get($parameters, "audience", "https://recodex.projekty.ms.mff.cuni.cz");
     $this->allowedAlgorithms = Arrays::get($parameters, "allowedAlgorithms", [ "HS256" ]);
-    $this->usedAlgorithm = Arrays::get($parameters, "usedAlogrithm", "HS256");
+    $this->usedAlgorithm = Arrays::get($parameters, "usedAlgorithm", "HS256");
     JWT::$leeway = Arrays::get($parameters, "leeway", 10); // 10 seconds
   }
 
