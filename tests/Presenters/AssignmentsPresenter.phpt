@@ -206,7 +206,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testRemove()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignment = current($this->assignments->findAll());
 

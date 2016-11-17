@@ -94,7 +94,6 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testSetBonusPoints()
   {
     $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allSubmissions = $this->presenter->submissions->findAll();
     $submission = array_pop($allSubmissions);
