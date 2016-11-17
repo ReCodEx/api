@@ -90,7 +90,7 @@ class SubmissionsPresenter extends BasePresenter {
    * @UserIsAllowed(submissions="set-bonus-points")
    */
   public function actionSetBonusPoints(string $id) {
-    $newBonusPoints = $this->getHttpRequest()->getPost("bonusPoints");
+    $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
     $submission = $this->submissions->findOrThrow($id);
     $evaluation = $submission->getEvaluation();
 
@@ -105,7 +105,7 @@ class SubmissionsPresenter extends BasePresenter {
     $evaluation->setBonusPoints($newBonusPoints);
     $this->evaluations->persist($evaluation);
 
-    $this->sendSuccessResponse($evaluation);
+    $this->sendSuccessResponse("OK");
   }
 
 }

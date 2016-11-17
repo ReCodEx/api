@@ -36,13 +36,13 @@ class TestSubmissionsPresenter extends Tester\TestCase
   {
     PresenterTestHelper::fillDatabase($this->container);
     $this->presenter = PresenterTestHelper::createPresenter($this->container, SubmissionsPresenter::class);
-    $this->presenter->evaluations = Mockery::mock('App\Model\Repository\SolutionEvaluations')
-        ->shouldReceive('persist')->with(Mockery::any())->getMock();
-    $this->presenter->evaluationLoader = Mockery::mock('App\Helpers\EvaluationLoader')
+    /*$this->presenter->evaluations = Mockery::mock('App\Model\Repository\SolutionEvaluations')
+        ->shouldReceive('persist')->with(Mockery::any())->getMock();*/
+    /*$this->presenter->evaluationLoader = Mockery::mock('App\Helpers\EvaluationLoader')
         ->shouldReceive('load')
         ->withAnyArgs()
         ->andReturn(Mockery::mock('App\Model\Entity\SolutionEvaluation'))
-        ->getMock();
+        ->getMock();*/
   }
 
   protected function tearDown()
@@ -90,6 +90,32 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::same($submission, $result['payload']);
+    Assert::type('App\Model\Entity\SolutionEvaluation', $submission->getEvaluation());
+  }
+
+  public function testSetBonusPoints()
+  {
+    $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+    PresenterTestHelper::setToken($this->presenter, $token);
+
+    $allSubmissions = $this->presenter->submissions->findAll();
+    $submission = array_pop($allSubmissions);
+
+    $request = new Nette\Application\Request('V1:Submissions',
+      'POST',
+      ['action' => 'setBonusPoints', 'id' => $submission->id],
+      ['bonusPoints' => 4]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    // Check invariants
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    $submission = $this->presenter->submissions->get($submission->id);
+    Assert::equal(4, $submission->getEvaluation()->getBonusPoints());
   }
 }
 

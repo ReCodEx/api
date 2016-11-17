@@ -7,6 +7,19 @@ App\Model\Entity\UploadedFile:
             - 0
             - @submitUser1
 
+App\Model\Entity\SolutionEvaluation:
+    firstEvaluation:
+        __construct: false
+        bonusPoints: 1
+        evaluatedAt: "<dateTime()>"
+        initFailed: false
+        score: 0.95
+        points: 10
+        isValid: true
+        evaluationFailed: false
+        resultYml: ""
+        testResults: []
+
 App\Model\Entity\Submission:
     firstSubmission:
         __construct:
@@ -18,3 +31,4 @@ App\Model\Entity\Submission:
                 - [@firstUploadedFile]
                 - @demoRuntimeConfig
                 - false
+        evaluation: @firstEvaluation
