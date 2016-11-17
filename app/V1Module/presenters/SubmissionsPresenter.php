@@ -94,7 +94,7 @@ class SubmissionsPresenter extends BasePresenter {
     $submission = $this->submissions->findOrThrow($id);
     $evaluation = $submission->getEvaluation();
 
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $groupOfSubmission = $submission->getAssignment()->getGroup();
     $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
     $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
