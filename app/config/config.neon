@@ -103,17 +103,21 @@ extensions:
 
 services:
   router: App\RouterFactory::createRouter
-  - App\Security\AccessManager(%accessManager%)
-  - App\Security\Authorizator
   - Nette\Mail\SmtpMailer(%mail%)
   - class: App\Console\DoctrineFixtures
     tags: [kdyby.console.command]
   - class: App\Console\GenerateSwagger(@router)
     tags: [kdyby.console.command]
 
+  # security
+  - App\Security\AccessManager(%accessManager%)
+  - App\Security\Authorizator
+  security.userStorage: App\Security\UserStorage
+  - App\Security\CredentialsAuthenticator
+
   # external login services
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
-  - App\Helpers\ExternalLogin\AuthService(@App\Helpers\ExternalLogin\CAS)
+  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(@App\Helpers\ExternalLogin\CAS)
 
   # config objects
   - App\Helpers\MonitorConfig(%monitor%)

@@ -12,34 +12,12 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\ForbiddenRequestException;
 
 class Users extends BaseRepository {
-
-  /** @var NS\User */
-  private $userSession;
-
-  public function __construct(EntityManager $em, NS\User $user) {
+  public function __construct(EntityManager $em) {
     parent::__construct($em, User::CLASS);
-    $this->userSession = $user;
   }
 
   public function getByEmail(string $email) {
     return $this->findOneBy([ "email" => $email ]);
-  }
-
-  public function findCurrentUserOrThrow(): User {
-    if (!$this->userSession->isLoggedIn()) {
-      throw new ForbiddenRequestException;
-    }
-
-    $id = $this->userSession->id;
-    return $this->findOrThrow($id);
-  }
-
-  public function findCurrentUser() {
-    if (!$this->userSession->isLoggedIn()) {
-      return NULL;
-    }
-
-    return $this->get($this->userSession->id);
   }
 
   public function findOrThrow($id): User {
@@ -50,6 +28,4 @@ class Users extends BaseRepository {
 
     return $user;
   }
-
-
 }

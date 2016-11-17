@@ -14,7 +14,7 @@ use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidArgumentException;
-use App\Helpers\ExternalLogin\AuthService;
+use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -56,10 +56,10 @@ class UsersPresenter extends BasePresenter {
   public $instances;
 
   /**
-   * @var AuthService
+   * @var ExternalServiceAuthenticator
    * @inject
    */
-  public $authService;
+  public $externalServiceAuthenticator;
 
   /**
    * Get a list of all users
@@ -143,11 +143,11 @@ class UsersPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-    $authService = $this->authService->getById($serviceId);
+    $authService = $this->externalServiceAuthenticator->getById($serviceId);
     $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
 
-    if ($user != NULL) {
+    if ($user !== NULL) {
       throw new BadRequestException("User is already registered.");
     }
 
@@ -222,7 +222,7 @@ class UsersPresenter extends BasePresenter {
 
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     $user->setFirstName($firstName);
     $user->setLastName($lastName);

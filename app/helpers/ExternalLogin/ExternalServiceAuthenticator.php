@@ -3,12 +3,13 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
+use Nette\Security\User;
 
 
 /**
  * Mapper of service identification to object instance
  */
-class AuthService {
+class ExternalServiceAuthenticator {
 
   /**
    * Auth service of Charles University
@@ -37,5 +38,10 @@ class AuthService {
       default:
         throw new BadRequestException("Authentication service '$serviceId' is not supported.");
     }
+  }
+
+  public function authenticate(string $serviceId, string $username, string $password) {
+    $service = $this->getById($serviceId);
+    return $service->getUser($username, $password);
   }
 }

@@ -2,15 +2,15 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\WrongCredentialsException;
-use App\Exceptions\BadRequestException;
-use App\Helpers\ExternalLogin\IExternalLoginService;
-use App\Helpers\ExternalLogin\AuthService;
+use App\Exceptions\ForbiddenRequestException;
+use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
+use App\Security\CredentialsAuthenticator;
+use App\Security\Identity;
 
 /**
  * Endpoints used to log a user in
@@ -36,23 +36,27 @@ class LoginPresenter extends BasePresenter {
   public $accessManager;
 
   /**
-   * @var AuthService
+   * @var CredentialsAuthenticator
    * @inject
    */
-  public $authService;
+  public $credentialsAuthenticator;
+
+  /**
+   * @var ExternalServiceAuthenticator
+   * @inject
+   */
+  public $externalServiceAuthenticator;
 
   /**
    * Sends response with an access token, if the user exists.
    * @param User $user
-   * @throws WrongCredentialsException
    */
-  private function trySendingLoggedInResponse($user) {
-    if (!$user) {
-      throw new WrongCredentialsException;
-    }
+  private function trySendingLoggedInResponse(User $user) {
+    $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]);
+    $this->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user, [ AccessToken::SCOPE_REFRESH ]),
+      "accessToken" => $token,
       "user" => $user
     ]);
   }
@@ -68,7 +72,7 @@ class LoginPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-    $user = $this->logins->getUser($username, $password);
+    $user = $this->credentialsAuthenticator->authenticate($username, $password);
     $this->trySendingLoggedInResponse($user);
   }
 
@@ -83,9 +87,7 @@ class LoginPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-    $authService = $this->authService->getById($serviceId);
-    $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
-    $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
+    $user = $this->externalServiceAuthenticator->authenticate($serviceId, $username, $password);
     $this->trySendingLoggedInResponse($user);
   }
 
@@ -95,7 +97,14 @@ class LoginPresenter extends BasePresenter {
    * @LoggedIn
    */
   public function actionRefresh() {
-    $user = $this->users->findCurrentUserOrThrow();
+    /** @var Identity $identity */
+    $identity = $this->user->identity;
+
+    if (!$identity->isInScope(AccessToken::SCOPE_REFRESH)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user),
       "user" => $user

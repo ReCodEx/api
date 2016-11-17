@@ -2,6 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Model\Entity\User;
+use App\Security\Identity;
+use Nette\Reflection\ClassType;
 use ReflectionException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -62,7 +65,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
-    $this->tryLogin();
     $this->parameters = new \stdClass;
 
     try {
@@ -80,16 +82,18 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   /**
-   * Try to authenticate the user from the parameters given in the request.
-   * @return void
+   * @return User
+   * @throws ForbiddenRequestException
    */
-  private function tryLogin() {
-    // try to authenticate the user
-    $identity = $this->accessManager->getIdentity($this->getHttpRequest());
-    if ($identity !== NULL) {
-      $this->user->login($identity);
-      $this->user->setAuthorizator($this->authorizator);
+  protected function getCurrentUser(): User {
+    /** @var Identity $identity */
+    $identity = $this->user->identity;
+
+    if ($identity === NULL) {
+      throw new ForbiddenRequestException();
     }
+
+    return $identity->getUserData();
   }
 
   /**
@@ -98,10 +102,14 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @return bool
    */
   protected function isInScope(string $scope): bool {
-    return $this->user->isLoggedIn()
-      && isset($this->user->identity->token)
-      && $this->user->identity->token instanceof AccessToken
-      && $this->user->identity->token->isInScope($scope);
+    /** @var Identity $identity */
+    $identity = $this->user->identity;
+
+    if (!$identity) {
+      return FALSE;
+    }
+
+    return $identity->isInScope($scope);
   }
 
   private function processParams(\Reflector $reflection) {
@@ -188,7 +196,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
     if ($reflection->hasAnnotation("Role")
       && !$this->user->isInRole($reflection->getAnnotation("Role"))) {
-        throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
+      throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
     }
 
     if ($reflection->hasAnnotation("UserIsAllowed")) {

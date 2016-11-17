@@ -10,7 +10,7 @@ use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\NoAccessTokenException;
 use App\Exceptions\ForbiddenRequestException;
 
-use Nette\Http\Request;
+use Nette\Http\IRequest;
 use Nette\Security\Identity;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
@@ -37,7 +37,7 @@ class AccessManager {
   private $allowedAlgorithms;
 
   /** @var string Name of the algorithm currently used for encrypting the signature of the token. */
-  private $usedAlgoirthm;
+  private $usedAlgorithm;
 
   /** @var string Verification key */
   private $verificationKey;
@@ -55,10 +55,10 @@ class AccessManager {
 
   /**
    * Extract user information from the
-   * @param   Request       $req    HTTP request
+   * @param   IRequest       $req    HTTP request
    * @return  Identity|NULL
    */
-  public function getIdentity(Request $req) {
+  public function getIdentity(IRequest $req) {
     try {
       $token = self::getGivenAccessTokenOrThrow($req);
       $decodedToken = $this->decodeToken($token);
@@ -144,7 +144,7 @@ class AccessManager {
    * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
    * @throws NoAccessTokenException
    */
-  public static function getGivenAccessTokenOrThrow(Request $request) {
+  public static function getGivenAccessTokenOrThrow(IRequest $request) {
     $token = self::getGivenAccessToken($request);
     if ($token === NULL) {
       throw new NoAccessTokenException;
@@ -154,9 +154,9 @@ class AccessManager {
 
   /**
    * Extract the access token from the request.
-   * @return string|null  The access token parsed from the HTTP request, or FALSE if there is no access token.
+   * @return string|null  The access token parsed from the HTTP request, or NULL if there is no access token.
    */
-  public static function getGivenAccessToken(Request $request) {
+  public static function getGivenAccessToken(IRequest $request) {
     $accessToken = $request->getQuery("access_token");
     if($accessToken !== NULL && Strings::length($accessToken) > 0) {
       return $accessToken; // the token specified in the URL is prefered
@@ -164,6 +164,11 @@ class AccessManager {
 
     // if the token is not in the URL, try to find the "Authorization" header with the bearer token
     $authorizationHeader = $request->getHeader("Authorization", NULL);
+
+    if ($authorizationHeader === NULL) {
+      return NULL;
+    }
+
     $parts = Strings::split($authorizationHeader, "/ /");
     if(count($parts) === 2) {
       list($bearer, $accessToken) = $parts;

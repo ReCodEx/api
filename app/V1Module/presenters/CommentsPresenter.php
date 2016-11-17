@@ -42,7 +42,7 @@ class CommentsPresenter extends BasePresenter {
   public function actionDefault($id) {
     $thread = $this->findThreadOrCreateIt($id);
     $this->comments->flush();
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $thread->filterPublic($user);
     $this->sendSuccessResponse($thread);
   }
@@ -56,7 +56,7 @@ class CommentsPresenter extends BasePresenter {
    */
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $text = $this->getRequest()->getPost("text");
     $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
     $comment = Comment::createComment($thread, $user, $text, $isPrivate);
@@ -74,7 +74,7 @@ class CommentsPresenter extends BasePresenter {
    * @UserIsAllowed(comments="alter")
    */
   public function actionTogglePrivate(string $threadId, string $commentId) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $comment = $this->comments->findUsersComment($user, $commentId);
 
     if (!$comment || $comment->getCommentThread()->getId() !== $threadId) {

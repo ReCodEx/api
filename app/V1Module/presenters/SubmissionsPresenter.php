@@ -58,7 +58,7 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionEvaluation(string $id) {
     $submission = $this->submissions->findOrThrow($id);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $groupOfSubmission = $submission->getAssignment()->getGroup();
 
     $isFileOwner = $submission->getUser()->getId() === $currentUser->getId();

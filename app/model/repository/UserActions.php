@@ -2,6 +2,7 @@
 
 namespace App\Model\Repository;
 
+use App\Security\Identity;
 use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
@@ -9,12 +10,12 @@ use App\Model\Entity\UserAction;
 
 class UserActions extends BaseRepository {
 
-  /** @var Users */
-  private $users;
+  /** @var Nette\Security\User */
+  private $user;
 
-  public function __construct(EntityManager $em, Users $users) {
+  public function __construct(EntityManager $em, Nette\Security\User $user) {
     parent::__construct($em, UserAction::CLASS);
-    $this->users = $users;
+    $this->user = $user;
   }
 
   /**
@@ -26,8 +27,9 @@ class UserActions extends BaseRepository {
    * @return UserAction
    */
   public function log(string $action, array $params, int $code, $data = NULL): UserAction {
-    $user = $this->users->findCurrentUserOrThrow();
-    $log = new UserAction($user, new DateTime, $action, $params, $code, $data);
+    /** @var Identity $identity */
+    $identity = $this->user->identity;
+    $log = new UserAction($identity->getUserData(), new DateTime, $action, $params, $code, $data);
     $this->persist($log);
     return $log;
   }

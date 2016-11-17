@@ -92,7 +92,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionCreateReferenceSolution(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("Only author can create reference assignments");

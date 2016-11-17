@@ -123,7 +123,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$assignment->canAccessAsStudent($user)
         && !$assignment->canAccessAsSupervisor($user)
@@ -152,7 +152,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     if (!$assignment->canAccessAsSupervisor($user)
         && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot update this assignment.");
@@ -217,7 +217,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $group = $this->groups->findOrThrow($groupId);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     // test, if the user has privileges to the given group
     if ($group->isSupervisorOf($user) === FALSE && $user->getRole()->hasLimitedRights()) {
@@ -259,7 +259,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionRemove(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$assignment->canAccessAsSupervisor($user)
       && $user->getRole()->hasLimitedRights()) {
@@ -277,7 +277,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionCanSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$assignment->canAccessAsStudent($user)
         && !$assignment->canAccessAsSupervisor($user)) {
@@ -295,7 +295,7 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
 
     $isFileOwner = $userId === $currentUser->getId();
     $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
@@ -320,7 +320,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $req = $this->getRequest();
 
-    $loggedInUser = $this->users->findCurrentUserOrThrow();
+    $loggedInUser = $this->getCurrentUser();
     $userId = $req->getPost("userId");
     $user = $userId !== NULL
       ? $this->users->findOrThrow($userId)

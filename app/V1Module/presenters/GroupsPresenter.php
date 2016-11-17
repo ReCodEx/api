@@ -74,7 +74,7 @@ class GroupsPresenter extends BasePresenter {
     $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
     $parentGroupId = $req->getPost("parentGroupId", NULL);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $instance = $this->instances->get($instanceId);
 
     if (!$user->belongsTo($instance)) {
@@ -125,7 +125,7 @@ class GroupsPresenter extends BasePresenter {
    * @UserIsAllowed(groups="remove")
    */
   public function actionRemoveGroup(string $id) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if ($group->isAdminOf($user) === FALSE) {
@@ -148,7 +148,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$user->belongsTo($group->getInstance())
       && $user->getRole()->hasLimitedRights()) {
@@ -169,7 +169,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionSubgroups(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$group->isMemberOf($user)
       && $user->getRole()->hasLimitedRights()) {
@@ -187,7 +187,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionMembers(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$group->isSupervisorOf($user)
       && $user->getRole()->hasLimitedRights()) {
@@ -207,7 +207,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionSupervisors(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$group->isSupervisorOf($user)
       && $user->getRole()->hasLimitedRights()) {
@@ -224,7 +224,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudents(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$group->isMemberOf($user)) {
       throw new ForbiddenRequestException("You are not allowed to view students of this group.");
@@ -240,7 +240,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAssignments(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     if (!$group->isMemberOf($user)
       && $user->getRole()->hasLimitedRights()) {
@@ -257,7 +257,7 @@ class GroupsPresenter extends BasePresenter {
    * @UserIsAllowed(groups="view-detail")
    */
   public function actionStats(string $id) {
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if (!$group->statsArePublic()
@@ -287,7 +287,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudentsStats(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if ($user->getId() !== $this->user->id
@@ -310,7 +310,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudentsBestResults(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if ($user->getId() !== $this->user->id
@@ -350,7 +350,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     // check if current user isn't trying to add someone to a private group without sufficient rights
@@ -382,7 +382,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionRemoveStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     // check that the user has rights to join the group
@@ -412,7 +412,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     // check that the user is the admin of the group
@@ -441,7 +441,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionRemoveSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     // check that the user has rights to join the group
@@ -486,7 +486,7 @@ class GroupsPresenter extends BasePresenter {
   public function actionMakeAdmin(string $id) {
     $userId = $this->getHttpRequest()->getPost("userId");
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->users->findCurrentUserOrThrow();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     // check that the user has rights to join the group

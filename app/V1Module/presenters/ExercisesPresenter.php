@@ -99,7 +99,7 @@ class ExercisesPresenter extends BasePresenter {
     $difficulty = $req->getPost("difficulty");
 
     // check if user can modify requested exercise
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
@@ -148,7 +148,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="runtimeConfigs", description="A description of the assignment")
    */
   public function actionUpdateRuntimeConfigs(string $id) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot update it.");
@@ -202,7 +202,7 @@ class ExercisesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionUploadSupplementaryFile(string $id) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
@@ -234,7 +234,7 @@ class ExercisesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionGetSupplementaryFiles(string $id) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
@@ -248,7 +248,7 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="create")
    */
   public function actionCreate() {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     $exercise = Exercise::create($user);
     $this->exercises->persist($exercise);
@@ -263,7 +263,7 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionForkFrom(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
 
     $forkedExercise = Exercise::forkFrom($exercise, $user);
     $this->exercises->persist($forkedExercise);

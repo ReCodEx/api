@@ -36,7 +36,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   private function throwIfUserCantAccessFile(UploadedFile $file) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $isUserSupervisor = FALSE;
 
     /** @var Group $group */
@@ -93,7 +93,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @UserIsAllowed(files="upload")
    */
   public function actionUpload() {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $files = $this->getRequest()->getFiles();
     if (count($files) === 0) {
       throw new BadRequestException("No file was uploaded");

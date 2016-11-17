@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Security\Identity;
 use App\V1Module\Presenters\ForgottenPasswordPresenter;
 use Tester\Assert;
 
@@ -106,15 +107,12 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
   {
     // issue token for password change in proper scope
     // first log in regulary to find out user ID
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    $userId = $this->accessManager->getUser($this->accessManager->decodeToken($token))->getId();
+    $user = $this->presenter->users->getByEmail($this->userLogin);
 
-    // create fake user entity to return the right user ID
-    $userMock = Mockery::mock('\App\Model\Entity\User')->shouldReceive('getId')->withNoArgs()->andReturn($userId)->getMock();
     // issue token for changing password
-    $token = $this->accessManager->issueToken($userMock, [ \App\Security\AccessToken::SCOPE_CHANGE_PASSWORD ], 600);
+    $token = $this->accessManager->issueToken($user, [ \App\Security\AccessToken::SCOPE_CHANGE_PASSWORD ], 600);
     // login with obtained token
-    PresenterTestHelper::setToken($this->presenter, $token);
+    $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
     $response = $this->presenter->run($request);

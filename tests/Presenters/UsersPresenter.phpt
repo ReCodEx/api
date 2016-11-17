@@ -81,7 +81,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::true(count($result['payload']) > 0);
 
-    $users = array_pop($result['payload']);
+    $users = $result['payload'];
     foreach ($users as $user) {
       Assert::type(App\Model\Entity\User::class, $user);
     }
@@ -165,7 +165,7 @@ class TestUsersPresenter extends Tester\TestCase
       ->once();
 
     // set mocks to presenter
-    $this->presenter->authService = $mockAuthService;
+    $this->presenter->externalServiceAuthenticator = $mockAuthService;
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createAccountExt'],

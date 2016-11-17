@@ -35,7 +35,7 @@ class InstancesPresenter extends BasePresenter {
   public function actionDefault() {
     $instances = $this->instances->findAll(); // @todo: Filter out the non-public
     $this->sendSuccessResponse(array_map(function (Instance $instance) {
-      return $instance->getData($this->users->findCurrentUser());
+      return $instance->getData($this->getCurrentUser());
     }, $instances));
   }
 
@@ -50,7 +50,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionCreateInstance() {
     $params = $this->parameters;
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $instance = Instance::createInstance(
       $params->name,
       $params->isOpen,
@@ -58,7 +58,7 @@ class InstancesPresenter extends BasePresenter {
       $params->description
     );
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance->getData($this->users->findCurrentUser()), IResponse::S201_CREATED);
+    $this->sendSuccessResponse($instance->getData($this->getCurrentUser()), IResponse::S201_CREATED);
   }
 
   /**
@@ -83,7 +83,7 @@ class InstancesPresenter extends BasePresenter {
       $instance->isOpen = $params->isOpen;
     }
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance->getData($this->users->findCurrentUser()));
+    $this->sendSuccessResponse($instance->getData($this->getCurrentUser()));
   }
 
   /**
@@ -105,7 +105,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    $user = $this->users->findCurrentUser();
+    $user = $this->getCurrentUser();
     $this->sendSuccessResponse($instance->getData($user));
   }
 
@@ -116,7 +116,7 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="view-groups")
    */
   public function actionGroups(string $id) {
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     $instance = $this->instances->findOrThrow($id);
     $this->sendSuccessResponse($instance->getGroupsForUser($user));
   }
@@ -129,7 +129,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->instances->findOrThrow($id);
-    $user = $this->users->findCurrentUserOrThrow();
+    $user = $this->getCurrentUser();
     if (!$user->belongsTo($instance)
       && $user->getRole()->hasLimitedRights()) {
         throw new ForbiddenRequestException("You cannot access this instance users.");
