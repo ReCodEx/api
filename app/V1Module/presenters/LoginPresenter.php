@@ -70,7 +70,7 @@ class LoginPresenter extends BasePresenter {
    * @Param(type="post", name="password", validation="string", description="Password")
    */
   public function actionExternal($serviceId) {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
@@ -93,7 +93,7 @@ class LoginPresenter extends BasePresenter {
 
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user),
+      "accessToken" => $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]),
       "user" => $user
     ]);
   }
