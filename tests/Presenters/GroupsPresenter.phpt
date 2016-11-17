@@ -53,7 +53,6 @@ class TestGroupsPresenter extends Tester\TestCase
   public function testUserCannotListAllGroups()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     /** @var \Nette\Application\Responses\JsonResponse $response */
     Assert::exception(function () {
@@ -65,7 +64,6 @@ class TestGroupsPresenter extends Tester\TestCase
   public function testAdminCanListAllGroups()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Groups', 'GET', ['action' => 'default']);
 
@@ -81,7 +79,6 @@ class TestGroupsPresenter extends Tester\TestCase
   public function testUserCannotJoinPrivateGroup()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
     $group = $user->instance->getGroups()->filter(
@@ -103,7 +100,6 @@ class TestGroupsPresenter extends Tester\TestCase
   public function testUserCanJoinPublicGroup()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
     $group = $user->instance->getGroups()->filter(

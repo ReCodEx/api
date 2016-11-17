@@ -62,7 +62,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testGetAllInstances()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -78,7 +77,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testCreateInstance()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Instances',
         'POST',
@@ -99,7 +97,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testUpdateInstance()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
@@ -121,7 +118,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testDeleteInstance()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // create new testing instance for further deletion
     $request = new Nette\Application\Request('V1:Instances',
@@ -151,7 +147,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testGetGroups()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
@@ -173,7 +168,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testGetUsers()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
@@ -190,7 +184,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testGetLicences()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
@@ -207,7 +200,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testCreateLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
@@ -231,7 +223,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testUpdateLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // create testing licence
     $allInstances = $this->presenter->instances->findAll();
@@ -261,7 +252,6 @@ class TestInstancesPresenter extends Tester\TestCase
   public function testRemoveLicence()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // create testing licence
     $allInstances = $this->presenter->instances->findAll();
@@ -289,8 +279,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
   public function testUserCannotSeePrivateGroups()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     /** @var App\Model\Entity\User $user */
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));

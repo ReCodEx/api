@@ -71,7 +71,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testGetAllUsers()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -90,7 +89,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testCreateAccount()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $email = "email@email.email";
     $firstName = "firstName";
@@ -141,7 +139,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testCreateAccountExt()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $userId = "userIdExt";
     $username = "usernameExt";
@@ -203,7 +200,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testValidateRegistrationData()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'validateRegistrationData'],
@@ -229,7 +225,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -249,7 +244,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testUpdateProfile()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $email = "emailUpdated@emailUpdated.emailUpdated";
@@ -289,7 +283,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testSupervisorGroups()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -311,7 +304,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testStudentGroups()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -344,7 +336,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testInstances()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -367,7 +358,6 @@ class TestUsersPresenter extends Tester\TestCase
   public function testExercises()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',

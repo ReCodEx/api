@@ -65,7 +65,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testUserCannotAccessDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin, $this->otherUserPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
 
@@ -79,7 +78,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
 
@@ -97,7 +95,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testNotFoundDownload()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $file = current($this->presenter->uploadedFiles->findAll());
 
@@ -111,7 +108,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testDownload()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // create virtual filesystem setup
     $filename = "file.ext";
@@ -137,7 +133,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testContent()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // create virtual filesystem setup
     $filename = "file.ext";
@@ -164,7 +159,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testNoFilesUpload()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST', ['action' => 'upload']);
     Assert::exception(function () use ($request) {
@@ -175,7 +169,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testUpload()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $user = current($this->presenter->users->findAll());
     $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname'];
@@ -200,7 +193,6 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testGroupSupervisorCanDownloadSubmissions()
   {
     $token = PresenterTestHelper::login($this->container, $this->supervisorLogin, $this->supervisorPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $filename = "file.ext";
     $content = "ContentOfContentedFile";

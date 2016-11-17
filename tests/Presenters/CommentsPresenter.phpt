@@ -46,7 +46,6 @@ class TestCommentsPresenter extends Tester\TestCase
   public function testGetCommentsInNormalThread()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'mainThread']);
     $response = $this->presenter->run($request);
@@ -66,7 +65,6 @@ class TestCommentsPresenter extends Tester\TestCase
   public function testGetCommentsInEmptyThread()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'emptyThread']);
     $response = $this->presenter->run($request);
@@ -81,7 +79,6 @@ class TestCommentsPresenter extends Tester\TestCase
   public function testAddCommentIntoExistingThread()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request(
       'V1:Comments',
@@ -106,7 +103,6 @@ class TestCommentsPresenter extends Tester\TestCase
   public function testAddCommentIntoNonexistingThread()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request(
       'V1:Comments',
@@ -126,7 +122,6 @@ class TestCommentsPresenter extends Tester\TestCase
   public function testTogglePrivate()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $comments = $this->presenter->comments->findAll();
     $exampleComment = array_pop($comments);

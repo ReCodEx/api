@@ -66,7 +66,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testListAllExercises()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -81,7 +80,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testListSearchExercises()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'al']);
     $response = $this->presenter->run($request);
@@ -95,7 +93,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allExercises = $this->presenter->exercises->findAll();
     $exercise = array_pop($allExercises);
@@ -112,7 +109,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testUpdateDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allExercises = $this->presenter->exercises->findAll();
     $exercise = array_pop($allExercises);
@@ -160,7 +156,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testCreate()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'create']);
     $response = $this->presenter->run($request);
@@ -174,7 +169,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testForkFrom()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allExercises = $this->presenter->exercises->findAll();
     $exercise = array_pop($allExercises);
@@ -194,7 +188,6 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testUpdateRuntimeConfigs()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allExercises = $this->presenter->exercises->findAll();
     $exercise = array_pop($allExercises);
@@ -250,7 +243,6 @@ class TestExercisesPresenter extends Tester\TestCase
 
     // Finally, the test itself
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $exercise = current($this->presenter->exercises->findAll());
     $file = ['name' => $filename, 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname', 'error' => UPLOAD_ERR_OK];
@@ -271,7 +263,6 @@ class TestExercisesPresenter extends Tester\TestCase
 
   public function testGetSupplementaryFiles() {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     // prepare files into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);

@@ -57,7 +57,6 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testGetAllSubmissions()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Submissions', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -74,7 +73,6 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testGetEvaluation()
   {
     $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $allSubmissions = $this->presenter->submissions->findAll();
     $submission = array_pop($allSubmissions);

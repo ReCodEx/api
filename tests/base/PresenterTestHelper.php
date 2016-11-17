@@ -48,32 +48,22 @@ class PresenterTestHelper
     return $presenter;
   }
 
-  public static function login(\Nette\DI\Container $container, string $login, string $password): string
+  public static function login(\Nette\DI\Container $container, string $login): string
   {
-    $presenter = self::createPresenter($container, \App\V1Module\Presenters\LoginPresenter::class);
-    $response = $presenter->run(new \Nette\Application\Request("V1:Login", "POST", ["action" => "default"], ["username" => $login, "password" => $password]));
-    $payload = $response->getPayload();
-    return Arrays::get($payload, ["payload", "accessToken"]);
+    /** @var \Nette\Security\User $userSession */
+    $userSession = $container->getByType(\Nette\Security\User::class);
+    $user = $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
+
+    /** @var \App\Security\AccessManager $accessManager */
+    $accessManager = $container->getByType(\App\Security\AccessManager::class);
+    $tokenText = $accessManager->issueToken($user);
+    $token = $accessManager->decodeToken($tokenText);
+
+    $userSession->login(new \App\Security\Identity($user, $token));
+    return $tokenText;
   }
 
   public static function loginDefaultAdmin(\Nette\DI\Container $container): string {
-    $presenter = self::createPresenter($container, \App\V1Module\Presenters\LoginPresenter::class);
-    $response = $presenter->run(new \Nette\Application\Request("V1:Login", "POST", ["action" => "default"], ["username" => self::ADMIN_LOGIN, "password" => self::ADMIN_PASSWORD]));
-    $payload = $response->getPayload();
-    return Arrays::get($payload, ["payload", "accessToken"]);
-  }
-
-  public static function setToken(Nette\Application\UI\Presenter $presenter, $token)
-  {
-    $method = Nette\Reflection\ClassType::from($presenter)->getMethod("getHttpRequest");
-    $method->setAccessible(TRUE);
-
-    /** @var Nette\Http\Request $request */
-    $request = $method->invoke($presenter);
-    $headersRef = Nette\Reflection\ClassType::from($request)->getProperty("headers");
-    $headersRef->setAccessible(TRUE);
-    $headers = $headersRef->getValue($request);
-    $headers["authorization"] = "Bearer ". $token;
-    $headersRef->setValue($request, $headers);
+    return self::login($container, self::ADMIN_LOGIN);
   }
 }

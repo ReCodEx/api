@@ -125,8 +125,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
 
   public function testWrongPasswordReset()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-    PresenterTestHelper::setToken($this->presenter, $token);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
     Assert::exception(function() use ($request) { $this->presenter->run($request); }, App\Exceptions\ForbiddenRequestException::class);

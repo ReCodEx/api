@@ -54,7 +54,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testListAssignments()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -68,7 +67,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignments = $this->assignments->findAll();
     $assignment = array_pop($assignments);
@@ -87,7 +85,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testUpdateDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignments = $this->assignments->findAll();
     $assignment = array_pop($assignments);
@@ -154,7 +151,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testCreateAssignment()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
@@ -231,7 +227,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testCanSubmit()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignment = current($this->assignments->findAll());
 
@@ -249,7 +244,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testSubmissions()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $submission = current($this->presenter->submissions->findAll());
     $user = $submission->getUser();
@@ -271,7 +265,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testSubmit()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
@@ -350,7 +343,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testGetLimits()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignment = current($this->assignments->findAll());
 
@@ -392,7 +384,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testSetLimits()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    PresenterTestHelper::setToken($this->presenter, $token);
 
     $assignment = current($this->assignments->findAll());
     $setLimitsCallCount = count($assignment->getSolutionRuntimeConfigs());
