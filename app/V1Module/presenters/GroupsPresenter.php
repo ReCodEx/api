@@ -120,6 +120,40 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Update group info
+   * @POST
+   * @UserIsAllowed(groups="update")
+   * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="description", validation="string")
+   * @Param(type="post", name="publicStats", validation="bool")
+   * @Param(type="post", name="isPublic", validation="bool")
+   * @Param(type="post", name="threshold", validation="numericint", required=FALSE)
+   */
+  public function actionUpdateGroup(string $id) {
+    $req = $this->getHttpRequest();
+    $name = $req->getPost("name");
+    $description = $req->getPost("description");
+    $publicStats = $req->getPost("publicStats");
+    $isPublic = $req->getPost("isPublic");
+
+    $user = $this->users->findCurrentUserOrThrow();
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$group->isAdminOf($user) && !$user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("Only group administrators can update group detail.");
+    }
+
+    $group->setName($req->getPost("name"));
+    $group->setDescription($req->getPost("description"));
+    $group->setPublicStats($req->getPost("publicStats"));
+    $group->setIsPublic($req->getPost("isPublic"));
+    $group->setThreshold($req->getPost("threshold", $group->getThreshold()));
+
+    $this->groups->persist($group);
+    $this->sendSuccessResponse($group);
+  }
+
+  /**
    * Delete a group
    * @DELETE
    * @UserIsAllowed(groups="remove")
