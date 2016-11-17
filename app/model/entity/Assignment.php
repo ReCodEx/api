@@ -8,13 +8,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
 use DateTime;
+use Kdyby\Doctrine\Entities\MagicAccessors;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
 class Assignment implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use MagicAccessors;
 
   private function __construct(
     string $name,
@@ -85,6 +88,11 @@ class Assignment implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isPublic;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\Column(type="smallint")

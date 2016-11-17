@@ -6,13 +6,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
+use Kdyby\Doctrine\Entities\MagicAccessors;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
 class Instance implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use MagicAccessors;
 
   /**
    * @ORM\Id
@@ -50,6 +53,11 @@ class Instance implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $updatedAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
@@ -169,6 +177,7 @@ class Instance implements JsonSerializable
       "isAllowed" => $this->isAllowed,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
+      "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : NULL,
       "admin" => $this->admin ? $this->admin->getId() : NULL,
       "topLevelGroups" => $this->getTopLevelGroups($user)->map(function($group) { return $group->getId(); })->getValues()
     ];

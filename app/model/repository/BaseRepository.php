@@ -3,6 +3,7 @@
 namespace App\Model\Repository;
 
 use App\Exceptions\NotFoundException;
+use Doctrine\Common\Collections\Criteria;
 use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
@@ -61,7 +62,7 @@ class BaseRepository extends Nette\Object {
     $this->em->flush();
   }
 
-  public function matching($params) {
+  public function matching(Criteria $params) {
     return $this->repository->matching($params);
   }
 }

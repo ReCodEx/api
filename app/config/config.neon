@@ -97,6 +97,7 @@ extensions:
   console: Kdyby\Console\DI\ConsoleExtension
   events: Kdyby\Events\DI\EventsExtension
   annotations: Kdyby\Annotations\DI\AnnotationsExtension
+  gedmo: Rixxi\Gedmo\DI\OrmExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
 
@@ -167,6 +168,11 @@ doctrine:
   dbname: 'recodex-api'
   metadata:
     App\Model\Entity: %appDir%/model/entity
+  types:
+    bit: Doctrine\DBAL\Types\BooleanType
+
+gedmo:
+  softDeleteable: on
 
 fixtures:
   locale: "en_US"
