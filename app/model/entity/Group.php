@@ -355,7 +355,8 @@ class Group implements JsonSerializable
       "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
       "assignments" => $this->getAssignmentsIds(),
       "publicStats" => $this->publicStats,
-      "isPublic" => $this->isPublic
+      "isPublic" => $this->isPublic,
+      "threshold" => $this->threshold
     ];
   }
 }
