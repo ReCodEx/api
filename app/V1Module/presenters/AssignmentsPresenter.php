@@ -412,6 +412,7 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
+    $environments = $this->getPost("environments");
 
     $req = $this->getRequest();
     $environments = $req->getPost("environments");
@@ -440,7 +441,7 @@ class AssignmentsPresenter extends BasePresenter {
 
         $hardwareGroup = $hwGroupLimits["hardwareGroup"];
         $tests = Arrays::get($hwGroupLimits, ["tests"], []);
-        $limits = array_reduce($tests, 'array_merge', []);
+        $limits = array_reduce(array_values($tests), "array_merge", []);
         $jobConfig->setLimits($hardwareGroup, $limits);
       }
 
