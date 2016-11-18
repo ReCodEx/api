@@ -40,6 +40,7 @@ class RouterFactory {
     self::createInstancesRoutes($router, "$prefix/instances");
     self::createReferenceSolutionsRoutes($router, "$prefix/reference-solutions");
     self::createSubmissionRoutes($router, "$prefix/submissions");
+    self::createSubmissionFailuresRoutes($router, "$prefix/submission-failures");
     self::createUploadedFilesRoutes($router, "$prefix/uploaded-files");
     self::createUsersRoutes($router, "$prefix/users");
     self::createForgottenPasswordRoutes($router, "$prefix/forgotten-password");
@@ -229,6 +230,14 @@ class RouterFactory {
 
   private static function createRuntimeEnvironmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "RuntimeEnvironments:");
+  }
+
+  private static function createSubmissionFailuresRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix", "SubmissionFailures:");
+    $router[] = new GetRoute("$prefix/unresolved", "SubmissionFailures:unresolved");
+    $router[] = new GetRoute("$prefix/submission/<id>", "SubmissionFailures:listBySubmission");
+    $router[] = new GetRoute("$prefix/<id>", "SubmissionFailures:detail");
+    $router[] = new PostRoute("$prefix/<id>/resolve", "SubmissionFailures:resolve");
   }
 
 }
