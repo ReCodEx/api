@@ -12,6 +12,8 @@ use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
 use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\SubmissionFailure;
+use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\ReferenceSolutionEvaluations;
@@ -47,6 +49,12 @@ class BrokerReportsPresenter extends BasePresenter {
    * @inject
    */
   public $submissions;
+
+  /**
+   * @var SubmissionFailures
+   * @inject
+   */
+  public $submissionFailures;
 
   /**
    * @var SolutionEvaluations
@@ -117,6 +125,13 @@ class BrokerReportsPresenter extends BasePresenter {
           FailureHelper::TYPE_BACKEND_ERROR,
           "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
         );
+
+        $submission = $this->submissions->get($jobId);
+        if ($submission) {
+          $failureReport = new SubmissionFailure(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
+          $this->submissionFailures->persist($failureReport);
+        }
+
         break;
     }
 
