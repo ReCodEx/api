@@ -412,7 +412,6 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
-    $environments = $this->getRequest()->getPost("environments");
 
     $req = $this->getRequest();
     $environments = $req->getPost("environments");
