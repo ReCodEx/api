@@ -214,6 +214,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
     $router[] = new PostRoute("$prefix/detail", "Users:updateProfile"); // TODO: maybe a bit different route
+    $router[] = new PostRoute("$prefix/detail/settings", "Users:updateSettings");
   }
 
   /**

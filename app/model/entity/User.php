@@ -39,6 +39,7 @@ class User implements JsonSerializable
     $this->createdAt = new \DateTime;
     $this->instance = $instance;
     $instance->addMember($this);
+    $this->settings = new UserSettings(TRUE, FALSE, "en");
 
     if ($instanceAdmin) {
       $instance->admin = $this;
@@ -111,6 +112,11 @@ class User implements JsonSerializable
   public function belongsTo(Instance $instance) {
     return $this->instance->getId() === $instance->getId();
   }
+
+   /**
+    * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
+    */
+   protected $settings;
 
   /**
    * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
@@ -228,7 +234,8 @@ class User implements JsonSerializable
       "groups" => [
         "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->getValues(),
         "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->getValues()
-      ]
+      ],
+      "settings" => (string) $this->settings
     ];
   }
 }
