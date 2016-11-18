@@ -8,7 +8,7 @@ App\Model\Entity\UploadedFile:
             - @submitUser1
 
 App\Model\Entity\SolutionEvaluation:
-    firstEvaluation:
+    "evaluation{1..2}":
         __construct: false
         bonusPoints: 1
         evaluatedAt: "<dateTime()>"
@@ -21,7 +21,7 @@ App\Model\Entity\SolutionEvaluation:
         testResults: []
 
 App\Model\Entity\Submission:
-    firstSubmission:
+    "submission{1..2}":
         __construct:
             createSubmission:
                 - "Random note"
@@ -31,4 +31,20 @@ App\Model\Entity\Submission:
                 - [@firstUploadedFile]
                 - @demoRuntimeConfig
                 - false
-        evaluation: @firstEvaluation
+        evaluation: "@evaluation<current()>"
+
+App\Model\Entity\SubmissionFailure:
+    "resolvedSubmissionFailure{1..2}":
+        __construct:
+            - evaluation_failure
+            - Things went south
+            - "@submission<current()>"
+            - "<dateTime()>"
+        resolve:
+            - Got it!
+    unresolvedSubmissionFailure:
+        __construct:
+            - evaluation_failure
+            - Things went south
+            - @submission1
+            - "<dateTime()>"
