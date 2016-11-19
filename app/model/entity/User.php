@@ -235,7 +235,7 @@ class User implements JsonSerializable
         "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->getValues(),
         "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->getValues()
       ],
-      "settings" => (string) $this->settings
+      "settings" => $this->settings
     ];
   }
 }
