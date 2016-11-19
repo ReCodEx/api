@@ -1,6 +1,8 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\SubmissionFailedException;
+use App\Helpers\MonitorConfig;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -312,10 +314,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $submissionHelper = new \App\Helpers\SubmissionHelper($mockBrokerProxy, $mockFileserverProxy);
     $this->presenter->submissionHelper = $submissionHelper;
 
-    // mock monitor configuration
-    $mockMonitorConfig = Mockery::mock(\App\Helpers\MonitorConfig::class);
-    $mockMonitorConfig->shouldReceive("getAddress")->andReturn($webSocketMonitorUrl)->once();
-    $this->presenter->monitorConfig = $mockMonitorConfig;
+    // fake monitor configuration
+    $monitorConfig = new MonitorConfig([
+      "address" => $webSocketMonitorUrl
+    ]);
+    $this->presenter->monitorConfig = $monitorConfig;
 
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'submit', 'id' => $assignment->getId()],
@@ -337,6 +340,77 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($jobId, $webSocketChannel['id']);
     Assert::equal($webSocketMonitorUrl, $webSocketChannel['monitorUrl']);
     Assert::equal($tasksCount, $webSocketChannel['expectedTasksCount']);
+  }
+
+  public function testSubmissionFailure()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = current($this->presenter->users->findAll());
+    $assignment = current($this->assignments->findAll());
+    $runtimeConfig = $assignment->getSolutionRuntimeConfigs()->first();
+    $ext = current($runtimeConfig->getRuntimeEnvironment()->getExtensionsList());
+
+    // save fake files into db
+    $file1 = new UploadedFile("file1." . $ext, "file1." . $ext, new \DateTime, 0, $user);
+    $file2 = new UploadedFile("file2." . $ext, "file2." . $ext, new \DateTime, 0, $user);
+    $this->presenter->files->persist($file1);
+    $this->presenter->files->persist($file2);
+    $this->presenter->files->flush();
+    $files = [ $file1->getId(), $file2->getId() ];
+
+    // prepare return variables for mocked objects
+    $jobId = 'jobId';
+    $hwGroups = ["group1", "group2"];
+    $archiveUrl = "archiveUrl";
+    $resultsUrl = "resultsUrl";
+    $fileserverUrl = "fileserverUrl";
+    $tasksCount = 5;
+    $webSocketMonitorUrl = "webSocketMonitorUrl";
+
+    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
+    $mockJobConfig->shouldReceive("setJobId")->withArgs([Submission::JOB_TYPE, Mockery::any()])->andReturn()->once()
+      ->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+      ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->zeroOrMoreTimes()
+      ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
+      ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
+
+    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
+    $mockStorage = Mockery::mock(JobConfig\Storage::class);
+    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->once();
+    $this->presenter->jobConfigs = $mockStorage;
+
+    // mock fileserver and broker proxies
+    $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->once()
+      ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
+      ->andReturn([$archiveUrl, $resultsUrl])->once();
+    $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
+    $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
+      ->andThrow(SubmissionFailedException::class)->once();
+    $submissionHelper = new \App\Helpers\SubmissionHelper($mockBrokerProxy, $mockFileserverProxy);
+    $this->presenter->submissionHelper = $submissionHelper;
+
+    // fake monitor configuration
+    $monitorConfig = new MonitorConfig([
+      "address" => $webSocketMonitorUrl
+    ]);
+    $this->presenter->monitorConfig = $monitorConfig;
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'submit', 'id' => $assignment->getId()],
+      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files]
+    );
+
+    $failureCount = count($this->presenter->submissionFailures->findAll());
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, SubmissionFailedException::class);
+
+    $newFailureCount = count($this->presenter->submissionFailures->findAll());
+    Assert::same($failureCount + 1, $newFailureCount);
   }
 
   public function testGetLimits()
