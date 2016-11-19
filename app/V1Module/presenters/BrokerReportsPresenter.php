@@ -120,7 +120,7 @@ class BrokerReportsPresenter extends BasePresenter {
         }
         break;
       case self::STATUS_FAILED:
-        $message = $this->getRequest()->getPost("message", "");
+        $message = $this->getRequest()->getPost("message") ?: "";
         $this->failureHelper->report(
           FailureHelper::TYPE_BACKEND_ERROR,
           "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
