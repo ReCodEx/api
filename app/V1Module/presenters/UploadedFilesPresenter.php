@@ -72,7 +72,8 @@ class UploadedFilesPresenter extends BasePresenter {
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
-    $this->sendResponse(new FileResponse($file->getFilePath(), $file->getName()));
+    $this->sendSuccessResponse([$file->getFilePath(), $file->getName()]);
+    //$this->sendResponse(new FileResponse($file->getFilePath(), $file->getName()));
   }
 
   /**
