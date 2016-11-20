@@ -201,7 +201,7 @@ class UsersPresenter extends BasePresenter {
    * Update the profile associated with a user account
    * @POST
    * @LoggedIn
-   * @Param(type="post", name="email", validation="email", description="E-mail address")
+   * @Param(type="post", name="email", validation="email", description="E-mail address", required=false)
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", validation="string:1..", description="Degrees before name")
@@ -224,9 +224,13 @@ class UsersPresenter extends BasePresenter {
     $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
 
+    // user might not want to change the email address
+    if ($email !== NULL) {
+      $user->setEmail($email);
+    }
+
     $user->setFirstName($firstName);
     $user->setLastName($lastName);
-    $user->setEmail($email);
     $user->setDegreesBeforeName($degreesBeforeName);
     $user->setDegreesAfterName($degreesAfterName);
 
@@ -281,7 +285,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setDefaultLanguage($defaultLanguage);
 
     $this->users->persist($user);
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($settings);
   }
 
   /**
