@@ -204,8 +204,8 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="email", validation="email", description="E-mail address", required=false)
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-   * @Param(type="post", name="degreesBeforeName", validation="string:1..", description="Degrees before name")
-   * @Param(type="post", name="degreesAfterName", validation="string:1..", description="Degrees after name")
+   * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
+   * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
    */
