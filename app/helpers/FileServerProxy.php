@@ -139,7 +139,7 @@ class FileServerProxy {
 
   /**
    * Send supplementary task files (e.g. test inputs) to the file server
-   * @param FileUpload[] $files files to be uploaded
+   * @param UploadedFile[] $files files to be uploaded
    * @return array
    * @throws SubmissionFailedException
    */
@@ -164,20 +164,14 @@ class FileServerProxy {
   }
 
   /**
-   *
-   * @param FileUpload $file
-   * @return type
-   * @throws SubmissionFailedException
+   * @param UploadedFile $file
+   * @return array
    */
-  private function prepareSupplementaryFileData(FileUpload $file) {
-    if (!$file->isOk()) {
-      throw new CannotReceiveUploadedFileException($file->getName());
-    }
-
+  private function prepareSupplementaryFileData(UploadedFile $file) {
     return [
       "name" => $file->getName(),
       "filename" => $file->getName(),
-      "contents" => $file->getContents()
+      "contents" => $file->getContent()
     ];
   }
 

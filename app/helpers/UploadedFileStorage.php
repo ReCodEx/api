@@ -60,4 +60,10 @@ class UploadedFileStorage extends Nette\Object {
     $uniqueId = uniqid();
     return "{$this->uploadDir}/user_{$userId}/{$fileName}_{$uniqueId}.$ext";
   }
+
+  public function delete(UploadedFile $file) {
+    if ($file->getLocalFilePath() !== NULL) {
+      Nette\Utils\FileSystem::delete($file);
+    }
+  }
 }

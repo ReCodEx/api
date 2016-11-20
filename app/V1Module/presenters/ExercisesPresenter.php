@@ -6,6 +6,8 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
@@ -16,6 +18,7 @@ use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
+use Exception;
 
 /**
  * Endpoints for exercise manipulation
@@ -64,6 +67,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $supplementaryFileStorage;
+
+  /**
+   * @var UploadedFileStorage
+   * @inject
+   */
+  public $uploadedFileStorage;
 
   /**
    * Get a list of exercises with an optional filter
@@ -202,35 +211,47 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   * Upload one supplementary file for the exercise
+   * Associate supplementary files with an exercise and upload them to remote file server
    * @POST
    * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of exercise
+   * @throws BadRequestException
+   * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
    */
-  public function actionUploadSupplementaryFile(string $id) {
+  public function actionUploadSupplementaryFiles(string $id) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user)) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
     }
 
-    $files = $this->getRequest()->getFiles();
-    if (count($files) === 0) {
-      throw new BadRequestException("No file was uploaded");
-    } elseif (count($files) > 1) {
-      throw new BadRequestException("Too many files were uploaded");
+    $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
+    $supplementaryFiles = [];
+    $deletedFiles = [];
+
+    foreach ($files as $file) {
+      if (!($file instanceof UploadedFile)) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
+      }
+
+      $supplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->store($file, $exercise);
+      $this->uploadedFiles->persist($exerciseFile, FALSE);
+      $this->uploadedFiles->remove($file, FALSE);
+      $deletedFiles[] = $file;
     }
 
-    $file = array_pop($files);
-    $supplementaryFile = $this->supplementaryFileStorage->store($file, $user, $exercise);
-    if ($supplementaryFile !== NULL) {
-      $this->supplementaryFiles->persist($supplementaryFile);
-      $this->supplementaryFiles->flush();
-      $this->sendSuccessResponse($supplementaryFile);
-    } else {
-      throw new CannotReceiveUploadedFileException($file->getSanitizedName());
+    $this->uploadedFiles->flush();
+
+    /** @var UploadedFile $file */
+    foreach ($deletedFiles as $file) {
+      try {
+        $this->uploadedFileStorage->delete($file);
+      } catch (Exception $e) {} // TODO not worth aborting the request - log it?
     }
+
+    $this->sendSuccessResponse($supplementaryFiles);
   }
 
   /**

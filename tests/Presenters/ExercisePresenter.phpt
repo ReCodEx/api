@@ -2,6 +2,8 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\ExerciseFileStorage;
+use App\Helpers\FileServerProxy;
+use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExercisesPresenter;
 use App\Model\Entity\ExerciseFile;
 use Tester\Assert;
@@ -211,34 +213,60 @@ class TestExercisesPresenter extends Tester\TestCase
 
   public function testSupplementaryFilesUpload() {
     // Mock file server setup
-    $filename = "task1.txt";
-    $fileServerResponse = [
-      $filename => "https://fs/tasks/hash1"
+    $filename1 = "task1.txt";
+    $filename2 = "task2.txt";
+    $fileServerResponse1 = [
+      $filename1 => "https://fs/tasks/hash1",
     ];
+    $fileServerResponse2 = [
+      $filename2 => "https://fs/tasks/hash2"
+    ];
+    $fileServerResponseMerged = array_merge($fileServerResponse1, $fileServerResponse2);
 
-    /** @var Mockery\Mock $fileServerMock */
-    $fileServerMock = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $fileServerMock->shouldReceive("sendSupplementaryFiles")->withAnyArgs()->andReturn($fileServerResponse)->once();
+    $user = $this->presenter->users->getByEmail($this->adminLogin);
+
+    $file1 = new UploadedFile($filename1, new \DateTime, 0, $user, $filename1);
+    $file2 = new UploadedFile($filename2, new \DateTime, 0, $user, $filename2);
+    $this->presenter->uploadedFiles->persist($file1);
+    $this->presenter->uploadedFiles->persist($file2);
+    $this->presenter->uploadedFiles->flush();
+
+    /** @var FileServerProxy|Mockery\Mock $fileServerMock */
+    $fileServerMock = Mockery::mock(FileServerProxy::class);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1])->andReturn($fileServerResponse1)->between(0, 1);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file2])->andReturn($fileServerResponse2)->between(0, 1);
+    $fileServerMock->shouldReceive("sendSupplementaryFiles")->with([$file1, $file2])->andReturn($fileServerResponseMerged)->between(0, 1);
     $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
+
+    // mock file storage
+    $mockFileStorage = Mockery::mock($this->presenter->uploadedFileStorage);
+    $mockFileStorage->shouldDeferMissing();
+    $mockFileStorage->shouldReceive("delete")->with($file1)->once();
+    $mockFileStorage->shouldReceive("delete")->with($file2)->once();
+    $this->presenter->uploadedFileStorage = $mockFileStorage;
 
     // Finally, the test itself
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
     $exercise = current($this->presenter->exercises->findAll());
-    $file = ['name' => $filename, 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname', 'error' => UPLOAD_ERR_OK];
-    $fileUpload = new Nette\Http\FileUpload($file);
+    $files = [ $file1->getId(), $file2->getId() ];
 
     /** @var Nette\Application\Responses\JsonResponse $response */
     $response = $this->presenter->run(new Nette\Application\Request("V1:Exercises", "POST", [
-      "action" => 'uploadSupplementaryFile',
+      "action" => 'uploadSupplementaryFiles',
       'id' => $exercise->id
-    ], [], [$fileUpload]));
+    ], [
+      'files' => $files
+    ]));
 
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $payload = $response->getPayload()['payload'];
-    Assert::type(App\Model\Entity\ExerciseFile::class, $payload);
-    Assert::equal($filename, $payload->getName());
+    Assert::count(2, $payload);
+
+    foreach ($payload as $item) {
+      Assert::type(App\Model\Entity\ExerciseFile::class, $item);
+    }
   }
 
   public function testGetSupplementaryFiles() {
@@ -249,8 +277,8 @@ class TestExercisesPresenter extends Tester\TestCase
     $exercise = current($this->presenter->exercises->findAll());
     $expectedFile1 = new ExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
     $expectedFile2 = new ExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, $exercise);
-    $this->supplementaryFiles->persist($expectedFile1);
-    $this->supplementaryFiles->persist($expectedFile2);
+    $this->supplementaryFiles->persist($expectedFile1, FALSE);
+    $this->supplementaryFiles->persist($expectedFile2, FALSE);
     $this->supplementaryFiles->flush();
 
     $request = new Nette\Application\Request("V1:Exercises", 'GET',

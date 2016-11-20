@@ -94,7 +94,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
 
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
-    $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFile");
+    $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
   }
 
   /**

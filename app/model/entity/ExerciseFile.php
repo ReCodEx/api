@@ -39,6 +39,19 @@ class ExerciseFile extends UploadedFile
     $this->hashName = $hashName;
     $this->fileServerPath = $fileServerPath;
     $this->exercise = $exercise;
+    $exercise->addSupplementaryFile($this);
+  }
+
+  public static function fromUploadedFile(UploadedFile $file, Exercise $exercise, string $hashName, string $fileServerPath) {
+    return new self(
+      $file->getName(),
+      $file->getUploadedAt(),
+      $file->getFileSize(),
+      $hashName,
+      $fileServerPath,
+      $file->getUser(),
+      $exercise
+    );
   }
 
   public function jsonSerialize() {

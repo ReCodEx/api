@@ -162,4 +162,8 @@ class Exercise implements JsonSerializable
     ];
   }
 
+  public function addSupplementaryFile(UploadedFile $file) {
+    $this->supplementaryFiles->add($file);
+  }
+
 }
