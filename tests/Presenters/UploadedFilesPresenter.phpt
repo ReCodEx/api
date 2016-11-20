@@ -199,7 +199,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
 
     $file = current($this->presenter->uploadedFiles->findAll());
-    $file->filePath = $vfs->getChild($filename)->url();
+    $file->localFilePath = $vfs->getChild($filename)->url();
     $this->em->flush();
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET', [
