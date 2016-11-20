@@ -65,7 +65,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     $allResults = $result['payload'];
-    Assert::equal(1, count($allResults));
+    Assert::equal(2, count($allResults));
     $theResult = array_pop($allResults);
     Assert::equal('Random note', $theResult->note);
   }

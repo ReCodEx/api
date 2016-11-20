@@ -1,5 +1,5 @@
 App\Model\Entity\SolutionEvaluation:
-    firstEvaluation:
+    "evaluation{1..2}":
         __construct: false
         bonusPoints: 1
         evaluatedAt: "<dateTime()>"
@@ -12,7 +12,7 @@ App\Model\Entity\SolutionEvaluation:
         testResults: []
 
 App\Model\Entity\Solution:
-    firstSolution:
+     "demoSolution{1..2}":
         __construct:
             - @submitUser1
             - @demoRuntimeConfig
@@ -25,16 +25,32 @@ App\Model\Entity\SolutionFile:
             - 0
             - @submitUser1
             - "some/file/path/filename.ext"
-            - @firstSolution
+            - @demoSolution1
 
 App\Model\Entity\Submission:
-    firstSubmission:
+    "submission{1..2}":
         __construct:
             createSubmission:
                 - "Random note"
                 - @demoAssignment
                 - @submitUser1
                 - @submitUser1
-                - @firstSolution
+                - "@demoSolution<current()>"
                 - false
-        evaluation: @firstEvaluation
+        evaluation: "@evaluation<current()>"
+
+App\Model\Entity\SubmissionFailure:
+    "resolvedSubmissionFailure{1..2}":
+        __construct:
+            - evaluation_failure
+            - Things went south
+            - "@submission<current()>"
+            - "<dateTime()>"
+        resolve:
+            - Got it!
+    unresolvedSubmissionFailure:
+        __construct:
+            - evaluation_failure
+            - Things went south
+            - @submission1
+            - "<dateTime()>"

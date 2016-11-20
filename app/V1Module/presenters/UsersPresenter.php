@@ -201,11 +201,11 @@ class UsersPresenter extends BasePresenter {
    * Update the profile associated with a user account
    * @POST
    * @LoggedIn
-   * @Param(type="post", name="email", validation="email", description="E-mail address")
+   * @Param(type="post", name="email", validation="email", description="E-mail address", required=false)
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
-   * @Param(type="post", name="degreesBeforeName", validation="string:1..", description="Degrees before name")
-   * @Param(type="post", name="degreesAfterName", validation="string:1..", description="Degrees after name")
+   * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
+   * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
    */
@@ -224,9 +224,13 @@ class UsersPresenter extends BasePresenter {
     $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
 
+    // user might not want to change the email address
+    if ($email !== NULL) {
+      $user->setEmail($email);
+    }
+
     $user->setFirstName($firstName);
     $user->setLastName($lastName);
-    $user->setEmail($email);
     $user->setDegreesBeforeName($degreesBeforeName);
     $user->setDegreesAfterName($degreesAfterName);
 
@@ -268,8 +272,12 @@ class UsersPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $settings = $user->getSettings();
 
-    $darkTheme = $req->getPost("darkTheme") !== NULL ? $req->getPost("darkTheme") : $settings->getDarkTheme();
-    $vimMode = $req->getPost("vimMode") !== NULL ? $req->getPost("vimMode") : $settings->getVimMode();
+    $darkTheme = $req->getPost("darkTheme") !== NULL
+      ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getDarkTheme();
+    $vimMode = $req->getPost("vimMode") !== NULL
+      ? filter_var($req->getPost("vimMode"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getVimMode();
     $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguge();
 
     $settings->setDarkTheme($darkTheme);
@@ -277,7 +285,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setDefaultLanguage($defaultLanguage);
 
     $this->users->persist($user);
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($settings);
   }
 
   /**

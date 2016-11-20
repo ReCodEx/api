@@ -303,11 +303,11 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $updatedUser = $result["payload"];
-    Assert::type(\App\Model\Entity\User::class, $updatedUser);
-    Assert::equal($darkTheme, $updatedUser->getSettings()->getDarkTheme());
-    Assert::equal($vimMode, $updatedUser->getSettings()->getVimMode());
-    Assert::equal($defaultLanguage, $updatedUser->getSettings()->getDefaultLanguage());
+    $settings = $result["payload"];
+    Assert::type(\App\Model\Entity\UserSettings::class, $settings);
+    Assert::equal($darkTheme, $settings->getDarkTheme());
+    Assert::equal($vimMode, $settings->getVimMode());
+    Assert::equal($defaultLanguage, $settings->getDefaultLanguage());
   }
 
   public function testSupervisorGroups()
