@@ -268,8 +268,12 @@ class UsersPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $settings = $user->getSettings();
 
-    $darkTheme = $req->getPost("darkTheme") !== NULL ? $req->getPost("darkTheme") : $settings->getDarkTheme();
-    $vimMode = $req->getPost("vimMode") !== NULL ? $req->getPost("vimMode") : $settings->getVimMode();
+    $darkTheme = $req->getPost("darkTheme") !== NULL
+      ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getDarkTheme();
+    $vimMode = $req->getPost("vimMode") !== NULL
+      ? filter_var($req->getPost("vimMode"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getVimMode();
     $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguge();
 
     $settings->setDarkTheme($darkTheme);
