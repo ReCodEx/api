@@ -15,16 +15,19 @@ use App\Model\Entity\LocalizedAssignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\UploadedJobConfigStorage;
+use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\SolutionRuntimeConfigs;
+use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\UploadedFiles;
 
 use DateTime;
 use Doctrine\Common\Collections\Criteria;
+use Exception;
 use Nette\InvalidStateException;
 use Nette\Utils\Arrays;
 
@@ -57,6 +60,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $submissions;
+
+  /**
+   * @var SubmissionFailures
+   * @inject
+   */
+  public $submissionFailures;
 
   /**
    * @var UploadedFiles
@@ -347,15 +356,22 @@ class AssignmentsPresenter extends BasePresenter {
     $path = $runtimeConfiguration->getJobConfigFilePath();
     $jobConfig = $this->jobConfigs->getJobConfig($path);
     $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
-    $resultsUrl = $this->submissionHelper->initiateEvaluation(
-      $jobConfig,
-      $submission->getSolution()->getFiles()->getValues(),
-      ['env' => $runtimeConfiguration->runtimeEnvironment->id]
-    );
+    $resultsUrl = NULL;
+
+    try {
+      $resultsUrl = $this->submissionHelper->initiateEvaluation(
+        $jobConfig,
+        $submission->getSolution()->getFiles()->getValues(),
+        ['env' => $runtimeConfiguration->runtimeEnvironment->id]
+      );
+    } catch (Exception $e) {
+      $this->submissionFailed($submission, $e->getMessage());
+    }
 
     // if the submission was accepted we now have the URL where to look for the results later
     if($resultsUrl === NULL) {
-      throw new SubmissionFailedException;
+      $this->submissionFailed($submission, "The broker rejected our request");
+      return;
     }
 
     $submission->setResultsUrl($resultsUrl);
@@ -368,6 +384,12 @@ class AssignmentsPresenter extends BasePresenter {
         "expectedTasksCount" => $jobConfig->getTasksCount()
       ]
     ]);
+  }
+
+  private function submissionFailed(Submission $submission, string $message) {
+    $failure = new SubmissionFailure(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
+    $this->submissionFailures->persist($failure);
+    throw new SubmissionFailedException($message);
   }
 
   /**

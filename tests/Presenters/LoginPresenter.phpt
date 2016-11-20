@@ -8,7 +8,7 @@ use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
 use Tester\Assert;
 
-$container = require_once "../bootstrap.php";
+$container = require_once __DIR__ . "/../bootstrap.php";
 
 class TestLoginPresenter extends Tester\TestCase
 {

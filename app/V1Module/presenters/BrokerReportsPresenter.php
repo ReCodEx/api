@@ -12,6 +12,8 @@ use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
 use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\SubmissionFailure;
+use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\ReferenceSolutionEvaluations;
@@ -47,6 +49,12 @@ class BrokerReportsPresenter extends BasePresenter {
    * @inject
    */
   public $submissions;
+
+  /**
+   * @var SubmissionFailures
+   * @inject
+   */
+  public $submissionFailures;
 
   /**
    * @var SolutionEvaluations
@@ -90,7 +98,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
    */
   public function actionJobStatus($jobId) {
-    $status = $this->getHttpRequest()->getPost("status");
+    $status = $this->getRequest()->getPost("status");
     $job = new JobId($jobId);
 
     switch ($status) {
@@ -112,15 +120,22 @@ class BrokerReportsPresenter extends BasePresenter {
         }
         break;
       case self::STATUS_FAILED:
-        $message = $this->getHttpRequest()->getPost("message", "");
+        $message = $this->getRequest()->getPost("message") ?: "";
         $this->failureHelper->report(
           FailureHelper::TYPE_BACKEND_ERROR,
           "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
         );
+
+        $submission = $this->submissions->get($jobId);
+        if ($submission) {
+          $failureReport = new SubmissionFailure(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
+          $this->submissionFailures->persist($failureReport);
+        }
+
         break;
     }
 
-    $this->sendSuccessResponse($submission);
+    $this->sendSuccessResponse("OK");
   }
 
   private function loadEvaluation(Submission $submission) {
@@ -179,7 +194,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @Param(name="message", type="post", description="A textual description of the error")
    */
   public function actionError() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $message = $req->getPost("message");
     if (!$this->failureHelper->report(FailureHelper::TYPE_BACKEND_ERROR, $message)) {
       throw new InternalServerErrorException("Error could not have been reported to the admin because of an internal server error.");

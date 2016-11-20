@@ -28,6 +28,8 @@ App\Model\Entity\Resource:
     __construct: ["users"]
   "runtimeEnvironments":
     __construct: ["runtimeEnvironments"]
+  "submissionFailures":
+    __construct: ["submissionFailures"]
 
 App\Model\Entity\Permission:
   "superadmin-assignments":
@@ -63,6 +65,11 @@ App\Model\Entity\Permission:
   "superadmin-submissions":
     "role": @superadmin
     "resource": @submissions
+    "action": "*"
+    "isAllowed": 1
+  "superadmin-submission-failures":
+    "role": @superadmin
+    "resource": @submissionFailures
     "action": "*"
     "isAllowed": 1
   "superadmin-users":
