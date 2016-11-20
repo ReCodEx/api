@@ -462,7 +462,7 @@ class AssignmentsPresenter extends BasePresenter {
 
         $hardwareGroup = $hwGroupLimits["hardwareGroup"];
         $tests = Arrays::get($hwGroupLimits, ["tests"], []);
-        $limits = array_reduce($tests, 'array_merge', []);
+        $limits = array_reduce(array_values($tests), "array_merge", []);
         $jobConfig->setLimits($hardwareGroup, $limits);
       }
 

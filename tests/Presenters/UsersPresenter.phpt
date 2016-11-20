@@ -280,6 +280,36 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::same($updatedUser, $storedUpdatedUser);
   }
 
+  public function testUpdateSettings()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $darkTheme = FALSE;
+    $vimMode = FALSE;
+    $defaultLanguage = "de";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateSettings'],
+      [
+        'darkTheme' => $darkTheme,
+        'vimMode' => $vimMode,
+        'defaultLanguage' => $defaultLanguage
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::equal($darkTheme, $updatedUser->getSettings()->getDarkTheme());
+    Assert::equal($vimMode, $updatedUser->getSettings()->getVimMode());
+    Assert::equal($defaultLanguage, $updatedUser->getSettings()->getDefaultLanguage());
+  }
+
   public function testSupervisorGroups()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

@@ -291,7 +291,7 @@ class GroupsPresenter extends BasePresenter {
    * @UserIsAllowed(groups="view-detail")
    */
   public function actionStats(string $id) {
-    $user = $this->getCurrentUser();
+    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
     if (!$group->statsArePublic()

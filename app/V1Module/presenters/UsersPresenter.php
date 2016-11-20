@@ -255,6 +255,31 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($user);
   }
 
+   /**
+   * Update the profile settings
+   * @POST
+   * @LoggedIn
+   * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=FALSE)
+   * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
+   * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=FALSE)
+   */
+  public function actionUpdateSettings() {
+    $req = $this->getRequest();
+    $user = $this->getCurrentUser();
+    $settings = $user->getSettings();
+
+    $darkTheme = $req->getPost("darkTheme") !== NULL ? $req->getPost("darkTheme") : $settings->getDarkTheme();
+    $vimMode = $req->getPost("vimMode") !== NULL ? $req->getPost("vimMode") : $settings->getVimMode();
+    $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguge();
+
+    $settings->setDarkTheme($darkTheme);
+    $settings->setVimMode($vimMode);
+    $settings->setDefaultLanguage($defaultLanguage);
+
+    $this->users->persist($user);
+    $this->sendSuccessResponse($user);
+  }
+
   /**
    * @GET
    * @LoggedIn
