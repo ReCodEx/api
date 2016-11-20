@@ -60,7 +60,6 @@ class UploadedFilesPresenter extends BasePresenter {
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
-    $file->setDownloadUrl($this->link("//download", $id));
     $this->sendSuccessResponse($file);
   }
 
@@ -72,7 +71,7 @@ class UploadedFilesPresenter extends BasePresenter {
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
     $this->throwIfUserCantAccessFile($file);
-    $this->sendResponse(new FileResponse($file->getFilePath(), $file->getName()));
+    $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
   }
 
   /**

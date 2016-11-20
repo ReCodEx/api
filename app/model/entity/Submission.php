@@ -141,18 +141,27 @@ class Submission implements JsonSerializable, ES\IEvaluable
       ];
     }
 
-    /**
-     * The name of the user
-     * @param string $note
-     * @param Assignment $assignment
-     * @param User $user          The user who submits the solution
-     * @param User $loggedInUser  The logged in user - might be the student or his/her supervisor
-     * @param array $files        The submitted files
-     * @param SolutionRuntimeConfig $runtime Runtime configuration
-     * @param bool $asynchronous  Flag if submitted by student (FALSE) or supervisor (TRUE)
-     * @return Submission
-     */
-    public static function createSubmission(string $note, Assignment $assignment, User $user, User $loggedInUser, array $files, SolutionRuntimeConfig $runtime, bool $asynchronous = FALSE) {
+  /**
+   * The name of the user
+   * @param string $note
+   * @param Assignment $assignment
+   * @param User $user The user who submits the solution
+   * @param User $loggedInUser The logged in user - might be the student or his/her supervisor
+   * @param Solution $solution
+   * @param bool $asynchronous Flag if submitted by student (FALSE) or supervisor (TRUE)
+   * @return Submission
+   * @throws ForbiddenRequestException
+   * @internal param array $files The submitted files
+   * @internal param SolutionRuntimeConfig $runtime Runtime configuration
+   */
+    public static function createSubmission(
+      string $note,
+      Assignment $assignment,
+      User $user,
+      User $loggedInUser,
+      Solution $solution,
+      bool $asynchronous = false
+    ) {
       // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
       if ($assignment->canAccessAsStudent($user) === FALSE &&
         ($user->getId() === $loggedInUser->getId()
@@ -182,7 +191,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
       $entity->asynchronous = $asynchronous;
-      $entity->solution = new Solution($user, $files, $runtime);
+      $entity->solution = $solution;
 
       return $entity;
     }

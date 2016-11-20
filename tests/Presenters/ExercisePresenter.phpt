@@ -1,9 +1,9 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Helpers\SupplementaryFileStorage;
+use App\Helpers\ExerciseFileStorage;
 use App\V1Module\Presenters\ExercisesPresenter;
-use App\Model\Entity\SupplementaryFile;
+use App\Model\Entity\ExerciseFile;
 use Tester\Assert;
 
 class TestExercisesPresenter extends Tester\TestCase
@@ -19,13 +19,13 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var  Nette\DI\Container */
   protected $container;
 
-  /** @var App\Model\Repository\RuntimeEnvironment */
+  /** @var App\Model\Repository\RuntimeEnvironments */
   protected $runtimeEnvironments;
 
   /** @var App\Model\Repository\HardwareGroups */
   protected $hardwareGroups;
 
-  /** @var App\Model\Repository\SupplementaryFiles */
+  /** @var App\Model\Repository\ExerciseFiles */
   protected $supplementaryFiles;
 
   /** @var App\Model\Repository\Logins */
@@ -42,7 +42,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->runtimeEnvironments = $container->getByType(\App\Model\Repository\RuntimeEnvironments::class);
     $this->hardwareGroups = $container->getByType(\App\Model\Repository\HardwareGroups::class);
-    $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryFiles::class);
+    $this->supplementaryFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
   }
 
@@ -219,7 +219,7 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var Mockery\Mock $fileServerMock */
     $fileServerMock = Mockery::mock(App\Helpers\FileServerProxy::class);
     $fileServerMock->shouldReceive("sendSupplementaryFiles")->withAnyArgs()->andReturn($fileServerResponse)->once();
-    $this->presenter->supplementaryFileStorage = new SupplementaryFileStorage($fileServerMock);
+    $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
 
     // Finally, the test itself
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -237,7 +237,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $payload = $response->getPayload()['payload'];
-    Assert::type(App\Model\Entity\SupplementaryFile::class, $payload);
+    Assert::type(App\Model\Entity\ExerciseFile::class, $payload);
     Assert::equal($filename, $payload->getName());
   }
 
@@ -247,8 +247,8 @@ class TestExercisesPresenter extends Tester\TestCase
     // prepare files into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $exercise = current($this->presenter->exercises->findAll());
-    $expectedFile1 = new SupplementaryFile("name1", "hashName1", "fileServerPath1", 1, $user, $exercise);
-    $expectedFile2 = new SupplementaryFile("name2", "hashName2", "fileServerPath2", 2, $user, $exercise);
+    $expectedFile1 = new ExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
+    $expectedFile2 = new ExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, $exercise);
     $this->supplementaryFiles->persist($expectedFile1);
     $this->supplementaryFiles->persist($expectedFile2);
     $this->supplementaryFiles->flush();

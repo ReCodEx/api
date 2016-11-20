@@ -1,12 +1,3 @@
-App\Model\Entity\UploadedFile:
-    firstUploadedFile:
-        __construct:
-            - "some/file/path"
-            - "filename.ext"
-            - "<dateTime()>"
-            - 0
-            - @submitUser1
-
 App\Model\Entity\SolutionEvaluation:
     firstEvaluation:
         __construct: false
@@ -20,6 +11,22 @@ App\Model\Entity\SolutionEvaluation:
         resultYml: ""
         testResults: []
 
+App\Model\Entity\Solution:
+    firstSolution:
+        __construct:
+            - @submitUser1
+            - @demoRuntimeConfig
+
+App\Model\Entity\SolutionFile:
+    firstUploadedFile:
+        __construct:
+            - "filename.ext"
+            - "<dateTime()>"
+            - 0
+            - @submitUser1
+            - "some/file/path/filename.ext"
+            - @firstSolution
+
 App\Model\Entity\Submission:
     firstSubmission:
         __construct:
@@ -28,7 +35,6 @@ App\Model\Entity\Submission:
                 - @demoAssignment
                 - @submitUser1
                 - @submitUser1
-                - [@firstUploadedFile]
-                - @demoRuntimeConfig
+                - @firstSolution
                 - false
         evaluation: @firstEvaluation

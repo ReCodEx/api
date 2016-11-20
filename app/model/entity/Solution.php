@@ -18,6 +18,7 @@ use GuzzleHttp\Exception\RequestException;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class Solution implements JsonSerializable
 {
@@ -61,8 +62,8 @@ class Solution implements JsonSerializable
     public function jsonSerialize() {
       return [
         "id" => $this->id,
-        "userId" => $this->getUser()->getId(),
-        "files" => $this->getFiles()->getValues()
+        "userId" => $this->user->getId(),
+        "files" => $this->files->getValues()
       ];
     }
 
@@ -71,20 +72,15 @@ class Solution implements JsonSerializable
      * @param array $files
      * @param SolutionRuntimeConfig $solutionRuntimeConfig
      */
-    public function __construct(User $user, array $files, SolutionRuntimeConfig $solutionRuntimeConfig) {
+    public function __construct(User $user, SolutionRuntimeConfig $solutionRuntimeConfig) {
       $this->user = $user;
       $this->files = new ArrayCollection;
       $this->evaluated = FALSE;
       $this->solutionRuntimeConfig = $solutionRuntimeConfig;
-      foreach ($files as $file) {
-        if ($file->getSolution() !== NULL && $file->getSolution()->getEvaluated() === TRUE) {
-          // the file was already used before and that is not allowed
-          throw new BadRequestException("The file {$file->getId()} was already used in a different submission. If you want to use this file, reupload it to the server.");
-        }
-
-        $this->files->add($file);
-        $file->solution = $this;
-      }
     }
 
+  public function addFile(SolutionFile $file)
+  {
+    $this->files->add($file);
+  }
 }

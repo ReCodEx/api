@@ -117,7 +117,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->logins->getUser($this->userLogin, $this->userPassword);
-    $uploadedFile = new UploadedFile($vfsFile->url(), $filename, new \DateTime, 1, $user);
+    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -142,7 +142,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-    $uploadedFile = new UploadedFile($vfsFile->url(), $filename, new \DateTime, 1, $user);
+    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -173,7 +173,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $user = current($this->presenter->users->findAll());
     $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname'];
     $fileUpload = new Nette\Http\FileUpload($file);
-    $uploadedFile = new UploadedFile('filepath', 'name', new \DateTime, 1, $user);
+    $uploadedFile = new UploadedFile('name', new \DateTime, 1, $user, 'filepath');
 
     // mock file storage
     $mockFileStorage = Mockery::mock(UploadedFileStorage::class);

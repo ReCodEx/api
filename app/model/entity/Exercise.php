@@ -11,6 +11,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class Exercise implements JsonSerializable
 {
@@ -74,7 +75,7 @@ class Exercise implements JsonSerializable
   protected $referenceSolutions;
 
   /**
-   * @ORM\OneToMany(targetEntity="SupplementaryFile", mappedBy="exercise")
+   * @ORM\OneToMany(targetEntity="ExerciseFile", mappedBy="exercise")
    */
   protected $supplementaryFiles;
 

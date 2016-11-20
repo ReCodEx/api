@@ -8,7 +8,16 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @ORM\InheritanceType("SINGLE_TABLE")
+ * @ORM\DiscriminatorColumn("discriminator")
  * @ORM\Table(name="`uploaded_file`")
+ *
+ * @method string getId()
+ * @method string getName()
+ * @method string getLocalFilePath()
+ * @method DateTime getUploadedAt()
+ * @method int getFileSize()
+ * @method User getUser()
  */
 class UploadedFile implements JsonSerializable
 {
@@ -22,17 +31,19 @@ class UploadedFile implements JsonSerializable
     protected $id;
 
     /**
+     * The name under which the file was uploaded
      * @ORM\Column(type="string")
      */
     protected $name;
 
     /**
-     * @ORM\Column(type="string")
+     * A complete path to the file on local filesystem. If NULL, the file is not present.
+     * @ORM\Column(type="string", nullable=true)
      */
-    protected $filePath;
+    protected $localFilePath;
 
     public function getContent() {
-      return file_get_contents($this->filePath);
+      return $this->localFilePath !== NULL ? file_get_contents($this->localFilePath) : NULL;
     }
 
     /**
@@ -40,12 +51,7 @@ class UploadedFile implements JsonSerializable
     * @return string extension
     */
     public function getFileExtension(): string {
-      $ext = pathinfo($this->name, PATHINFO_EXTENSION);
-      if ($ext === NULL) {
-        $ext = "";
-      }
-
-      return $ext;
+      return pathinfo($this->name, PATHINFO_EXTENSION) ?? "";
     }
 
     /**
@@ -63,23 +69,15 @@ class UploadedFile implements JsonSerializable
      */
     protected $user;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="Solution")
-     */
-    protected $solution;
-
-    /** @var string */
-    protected $downloadUrl = NULL;
-
-    /**
-     * @param string $filePath Path where the file is stored
-     * @param string $name Name of the file
-     * @param DateTime $uploadedAt Time of the upload
-     * @param int $fileSize Size of the file
-     * @param User $user   The user who uploaded the file
-     */
-    public function __construct(string $filePath, string $name, DateTime $uploadedAt, int $fileSize, User $user) {
-      $this->filePath = $filePath;
+  /**
+   * @param string $name Name of the file
+   * @param DateTime $uploadedAt Time of the upload
+   * @param int $fileSize Size of the file
+   * @param User $user The user who uploaded the file
+   * @param string $filePath Path where the file is stored
+   */
+    public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null) {
+      $this->localFilePath = $filePath;
       $this->name = $name;
       $this->uploadedAt = $uploadedAt;
       $this->fileSize = $fileSize;
@@ -92,8 +90,7 @@ class UploadedFile implements JsonSerializable
         "name" => $this->name,
         "size" => $this->fileSize,
         "uploadedAt" => $this->uploadedAt->getTimestamp(),
-        "userId" => $this->user->getId(),
-        "downloadUrl" => $this->downloadUrl
+        "userId" => $this->user->getId()
       ];
     }
 }

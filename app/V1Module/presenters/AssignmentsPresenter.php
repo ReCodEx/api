@@ -9,6 +9,8 @@ use App\Exceptions\JobConfigLoadingException;
 
 use App\Helpers\MonitorConfig;
 use App\Helpers\ScoreCalculatorAccessor;
+use App\Model\Entity\Solution;
+use App\Model\Entity\SolutionFile;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
@@ -21,6 +23,7 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\SolutionRuntimeConfigs;
 use App\Model\Repository\Submissions;
+use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 
 use DateTime;
@@ -57,6 +60,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $submissions;
+
+  /**
+   * @var Solutions
+   * @inject
+   */
+  public $solutions;
 
   /**
    * @var UploadedFiles
@@ -330,15 +339,33 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
     }
 
+    $uploadedFiles = $this->files->findAllById($req->getPost("files"));
+
     // detect the runtime configuration if needed
-    $files = $this->files->findAllById($req->getPost("files"));
     $runtimeConfigurationId = $req->getPost("runtimeConfigurationId");
     $runtimeConfiguration = $runtimeConfigurationId === NULL
-      ? $this->runtimeConfigurations->detectOrThrow($assignment, $files)
+      ? $this->runtimeConfigurations->detectOrThrow($assignment, $uploadedFiles)
       : $this->runtimeConfigurations->findOrThrow($runtimeConfigurationId);
 
+    // create Solution object
+    $solution = new Solution($user, $runtimeConfiguration);
+
+    foreach ($uploadedFiles as $file) {
+      if ($file instanceof SolutionFile) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used in a different submission.");
+      }
+
+      $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
+      $this->files->persist($solutionFile, FALSE);
+      $this->files->remove($file, FALSE);
+    }
+
+    // persist the new solution and flush all the changes to the files
+    $this->solutions->persist($solution);
+
+    // submit the solution
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $files, $runtimeConfiguration);
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);

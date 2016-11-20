@@ -206,14 +206,14 @@ class FileServerProxy {
    * @throws SubmissionFailedException
    */
   private function prepareFileData(UploadedFile $file) {
-      if (!file_exists($file->filePath)) {
-        throw new SubmissionFailedException("File $file->filePath does not exist on the server.");
+      if (!file_exists($file->localFilePath)) {
+        throw new SubmissionFailedException("File $file->localFilePath does not exist on the server.");
       }
 
       return [
         "name" => $file->name,
         "filename" => $file->name,
-        "contents" => fopen($file->filePath, "r")
+        "contents" => fopen($file->localFilePath, "r")
       ];
   }
 

@@ -3,12 +3,16 @@
 namespace App\Model\Repository;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\SolutionFile;
 use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\UploadedFile;
 
+/**
+ * @method UploadedFile findOrThrow(string $id)
+ */
 class UploadedFiles extends BaseRepository {
 
   public function __construct(EntityManager $em) {
@@ -26,7 +30,7 @@ class UploadedFiles extends BaseRepository {
    */
   public function findGroupForFile(UploadedFile $file)
   {
-    if ($file->solution === NULL) {
+    if (!($file instanceof SolutionFile)) {
       return NULL;
     }
 
@@ -37,7 +41,7 @@ class UploadedFiles extends BaseRepository {
     ");
 
     $query->setParameters([
-      'solutionId' => $file->solution->id
+      'solutionId' => $file->getSolution()->getId()
     ]);
 
     $result = $query->getOneOrNullResult();

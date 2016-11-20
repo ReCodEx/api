@@ -9,13 +9,13 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
-use App\Helpers\SupplementaryFileStorage;
+use App\Helpers\ExerciseFileStorage;
 use App\Model\Entity\SolutionRuntimeConfig;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\SupplementaryFiles;
+use App\Model\Repository\ExerciseFiles;
 
 /**
  * Endpoints for exercise manipulation
@@ -54,13 +54,13 @@ class ExercisesPresenter extends BasePresenter {
   public $uploadedFiles;
 
   /**
-   * @var SupplementaryFiles
+   * @var ExerciseFiles
    * @inject
    */
   public $supplementaryFiles;
 
   /**
-   * @var SupplementaryFileStorage
+   * @var ExerciseFileStorage
    * @inject
    */
   public $supplementaryFileStorage;

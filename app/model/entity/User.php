@@ -10,6 +10,7 @@ use forxer\Gravatar\Gravatar;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class User implements JsonSerializable
 {

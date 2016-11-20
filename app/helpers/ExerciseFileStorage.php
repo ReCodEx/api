@@ -2,16 +2,17 @@
 
 namespace App\Helpers;
 
-use App\Model\Entity\SupplementaryFile;
+use App\Model\Entity\ExerciseFile;
 use App\Model\Entity\User;
 use App\Model\Entity\Exercise;
+use DateTime;
 use Nette;
 use Nette\Http\FileUpload;
 
 /**
- * Stores uploaded supplementary files on fileserver
+ * Stores uploaded supplementary exercise files on fileserver
  */
-class SupplementaryFileStorage extends Nette\Object {
+class ExerciseFileStorage extends Nette\Object {
 
   /**
    * @var FileServerProxy
@@ -31,7 +32,7 @@ class SupplementaryFileStorage extends Nette\Object {
    * @param FileUpload $file The file to be stored
    * @param User       $user User, who uploaded the file
    * @param Exercise   $exercise
-   * @return SupplementaryFile|NULL If the operation is not successful, NULL is returned
+   * @return ExerciseFile|NULL If the operation is not successful, NULL is returned
    */
   public function store(FileUpload $file, User $user, Exercise $exercise) {
     if (!$file->isOk()) {
@@ -40,15 +41,16 @@ class SupplementaryFileStorage extends Nette\Object {
 
     $result = current($this->fileServer->sendSupplementaryFiles([$file]));
 
-    $supplementaryFile = new SupplementaryFile(
+    $exerciseFile = new ExerciseFile(
       $file->getName(),
+      new DateTime(),
+      $file->getSize(),
       basename($result),
       $result,
-      $file->getSize(),
       $user,
       $exercise
     );
 
-    return $supplementaryFile;
+    return $exerciseFile;
   }
 }
