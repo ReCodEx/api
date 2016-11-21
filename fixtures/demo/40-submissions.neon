@@ -18,14 +18,14 @@ App\Model\Entity\Solution:
             - @demoRuntimeConfig
 
 App\Model\Entity\SolutionFile:
-    firstUploadedFile:
+    "uploadedFile{1..2}":
         __construct:
             - "filename.ext"
             - "<dateTime()>"
             - 0
             - @submitUser1
             - "some/file/path/filename.ext"
-            - @demoSolution1
+            - "@demoSolution<current()>"
 
 App\Model\Entity\Submission:
     "submission{1..2}":

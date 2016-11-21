@@ -2,23 +2,16 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
-use Nette\Utils\Json;
-use Nette\Utils\Arrays;
-
-use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\MalformedJobConfigException;
-use App\Exceptions\SubmissionFailedException;
-
-use GuzzleHttp\Exception\RequestException;
 
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method Collection getFiles()
  */
 class Solution implements JsonSerializable
 {
@@ -38,7 +31,7 @@ class Solution implements JsonSerializable
     protected $user;
 
     /**
-     * @ORM\OneToMany(targetEntity="UploadedFile", mappedBy="solution")
+     * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
      */
     protected $files;
 
