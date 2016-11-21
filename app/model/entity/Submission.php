@@ -137,7 +137,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return [
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
-        "submittedBy" => $this->getSubmittedBy()->getId(),
+        "submittedBy" => $this->getSubmittedBy() ? $this->getSubmittedBy()->getId() : NULL,
         "note" => $this->note,
         "exerciseAssignmentId" => $this->assignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
