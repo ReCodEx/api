@@ -117,7 +117,7 @@ services:
 
   # external login services
   - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
-  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(@App\Helpers\ExternalLogin\CAS)
+  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator
 
   # config objects
   - App\Helpers\MonitorConfig(%monitor%)

@@ -3,7 +3,8 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
-use Nette\Security\User;
+use App\Model\Entity\User;
+use App\Model\Repository\ExternalLogins;
 
 
 /**
@@ -18,10 +19,16 @@ class ExternalServiceAuthenticator {
   private $cas;
 
   /**
+   * @var ExternalLogins
+   */
+  private $externalLogins;
+
+  /**
    * Constructor with instantiation of all login services
    * @param CAS $cas Charles University autentication service
    */
-  public function __construct(CAS $cas) {
+  public function __construct(ExternalLogins $externalLogins, CAS $cas) {
+    $this->externalLogins = $externalLogins;
     $this->cas = $cas;
   }
 
@@ -40,8 +47,16 @@ class ExternalServiceAuthenticator {
     }
   }
 
+  /**
+   * Authenticate a user against given external authentication service
+   * @param string $serviceId
+   * @param string $username
+   * @param string $password
+   * @return User|NULL
+   */
   public function authenticate(string $serviceId, string $username, string $password) {
     $service = $this->getById($serviceId);
-    return $service->getUser($username, $password);
+    $userData = $service->getUser($username, $password);
+    return $this->externalLogins->getUser($serviceId, $userData->getId());
   }
 }
