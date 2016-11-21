@@ -91,6 +91,7 @@ application:
 
 
 session:
+  autoStart: false
   useCookies: 0
 
 extensions:
