@@ -60,7 +60,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
     /**
      * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     protected $user;
 
