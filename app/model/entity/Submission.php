@@ -65,6 +65,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
     protected $user;
 
     /**
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    protected $submittedBy;
+
+    /**
      * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
      */
     protected $solution;
@@ -133,6 +138,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return [
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
+        "submittedBy" => $this->getSubmittedBy()->getId(),
         "note" => $this->note,
         "exerciseAssignmentId" => $this->assignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
@@ -192,6 +198,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->user = $user;
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
+      $entity->submittedBy = $loggedInUser;
       $entity->asynchronous = $asynchronous;
       $entity->solution = $solution;
 
