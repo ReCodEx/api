@@ -24,11 +24,16 @@ class UserActions extends BaseRepository {
    * @param array   $params   Parameters of the request
    * @param int     $code     HTTP response code
    * @param mixed   $data     Additonal data
-   * @return UserAction
+   * @return UserAction|NULL
    */
-  public function log(string $action, array $params, int $code, $data = NULL): UserAction {
+  public function log(string $action, array $params, int $code, $data = NULL) {
     /** @var Identity $identity */
     $identity = $this->user->identity;
+
+    if ($identity === null || !($identity instanceof Identity)) {
+      return NULL;
+    }
+
     $log = new UserAction($identity->getUserData(), new DateTime, $action, $params, $code, $data);
     $this->persist($log);
     return $log;
