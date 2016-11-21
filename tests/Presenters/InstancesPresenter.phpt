@@ -74,6 +74,19 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal("Frankenstein University, Atlantida", $instance['name']);
   }
 
+  public function testGetAllInstancesUnauthenticated()
+  {
+    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'default']);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal(1, count($result['payload']));
+    $instance = array_pop($result['payload']);
+    Assert::equal("Frankenstein University, Atlantida", $instance['name']);
+  }
+
   public function testCreateInstance()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);

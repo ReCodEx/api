@@ -34,8 +34,9 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $instances = $this->instances->findAll(); // @todo: Filter out the non-public
-    $this->sendSuccessResponse(array_map(function (Instance $instance) {
-      return $instance->getData($this->getCurrentUser());
+    $user = $this->user->identity ? $this->user->identity->getUserData() : NULL;
+    $this->sendSuccessResponse(array_map(function (Instance $instance) use ($user) {
+      return $instance->getData($user);
     }, $instances));
   }
 
