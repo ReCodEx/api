@@ -97,49 +97,49 @@ class BrokerProxy {
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
     }
 
-    $ackReceived = $this->pollRead($poll, $queue, $this->ackTimeout);
-
-    if (!$ackReceived) {
+    $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
+    if ($ack === NULL) {
       throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }
-
-    $ack = $queue->recvMulti();
 
     if ($ack[0] !== self::EXPECTED_ACK) {
       throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
     }
 
-    $responseReceived = $this->pollRead($poll, $queue, $this->resultTimeout);
-
-    if (!$responseReceived) {
+    $response = $this->pollReadWorkaround($queue, $this->resultTimeout);
+    if ($response === null) {
       throw new SubmissionFailedException("Receiving response from the broker failed.");
     }
-
-    $response = $queue->recvMulti();
 
     return $response[0] === self::EXPECTED_RESULT;
   }
 
   /**
+   * WORKAROUND for https://github.com/mkoppanen/php-zmq/issues/176
    * Wait until given socket can be read from
-   * @param ZMQPoll $poll Polling helper structure
    * @param ZMQSocket $queue The socket for which we want to wait
    * @param int $timeout Time limit in milliseconds
+   * @return array|NULL
+   * @throws SubmissionFailedException
    */
-  private function pollRead(ZMQPoll $poll, ZMQSocket $queue, int $timeout) {
-    $readable = [];
-    $writable = [];
+  private function pollReadWorkaround(ZMQSocket $queue, int $timeout) {
+    $timeoutSeconds = $timeout / 1000;
+    $limit = microtime(TRUE) + $timeout / 1000;
 
-    try {
-      $events = $poll->poll($readable, $writable, $timeout);
-      $errors = $poll->getLastErrors();
-      if (count($errors) > 0) {
-        throw new SubmissionFailedException("ZMQ polling returned error(s).");
+    do {
+      $waitTime = min($limit - microtime(true), $timeoutSeconds / 10);
+      if ($waitTime > 0) {
+        $waitTimeMicroseconds = $waitTime * 1000 * 1000;
+        usleep($waitTimeMicroseconds);
       }
-    } catch (ZMQPollException $e) {
-      throw new SubmissionFailedException("ZMQ polling raised an exception.");
-    }
 
-    return in_array($queue, $readable);
+      $result = $queue->recvMulti(ZMQ::MODE_DONTWAIT);
+
+      if ($result !== FALSE) {
+        return $result;
+      }
+    } while (microtime(true) <= $limit);
+
+    return NULL;
   }
 }

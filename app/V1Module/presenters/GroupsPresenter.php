@@ -206,12 +206,18 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if (!$group->isMemberOf($user)
+    if (!$user->belongsTo($group->getInstance())
       && $user->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You are not allowed to view subgroups of this group.");
+      throw new ForbiddenRequestException("You are not member of the same instance as the group.");
     }
 
-    $this->sendSuccessResponse($group->getChildGroups()->getValues());
+    if (!$group->canUserAccessGroupDetail($user)) {
+      throw new ForbiddenRequestException("You are not allowed to view this group detail.");
+    }
+
+    $subgroups = $group->getChildGroups()->map(function ($subgroup) use ($user) { return $subgroup->canUserAccessGroupDetail($user); });
+
+    $this->sendSuccessResponse($subgroups->getValues());
   }
 
   /**
@@ -244,7 +250,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if (!$group->isSupervisorOf($user)
+    if ($group->isPrivate() && !$group->isMemberOf($user)
       && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
