@@ -109,11 +109,13 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="name", description="Name of exercise")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
+   * @Param(type="post", name="isPublic", description="Exercise can be public or private")
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
     $name = $req->getPost("name");
     $difficulty = $req->getPost("difficulty");
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
     // check if user can modify requested exercise
     $user = $this->getCurrentUser();
@@ -125,6 +127,7 @@ class ExercisesPresenter extends BasePresenter {
     // make changes to newly created excercise
     $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
+    $exercise->setIsPublic($isPublic);
 
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");

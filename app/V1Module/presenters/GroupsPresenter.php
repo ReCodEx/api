@@ -131,10 +131,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionUpdateGroup(string $id) {
     $req = $this->getHttpRequest();
-    $name = $req->getPost("name");
-    $description = $req->getPost("description");
-    $publicStats = $req->getPost("publicStats");
-    $isPublic = $req->getPost("isPublic");
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VARIABLE_BOOLEAN);
 
     $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
@@ -146,9 +143,9 @@ class GroupsPresenter extends BasePresenter {
     $group->setName($req->getPost("name"));
     $group->setDescription($req->getPost("description"));
     $group->setPublicStats($req->getPost("publicStats"));
-    $group->setIsPublic($req->getPost("isPublic"));
+    $group->setIsPublic($isPublic);
     $treshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
-    $group->setThreshold($req->getPost("threshold"));
+    $group->setThreshold($treshold);
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($group);
