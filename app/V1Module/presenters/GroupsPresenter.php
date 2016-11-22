@@ -491,8 +491,8 @@ class GroupsPresenter extends BasePresenter {
       $this->groupMemberships->flush();
 
       // if user is not supervisor in any other group, lets downgrade his/hers privileges
-      if ($user->findGroupMembershipsAsSupervisor()->isEmpty()
-          && $user->getRole()->isSupervisor()) {
+      if (empty($user->findGroupMembershipsAsSupervisor())
+        && $user->getRole()->isSupervisor()) {
         $user->setRole($this->roles->get(Role::STUDENT));
         $this->users->flush();
       }
