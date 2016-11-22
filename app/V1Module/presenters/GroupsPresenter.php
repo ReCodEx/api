@@ -147,7 +147,8 @@ class GroupsPresenter extends BasePresenter {
     $group->setDescription($req->getPost("description"));
     $group->setPublicStats($req->getPost("publicStats"));
     $group->setIsPublic($req->getPost("isPublic"));
-    $group->setThreshold($req->getPost("threshold", $group->getThreshold()));
+    $treshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
+    $group->setThreshold($req->getPost("threshold"));
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($group);
