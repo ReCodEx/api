@@ -208,7 +208,7 @@ class Assignment implements JsonSerializable
    * Can a specific user access this assignment as supervisor?
    */
   public function canAccessAsSupervisor(User $user) {
-    return $this->group->isSupervisorOf($user);
+    return $this->group->isAdminOf($user) || $this->group->isSupervisorOf($user);
   }
 
   /**
