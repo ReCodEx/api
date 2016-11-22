@@ -215,12 +215,13 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view this group detail.");
     }
 
-    $subgroups = $group->getAllSubgroups()->filter(
+    $subgroups = array_filter(
+      $group->getAllSubgroups(),
       function ($subgroup) use ($user) {
         return $subgroup->canUserAccessGroupDetail($user);
       }
     );
-    $this->sendSuccessResponse($subgroups->getValues());
+    $this->sendSuccessResponse($subgroups);
   }
 
   /**

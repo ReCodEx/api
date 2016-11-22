@@ -91,11 +91,15 @@ class Group implements JsonSerializable
    */
   protected $childGroups;
 
+  /**
+   * Recursivelly merge all the subgroups into a flat array of groups.
+   * @return array
+   */
   public function getAllSubgroups() {
     $subtrees = $this->childGroups->map(function ($group) {
-      $group->getAllSubgroups();
-    })->getValues();
-    array_merge(...$this->childGroups, ...$subtrees);
+      return $group->getAllSubgroups();
+    });
+    return array_merge($this->childGroups->getValues(), ...$subtrees);
   }
 
   /**
