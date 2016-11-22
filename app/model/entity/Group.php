@@ -91,6 +91,13 @@ class Group implements JsonSerializable
    */
   protected $childGroups;
 
+  public function getAllSubgroups() {
+    $subtrees = $this->childGroups->map(function ($group) {
+      $group->getAllSubgroups();
+    })->getValues();
+    array_merge(...$this->childGroups, ...$subtrees);
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
    */
