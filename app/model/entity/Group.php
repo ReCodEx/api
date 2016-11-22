@@ -217,7 +217,7 @@ class Group implements JsonSerializable
       $group = $group->parentGroup;
     }
 
-    return array_unique($admins);
+    return array_unique(array_values($admins));
   }
 
   /**
