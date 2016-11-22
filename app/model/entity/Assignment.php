@@ -89,6 +89,10 @@ class Assignment implements JsonSerializable
    */
   protected $isPublic;
 
+  public function isPublic() {
+    return $this->isPublic;
+  }
+
   /**
    * @ORM\Column(type="datetime", nullable=true)
    */

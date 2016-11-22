@@ -224,13 +224,14 @@ class Group implements JsonSerializable
    */
   protected $assignments;
 
-  public function addAssignment($assignment)
-  {
-    $this->assignments->add($assignment);
-  }
-
-  public function getAssignmentsIds(): array {
-    return $this->getAssignments()->map(function($a) { return $a->id; })->getValues();
+  /**
+   * Map collection of assignments to an array of its ID's
+   * @param ArrayCollection   $assignments  List of assignments
+   * @return string[]
+   */
+  public function getAssignmentsIds($assignments = NULL): array {
+    $assignments = $assignments === NULL ? $this->assignments : $assignments;
+    return $assignments->map(function($a) { return $a->id; })->getValues();
   }
 
   public function getMaxPoints(): int {
@@ -320,32 +321,34 @@ class Group implements JsonSerializable
   /**
    * Get all possible assignment for user based on his/hers role.
    * @param User $user
-   * @return array list of assignments
+   * @return ArrayCollection list of assignments
    */
   public function getAssignmentsForUser(User $user) {
     if ($this->isAdminOf($user) || $this->isSupervisorOf($user)) {
-      return $this->getAssignments()->getValues();
+      return $this->assignments;
+    } else if ($this->isStudentOf($user)) {
+      return $this->getPublicAssignments();
     } else {
-      // student can view only public assignments
-      $studentAssignments = function ($assignment) use ($user) {
-        if ($assignment->canAccessAsStudent($user)) {
-          return TRUE;
-        }
-        return FALSE;
-      };
-
-      return $this->getAssignments()->filter($studentAssignments)->getValues();
+      return new ArrayCollection;
     }
+  }
+
+  /**
+   * Student can view only public assignments.
+   */
+  public function getPublicAssignments() {
+    return $this->getAssignments()->filter(
+      function ($assignment) { return $assignment->isPublic(); }
+    );
   }
 
   public function jsonSerialize() {
     $instance = $this->getInstance();
-    $admin = $this->admin;
     return [
       "id" => $this->id,
       "name" => $this->name,
       "description" => $this->description,
-      "adminId" => $admin ? $this->admin->getId() : NULL,
+      "adminId" => $this->admin ? $this->admin->getId() : NULL,
       "admins" => $this->getAdminsIds(),
       "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->getValues(),
       "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->getValues(),
@@ -353,7 +356,10 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
-      "assignments" => $this->getAssignmentsIds(),
+      "assignments" => [
+        "all" => $this->getAssignmentsIds(),
+        "public" => $this->getAssignmentsIds($this->getPublicAssignments())
+      ],
       "publicStats" => $this->publicStats,
       "isPublic" => $this->isPublic,
       "threshold" => $this->threshold

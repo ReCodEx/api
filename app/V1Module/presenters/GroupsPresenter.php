@@ -282,7 +282,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $assignments = $group->getAssignmentsForUser($user);
-    $this->sendSuccessResponse($assignments);
+    $this->sendSuccessResponse($assignments->getValues());
   }
 
   /**
