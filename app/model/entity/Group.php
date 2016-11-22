@@ -73,6 +73,10 @@ class Group implements JsonSerializable
    */
   protected $isPublic;
 
+  public function isPublic(): bool {
+    return $this->isPublic;
+  }
+
   public function isPrivate(): bool {
     return !$this->isPublic;
   }
@@ -370,7 +374,22 @@ class Group implements JsonSerializable
       "instanceId" => $instance ? $instance->getId() : NULL,
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      "childGroups" => $this->childGroups->map(function($group) { return $group->getId(); })->getValues(),
+      "childGroups" => [
+        "all" => $this->childGroups->map(
+          function($group) {
+            return $group->getId();
+          }
+        )->getValues(),
+        "public" => $this->childGroups->filter(
+          function($g) {
+            return $g->isPublic();
+          }
+        )->map(
+          function($group) {
+            return $group->getId();
+          }
+        )->getValues()
+      ],
       "assignments" => [
         "all" => $this->getAssignmentsIds(),
         "public" => $this->getAssignmentsIds($this->getPublicAssignments())
