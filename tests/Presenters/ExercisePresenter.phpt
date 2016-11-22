@@ -74,8 +74,8 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($this->presenter->exercises->findAll(), $result['payload']);
-    Assert::equal(5, count($result['payload']));
+    Assert::same($this->presenter->exercises->findAll(), $result['payload']);
+    Assert::count(count($this->presenter->exercises->findAll()), $result['payload']);
   }
 
   public function testListSearchExercises()
@@ -88,7 +88,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal(3, count($result['payload']));
+    Assert::count(3, $result['payload']);
   }
 
   public function testDetail()
@@ -156,7 +156,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
   public function testCreate()
   {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    PresenterTestHelper::login($this->container, $this->adminLogin);
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'create']);
     $response = $this->presenter->run($request);
@@ -164,7 +164,9 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+    Assert::type(\App\Model\Entity\Exercise::class, $result['payload']);
     Assert::equal($this->adminLogin, $result['payload']->getAuthor()->email);
+    Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $result['payload']->getName());
   }
 
   public function testUpdateRuntimeConfigs()

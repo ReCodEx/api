@@ -89,11 +89,27 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isPublic;
+
+  public function isPublic() {
+    return $this->isPublic;
+  }
+
+  /**
+   * Can a specific user access this exercise?
+   */
+  public function canAccessDetail(User $user) {
+    return $this->isPublic === TRUE || $this->isAuthor($user);
+  }
+
+  /**
    * Constructor
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
-      $exercise, User $user) {
+      $exercise, User $user, $isPublic = TRUE) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -104,6 +120,7 @@ class Exercise implements JsonSerializable
     $this->exercise = $exercise;
     $this->author = $user;
     $this->supplementaryFiles = new ArrayCollection;
+    $this->isPublic = $isPublic;
   }
 
   public static function create(User $user): Exercise {
@@ -158,7 +175,8 @@ class Exercise implements JsonSerializable
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
-      "authorId" => $this->author->getId()
+      "authorId" => $this->author->getId(),
+      "isPublic" => $this->isPublic
     ];
   }
 

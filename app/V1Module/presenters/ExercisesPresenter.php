@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
@@ -81,8 +82,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $search text which will be searched in exercises names
    */
   public function actionDefault(string $search = NULL) {
-    $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByName($search);
-
+    $exercises = $this->exercises->searchByName($search);
     $this->sendSuccessResponse($exercises);
   }
 
@@ -94,6 +94,10 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
+      throw new NotFoundException;
+    }
+
     $this->sendSuccessResponse($exercise);
   }
 
@@ -281,6 +285,7 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
 
     $exercise = Exercise::create($user);
+    $exercise->setName("Exercise by " . $user->getName());
     $this->exercises->persist($exercise);
     $this->exercises->flush();
 
