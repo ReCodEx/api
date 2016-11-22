@@ -211,6 +211,10 @@ class Group implements JsonSerializable
    * @return bool
    */
   public function isAdminOf(User $user) {
+    if (!$user->getRole()->hasLimitedRights()) {
+      return TRUE;
+    }
+
     $admins = $this->getAdminsIds();
     return array_search($user->getId(), $admins, TRUE) !== FALSE;
   }
