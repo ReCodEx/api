@@ -464,7 +464,10 @@ class AssignmentsPresenter extends BasePresenter {
           "environment" => $environment,
           "hardwareGroups" => $jobConfig->getHardwareGroups(),
           "limits" => $jobConfig->getLimits(),
-          "referenceSolutionsEvaluations" => $referenceEvaluations
+          "referenceSolutionsEvaluations" => array_map(
+            function ($evaluation) {return $evaluation->getData(TRUE); },
+            $referenceEvaluations
+          )
         ];
       }
     );
