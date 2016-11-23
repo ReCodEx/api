@@ -19,11 +19,6 @@ class Exercises extends BaseRepository {
    * @return array
    */
   public function searchByName($search, User $user) {
-    // superadmin can view all exercises
-    if (!$user->getRole()->hasLimitedRights()) {
-      return $this->findAll();
-    }
-
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()->where(Criteria::expr()->contains("name", $search));
       if ($user->getRole()->hasLimitedRights()) {
