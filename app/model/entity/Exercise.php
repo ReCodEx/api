@@ -113,6 +113,10 @@ class Exercise implements JsonSerializable
    * Can a specific user access this exercise?
    */
   public function canAccessDetail(User $user) {
+    if (!$user->getRole()->hasLimitedRights()) {
+      return TRUE;
+    }
+
     return $this->isPublic === TRUE || $this->isAuthor($user);
   }
 
