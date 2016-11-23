@@ -105,6 +105,11 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * @ORM\Column(type="text")
+   */
+  protected $description;
+
+  /**
    * Can a specific user access this exercise?
    */
   public function canAccessDetail(User $user) {
@@ -116,7 +121,7 @@ class Exercise implements JsonSerializable
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
-      $exercise, User $user, $isPublic = TRUE) {
+      $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -128,6 +133,7 @@ class Exercise implements JsonSerializable
     $this->author = $user;
     $this->supplementaryFiles = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->description = $description;
   }
 
   public static function create(User $user): Exercise {
@@ -185,7 +191,8 @@ class Exercise implements JsonSerializable
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
-      "isPublic" => $this->isPublic
+      "isPublic" => $this->isPublic,
+      "description" => $this->description
     ];
   }
 

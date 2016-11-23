@@ -121,6 +121,7 @@ class TestExercisesPresenter extends Tester\TestCase
         'name' => 'new name',
         'difficulty' => 'super hard',
         'isPublic' => FALSE,
+        'description' => 'some neaty description',
         'localizedAssignments' => [
           [
             'locale' => 'cs-CZ',
@@ -138,6 +139,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal('new name', $result['payload']->name);
     Assert::equal('super hard', $result['payload']->difficulty);
     Assert::equal(FALSE, $result['payload']->isPublic);
+    Assert::equal('some neaty description', $result['payload']->description);
 
     $updatedLocalizedAssignments = $result['payload']->localizedAssignments;
     Assert::count(count($exercise->localizedAssignments), $updatedLocalizedAssignments);
