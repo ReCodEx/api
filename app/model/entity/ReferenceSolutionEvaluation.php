@@ -63,7 +63,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "referenceSolutionId" => $this->referenceSolution->getId(),
+      "referenceSolution" => $this->referenceSolution,
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "evaluation" => $this->evaluation
     ];
