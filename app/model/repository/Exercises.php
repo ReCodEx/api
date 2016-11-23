@@ -25,12 +25,14 @@ class Exercises extends BaseRepository {
     }
 
     if ($search !== NULL && !empty($search)) {
-      $filter = Criteria::create()
-                  ->where(Criteria::expr()->contains("name", $search))
-                  ->andWhere(Criteria::expr()->orX(
-                      Criteria::expr()->eq("isPublic", TRUE),
-                      Criteria::expr()->eq("author", $user)
-                  ));
+      $filter = Criteria::create()->where(Criteria::expr()->contains("name", $search));
+      if ($user->getRole()->hasLimitedRights()) {
+        $filter->andWhere(Criteria::expr()->orX(
+          Criteria::expr()->eq("isPublic", TRUE),
+          Criteria::expr()->eq("author", $user)
+        ));
+      }
+
       $foundExercises = $this->matching($filter);
       if ($foundExercises->count() > 0) {
         return $foundExercises->toArray();
@@ -44,12 +46,14 @@ class Exercises extends BaseRepository {
           continue;
         }
 
-        $filter = Criteria::create()
-                    ->where(Criteria::expr()->contains("name", $part))
-                    ->andWhere(Criteria::expr()->orX(
-                        Criteria::expr()->eq("isPublic", TRUE),
-                        Criteria::expr()->eq("author", $user)
-                    ));
+        $filter = Criteria::create()->where(Criteria::expr()->contains("name", $part));
+        if ($user->getRole()->hasLimitedRights()) {
+          $filter->andWhere(Criteria::expr()->orX(
+            Criteria::expr()->eq("isPublic", TRUE),
+            Criteria::expr()->eq("author", $user)
+          ));
+        }
+
         $foundExercises = $this->matching($filter);
       }
 
