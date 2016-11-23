@@ -66,7 +66,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
-      "createdAt" => $this->createdAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
       "jobConfig" => $this->getJobConfigFileContent(),
       "runtimeEnvironment" => $this->runtimeEnvironment
     ];

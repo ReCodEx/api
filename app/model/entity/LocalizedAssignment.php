@@ -99,7 +99,7 @@ class LocalizedAssignment implements JsonSerializable
       "name" => $this->name,
       "locale" => $this->locale,
       "description" => $this->description,
-      "createdAt" => $this->createdAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
       "createdFrom" => $this->localizedAssignment ? $this->localizedAssignment->id : ""
     ];
   }

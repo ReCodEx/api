@@ -35,6 +35,13 @@ class Exercise implements JsonSerializable
   protected $version;
 
   /**
+   * Increment version number.
+   */
+  public function incrementVersion() {
+    $this->version++;
+  }
+
+  /**
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
@@ -169,8 +176,8 @@ class Exercise implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "version" => $this->version,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedAssignments" => $this->localizedAssignments->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),

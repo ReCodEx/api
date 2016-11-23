@@ -129,6 +129,8 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
     $exercise->setIsPublic($isPublic);
+    $exercise->setUpdatedAt(new \DateTime);
+    $exercise->incrementVersion();
 
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");
