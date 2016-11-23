@@ -439,7 +439,7 @@ class AssignmentsPresenter extends BasePresenter {
         $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         $referenceEvaluations = [];
         foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
-          $referenceEvaluations[] = $this->referenceSolutionEvaluations->find(
+          $referenceEvaluations[$hwGroup] = $this->referenceSolutionEvaluations->find(
             $assignment->getExercise(),
             $environment->getRuntimeEnvironment(),
             $hwGroup
