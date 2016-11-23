@@ -82,7 +82,8 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $search text which will be searched in exercises names
    */
   public function actionDefault(string $search = NULL) {
-    $exercises = $this->exercises->searchByName($search);
+    $user = $this->getCurrentUser();
+    $exercises = $this->exercises->searchByName($search, $user);
     $this->sendSuccessResponse($exercises);
   }
 
