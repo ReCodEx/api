@@ -428,14 +428,11 @@ class GenerateSwagger extends Command
     $schemaTool->createSchema($em->getMetadataFactory()->getAllMetadata());
 
     // Load fixtures and persist them
-    $entityClasses = [];
-
     foreach ($files as $file) {
       $loadedEntities = $this->fixtureLoader->load($file);
 
       foreach ($loadedEntities as $entity) {
         $em->persist($entity);
-        $entityClasses[get_class($entity)] = TRUE;
       }
     }
 
@@ -443,8 +440,11 @@ class GenerateSwagger extends Command
     $em->clear();
 
     $entityExamples = [];
-    foreach (array_keys($entityClasses) as $entityClass) {
-      $entityExamples[] = $em->getRepository($entityClass)->findAll()[0];
+    foreach ($em->getMetadataFactory()->getAllMetadata() as $metadata) {
+      $name = $metadata->getName();
+      if (Strings::startsWith($name, "App")) {
+        $entityExamples[] = $em->getRepository($name)->findAll()[0];
+      }
     }
 
     // Dump serializable entities into the document
