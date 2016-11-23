@@ -2,6 +2,7 @@
 
 namespace App\Model\Repository;
 
+use App\Model\Entity\Instance;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Group;
 
@@ -12,7 +13,7 @@ class Groups extends BaseSoftDeleteRepository  {
   }
 
   public function findAllByInstance(Instance $instance) {
-    return $this->repository->findBy([ 'instance' => $instance->getId() ]);
+    return $this->findBy([ 'instance' => $instance->getId() ]);
   }
 
   public function nameIsFree($name, $instanceId, $parentGroupId = NULL) {
