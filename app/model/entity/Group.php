@@ -10,6 +10,7 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @ORM\Table(name="`group`")
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
 class Group implements JsonSerializable
 {
@@ -91,6 +92,11 @@ class Group implements JsonSerializable
   public function statsArePublic(): bool {
     return $this->publicStats;
   }
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")
