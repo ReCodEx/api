@@ -13,10 +13,11 @@ class TaskResult implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
-  public function __construct(string $taskName, float $usedTime, int $usedMemory) {
+  public function __construct(string $taskName, float $usedTime, int $usedMemory, TestResult $result) {
     $this->taskName = $taskName;
     $this->usedTime = $usedTime;
     $this->usedMemory = $usedMemory;
+    $this->testResult = $result;
   }
 
   /**
