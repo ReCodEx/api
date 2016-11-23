@@ -375,50 +375,6 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
-   * Get the best solution of an assignment for a group submitted by a student
-   * @GET
-   * @UserIsAllowed(groups="view-detail")
-   * @param string $id Identifier of the group
-   * @param string $userId Identifier of the student
-   * @throws BadRequestException
-   * @throws ForbiddenRequestException
-   */
-  public function actionStudentsBestResults(string $id, string $userId) {
-    $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
-    $group = $this->groups->findOrThrow($id);
-
-    if ($user->getId() !== $this->user->id
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot view these stats.");
-    }
-
-    if ($group->isStudentOf($user) === FALSE) {
-      throw new BadRequestException("User $userId is not student of $id");
-    }
-
-    $statsMap = array_reduce(
-      $group->getBestSolutions($user),
-      function ($arr, $best) {
-        if ($best !== NULL) {
-          $arr[$best->getAssignment()->getId()] = [
-            "submissionId" => $best->getId(),
-            "score" => $best->getEvaluation()->getScore(),
-            "points" => $best->getEvaluation()->getPoints(),
-            "bonusPoints" => $best->getEvaluation()->getBonusPoints()
-          ];
-        }
-
-        return $arr;
-      },
-      []
-    );
-
-    $this->sendSuccessResponse($statsMap);
-  }
-
-  /**
    * Add a student to a group
    * @POST
    * @UserIsAllowed(groups="add-student")
