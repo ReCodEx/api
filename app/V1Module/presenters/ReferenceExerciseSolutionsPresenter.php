@@ -78,7 +78,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionExercise(string $id) {
     // @todo check that this user can access this information
-    $exercise = $this->findExerciseOrThrow($id);
+    $exercise = $this->exercises->findOrThrow($id);
+    if ($exercise->canAccessDetail($this->getCurrentUser())) {
+      throw new NotFoundException;
+    }
+
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
   }
 
@@ -125,7 +129,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-    
+
     if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
       throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
     }

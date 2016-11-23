@@ -233,9 +233,13 @@ class AssignmentsPresenter extends BasePresenter {
     $exerciseId = $req->getPost("exerciseId");
     $groupId = $req->getPost("groupId");
 
-    $exercise = $this->exercises->findOrThrow($exerciseId);
     $group = $this->groups->findOrThrow($groupId);
     $user = $this->getCurrentUser();
+
+    $exercise = $this->exercises->findOrThrow($exerciseId);
+    if (!$exercise->canAccessDetail($user)) {
+      throw new NotFoundException("Exercise was not found");
+    }
 
     // test, if the user has privileges to the given group
     if ($group->isSupervisorOf($user) === FALSE && $user->getRole()->hasLimitedRights()) {

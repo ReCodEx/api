@@ -27,7 +27,7 @@ use ZipArchive;
 class FileServerProxy {
 
   const JOB_CONFIG_FILENAME = "job-config.yml";
-  const TASKS_ROUTE = "/tasks";
+  const TASKS_ROUTE = "/exercises";
 
   /** @var string Address of the remote fileserver (including port) */
   private $remoteServerAddress;

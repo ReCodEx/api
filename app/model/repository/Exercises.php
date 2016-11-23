@@ -2,10 +2,7 @@
 
 namespace App\Model\Repository;
 
-use Nette;
-use DateTime;
 use Kdyby\Doctrine\EntityManager;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use App\Model\Entity\Exercise;
 
@@ -15,10 +12,16 @@ class Exercises extends BaseRepository {
     parent::__construct($em, Exercise::CLASS);
   }
 
-  public function searchByName(string $search) {
+  /**
+   *
+   * @param string|NULL $search
+   * @return array
+   */
+  public function searchByName($search) {
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()
-                  ->where(Criteria::expr()->contains("name", $search));
+                  ->where(Criteria::expr()->contains("name", $search))
+                  ->andWhere(Criteria::expr()->eq("isPublic", TRUE));
       $foundExercises = $this->matching($filter);
       if ($foundExercises->count() > 0) {
         return $foundExercises->toArray();
@@ -33,14 +36,16 @@ class Exercises extends BaseRepository {
         }
 
         $filter = Criteria::create()
-                    ->where(Criteria::expr()->contains("name", $part));
+                    ->where(Criteria::expr()->contains("name", $part))
+                    ->andWhere(Criteria::expr()->eq("isPublic", TRUE));
         $foundExercises = $this->matching($filter);
       }
 
       return $foundExercises->toArray();
     } else {
       // no query is present
-      return $this->findAll();
+      $filter = Criteria::create()->where(Criteria::expr()->eq("isPublic", TRUE));
+      return $this->matching($filter)->toArray();
     }
   }
 

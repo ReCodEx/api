@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
@@ -81,8 +82,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $search text which will be searched in exercises names
    */
   public function actionDefault(string $search = NULL) {
-    $exercises = $search === NULL ? $this->exercises->findAll() : $this->exercises->searchByName($search);
-
+    $exercises = $this->exercises->searchByName($search);
     $this->sendSuccessResponse($exercises);
   }
 
@@ -94,6 +94,10 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
+      throw new NotFoundException;
+    }
+
     $this->sendSuccessResponse($exercise);
   }
 
@@ -105,11 +109,13 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="name", description="Name of exercise")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
+   * @Param(type="post", name="isPublic", description="Exercise can be public or private")
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
     $name = $req->getPost("name");
     $difficulty = $req->getPost("difficulty");
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
     // check if user can modify requested exercise
     $user = $this->getCurrentUser();
@@ -121,6 +127,7 @@ class ExercisesPresenter extends BasePresenter {
     // make changes to newly created excercise
     $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
+    $exercise->setIsPublic($isPublic);
 
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");
@@ -281,6 +288,7 @@ class ExercisesPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
 
     $exercise = Exercise::create($user);
+    $exercise->setName("Exercise by " . $user->getName());
     $this->exercises->persist($exercise);
     $this->exercises->flush();
 
