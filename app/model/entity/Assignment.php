@@ -68,6 +68,7 @@ class Assignment implements JsonSerializable
     );
 
     $group->addAssignment($assignment);
+    $assignment->setLocalizedAssignments($exercise->getLocalizedAssignments());
 
     return $assignment;
   }
