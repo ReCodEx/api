@@ -191,6 +191,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-all")
+   * @param string $id Identifier of the user
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -289,9 +290,11 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of groups for a user
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-groups")
+   * @param string $id Identifier of the user
    */
   public function actionGroups(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -315,6 +318,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-instances")
+   * @param string $id Identifier of the user
    */
   public function actionInstances(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -328,6 +332,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-exercises")
+   * @param string $id Identifier of the user
    */
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);

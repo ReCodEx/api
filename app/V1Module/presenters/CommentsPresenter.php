@@ -38,6 +38,7 @@ class CommentsPresenter extends BasePresenter {
    * Get a comment thread
    * @GET
    * @UserIsAllowed(comments="view")
+   * @param string $id Identifier of the comment thread
    */
   public function actionDefault($id) {
     $thread = $this->findThreadOrCreateIt($id);
@@ -53,6 +54,7 @@ class CommentsPresenter extends BasePresenter {
    * @UserIsAllowed(comments="alter")
    * @Param(type="post", name="text", validation="string:1..", description="Text of the comment")
    * @Param(type="post", name="isPrivate", validation="string", description="True if the comment is private")
+   * @param string $id Identifier of the comment thread
    */
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);
@@ -72,6 +74,9 @@ class CommentsPresenter extends BasePresenter {
    * Make a private comment public or vice versa
    * @POST
    * @UserIsAllowed(comments="alter")
+   * @param string $threadId Identifier of the comment thread
+   * @param string $commentId Identifier of the comment
+   * @throws ForbiddenRequestException
    */
   public function actionTogglePrivate(string $threadId, string $commentId) {
     $user = $this->getCurrentUser();
