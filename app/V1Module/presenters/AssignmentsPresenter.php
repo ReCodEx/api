@@ -331,6 +331,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @POST
    * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note", description="A private note by the author of the solution")
+   * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
    * @Param(type="post", name="runtimeConfigurationId", required=false)
    */
@@ -342,7 +343,7 @@ class AssignmentsPresenter extends BasePresenter {
     $userId = $req->getPost("userId");
     $user = $userId !== NULL
       ? $this->users->findOrThrow($userId)
-      : $user = $loggedInUser;
+      : $loggedInUser;
 
     if (!$assignment->canReceiveSubmissions($loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
