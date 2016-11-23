@@ -74,7 +74,7 @@ class GroupsPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
     $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
-    $externalId = $req->getPost("externalId");
+    $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
     $parentGroupId = $req->getPost("parentGroupId", NULL);
     $user = $this->getCurrentUser();
     $instance = $this->instances->get($instanceId);
