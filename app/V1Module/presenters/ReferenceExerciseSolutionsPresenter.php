@@ -3,7 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MonitorConfig;
+use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
@@ -107,8 +109,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Only author can create reference assignments");
     }
 
-    $req = $this->getHttpRequest();
-    $files = $this->files->findAllById($req->getPost("files"));
+    $req = $this->getRequest();
     $note = $req->getPost("note");
     $runtimeId = $req->getPost("runtime");
 
@@ -118,12 +119,24 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     if ($numOfResults !== 1) {
       throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
     }
+
     $runtime = $configsFound->first();
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtime);
 
-    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files, $runtime);
-    $this->referenceSolutions->persist($solution);
+    $uploadedFiles = $this->files->findAllById($req->getPost("files"));
 
-    $this->sendSuccessResponse($solution);
+    foreach ($uploadedFiles as $file) {
+      if (!($file instanceof UploadedFile)) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used in a different submission.");
+      }
+
+      $solutionFile = SolutionFile::fromUploadedFile($file, $referenceSolution->getSolution());
+      $this->files->persist($solutionFile, FALSE);
+      $this->files->remove($file, FALSE);
+    }
+
+    $this->referenceSolutions->persist($referenceSolution);
+    $this->sendSuccessResponse($referenceSolution);
   }
 
   /**

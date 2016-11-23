@@ -9,6 +9,7 @@ use DateTime;
 
 /**
  * @ORM\Entity
+ * @method Solution getSolution()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {
@@ -60,11 +61,11 @@ class ReferenceExerciseSolution implements JsonSerializable
     ];
   }
 
-  public function __construct(Exercise $exercise, User $user, string $description, array $files, SolutionRuntimeConfig $runtime) {
+  public function __construct(Exercise $exercise, User $user, string $description, SolutionRuntimeConfig $runtime) {
     $this->exercise = $exercise;
     $this->uploadedAt = new \DateTime;
     $this->description = $description;
-    $this->solution = new Solution($user, $files, $runtime);
+    $this->solution = new Solution($user, $runtime);
     $this->evaluations = new ArrayCollection;
   }
 }
