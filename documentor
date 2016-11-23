@@ -1,1 +1,1 @@
-./vendor/bin/phpdoc -d app -t docs --template="responsive-twig" $*
+phpdoc -d app -t docs --template="responsive-twig" $*

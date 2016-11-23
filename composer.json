@@ -45,8 +45,7 @@
 	"require-dev": {
 		"nette/tester": "^1.7",
 		"mockery/mockery": "@stable",
-		"mikey179/vfsStream": "@stable",
-		"phpdocumentor/phpdocumentor": "2.*"
+		"mikey179/vfsStream": "@stable"
 	},
 	"minimum-stability": "stable"
 }
