@@ -30,6 +30,13 @@ class TestResult implements JsonSerializable
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
     $this->stats = implode(",", array_map(function ($stat) { return (string) $stat; }, $result->getStats()));
+
+    $this->tasks = new ArrayCollection;
+    foreach ($result->getExecutionResults() as $executionResult) {
+      $stats = $executionResult->getStats();
+      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedTime(), $stats->getUsedMemory());
+      $this->tasks->add($newTask);
+    }
   }
 
   /**
@@ -90,7 +97,7 @@ class TestResult implements JsonSerializable
   protected $message;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="text")
    */
   protected $stats;
 
@@ -99,12 +106,19 @@ class TestResult implements JsonSerializable
    */
   protected $judgeOutput;
 
+  /**
+   * @ORM\OneToMany(targetEntity="TaskResult", mappedBy="testResult", cascade={"persist"})
+   */
+  protected $tasks;
+
   public function getData(bool $canViewRatios) {
     $timeRatio = NULL;
     $memoryRatio = NULL;
+    $tasks = NULL;
     if ($canViewRatios) {
       $timeRatio = $this->usedTimeRatio;
       $memoryRatio = $this->usedMemoryRatio;
+      $tasks = $this->tasks->getValues();
     }
 
     return [
@@ -117,7 +131,8 @@ class TestResult implements JsonSerializable
       "timeExceeded" => $this->timeExceeded,
       "message" => $this->message,
       "timeRatio" => $timeRatio,
-      "memoryRatio" => $memoryRatio
+      "memoryRatio" => $memoryRatio,
+      "tasks" => $tasks
     ];
   }
 

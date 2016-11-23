@@ -50,6 +50,14 @@ abstract class UnsuccessfulTestResult implements ITestResult {
   }
 
   /**
+   * Gets array of execution tasks results
+   * @return array List of results for all execution tasks in this test
+   */
+  public function getExecutionResults(): array {
+    return [];
+  }
+
+  /**
    * Calculates the score for this test.
    * @return float 0.0 as minimum score value
    */

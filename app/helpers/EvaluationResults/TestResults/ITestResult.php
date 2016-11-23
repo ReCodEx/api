@@ -35,6 +35,12 @@ interface ITestResult {
   public function getScore(): float;
 
   /**
+   * Gets array of execution tasks results
+   * @return array List of results for all execution tasks in this test
+   */
+  public function getExecutionResults(): array;
+
+  /**
    * Checks the configuration agains the actual performace.
    * @return boolean The result
    */

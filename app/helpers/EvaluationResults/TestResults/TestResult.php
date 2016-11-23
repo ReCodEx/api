@@ -110,6 +110,14 @@ class TestResult implements ITestResult {
   }
 
   /**
+   * Gets array of execution tasks results
+   * @return array List of results for all execution tasks in this test
+   */
+  public function getExecutionResults(): array {
+    return $this->executionResults;
+  }
+
+  /**
    * Calculates the score for this test.
    * @return float The score between SCORE_MIN a SCORE_MAX
    */
