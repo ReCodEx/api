@@ -56,6 +56,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * Get details of a file
    * @GET
    * @UserIsAllowed(files="view-detail")
+   * @param string $id Identifier of the uploaded file
    */
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
@@ -67,6 +68,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * Download a file
    * @GET
    * @UserIsAllowed(files="view-detail")
+   * @param string $id Identifier of the file
    */
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
@@ -78,6 +80,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * Get the contents of a file
    * @GET
    * @UserIsAllowed(files="view-content")
+   * @param string $id Identifier of the file
    */
   public function actionContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);

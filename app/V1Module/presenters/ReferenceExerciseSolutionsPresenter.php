@@ -75,6 +75,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solutions for an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
+   * @param string $id Identifier of the exercise
+   * @throws NotFoundException
    */
   public function actionExercise(string $id) {
     // @todo check that this user can access this information
@@ -87,12 +89,15 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
-   * Add new reference solution to existing exercise
+   * Add new reference solution to an exercise
    * @POST
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
    * @Param(type="post", name="runtime", description="ID of runtime for this solution")
    * @UserIsAllowed(exercises="create")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionCreateReferenceSolution(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -126,6 +131,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
    * @UserIsAllowed(assignments="create")
+   * @param string $exerciseId Identifier of the exercise
+   * @param string $id Identifier of the reference solution
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);

@@ -96,6 +96,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @POST
    * @Param(name="status", type="post", description="The new status of the job")
    * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
+   * @param string $jobId Identifier of the job whose status is being reported
    */
   public function actionJobStatus($jobId) {
     $status = $this->getRequest()->getPost("status");

@@ -58,7 +58,7 @@ class Group implements JsonSerializable
   /**
    * @ORM\Column(type="string", nullable=true)
    */
-  protected $externalId; // @TODO: UNIQUE in instance unless null
+  protected $externalId;
 
   /**
    * @ORM\Column(type="text")

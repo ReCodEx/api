@@ -70,6 +70,7 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..", required=FALSE, description="Name of the instance")
    * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
    * @Param(type="post", name="isOpen", validation="bool", required=FALSE, description="Should the instance be open for registration?")
+   * @param string $id An identifier of the updated instance
    */
   public function actionUpdateInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
@@ -92,6 +93,7 @@ class InstancesPresenter extends BasePresenter {
    * @DELETE
    * @LoggedIn
    * @UserIsAllowed(instances="remove")
+   * @param string $id An identifier of the instance to be deleted
    */
   public function actionDeleteInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
@@ -103,6 +105,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * Get details of an instance
    * @GET
+   * @param string $id An identifier of the instance
    */
   public function actionDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
@@ -115,6 +118,7 @@ class InstancesPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-groups")
+   * @param string $id An identifier of the instance
    */
   public function actionGroups(string $id) {
     $user = $this->getCurrentUser();
@@ -127,6 +131,8 @@ class InstancesPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-users")
+   * @param string $id An identifier of the instance
+   * @param string $search A result filter
    */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->instances->findOrThrow($id);
@@ -145,6 +151,7 @@ class InstancesPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(instances="view-licences")
+   * @param string $id An identifier of the instance
    */
   public function actionLicences(string $id) {
     $instance = $this->instances->findOrThrow($id);
@@ -158,6 +165,7 @@ class InstancesPresenter extends BasePresenter {
    * @UserIsAllowed(instances="add-licence")
    * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
    * @Param(type="post", name="validUntil", validation="string", description="Expiration date of the license")
+   * @param string $id An identifier of the instance
    */
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
@@ -169,13 +177,14 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
-   * Update existing license for an instance
+   * Update an existing license for an instance
    * @POST
    * @LoggedIn
    * @UserIsAllowed(instances="update-licence")
    * @Param(type="post", name="note", validation="string:2..", required=FALSE, description="A note for users or administrators")
    * @Param(type="post", name="validUntil", validation="string", required=FALSE, description="Expiration date of the license")
    * @Param(type="post", name="isValid", validation="bool", required=FALSE, description="Administrator switch to toggle licence validity")
+   * @param string $licenceId Identifier of the licence
    */
   public function actionUpdateLicence(string $licenceId) {
     $params = $this->parameters;
@@ -200,6 +209,7 @@ class InstancesPresenter extends BasePresenter {
    * @DELETE
    * @LoggedIn
    * @UserIsAllowed(instances="remove-licence")
+   * @param string $licenceId Identifier of the licence
    */
   public function actionDeleteLicence(string $licenceId) {
     $licence = $this->licences->findOrThrow($licenceId);

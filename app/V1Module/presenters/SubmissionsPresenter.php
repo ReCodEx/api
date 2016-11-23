@@ -53,8 +53,8 @@ class SubmissionsPresenter extends BasePresenter {
    * Get information about the evaluation of a submission
    * @GET
    * @UserIsAllowed(submissions="view-evaluation")
-   * @param string $id
-   * @throws NotFoundException
+   * @param string $id Identifier of the submission
+   * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $id) {
     $submission = $this->submissions->findOrThrow($id);
@@ -84,10 +84,12 @@ class SubmissionsPresenter extends BasePresenter {
   }
 
   /**
-   * Set new amount of bonus points for this submission
+   * Set new amount of bonus points for a submission
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
    * @UserIsAllowed(submissions="set-bonus-points")
+   * @param string $id Identifier of the submission
+   * @throws ForbiddenRequestException
    */
   public function actionSetBonusPoints(string $id) {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
