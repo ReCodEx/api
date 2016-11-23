@@ -123,6 +123,7 @@ services:
   # config objects
   - App\Helpers\MonitorConfig(%monitor%)
   - App\Helpers\BrokerConfig(%broker%)
+  - App\Helpers\EmailsConfig(%emails%)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
