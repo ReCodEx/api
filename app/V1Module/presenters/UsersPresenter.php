@@ -207,7 +207,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
+   * @Param(type="post", name="newPassword", required=false, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
@@ -218,7 +218,7 @@ class UsersPresenter extends BasePresenter {
     $degreesAfterName = $req->getPost("degreesAfterName");
 
     $oldPassword = $req->getPost("oldPassword");
-    $newPassword = $req->getPost("password");
+    $newPassword = $req->getPost("newPassword");
 
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
