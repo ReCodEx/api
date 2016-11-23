@@ -167,8 +167,10 @@ class Exercise implements JsonSerializable
    * @return SolutionRuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("runtime_environment_id", $environment->getId()));
-    return $this->getSolutionRuntimeConfigs()->matching($criteria)->first();
+    return $this->getSolutionRuntimeConfigs()->filter(
+      function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
+        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
+    })->first();
   }
 
   public function jsonSerialize() {
