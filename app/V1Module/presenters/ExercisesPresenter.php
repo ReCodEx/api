@@ -109,7 +109,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="name", description="Name of exercise")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
-   * @Param(type="post", name="isPublic", description="Exercise can be public or private")
+   * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
