@@ -2,12 +2,14 @@ App\Model\Entity\Group:
     demoGroup:
         __construct:
             - Demo group
+            - NPRG031
             - A group meant solely for the purpose of demonstration
             - @demoInstance
             - @demoAdmin
     demoChildGroup:
         __construct:
             - Demo child group
+            - NPRG031
             - A group meant solely for the purpose of demonstration of child groups
             - @demoInstance
             - @demoAdmin
@@ -15,6 +17,7 @@ App\Model\Entity\Group:
     demoPrivateGroup:
         __construct:
             - Private group
+            - NPRG031
             - A group meant solely for the purpose of demonstration of private groups
             - @demoInstance
             - @demoAdmin
