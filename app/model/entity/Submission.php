@@ -204,4 +204,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $entity;
     }
 
+  function isValid(): bool {
+    return $this->evaluation->isValid;
+  }
+
+  function isCorrect(): bool {
+    return $this->evaluation->isCorrect();
+  }
 }

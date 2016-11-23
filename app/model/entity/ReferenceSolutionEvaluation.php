@@ -74,4 +74,11 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     $this->hwGroup = $hwGroup;
   }
 
+  function isValid(): bool {
+    return $this->evaluation->isValid;
+  }
+
+  function isCorrect(): bool {
+    return TRUE;
+  }
 }
