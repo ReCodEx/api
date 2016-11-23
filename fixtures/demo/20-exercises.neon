@@ -19,3 +19,17 @@ App\Model\Entity\Exercise:
             - @demoLocalizedAssignment
         addRuntimeConfig:
             - @demoRuntimeConfig
+
+App\Model\Entity\ReferenceExerciseSolution:
+    demoReferenceExerciseSolution:
+        __construct:
+            - @demoExercise
+            - @demoAdmin
+            - Brute force solution
+            - @demoRuntimeConfig
+
+App\Model\Entity\ReferenceSolutionEvaluation:
+    demoReferenceExerciseSolutionEvaluation:
+        __construct:
+            - @demoReferenceExerciseSolution
+            - @demoHWGroup
