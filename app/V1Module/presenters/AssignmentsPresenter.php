@@ -139,6 +139,8 @@ class AssignmentsPresenter extends BasePresenter {
    * Get details of an assignment
    * @GET
    * @UserIsAllowed(assignments="view-detail")
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -168,6 +170,8 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can user view ratio of his solution memory and time usages and assignment limits?")
    * @Param(type="post", name="secondDeadline", validation="numericint", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
+   * @param string $id Identifier of the updated assignment
+   * @throws ForbiddenRequestException
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -279,6 +283,8 @@ class AssignmentsPresenter extends BasePresenter {
    * Delete an assignment
    * @DELETE
    * @UserIsAllowed(assignments="remove")
+   * @param string $id Identifier of the assignment to be removed
+   * @throws ForbiddenRequestException
    */
   public function actionRemove(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -297,6 +303,8 @@ class AssignmentsPresenter extends BasePresenter {
    * Check if the current user can submit solutions to the assignment
    * @GET
    * @UserIsAllowed(assignments="submit")
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
    */
   public function actionCanSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -311,9 +319,12 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of submitted solutions of the assignment
+   * Get a list of solutions submitted by a user of an assignment
    * @GET
    * @UserIsAllowed(assignments="view-submissions")
+   * @param string $id Identifier of the assignment
+   * @param string $userId Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -332,13 +343,15 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Submit a solution of the assignment
+   * Submit a solution of an assignment
    * @POST
    * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
-   * @Param(type="post", name="runtimeConfigurationId", required=false)
+   * @Param(type="post", name="runtimeConfigurationId", required=false, description="Identifier of the runtime configuration used for evaluation")
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -426,9 +439,10 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of resource limits for an assignment and a hardware group
+   * Get a description of resource limits for an assignment
    * @GET
    * @UserIsAllowed(assignments="view-limits")
+   * @param string $id Identifier of the exercise
    */
   public function actionGetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -439,7 +453,7 @@ class AssignmentsPresenter extends BasePresenter {
         $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         $referenceEvaluations = [];
         foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
-          $referenceEvaluations[] = $this->referenceSolutionEvaluations->find(
+          $referenceEvaluations[$hwGroup] = $this->referenceSolutionEvaluations->find(
             $assignment->getExercise(),
             $environment->getRuntimeEnvironment(),
             $hwGroup
@@ -459,10 +473,14 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Set resource limits for an assignment and a hardware group
+   * Set resource limits for an assignment
    * @POST
    * @UserIsAllowed(assignments="set-limits")
    * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);

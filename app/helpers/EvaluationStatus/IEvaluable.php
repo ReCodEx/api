@@ -27,4 +27,8 @@ interface IEvaluable {
    */
   function canBeEvaluated(): bool;
 
+  function isValid(): bool;
+
+  function isCorrect(): bool;
+
 }

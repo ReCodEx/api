@@ -44,8 +44,8 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   /**
-    * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
-    */
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+   */
   protected $evaluation;
 
   public function hasEvaluation(): bool {
@@ -63,7 +63,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "referenceSolutionId" => $this->referenceSolution->getId(),
+      "referenceSolution" => $this->referenceSolution,
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "evaluation" => $this->evaluation
     ];
@@ -74,4 +74,11 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     $this->hwGroup = $hwGroup;
   }
 
+  function isValid(): bool {
+    return $this->evaluation->isValid;
+  }
+
+  function isCorrect(): bool {
+    return TRUE;
+  }
 }

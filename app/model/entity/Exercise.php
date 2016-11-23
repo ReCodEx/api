@@ -35,6 +35,13 @@ class Exercise implements JsonSerializable
   protected $version;
 
   /**
+   * Increment version number.
+   */
+  public function incrementVersion() {
+    $this->version++;
+  }
+
+  /**
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
@@ -98,6 +105,11 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * @ORM\Column(type="text")
+   */
+  protected $description;
+
+  /**
    * Can a specific user access this exercise?
    */
   public function canAccessDetail(User $user) {
@@ -109,7 +121,7 @@ class Exercise implements JsonSerializable
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
-      $exercise, User $user, $isPublic = TRUE) {
+      $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -121,6 +133,7 @@ class Exercise implements JsonSerializable
     $this->author = $user;
     $this->supplementaryFiles = new ArrayCollection;
     $this->isPublic = $isPublic;
+    $this->description = $description;
   }
 
   public static function create(User $user): Exercise {
@@ -160,8 +173,10 @@ class Exercise implements JsonSerializable
    * @return SolutionRuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("runtime_environment_id", $environment->getId()));
-    return $this->getSolutionRuntimeConfigs()->matching($criteria)->first();
+    return $this->getSolutionRuntimeConfigs()->filter(
+      function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
+        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
+    })->first();
   }
 
   public function jsonSerialize() {
@@ -169,14 +184,15 @@ class Exercise implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "version" => $this->version,
-      "createdAt" => $this->createdAt,
-      "updatedAt" => $this->updatedAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedAssignments" => $this->localizedAssignments->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
-      "isPublic" => $this->isPublic
+      "isPublic" => $this->isPublic,
+      "description" => $this->description
     ];
   }
 

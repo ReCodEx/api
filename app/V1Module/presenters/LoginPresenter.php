@@ -68,6 +68,7 @@ class LoginPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="username", validation="string", description="User name")
    * @Param(type="post", name="password", validation="string", description="Password")
+   * @param string $serviceId Identifier of the login service
    */
   public function actionExternal($serviceId) {
     $req = $this->getRequest();

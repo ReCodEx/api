@@ -47,7 +47,7 @@ class SolutionRuntimeConfig implements JsonSerializable
    * Created from.
    * @ORM\ManyToOne(targetEntity="SolutionRuntimeConfig")
    */
-  protected $solutionRuntimeConfig;
+  protected $createdFrom;
 
   public function __construct(
     string $name,
@@ -58,7 +58,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     $this->name = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->jobConfigFilePath = $jobConfigFilePath;
-    $this->solutionRuntimeConfig = $createdFrom;
+    $this->createdFrom = $createdFrom;
     $this->createdAt = new \DateTime;
   }
 
@@ -66,9 +66,9 @@ class SolutionRuntimeConfig implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
-      "createdAt" => $this->createdAt,
+      "createdAt" => $this->createdAt->getTimestamp(),
       "jobConfig" => $this->getJobConfigFileContent(),
-      "runtimeEnvironment" => $this->runtimeEnvironment
+      "runtimeEnvironmentId" => $this->runtimeEnvironment->getId()
     ];
   }
 

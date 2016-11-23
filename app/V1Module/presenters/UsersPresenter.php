@@ -191,6 +191,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-all")
+   * @param string $id Identifier of the user
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -206,8 +207,8 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
-   * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
+   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
@@ -217,8 +218,8 @@ class UsersPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
-    $oldPassword = $req->getPost("oldPassword");
-    $newPassword = $req->getPost("password");
+    $oldPassword = $req->getPost("password");
+    $newPassword = $req->getPost("newPassword");
 
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
@@ -289,9 +290,11 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of groups for a user
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-groups")
+   * @param string $id Identifier of the user
    */
   public function actionGroups(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -315,6 +318,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-instances")
+   * @param string $id Identifier of the user
    */
   public function actionInstances(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -328,6 +332,7 @@ class UsersPresenter extends BasePresenter {
    * @GET
    * @LoggedIn
    * @UserIsAllowed(users="view-exercises")
+   * @param string $id Identifier of the user
    */
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);

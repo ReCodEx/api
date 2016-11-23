@@ -3,7 +3,9 @@
 namespace App\V1Module\Presenters;
 
 use App\Helpers\MonitorConfig;
+use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
@@ -75,6 +77,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solutions for an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
+   * @param string $id Identifier of the exercise
+   * @throws NotFoundException
    */
   public function actionExercise(string $id) {
     // @todo check that this user can access this information
@@ -87,12 +91,15 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
-   * Add new reference solution to existing exercise
+   * Add new reference solution to an exercise
    * @POST
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
    * @Param(type="post", name="runtime", description="ID of runtime for this solution")
    * @UserIsAllowed(exercises="create")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionCreateReferenceSolution(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -102,8 +109,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Only author can create reference assignments");
     }
 
-    $req = $this->getHttpRequest();
-    $files = $this->files->findAllById($req->getPost("files"));
+    $req = $this->getRequest();
     $note = $req->getPost("note");
     $runtimeId = $req->getPost("runtime");
 
@@ -113,12 +119,24 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     if ($numOfResults !== 1) {
       throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
     }
+
     $runtime = $configsFound->first();
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtime);
 
-    $solution = new ReferenceExerciseSolution($exercise, $user, $note, $files, $runtime);
-    $this->referenceSolutions->persist($solution);
+    $uploadedFiles = $this->files->findAllById($req->getPost("files"));
 
-    $this->sendSuccessResponse($solution);
+    foreach ($uploadedFiles as $file) {
+      if (!($file instanceof UploadedFile)) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used in a different submission.");
+      }
+
+      $solutionFile = SolutionFile::fromUploadedFile($file, $referenceSolution->getSolution());
+      $this->files->persist($solutionFile, FALSE);
+      $this->files->remove($file, FALSE);
+    }
+
+    $this->referenceSolutions->persist($referenceSolution);
+    $this->sendSuccessResponse($referenceSolution);
   }
 
   /**
@@ -126,6 +144,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
    * @UserIsAllowed(assignments="create")
+   * @param string $exerciseId Identifier of the exercise
+   * @param string $id Identifier of the reference solution
    */
   public function actionEvaluate(string $exerciseId, string $id) {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);

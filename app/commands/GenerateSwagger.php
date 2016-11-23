@@ -171,7 +171,7 @@ class GenerateSwagger extends Command
       $yaml = Strings::replace($yaml, '/(?<=' . $definition . ':)\s*\{\s*\}/', " [ ]"); // :-!
     }
 
-    $output->write($yaml);
+    // $output->write($yaml);
 
     if ($save) {
       file_put_contents($source, $yaml);
@@ -208,76 +208,37 @@ class GenerateSwagger extends Command
         $annotation = get_object_vars($annotation);
       }
 
-      if (isset($paramEntry)) {
-        unset($paramEntry);
-      }
-
-      $paramEntryFound = FALSE;
-
-      foreach ($entry["parameters"] as $i => $parameter) {
-        if ($parameter["name"] === $annotation["name"]) {
-          $paramEntry = &$entry["parameters"][$i];
-          $paramEntryFound = TRUE;
-          break;
-        }
-      }
-
-      if (!$paramEntryFound) {
-        $entry["parameters"][] = [
-          "name" => $annotation["name"]
-        ];
-
-        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
-      }
-
-      $paramEntry["required"] = Arrays::get($annotation, "required", FALSE);
-      $paramEntry = array_merge($paramEntry, $this->translateType(Arrays::get($annotation, "validation", "")));
-
-      if ($annotation["type"] === "post") {
-        $paramEntry["in"] = "formData";
-      } else if ($annotation["type"] === "query") {
-        $paramEntry["in"] = "query";
-      }
-
-      $paramEntry["description"] = Arrays::get($annotation, "description", "");
+      $required = Arrays::get($annotation, "required", FALSE);
+      $validation = Arrays::get($annotation, "validation", "");
+      $in = $annotation["type"] === "post" ? "formData" : "query";
+      $description = Arrays::get($annotation, "description", "");
+      $this->fillParamEntry($entry, $annotation["name"], $in, $required, $validation, $description);
     }
 
+    $parameterAnnotations = Arrays::get($annotations, "param", []);
+
     foreach ($method->getParameters() as $methodParameter) {
-      if (isset($paramEntry)) {
-        unset($paramEntry);
-      }
+      $in = $methodParameter->isOptional() ? "query" : "path";
+      $description = "";
+      $validation = "string";
 
-      $paramEntryFound = FALSE;
+      foreach ($parameterAnnotations as $annotation) {
+        $annotationParts = explode(" ", $annotation, 3);
+        $firstPart = Arrays::get($annotationParts, 0, NULL);
+        $secondPart = Arrays::get($annotationParts, 1, NULL);
 
-      foreach ($entry["parameters"] as $i => $parameter) {
-        if ($parameter["name"] === $methodParameter->getName()) {
-          $paramEntry = &$entry["parameters"][$i];
-          $paramEntryFound = TRUE;
-          break;
+        if ($secondPart === "$" . $methodParameter->getName()) {
+          $validation = $firstPart;
+        } else if ($firstPart === "$" . $methodParameter->getName()) {
+          $validation = $secondPart;
+        } else {
+          continue;
         }
+
+        $description = Arrays::get($annotationParts, 2, "");
       }
 
-      if (!$paramEntryFound) {
-        $entry["parameters"][] = [
-          "name" => $methodParameter->getName()
-        ];
-
-        $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
-      }
-
-      if ($methodParameter->isOptional()) {
-        $paramEntry["in"] = "query";
-        $this->setArrayDefault($paramEntry, "required", FALSE);
-      } else {
-        $paramEntry["in"] = "path";
-        $paramEntry["required"] = TRUE;
-      }
-
-      $this->setArrayDefault($paramEntry, "type", "string");
-
-      if (!Arrays::get($paramEntry, "description", NULL)) {
-        $paramEntry["description"] = ""; // TODO put something meaningful in here
-      }
+      $this->fillParamEntry($entry, $methodParameter->getName(), $in, !$methodParameter->isOptional(), $validation, $description);
     }
 
     $this->setArrayDefault($entry["responses"], "200", []);
@@ -306,6 +267,47 @@ class GenerateSwagger extends Command
     }
 
     return $entry;
+  }
+
+  /**
+   * @param array $entry
+   * @param $name
+   * @param $in
+   * @param $required
+   * @param $validation
+   * @param $description
+   */
+  private function fillParamEntry(array &$entry, $name, $in, $required, $validation, $description)
+  {
+    $paramEntryFound = FALSE;
+
+    foreach ($entry["parameters"] as $i => $parameter) {
+      if ($parameter["name"] === $name) {
+        $paramEntry = &$entry["parameters"][$i];
+        $paramEntryFound = TRUE;
+        break;
+      }
+    }
+
+    if (!$paramEntryFound) {
+      $entry["parameters"][] = [
+        "name" => $name
+      ];
+
+      $paramEntry = &$entry["parameters"][count($entry["parameters"]) - 1];
+    }
+
+    $paramEntry["in"] = $in;
+    $paramEntry["required"] = $required;
+
+    if ($in === "path") {
+      $paramEntry["required"] = TRUE;
+    } else if ($in === "query") {
+      $this->setArrayDefault($paramEntry, "required", FALSE);
+    }
+
+    $paramEntry = array_merge($paramEntry, $this->translateType($validation));
+    $paramEntry["description"] = $description;
   }
 
   private function findAPIRouteList()
@@ -426,14 +428,11 @@ class GenerateSwagger extends Command
     $schemaTool->createSchema($em->getMetadataFactory()->getAllMetadata());
 
     // Load fixtures and persist them
-    $entityClasses = [];
-
     foreach ($files as $file) {
       $loadedEntities = $this->fixtureLoader->load($file);
 
       foreach ($loadedEntities as $entity) {
         $em->persist($entity);
-        $entityClasses[get_class($entity)] = TRUE;
       }
     }
 
@@ -441,8 +440,11 @@ class GenerateSwagger extends Command
     $em->clear();
 
     $entityExamples = [];
-    foreach (array_keys($entityClasses) as $entityClass) {
-      $entityExamples[] = $em->getRepository($entityClass)->findAll()[0];
+    foreach ($em->getMetadataFactory()->getAllMetadata() as $metadata) {
+      $name = $metadata->getName();
+      if (Strings::startsWith($name, "App")) {
+        $entityExamples[] = $em->getRepository($name)->findAll()[0];
+      }
     }
 
     // Dump serializable entities into the document

@@ -24,10 +24,9 @@ class EvaluationStatus {
         return self::EVALUATION_STATUS_IN_PROGRESS;
       }
 
-      $eval = $evaluable->getEvaluation();
-      if ($eval->isValid() === FALSE) {
+      if ($evaluable->isValid() === FALSE) {
         return self::EVALUATION_STATUS_EVALUATION_FAILED;
-      } elseif ($eval->isCorrect() === TRUE) {
+      } elseif ($evaluable->isCorrect() === TRUE) {
         return self::EVALUATION_STATUS_DONE;
       } else {
         return self::EVALUATION_STATUS_FAILED;

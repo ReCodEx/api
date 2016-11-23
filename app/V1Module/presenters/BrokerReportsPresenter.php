@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
+use App\Helpers\EmailsConfig;
 use App\Helpers\FailureHelper;
 use App\Helpers\EmailHelper;
 use App\Helpers\EvaluationLoader;
@@ -75,6 +76,12 @@ class BrokerReportsPresenter extends BasePresenter {
   public $brokerConfig;
 
   /**
+   * @var EmailsConfig
+   * @inject
+   */
+  public $emailsConfig;
+
+  /**
    * The actions of this presenter have specific
    */
   public function startup() {
@@ -96,6 +103,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @POST
    * @Param(name="status", type="post", description="The new status of the job")
    * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
+   * @param string $jobId Identifier of the job whose status is being reported
    */
   public function actionJobStatus($jobId) {
     $status = $this->getRequest()->getPost("status");
@@ -158,13 +166,14 @@ class BrokerReportsPresenter extends BasePresenter {
   }
 
   private function loadReferenceEvaluation(ReferenceSolutionEvaluation $referenceSolutionEvaluation) {
+    $referenceSolution = $referenceSolutionEvaluation->getReferenceSolution();
     try {
       $solutionEvaluation = $this->evaluationLoader->loadReference($referenceSolutionEvaluation);
     } catch (SubmissionEvaluationFailedException $e) {
       // the result cannot be loaded even though the result MUST be ready at this point
       $this->failureHelper->report(
         FailureHelper::TYPE_API_ERROR,
-        "Evaluation results of the job with ID '{$submission->getId()}' could not be processed. {$e->getMessage()}"
+        "Evaluation results of the job with ID '{$referenceSolution->getId()}' could not be processed. {$e->getMessage()}"
       );
     }
 
@@ -174,18 +183,19 @@ class BrokerReportsPresenter extends BasePresenter {
   }
 
   /**
-   * @todo Rewrite this method completely!!
+   * Notify student that his evaluation finished with following status.
    * @param Submission $submission  Evaluated submission
    * @return void
    */
   private function notifyEvaluationFinished(Submission $submission) {
+    $successful = $submission->isCorrect();
     $exerciseName = $submission->getAssignment()->getName();
     $date = $submission->getEvaluation()->getEvaluatedAt()->format('j. n. H:i'); // @todo: Localizable
-    $status = $successful === TRUE ? "Řešení je v pořádku" : "Řešení je chybné";  // @todo: Translatable
+    $status = $successful === TRUE ? "Evaluation of exercise was successful" : "Evaluation of exercise failed";  // @todo: Translatable
     $subject = "$exerciseName - $status [$date]";
-    $text = "Vaše řešení úlohy '$exerciseName' bylo vyhodnoceno. $status. Podrobnosti naleznete na webu <a href='http://recodex.projekty.ms.mff.cuni.cz'>ReCodEx</a>."; // @todo: Translatable
+    $text = "Solution of your assignment '$exerciseName' was evaluated. $status. Further description can be found in <a href='http://recodex.projekty.ms.mff.cuni.cz'>ReCodEx</a>."; // @todo: Translatable
     $email = $submission->getUser()->getEmail();
-    $this->emailHelper->send("noreply@recodex.org", [ $email ], $subject, $text); // @todo: Load the sender from config
+    $this->emailHelper->send($this->emailsConfig->from, [ $email ], $subject, $text);
   }
 
   /**
