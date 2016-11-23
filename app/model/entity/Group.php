@@ -17,6 +17,7 @@ class Group implements JsonSerializable
 
   public function __construct(
       string $name,
+      string $externalId,
       string $description,
       Instance $instance,
       User $admin,
@@ -24,6 +25,7 @@ class Group implements JsonSerializable
       bool $publicStats = TRUE,
       bool $isPublic = TRUE) {
     $this->name = $name;
+    $this->externalId = $externalId;
     $this->description = $description;
     $this->memberships = new ArrayCollection;
     $this->admin = $admin;
@@ -52,6 +54,11 @@ class Group implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $name;
+
+  /**
+   * @ORM\Column(type="string", nullable=true)
+   */
+  protected $externalId; // @TODO: UNIQUE in instance unless null
 
   /**
    * @ORM\Column(type="text")
@@ -365,6 +372,7 @@ class Group implements JsonSerializable
     $instance = $this->getInstance();
     return [
       "id" => $this->id,
+      "externalId" => $this->externalId,
       "name" => $this->name,
       "description" => $this->description,
       "adminId" => $this->admin ? $this->admin->getId() : NULL,

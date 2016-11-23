@@ -65,6 +65,7 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..")
    * @Param(type="post", name="description", required=FALSE)
    * @Param(type="post", name="instanceId", validation="string:36")
+   * @Param(type="post", name="externalId", required=FALSE)
    * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE)
    * @Param(type="post", name="publicStats", validation="bool", required=FALSE)
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE)
@@ -73,6 +74,7 @@ class GroupsPresenter extends BasePresenter {
     $req = $this->getHttpRequest();
     $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
+    $externalId = $req->getPost("externalId");
     $parentGroupId = $req->getPost("parentGroupId", NULL);
     $user = $this->getCurrentUser();
     $instance = $this->instances->get($instanceId);
@@ -94,7 +96,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
     }
 
-    $group = new Group($name, $description, $instance, $user, $parentGroup, $publicStats, $isPublic);
+    $group = new Group($name, $externalId, $description, $instance, $user, $parentGroup, $publicStats, $isPublic);
     $this->groups->persist($group);
     $this->groups->flush();
     $this->sendSuccessResponse($group);
@@ -124,6 +126,7 @@ class GroupsPresenter extends BasePresenter {
    * @POST
    * @UserIsAllowed(groups="update")
    * @Param(type="post", name="name", validation="string:2..")
+   * @Param(type="post", name="externalId", validation="string:1..")
    * @Param(type="post", name="description", validation="string")
    * @Param(type="post", name="publicStats", validation="bool")
    * @Param(type="post", name="isPublic", validation="bool")
@@ -132,7 +135,7 @@ class GroupsPresenter extends BasePresenter {
   public function actionUpdateGroup(string $id) {
     $req = $this->getHttpRequest();
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
-    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VARIABLE_BOOLEAN);
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
     $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
@@ -141,6 +144,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Only group administrators can update group detail.");
     }
 
+    $group->setName($req->getPost("externalId"));
     $group->setName($req->getPost("name"));
     $group->setDescription($req->getPost("description"));
     $group->setPublicStats($publicStats);
