@@ -6,6 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\NotFoundException;
 
 use App\Helpers\MonitorConfig;
 use App\Helpers\ScoreCalculatorAccessor;
