@@ -286,7 +286,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setDefaultLanguage($defaultLanguage);
 
     $this->users->persist($user);
-    $this->sendSuccessResponse($settings);
+    $this->sendSuccessResponse($user);
   }
 
   /**
