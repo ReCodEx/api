@@ -402,12 +402,12 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => [
-        "all" => $this->childGroups->map(
+        "all" => $this->getChildGroups()->map(
           function($group) {
             return $group->getId();
           }
         )->getValues(),
-        "public" => $this->childGroups->filter(
+        "public" => $this->getChildGroups()->filter(
           function($g) {
             return $g->isPublic();
           }
@@ -425,5 +425,11 @@ class Group implements JsonSerializable
       "isPublic" => $this->isPublic,
       "threshold" => $this->threshold
     ];
+  }
+
+  public function getChildGroups() {
+    return $this->childGroups->filter(function (Group $group) {
+      return $group->getDeletedAt() === NULL;
+    });
   }
 }
