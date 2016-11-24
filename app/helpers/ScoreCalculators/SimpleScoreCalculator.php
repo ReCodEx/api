@@ -92,7 +92,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
   public static function getDefaultConfig(array $tests): string {
     $config = "testWeights:\n";
     foreach ($tests as $test) {
-      $config .= "  $test: 100\n";
+      $config .= "  \"$test\": 100\n";
     }
     return $config;
   }
