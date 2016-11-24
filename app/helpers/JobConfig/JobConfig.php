@@ -30,7 +30,11 @@ class JobConfig {
    * Job config data structure creation
    * @param array $data The deserialized data from the config file
    */
-  public function __construct(array $data) {
+  public function __construct($data) {
+    if (!is_array($data)) {
+      throw new JobConfigLoadingException("Job configuration is not in correct format.");
+    }
+
     if (!isset($data[self::SUBMISSION_KEY])) {
       throw new JobConfigLoadingException("Job config does not contain the required '" . self::SUBMISSION_KEY . "' field.");
     }
