@@ -3,12 +3,15 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\InvalidMembershipException;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method DateTime getRejectedAt()
+ * @method DateTime getRequestedAt()
  */
 class GroupMembership implements JsonSerializable
 {
@@ -126,9 +129,9 @@ class GroupMembership implements JsonSerializable
       "userId" => $this->user->getId(),
       "groupId" => $this->group->getId(),
       "status" => $this->status,
-      "requestedAt" => $this->requestedAt,
+      "requestedAt" => $this->getRequestedAt()->getTimestamp(),
       "joinedAt" => $this->joinedAt,
-      "rejectedAt" => $this->requestedAt,
+      "rejectedAt" => $this->getRejectedAt()->getTimestamp(),
       "studentSince" => $this->studentSince,
       "supervisorSince" => $this->supervisorSince,
     ];
