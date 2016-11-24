@@ -140,8 +140,17 @@ class Instance implements JsonSerializable
     $this->groups->add($group);
   }
 
+  public function getGroups() {
+    return $this->groups->filter(function ($group) {
+      return $group->getDeletedAt() === NULL;
+    });
+  }
+
   public function getGroupsForUser(User $user) {
     return $this->groups->filter(function ($group) use ($user) {
+      if ($group->getDeletedAt() !== NULL) {
+        return FALSE;
+      }
       if ($group->canUserAccessGroupDetail($user)) {
         return TRUE;
       }
@@ -156,11 +165,11 @@ class Instance implements JsonSerializable
 
     if ($user) {
       $result = $result->filter(function (Group $group) use ($user) {
-        return $group->canUserAccessGroupDetail($user);
+        return $group->getDeletedAt() === NULL && $group->canUserAccessGroupDetail($user);
       });
     } else {
       $result = $result->filter(function (Group $group) use ($user) {
-        return $group->isPublic;
+        return $group->getDeletedAt() === NULL && $group->isPublic;
       });
     }
 
@@ -187,6 +196,12 @@ class Instance implements JsonSerializable
     return $this->getData(NULL);
   }
 
+  public function __construct(){
+    $this->licences = new ArrayCollection();
+    $this->groups = new ArrayCollection();
+    $this->members = new ArrayCollection();
+  }
+
   public static function createInstance(string $name, bool $isOpen, User $admin = NULL, string $description = NULL) {
     $instance = new Instance;
     $instance->name = $name;
@@ -198,9 +213,6 @@ class Instance implements JsonSerializable
     $instance->createdAt = $now;
     $instance->updatedAt = $now;
     $instance->admin = $admin;
-    $instance->licences = new ArrayCollection;
-    $instance->groups = new ArrayCollection;
-    $instance->members = new ArrayCollection;
     return $instance;
   }
 

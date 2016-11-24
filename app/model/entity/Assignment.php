@@ -26,7 +26,6 @@ class Assignment implements JsonSerializable
     Exercise $exercise,
     Group $group,
     bool $isPublic,
-    Collection $solutionRuntimeConfigs,
     int $submissionsCountLimit,
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
@@ -47,10 +46,10 @@ class Assignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
-    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
+    $this->solutionRuntimeConfigs = $exercise->getSolutionRuntimeConfigs();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
-    $this->localizedAssignments = new ArrayCollection;
+    $this->localizedAssignments = $exercise->getLocalizedAssignments();
     $this->canViewLimitRatios = $canViewLimitRatios;
   }
 
@@ -62,7 +61,6 @@ class Assignment implements JsonSerializable
       $exercise,
       $group,
       $isPublic,
-      $exercise->getSolutionRuntimeConfigs(),
       50,
       FALSE
     );

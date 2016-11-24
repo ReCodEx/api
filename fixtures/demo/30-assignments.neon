@@ -7,5 +7,3 @@ App\Model\Entity\Assignment:
                 - true
         firstDeadline: "<dateTimeBetween('+1 years', '+3 years')>"
         secondDeadline: "<dateTimeBetween($firstDeadline, '+5 years')>"
-        addLocalizedAssignment:
-            - @demoLocalizedAssignment
