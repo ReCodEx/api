@@ -216,11 +216,12 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
+    $validUntil = new \DateTime;
 
     $request = new Nette\Application\Request('V1:Instances',
         'POST',
         ['action' => 'createLicence', 'id' => $instance->id],
-        ['note' => 'Another year', 'validUntil' => '2017-05-12 13:02:56']
+        ['note' => 'Another year', 'validUntil' => $validUntil->getTimestamp()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -230,7 +231,7 @@ class TestInstancesPresenter extends Tester\TestCase
     $licence = $result['payload'];
     Assert::equal($instance->id, $licence->instance->id);
     Assert::equal('Another year', $licence->note);
-    Assert::equal(new DateTime('2017-05-12 13:02:56'), $licence->validUntil);
+    Assert::equal($validUntil, $licence->validUntil);
   }
 
   public function testUpdateLicence()
