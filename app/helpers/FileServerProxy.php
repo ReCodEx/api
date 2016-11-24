@@ -64,10 +64,10 @@ class FileServerProxy {
    * Downloads the contents of a archive file at the given URL and return
    * unparsed YAML results of evaluation.
    * @param   string $url   URL of the file
-   * @return  string        Contents of the results file
+   * @return  string|NULL   Contents of the results file
    * @throws  SubmissionEvaluationFailedException when results are not available
    */
-  public function downloadResults(string $url): string {
+  public function downloadResults(string $url) {
     try {
       $response = $this->client->request("GET", $url);
     } catch (ClientException $e) {
