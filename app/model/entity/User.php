@@ -148,6 +148,12 @@ class User implements JsonSerializable
     return $this->findMembership($group, GroupMembership::TYPE_SUPERVISOR);
   }
 
+  protected function getMemberships() {
+    return $this->memberships->filter(function (GroupMembership $membership) {
+      return $membership->getGroup()->getDeletedAt() === NULL;
+    });
+  }
+
   /**
    * Returns array with all groups in which this user has given type.
    * @param string $type
@@ -156,7 +162,7 @@ class User implements JsonSerializable
   protected function findGroupMemberships($type) {
     $filter = Criteria::create()
             ->where(Criteria::expr()->eq("type", $type));
-    return $this->memberships->matching($filter)->getValues();
+    return $this->getMemberships()->matching($filter)->getValues();
   }
 
   public function findGroupMembershipsAsSupervisor() {
@@ -185,7 +191,7 @@ class User implements JsonSerializable
 
   protected function getGroups(string $type) {
     $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
-    return $this->memberships->matching($filter)->map(
+    return $this->getMemberships()->matching($filter)->map(
       function ($membership) {
         return $membership->getGroup();
       }

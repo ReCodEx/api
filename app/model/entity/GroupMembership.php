@@ -10,6 +10,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method Group getGroup()
  * @method DateTime getRejectedAt()
  * @method DateTime getJoinedAt()
  * @method DateTime getRequestedAt()

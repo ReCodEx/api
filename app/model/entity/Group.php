@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -12,6 +13,9 @@ use JsonSerializable;
  * @ORM\Entity
  * @ORM\Table(name="`group`")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
+ * @method string getId()
+ * @method DateTime getDeletedAt()
  */
 class Group implements JsonSerializable
 {
