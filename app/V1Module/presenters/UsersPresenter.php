@@ -202,7 +202,6 @@ class UsersPresenter extends BasePresenter {
    * Update the profile associated with a user account
    * @POST
    * @LoggedIn
-   * @Param(type="post", name="email", validation="email", description="E-mail address", required=false)
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
@@ -212,7 +211,6 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
-    $email = $req->getPost("email");
     $firstName = $req->getPost("firstName");
     $lastName = $req->getPost("lastName");
     $degreesBeforeName = $req->getPost("degreesBeforeName");
@@ -224,11 +222,6 @@ class UsersPresenter extends BasePresenter {
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
-
-    // user might not want to change the email address
-    if ($email !== NULL) {
-      $user->setEmail($email);
-    }
 
     $user->setFirstName($firstName);
     $user->setLastName($lastName);

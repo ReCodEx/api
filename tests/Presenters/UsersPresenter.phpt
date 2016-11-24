@@ -246,7 +246,6 @@ class TestUsersPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $email = "emailUpdated@emailUpdated.emailUpdated";
     $firstName = "firstNameUpdated";
     $lastName = "lastNameUpdated";
     $degreesBeforeName = "degreesBeforeNameUpdated";
@@ -255,7 +254,6 @@ class TestUsersPresenter extends Tester\TestCase
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'updateProfile'],
       [
-        'email' => $email,
         'firstName' => $firstName,
         'lastName' => $lastName,
         'degreesBeforeName' => $degreesBeforeName,
@@ -270,7 +268,6 @@ class TestUsersPresenter extends Tester\TestCase
 
     $updatedUser = $result["payload"];
     Assert::type(\App\Model\Entity\User::class, $updatedUser);
-    Assert::equal($email, $updatedUser->getEmail());
     Assert::equal($firstName, $updatedUser->getFirstName());
     Assert::equal($lastName, $updatedUser->getLastName());
     Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
