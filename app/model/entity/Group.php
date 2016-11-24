@@ -265,7 +265,7 @@ class Group implements JsonSerializable
   public function getAssignmentsIds($assignments = NULL): array {
     $assignments = $assignments === NULL ? $this->getAssignments() : $assignments;
     return $assignments->map(function (Assignment $a) {
-      return $a->getId;
+      return $a->getId();
     })->getValues();
   }
 
