@@ -14,6 +14,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
+ * @method string getId()
+ * @method DateTime getDeletedAt()
  */
 class Assignment implements JsonSerializable
 {

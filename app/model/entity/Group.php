@@ -263,8 +263,16 @@ class Group implements JsonSerializable
    * @return string[]
    */
   public function getAssignmentsIds($assignments = NULL): array {
-    $assignments = $assignments === NULL ? $this->assignments : $assignments;
-    return $assignments->map(function($a) { return $a->id; })->getValues();
+    $assignments = $assignments === NULL ? $this->getAssignments() : $assignments;
+    return $assignments->map(function (Assignment $a) {
+      return $a->getId;
+    })->getValues();
+  }
+
+  public function getAssignments() {
+    return $this->assignments->filter(function (Assignment $assignment) {
+      return $assignment->getDeletedAt() === NULL;
+    });
   }
 
   public function getMaxPoints(): int {
@@ -276,7 +284,7 @@ class Group implements JsonSerializable
   }
 
   public function getBestSolutions(User $user): array {
-    return $this->assignments->map(
+    return $this->getAssignments()->map(
       function ($assignment) use ($user) {
         return $assignment->getBestSolution($user);
       }
@@ -320,14 +328,14 @@ class Group implements JsonSerializable
    * @return array          Students statistics
    */
   public function getStudentsStats(User $student) {
-    $total = $this->assignments->count();
+    $total = $this->getAssignments()->count();
     $completed = $this->getCompletedAssignmentsByStudent($student);
     $missed = $this->getMissedAssignmentsByStudent($student);
     $maxPoints = $this->getMaxPoints();
     $gainedPoints = $this->getPointsGainedByStudent($student);
 
     $statuses = [];
-    foreach ($this->assignments as $assignment) {
+    foreach ($this->getAssignments() as $assignment) {
       $best = $assignment->getBestSolution($student);
       $solution = $best ? $best : $assignment->getLastSolution($student);
       $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL;
@@ -358,7 +366,7 @@ class Group implements JsonSerializable
    */
   public function getAssignmentsForUser(User $user) {
     if ($this->isAdminOf($user) || $this->isSupervisorOf($user)) {
-      return $this->assignments;
+      return $this->getAssignments();
     } else if ($this->isStudentOf($user)) {
       return $this->getPublicAssignments();
     } else {
