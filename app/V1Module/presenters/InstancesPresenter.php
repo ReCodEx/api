@@ -170,7 +170,7 @@ class InstancesPresenter extends BasePresenter {
   public function actionCreateLicence(string $id) {
     $params = $this->parameters;
     $instance = $this->instances->findOrThrow($id);
-    $validUntil = new \DateTime($params->validUntil);
+    $validUntil = (new \DateTime())->setTimestamp($params->validUntil);
     $licence = Licence::createLicence($params->note, $validUntil, $instance);
     $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);
