@@ -207,14 +207,8 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
 
     $updatedRuntimeConfigs = $result["payload"]->getSolutionRuntimeConfigs();
-    Assert::true($updatedRuntimeConfigs->exists(function ($key, $config) use ($environmentId) {
-      if ($config->name == "runtimeConfigName"
-          && $config->runtimeEnvironment->getId() == $environmentId) {
-        return TRUE;
-      }
-
-      return FALSE;
-    }));
+    Assert::count(1, $updatedRuntimeConfigs);
+    Assert::equal($updatedRuntimeConfigs->first()->name, "runtimeConfigName");
   }
 
   public function testSupplementaryFilesUpload() {
