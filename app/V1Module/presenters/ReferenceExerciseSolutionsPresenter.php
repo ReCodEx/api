@@ -83,7 +83,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public function actionExercise(string $id) {
     // @todo check that this user can access this information
     $exercise = $this->exercises->findOrThrow($id);
-    if ($exercise->canAccessDetail($this->getCurrentUser())) {
+    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
       throw new NotFoundException;
     }
 
