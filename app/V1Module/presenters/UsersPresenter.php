@@ -259,6 +259,7 @@ class UsersPresenter extends BasePresenter {
    * @LoggedIn
    * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=FALSE)
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
+   * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=FALSE)
    * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=FALSE)
    */
   public function actionUpdateSettings() {
@@ -272,10 +273,14 @@ class UsersPresenter extends BasePresenter {
     $vimMode = $req->getPost("vimMode") !== NULL
       ? filter_var($req->getPost("vimMode"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getVimMode();
+    $openedSidebar = $req->getPost("openedSidebar") !== NULL
+      ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getOpenedSidebar();
     $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguge();
 
     $settings->setDarkTheme($darkTheme);
     $settings->setVimMode($vimMode);
+    $settings->setOpenedSidebar($openedSidebar);
     $settings->setDefaultLanguage($defaultLanguage);
 
     $this->users->persist($user);
