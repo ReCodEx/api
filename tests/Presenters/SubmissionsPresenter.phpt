@@ -87,8 +87,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     // Check invariants
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($submission, $result['payload']);
-    Assert::type('App\Model\Entity\SolutionEvaluation', $submission->getEvaluation());
+    Assert::same($submission->getId(), $result['payload']['id']);
   }
 
   public function testSetBonusPoints()
