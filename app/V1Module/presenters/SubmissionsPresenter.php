@@ -65,6 +65,8 @@ class SubmissionsPresenter extends BasePresenter {
     $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
     $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
+asdlaksdjals
+
     if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
@@ -80,7 +82,8 @@ class SubmissionsPresenter extends BasePresenter {
       }
     }
 
-    $this->sendSuccessResponse($submission);
+    $canViewDetails = $submission->getAssignment()->getCanViewLimitRatios() || $isAdmin || $isSupervisor;
+    $this->sendSuccessResponse($submission->getData($canViewDetails));
   }
 
   /**

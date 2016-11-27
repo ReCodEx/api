@@ -129,11 +129,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $this->evaluation->getTotalPoints();
     }
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize() {
-      $evaluation = $this->hasEvaluation() ? $this->getEvaluation()->getData($this->assignment->getCanViewLimitRatios()) : NULL;
+    public function getData($canViewDetails = FALSE) {
+      $evaluation = $this->hasEvaluation()
+        ? $this->getEvaluation()->getData($canViewDetails)
+        : NULL;
+
       return [
         "id" => $this->id,
         "userId" => $this->getUser()->getId(),
@@ -146,6 +146,13 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "files" => $this->getSolution()->getFiles()->getValues(),
         "maxPoints" => $this->getMaxPoints()
       ];
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize() {
+      return $this->getData($this->assignment->getCanViewLimitRatios());
     }
 
   /**
