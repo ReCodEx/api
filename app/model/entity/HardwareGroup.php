@@ -63,7 +63,8 @@ class HardwareGroup implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "description" => $this->description
+      "description" => $this->description,
+      "isAvailable" => $this->isAvailable()
     ];
   }
 

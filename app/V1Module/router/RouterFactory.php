@@ -45,6 +45,7 @@ class RouterFactory {
     self::createUsersRoutes($router, "$prefix/users");
     self::createForgottenPasswordRoutes($router, "$prefix/forgotten-password");
     self::createRuntimeEnvironmentsRoutes($router, "$prefix/runtime-environments");
+    self::createHardwareGroupsRoutes($router, "$prefix/hardware-groups");
 
     return $router;
   }
@@ -230,6 +231,10 @@ class RouterFactory {
 
   private static function createRuntimeEnvironmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "RuntimeEnvironments:");
+  }
+
+  private static function createHardwareGroupsRoutes($router, $prefix) {
+    $router[] = new GetRoute("$prefix", "HardwareGroups:");
   }
 
   private static function createSubmissionFailuresRoutes($router, $prefix) {

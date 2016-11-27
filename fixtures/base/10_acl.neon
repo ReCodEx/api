@@ -30,6 +30,8 @@ App\Model\Entity\Resource:
     __construct: ["runtimeEnvironments"]
   "submissionFailures":
     __construct: ["submissionFailures"]
+  "hardwareGroups":
+    __construct: ["hardwareGroups"]
 
 App\Model\Entity\Permission:
   "superadmin-assignments":
@@ -75,6 +77,16 @@ App\Model\Entity\Permission:
   "superadmin-users":
     "role": @superadmin
     "resource": @users
+    "action": "*"
+    "isAllowed": 1
+  "superadmin-runtimeEnvironments":
+    "role": @superadmin
+    "resource": @runtimeEnvironments
+    "action": "*"
+    "isAllowed": 1
+  "superadmin-hardwareGroups":
+    "role": @superadmin
+    "resource": @hardwareGroups
     "action": "*"
     "isAllowed": 1
   "student-assignments-submit":
@@ -256,4 +268,9 @@ App\Model\Entity\Permission:
     "role": @supervisor
     "resource": @submissions
     "action": "set-bonus-points"
+    "isAllowed": 1
+  "supervisor-hardwareGroupss-view-all":
+    "role": @supervisor
+    "resource": @hardwareGroups
+    "action": "view-all"
     "isAllowed": 1
