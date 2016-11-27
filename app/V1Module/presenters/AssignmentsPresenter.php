@@ -7,6 +7,7 @@ use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 
 use App\Helpers\MonitorConfig;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -28,9 +29,9 @@ use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
+use App\Model\Repository\RuntimeEnvironments;
 
 use DateTime;
-use Doctrine\Common\Collections\Criteria;
 use Exception;
 use Nette\InvalidStateException;
 use Nette\Utils\Arrays;
@@ -124,6 +125,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $uploadedJobConfigStorage;
+
+  /**
+   * @var RuntimeEnvironments
+   * @inject
+   */
+  public $runtimeEnvironments;
 
   /**
    * Get a list of all assignments
@@ -349,7 +356,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
-   * @Param(type="post", name="runtimeConfigurationId", required=false, description="Identifier of the runtime configuration used for evaluation")
+   * @Param(type="post", name="runtimeEnvironmentId", required=false, description="Identifier of the runtime environment used for evaluation")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    */
@@ -367,13 +374,22 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
     }
 
+    // retrieve and check uploaded files
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
+    if (count($uploadedFiles) === 0) {
+      throw new SubmissionEvaluationFailedException("No files were uploaded");
+    }
 
-    // detect the runtime configuration if needed
-    $runtimeConfigurationId = $req->getPost("runtimeConfigurationId");
-    $runtimeConfiguration = $runtimeConfigurationId === NULL
-      ? $this->runtimeConfigurations->detectOrThrow($assignment, $uploadedFiles)
-      : $this->runtimeConfigurations->findOrThrow($runtimeConfigurationId);
+    // detect the runtime configuration
+    if ($req->getPost("runtimeEnvironmentId") === NULL) {
+      $runtimeConfiguration = $this->runtimeConfigurations->detectOrThrow($assignment, $uploadedFiles);
+    } else {
+      $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
+      $runtimeConfiguration = $assignment->getRuntimeConfigByEnvironment($runtimeEnvironment);
+      if ($runtimeConfiguration === NULL) {
+        throw new NotFoundException("RuntimeConfiguration was not found");
+      }
+    }
 
     // create Solution object
     $solution = new Solution($user, $runtimeConfiguration);

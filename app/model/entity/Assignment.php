@@ -269,8 +269,27 @@ class Assignment implements JsonSerializable
     );
   }
 
+  /**
+   * Get runtime configuration based on environment identification.
+   * @param RuntimeEnvironment $environment
+   * @return SolutionRuntimeConfig|NULL
+   */
+  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
+    return $this->getSolutionRuntimeConfigs()->filter(
+      function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
+        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
+    })->first();
+  }
+
   public function getSolutionRuntimeConfigsIds() {
     return $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+  }
+
+  public function getRuntimeEnvironmentsIds() {
+    return $this->solutionRuntimeConfigs->map(
+      function(SolutionRuntimeConfig $config) {
+        return $config->getRuntimeEnvironment()->getId();
+      })->getValues();
   }
 
   public function jsonSerialize() {
@@ -288,7 +307,7 @@ class Assignment implements JsonSerializable
       "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
-      "solutionRuntimeConfigs" => $this->getSolutionRuntimeConfigsIds(),
+      "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $this->canViewLimitRatios
     ];
   }

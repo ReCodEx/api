@@ -197,6 +197,11 @@ App\Model\Entity\Permission:
     "resource": @users
     "action": "view-instances"
     "isAllowed": 1
+  "student-runtimeEnvironments-view-all":
+    "role": @student
+    "resource": @runtimeEnvironments
+    "action": "view-all"
+    "isAllowed": 1
   "supervisor-assignments-view-limits":
     "role": @supervisor
     "resource": @assignments
@@ -246,11 +251,6 @@ App\Model\Entity\Permission:
     "role": @supervisor
     "resource": @exercises
     "action": "update"
-    "isAllowed": 1
-  "supervisor-runtimeEnvironments-view-all":
-    "role": @supervisor
-    "resource": @runtimeEnvironments
-    "action": "view-all"
     "isAllowed": 1
   "supervisor-submissions-set-bonus-points":
     "role": @supervisor
