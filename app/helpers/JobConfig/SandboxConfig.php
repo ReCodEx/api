@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-use App\Exceptions\JobConfigLoadingException;
+use App\Exceptions\MalformedJobConfigException;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -23,7 +23,7 @@ class SandboxConfig {
   const LIMITS_KEY = "limits";
 
   /** @var string Sandbox name */
-  private $name;
+  private $name = "";
   /** @var string Standard input redirection file */
   private $stdin = NULL;
   /** @var string Standard output redirection file */
@@ -33,49 +33,7 @@ class SandboxConfig {
   /** @var array List of limits */
   private $limits = [];
   /** @var array Additional data */
-  private $data;
-
-  /**
-   * Creates sandbox config from given structured data.
-   * @param array $data structured config
-   * @throws JobConfigLoadingException In case of parsing error
-   */
-  public function __construct(array $data) {
-    if (!isset($data[self::NAME_KEY])) {
-      throw new JobConfigLoadingException("Sandbox section does not contain required field '" . self::NAME_KEY . "'");
-    }
-    $this->name = $data[self::NAME_KEY];
-    unset($data[self::NAME_KEY]);
-
-    if (!isset($data[self::LIMITS_KEY]) || !is_array($data[self::LIMITS_KEY])) {
-      throw new JobConfigLoadingException("Sandbox section does not contain proper field '" . self::LIMITS_KEY . "'");
-    }
-
-    if (isset($data[self::STDIN_KEY])) {
-      $this->stdin = $data[self::STDIN_KEY];
-      unset($data[self::STDIN_KEY]);
-    }
-
-    if (isset($data[self::STDOUT_KEY])) {
-      $this->stdout = $data[self::STDOUT_KEY];
-      unset($data[self::STDOUT_KEY]);
-    }
-
-    if (isset($data[self::STDERR_KEY])) {
-      $this->stderr = $data[self::STDERR_KEY];
-      unset($data[self::STDERR_KEY]);
-    }
-
-    // *** CONSTRUCT ALL LIMITS
-
-    foreach ($data[self::LIMITS_KEY] as $lim) {
-      $limTyped = new Limits($lim);
-      $this->limits[$limTyped->getId()] = $limTyped;
-    }
-
-    // *** LOAD ALL REMAINING INFO
-    $this->data = $data;
-  }
+  private $data = [];
 
   /**
    * Get sandbox name.
@@ -83,6 +41,11 @@ class SandboxConfig {
    */
   public function getName(): string {
     return $this->name;
+  }
+
+  public function setName($name) {
+    $this->name = $name;
+    return $this;
   }
 
   /**
@@ -93,6 +56,11 @@ class SandboxConfig {
     return $this->stdin;
   }
 
+  public function setStdin($stdin) {
+    $this->stdin = $stdin;
+    return $this;
+  }
+
   /**
    * Return standard output redirection file.
    * @return string|NULL
@@ -101,12 +69,22 @@ class SandboxConfig {
     return $this->stdout;
   }
 
+  public function setStdout($stdout) {
+    $this->stdout = $stdout;
+    return $this;
+  }
+
   /**
    * Get standard error redirection file.
    * @return string|NULL
    */
   public function getStderr() {
     return $this->stderr;
+  }
+
+  public function setStderr($stderr) {
+    $this->stderr = $stderr;
+    return $this;
   }
 
   /**
@@ -133,7 +111,7 @@ class SandboxConfig {
    */
   public function getLimits(string $hardwareGroupId): Limits {
     if (!isset($this->limits[$hardwareGroupId])) {
-      throw new JobConfigLoadingException("Sandbox config does not define limits for hardware group '$hardwareGroupId'");
+      throw new MalformedJobConfigException("Sandbox config does not define limits for hardware group '$hardwareGroupId'");
     }
 
     return $this->limits[$hardwareGroupId];
@@ -147,6 +125,7 @@ class SandboxConfig {
    */
   public function setLimits(Limits $limits) {
     $this->limits[$limits->getId()] = $limits;
+    return $this;
   }
 
   /**
@@ -157,6 +136,15 @@ class SandboxConfig {
    */
   public function removeLimits(string $hardwareGroupId) {
     $this->setLimits(new UndefinedLimits($hardwareGroupId));
+  }
+
+  public function getAdditionalData() {
+    return $this->data;
+  }
+
+  public function setAdditionalData($data) {
+    $this->data = $data;
+    return $this;
   }
 
   /**

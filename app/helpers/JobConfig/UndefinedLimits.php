@@ -14,9 +14,8 @@ class UndefinedLimits extends Limits {
    * @param type $id
    */
   public function __construct(string $id) {
-    parent::__construct([
-      "hw-group-id" => $id
-    ]);
+    parent::__construct();
+    setId($id);
   }
 
   /**

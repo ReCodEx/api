@@ -3,10 +3,9 @@
 namespace App\Helpers\JobConfig;
 
 use Symfony\Component\Yaml\Yaml;
-use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Helpers\JobConfig\TaskFactory;
 use App\Helpers\JobConfig\SubmissionHeader;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -20,52 +19,23 @@ class JobConfig {
   const TASKS_KEY = "tasks";
 
   /** @var array Additional top level data */
-  private $data;
+  private $data = [];
   /** @var SubmissionHeader Holds data about this job submission */
   private $submissionHeader;
   /** @var array List of tasks */
   private $tasks = [];
 
-  /**
-   * Job config data structure creation
-   * @param array $data The deserialized data from the config file
-   */
-  public function __construct($data) {
-    if (!is_array($data)) {
-      throw new JobConfigLoadingException("Job configuration is not in correct format.");
-    }
-
-    if (!isset($data[self::SUBMISSION_KEY])) {
-      throw new JobConfigLoadingException("Job config does not contain the required '" . self::SUBMISSION_KEY . "' field.");
-    }
-    $this->submissionHeader = new SubmissionHeader($data[self::SUBMISSION_KEY]);
-    unset($data[self::SUBMISSION_KEY]);
-
-    if (!isset($data[self::TASKS_KEY])) {
-      throw new JobConfigLoadingException("Job config does not contain the required '" . self::TASKS_KEY . "' field.");
-    }
-    foreach ($data[self::TASKS_KEY] as $taskConfig) {
-      $this->tasks[] = TaskFactory::create($taskConfig);
-    }
-    unset($data[self::TASKS_KEY]);
-
-    $this->data = $data;
+  public function __construct() {
+    $this->submissionHeader = new SubmissionHeader;
   }
 
-  /**
-   * Get only job identification without type.
-   * @return string
-   */
-  public function getId(): string {
-    return $this->submissionHeader->getId();
+  public function getSubmissionHeader() {
+    return $this->submissionHeader;
   }
 
-  /**
-   * Get type of this job.
-   * @return string
-   */
-  public function getType(): string {
-    return $this->submissionHeader->getType();
+  public function setSubmissionHeader(SubmissionHeader $header) {
+    $this->submissionHeader = $header;
+    return $this;
   }
 
   /**
@@ -80,8 +50,9 @@ class JobConfig {
    * Set the identificator of this job
    * @param string $jobId
    */
-  public function setJobId(string $type, string $jobId) {
-    $this->submissionHeader->setJobId($type, $jobId);
+  public function setJobId(string $jobId) {
+    $this->submissionHeader->setJobId($jobId);
+    return $this;
   }
 
   /**
@@ -98,6 +69,7 @@ class JobConfig {
    */
   public function setFileCollector(string $fileCollector) {
     $this->submissionHeader->setFileCollector($fileCollector);
+    return $this;
   }
 
   /**
@@ -110,10 +82,15 @@ class JobConfig {
 
   /**
    * Returns the tasks of this configuration
-   * @return TaskBase[] The tasks with instances of InternalTask and ExternalTask
+   * @return Task[] The tasks with instances of InternalTask and ExternalTask
    */
   public function getTasks(): array {
     return $this->tasks;
+  }
+
+  public function addTask(Task $task) {
+    $this->tasks[] = $task;
+    return $this;
   }
 
   /**
@@ -210,6 +187,16 @@ class JobConfig {
       }
     }
     $this->submissionHeader->addHardwareGroup($hwGroupId);
+    return $this;
+  }
+
+  public function getAdditionalData() {
+    return $this->data;
+  }
+
+  public function setAdditionalData($data) {
+    $this->data = $data;
+    return $this;
   }
 
   /**

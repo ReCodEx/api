@@ -134,11 +134,9 @@ class BrokerReportsPresenter extends BasePresenter {
           "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
         );
 
-        $submission = $this->submissions->get($jobId);
-        if ($submission) {
-          $failureReport = new SubmissionFailure(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
-          $this->submissionFailures->persist($failureReport);
-        }
+        $submission = $this->submissions->findOrThrow($job->getId());
+        $failureReport = new SubmissionFailure(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
+        $this->submissionFailures->persist($failureReport);
 
         break;
     }

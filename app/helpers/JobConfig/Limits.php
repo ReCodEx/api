@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
 
@@ -37,7 +36,7 @@ class Limits implements JsonSerializable {
   const BOUND_DIRECTORIES_KEY = "bound-directories";
 
   /** @var string ID of the hardware group */
-  protected $id;
+  protected $id = "";
   /** @var float Time limit */
   protected $time = 0;
   /** @var float Wall time limit */
@@ -61,84 +60,7 @@ class Limits implements JsonSerializable {
   /** @var BoundDirectoryConfig[] Bound directories array */
   protected $boundDirectories = [];
   /** @var array Additional data */
-  protected $data;
-
-  /**
-   * Construct Limits structure from given structured configuration.
-   * @param array $data Structured config
-   * @throws JobConfigLoadingException In case of parsing error
-   */
-  public function __construct(array $data) {
-
-    if (!isset($data[self::HW_GROUP_ID_KEY])) {
-      throw new JobConfigLoadingException("Sandbox limits section does not contain required field '" . self::HW_GROUP_ID_KEY . "'");
-    }
-    $this->id = $data[self::HW_GROUP_ID_KEY];
-    unset($data[self::HW_GROUP_ID_KEY]);
-
-    // *** LOAD OPTIONAL DATAS
-
-    if (isset($data[self::TIME_KEY])) {
-      $this->time = floatval($data[self::TIME_KEY]);
-      unset($data[self::TIME_KEY]);
-    }
-
-    if (isset($data[self::WALL_TIME_KEY])) {
-      $this->wallTime = floatval($data[self::WALL_TIME_KEY]);
-      unset($data[self::WALL_TIME_KEY]);
-    }
-
-    if (isset($data[self::EXTRA_TIME_KEY])) {
-      $this->extraTime = floatval($data[self::EXTRA_TIME_KEY]);
-      unset($data[self::EXTRA_TIME_KEY]);
-    }
-
-    if (isset($data[self::STACK_SIZE_KEY])) {
-      $this->stackSize = intval($data[self::STACK_SIZE_KEY]);
-      unset($data[self::STACK_SIZE_KEY]);
-    }
-
-    if (isset($data[self::MEMORY_KEY])) {
-      $this->memory = intval($data[self::MEMORY_KEY]);
-      unset($data[self::MEMORY_KEY]);
-    }
-
-    if (isset($data[self::PARALLEL_KEY])) {
-      $this->parallel = intval($data[self::PARALLEL_KEY]);
-      unset($data[self::PARALLEL_KEY]);
-    }
-
-    if (isset($data[self::DISK_SIZE_KEY])) {
-      $this->diskSize = intval($data[self::DISK_SIZE_KEY]);
-      unset($data[self::DISK_SIZE_KEY]);
-    }
-
-    if (isset($data[self::DISK_FILES_KEY])) {
-      $this->diskFiles = intval($data[self::DISK_FILES_KEY]);
-      unset($data[self::DISK_FILES_KEY]);
-    }
-
-    if (isset($data[self::ENVIRON_KEY]) && is_array($data[self::ENVIRON_KEY])) {
-      $this->environVariables = $data[self::ENVIRON_KEY];
-      unset($data[self::ENVIRON_KEY]);
-    }
-
-    if (isset($data[self::CHDIR_KEY])) {
-      $this->chdir = strval($data[self::CHDIR_KEY]);
-      unset($data[self::CHDIR_KEY]);
-    }
-
-    if (isset($data[self::BOUND_DIRECTORIES_KEY]) && is_array($data[self::BOUND_DIRECTORIES_KEY])) {
-      foreach ($data[self::BOUND_DIRECTORIES_KEY] as $dir) {
-        $this->boundDirectories[] = new BoundDirectoryConfig($dir);
-      }
-      unset($data[self::BOUND_DIRECTORIES_KEY]);
-    }
-
-    // *** LOAD REMAINING INFO
-
-    $this->data = $data;
-  }
+  protected $data = [];
 
   /**
    * Hardware group identification.
@@ -146,6 +68,11 @@ class Limits implements JsonSerializable {
    */
   public function getId(): string {
     return $this->id;
+  }
+
+  public function setId($id) {
+    $this->id = $id;
+    return $this;
   }
 
   /**
@@ -156,12 +83,22 @@ class Limits implements JsonSerializable {
     return $this->time;
   }
 
+  public function setTimeLimit($time) {
+    $this->time = $time;
+    return $this;
+  }
+
   /**
    * Returns wall time limit.
    * @return float Number of seconds
    */
   public function getWallTime(): float {
     return $this->wallTime;
+  }
+
+  public function setWallTime($time) {
+    $this->wallTime = $time;
+    return $this;
   }
 
   /**
@@ -172,12 +109,22 @@ class Limits implements JsonSerializable {
     return $this->extraTime;
   }
 
+  public function setExtraTime($time) {
+    $this->extraTime = $time;
+    return $this;
+  }
+
   /**
    * Get maximum stack size.
    * @return int Number in kilobytes
    */
   public function getStackSize(): int {
     return $this->stackSize;
+  }
+
+  public function setStackSize($size) {
+    $this->stackSize = $size;
+    return $this;
   }
 
   /**
@@ -188,12 +135,22 @@ class Limits implements JsonSerializable {
     return $this->memory;
   }
 
+  public function setMemoryLimit($memory) {
+    $this->memory = $memory;
+    return $this;
+  }
+
   /**
    * Gets number of processes/threads which can be created in sandboxed program.
    * @return int Number of processes/threads
    */
   public function getParallel(): int {
     return $this->parallel;
+  }
+
+  public function setParallel($parallel) {
+    $this->parallel = $parallel;
+    return $this;
   }
 
   /**
@@ -204,12 +161,22 @@ class Limits implements JsonSerializable {
     return $this->diskSize;
   }
 
+  public function setDiskSize($size) {
+    $this->diskSize = $size;
+    return $this;
+  }
+
   /**
    * Gets maximum number of opened files in sandboxed application.
    * @return int Number of files
    */
   public function getDiskFiles(): int {
     return $this->diskFiles;
+  }
+
+  public function setDiskFiles($files) {
+    $this->diskFiles = $files;
+    return $this;
   }
 
   /**
@@ -220,12 +187,22 @@ class Limits implements JsonSerializable {
     return $this->environVariables;
   }
 
+  public function setEnvironVariables(array $variables) {
+    $this->environVariables = $variables;
+    return $this;
+  }
+
   /**
    * Get directory in which sandboxed program will be executed.
    * @return string|NULL
    */
   public function getChdir() {
     return $this->chdir;
+  }
+
+  public function setChdir($chdir) {
+    $this->chdir = $chdir;
+    return $this;
   }
 
   /**
@@ -235,6 +212,20 @@ class Limits implements JsonSerializable {
    */
   public function getBoundDirectories(): array {
     return $this->boundDirectories;
+  }
+
+  public function addBoundDirectory(BoundDirectoryConfig $boundDir) {
+    $this->boundDirectories[] = $boundDir;
+    return $this;
+  }
+
+  public function getAdditionalData() {
+    return $this->data;
+  }
+
+  public function setAdditionalData($data) {
+    $this->data = $data;
+    return $this;
   }
 
   /**

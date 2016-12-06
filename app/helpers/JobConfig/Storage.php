@@ -20,6 +20,16 @@ class Storage {
   private static $cache = NULL;
 
   /**
+   *
+   * @var Builder
+   */
+  private $jobBuilder;
+
+  public function __construct(Builder $jobBuilder) {
+    $this->jobBuilder = $jobBuilder;
+  }
+
+  /**
    * Lazy construction of configuration cache.
    * @return Cache
    */
@@ -131,7 +141,7 @@ class Storage {
       throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
     }
 
-    return new JobConfig($parsedConfig);
+    return $this->jobBuilder->build($parsedConfig);
   }
 
 }
