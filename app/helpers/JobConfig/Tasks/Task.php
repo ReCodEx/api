@@ -199,6 +199,10 @@ class Task {
     return $this->type === EvaluationTaskType::TASK_TYPE;
   }
 
+  public function isSandboxedTask(): bool {
+    return !($this->sandboxConfig === NULL);
+  }
+
   /**
    * Creates and returns properly structured array representing this object.
    * @return array

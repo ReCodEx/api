@@ -3,7 +3,8 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Tasks\InternalTask;
+use App\Helpers\JobConfig\Tasks\Task;
+use App\Helpers\JobConfig\Builder;
 use App\Exceptions\JobConfigLoadingException;
 
 
@@ -19,12 +20,19 @@ class TestInternalTask extends Tester\TestCase
     "forward" => "compatibility"
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testMissingRequiredFields() {
-    Assert::exception(function() { new InternalTask([]); }, JobConfigLoadingException::class);
+    Assert::exception(function() { $this->builder->buildTask([]); }, JobConfigLoadingException::class);
   }
 
   public function testBasicTask() {
-    $task = new InternalTask(self::$basic);
+    $task = $this->builder->buildTask(self::$basic);
     Assert::equal("A", $task->getId());
     Assert::equal(1, $task->getPriority());
     Assert::equal(true, $task->getFatalFailure());
@@ -33,6 +41,7 @@ class TestInternalTask extends Tester\TestCase
     Assert::equal([], $task->getCommandArguments());
     Assert::equal(NULL, $task->getType());
     Assert::equal(NULL, $task->getTestId());
+    Assert::false($task->isSandboxedTask());
 
     Assert::isEqual(self::$basic, $task->toArray());
   }

@@ -16,10 +16,10 @@ class EvaluationTaskType {
 
   /**
    * Checks and store evaluation task.
-   * @param TaskBase $task
+   * @param Task $task
    * @throws JobConfigLoadingException
    */
-  public function __construct(TaskBase $task) {
+  public function __construct(Task $task) {
     if (!$task->isEvaluationTask()) {
       throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
     }
@@ -29,9 +29,9 @@ class EvaluationTaskType {
 
   /**
    * Get evaluation task which was given and checked during construction.
-   * @return TaskBase
+   * @return Task
    */
-  public function getTask(): TaskBase {
+  public function getTask(): Task {
     return $this->task;
   }
 

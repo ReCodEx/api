@@ -178,11 +178,13 @@ class JobConfig {
           if (!$sandboxConfig->hasLimits($hwGroupId)) {
             throw new ForbiddenRequestException("It's not allowed to set limits for new hwgroup.");
           }
+          
+          // TODO: should this really be merge?
           $newTaskLimits = array_merge(
             $sandboxConfig->getLimits($hwGroupId)->toArray(),
             $limits[$task->getId()]
           );
-          $sandboxConfig->setLimits(new Limits($newTaskLimits)); // $hwGroupId is inherited from current limits
+          $sandboxConfig->setLimits((new Builder)->buildLimits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }
       }
     }

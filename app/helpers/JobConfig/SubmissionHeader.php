@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 use Symfony\Component\Yaml\Yaml;
+use App\Exceptions\MalformedJobConfigException;
 
 
 /**
@@ -130,7 +131,11 @@ class SubmissionHeader {
    * Set available hardware groups in this configuration.
    * @param array $groups List of available hardware groups
    */
-  public function setHardwareGroups(array $groups) {
+  public function setHardwareGroups($groups) {
+    if (!is_array($groups)) {
+      throw new MalformedJobConfigException("Hardware groups have to be array");
+    }
+
     $this->hardwareGroups = $groups;
     return $this;
   }

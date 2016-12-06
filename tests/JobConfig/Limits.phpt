@@ -3,8 +3,7 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Limits;
-use App\Helpers\JobConfig\BoundDirectoryConfig;
+use App\Helpers\JobConfig\Builder;
 use App\Helpers\JobConfig\UndefinedLimits;
 use Symfony\Component\Yaml\Yaml;
 
@@ -41,20 +40,29 @@ class TestLimits extends Tester\TestCase
     ]
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testSerialization() {
     $cfg = [ "hw-group-id" => "A", "memory" => 123, "time" => 456, "somethingElse" => 124578 ];
-    $deserialized = Yaml::parse((string) new Limits($cfg));
+    $deserialized = Yaml::parse((string) $this->builder->buildLimits($cfg));
     Assert::isEqual($cfg, $deserialized);
   }
 
   public function testMissingHWGroupId() {
     $data = self::$sample;
     unset($data["hw-group-id"]);
-    Assert::exception(function () use ($data) { new Limits($data); }, 'App\Exceptions\JobConfigLoadingException');
+    Assert::exception(function () use ($data) {
+      $this->builder->buildLimits($data);
+    }, 'App\Exceptions\JobConfigLoadingException');
   }
 
   public function testParsingA() {
-    $limits = new Limits(self::$cfg[0]);
+    $limits = $this->builder->buildLimits(self::$cfg[0]);
     Assert::equal("A", $limits->getId());
     Assert::equal(123, $limits->getMemoryLimit());
     Assert::type("int", $limits->getMemoryLimit());
@@ -63,7 +71,7 @@ class TestLimits extends Tester\TestCase
   }
 
   public function testParsingB() {
-    $limits = new Limits(self::$cfg[1]);
+    $limits = $this->builder->buildLimits(self::$cfg[1]);
     Assert::equal("B", $limits->getId());
     Assert::equal(321, $limits->getMemoryLimit());
     Assert::type("int", $limits->getMemoryLimit());
@@ -82,7 +90,7 @@ class TestLimits extends Tester\TestCase
   }
 
   public function testOptional() {
-    $limits = new Limits(self::$optional);
+    $limits = $this->builder->buildLimits(self::$optional);
     Assert::equal("optional", $limits->getId());
     Assert::equal(1.0, $limits->getTimeLimit());
     Assert::equal(2.0, $limits->getWallTime());
@@ -94,12 +102,12 @@ class TestLimits extends Tester\TestCase
     Assert::equal(8, $limits->getDiskFiles());
     Assert::isEqual([ "varA", "varB", "varC" ], $limits->getEnvironVariables());
     Assert::equal("/change/dir", $limits->getChdir());
-    Assert::equal(2, count($limits->getBoundDirectories()));
+    Assert::count(2, $limits->getBoundDirectories());
     Assert::isEqual(self::$optional, $limits->toArray());
   }
 
   public function testBoundDirectoryConfig() {
-    $boundDir = new BoundDirectoryConfig(self::$boundDir);
+    $boundDir = $this->builder->buildBoundDirectoryConfig(self::$boundDir);
     Assert::equal("/tmp", $boundDir->getSource());
     Assert::equal("/temp", $boundDir->getDestination());
     Assert::equal("RW", $boundDir->getMode());

@@ -14,8 +14,7 @@ class UndefinedLimits extends Limits {
    * @param type $id
    */
   public function __construct(string $id) {
-    parent::__construct();
-    setId($id);
+    $this->setId($id);
   }
 
   /**

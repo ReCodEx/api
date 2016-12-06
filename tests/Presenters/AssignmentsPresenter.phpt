@@ -153,26 +153,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testCreateAssignment()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $baseTaskData = [
-      'task-id' => 'anything',
-      'priority' => 42,
-      'fatal-failure' => false,
-      'cmd' => ['bin' => 'echo'],
-    ];
 
     $mockJobConfig->shouldReceive("getTests")->withAnyArgs()->andReturn([
       new JobConfig\TestConfig("test1", [
-        new JobConfig\Tasks\ExternalTask($baseTaskData + [
-          'type' => 'execution',
-          'sandbox' => ['name' => 'isolate', 'limits' => []]
-        ]),
-        new JobConfig\Tasks\InternalTask($baseTaskData + [
-          'type' => 'evaluation'
-        ])
+        (new JobConfig\Tasks\Task)->setType('execution')->setSandboxConfig((new JobConfig\SandboxConfig)->setName('isolate')),
+        (new JobConfig\Tasks\Task)->setType('evaluation')
       ])
     ]);
 

@@ -5,34 +5,11 @@ include '../../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
 use App\Helpers\EvaluationResults\SkippedTestResult;
-use App\Helpers\JobConfig\Tasks\TaskBase;
-use App\Helpers\JobConfig\Tasks\ExternalTask;
+use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
-
-
-class FakeTask extends TaskBase {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
-
-class FakeExternalTask extends ExternalTask {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
 
 
 class TestSkippedTestResult extends Tester\TestCase
@@ -41,13 +18,19 @@ class TestSkippedTestResult extends Tester\TestCase
   static $evalCfg = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => EvaluationTaskType::TASK_TYPE
+    "type" => EvaluationTaskType::TASK_TYPE,
+    "priority" => 1,
+    "fatal-failure" => false,
+    "cmd" => [ "bin" => "a.out" ]
   ];
 
   static $execCfg = [
     "task-id" => "Y",
     "test-id" => "A",
     "type" => ExecutionTaskType::TASK_TYPE,
+    "priority" => 2,
+    "fatal-failure" => false,
+    "cmd" => [ "bin" => "a.out" ],
     "sandbox" => [
       "name" => "isolate",
       "limits" => [
@@ -60,17 +43,22 @@ class TestSkippedTestResult extends Tester\TestCase
     ]
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testOKTest() {
-    $exec = new FakeExternalTask(self::$execCfg);
-    $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
       [
-          new FakeTask([ "task-id" => "A" ]),
-          $exec,
-          new FakeTask([ "task-id" => "C" ]),
-          $eval,
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->builder->buildTask(self::$execCfg),
+          (new Task)->setId("C"),
+          $this->builder->buildTask(self::$evalCfg),
+          (new Task)->setId("D")
       ]
     );
 

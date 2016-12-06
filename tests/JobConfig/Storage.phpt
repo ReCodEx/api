@@ -4,6 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\Builder;
 use App\Exceptions\MalformedJobConfigException;
 use App\Helpers\JobConfig\Storage;
 use Nette\Utils\Strings;
@@ -19,7 +20,7 @@ class TestJobConfigStorage extends Tester\TestCase
     $filePath = sys_get_temp_dir() . '/test-job-config-loader.yml';
     file_put_contents($filePath, self::$jobConfig);
     $this->jobConfigFileName = $filePath;
-    $this->storage = new Storage();
+    $this->storage = new Storage(new Builder);
   }
 
   public function tearDown() {
@@ -62,7 +63,7 @@ class TestJobConfigStorage extends Tester\TestCase
   public function testCanBeLoaded() {
     $jobConfig = $this->storage->parseJobConfig(self::$jobConfig);
     Assert::type(JobConfig::CLASS, $jobConfig);
-    Assert::equal("hippoes", $jobConfig->getId());
+    Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
   }
 
   public function testRejectInvalidYaml() {
@@ -77,7 +78,7 @@ class TestJobConfigStorage extends Tester\TestCase
 
   public function testLoadFromFile() {
     $jobConfig = $this->storage->getJobConfig($this->jobConfigFileName);
-    Assert::equal("hippoes", $jobConfig->getId());
+    Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
     Assert::type(JobConfig::CLASS, $jobConfig);
   }
 

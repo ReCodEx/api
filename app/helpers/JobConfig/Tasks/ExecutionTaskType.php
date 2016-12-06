@@ -12,21 +12,21 @@ class ExecutionTaskType {
   /** Execution task type value */
   const TASK_TYPE = "execution";
 
-  /** @var ExternalTask Execution task */
+  /** @var Task Execution task */
   private $task;
 
   /**
    * Checks and store execution task.
-   * @param TaskBase $task
+   * @param Task $task
    * @throws JobConfigLoadingException
    */
-  public function __construct(TaskBase $task) {
+  public function __construct(Task $task) {
     if (!$task->isExecutionTask()) {
       throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
     }
 
-    if (!$task instanceof ExternalTask) {
-      throw new JobConfigLoadingException("Execution task has to be ExternalTask type");
+    if (!$task->isSandboxedTask()) {
+      throw new JobConfigLoadingException("Execution task has to have sandbox configuration defined");
     }
 
     $this->task = $task;
@@ -34,9 +34,9 @@ class ExecutionTaskType {
 
   /**
    * Get execution task which was given and checked during construction.
-   * @return TaskBase
+   * @return Task
    */
-  public function getTask(): TaskBase {
+  public function getTask(): Task {
     return $this->task;
   }
 

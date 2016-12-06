@@ -11,15 +11,15 @@ class InitiationTaskType {
   /** Initiation task type value */
   const TASK_TYPE = "initiation";
 
-  /** @var TaskBase Initiation task */
+  /** @var Task Initiation task */
   private $task;
 
   /**
    * Checks and store initiation task.
-   * @param TaskBase $task
+   * @param Task $task
    * @throws JobConfigLoadingException
    */
-  public function __construct(TaskBase $task) {
+  public function __construct(Task $task) {
     if (!$task->isInitiationTask()) {
       throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
     }
@@ -29,9 +29,9 @@ class InitiationTaskType {
 
   /**
    * Get initiation task which was given and checked during construction.
-   * @return TaskBase
+   * @return Task
    */
-  public function getTask(): TaskBase {
+  public function getTask(): Task {
     return $this->task;
   }
 

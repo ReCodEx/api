@@ -15,7 +15,7 @@ class Builder {
    * @param array $data
    * @return SubmissionHeader
    */
-  private function buildSubmissionHeader($data) {
+  public function buildSubmissionHeader($data) {
     $header = new SubmissionHeader;
 
     if (!isset($data[SubmissionHeader::JOB_ID_KEY])) {
@@ -47,7 +47,7 @@ class Builder {
     return $header;
   }
 
-  private function buildBoundDirectoryConfig($data) {
+  public function buildBoundDirectoryConfig($data) {
     $boundDir = new BoundDirectoryConfig;
 
     if (!isset($data[BoundDirectoryConfig::SRC_KEY])) {
@@ -73,8 +73,12 @@ class Builder {
     return $boundDir;
   }
 
-  private function buildLimits($data) {
+  public function buildLimits($data) {
     $limits = new Limits;
+
+    if (!is_array($data)) {
+      throw new JobConfigLoadingException("Limits are not array");
+    }
 
     if (!isset($data[Limits::HW_GROUP_ID_KEY])) {
       throw new JobConfigLoadingException("Sandbox limits section does not contain required field '" . Limits::HW_GROUP_ID_KEY . "'");
@@ -136,7 +140,7 @@ class Builder {
 
     if (isset($data[Limits::BOUND_DIRECTORIES_KEY]) && is_array($data[Limits::BOUND_DIRECTORIES_KEY])) {
       foreach ($data[Limits::BOUND_DIRECTORIES_KEY] as $dir) {
-        $this->boundDirectories[] = $this->buildBoundDirectoryConfig($dir);
+        $limits->addBoundDirectory($this->buildBoundDirectoryConfig($dir));
       }
       unset($data[Limits::BOUND_DIRECTORIES_KEY]);
     }
@@ -147,7 +151,7 @@ class Builder {
     return $limits;
   }
 
-  private function buildSandboxConfig($data) {
+  public function buildSandboxConfig($data) {
     $sandboxConfig = new SandboxConfig;
 
     if (!isset($data[SandboxConfig::NAME_KEY])) {
@@ -179,6 +183,8 @@ class Builder {
       foreach ($data[SandboxConfig::LIMITS_KEY] as $lim) {
         $sandboxConfig->setLimits($this->buildLimits($lim));
       }
+    } elseif (isset($data[SandboxConfig::LIMITS_KEY]) && !is_array($data[SandboxConfig::LIMITS_KEY])) {
+      throw new JobConfigLoadingException("List of limits is not array");
     }
 
     // *** LOAD ALL REMAINING INFO
@@ -186,7 +192,7 @@ class Builder {
     return $sandboxConfig;
   }
 
-  private function buildTask($data) {
+  public function buildTask($data) {
     $task = new Task;
 
     // *** LOAD MANDATORY ITEMS
@@ -242,12 +248,13 @@ class Builder {
     }
 
     if (isset($data[Task::SANDBOX_KEY])) {
-      $this->setSandboxConfig($this->buildSandboxConfig($data[Task::SANDBOX_KEY]));
+      $task->setSandboxConfig($this->buildSandboxConfig($data[Task::SANDBOX_KEY]));
       unset($data[Task::SANDBOX_KEY]);
     }
 
     // *** LOAD REMAINING DATA
     $task->setAdditionalData($data);
+    return $task;
   }
 
   /**
@@ -255,7 +262,7 @@ class Builder {
    * @param array $data
    * @return JobConfig
    */
-  public function build($data) {
+  public function buildJobConfig($data) {
     $config = new JobConfig;
 
     if (!is_array($data)) {
@@ -280,5 +287,6 @@ class Builder {
 
     // finally maintain forward compatibility
     $config->setAdditionalData($data);
+    return $config;
   }
 }

@@ -141,7 +141,7 @@ class Storage {
       throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
     }
 
-    return $this->jobBuilder->build($parsedConfig);
+    return $this->jobBuilder->buildJobConfig($parsedConfig);
   }
 
 }
