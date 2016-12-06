@@ -192,7 +192,7 @@ class SubmissionHeader {
    * Serialize the config.
    * @return string
    */
-  public function __toString(): string {
+  public function __toString() {
     return Yaml::dump($this->toArray());
   }
 

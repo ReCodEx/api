@@ -279,10 +279,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $evaluationStarted = TRUE;
     $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
+    $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
+      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+
+    /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("setJobId")->withArgs([Submission::JOB_TYPE, Mockery::any()])->andReturn()->once()
-      ->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
       ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->once()
       ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
       ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
@@ -357,10 +362,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $tasksCount = 5;
     $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
+    $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
+      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+
+    /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("setJobId")->withArgs([Submission::JOB_TYPE, Mockery::any()])->andReturn()->once()
-      ->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
       ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->zeroOrMoreTimes()
       ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
       ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();

@@ -58,7 +58,7 @@ class TestJobConfig extends Tester\TestCase
   public function testInvalidJobType() {
     $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
-      $jobConfig->setJobId("XY_Z", "ratataId");
+      $jobConfig->setJobId("XY_ratataId");
     }, JobConfigLoadingException::CLASS);
   }
 

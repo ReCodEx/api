@@ -417,7 +417,7 @@ class AssignmentsPresenter extends BasePresenter {
     // get the job config with correct job id
     $path = $runtimeConfiguration->getJobConfigFilePath();
     $jobConfig = $this->jobConfigs->getJobConfig($path);
-    $jobConfig->setJobId(Submission::JOB_TYPE, $submission->getId());
+    $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
     $resultsUrl = NULL;
 
     try {

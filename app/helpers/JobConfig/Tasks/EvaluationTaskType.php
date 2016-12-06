@@ -11,7 +11,7 @@ class EvaluationTaskType {
   /** Evaluation task type value */
   const TASK_TYPE = "evaluation";
 
-  /** @var TaskBase Evaluation task */
+  /** @var Task Evaluation task */
   private $task;
 
   /**

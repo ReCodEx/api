@@ -82,7 +82,7 @@ class JobConfig {
 
   /**
    * Returns the tasks of this configuration
-   * @return Task[] The tasks with instances of InternalTask and ExternalTask
+   * @return Task[] Structures with metadata describing job tasks
    */
   public function getTasks(): array {
     return $this->tasks;
@@ -178,7 +178,7 @@ class JobConfig {
           if (!$sandboxConfig->hasLimits($hwGroupId)) {
             throw new ForbiddenRequestException("It's not allowed to set limits for new hwgroup.");
           }
-          
+
           // TODO: should this really be merge?
           $newTaskLimits = array_merge(
             $sandboxConfig->getLimits($hwGroupId)->toArray(),
