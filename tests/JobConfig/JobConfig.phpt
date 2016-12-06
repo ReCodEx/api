@@ -16,7 +16,6 @@ class TestJobConfig extends Tester\TestCase
     "submission" => [
       "job-id" => "student_bla bla bla",
       "file-collector" => "url://url.url",
-      "language" => "cpp",
       "log" => "true",
       "hw-groups" => [ "A" ]
     ],
