@@ -119,6 +119,7 @@ class TestExercisesPresenter extends Tester\TestCase
       ['action' => 'updateDetail', 'id' => $exercise->id],
       [
         'name' => 'new name',
+        'version' => 1,
         'difficulty' => 'super hard',
         'isPublic' => FALSE,
         'description' => 'some neaty description',

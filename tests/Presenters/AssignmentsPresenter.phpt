@@ -111,6 +111,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
       [
         'name' => $name,
         'isPublic' => $isPublic,
+        'version' => 1,
         'localizedAssignments' => $localizedAssignments,
         'firstDeadline' => $firstDeadline,
         'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,

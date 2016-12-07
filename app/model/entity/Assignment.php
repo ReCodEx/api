@@ -54,6 +54,7 @@ class Assignment implements JsonSerializable
     $this->scoreConfig = "";
     $this->localizedAssignments = $exercise->getLocalizedAssignments();
     $this->canViewLimitRatios = $canViewLimitRatios;
+    $this->version = 1;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {

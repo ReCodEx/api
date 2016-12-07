@@ -189,13 +189,14 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
+    $req = $this->getRequest();
     $version = intval($req->getPost("version"));
-    if ($version !== $exercise->getVersion()) {
-      throw new BadRequestException("The exercise was edited in the meantime and the version has changed. Current version is {$exercise->getVersion()}."); // @todo better exception
+    if ($version !== $assignment->getVersion()) {
+      throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."); // @todo better exception
     }
 
-    $req = $this->getRequest();
     $assignment->setName($req->getPost("name"));
+    $assignment->incrementVersion();
     $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));
