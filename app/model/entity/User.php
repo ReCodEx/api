@@ -30,8 +30,7 @@ class User implements JsonSerializable
     $this->lastName = $lastName;
     $this->degreesBeforeName = $degreesBeforeName;
     $this->degreesAfterName = $degreesAfterName;
-    $this->email = $email;
-    $this->avatarUrl = Gravatar::image($email, 200, "retro", "g", "png", true, false);
+    $this->setEmail($email);
     $this->isVerified = FALSE;
     $this->isAllowed = TRUE;
     $this->memberships = new ArrayCollection;
@@ -82,6 +81,11 @@ class User implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $email;
+
+  public function setEmail($email) {
+    $this->email = $email;
+    $this->avatarUrl = Gravatar::image($email, 200, "retro", "g", "png", true, false);
+  }
 
   /**
    * @ORM\Column(type="string")
