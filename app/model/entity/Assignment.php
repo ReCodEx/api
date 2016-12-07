@@ -86,6 +86,18 @@ class Assignment implements JsonSerializable
   protected $name;
 
   /**
+   * @ORM\Column(type="integer")
+   */
+  protected $version;
+
+  /**
+   * Increment version number.
+   */
+  public function incrementVersion() {
+    $this->version++;
+  }
+
+  /**
    * @ORM\Column(type="boolean")
    */
   protected $isPublic;
@@ -296,6 +308,7 @@ class Assignment implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
+      "version" => $this->version,
       "isPublic" => $this->isPublic,
       "localizedAssignments" => $this->localizedAssignments->getValues(),
       "groupId" => $this->group->getId(),

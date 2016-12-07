@@ -167,6 +167,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @POST
    * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
@@ -186,6 +187,11 @@ class AssignmentsPresenter extends BasePresenter {
     if (!$assignment->canAccessAsSupervisor($user)
         && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot update this assignment.");
+    }
+
+    $version = intval($req->getPost("version"));
+    if ($version !== $exercise->getVersion()) {
+      throw new BadRequestException("The exercise was edited in the meantime and the version has changed. Current version is {$exercise->getVersion()}."); // @todo better exception
     }
 
     $req = $this->getRequest();
@@ -231,6 +237,30 @@ class AssignmentsPresenter extends BasePresenter {
     $this->assignments->flush();
 
     $this->sendSuccessResponse($assignment);
+  }
+
+  /**
+   * Check if the version of the assignment is up-to-date.
+   * @POST
+   * @UserIsAllowed(assignments="update")
+   * @Param(type="post", name="version", validation="", description="Version of the assignment.")
+   * @param string $id Identifier of the assignment
+   */
+  public function actionValidate($id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->getCurrentUser();
+
+    if (!$assignment->canAccessAsSupervisor($user)
+        && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You cannot access this assignment.");
+    }
+
+    $req = $this->getHttpRequest();
+    $version = intval($req->getPost("version"));
+
+    $this->sendSuccessResponse([
+      "versionIsUpToDate" => $assignment->getVersion() === $version
+    ]);
   }
 
   /**

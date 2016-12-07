@@ -93,6 +93,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
+    $router[] = new PostRoute("$prefix/<id>/validate", "Exercises:validate");
 
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
@@ -114,6 +115,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
     $router[] = new GetRoute("$prefix/<id>/limits", "Assignments:getLimits");
     $router[] = new PostRoute("$prefix/<id>/limits", "Assignments:setLimits");
+    $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
   }
 
   /**

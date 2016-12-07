@@ -108,6 +108,7 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
    * @Param(type="post", name="name", description="Name of exercise")
+   * @Param(type="post", name="version", description="Version of the edited exercise")
    * @Param(type="post", name="description", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
@@ -123,8 +124,13 @@ class ExercisesPresenter extends BasePresenter {
     // check if user can modify requested exercise
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+    }
+
+    $version = intval($req->getPost("version"));
+    if ($version !== $exercise->getVersion()) {
+      throw new BadRequestException("The exercise was edited in the meantime and the version has changed. Current version is {$exercise->getVersion()}."); // @todo better exception
     }
 
     // make changes to newly created excercise
@@ -169,6 +175,30 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Check if the version of the exercise is up-to-date.
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the exercise.")
+   * @param string $id Identifier of the exercise
+   */
+  public function actionValidate($id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $user = $this->getCurrentUser();
+
+    if (!$exercise->isAuthor($user)
+        && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You cannot access this assignment.");
+    }
+
+    $req = $this->getHttpRequest();
+    $version = intval($req->getPost("version"));
+
+    $this->sendSuccessResponse([
+      "versionIsUpToDate" => $exercise->getVersion() === $version
+    ]);
+  }
+
+  /**
    * Change runtime configuration of exercise.
    * Configurations can be added or deleted here, based on what is provided in arguments.
    * @POST
@@ -179,7 +209,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionUpdateRuntimeConfigs(string $id) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
