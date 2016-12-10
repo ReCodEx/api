@@ -154,26 +154,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testCreateAssignment()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $baseTaskData = [
-      'task-id' => 'anything',
-      'priority' => 42,
-      'fatal-failure' => false,
-      'cmd' => ['bin' => 'echo'],
-    ];
 
     $mockJobConfig->shouldReceive("getTests")->withAnyArgs()->andReturn([
       new JobConfig\TestConfig("test1", [
-        new JobConfig\Tasks\ExternalTask($baseTaskData + [
-          'type' => 'execution',
-          'sandbox' => ['name' => 'isolate', 'limits' => []]
-        ]),
-        new JobConfig\Tasks\InternalTask($baseTaskData + [
-          'type' => 'evaluation'
-        ])
+        (new JobConfig\Tasks\Task)->setType('execution')->setSandboxConfig((new JobConfig\SandboxConfig)->setName('isolate')),
+        (new JobConfig\Tasks\Task)->setType('evaluation')
       ])
     ]);
 
@@ -291,10 +280,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $evaluationStarted = TRUE;
     $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
+    $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
+      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+
+    /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("setJobId")->withArgs([Submission::JOB_TYPE, Mockery::any()])->andReturn()->once()
-      ->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
       ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->once()
       ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
       ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
@@ -369,10 +363,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $tasksCount = 5;
     $webSocketMonitorUrl = "webSocketMonitorUrl";
 
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
+    /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
+    $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
+      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+
+    /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("setJobId")->withArgs([Submission::JOB_TYPE, Mockery::any()])->andReturn()->once()
-      ->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(1)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->once()
       ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->zeroOrMoreTimes()
       ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
       ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();

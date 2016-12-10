@@ -4,61 +4,33 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\TestConfig;
-use App\Helpers\JobConfig\Tasks\TaskBase;
-use App\Helpers\JobConfig\Tasks\ExternalTask;
+use App\Helpers\JobConfig\Tasks\Task;
+use App\Helpers\JobConfig\SandboxConfig;
 use App\Exceptions\JobConfigLoadingException;
-
-
-class FakeTask extends TaskBase {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
-
-class FakeExternalTask extends ExternalTask {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
-
 
 class TestTestResult extends Tester\TestCase
 {
+  /** @var Task */
+  private $evaluationTask;
 
-  static $evaluation = [
-    "task-id" => "X",
-    "test-id" => "A",
-    "type" => "evaluation"
-  ];
-  static $execution = [
-    "task-id" => "Y",
-    "test-id" => "A",
-    "type" => "execution",
-    "sandbox" => [
-      "name" => "sandboxName",
-      "limits" => []
-    ]
-  ];
+  /** @var Task */
+  private $executionTask;
+
+  protected function setUp() {
+    $this->evaluationTask = (new Task)->setId("X")->setTestId("A")->setType("evaluation");
+    $this->executionTask = (new Task)->setId("Y")->setTestId("A")->setType("execution")
+            ->setSandboxConfig((new SandboxConfig)->setName("sandboxName"));
+  }
 
   public function testMissingExecutionOrEvaluationTask() {
     Assert::exception(function () {
       new TestConfig(
         "some ID",
         [
-          new FakeTask([ "task-id" => "A" ]),
-          new FakeTask([ "task-id" => "B" ]),
-          new FakeTask([ "task-id" => "C" ]),
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          (new Task)->setId("B"),
+          (new Task)->setId("C"),
+          (new Task)->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -67,10 +39,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          new FakeTask([ "task-id" => "A" ]),
-          new FakeExternalTask(self::$execution),
-          new FakeTask([ "task-id" => "C" ]),
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->executionTask,
+          (new Task)->setId("C"),
+          (new Task)->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -79,10 +51,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          new FakeTask([ "task-id" => "A" ]),
-          new FakeTask([ "task-id" => "B" ]),
-          new FakeTask(self::$evaluation),
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          (new Task)->setId("B"),
+          $this->evaluationTask,
+          (new Task)->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -92,11 +64,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-        new FakeTask([ "task-id" => "A" ]),
-        new FakeExternalTask(self::$execution),
-        new FakeTask([ "task-id" => "C" ]),
-        new FakeTask(self::$evaluation),
-        new FakeTask([ "task-id" => "D" ])
+        (new Task)->setId("A"),
+        $this->executionTask,
+        (new Task)->setId("C"),
+        $this->evaluationTask,
+        (new Task)->setId("D")
       ]
     );
 
@@ -104,17 +76,14 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testExecutionOrEvaluationTasksAvailability() {
-    $exec = new FakeExternalTask(self::$execution);
-    $eval = new FakeTask(self::$evaluation);
-
     $cfg = new TestConfig(
       "some ID",
       [
-          new FakeTask([ "task-id" => "A" ]),
-          $exec,
-          new FakeTask([ "task-id" => "C" ]),
-          $eval,
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->executionTask,
+          (new Task)->setId("C"),
+          $this->evaluationTask,
+          (new Task)->setId("D")
       ]
     );
 

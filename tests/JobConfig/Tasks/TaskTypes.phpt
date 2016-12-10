@@ -3,58 +3,62 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Tasks\ExternalTask;
+use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\SandboxConfig;
+use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 use App\Exceptions\JobConfigLoadingException;
 
-class FakeExternalTask extends ExternalTask {
-  public function __construct(array $data) {
-    $data["task-id"] = "id";
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    $data["sandbox"] = [];
-    $data["sandbox"]["name"] = "sandboxName";
-    $data["sandbox"]["limits"] = [];
-    $data["sandbox"]["limits"][] = [ "hw-group-id" => "groupA", "time" => 1 ];
-    $data["sandbox"]["limits"][] = [ "hw-group-id" => "groupB", "time" => 2 ];
-
-    parent::__construct($data);
-  }
-}
-
 
 class TestTaskTypes extends Tester\TestCase
 {
+  static $cfg = [
+    "task-id" => "A",
+    "priority" => "1",
+    "fatal-failure" => "true",
+    "cmd" => [
+      "bin" => "cmdA"
+    ],
+    "sandbox" => [ "name" => "isolate", "limits" => [
+      [ "hw-group-id" => "groupA", "time" => 1 ],
+      [ "hw-group-id" => "groupB", "time" => 2 ]
+    ] ],
+    "forward" => "compatibility"
+  ];
+
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
 
   public function testBadTaskTypes() {
     Assert::exception(function() {
-      new InitiationTaskType(new FakeExternalTask(["type" => "execution"]));
+      new InitiationTaskType($this->builder->buildTask(self::$cfg)->setType("execution"));
     }, JobConfigLoadingException::class);
 
     Assert::exception(function() {
-      new ExecutionTaskType(new FakeExternalTask(["type" => "evaluation"]));
+      new ExecutionTaskType($this->builder->buildTask(self::$cfg)->setType("evaluation"));
     }, JobConfigLoadingException::class);
 
     Assert::exception(function() {
-      new EvaluationTaskType(new FakeExternalTask(["type" => "initiation"]));
+      new EvaluationTaskType($this->builder->buildTask(self::$cfg)->setType("initiation"));
     }, JobConfigLoadingException::class);
   }
 
   public function testParsingInitEval() {
-    $initiation = new InitiationTaskType(new FakeExternalTask(["type" => "initiation"]));
+    $initiation = new InitiationTaskType($this->builder->buildTask(self::$cfg)->setType("initiation"));
     Assert::true($initiation->getTask()->isInitiationTask());
 
-    $evaluation = new EvaluationTaskType(new FakeExternalTask(["type" => "evaluation"]));
+    $evaluation = new EvaluationTaskType($this->builder->buildTask(self::$cfg)->setType("evaluation"));
     Assert::true($evaluation->getTask()->isEvaluationTask());
   }
 
   public function testParsingExecution() {
-    $execution = new ExecutionTaskType(new FakeExternalTask(["type" => "execution"]));
+    $execution = new ExecutionTaskType($this->builder->buildTask(self::$cfg)->setType("execution"));
     Assert::true($execution->getTask()->isExecutionTask());
 
     Assert::equal("groupA", $execution->getLimits("groupA")->getId());

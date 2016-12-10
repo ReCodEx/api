@@ -5,6 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Helpers\JobConfig\SubmissionHeader;
+use App\Helpers\JobConfig\Builder;
 
 
 class TestSubmissionHeader extends Tester\TestCase
@@ -12,12 +13,18 @@ class TestSubmissionHeader extends Tester\TestCase
   static $minimalConfig = [
     "job-id" => "id123",
     "file-collector" => "https://collector",
-    "language" => "cpp",
     "hw-groups" => [ "A", "B" ]
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testValidConstructionRequired() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
     Assert::equal("id123", $header->getId());
     Assert::equal("student", $header->getType());
     Assert::equal("student_id123", $header->getJobId());
@@ -28,7 +35,7 @@ class TestSubmissionHeader extends Tester\TestCase
     $config = self::$minimalConfig;
     $config["somekey"] = "somevalue";
     $config["otherkey"] = "othervalue";
-    $header = new SubmissionHeader($config);
+    $header = $this->builder->buildSubmissionHeader($config);
     Assert::equal(array("somekey" => "somevalue", "otherkey" => "othervalue"), $header->getAdditionalData());
   }
 
@@ -37,7 +44,7 @@ class TestSubmissionHeader extends Tester\TestCase
     $config["job-id"] = "wrtype_id";
     Assert::exception(
       function() use ($config) {
-        new SubmissionHeader($config);
+        $this->builder->buildSubmissionHeader($config);
       }, JobConfigLoadingException::CLASS
     );
   }
@@ -47,7 +54,7 @@ class TestSubmissionHeader extends Tester\TestCase
     $config["hw-groups"] = "bla bla";
     Assert::exception(
       function() use ($config) {
-        new SubmissionHeader($config);
+        $this->builder->buildSubmissionHeader($config);
       }, JobConfigLoadingException::CLASS
     );
   }
@@ -57,13 +64,13 @@ class TestSubmissionHeader extends Tester\TestCase
     unset($config["hw-groups"]);
     Assert::exception(
       function() use ($config) {
-        new SubmissionHeader($config);
+        $this->builder->buildSubmissionHeader($config);
       }, JobConfigLoadingException::CLASS
     );
   }
 
   public function testAddingHardwareGroups() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
 
     $header->addHardwareGroup("C");
     Assert::equal([ "A", "B", "C" ], $header->getHardwareGroups());
@@ -73,7 +80,7 @@ class TestSubmissionHeader extends Tester\TestCase
   }
 
   public function testRemovingHardwareGroups() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
 
     $header->removeHardwareGroup("B");
     Assert::equal([ "A" ], $header->getHardwareGroups());
@@ -83,7 +90,7 @@ class TestSubmissionHeader extends Tester\TestCase
   }
 
   public function testSetJobId() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
     Assert::equal("id123", $header->getId());
     $header->setId("mojeid");
     Assert::equal("mojeid", $header->getId());
@@ -100,28 +107,21 @@ class TestSubmissionHeader extends Tester\TestCase
   }
 
   public function testSetFileCollector() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
     Assert::equal("https://collector", $header->getFileCollector());
     $header->setFileCollector("https://new.collector");
     Assert::equal("https://new.collector", $header->getFileCollector());
   }
 
-  public function testSetLanguage() {
-    $header = new SubmissionHeader(self::$minimalConfig);
-    Assert::equal("cpp", $header->getLanguage());
-    $header->setLanguage("newspeak");
-    Assert::equal("newspeak", $header->getLanguage());
-  }
-
   public function testSetHardwareGroups() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
     Assert::equal(["A", "B"], $header->getHardwareGroups());
     $header->setHardwareGroups(["A", "C"]);
     Assert::equal(["A", "C"], $header->getHardwareGroups());
   }
 
   public function testSetLog() {
-    $header = new SubmissionHeader(self::$minimalConfig);
+    $header = $this->builder->buildSubmissionHeader(self::$minimalConfig);
     Assert::false($header->getLog());
     $header->setLog(TRUE);
     Assert::true($header->getLog());
@@ -131,12 +131,11 @@ class TestSubmissionHeader extends Tester\TestCase
     $config = self::$minimalConfig;
     $config["somekey"] = "somevalue";
     $config["otherkey"] = "othervalue";
-    $header = new SubmissionHeader($config);
+    $header = $this->builder->buildSubmissionHeader($config);
 
     $expected = [
       "job-id" => "student_id123",
       "file-collector" => "https://collector",
-      "language" => "cpp",
       "log" => "false",
       "hw-groups" => [ "A", "B" ],
       "somekey" => "somevalue",

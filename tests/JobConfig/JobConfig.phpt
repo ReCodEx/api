@@ -5,8 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Model\Entity\SubmissionEvaluation;
-use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\Builder;
 use Symfony\Component\Yaml\Yaml;
 use App\Helpers\JobConfig\UndefinedLimits;
 use App\Helpers\JobConfig\Limits;
@@ -17,7 +16,6 @@ class TestJobConfig extends Tester\TestCase
     "submission" => [
       "job-id" => "student_bla bla bla",
       "file-collector" => "url://url.url",
-      "language" => "cpp",
       "log" => "true",
       "hw-groups" => [ "A" ]
     ],
@@ -30,8 +28,15 @@ class TestJobConfig extends Tester\TestCase
     ]
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testSerialization() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $data = Yaml::parse((string) $jobConfig);
     Assert::type("array", $data["submission"]);
     Assert::type("array", $data["tasks"]);
@@ -39,57 +44,57 @@ class TestJobConfig extends Tester\TestCase
   }
 
   public function testUpdateJobId() {
-    $jobConfig = new JobConfig(self::$jobConfig);
-    Assert::equal("student", $jobConfig->getType());
-    Assert::equal("bla bla bla", $jobConfig->getId());
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    Assert::equal("student", $jobConfig->getSubmissionHeader()->getType());
+    Assert::equal("bla bla bla", $jobConfig->getSubmissionHeader()->getId());
     Assert::equal("student_bla bla bla", $jobConfig->getJobId());
-    $jobConfig->setJobId("reference", "ratataId");
-    Assert::equal("reference", $jobConfig->getType());
-    Assert::equal("ratataId", $jobConfig->getId());
+    $jobConfig->setJobId("reference_ratataId");
+    Assert::equal("reference", $jobConfig->getSubmissionHeader()->getType());
+    Assert::equal("ratataId", $jobConfig->getSubmissionHeader()->getId());
     Assert::equal("reference_ratataId", $jobConfig->getJobId());
   }
 
   public function testInvalidJobType() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
-      $jobConfig->setJobId("XY_Z", "ratataId");
+      $jobConfig->setJobId("XY_ratataId");
     }, JobConfigLoadingException::CLASS);
   }
 
   public function testUpdateJobIdInSerializedConfig() {
-    $jobConfig = new JobConfig(self::$jobConfig);
-    $jobConfig->setJobId("reference", "ratataId");
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig->setJobId("reference_ratataId");
     $data = Yaml::parse((string) $jobConfig);
     Assert::equal("reference_ratataId", $data["submission"]["job-id"]);
   }
 
   public function testUpdateFileCollector() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     Assert::equal("url://url.url", $jobConfig->getFileCollector());
     $jobConfig->setFileCollector("url://file.collector.recodex");
     Assert::equal("url://file.collector.recodex", $jobConfig->getFileCollector());
   }
 
   public function testUpdateFileCollectorInSerializedConfig() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $jobConfig->setFileCollector("url://file.collector.recodex");
     $data = Yaml::parse((string) $jobConfig);
     Assert::equal("url://file.collector.recodex", $data["submission"]["file-collector"]);
   }
 
   public function testTasksCount() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     Assert::equal(2, $jobConfig->getTasksCount());
   }
 
   public function testGetTasks() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $tasks = $jobConfig->getTasks();
     Assert::equal(2, count($tasks));
   }
 
   public function testGetTests() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $tests = $jobConfig->getTests();
     Assert::equal(1, count($tests));
   }
@@ -97,7 +102,7 @@ class TestJobConfig extends Tester\TestCase
   public function testRemoveLimits() {
     $hwGroup = "A";
 
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $jobConfig->removeLimits($hwGroup);
 
     // test for infinite limits which are set in remove limits
@@ -111,15 +116,15 @@ class TestJobConfig extends Tester\TestCase
   public function testSetLimits() {
     $taskId = "Y";
     $hwGroup = "A";
-    $limits = [ "hw-group-id" => $hwGroup, "time" => "987", "memory" => "654" ];
-    $testLimits = [ $taskId => $limits ];
+    $limits = (new Limits)->setId($hwGroup)->setTimeLimit(987.0)->setMemoryLimit(654);
+    $testLimits = [ $taskId => $limits->toArray() ];
 
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $jobConfig->setLimits($hwGroup, $testLimits);
 
     // test for expected limits which should be set
     foreach ($jobConfig->getTests() as $test) {
-      Assert::equal(new Limits($testLimits[$taskId]), $test->getLimits($hwGroup)[$taskId]);
+      Assert::equal($limits, $test->getLimits($hwGroup)[$taskId]);
     }
 
     Assert::exception(function() use ($jobConfig, $testLimits) {

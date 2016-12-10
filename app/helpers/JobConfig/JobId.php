@@ -29,11 +29,7 @@ class JobId {
     }
   }
 
-  /**
-   * Create job ID from given textual description.
-   * @param string $jobId
-   */
-  public function __construct(string $jobId) {
+  private function parse($jobId) {
     if (!strpos($jobId, self::SEPARATOR)) {
       $this->id = $jobId;
       $this->type = "student";
@@ -44,13 +40,11 @@ class JobId {
   }
 
   /**
-   * Set type and identification of a job.
-   * @param string $type Type of a job
-   * @param string $id Identification of a job
+   * Create job ID from given textual description.
+   * @param string $jobId
    */
-  public function setJobId(string $type, string $id) {
-    $this->setType($type);
-    $this->setId($id);
+  public function __construct(string $jobId = "") {
+    $this->parse($jobId);
   }
 
   /**
@@ -59,6 +53,15 @@ class JobId {
    */
   public function getJobId(): string {
     return $this->type . self::SEPARATOR . $this->id;
+  }
+
+  /**
+   * Set type and identification of a job.
+   * @param string $jobId Identification of a job
+   */
+  public function setJobId(string $jobId) {
+    $this->parse($jobId);
+    return $this;
   }
 
   /**
@@ -75,6 +78,7 @@ class JobId {
    */
   public function setId(string $id) {
     $this->id = $id;
+    return $this;
   }
 
   /**
@@ -92,6 +96,7 @@ class JobId {
   public function setType(string $type) {
     $this->checkTypeValidity($type);
     $this->type = $type;
+    return $this;
   }
 
   /**

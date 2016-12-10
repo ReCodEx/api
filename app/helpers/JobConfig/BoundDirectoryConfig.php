@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-use App\Exceptions\JobConfigLoadingException;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -17,42 +16,13 @@ class BoundDirectoryConfig {
   const MODE_KEY = "mode";
 
   /** @var string Source folder for bound directory */
-  private $source;
+  private $source = "";
   /** @var string Destination folder for bound directory */
-  private $destination;
+  private $destination = "";
   /** @var string Mode in which folder is loaded */
-  private $mode;
+  private $mode = "";
   /** @var array Additional data */
-  private $data;
-
-  /**
-   * Construct BoundDirectory from given structured configuration.
-   * @param array $data Structured configuration
-   * @throws JobConfigLoadingException In case of any parsing error
-   */
-  public function __construct(array $data) {
-
-    if (!isset($data[self::SRC_KEY])) {
-      throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::SRC_KEY . "'");
-    }
-    $this->source = $data[self::SRC_KEY];
-    unset($data[self::SRC_KEY]);
-
-    if (!isset($data[self::DST_KEY])) {
-      throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::DST_KEY . "'");
-    }
-    $this->destination = $data[self::DST_KEY];
-    unset($data[self::DST_KEY]);
-
-    if (!isset($data[self::MODE_KEY])) {
-      throw new JobConfigLoadingException("Bound directory does not contain required field '" . self::MODE_KEY . "'");
-    }
-    $this->mode = $data[self::MODE_KEY];
-    unset($data[self::MODE_KEY]);
-
-    // *** LOAD REMAINING DATA
-    $this->data = $data;
-  }
+  private $data = [];
 
   /**
    * Get source folder for bound directory.
@@ -60,6 +30,11 @@ class BoundDirectoryConfig {
    */
   public function getSource(): string {
     return $this->source;
+  }
+
+  public function setSource($src) {
+    $this->source = $src;
+    return $this;
   }
 
   /**
@@ -70,12 +45,31 @@ class BoundDirectoryConfig {
     return $this->destination;
   }
 
+  public function setDestination($dst) {
+    $this->destination = $dst;
+    return $this;
+  }
+
   /**
    * Get mounting mode of bounded directory.
    * @return string
    */
   public function getMode(): string {
     return $this->mode;
+  }
+
+  public function setMode($mode) {
+    $this->mode = $mode;
+    return $this;
+  }
+
+  public function getAdditionalData() {
+    return $this->data;
+  }
+
+  public function setAdditionalData($data) {
+    $this->data = $data;
+    return $this;
   }
 
   /**

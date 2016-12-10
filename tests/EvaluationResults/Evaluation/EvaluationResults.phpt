@@ -4,16 +4,15 @@ include '../../bootstrap.php';
 
 use Tester\Assert;
 
+use App\Helpers\JobConfig\Builder;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 
 use App\Helpers\EvaluationResults\EvaluationResults;
-use App\Helpers\EvaluationResults\TaskResult;
 use App\Helpers\EvaluationResults\TestResult;
 
-use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
 
 class TestEvaluationResults extends Tester\TestCase
@@ -57,8 +56,15 @@ class TestEvaluationResults extends Tester\TestCase
     ]
   ];
 
+  /** @var Builder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new Builder;
+  }
+
   public function testMissingParams() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
 
     // empty document
     Assert::exception(function () use ($jobConfig) {
@@ -120,7 +126,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationOK() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
       "hw-group" => "whatever",
@@ -135,7 +141,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfSkippedTask() {
-    $jobConfig = new JobConfig([
+    $jobConfig = $this->builder->buildJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -172,7 +178,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfFailedTask() {
-    $jobConfig = new JobConfig([
+    $jobConfig = $this->builder->buildJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -209,7 +215,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfMissingTaskInitResult() {
-    $jobConfig = new JobConfig([
+    $jobConfig = $this->builder->buildJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -246,7 +252,7 @@ class TestEvaluationResults extends Tester\TestCase
 
 
   public function testSimpleGetTestResult() {
-    $jobConfig = new JobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
     $initRes = [ "task-id" => "W", "status" => "OK" ];
     $execRes = [
       "task-id" => "X",

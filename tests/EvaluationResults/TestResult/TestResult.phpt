@@ -3,40 +3,16 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
+use App\Helpers\JobConfig\Builder as JobConfigBuilder;
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
 use App\Helpers\EvaluationResults\TestResult as TR;
 use App\Helpers\EvaluationResults\TaskResult;
-use App\Helpers\JobConfig\Tasks\TaskBase;
-use App\Helpers\JobConfig\Tasks\ExternalTask;
+use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
 use App\Exceptions\ResultsLoadingException;
-
-
-class FakeTask extends TaskBase {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
-
-
-class FakeExternalTask extends ExternalTask {
-  public function __construct(array $data) {
-    $data["priority"] = 1;
-    $data["fatal-failure"] = true;
-    $data["cmd"] = [];
-    $data["cmd"]["bin"] = "cmd";
-
-    parent::__construct($data);
-  }
-}
 
 
 class TestTestResult extends Tester\TestCase
@@ -45,13 +21,19 @@ class TestTestResult extends Tester\TestCase
   static $evalCfg = [
     "task-id" => "X",
     "test-id" => "A",
-    "type" => EvaluationTaskType::TASK_TYPE
+    "type" => EvaluationTaskType::TASK_TYPE,
+    "priority" => 1,
+    "fatal-failure" => false,
+    "cmd" => [ "bin" => "a.out" ]
   ];
 
   static $execCfg = [
     "task-id" => "Y",
     "test-id" => "A",
     "type" => ExecutionTaskType::TASK_TYPE,
+    "priority" => 2,
+    "fatal-failure" => false,
+    "cmd" => [ "bin" => "a.out" ],
     "sandbox" => [
       "name" => "isolate",
       "limits" => [
@@ -86,6 +68,13 @@ class TestTestResult extends Tester\TestCase
     ]
   ];
 
+  /** @var JobConfigBuilder */
+  private $builder;
+
+  public function __construct() {
+    $this->builder = new JobConfigBuilder;
+  }
+
 
   public function testCalculateStatus() {
     Assert::equal(TR::STATUS_OK,        TR::calculateStatus(TR::STATUS_OK, TR::STATUS_OK));
@@ -100,16 +89,14 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testOKTest() {
-    $exec = new FakeExternalTask(self::$execCfg);
-    $eval = new FakeTask(self::$evalCfg);
     $cfg = new TestConfig(
       "some ID",
       [
-          new FakeTask([ "task-id" => "A" ]),
-          $exec,
-          new FakeTask([ "task-id" => "C" ]),
-          $eval,
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->builder->buildTask(self::$execCfg),
+          (new Task)->setId("C"),
+          $this->builder->buildTask(self::$evalCfg),
+          (new Task)->setId("D")
       ]
     );
 
@@ -133,17 +120,14 @@ class TestTestResult extends Tester\TestCase
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
     $execCfg["sandbox"]["limits"][0]["time"] = 0.01;
 
-    $exec = new FakeExternalTask($execCfg);
-    $eval = new FakeTask(self::$evalCfg);
-
     $cfg = new TestConfig(
       "some ID",
       [
-          new FakeTask([ "task-id" => "A" ]),
-          $exec,
-          new FakeTask([ "task-id" => "C" ]),
-          $eval,
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->builder->buildTask($execCfg),
+          (new Task)->setId("C"),
+          $this->builder->buildTask(self::$evalCfg),
+          (new Task)->setId("D")
       ]
     );
 
@@ -162,17 +146,14 @@ class TestTestResult extends Tester\TestCase
   }
 
   public function testFailedTestBecauseOfFailedExecution() {
-    $exec = new FakeExternalTask(self::$execCfg);
-    $eval = new FakeTask(self::$evalCfg);
-
     $cfg = new TestConfig(
       "some ID",
       [
-          new FakeTask([ "task-id" => "A" ]),
-          $exec,
-          new FakeTask([ "task-id" => "C" ]),
-          $eval,
-          new FakeTask([ "task-id" => "D" ])
+          (new Task)->setId("A"),
+          $this->builder->buildTask(self::$execCfg),
+          (new Task)->setId("C"),
+          $this->builder->buildTask(self::$evalCfg),
+          (new Task)->setId("D")
       ]
     );
 

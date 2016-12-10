@@ -5,7 +5,7 @@ use App\Exceptions\JobConfigLoadingException;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
-use App\Helpers\JobConfig\Tasks\TaskBase;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -75,7 +75,7 @@ class TestConfig {
   }
 
   /**
-   * Get array of initiation tasks (TaskBase).
+   * Get array of initiation tasks (Task).
    */
   public function getInitiationTasks(): array {
     $tasks = [];
@@ -86,7 +86,7 @@ class TestConfig {
   }
 
   /**
-   * Get array of execution tasks (TaskBase).
+   * Get array of execution tasks (Task).
    */
   public function getExecutionTasks(): array {
     $tasks = [];
@@ -99,7 +99,7 @@ class TestConfig {
   /**
    * Get the only one evaluation task.
    */
-  public function getEvaluationTask(): TaskBase {
+  public function getEvaluationTask(): Task {
     return $this->evaluationTaskType->getTask();
   }
 }

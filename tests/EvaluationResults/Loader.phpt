@@ -5,6 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 
 use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\Builder as JobConfigBuilder;
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
 
 use App\Helpers\EvaluationResults\Loader;
@@ -25,7 +26,7 @@ class TestEvaluationResultsLoader extends Tester\TestCase
   private $jobConfigStorage;
 
   protected function setUp() {
-    $this->jobConfigStorage = new JobConfigStorage();
+    $this->jobConfigStorage = new JobConfigStorage(new JobConfigBuilder);
   }
 
   public function testCanLoadSuccessResult() {
