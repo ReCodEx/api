@@ -136,7 +136,7 @@ services:
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
   - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
   - App\Helpers\JobConfig\Storage
-  - App\Helpers\JobConfig\Builder
+  - App\Helpers\JobConfig\Loader
   - App\Helpers\SimpleScoreCalculator
   - App\Helpers\ScoreCalculatorAccessor({
     simple: @App\Helpers\SimpleScoreCalculator

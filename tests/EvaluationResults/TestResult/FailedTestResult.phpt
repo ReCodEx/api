@@ -5,7 +5,7 @@ include '../../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
 use App\Helpers\EvaluationResults\FailedTestResult;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
@@ -42,11 +42,11 @@ class TestFailedTestResult extends Tester\TestCase
     ]
   ];
 
-  /** @var Builder */
+  /** @var Loader */
   private $builder;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->builder = new Loader;
   }
 
   public function testOKTest() {
@@ -54,9 +54,9 @@ class TestFailedTestResult extends Tester\TestCase
       "some ID",
       [
           (new Task)->setId("A"),
-          $this->builder->buildTask(self::$execCfg),
+          $this->builder->loadTask(self::$execCfg),
           (new Task)->setId("C"),
-          $this->builder->buildTask(self::$evalCfg),
+          $this->builder->loadTask(self::$evalCfg),
           (new Task)->setId("D")
       ]
     );

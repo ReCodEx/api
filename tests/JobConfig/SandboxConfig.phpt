@@ -3,7 +3,7 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Limits;
 use App\Helpers\JobConfig\UndefinedLimits;
@@ -28,18 +28,18 @@ class TestSandboxConfig extends Tester\TestCase
     ]
   ];
 
-  /** @var Builder */
+  /** @var Loader */
   private $builder;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->builder = new Loader;
   }
 
   public function testMissingSandboxName() {
     Assert::exception(function () {
       $data = self::$cfg;
       unset($data["name"]);
-      $this->builder->buildSandboxConfig($data);
+      $this->builder->loadSandboxConfig($data);
     }, JobConfigLoadingException::class);
   }
 
@@ -48,12 +48,12 @@ class TestSandboxConfig extends Tester\TestCase
       $data = self::$cfg;
       unset($data["limits"]);
       $data["limits"] = "hello";
-      $this->builder->buildSandboxConfig($data);
+      $this->builder->loadSandboxConfig($data);
     }, JobConfigLoadingException::class);
   }
 
   public function testParsing() {
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     Assert::equal("sandboxName", $sandbox->getName());
     Assert::equal(NULL, $sandbox->getStdin());
     Assert::equal(NULL, $sandbox->getStdout());
@@ -65,7 +65,7 @@ class TestSandboxConfig extends Tester\TestCase
   }
 
   public function testOptional() {
-    $sandbox = $this->builder->buildSandboxConfig(self::$optional);
+    $sandbox = $this->builder->loadSandboxConfig(self::$optional);
     Assert::equal("optional", $sandbox->getName());
     Assert::equal("optStdin", $sandbox->getStdin());
     Assert::equal("optStdout", $sandbox->getStdout());
@@ -76,14 +76,14 @@ class TestSandboxConfig extends Tester\TestCase
   }
 
   public function testHasLimits() {
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     Assert::true($sandbox->hasLimits("idA"));
     Assert::true($sandbox->hasLimits("idB"));
     Assert::false($sandbox->hasLimits("nonExistingGroup"));
   }
 
   public function testGetLimits() {
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     Assert::true($sandbox->hasLimits("idA"));
     Assert::type(Limits::class, $sandbox->getLimits("idA"));
     Assert::equal("idA", $sandbox->getLimits("idA")->getId());
@@ -98,8 +98,8 @@ class TestSandboxConfig extends Tester\TestCase
   }
 
   public function testSetLimits() {
-    $limits = $this->builder->buildLimits([ "hw-group-id" => "newGroup" ]);
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "newGroup" ]);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     $sandbox->setLimits($limits);
 
     Assert::type(Limits::class, $sandbox->getLimits("newGroup"));
@@ -108,8 +108,8 @@ class TestSandboxConfig extends Tester\TestCase
   }
 
   public function testReplaceLimits() {
-    $limits = $this->builder->buildLimits([ "hw-group-id" => "idA", "time" => "25.5" ]);
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "idA", "time" => "25.5" ]);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
 
     Assert::true($sandbox->hasLimits("idA"));
     Assert::equal(0.0, $sandbox->getLimits("idA")->getTimeLimit());
@@ -120,7 +120,7 @@ class TestSandboxConfig extends Tester\TestCase
   }
 
   public function testRemoveLimits() {
-    $sandbox = $this->builder->buildSandboxConfig(self::$cfg);
+    $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     Assert::true($sandbox->hasLimits("idA"));
 
     $sandbox->removeLimits("idA");

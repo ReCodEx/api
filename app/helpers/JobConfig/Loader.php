@@ -8,14 +8,14 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  *
  */
-class Builder {
+class Loader {
 
   /**
    *
    * @param array $data
    * @return SubmissionHeader
    */
-  public function buildSubmissionHeader($data) {
+  public function loadSubmissionHeader($data) {
     $header = new SubmissionHeader;
 
     if (!isset($data[SubmissionHeader::JOB_ID_KEY])) {
@@ -46,7 +46,7 @@ class Builder {
     return $header;
   }
 
-  public function buildBoundDirectoryConfig($data) {
+  public function loadBoundDirectoryConfig($data) {
     $boundDir = new BoundDirectoryConfig;
 
     if (!isset($data[BoundDirectoryConfig::SRC_KEY])) {
@@ -72,7 +72,7 @@ class Builder {
     return $boundDir;
   }
 
-  public function buildLimits($data) {
+  public function loadLimits($data) {
     $limits = new Limits;
 
     if (!is_array($data)) {
@@ -139,7 +139,7 @@ class Builder {
 
     if (isset($data[Limits::BOUND_DIRECTORIES_KEY]) && is_array($data[Limits::BOUND_DIRECTORIES_KEY])) {
       foreach ($data[Limits::BOUND_DIRECTORIES_KEY] as $dir) {
-        $limits->addBoundDirectory($this->buildBoundDirectoryConfig($dir));
+        $limits->addBoundDirectory($this->loadBoundDirectoryConfig($dir));
       }
       unset($data[Limits::BOUND_DIRECTORIES_KEY]);
     }
@@ -150,7 +150,7 @@ class Builder {
     return $limits;
   }
 
-  public function buildSandboxConfig($data) {
+  public function loadSandboxConfig($data) {
     $sandboxConfig = new SandboxConfig;
 
     if (!isset($data[SandboxConfig::NAME_KEY])) {
@@ -180,7 +180,7 @@ class Builder {
 
     if (isset($data[SandboxConfig::LIMITS_KEY]) && is_array($data[SandboxConfig::LIMITS_KEY])) {
       foreach ($data[SandboxConfig::LIMITS_KEY] as $lim) {
-        $sandboxConfig->setLimits($this->buildLimits($lim));
+        $sandboxConfig->setLimits($this->loadLimits($lim));
       }
     } elseif (isset($data[SandboxConfig::LIMITS_KEY]) && !is_array($data[SandboxConfig::LIMITS_KEY])) {
       throw new JobConfigLoadingException("List of limits is not array");
@@ -191,7 +191,7 @@ class Builder {
     return $sandboxConfig;
   }
 
-  public function buildTask($data) {
+  public function loadTask($data) {
     $task = new Task;
 
     // *** LOAD MANDATORY ITEMS
@@ -247,7 +247,7 @@ class Builder {
     }
 
     if (isset($data[Task::SANDBOX_KEY])) {
-      $task->setSandboxConfig($this->buildSandboxConfig($data[Task::SANDBOX_KEY]));
+      $task->setSandboxConfig($this->loadSandboxConfig($data[Task::SANDBOX_KEY]));
       unset($data[Task::SANDBOX_KEY]);
     }
 
@@ -261,7 +261,7 @@ class Builder {
    * @param array $data
    * @return JobConfig
    */
-  public function buildJobConfig($data) {
+  public function loadJobConfig($data) {
     $config = new JobConfig;
 
     if (!is_array($data)) {
@@ -272,7 +272,7 @@ class Builder {
     if (!isset($data[JobConfig::SUBMISSION_KEY])) {
       throw new JobConfigLoadingException("Job config does not contain the required '" . JobConfig::SUBMISSION_KEY . "' field.");
     }
-    $config->setSubmissionHeader($this->buildSubmissionHeader($data[JobConfig::SUBMISSION_KEY]));
+    $config->setSubmissionHeader($this->loadSubmissionHeader($data[JobConfig::SUBMISSION_KEY]));
     unset($data[JobConfig::SUBMISSION_KEY]);
 
     // parse and build list of tasks
@@ -280,7 +280,7 @@ class Builder {
       throw new JobConfigLoadingException("Job config does not contain the required '" . JobConfig::TASKS_KEY . "' field.");
     }
     foreach ($data[JobConfig::TASKS_KEY] as $taskConfig) {
-      $config->addTask($this->buildTask($taskConfig));
+      $config->addTask($this->loadTask($taskConfig));
     }
     unset($data[JobConfig::TASKS_KEY]);
 

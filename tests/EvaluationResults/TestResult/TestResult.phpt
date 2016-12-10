@@ -3,7 +3,7 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Builder as JobConfigBuilder;
+use App\Helpers\JobConfig\Loader as JobConfigBuilder;
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
 use App\Helpers\EvaluationResults\TestResult as TR;
@@ -93,9 +93,9 @@ class TestTestResult extends Tester\TestCase
       "some ID",
       [
           (new Task)->setId("A"),
-          $this->builder->buildTask(self::$execCfg),
+          $this->builder->loadTask(self::$execCfg),
           (new Task)->setId("C"),
-          $this->builder->buildTask(self::$evalCfg),
+          $this->builder->loadTask(self::$evalCfg),
           (new Task)->setId("D")
       ]
     );
@@ -124,9 +124,9 @@ class TestTestResult extends Tester\TestCase
       "some ID",
       [
           (new Task)->setId("A"),
-          $this->builder->buildTask($execCfg),
+          $this->builder->loadTask($execCfg),
           (new Task)->setId("C"),
-          $this->builder->buildTask(self::$evalCfg),
+          $this->builder->loadTask(self::$evalCfg),
           (new Task)->setId("D")
       ]
     );
@@ -150,9 +150,9 @@ class TestTestResult extends Tester\TestCase
       "some ID",
       [
           (new Task)->setId("A"),
-          $this->builder->buildTask(self::$execCfg),
+          $this->builder->loadTask(self::$execCfg),
           (new Task)->setId("C"),
-          $this->builder->buildTask(self::$evalCfg),
+          $this->builder->loadTask(self::$evalCfg),
           (new Task)->setId("D")
       ]
     );

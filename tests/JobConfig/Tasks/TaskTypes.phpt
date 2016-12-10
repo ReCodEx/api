@@ -3,7 +3,7 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
@@ -28,37 +28,37 @@ class TestTaskTypes extends Tester\TestCase
     "forward" => "compatibility"
   ];
 
-  /** @var Builder */
+  /** @var Loader */
   private $builder;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->builder = new Loader;
   }
 
   public function testBadTaskTypes() {
     Assert::exception(function() {
-      new InitiationTaskType($this->builder->buildTask(self::$cfg)->setType("execution"));
+      new InitiationTaskType($this->builder->loadTask(self::$cfg)->setType("execution"));
     }, JobConfigLoadingException::class);
 
     Assert::exception(function() {
-      new ExecutionTaskType($this->builder->buildTask(self::$cfg)->setType("evaluation"));
+      new ExecutionTaskType($this->builder->loadTask(self::$cfg)->setType("evaluation"));
     }, JobConfigLoadingException::class);
 
     Assert::exception(function() {
-      new EvaluationTaskType($this->builder->buildTask(self::$cfg)->setType("initiation"));
+      new EvaluationTaskType($this->builder->loadTask(self::$cfg)->setType("initiation"));
     }, JobConfigLoadingException::class);
   }
 
   public function testParsingInitEval() {
-    $initiation = new InitiationTaskType($this->builder->buildTask(self::$cfg)->setType("initiation"));
+    $initiation = new InitiationTaskType($this->builder->loadTask(self::$cfg)->setType("initiation"));
     Assert::true($initiation->getTask()->isInitiationTask());
 
-    $evaluation = new EvaluationTaskType($this->builder->buildTask(self::$cfg)->setType("evaluation"));
+    $evaluation = new EvaluationTaskType($this->builder->loadTask(self::$cfg)->setType("evaluation"));
     Assert::true($evaluation->getTask()->isEvaluationTask());
   }
 
   public function testParsingExecution() {
-    $execution = new ExecutionTaskType($this->builder->buildTask(self::$cfg)->setType("execution"));
+    $execution = new ExecutionTaskType($this->builder->loadTask(self::$cfg)->setType("execution"));
     Assert::true($execution->getTask()->isExecutionTask());
 
     Assert::equal("groupA", $execution->getLimits("groupA")->getId());

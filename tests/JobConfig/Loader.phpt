@@ -3,7 +3,7 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Limits;
 use App\Exceptions\JobConfigLoadingException;
@@ -13,31 +13,31 @@ use App\Exceptions\JobConfigLoadingException;
  * constructed/built by it (JobConfig, SubmissionHeader, etc...).
  * This is only general test which tests only simple cases.
  */
-class TestJobConfigBuilder extends Tester\TestCase
+class TestJobConfigLoader extends Tester\TestCase
 {
-  /** @var Builder */
-  private $builder;
+  /** @var Loader */
+  private $loader;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->loader = new Loader;
   }
 
   public function testBadFormat() {
     Assert::exception(function () {
-      $this->builder->buildJobConfig([]);
+      $this->loader->loadJobConfig([]);
     }, JobConfigLoadingException::class);
 
     Assert::exception(function () {
-      $this->builder->buildJobConfig("");
+      $this->loader->loadJobConfig("");
     }, JobConfigLoadingException::class);
 
     Assert::exception(function () {
-      $this->builder->buildJobConfig(NULL);
+      $this->loader->loadJobConfig(NULL);
     }, JobConfigLoadingException::class);
   }
 
   public function testCorrectBuild() {
-    $job = $this->builder->buildJobConfig(self::$jobConfig);
+    $job = $this->loader->loadJobConfig(self::$jobConfig);
     $header = $job->getSubmissionHeader();
 
     Assert::equal("bla bla bla", $header->getId());
@@ -125,5 +125,5 @@ class TestJobConfigBuilder extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestJobConfigBuilder;
+$testCase = new TestJobConfigLoader;
 $testCase->run();

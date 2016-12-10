@@ -184,7 +184,7 @@ class JobConfig {
             $sandboxConfig->getLimits($hwGroupId)->toArray(),
             $limits[$task->getId()]
           );
-          $sandboxConfig->setLimits((new Builder)->buildLimits($newTaskLimits)); // $hwGroupId is inherited from current limits
+          $sandboxConfig->setLimits((new Loader)->loadLimits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }
       }
     }

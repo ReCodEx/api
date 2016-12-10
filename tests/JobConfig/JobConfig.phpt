@@ -5,7 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use Symfony\Component\Yaml\Yaml;
 use App\Helpers\JobConfig\UndefinedLimits;
 use App\Helpers\JobConfig\Limits;
@@ -28,15 +28,15 @@ class TestJobConfig extends Tester\TestCase
     ]
   ];
 
-  /** @var Builder */
+  /** @var Loader */
   private $builder;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->builder = new Loader;
   }
 
   public function testSerialization() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $data = Yaml::parse((string) $jobConfig);
     Assert::type("array", $data["submission"]);
     Assert::type("array", $data["tasks"]);
@@ -44,7 +44,7 @@ class TestJobConfig extends Tester\TestCase
   }
 
   public function testUpdateJobId() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     Assert::equal("student", $jobConfig->getSubmissionHeader()->getType());
     Assert::equal("bla bla bla", $jobConfig->getSubmissionHeader()->getId());
     Assert::equal("student_bla bla bla", $jobConfig->getJobId());
@@ -55,46 +55,46 @@ class TestJobConfig extends Tester\TestCase
   }
 
   public function testInvalidJobType() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     Assert::exception(function() use ($jobConfig) {
       $jobConfig->setJobId("XY_ratataId");
     }, JobConfigLoadingException::CLASS);
   }
 
   public function testUpdateJobIdInSerializedConfig() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $jobConfig->setJobId("reference_ratataId");
     $data = Yaml::parse((string) $jobConfig);
     Assert::equal("reference_ratataId", $data["submission"]["job-id"]);
   }
 
   public function testUpdateFileCollector() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     Assert::equal("url://url.url", $jobConfig->getFileCollector());
     $jobConfig->setFileCollector("url://file.collector.recodex");
     Assert::equal("url://file.collector.recodex", $jobConfig->getFileCollector());
   }
 
   public function testUpdateFileCollectorInSerializedConfig() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $jobConfig->setFileCollector("url://file.collector.recodex");
     $data = Yaml::parse((string) $jobConfig);
     Assert::equal("url://file.collector.recodex", $data["submission"]["file-collector"]);
   }
 
   public function testTasksCount() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     Assert::equal(2, $jobConfig->getTasksCount());
   }
 
   public function testGetTasks() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $tasks = $jobConfig->getTasks();
     Assert::equal(2, count($tasks));
   }
 
   public function testGetTests() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $tests = $jobConfig->getTests();
     Assert::equal(1, count($tests));
   }
@@ -102,7 +102,7 @@ class TestJobConfig extends Tester\TestCase
   public function testRemoveLimits() {
     $hwGroup = "A";
 
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $jobConfig->removeLimits($hwGroup);
 
     // test for infinite limits which are set in remove limits
@@ -119,7 +119,7 @@ class TestJobConfig extends Tester\TestCase
     $limits = (new Limits)->setId($hwGroup)->setTimeLimit(987.0)->setMemoryLimit(654);
     $testLimits = [ $taskId => $limits->toArray() ];
 
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $jobConfig->setLimits($hwGroup, $testLimits);
 
     // test for expected limits which should be set

@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use Tester\Assert;
 
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Tasks\InitiationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
@@ -56,15 +56,15 @@ class TestEvaluationResults extends Tester\TestCase
     ]
   ];
 
-  /** @var Builder */
+  /** @var Loader */
   private $builder;
 
   public function __construct() {
-    $this->builder = new Builder;
+    $this->builder = new Loader;
   }
 
   public function testMissingParams() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
 
     // empty document
     Assert::exception(function () use ($jobConfig) {
@@ -126,7 +126,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationOK() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
       "hw-group" => "whatever",
@@ -141,7 +141,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfSkippedTask() {
-    $jobConfig = $this->builder->buildJobConfig([
+    $jobConfig = $this->builder->loadJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -178,7 +178,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfFailedTask() {
-    $jobConfig = $this->builder->buildJobConfig([
+    $jobConfig = $this->builder->loadJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -215,7 +215,7 @@ class TestEvaluationResults extends Tester\TestCase
   }
 
   public function testInitialisationFailedBecauseOfMissingTaskInitResult() {
-    $jobConfig = $this->builder->buildJobConfig([
+    $jobConfig = $this->builder->loadJobConfig([
       "submission" => [
         "job-id" => "student_bla bla bla",
         "file-collector" => "https://collector",
@@ -252,7 +252,7 @@ class TestEvaluationResults extends Tester\TestCase
 
 
   public function testSimpleGetTestResult() {
-    $jobConfig = $this->builder->buildJobConfig(self::$jobConfig);
+    $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
     $initRes = [ "task-id" => "W", "status" => "OK" ];
     $execRes = [
       "task-id" => "X",

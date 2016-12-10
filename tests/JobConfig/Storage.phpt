@@ -4,7 +4,7 @@ include '../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\JobConfig\JobConfig;
-use App\Helpers\JobConfig\Builder;
+use App\Helpers\JobConfig\Loader;
 use App\Exceptions\MalformedJobConfigException;
 use App\Helpers\JobConfig\Storage;
 use Nette\Utils\Strings;
@@ -20,7 +20,7 @@ class TestJobConfigStorage extends Tester\TestCase
     $filePath = sys_get_temp_dir() . '/test-job-config-loader.yml';
     file_put_contents($filePath, self::$jobConfig);
     $this->jobConfigFileName = $filePath;
-    $this->storage = new Storage(new Builder);
+    $this->storage = new Storage;
   }
 
   public function tearDown() {

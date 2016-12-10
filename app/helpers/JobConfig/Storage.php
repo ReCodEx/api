@@ -21,12 +21,12 @@ class Storage {
 
   /**
    *
-   * @var Builder
+   * @var Loader
    */
-  private $jobBuilder;
+  private $jobLoader;
 
-  public function __construct(Builder $jobBuilder) {
-    $this->jobBuilder = $jobBuilder;
+  public function __construct() {
+    $this->jobLoader = new Loader;
   }
 
   /**
@@ -142,7 +142,7 @@ class Storage {
       throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.", $e);
     }
 
-    return $this->jobBuilder->buildJobConfig($parsedConfig);
+    return $this->jobLoader->loadJobConfig($parsedConfig);
   }
 
 }
