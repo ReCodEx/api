@@ -132,13 +132,14 @@ class Storage {
    * Parse configuration from given string a create and return new instance
    * of JobConfig.
    * @throws MalformedJobConfigException In case of YAML parsing error
+   * @throws JobConfigLoadingException In case of semantic error
    * @return array Parsed YAML config
    */
   public function parseJobConfig(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {
-      throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.");
+      throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.", $e);
     }
 
     return $this->jobBuilder->buildJobConfig($parsedConfig);
