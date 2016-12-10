@@ -266,7 +266,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionUploadSupplementaryFiles(string $id) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
     }
 
@@ -307,7 +307,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionGetSupplementaryFiles(string $id) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->isAuthor($user)) {
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
     }
 

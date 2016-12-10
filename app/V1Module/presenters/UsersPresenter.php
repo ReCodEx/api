@@ -206,6 +206,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
+   * @Param(type="post", name="email", description="New email address", required=FALSE)
    * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
    */
@@ -222,6 +223,16 @@ class UsersPresenter extends BasePresenter {
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
+
+    // change the email only of the user wants to
+    $email = $req->getPost("email");
+    if ($email && strlen($email) > 0) {
+      $user->setEmail($email);
+      // do not forget to change local login (if any)
+      if ($login) {
+        $login->setUsername($email);
+      }
+    }
 
     $user->setFirstName($firstName);
     $user->setLastName($lastName);
@@ -240,7 +251,9 @@ class UsersPresenter extends BasePresenter {
         // user is in modify-password scope and can change password without providing old one
         $login->setPasswordHash(Login::hashPassword($newPassword));
       }
+    }
 
+    if ($login) {
       // make password changes permanent
       $this->logins->persist($login);
       $this->logins->flush();

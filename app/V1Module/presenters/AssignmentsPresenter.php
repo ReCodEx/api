@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
@@ -244,7 +245,7 @@ class AssignmentsPresenter extends BasePresenter {
    * Check if the version of the assignment is up-to-date.
    * @POST
    * @UserIsAllowed(assignments="update")
-   * @Param(type="post", name="version", validation="", description="Version of the assignment.")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the assignment.")
    * @param string $id Identifier of the assignment
    */
   public function actionValidate($id) {
