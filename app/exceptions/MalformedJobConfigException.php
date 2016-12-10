@@ -21,7 +21,7 @@ class MalformedJobConfigException extends ApiException {
    *                                          Line numbers and snippets can be found there.
    */
   public function __construct(string $msg = 'Please contact your supervisor', ParseException $originalException = NULL) {
-    parent::__construct("Job configuration file is malformed - $msg");
+    parent::__construct("Job configuration is malformed - $msg");
     $this->originalException = $originalException;
   }
 
