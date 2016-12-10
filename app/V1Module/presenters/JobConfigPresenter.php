@@ -25,25 +25,24 @@ class JobConfigPresenter extends BasePresenter {
     $req = $this->getRequest();
     $config = $req->getPost("jobConfig");
 
-    $errors = [];
+    $error = [];
     try {
       $this->jobConfigStorage->parseJobConfig($config);
     } catch (MalformedJobConfigException $e) {
       $parserException = $e->getOriginalException();
-      while ($parserException != NULL) {
-        $errors[] = [
+      if ($parserException != NULL) {
+        $error = [
           "message" => $parserException->getMessage(),
           "line" => $parserException->getParsedLine(),
           "snippet" => $parserException->getSnippet()
         ];
-        $parserException = $parserException->getPrevious();
       }
     } catch (JobConfigLoadingException $e) {
-      $errors[] = [
+      $error = [
         "message" => $e->getMessage()
       ];
     }
 
-    $this->sendSuccessResponse($errors);
+    $this->sendSuccessResponse($error);
   }
 }

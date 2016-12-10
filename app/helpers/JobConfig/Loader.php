@@ -235,12 +235,6 @@ class Loader {
     $task->setPriority(intval($data[Task::PRIORITY_KEY]));
     unset($data[Task::PRIORITY_KEY]);
 
-    if (!isset($data[Task::FATAL_FAILURE_KEY])) {
-      throw new JobConfigLoadingException("Task configuration does not contain required '" . Task::FATAL_FAILURE_KEY . "' field.");
-    }
-    $task->setFatalFailure(filter_var($data[Task::FATAL_FAILURE_KEY], FILTER_VALIDATE_BOOLEAN));
-    unset($data[Task::FATAL_FAILURE_KEY]);
-
     if (!isset($data[Task::CMD_KEY]) || !is_array($data[Task::CMD_KEY])) {
       throw new JobConfigLoadingException("Task configuration does not contain proper '" . Task::CMD_KEY . "' field.");
     }
@@ -252,6 +246,13 @@ class Loader {
     unset($data[Task::CMD_KEY][Task::CMD_BIN_KEY]);
 
     // *** LOAD OPTIONAL ITEMS
+
+    if (isset($data[Task::FATAL_FAILURE_KEY])) {
+      $task->setFatalFailure(filter_var($data[Task::FATAL_FAILURE_KEY], FILTER_VALIDATE_BOOLEAN));
+      unset($data[Task::FATAL_FAILURE_KEY]);
+    } else {
+      $task->setFatalFailure(FALSE);
+    }
 
     if (isset($data[Task::DEPENDENCIES]) && is_array($data[Task::DEPENDENCIES])) {
       $task->setDependencies($data[Task::DEPENDENCIES]);
