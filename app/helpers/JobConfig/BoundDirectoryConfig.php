@@ -32,7 +32,12 @@ class BoundDirectoryConfig {
     return $this->source;
   }
 
-  public function setSource($src) {
+  /**
+   * Set source folder for bound directory.
+   * @param string $src source folder
+   * @return $this
+   */
+  public function setSource(string $src) {
     $this->source = $src;
     return $this;
   }
@@ -45,7 +50,12 @@ class BoundDirectoryConfig {
     return $this->destination;
   }
 
-  public function setDestination($dst) {
+  /**
+   * Set destination folder for source directory.
+   * @param string $dst destination folder
+   * @return $this
+   */
+  public function setDestination(string $dst) {
     $this->destination = $dst;
     return $this;
   }
@@ -58,16 +68,32 @@ class BoundDirectoryConfig {
     return $this->mode;
   }
 
-  public function setMode($mode) {
+  /**
+   * Set mounting mode of bounded directory.
+   * @param string $mode
+   * @return $this
+   */
+  public function setMode(string $mode) {
     $this->mode = $mode;
     return $this;
   }
 
+  /**
+   * Get additional data.
+   * Needed for forward compatibility.
+   * @return array
+   */
   public function getAdditionalData() {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }

@@ -2,8 +2,6 @@
 
 namespace App\Helpers\JobConfig;
 use Symfony\Component\Yaml\Yaml;
-use App\Exceptions\MalformedJobConfigException;
-
 
 /**
  * Header which represents and holds information about job submission.
@@ -30,6 +28,9 @@ class SubmissionHeader {
   /** @var array Available hardware groups */
   private $hardwareGroups = [];
 
+  /**
+   * Construct basic instance of SubmissionHeader.
+   */
   public function __construct() {
     $this->jobId = new JobId;
   }
@@ -45,6 +46,7 @@ class SubmissionHeader {
   /**
    * Set job identification alogside with its type.
    * @param string $jobId identification of job
+   * @return $this
    */
   public function setJobId(string $jobId) {
     $this->jobId->setJobId($jobId);
@@ -62,6 +64,7 @@ class SubmissionHeader {
   /**
    * Set job identification without type.
    * @param string $id
+   * @return $this
    */
   public function setId(string $id) {
     $this->jobId->setId($id);
@@ -79,6 +82,7 @@ class SubmissionHeader {
   /**
    * Set type of this job.
    * @param string $type
+   * @return $this
    */
   public function setType(string $type) {
     $this->jobId->setType($type);
@@ -96,6 +100,7 @@ class SubmissionHeader {
   /**
    * Set fileserver URL.
    * @param string $fileCollector
+   * @return $this
    */
   public function setFileCollector(string $fileCollector) {
     $this->fileCollector = $fileCollector;
@@ -113,6 +118,7 @@ class SubmissionHeader {
   /**
    * Set logging on/off bit.
    * @param bool $log
+   * @return $this
    */
   public function setLog(bool $log) {
     $this->log = $log;
@@ -130,12 +136,9 @@ class SubmissionHeader {
   /**
    * Set available hardware groups in this configuration.
    * @param array $groups List of available hardware groups
+   * @return $this
    */
-  public function setHardwareGroups($groups) {
-    if (!is_array($groups)) {
-      throw new MalformedJobConfigException("Hardware groups have to be array");
-    }
-
+  public function setHardwareGroups(array $groups) {
     $this->hardwareGroups = $groups;
     return $this;
   }
@@ -143,6 +146,7 @@ class SubmissionHeader {
   /**
    * Add new hardware group to list of available groups (if not present)
    * @param string $hwGroupId Hardware group identifier we want to be present in header
+   * @return $this
    */
   public function addHardwareGroup(string $hwGroupId) {
     if (!in_array($hwGroupId, $this->hardwareGroups)) {
@@ -154,6 +158,7 @@ class SubmissionHeader {
   /**
    * Remove hardware group from list of available groups (if present)
    * @param string $hwGroupId Hardware group identifier we want not to be present in header
+   * @return $this
    */
   public function removeHardwareGroup(string $hwGroupId) {
     if(($key = array_search($hwGroupId, $this->hardwareGroups)) !== FALSE) {
@@ -163,14 +168,20 @@ class SubmissionHeader {
   }
 
   /**
-   * Get additional data which was not parsed at construction.
+   * Get additional data which cannot be parsed.
    * @return array
    */
   public function getAdditionalData(): array {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }

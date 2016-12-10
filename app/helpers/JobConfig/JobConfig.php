@@ -25,14 +25,26 @@ class JobConfig {
   /** @var array List of tasks */
   private $tasks = [];
 
+  /**
+   * Construct basic instance of JobConfig.
+   */
   public function __construct() {
     $this->submissionHeader = new SubmissionHeader;
   }
 
-  public function getSubmissionHeader() {
+  /**
+   * Get SubmissionHeader structure which belongs to this configuration.
+   * @return SubmissionHeader
+   */
+  public function getSubmissionHeader(): SubmissionHeader {
     return $this->submissionHeader;
   }
 
+  /**
+   * Set SubmissionHeader structure which belongs to this configuration.
+   * @param SubmissionHeader $header
+   * @return $this
+   */
   public function setSubmissionHeader(SubmissionHeader $header) {
     $this->submissionHeader = $header;
     return $this;
@@ -49,6 +61,7 @@ class JobConfig {
   /**
    * Set the identificator of this job
    * @param string $jobId
+   * @return $this
    */
   public function setJobId(string $jobId) {
     $this->submissionHeader->setJobId($jobId);
@@ -66,6 +79,7 @@ class JobConfig {
   /**
    * Sets URL of fileserver
    * @param string $fileCollector
+   * @return $this
    */
   public function setFileCollector(string $fileCollector) {
     $this->submissionHeader->setFileCollector($fileCollector);
@@ -88,6 +102,11 @@ class JobConfig {
     return $this->tasks;
   }
 
+  /**
+   * Add task to this job configuration.
+   * @param Task $task
+   * @return $this
+   */
   public function addTask(Task $task) {
     $this->tasks[] = $task;
     return $this;
@@ -97,7 +116,7 @@ class JobConfig {
    * Get the logical tests defined in the job config
    * @return TestConfig[] tests with their corresponding tasks
    */
-  public function getTests() {
+  public function getTests(): array {
     $tasksByTests = [];
     foreach ($this->tasks as $task) {
       $id = $task->getTestId();
@@ -129,6 +148,10 @@ class JobConfig {
     return count($this->tasks);
   }
 
+  /**
+   * Get array of limits which is indexed by test-id and then by task-id.
+   * @return array map of limits
+   */
   public function getLimits(): array {
     // Array of test-id as a key and the value is another array of task-id and limits as Limits type
     return array_map(
@@ -167,6 +190,7 @@ class JobConfig {
    * Set limits for execution tasks. For given hwgroup set limits of some/all execution tasks.
    * @param string $hwGroupId Hardware group for new limits
    * @param array $limits Map of task-id (key) and limits as array (value)
+   * @return $this
    */
   public function setLimits(string $hwGroupId, array $limits) {
     foreach ($this->tasks as $task) {
@@ -192,11 +216,22 @@ class JobConfig {
     return $this;
   }
 
-  public function getAdditionalData() {
+  /**
+   * Get additional data.
+   * Needed for forward compatibility.
+   * @return array
+   */
+  public function getAdditionalData(): array {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }

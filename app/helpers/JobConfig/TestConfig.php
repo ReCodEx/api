@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- *
+ * Reprezentation of one test unit which belongs to job.
  */
 class TestConfig {
 
@@ -28,9 +28,9 @@ class TestConfig {
   private $evaluationTaskType = NULL;
 
   /**
-   *
-   * @param string $id
-   * @param array $tasks
+   * Construct test configuration with all needed information.
+   * @param string $id identification of test
+   * @param array $tasks array of tasks which belong to this test
    * @throws JobConfigLoadingException
    */
   public function __construct(string $id, array $tasks) {
@@ -54,7 +54,7 @@ class TestConfig {
   }
 
   /**
-   *
+   * Get identification of this test.
    * @return string
    */
   public function getId(): string {

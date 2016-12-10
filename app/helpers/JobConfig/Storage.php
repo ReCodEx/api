@@ -20,7 +20,7 @@ class Storage {
   private static $cache = NULL;
 
   /**
-   *
+   * Loader of job configuration.
    * @var Loader
    */
   private $jobLoader;

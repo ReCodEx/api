@@ -43,7 +43,12 @@ class SandboxConfig {
     return $this->name;
   }
 
-  public function setName($name) {
+  /**
+   * Set name of the used sandbox.
+   * @param string $name
+   * @return $this
+   */
+  public function setName(string $name) {
     $this->name = $name;
     return $this;
   }
@@ -56,6 +61,11 @@ class SandboxConfig {
     return $this->stdin;
   }
 
+  /**
+   * Set input redirection file.
+   * @param string $stdin
+   * @return $this
+   */
   public function setStdin($stdin) {
     $this->stdin = $stdin;
     return $this;
@@ -69,6 +79,11 @@ class SandboxConfig {
     return $this->stdout;
   }
 
+  /**
+   * Set output redirection file.
+   * @param string $stdout
+   * @return $this
+   */
   public function setStdout($stdout) {
     $this->stdout = $stdout;
     return $this;
@@ -82,6 +97,11 @@ class SandboxConfig {
     return $this->stderr;
   }
 
+  /**
+   * Set error redirection file.
+   * @param string $stderr
+   * @return $this
+   */
   public function setStderr($stderr) {
     $this->stderr = $stderr;
     return $this;
@@ -97,6 +117,7 @@ class SandboxConfig {
 
   /**
    * Does the task config have limits for given hardware group?
+   * @param string $hardwareGroupId identification of hardware group
    * @return bool
    */
   public function hasLimits(string $hardwareGroupId): bool {
@@ -138,11 +159,22 @@ class SandboxConfig {
     $this->setLimits(new UndefinedLimits($hardwareGroupId));
   }
 
-  public function getAdditionalData() {
+  /**
+   * Get additional data.
+   * Needed for forward compatibility.
+   * @return array
+   */
+  public function getAdditionalData(): array {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }

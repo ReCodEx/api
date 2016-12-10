@@ -29,7 +29,11 @@ class JobId {
     }
   }
 
-  private function parse($jobId) {
+  /**
+   * Parse job configuration from single string into type and identification itself.
+   * @param string $jobId job identification
+   */
+  private function parse(string $jobId) {
     if (!strpos($jobId, self::SEPARATOR)) {
       $this->id = $jobId;
       $this->type = "student";
@@ -58,6 +62,7 @@ class JobId {
   /**
    * Set type and identification of a job.
    * @param string $jobId Identification of a job
+   * @return $this
    */
   public function setJobId(string $jobId) {
     $this->parse($jobId);
@@ -75,6 +80,7 @@ class JobId {
   /**
    * Set only identification.
    * @param string $id
+   * @return $this
    */
   public function setId(string $id) {
     $this->id = $id;
@@ -92,6 +98,7 @@ class JobId {
   /**
    * Set type of job.
    * @param string $type
+   * @return $this
    */
   public function setType(string $type) {
     $this->checkTypeValidity($type);

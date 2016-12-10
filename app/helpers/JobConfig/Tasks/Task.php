@@ -61,7 +61,12 @@ class Task {
     return $this->id;
   }
 
-  public function setId($id) {
+  /**
+   * Set identification of the task.
+   * @param string $id task identification
+   * @return $this
+   */
+  public function setId(string $id) {
     $this->id = $id;
     return $this;
   }
@@ -74,20 +79,30 @@ class Task {
     return $this->priority;
   }
 
-  public function setPriority($priority) {
+  /**
+   * Set priority of the task.
+   * @param int $priority priority of task
+   * @return $this
+   */
+  public function setPriority(int $priority) {
     $this->priority = $priority;
     return $this;
   }
 
   /**
-   * Fatal failure bit.
+   * Fatal failure bit, if set then task on failure ends whole execution.
    * @return bool
    */
   public function getFatalFailure(): bool {
     return $this->fatalFailure;
   }
 
-  public function setFatalFailure($fatalFailure) {
+  /**
+   * Set fatal failure bit.
+   * @param bool $fatalFailure if set then task on failure ends whole job execution
+   * @return $this
+   */
+  public function setFatalFailure(bool $fatalFailure) {
     $this->fatalFailure = $fatalFailure;
     return $this;
   }
@@ -100,6 +115,11 @@ class Task {
     return $this->dependencies;
   }
 
+  /**
+   * Set array of dependencies of this task.
+   * @param array $dependencies array of task ids
+   * @return $this
+   */
   public function setDependencies(array $dependencies) {
     $this->dependencies = $dependencies;
     return $this;
@@ -113,7 +133,12 @@ class Task {
     return $this->commandBinary;
   }
 
-  public function setCommandBinary($binary) {
+  /**
+   * Set binary which will be executed.
+   * @param string $binary command
+   * @return $this
+   */
+  public function setCommandBinary(string $binary) {
     $this->commandBinary = $binary;
     return $this;
   }
@@ -126,6 +151,11 @@ class Task {
     return $this->commandArguments;
   }
 
+  /**
+   * Set arguments which will be supplied to executed binary.
+   * @param array $args array of strings
+   * @return $this
+   */
   public function setCommandArguments(array $args) {
     $this->commandArguments = $args;
     return $this;
@@ -139,6 +169,11 @@ class Task {
     return $this->type;
   }
 
+  /**
+   * Set type of this task (initiation, execution, evaluation).
+   * @param string $type textual description of type
+   * @return $this
+   */
   public function setType($type) {
     $this->type = $type;
     return $this;
@@ -152,25 +187,51 @@ class Task {
     return $this->testId;
   }
 
+  /**
+   * Set identification of test to which this task belongs.
+   * @param string $testId identification of test
+   * @return $this
+   */
   public function setTestId($testId) {
     $this->testId = $testId;
     return $this;
   }
 
+  /**
+   * Get sandbox config structure, if this is internal task then NULL should be returned.
+   * @return SandboxConfig|NULL
+   */
   public function getSandboxConfig() {
     return $this->sandboxConfig;
   }
 
+  /**
+   * Set SandboxConfig structure, this step will make task external one,
+   * which will be executed in sandbox.
+   * @param SandboxConfig $config
+   * @return $this
+   */
   public function setSandboxConfig(SandboxConfig $config) {
     $this->sandboxConfig = $config;
     return $this;
   }
 
+  /**
+   * Get additional data.
+   * Needed for forward compatibility.
+   * @return array
+   */
   public function getAdditionalData() {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }
@@ -199,6 +260,10 @@ class Task {
     return $this->type === EvaluationTaskType::TASK_TYPE;
   }
 
+  /**
+   * Checks if task is external and will be executed in sandbox.
+   * @return bool
+   */
   public function isSandboxedTask(): bool {
     return !($this->sandboxConfig === NULL);
   }

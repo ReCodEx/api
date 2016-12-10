@@ -6,16 +6,19 @@ use App\Exceptions\JobConfigLoadingException;
 use App\Helpers\JobConfig\Tasks\Task;
 
 /**
- *
+ * Loader service which is able to load job configuration in the right format
+ * and with the all mandatory fields into internal holders (JobConfig, etc...).
+ * Given data are checked against mandatory fields and in case of error exception is thrown.
  */
 class Loader {
 
   /**
-   *
+   * Build and check submission header from given structured data.
    * @param array $data
    * @return SubmissionHeader
+   * @throws JobConfigLoadingException
    */
-  public function loadSubmissionHeader($data) {
+  public function loadSubmissionHeader($data): SubmissionHeader {
     $header = new SubmissionHeader;
 
     if (!isset($data[SubmissionHeader::JOB_ID_KEY])) {
@@ -46,7 +49,13 @@ class Loader {
     return $header;
   }
 
-  public function loadBoundDirectoryConfig($data) {
+  /**
+   * Build and check bound directory configuration from given structured data.
+   * @param array $data
+   * @return BoundDirectoryConfig
+   * @throws JobConfigLoadingException
+   */
+  public function loadBoundDirectoryConfig($data): BoundDirectoryConfig {
     $boundDir = new BoundDirectoryConfig;
 
     if (!isset($data[BoundDirectoryConfig::SRC_KEY])) {
@@ -72,7 +81,13 @@ class Loader {
     return $boundDir;
   }
 
-  public function loadLimits($data) {
+  /**
+   * Builds and checks limits from given structured data.
+   * @param array $data
+   * @return Limits
+   * @throws JobConfigLoadingException
+   */
+  public function loadLimits($data): Limits {
     $limits = new Limits;
 
     if (!is_array($data)) {
@@ -150,7 +165,13 @@ class Loader {
     return $limits;
   }
 
-  public function loadSandboxConfig($data) {
+  /**
+   * Build and check sandbox configuration from given structured data.
+   * @param array $data
+   * @return SandboxConfig
+   * @throws JobConfigLoadingException
+   */
+  public function loadSandboxConfig($data): SandboxConfig {
     $sandboxConfig = new SandboxConfig;
 
     if (!isset($data[SandboxConfig::NAME_KEY])) {
@@ -191,7 +212,13 @@ class Loader {
     return $sandboxConfig;
   }
 
-  public function loadTask($data) {
+  /**
+   * Build and check task configuration from given structured data.
+   * @param array $data
+   * @return Task
+   * @throws JobConfigLoadingException
+   */
+  public function loadTask($data): Task {
     $task = new Task;
 
     // *** LOAD MANDATORY ITEMS
@@ -257,11 +284,12 @@ class Loader {
   }
 
   /**
-   *
+   * Build and check job configuration from given structured data.
    * @param array $data
    * @return JobConfig
+   * @throws JobConfigLoadingException
    */
-  public function loadJobConfig($data) {
+  public function loadJobConfig($data): JobConfig {
     $config = new JobConfig;
 
     if (!is_array($data)) {

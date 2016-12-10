@@ -70,7 +70,12 @@ class Limits implements JsonSerializable {
     return $this->id;
   }
 
-  public function setId($id) {
+  /**
+   * Set hardware group identification.
+   * @param string $id hardware group identification
+   * @return $this
+   */
+  public function setId(string $id) {
     $this->id = $id;
     return $this;
   }
@@ -83,7 +88,12 @@ class Limits implements JsonSerializable {
     return $this->time;
   }
 
-  public function setTimeLimit($time) {
+  /**
+   * Set time limit in seconds.
+   * @param float $time time limit
+   * @return $this
+   */
+  public function setTimeLimit(float $time) {
     $this->time = $time;
     return $this;
   }
@@ -96,7 +106,12 @@ class Limits implements JsonSerializable {
     return $this->wallTime;
   }
 
-  public function setWallTime($time) {
+  /**
+   * Set wall time limit in seconds.
+   * @param float $time wall time limit
+   * @return $this
+   */
+  public function setWallTime(float $time) {
     $this->wallTime = $time;
     return $this;
   }
@@ -109,7 +124,12 @@ class Limits implements JsonSerializable {
     return $this->extraTime;
   }
 
-  public function setExtraTime($time) {
+  /**
+   * Set extra time limit in seconds.
+   * @param float $time extra time limit
+   * @return $this
+   */
+  public function setExtraTime(float $time) {
     $this->extraTime = $time;
     return $this;
   }
@@ -122,20 +142,30 @@ class Limits implements JsonSerializable {
     return $this->stackSize;
   }
 
-  public function setStackSize($size) {
+  /**
+   * Set maximum stack size.
+   * @param int $size stack size
+   * @return $this
+   */
+  public function setStackSize(int $size) {
     $this->stackSize = $size;
     return $this;
   }
 
   /**
-   * Returns the memory limit in bytes
+   * Returns the memory limit in kilobytes.
    * @return int Number of kilobytes
    */
   public function getMemoryLimit(): int {
     return $this->memory;
   }
 
-  public function setMemoryLimit($memory) {
+  /**
+   * Set memory limit in kilobytes.
+   * @param int $memory memory limit
+   * @return $this
+   */
+  public function setMemoryLimit(int $memory) {
     $this->memory = $memory;
     return $this;
   }
@@ -148,7 +178,12 @@ class Limits implements JsonSerializable {
     return $this->parallel;
   }
 
-  public function setParallel($parallel) {
+  /**
+   * Set number of parallel processes.
+   * @param int $parallel number of processes
+   * @return $this
+   */
+  public function setParallel(int $parallel) {
     $this->parallel = $parallel;
     return $this;
   }
@@ -161,7 +196,12 @@ class Limits implements JsonSerializable {
     return $this->diskSize;
   }
 
-  public function setDiskSize($size) {
+  /**
+   * Set maximum disk operations count in kilobytes.
+   * @param int $size number in kilobytes
+   * @return $this
+   */
+  public function setDiskSize(int $size) {
     $this->diskSize = $size;
     return $this;
   }
@@ -174,7 +214,12 @@ class Limits implements JsonSerializable {
     return $this->diskFiles;
   }
 
-  public function setDiskFiles($files) {
+  /**
+   * Set maximum number of opened files.
+   * @param int $files number of files
+   * @return $this
+   */
+  public function setDiskFiles(int $files) {
     $this->diskFiles = $files;
     return $this;
   }
@@ -187,6 +232,11 @@ class Limits implements JsonSerializable {
     return $this->environVariables;
   }
 
+  /**
+   * Set array of environmental variables.
+   * @param array $variables array of strings
+   * @return $this
+   */
   public function setEnvironVariables(array $variables) {
     $this->environVariables = $variables;
     return $this;
@@ -200,6 +250,11 @@ class Limits implements JsonSerializable {
     return $this->chdir;
   }
 
+  /**
+   * Set directory to which sandbox will change working directory.
+   * @param string $chdir working directory
+   * @return $this
+   */
   public function setChdir($chdir) {
     $this->chdir = $chdir;
     return $this;
@@ -214,16 +269,32 @@ class Limits implements JsonSerializable {
     return $this->boundDirectories;
   }
 
+  /**
+   * Add bound directory to internal array of bounded directories.
+   * @param BoundDirectoryConfig $boundDir bound directory
+   * @return $this
+   */
   public function addBoundDirectory(BoundDirectoryConfig $boundDir) {
     $this->boundDirectories[] = $boundDir;
     return $this;
   }
 
-  public function getAdditionalData() {
+  /**
+   * Get additional data.
+   * Needed for forward compatibility.
+   * @return array
+   */
+  public function getAdditionalData(): array {
     return $this->data;
   }
 
-  public function setAdditionalData($data) {
+  /**
+   * Set additional data, which cannot be parsed into structure.
+   * Needed for forward compatibility.
+   * @param array $data
+   * @return $this
+   */
+  public function setAdditionalData(array $data) {
     $this->data = $data;
     return $this;
   }
