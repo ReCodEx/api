@@ -24,12 +24,6 @@ class Builder {
     $header->setJobId($data[SubmissionHeader::JOB_ID_KEY]);
     unset($data[SubmissionHeader::JOB_ID_KEY]);
 
-    if (!isset($data[SubmissionHeader::FILE_COLLECTOR_KEY])) {
-      throw new JobConfigLoadingException("Submission header does not contain the required '" . SubmissionHeader::FILE_COLLECTOR_KEY . "' field.");
-    }
-    $header->setFileCollector($data[SubmissionHeader::FILE_COLLECTOR_KEY]);
-    unset($data[SubmissionHeader::FILE_COLLECTOR_KEY]);
-
     if (!isset($data[SubmissionHeader::HARDWARE_GROUPS_KEY])) {
       throw new JobConfigLoadingException("Submission header does not contain the required '" . SubmissionHeader::HARDWARE_GROUPS_KEY . "' field.");
     } else if (!is_array($data[SubmissionHeader::HARDWARE_GROUPS_KEY])) {
@@ -37,6 +31,11 @@ class Builder {
     }
     $header->setHardwareGroups($data[SubmissionHeader::HARDWARE_GROUPS_KEY]);
     unset($data[SubmissionHeader::HARDWARE_GROUPS_KEY]);
+
+    if (isset($data[SubmissionHeader::FILE_COLLECTOR_KEY])) {
+      $header->setFileCollector($data[SubmissionHeader::FILE_COLLECTOR_KEY]);
+      unset($data[SubmissionHeader::FILE_COLLECTOR_KEY]);
+    }
 
     if (isset($data[SubmissionHeader::LOG_KEY])) {
       $header->setLog(filter_var($data[SubmissionHeader::LOG_KEY], FILTER_VALIDATE_BOOLEAN));
