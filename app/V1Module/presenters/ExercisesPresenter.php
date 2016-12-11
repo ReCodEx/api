@@ -25,6 +25,7 @@ use Exception;
  * Endpoints for exercise manipulation
  * @LoggedIn
  */
+
 class ExercisesPresenter extends BasePresenter {
 
   /**
