@@ -1,4 +1,9 @@
 parameters:
+  api:
+    address: https://recodex.projekty.ms.mff.cuni.cz:4000
+    name: "ReCodEx API"
+    description: "ReCodEx Code Examiner"
+
   accessManager:
     leeway: 60
     issuer: https://recodex.projekty.ms.mff.cuni.cz

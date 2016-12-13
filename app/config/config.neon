@@ -6,6 +6,11 @@ parameters:
   uploadDir: %appDir%/../uploaded_data
   jobConfigStorageDir: %appDir%/../job_config
 
+  api:
+    address: https://recodex.projekty.ms.mff.cuni.cz:4000
+    name: "ReCodEx API"
+    description: "ReCodEx Code Examiner - API Server"
+
   accessManager:
     leeway: 60
     issuer: https://recodex.projekty.ms.mff.cuni.cz
@@ -124,6 +129,7 @@ services:
   - App\Helpers\MonitorConfig(%monitor%)
   - App\Helpers\BrokerConfig(%broker%)
   - App\Helpers\EmailsConfig(%emails%)
+  - App\Helpers\ApiConfig(%api%)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)

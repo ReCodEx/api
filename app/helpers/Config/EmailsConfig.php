@@ -3,6 +3,9 @@ namespace App\Helpers;
 use Nette;
 use Nette\Utils\Arrays;
 
+/**
+ * General configuration for all emails sent from this API.
+ */
 class EmailsConfig
 {
   use Nette\SmartObject;
@@ -37,6 +40,10 @@ class EmailsConfig
    */
   protected $from;
 
+  /**
+   * Constructs configuration object from given array.
+   * @param array $config
+   */
   public function __construct(array $config) {
     $this->apiUrl = Arrays::get($config, ["apiUrl"]);
     $this->footerUrl = Arrays::get($config, ["footerUrl"]);

@@ -2,14 +2,22 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\ApiConfig;
+
 class DefaultPresenter extends BasePresenter {
+
+  /**
+   * @var ApiConfig
+   * @inject
+   */
+  public $apiConfig;
 
   /**
    * @GET
    */
   public function actionDefault() {
     $this->sendJson([
-      "project" => "ReCodEx API",
+      "project" => $this->apiConfig->getName(),
       "version" => "1.0.0",
       "website" => "https://recodex.github.com"
     ]);
