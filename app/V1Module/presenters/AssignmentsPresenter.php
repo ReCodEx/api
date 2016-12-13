@@ -211,31 +211,27 @@ class AssignmentsPresenter extends BasePresenter {
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");
     $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
-    $usedLocale = [];
+    $localizations = [];
+
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
-      $description = $localization["description"];
-      $localizationName = $localization["name"];
+
+      if (array_key_exists($lang, $localizations)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang");
+      }
 
       // create all new localized assignments
-      $originalLocalized = $assignment->getLocalizedAssignmentByLocale($lang);
-      $localized = new LocalizedAssignment($localizationName, $description, $lang);
-      if ($originalLocalized) {
-        $localized->setLocalizedAssignment($originalLocalized);
-        $assignment->removeLocalizedAssignment($originalLocalized);
-      }
-      $assignment->addLocalizedAssignment($localized);
-      $usedLocale[] = $lang;
+      $localized = new LocalizedAssignment(
+        $localization["name"],
+        $localization["description"],
+        $lang,
+        $assignment->getLocalizedAssignmentByLocale($lang)
+      );
+
+      $localizations[$lang] = $localized;
     }
 
-    // remove unused languages
-    foreach ($assignment->getLocalizedAssignments() as $localization) {
-      if (!in_array($localization->getLocale(), $usedLocale)) {
-        $assignment->removeLocalizedAssignment($localization);
-      }
-    }
-
-    $this->assignments->persist($assignment);
+    $this->assignments->replaceLocalizedAssignments($assignment, $localizations, FALSE);
     $this->assignments->flush();
 
     $this->sendSuccessResponse($assignment);

@@ -13,6 +13,23 @@ class Exercises extends BaseRepository {
     parent::__construct($em, Exercise::CLASS);
   }
 
+  public function replaceLocalizedAssignments(Exercise $exercise, $localizations, $flush = TRUE) {
+    $originalLocalizations = $exercise->getLocalizedAssignments()->toArray();
+
+    foreach ($localizations as $localizedAssignment) {
+      $exercise->addLocalizedAssignment($localizedAssignment);
+      $this->persist($localizedAssignment);
+    }
+
+    foreach ($originalLocalizations as $localization) {
+      $exercise->removeLocalizedAssignment($localization);
+    }
+
+    if ($flush) {
+      $this->flush();
+    }
+  }
+
   /**
    *
    * @param string|NULL $search

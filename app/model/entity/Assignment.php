@@ -190,7 +190,7 @@ class Assignment implements JsonSerializable
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments")
    */
   protected $localizedAssignments;
 
@@ -209,7 +209,7 @@ class Assignment implements JsonSerializable
   protected $exercise;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments", cascade={"persist"})
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
    */
   protected $group;
 

@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\NotFoundException;
@@ -144,33 +145,29 @@ class ExercisesPresenter extends BasePresenter {
 
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");
-    $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
-    $usedLocale = [];
+    $localizedAssignments = $postLocalized && is_array($postLocalized) ? $postLocalized : array();
+    $localizations = [];
+
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
-      $description = $localization["description"];
-      $localizationName = $localization["name"];
+
+      if (array_key_exists($lang, $localizations)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang");
+      }
 
       // create all new localized assignments
-      $originalLocalized = $exercise->getLocalizedAssignmentByLocale($lang);
-      $localized = new LocalizedAssignment($localizationName, $description, $lang);
-      if ($originalLocalized) {
-        $localized->setLocalizedAssignment($originalLocalized);
-        $exercise->removeLocalizedAssignment($originalLocalized);
-      }
-      $exercise->addLocalizedAssignment($localized);
-      $usedLocale[] = $lang;
-    }
+      $localized = new LocalizedAssignment(
+        $localization["name"],
+        $localization["description"],
+        $lang,
+        $exercise->getLocalizedAssignmentByLocale($lang)
+      );
 
-    // remove unused languages
-    foreach ($exercise->getLocalizedAssignments() as $localization) {
-      if (!in_array($localization->getLocale(), $usedLocale)) {
-        $exercise->removeLocalizedAssignment($localization);
-      }
+      $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->exercises->persist($exercise);
+    $this->exercises->replaceLocalizedAssignments($exercise, array_values($localizations), FALSE);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }

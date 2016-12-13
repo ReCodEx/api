@@ -52,7 +52,7 @@ class Exercise implements JsonSerializable
   protected $updatedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises")
    */
   protected $localizedAssignments;
 
