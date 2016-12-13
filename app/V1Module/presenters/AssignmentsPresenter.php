@@ -9,6 +9,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\InvalidStateException;
 
 use App\Helpers\MonitorConfig;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -34,7 +35,6 @@ use App\Model\Repository\RuntimeEnvironments;
 
 use DateTime;
 use Exception;
-use Nette\InvalidStateException;
 use Nette\Utils\Arrays;
 
 /**

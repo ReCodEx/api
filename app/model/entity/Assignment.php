@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Exceptions\InvalidStateException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -58,6 +59,14 @@ class Assignment implements JsonSerializable
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
+    if ($exercise->getLocalizedAssignments()->count() == 0) {
+      throw new InvalidStateException("There are no localized descriptions of exercise");
+    }
+
+    if ($exercise->getSolutionRuntimeConfigs()->count() == 0) {
+      throw new InvalidStateException("There are no runtime configurations in exercise");
+    }
+
     $assignment = new self(
       $exercise->getName(),
       new DateTime,
