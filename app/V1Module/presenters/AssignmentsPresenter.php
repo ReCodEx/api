@@ -170,7 +170,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -208,11 +208,16 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
 
-    // add new and update old localizations
-    $postLocalized = $req->getPost("localizedAssignments");
-    $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
+    // retrieve localizations and prepare some temp variables
+    $localizedAssignments = $req->getPost("localizedAssignments");
     $localizations = [];
 
+    // localized assignments cannot be empty
+    if (count($localizedAssignments) == 0) {
+      throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    // go through given localizations and construct database entities
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
 
@@ -231,9 +236,9 @@ class AssignmentsPresenter extends BasePresenter {
       $localizations[$lang] = $localized;
     }
 
+    // make changes to database
     $this->assignments->replaceLocalizedAssignments($assignment, $localizations, FALSE);
     $this->assignments->flush();
-
     $this->sendSuccessResponse($assignment);
   }
 

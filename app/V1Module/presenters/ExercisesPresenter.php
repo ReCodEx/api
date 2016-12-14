@@ -113,7 +113,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="version", description="Version of the edited exercise")
    * @Param(type="post", name="description", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
-   * @Param(type="post", name="localizedAssignments", description="A description of the exercise")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
    */
   public function actionUpdateDetail(string $id) {
@@ -143,11 +143,16 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->incrementVersion();
     $exercise->setDescription($description);
 
-    // add new and update old localizations
-    $postLocalized = $req->getPost("localizedAssignments");
-    $localizedAssignments = $postLocalized && is_array($postLocalized) ? $postLocalized : array();
+    // retrieve localizations and prepare some temp variables
+    $localizedAssignments = $req->getPost("localizedAssignments");
     $localizations = [];
 
+    // localized assignments cannot be empty
+    if (count($localizedAssignments) == 0) {
+      throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    // go through given localizations and construct database entities
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
 
@@ -202,51 +207,53 @@ class ExercisesPresenter extends BasePresenter {
    * @POST
    * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
-   * @Param(type="post", name="runtimeConfigs", description="Runtime configurations for the exercise")
+   * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
    */
   public function actionUpdateRuntimeConfigs(string $id) {
+    $req = $this->getRequest();
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot update it.");
     }
 
-    // add new and update old runtime configs
-    $req = $this->getRequest();
+    // retrieve configuration and prepare some temp variables
     $runtimeConfigs = $req->getPost("runtimeConfigs");
-    $usedConfigs = [];
+    $configs = [];
+
+    // configurations cannot be empty
+    if (count($runtimeConfigs) == 0) {
+      throw new InvalidArgumentException("No entry for runtime configurations given.");
+    }
+
+    // go through given configurations and construct database entities
     foreach ($runtimeConfigs as $runtimeConfig) {
-      $name = $runtimeConfig["name"];
       $environmentId = $runtimeConfig["runtimeEnvironmentId"];
-      $jobConfig = $runtimeConfig["jobConfig"];
-      $environment = $this->runtimeEnvironments->get($environmentId);
+      $environment = $this->runtimeEnvironments->findOrThrow($environmentId);
+
+      if (array_key_exists($environmentId, $configs)) {
+        throw new InvalidArgumentException("Duplicate entry for configuration $environmentId");
+      }
 
       // store job configuration into file
-      $jobConfigPath = $this->uploadedJobConfigStorage->storeContent($jobConfig, $user);
+      $jobConfigPath = $this->uploadedJobConfigStorage->storeContent($runtimeConfig["jobConfig"], $user);
       if ($jobConfigPath === NULL) {
         throw new JobConfigStorageException;
       }
 
-      // create all new runtime configs
-      $originalConfig = $exercise->getRuntimeConfigByEnvironment($environment);
-      $config = new SolutionRuntimeConfig($name, $environment, $jobConfigPath);
-      if ($originalConfig) {
-        $config->setSolutionRuntimeConfig($originalConfig);
-        $exercise->removeSolutionRuntimeConfig($originalConfig);
-      }
-      $exercise->addSolutionRuntimeConfig($config);
-      $usedConfigs[] = $environmentId;
-    }
+      // create all new runtime configuration
+      $config = new SolutionRuntimeConfig(
+        $runtimeConfig["name"],
+        $environment,
+        $jobConfigPath,
+        $exercise->getRuntimeConfigByEnvironment($environment)
+      );
 
-    // remove unused configs
-    foreach ($exercise->getSolutionRuntimeConfigs() as $runtimeConfig) {
-      if (!in_array($runtimeConfig->getRuntimeEnvironment()->getId(), $usedConfigs)) {
-        $exercise->removeSolutionRuntimeConfig($runtimeConfig);
-      }
+      $configs[$environmentId] = $config;
     }
 
     // make changes to database
-    $this->exercises->persist($exercise);
+    $this->exercises->replaceSolutionRuntimeConfigs($exercise, $configs, FALSE);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }

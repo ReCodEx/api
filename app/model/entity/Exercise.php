@@ -152,8 +152,7 @@ class Exercise implements JsonSerializable
     );
   }
 
-  public function addRuntimeConfig(SolutionRuntimeConfig $config)
-  {
+  public function addRuntimeConfig(SolutionRuntimeConfig $config) {
     $this->solutionRuntimeConfigs->add($config);
   }
 
@@ -168,7 +167,8 @@ class Exercise implements JsonSerializable
    */
   public function getLocalizedAssignmentByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    return $this->getLocalizedAssignments()->matching($criteria)->first();
+    $first = $this->getLocalizedAssignments()->matching($criteria)->first();
+    return $first === FALSE ? NULL : $first;
   }
 
   /**
@@ -177,10 +177,11 @@ class Exercise implements JsonSerializable
    * @return SolutionRuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    return $this->getSolutionRuntimeConfigs()->filter(
+    $first = $this->getSolutionRuntimeConfigs()->filter(
       function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
+    return $first === FALSE ? NULL : $first;
   }
 
   public function jsonSerialize() {

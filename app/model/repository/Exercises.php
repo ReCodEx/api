@@ -13,7 +13,13 @@ class Exercises extends BaseRepository {
     parent::__construct($em, Exercise::CLASS);
   }
 
-  public function replaceLocalizedAssignments(Exercise $exercise, $localizations, $flush = TRUE) {
+  /**
+   * Replace all localizations in exercise with given ones.
+   * @param Exercise $exercise
+   * @param array $localizations localizations which will be placed to exercise
+   * @param bool $flush if true then all changes will be flush at the end
+   */
+  public function replaceLocalizedAssignments(Exercise $exercise, array $localizations, bool $flush = TRUE) {
     $originalLocalizations = $exercise->getLocalizedAssignments()->toArray();
 
     foreach ($localizations as $localizedAssignment) {
@@ -23,6 +29,29 @@ class Exercises extends BaseRepository {
 
     foreach ($originalLocalizations as $localization) {
       $exercise->removeLocalizedAssignment($localization);
+    }
+
+    if ($flush) {
+      $this->flush();
+    }
+  }
+
+  /**
+   * Replace all runtime configurations in exercise with given ones.
+   * @param Exercise $exercise
+   * @param array $configs configurations which will be placed to exercise
+   * @param bool $flush if true then all changes will be flush at the end
+   */
+  public function replaceSolutionRuntimeConfigs(Exercise $exercise, array $configs, bool $flush = TRUE) {
+    $originalConfigs = $exercise->getSolutionRuntimeConfigs()->toArray();
+
+    foreach ($configs as $config) {
+      $exercise->addSolutionRuntimeConfig($config);
+      $this->persist($config);
+    }
+
+    foreach ($originalConfigs as $config) {
+      $exercise->removeSolutionRuntimeConfig($config);
     }
 
     if ($flush) {
