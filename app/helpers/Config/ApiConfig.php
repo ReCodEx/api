@@ -29,6 +29,12 @@ class ApiConfig
   protected $description;
 
   /**
+   * Version of the project in semantic versioning (major.minor.patch)
+   * @var string
+   */
+  protected $version;
+
+  /**
    * Constructs configuration object from given array.
    * @param array $config
    */
@@ -36,6 +42,7 @@ class ApiConfig
     $this->address = Arrays::get($config, ["address"]);
     $this->name = Arrays::get($config, ["name"]);
     $this->description = Arrays::get($config, ["description"]);
+    $this->version = Arrays::get($config, ["version"]);
   }
 
   public function getAddress() {
@@ -48,5 +55,9 @@ class ApiConfig
 
   public function getDescription() {
       return $this->description;
+  }
+
+  public function getVersion() {
+    return $this->version;
   }
 }

@@ -18,8 +18,8 @@ class DefaultPresenter extends BasePresenter {
   public function actionDefault() {
     $this->sendJson([
       "project" => $this->apiConfig->getName(),
-      "version" => "1.0.0",
-      "website" => "https://recodex.github.com"
+      "version" => $this->apiConfig->getVersion(),
+      "website" => $this->apiConfig->getAddress()
     ]);
   }
 
