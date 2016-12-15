@@ -326,9 +326,26 @@ class ExercisesPresenter extends BasePresenter {
 
     $exercise = Exercise::create($user);
     $exercise->setName("Exercise by " . $user->getName());
-    $this->exercises->persist($exercise);
-    $this->exercises->flush();
 
+    $this->exercises->persist($exercise);
+    $this->sendSuccessResponse($exercise);
+  }
+
+  /**
+   * Fork exercise from given one into the completely new one.
+   * @GET
+   * @UserIsAllowed(exercises="create")
+   */
+  public function actionForkFrom(string $id) {
+    $user = $this->getCurrentUser();
+    $forkFrom = $this->exercises->findOrThrow($id);
+
+    if (!$forkFrom->canAccessDetail($user)) {
+      throw new ForbiddenRequestException("Exercise cannot be forked by you");
+    }
+
+    $exercise = Exercise::forkFrom($forkFrom, $user);
+    $this->exercises->persist($exercise);
     $this->sendSuccessResponse($exercise);
   }
 }

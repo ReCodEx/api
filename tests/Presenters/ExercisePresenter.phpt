@@ -296,6 +296,28 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::same($expectedFile1, $file1);
     Assert::same($expectedFile2, $file2);
   }
+
+  public function testForkFrom()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'GET',
+      ['action' => 'forkFrom', 'id' => $exercise->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $forked = $result['payload'];
+    Assert::type(\App\Model\Entity\Exercise::class, $forked);
+    Assert::equal($exercise->getName(), $forked->getName());
+    Assert::equal(1, $forked->getVersion());
+    Assert::equal($user, $forked->getAuthor());
+  }
 }
 
 $testCase = new TestExercisesPresenter();

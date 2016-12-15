@@ -125,6 +125,7 @@ class Exercise implements JsonSerializable
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
+      Collection $supplementaryFiles,
       $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
@@ -135,7 +136,7 @@ class Exercise implements JsonSerializable
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->exercise = $exercise;
     $this->author = $user;
-    $this->supplementaryFiles = new ArrayCollection;
+    $this->supplementaryFiles = $supplementaryFiles;
     $this->isPublic = $isPublic;
     $this->description = $description;
   }
@@ -147,8 +148,24 @@ class Exercise implements JsonSerializable
       "",
       new ArrayCollection,
       new ArrayCollection,
+      new ArrayCollection,
       NULL,
       $user
+    );
+  }
+
+  public static function forkFrom(Exercise $fork, User $user) {
+    return new self(
+      $fork->name,
+      1,
+      $fork->difficulty,
+      $fork->localizedAssignments,
+      $fork->solutionRuntimeConfigs,
+      $fork->supplementaryFiles,
+      $fork,
+      $user,
+      $fork->isPublic,
+      $fork->description
     );
   }
 
