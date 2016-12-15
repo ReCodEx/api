@@ -90,7 +90,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     */
   protected function sendErrorResponse(int $code, string $msg) {
     // log the action done by the current user
-    if ($this->user->isLoggedIn()) {
+    if ($this->getUser()->isLoggedIn()) {
       // determine the action name from the application request
       $req = $this->getRequest();
       $params = $req->getParameters();

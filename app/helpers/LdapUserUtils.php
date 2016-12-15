@@ -47,7 +47,7 @@ class LdapUserUtils {
   /**
    * Access anonymous connection manager.
    * @return Manager
-   * @throws LdapConnectionException
+   * @throws LdapConnectException
    */
   protected function getAnonymousManager() {
     if ($this->anonymousManager === NULL) {
@@ -154,7 +154,7 @@ class LdapUserUtils {
 
   /**
    * Connecting to LDAP
-   * @return Connected LDAP manager instance
+   * @return Manager Connected LDAP manager instance
    * @throws LdapConnectException on error
    */
   private function connect() {

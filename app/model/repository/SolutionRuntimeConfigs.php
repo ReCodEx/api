@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Model\Repository;
+use App\Model\Entity\UploadedFile;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Exceptions\NotFoundException;
@@ -15,14 +16,14 @@ class SolutionRuntimeConfigs extends BaseRepository {
   private $runtimeEnvironments;
 
   public function __construct(EntityManager $em, RuntimeEnvironments $environments) {
-    parent::__construct($em, SolutionRuntimeConfig::CLASS);
+    parent::__construct($em, SolutionRuntimeConfig::class);
     $this->runtimeEnvironments = $environments;
   }
 
   /**
    * Detect the configuration of the runtime environment for a given assignment
    * by the extensions of submitted files.
-   * @param Assignmenet     $assignment   The assignment
+   * @param Assignment     $assignment   The assignment
    * @param UploadedFile[]  $files        The files
    * @return SolutionRuntimeConfig
    * @throws NotFoundException

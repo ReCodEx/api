@@ -12,7 +12,7 @@ use App\Model\Entity\Assignment;
 class Submissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Submission::CLASS);
+    parent::__construct($em, Submission::class);
   }
 
   public function findSubmissions(Assignment $assignment, string $userId) {

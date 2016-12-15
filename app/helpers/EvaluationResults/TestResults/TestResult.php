@@ -2,6 +2,7 @@
 
 namespace App\Helpers\EvaluationResults;
 
+use App\Helpers\JobConfig\Limits;
 use App\Helpers\JobConfig\TestConfig;
 
 /**
@@ -21,7 +22,7 @@ class TestResult implements ITestResult {
   /** @var ExecutionTaskResult[] Result of the execution task */
   private $executionResults;
 
-  /** @var EvalutationTaskResult Result of the evaluation task */
+  /** @var EvaluationTaskResult Result of the evaluation task */
   private $evaluationResult;
 
   /** @var string Status of the test */
@@ -37,7 +38,7 @@ class TestResult implements ITestResult {
    * Constructor
    * @param TestConfig            $config           Test configuration (contained tasks grupped by types, limits)
    * @param array                 $executionResults Results of execution tasks
-   * @param EvaluationTaskResults $evaluationResult Result of the one evaluation task
+   * @param EvaluationTaskResult $evaluationResult Result of the one evaluation task
    * @param string                $hardwareGroupId  Identifier of hardware group on which was the test evaluated
    */
   public function __construct(

@@ -11,7 +11,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 class ReferenceExerciseSolutions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, ReferenceExerciseSolution::CLASS);
+    parent::__construct($em, ReferenceExerciseSolution::class);
   }
 
 }

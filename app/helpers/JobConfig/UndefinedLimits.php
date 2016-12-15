@@ -2,6 +2,8 @@
 
 namespace App\Helpers\JobConfig;
 
+use Symfony\Component\Yaml\Yaml;
+
 
 /**
  * Special structure extending Limits structure. None of the limits is defined,

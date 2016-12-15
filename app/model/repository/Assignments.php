@@ -26,7 +26,7 @@ class Assignments extends BaseSoftDeleteRepository {
   }
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Assignment::CLASS);
+    parent::__construct($em, Assignment::class);
   }
 
 }

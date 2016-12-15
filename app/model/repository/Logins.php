@@ -14,7 +14,7 @@ class Logins extends BaseRepository {
   private $userSession;
 
   public function __construct(EntityManager $em, NS\User $user) {
-    parent::__construct($em, Login::CLASS);
+    parent::__construct($em, Login::class);
     $this->userSession = $user;
   }
 

@@ -17,7 +17,7 @@ use DateTime;
 class ReferenceSolutionEvaluations extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, ReferenceSolutionEvaluation::CLASS);
+    parent::__construct($em, ReferenceSolutionEvaluation::class);
   }
 
   /**
@@ -28,7 +28,7 @@ class ReferenceSolutionEvaluations extends BaseRepository {
    * @return array
    */
   public function find(Exercise $exercise, RuntimeEnvironment $environment, string $hardwareGroupId) {
-    $eva = ReferenceSolutionEvaluation::CLASS;
+    $eva = ReferenceSolutionEvaluation::class;
     $query = $this->em->createQuery(
       "SELECT eva FROM $eva eva INNER JOIN eva.referenceSolution ref " .
       "  INNER JOIN ref.solution sol INNER JOIN sol.solutionRuntimeConfig rc " .

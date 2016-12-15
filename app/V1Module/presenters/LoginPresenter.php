@@ -40,7 +40,7 @@ class LoginPresenter extends BasePresenter {
    */
   private function trySendingLoggedInResponse(User $user) {
     $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]);
-    $this->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
+    $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $this->sendSuccessResponse([
       "accessToken" => $token,
@@ -86,7 +86,7 @@ class LoginPresenter extends BasePresenter {
    */
   public function actionRefresh() {
     /** @var Identity $identity */
-    $identity = $this->user->identity;
+    $identity = $this->getUser()->identity;
 
     if (!$identity->isInScope(AccessToken::SCOPE_REFRESH)) {
       throw new ForbiddenRequestException();

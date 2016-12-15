@@ -347,7 +347,7 @@ class Group implements JsonSerializable
 
     return [
       "userId" => $student->getId(),
-      "groupId" => $this->getId(),
+      "groupId" => $this->id,
       "assignments" => [
         "total" => $total,
         "completed" => $completed->count(),

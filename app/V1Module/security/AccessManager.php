@@ -42,6 +42,9 @@ class AccessManager {
   /** @var string Verification key */
   private $verificationKey;
 
+  /** @var int Expiration time of newly issued tokens (in seconds) */
+  private $expiration;
+
   public function __construct(array $parameters, Users $users) {
     $this->users = $users;
     $this->verificationKey = Arrays::get($parameters, "verificationKey");

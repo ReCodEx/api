@@ -16,7 +16,7 @@ use App\Model\Entity\UploadedFile;
 class UploadedFiles extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, UploadedFile::CLASS);
+    parent::__construct($em, UploadedFile::class);
   }
 
   public function findAllById($ids) {

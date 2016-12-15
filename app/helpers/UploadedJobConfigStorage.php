@@ -41,7 +41,7 @@ class UploadedJobConfigStorage {
     }
 
     try {
-      $filePath = getFilePathFromUpload($user->getId(), $file);
+      $filePath = $this->getFilePathFromUpload($user->getId(), $file);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
       return $filePath;
     } catch (Nette\InvalidStateException $e) {
@@ -78,9 +78,8 @@ class UploadedJobConfigStorage {
 
   /**
    * Return storage file path for given information.
-   * @param type $userId
-   * @param type $fileName
-   * @param type $ext
+   * @param string $userId
+   * @param string $fileName
    * @return string Path, where the newly stored file will be saved (including configured uploadDir)
    */
   protected function getFilePath($userId, $fileName = "job-config.yml"): string {

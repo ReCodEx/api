@@ -48,7 +48,7 @@ class HardwareGroupAvailabilityLog implements JsonSerializable
   ) {
     $this->hardwareGroup = $hwGroup;
     $this->isAvailable = $isAvailable;
-    $this->desciption = $description;
+    $this->description = $description;
     $this->loggedAt = $when === NULL ? new DateTime : $when;
   }
 

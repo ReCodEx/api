@@ -35,7 +35,7 @@ class UploadedFileStorage extends Nette\Object {
     }
 
     try {
-      $filePath = self::getFilePath($user->getId(), $file);
+      $filePath = $this->getFilePath($user->getId(), $file);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
     } catch (Nette\InvalidStateException $e) {
       return NULL;

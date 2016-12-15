@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use Nette\Http\IResponse;
 
 use App\Exceptions\NotFoundException;
@@ -34,7 +35,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $instances = $this->instances->findAll(); // @todo: Filter out the non-public
-    $user = $this->user->identity ? $this->user->identity->getUserData() : NULL;
+    $user = $this->getUser()->identity ? $this->getUser()->identity->getUserData() : NULL;
     $this->sendSuccessResponse(array_map(function (Instance $instance) use ($user) {
       return $instance->getData($user);
     }, $instances));

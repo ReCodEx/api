@@ -9,7 +9,7 @@ use App\Model\Entity\Group;
 class Groups extends BaseSoftDeleteRepository  {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Group::CLASS);
+    parent::__construct($em, Group::class);
   }
 
   public function findAllByInstance(Instance $instance) {

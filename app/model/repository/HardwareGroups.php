@@ -8,7 +8,7 @@ use Kdyby\Doctrine\EntityManager;
 class HardwareGroups extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, HardwareGroup::CLASS);
+    parent::__construct($em, HardwareGroup::class);
   }
 
 }

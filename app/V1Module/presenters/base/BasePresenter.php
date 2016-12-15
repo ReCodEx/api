@@ -80,7 +80,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   protected function getCurrentUser(): User {
     /** @var Identity $identity */
-    $identity = $this->user->identity;
+    $identity = $this->getUser()->identity;
 
     if ($identity === NULL) {
       throw new ForbiddenRequestException();
@@ -96,7 +96,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   protected function isInScope(string $scope): bool {
     /** @var Identity $identity */
-    $identity = $this->user->identity;
+    $identity = $this->getUser()->identity;
 
     if (!$identity) {
       return FALSE;
@@ -183,18 +183,18 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @throws  ForbiddenRequestException
    */
   private function restrictUnauthorizedAccess(\Reflector $reflection) {
-    if ($reflection->hasAnnotation("LoggedIn") && !$this->user->isLoggedIn()) {
+    if ($reflection->hasAnnotation("LoggedIn") && !$this->getUser()->isLoggedIn()) {
       throw new UnauthorizedException;
     }
 
     if ($reflection->hasAnnotation("Role")
-      && !$this->user->isInRole($reflection->getAnnotation("Role"))) {
+      && !$this->getUser()->isInRole($reflection->getAnnotation("Role"))) {
       throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
     }
 
     if ($reflection->hasAnnotation("UserIsAllowed")) {
       foreach ($reflection->getAnnotation("UserIsAllowed") as $resource => $action) {
-        if ($this->user->isAllowed($resource, $action) === FALSE) {
+        if ($this->getUser()->isAllowed($resource, $action) === FALSE) {
           throw new ForbiddenRequestException("You are not allowed to perform this action.");
         }
       }
@@ -202,7 +202,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {
-    if ($this->user->isLoggedIn()) {
+    if ($this->getUser()->isLoggedIn()) {
       $params = $this->getRequest()->getParameters();
       unset($params[self::ACTION_KEY]);
       $this->userActions->log($this->getAction(TRUE), $params, $code);

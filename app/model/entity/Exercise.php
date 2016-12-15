@@ -184,7 +184,7 @@ class Exercise implements JsonSerializable
    */
   public function getLocalizedAssignmentByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->getLocalizedAssignments()->matching($criteria)->first();
+    $first = $this->localizedAssignments->matching($criteria)->first();
     return $first === FALSE ? NULL : $first;
   }
 
@@ -194,7 +194,7 @@ class Exercise implements JsonSerializable
    * @return SolutionRuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->getSolutionRuntimeConfigs()->filter(
+    $first = $this->solutionRuntimeConfigs->filter(
       function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();

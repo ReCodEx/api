@@ -15,9 +15,9 @@ class Comments extends BaseRepository {
   private $comments;
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Comment::CLASS);
-    $this->threads = $em->getRepository(CommentThread::CLASS);
-    $this->comments = $em->getRepository(Comment::CLASS);
+    parent::__construct($em, Comment::class);
+    $this->threads = $em->getRepository(CommentThread::class);
+    $this->comments = $em->getRepository(Comment::class);
   }
 
   public function get($id) {

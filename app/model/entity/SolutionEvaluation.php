@@ -55,7 +55,7 @@ class SolutionEvaluation implements JsonSerializable
   protected $bonusPoints;
 
   public function getTotalPoints() {
-    return $this->getPoints() + $this->getBonusPoints();
+    return $this->points + $this->bonusPoints;
   }
 
   /**

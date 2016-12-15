@@ -14,7 +14,7 @@ class UserActions extends BaseRepository {
   private $user;
 
   public function __construct(EntityManager $em, Nette\Security\User $user) {
-    parent::__construct($em, UserAction::CLASS);
+    parent::__construct($em, UserAction::class);
     $this->user = $user;
   }
 

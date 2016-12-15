@@ -26,8 +26,8 @@ class BaseRepository extends Nette\Object {
     return $this->repository->findAll();
   }
 
-  public function findBy($params) {
-    return $this->repository->findBy($params);
+  public function findBy($params, $orderBy = []) {
+    return $this->repository->findBy($params, $orderBy);
   }
 
   public function findOneBy($params) {

@@ -11,7 +11,7 @@ use App\Model\Entity\Permission;
 class Permissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Permission::CLASS);
+    parent::__construct($em, Permission::class);
   }
 
 }

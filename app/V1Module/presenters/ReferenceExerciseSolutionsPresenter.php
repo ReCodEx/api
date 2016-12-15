@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\SubmissionFailedException;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SolutionRuntimeConfig;

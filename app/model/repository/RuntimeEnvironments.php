@@ -11,7 +11,7 @@ use Kdyby\Doctrine\EntityManager;
 class RuntimeEnvironments extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, RuntimeEnvironment::CLASS);
+    parent::__construct($em, RuntimeEnvironment::class);
   }
 
   /**

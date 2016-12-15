@@ -361,7 +361,7 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if ($user->getId() !== $this->user->id
+    if ($user->getId() !== $this->getUser()->id
       && !$group->isSupervisorOf($currentUser)
       && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot view these stats.");

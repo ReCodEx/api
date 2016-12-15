@@ -11,7 +11,7 @@ use App\Model\Entity\User;
 class ExternalLogins extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, ExternalLogin::CLASS);
+    parent::__construct($em, ExternalLogin::class);
   }
 
   /**

@@ -2,23 +2,25 @@
 
 namespace App\Helpers;
 
+use App\Helpers\JobConfig\JobConfig;
+
 class BlockDiagram {
 
   // @todo: Unit tests for this helper.
 
   /**
    * Transform a job configuration into SVG diagram.
-   * @param  JobConfig  Job configuration entity
+   * @param JobConfig $config Job configuration entity
    * @return string  The SVG source code
    */
   public function create(JobConfig $config): string {
-      $diagramSrc = $this->createSource($jobConfig);
+      $diagramSrc = $this->createSource($config);
       return $this->getSvg($diagramSrc);
   }
 
   /**
    * Transform a job configuration into 'blockdiag' source code.
-   * @param  JobConfig  Job configuration entity
+   * @param  JobConfig $config Job configuration entity
    * @return string     The source code
    */
   public function createSource(JobConfig $config): string {
@@ -41,7 +43,7 @@ class BlockDiagram {
 
   /**
    * Process 'blockdiag' source code and return SVG source if the diagram description is correct.
-   * @param  string  Block diagram source code
+   * @param  string $source Block diagram source code
    * @return string  The SVG source code
    */
   public function getSvg(string $source): string {

@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
 use App\Helpers\EmailsConfig;

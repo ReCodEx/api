@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\TestConfig;
  */
 abstract class UnsuccessfulTestResult implements ITestResult {
 
-  /** @var Test Test configuration */
+  /** @var TestConfig Test configuration */
   private $config;
 
   /** @var string Textual representation of test status */

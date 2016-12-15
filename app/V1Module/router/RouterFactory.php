@@ -53,8 +53,8 @@ class RouterFactory {
 
   /**
    * Adds all Authentication endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createAuthRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/login", "Login:default");
@@ -64,8 +64,8 @@ class RouterFactory {
 
   /**
    * Adds all BrokerReports endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createBrokerReportsRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
@@ -74,8 +74,8 @@ class RouterFactory {
 
   /**
    * Adds all Comments endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createCommentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "Comments:default");
@@ -85,8 +85,8 @@ class RouterFactory {
 
   /**
    * Adds all Exercises endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createExercisesRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Exercises:");
@@ -103,8 +103,8 @@ class RouterFactory {
 
   /**
    * Adds all Assignments endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createAssignmentsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Assignments:");
@@ -122,8 +122,8 @@ class RouterFactory {
 
   /**
    * Adds all Groups endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createGroupsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Groups:");
@@ -153,8 +153,8 @@ class RouterFactory {
 
   /**
    * Adds all Instances endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createInstancesRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Instances:");
@@ -172,8 +172,8 @@ class RouterFactory {
 
   /**
    * Adds all ReferenceSolutions endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createReferenceSolutionsRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
@@ -183,8 +183,8 @@ class RouterFactory {
 
   /**
    * Adds all Submission endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createSubmissionRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Submissions:");
@@ -194,8 +194,8 @@ class RouterFactory {
 
   /**
    * Adds all UploadedFiles endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createUploadedFilesRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
@@ -206,8 +206,8 @@ class RouterFactory {
 
   /**
    * Adds all Users endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createUsersRoutes($router, $prefix) {
     $router[] = new GetRoute("$prefix", "Users:");
@@ -224,8 +224,8 @@ class RouterFactory {
 
   /**
    * Adds all ForgottenPassword endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createForgottenPasswordRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
@@ -251,8 +251,8 @@ class RouterFactory {
 
   /**
    * Adds all JobConfigPresenter endpoints to given router.
-   * @param type $router
-   * @param type $prefix Route prefix
+   * @param RouteList $router
+   * @param string $prefix Route prefix
    */
   private static function createJobConfigRoutes($router, $prefix) {
     $router[] = new PostRoute("$prefix/validate", "JobConfig:validate");

@@ -13,7 +13,7 @@ use App\Exceptions\ForbiddenRequestException;
 
 class Users extends BaseRepository {
   public function __construct(EntityManager $em) {
-    parent::__construct($em, User::CLASS);
+    parent::__construct($em, User::class);
   }
 
   public function getByEmail(string $email) {

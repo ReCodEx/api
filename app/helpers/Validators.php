@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use DateTime;
 use Nette\Utils;
 
 /**
@@ -21,8 +22,8 @@ class Validators extends Utils\Validators {
    * @param  DateTime  $value
    * @return bool TRUE if $value is instance of DateTime class
    */
-  public static function isDateTime($value) {
-    return $value instanceof \DateTime;
+  public static function isDateTime(DateTime $value) {
+    return $value instanceof DateTime;
   }
 
   /**

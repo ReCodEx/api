@@ -10,7 +10,7 @@ use App\Model\Entity\User;
 class Exercises extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Exercise::CLASS);
+    parent::__construct($em, Exercise::class);
   }
 
   /**
