@@ -11,6 +11,10 @@ use App\Exceptions\JobConfigLoadingException;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
+ * @method string getJobConfigFilePath()
+ * @method RuntimeEnvironment getRuntimeEnvironment()
  */
 class SolutionRuntimeConfig implements JsonSerializable
 {

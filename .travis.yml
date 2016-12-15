@@ -22,5 +22,5 @@ script:
   - ./vendor/bin/tester -c test.ini tests --coverage ./coverage.xml --coverage-src ./app
 
 after_script:
-  - ./vendor/bin/phpstan analyse -l 1 -c phpstan.neon app
+  - ./phpstan/run.php analyse -l 2 -c phpstan/phpstan.neon app
   - php /tmp/coveralls.phar --verbose --config tests/.coveralls.yml || true

@@ -7,6 +7,15 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ *
+ * @method bool getDarkTheme()
+ * @method bool getVimMode()
+ * @method bool getOpenedSidebar()
+ * @method bool getDefaultLanguage()
+ * @method setDarkTheme(bool $darkTheme)
+ * @method setVimMode(bool $vimMode)
+ * @method setOpenedSidebar(bool $opened)
+ * @method setDefaultLanguage(bool $language)
  */
 class UserSettings implements JsonSerializable
 {

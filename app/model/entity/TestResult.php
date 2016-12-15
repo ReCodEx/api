@@ -9,6 +9,10 @@ use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
+ * @method string getTestName()
+ * @method float getScore()
  */
 class TestResult implements JsonSerializable
 {

@@ -12,6 +12,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @ORM\Entity
  * @method string getId()
  * @method Collection getFiles()
+ * @method SolutionRuntimeConfig getSolutionRuntimeConfig()
  */
 class Solution implements JsonSerializable
 {

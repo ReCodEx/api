@@ -10,6 +10,11 @@ use App\Helpers\EvaluationStatus as ES;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
+ * @method string getResultsUrl()
+ * @method ReferenceExerciseSolution getReferenceSolution()
+ * @method string setResultsUrl(string $url)
  */
 class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 {

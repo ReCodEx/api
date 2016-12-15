@@ -27,7 +27,7 @@ class Logins extends BaseRepository {
       return NULL;
     }
 
-    return $this->findByUserId($this->userSession->id);
+    return $this->findByUserId($this->userSession->getId());
   }
 
   /**

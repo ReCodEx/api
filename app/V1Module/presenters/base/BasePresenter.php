@@ -80,7 +80,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   protected function getCurrentUser(): User {
     /** @var Identity $identity */
-    $identity = $this->getUser()->identity;
+    $identity = $this->getUser()->getIdentity();
 
     if ($identity === NULL) {
       throw new ForbiddenRequestException();
@@ -96,7 +96,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   protected function isInScope(string $scope): bool {
     /** @var Identity $identity */
-    $identity = $this->getUser()->identity;
+    $identity = $this->getUser()->getIdentity();
 
     if (!$identity) {
       return FALSE;
@@ -105,7 +105,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     return $identity->isInScope($scope);
   }
 
-  private function processParams(\Reflector $reflection) {
+  private function processParams(Reflection\Method $reflection) {
     $annotations = $reflection->getAnnotations();
     $requiredFields = Arrays::get($annotations, "Param", []);
 
@@ -179,10 +179,11 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   /**
    * Restricts access to certain actions according to ACL
-   * @param   \Reflector         $reflection Information about current action
-   * @throws  ForbiddenRequestException
+   * @param  ClassType|Reflection\Method $reflection Information about current action
+   * @throws ForbiddenRequestException
+   * @throws UnauthorizedException
    */
-  private function restrictUnauthorizedAccess(\Reflector $reflection) {
+  private function restrictUnauthorizedAccess($reflection) {
     if ($reflection->hasAnnotation("LoggedIn") && !$this->getUser()->isLoggedIn()) {
       throw new UnauthorizedException;
     }

@@ -5,8 +5,6 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
-use App\Model\Repository\Logins;
-use App\Model\Repository\ExternalLogins;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\CredentialsAuthenticator;
@@ -86,7 +84,7 @@ class LoginPresenter extends BasePresenter {
    */
   public function actionRefresh() {
     /** @var Identity $identity */
-    $identity = $this->getUser()->identity;
+    $identity = $this->getUser()->getIdentity();
 
     if (!$identity->isInScope(AccessToken::SCOPE_REFRESH)) {
       throw new ForbiddenRequestException();

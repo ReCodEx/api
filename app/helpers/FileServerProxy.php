@@ -3,16 +3,12 @@
 namespace App\Helpers;
 
 use App\Model\Entity\UploadedFile;
-use Doctrine\Common\Collections\ArrayCollection;
-use GuzzleHttp\Psr7\Response;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use Nette\Utils\Arrays;
-use Nette\Http\FileUpload;
 
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
-use App\Exceptions\CannotReceiveUploadedFileException;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -145,7 +141,7 @@ class FileServerProxy {
    */
   public function sendSupplementaryFiles(array $files) {
     $fileData = array_map([$this, 'prepareSupplementaryFileData'], $files);
-    $httpResponse = $this->client->post(self::TASKS_ROUTE, [
+    $httpResponse = $this->client->request("POST", self::TASKS_ROUTE, [
       'multipart' => $fileData
     ]);
     $response = $this->decodeJsonResponse($httpResponse);
@@ -200,14 +196,14 @@ class FileServerProxy {
    * @throws SubmissionFailedException
    */
   private function prepareFileData(UploadedFile $file) {
-      if (!file_exists($file->localFilePath)) {
-        throw new SubmissionFailedException("File $file->localFilePath does not exist on the server.");
+      if (!file_exists($file->getLocalFilePath())) {
+        throw new SubmissionFailedException("File {$file->getLocalFilePath()} does not exist on the server.");
       }
 
       return [
-        "name" => $file->name,
-        "filename" => $file->name,
-        "contents" => fopen($file->localFilePath, "r")
+        "name" => $file->getName(),
+        "filename" => $file->getName(),
+        "contents" => fopen($file->getLocalFilePath(), "r")
       ];
   }
 

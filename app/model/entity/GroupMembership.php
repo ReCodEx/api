@@ -16,6 +16,7 @@ use JsonSerializable;
  * @method DateTime getRequestedAt()
  * @method DateTime getStudentSince()
  * @method DateTime getSupervisorSince()
+ * @method User getUser()
  */
 class GroupMembership implements JsonSerializable
 {

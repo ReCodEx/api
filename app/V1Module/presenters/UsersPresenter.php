@@ -289,7 +289,7 @@ class UsersPresenter extends BasePresenter {
     $openedSidebar = $req->getPost("openedSidebar") !== NULL
       ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getOpenedSidebar();
-    $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguge();
+    $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage();
 
     $settings->setDarkTheme($darkTheme);
     $settings->setVimMode($vimMode);

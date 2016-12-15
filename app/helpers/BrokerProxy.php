@@ -91,7 +91,7 @@ class BrokerProxy {
     $message[] = $resultRemotePath;
 
     try {
-      $queue->setSockOpt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti($message);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
@@ -133,7 +133,7 @@ class BrokerProxy {
         usleep($waitTimeMicroseconds);
       }
 
-      $result = $queue->recvMulti(ZMQ::MODE_DONTWAIT);
+      $result = $queue->recvmulti(ZMQ::MODE_DONTWAIT);
 
       if ($result !== FALSE) {
         return $result;

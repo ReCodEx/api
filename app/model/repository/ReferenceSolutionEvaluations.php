@@ -38,8 +38,8 @@ class ReferenceSolutionEvaluations extends BaseRepository {
     );
 
     $query->setParameters([
-      "exercise" => $exercise->id,
-      "environment" => $environment->id,
+      "exercise" => $exercise->getId(),
+      "environment" => $environment->getId(),
       "hwGroup" => $hardwareGroupId
     ]);
 

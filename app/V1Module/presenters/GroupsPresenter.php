@@ -361,7 +361,7 @@ class GroupsPresenter extends BasePresenter {
     $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if ($user->getId() !== $this->getUser()->id
+    if ($user->getId() !== $this->getUser()->getId()
       && !$group->isSupervisorOf($currentUser)
       && $currentUser->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You cannot view these stats.");
@@ -388,7 +388,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
 
     // check if current user isn't trying to add someone to a private group without sufficient rights
-    $currentUserHasRights = $group->isSupervisorOf($currentUser) || !$currentUser->role->hasLimitedRights();
+    $currentUserHasRights = $group->isSupervisorOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
     if ($group->isPrivate() && !$currentUserHasRights) {
       throw new ForbiddenRequestException("You cannot add user '$userId' to private group '$id'.");

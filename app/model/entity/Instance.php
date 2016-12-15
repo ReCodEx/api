@@ -12,6 +12,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
+ * @method string getId()
+ * @method setAdmin(User $admin)
  */
 class Instance implements JsonSerializable
 {
@@ -169,7 +172,7 @@ class Instance implements JsonSerializable
       });
     } else {
       $result = $result->filter(function (Group $group) use ($user) {
-        return $group->getDeletedAt() === NULL && $group->isPublic;
+        return $group->getDeletedAt() === NULL && $group->isPublic();
       });
     }
 

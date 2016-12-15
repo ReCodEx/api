@@ -7,6 +7,7 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\IScoreCalculator;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -15,6 +16,8 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
+ *
+ * @method DateTime getEvaluatedAt()
  */
 class SolutionEvaluation implements JsonSerializable
 {

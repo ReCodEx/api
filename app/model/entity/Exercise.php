@@ -12,6 +12,13 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getName()
+ * @method Collection getSolutionRuntimeConfigs()
+ * @method Collection getLocalizedAssignments()
+ * @method setName(string $name)
+ * @method addSolutionRuntimeConfig(SolutionRuntimeConfig $config)
+ * @method removeSolutionRuntimeConfig(SolutionRuntimeConfig $config)
+ * @method removeLocalizedAssignment(Assignment $assignment)
  */
 class Exercise implements JsonSerializable
 {
@@ -92,7 +99,7 @@ class Exercise implements JsonSerializable
   protected $author;
 
   public function isAuthor(User $user) {
-    return $this->author->id === $user->id;
+    return $this->author->getId() === $user->getId();
   }
 
   /**

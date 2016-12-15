@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use App\Exceptions\InvalidStateException;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -18,6 +19,14 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method DateTime getDeletedAt()
+ * @method string getScoreCalculator()
+ * @method Collection getSolutionRuntimeConfigs()
+ * @method int getPointsPercentualTreshold()
+ * @method int getSubmissionsCountLimit()
+ * @method bool getCanViewLimitRatios()
+ * @method Group getGroup()
+ * @method Collection getLocalizedAssignments()
+ * @method removeLocalizedAssignment(Assignment $assignment)
  */
 class Assignment implements JsonSerializable
 {
@@ -222,7 +231,7 @@ class Assignment implements JsonSerializable
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments")
-   * @var Collection
+   * @var Collection|Selectable
    */
   protected $localizedAssignments;
 

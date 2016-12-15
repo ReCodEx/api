@@ -10,6 +10,12 @@ use Nette\Utils\Validators;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
+ * @method string getUsername()
+ * @method setUsername(string $username)
+ * @method setPasswordHash(string $hash)
+ * @method User getUser()
  */
 class Login
 {

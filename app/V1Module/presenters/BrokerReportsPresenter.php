@@ -201,7 +201,7 @@ class BrokerReportsPresenter extends BasePresenter {
     $subject = "$exerciseName - $status [$date]";
     $text = "Solution of your assignment '$exerciseName' was evaluated. $status. Further description can be found in <a href='http://recodex.projekty.ms.mff.cuni.cz'>ReCodEx</a>."; // @todo: Translatable
     $email = $submission->getUser()->getEmail();
-    $this->emailHelper->send($this->emailsConfig->from, [ $email ], $subject, $text);
+    $this->emailHelper->send($this->emailsConfig->getFrom(), [ $email ], $subject, $text);
   }
 
   /**

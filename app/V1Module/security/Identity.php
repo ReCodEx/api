@@ -23,7 +23,7 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
    */
   function getId()
   {
-    return $this->user->id;
+    return $this->user->getId();
   }
 
   /**
@@ -32,7 +32,7 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
    */
   function getRoles()
   {
-    return [$this->user->role->id];
+    return [$this->user->getRole()->getId()];
   }
 
   function getUserData()

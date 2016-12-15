@@ -12,7 +12,6 @@ use JsonSerializable;
  * @ORM\DiscriminatorColumn("discriminator")
  * @ORM\Table(name="`uploaded_file`")
  *
- * @method string getId()
  * @method string getName()
  * @method string getLocalFilePath()
  * @method DateTime getUploadedAt()
@@ -69,13 +68,17 @@ class UploadedFile implements JsonSerializable
      */
     protected $user;
 
-  /**
-   * @param string $name Name of the file
-   * @param DateTime $uploadedAt Time of the upload
-   * @param int $fileSize Size of the file
-   * @param User $user The user who uploaded the file
-   * @param string $filePath Path where the file is stored
-   */
+    public function getId() {
+      return $this->id;
+    }
+
+    /**
+     * @param string $name Name of the file
+     * @param DateTime $uploadedAt Time of the upload
+     * @param int $fileSize Size of the file
+     * @param User $user The user who uploaded the file
+     * @param string $filePath Path where the file is stored
+     */
     public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null) {
       $this->localFilePath = $filePath;
       $this->name = $name;

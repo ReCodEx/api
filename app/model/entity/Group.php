@@ -16,6 +16,7 @@ use JsonSerializable;
  *
  * @method string getId()
  * @method DateTime getDeletedAt()
+ * @method addAssignment(Assignment $assignment)
  */
 class Group implements JsonSerializable
 {

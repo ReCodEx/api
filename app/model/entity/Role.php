@@ -8,6 +8,8 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
  */
 class Role implements JsonSerializable
 {

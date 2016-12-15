@@ -28,7 +28,7 @@ class UserActions extends BaseRepository {
    */
   public function log(string $action, array $params, int $code, $data = NULL) {
     /** @var Identity $identity */
-    $identity = $this->user->identity;
+    $identity = $this->user->getIdentity();
 
     if ($identity === null || !($identity instanceof Identity)) {
       return NULL;

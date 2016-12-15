@@ -10,6 +10,8 @@ use App\Exceptions\ApiException;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
  */
 class RuntimeEnvironment implements JsonSerializable
 {

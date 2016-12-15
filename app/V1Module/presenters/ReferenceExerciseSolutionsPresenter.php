@@ -171,7 +171,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $resultsUrl = $this->submissionHelper->initiateEvaluation(
       $jobConfig,
       $files,
-      ['env' => $runtimeConfig->runtimeEnvironment->id],
+      ['env' => $runtimeConfig->getRuntimeEnvironment()->getId()],
       $hwGroup
     );
 

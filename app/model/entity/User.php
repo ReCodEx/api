@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -11,6 +12,17 @@ use forxer\Gravatar\Gravatar;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getEmail()
+ * @method Role getRole()
+ * @method Instance getInstance()
+ * @method Collection getExercises()
+ * @method UserSettings getSettings()
+ * @method setUsername(string $username)
+ * @method setFirstName(string $firstName)
+ * @method setLastName(string $lastName)
+ * @method setDegreesBeforeName(string $degrees)
+ * @method setDegreesAfterName(string $degrees)
+ * @method setRole(Role $role)
  */
 class User implements JsonSerializable
 {
@@ -42,7 +54,7 @@ class User implements JsonSerializable
     $this->settings = new UserSettings(TRUE, FALSE, "en");
 
     if ($instanceAdmin) {
-      $instance->admin = $this;
+      $instance->setAdmin($this);
     }
   }
 

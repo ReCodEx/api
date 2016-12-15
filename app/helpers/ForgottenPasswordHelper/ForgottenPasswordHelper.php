@@ -83,19 +83,19 @@ class ForgottenPasswordHelper {
    */
   public function process(Login $login, string $IPaddress) {
     // Stalk forgotten password requests a little bit and store them to database
-    $entry = new ForgottenPassword($login->user, $login->user->email, $this->redirectUrl, $IPaddress);
+    $entry = new ForgottenPassword($login->getUser(), $login->getUser()->getEmail(), $this->redirectUrl, $IPaddress);
     $this->em->persist($entry);
     $this->em->flush();
 
     // prepare all necessary things
-    $token = $this->accessManager->issueToken($login->user, [ AccessToken::SCOPE_CHANGE_PASSWORD ], $this->tokenExpiration);
+    $token = $this->accessManager->issueToken($login->getUser(), [ AccessToken::SCOPE_CHANGE_PASSWORD ], $this->tokenExpiration);
     $subject = $this->createSubject($login);
     $message = $this->createBody($login, $token);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
-      [ $login->user->email ],
+      [ $login->getUser()->getEmail() ],
       $subject,
       $message
     );
@@ -107,7 +107,7 @@ class ForgottenPasswordHelper {
    * @return string
    */
   private function createSubject(Login $login): string {
-    return $this->subjectPrefix . " " . $login->username;
+    return $this->subjectPrefix . " " . $login->getUsername();
   }
 
   /**
@@ -124,7 +124,7 @@ class ForgottenPasswordHelper {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/resetPasswordEmail.latte", [
-      "username" => $login->username,
+      "username" => $login->getUsername(),
       "link" => "{$this->redirectUrl}#{$token}",
       "expiresAfter" => $expiresAfter->format("H:i")
     ]);

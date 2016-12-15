@@ -13,8 +13,13 @@ use App\Helpers\EvaluationStatus as ES;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getId()
  * @method Solution getSolution()
+ * @method Assignment getAssignment()
+ * @method string getResultsUrl()
  * @method User getUser()
+ * @method setResultsUrl(string $url)
  */
 class Submission implements JsonSerializable, ES\IEvaluable
 {

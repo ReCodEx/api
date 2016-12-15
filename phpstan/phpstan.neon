@@ -1,0 +1,8 @@
+parameters:
+  autoload_directories:
+    - %rootDir%/../../../app
+services:
+  -
+    class: App\PHPStan\MagicMethodClassReflectionExtension
+    tags:
+        - phpstan.broker.methodsClassReflectionExtension
