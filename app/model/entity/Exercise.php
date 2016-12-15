@@ -154,19 +154,18 @@ class Exercise implements JsonSerializable
     );
   }
 
-<<<<<<< HEAD
-  public static function forkFrom(Exercise $fork, User $user) {
+  public static function forkFrom(Exercise $exercise, User $user) {
     return new self(
-      $fork->name,
+      $exercise->name,
       1,
-      $fork->difficulty,
-      $fork->localizedAssignments,
-      $fork->solutionRuntimeConfigs,
-      $fork->supplementaryFiles,
-      $fork,
+      $exercise->difficulty,
+      $exercise->localizedAssignments,
+      $exercise->solutionRuntimeConfigs,
+      $exercise->supplementaryFiles,
+      $exercise,
       $user,
-      $fork->isPublic,
-      $fork->description
+      $exercise->isPublic,
+      $exercise->description
     );
   }
 
