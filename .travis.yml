@@ -6,6 +6,7 @@ php:
 before_install:
   - composer self-update
   - echo "extension=ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension=zmq.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension=ldap.so" >> test.ini
   - echo "zend_extension=xdebug.so" >> test.ini
   - echo "xdebug.remote_enable=on" >> test.ini
