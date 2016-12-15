@@ -138,9 +138,16 @@ class SolutionEvaluation implements JsonSerializable
       $maxPoints = $submission->getMaxPoints();
     }
 
+    // calculate percentual score of submission
     $this->setTestResults($results->getTestsResults());
     if ($submission !== NULL && $calculator !== NULL && !$this->initFailed) {
       $this->score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $this->scores);
+    }
+
+    // let us know if submission meets points treshold
+    $treshold = $submission->getPointsTreshold();
+    if ($this->score < $treshold) {
+      $this->score = 0;
     }
 
     // calculate the score and points

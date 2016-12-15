@@ -282,7 +282,7 @@ class Group implements JsonSerializable
   public function getMaxPoints(): int {
     return array_reduce(
       $this->getAssignments()->getValues(),
-      function ($carry, $assignment) { return $carry + $assignment->getMaxPoints(); },
+      function ($carry, $assignment) { return $carry + $assignment->getGroupPoints(); },
       0
     );
   }

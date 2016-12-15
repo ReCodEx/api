@@ -34,7 +34,9 @@ class Assignment implements JsonSerializable
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
     int $maxPointsBeforeSecondDeadline = 0,
-    bool $canViewLimitRatios = FALSE
+    bool $canViewLimitRatios = FALSE,
+    bool $isBonus = FALSE,
+    $pointsPercentualThreshold = NULL
   ) {
     if ($secondDeadline == null) {
       $secondDeadline = $firstDeadline;
@@ -56,6 +58,8 @@ class Assignment implements JsonSerializable
     $this->localizedAssignments = $exercise->getLocalizedAssignments();
     $this->canViewLimitRatios = $canViewLimitRatios;
     $this->version = 1;
+    $this->isBonus = $isBonus;
+    $this->pointsPercentualThreshold = $pointsPercentualThreshold;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -115,6 +119,16 @@ class Assignment implements JsonSerializable
   public function isPublic() {
     return $this->isPublic;
   }
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isBonus;
+
+  /**
+   * @ORM\Column(type="float", nullable=true)
+   */
+  protected $pointsPercentualThreshold;
 
   /**
    * @ORM\Column(type="datetime", nullable=true)
@@ -181,6 +195,22 @@ class Assignment implements JsonSerializable
       return $this->maxPointsBeforeSecondDeadline;
     } else {
       return 0;
+    }
+  }
+
+
+  /**
+   * Assignment can be marked as bonus, then we do not want to add its points
+   * to overall maximum points of group. This function will return 0 if
+   * assignment is marked as bonus one, otherwise it will return result of
+   * $this->getMaxPoints() function.
+   * @return int
+   */
+  public function getGroupPoints(): int {
+    if ($this->isBonus) {
+      return 0;
+    } else {
+      return $this->getMaxPoints();
     }
   }
 
@@ -331,7 +361,9 @@ class Assignment implements JsonSerializable
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
-      "canViewLimitRatios" => $this->canViewLimitRatios
+      "canViewLimitRatios" => $this->canViewLimitRatios,
+      "isBonus" => $this->isBonus,
+      "pointsPercentualThreshold" => $this->pointsPercentualThreshold
     ];
   }
 }

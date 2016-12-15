@@ -105,6 +105,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $canViewLimitRatios = false;
     $secondDeadline = (new \DateTime)->getTimestamp();
     $maxPointsBeforeSecondDeadline = 543;
+    $isBonus = true;
+    $pointsPercentualThreshold = 90;
 
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'updateDetail', 'id' => $assignment->getId()],
@@ -120,7 +122,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'allowSecondDeadline' => $allowSecondDeadline,
         'canViewLimitRatios' => $canViewLimitRatios,
         'secondDeadline' => $secondDeadline,
-        'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline
+        'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
+        'isBonus' => $isBonus,
+        'pointsPercentualThreshold' => $pointsPercentualThreshold
       ]
     );
     $response = $this->presenter->run($request);
@@ -142,6 +146,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($canViewLimitRatios, $updatedAssignment->getCanViewLimitRatios());
     Assert::equal($secondDeadline, $updatedAssignment->getSecondDeadline()->getTimestamp());
     Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment->getMaxPointsBeforeSecondDeadline());
+    Assert::equal($isBonus, $updatedAssignment->getIsBonus());
+    Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment->getPointsPercentualThreshold());
 
     // check localized assignment
     Assert::count(1, $updatedAssignment->getLocalizedAssignments());

@@ -179,6 +179,8 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can user view ratio of his solution memory and time usages and assignment limits?")
    * @Param(type="post", name="secondDeadline", validation="numericint", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
+   * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
+   * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to gain point from assignment")
    * @param string $id Identifier of the updated assignment
    * @throws ForbiddenRequestException
    */
@@ -207,6 +209,9 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
+    $threshold = $req->getPost("pointsPercentualThreshold") !== NULL ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
+    $assignment->setPointsPercentualThreshold($threshold);
 
     // add new and update old localizations
     $postLocalized = $req->getPost("localizedAssignments");
