@@ -220,7 +220,7 @@ class Assignment implements JsonSerializable
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments")
    */
   protected $localizedAssignments;
 
@@ -230,7 +230,8 @@ class Assignment implements JsonSerializable
 
   public function getLocalizedAssignmentByLocale($locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    return $this->getLocalizedAssignments()->matching($criteria)->first();
+    $first = $this->getLocalizedAssignments()->matching($criteria)->first();
+    return $first === FALSE ? NULL : $first;
   }
 
   /**
@@ -239,7 +240,7 @@ class Assignment implements JsonSerializable
   protected $exercise;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments", cascade={"persist"})
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
    */
   protected $group;
 
@@ -327,10 +328,11 @@ class Assignment implements JsonSerializable
    * @return SolutionRuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    return $this->getSolutionRuntimeConfigs()->filter(
+    $first = $this->getSolutionRuntimeConfigs()->filter(
       function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
+    return $first === FALSE ? NULL : $first;
   }
 
   public function getSolutionRuntimeConfigsIds() {

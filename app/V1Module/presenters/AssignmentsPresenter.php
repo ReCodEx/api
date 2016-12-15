@@ -170,7 +170,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
-   * @Param(type="post", name="localizedAssignments", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -213,36 +213,37 @@ class AssignmentsPresenter extends BasePresenter {
     $threshold = $req->getPost("pointsPercentualThreshold") !== NULL ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
     $assignment->setPointsPercentualThreshold($threshold);
 
-    // add new and update old localizations
-    $postLocalized = $req->getPost("localizedAssignments");
-    $localizedAssignments = $postLocalized && is_array($postLocalized)? $postLocalized : array();
-    $usedLocale = [];
+    // retrieve localizations and prepare some temp variables
+    $localizedAssignments = $req->getPost("localizedAssignments");
+    $localizations = [];
+
+    // localized assignments cannot be empty
+    if (count($localizedAssignments) == 0) {
+      throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    // go through given localizations and construct database entities
     foreach ($localizedAssignments as $localization) {
       $lang = $localization["locale"];
-      $description = $localization["description"];
-      $localizationName = $localization["name"];
+
+      if (array_key_exists($lang, $localizations)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang");
+      }
 
       // create all new localized assignments
-      $originalLocalized = $assignment->getLocalizedAssignmentByLocale($lang);
-      $localized = new LocalizedAssignment($localizationName, $description, $lang);
-      if ($originalLocalized) {
-        $localized->setLocalizedAssignment($originalLocalized);
-        $assignment->removeLocalizedAssignment($originalLocalized);
-      }
-      $assignment->addLocalizedAssignment($localized);
-      $usedLocale[] = $lang;
+      $localized = new LocalizedAssignment(
+        $localization["name"],
+        $localization["description"],
+        $lang,
+        $assignment->getLocalizedAssignmentByLocale($lang)
+      );
+
+      $localizations[$lang] = $localized;
     }
 
-    // remove unused languages
-    foreach ($assignment->getLocalizedAssignments() as $localization) {
-      if (!in_array($localization->getLocale(), $usedLocale)) {
-        $assignment->removeLocalizedAssignment($localization);
-      }
-    }
-
-    $this->assignments->persist($assignment);
+    // make changes to database
+    $this->assignments->replaceLocalizedAssignments($assignment, $localizations, FALSE);
     $this->assignments->flush();
-
     $this->sendSuccessResponse($assignment);
   }
 
