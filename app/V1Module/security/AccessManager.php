@@ -5,13 +5,10 @@ namespace App\Security;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
 
-use App\Exceptions\ApiException;
 use App\Exceptions\InvalidAccessTokenException;
-use App\Exceptions\NoAccessTokenException;
 use App\Exceptions\ForbiddenRequestException;
 
 use Nette\Http\IRequest;
-use Nette\Security\Identity;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
@@ -58,8 +55,9 @@ class AccessManager {
 
   /**
    * Parse and validate a JWT token and extract the payload.
-   * @param string The potential JWT token
-   * @return object The decoded payload
+   * @param string $token The potential JWT token
+   * @return AccessToken|object The decoded payload
+   * @throws ForbiddenRequestException
    * @throws InvalidAccessTokenException
    */
   public function decodeToken($token): AccessToken {
@@ -85,10 +83,12 @@ class AccessManager {
   }
 
   /**
-   * @param   object $token   Valid JWT payload
-   * @return  User
+   * @param AccessToken $token Valid JWT payload
+   * @return User
+   * @throws ForbiddenRequestException
    */
   public function getUser(AccessToken $token): User {
+    /** @var User $user */
     $user = $this->users->get($token->getUserId());
     if (!$user || $user->isAllowed() === FALSE) {
       throw new ForbiddenRequestException;
