@@ -123,7 +123,12 @@ class BrokerReportsPresenter extends BasePresenter {
             // load the evaluation only if the submission is "async"
             // (submitted by other person than the student/author or automatically)
             if ($submission->isAsynchronous()) {
-              $this->loadEvaluation($submission);
+              $result = $this->loadEvaluation($submission);
+
+              if ($result === TRUE) {
+                // the solution is always asynchronous here, so send notification to the user
+                $this->notifyEvaluationFinished($submission);
+              }
             }
             break;
         }
@@ -154,14 +159,15 @@ class BrokerReportsPresenter extends BasePresenter {
         FailureHelper::TYPE_API_ERROR,
         "Evaluation results of the job with ID '{$submission->getId()}' could not be processed. {$e->getMessage()}"
       );
+
+      return FALSE;
     }
 
     $submission->setEvaluation($evaluation);
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
-    // the solution is allways asynchronous here, so send notification to the user
-    $this->notifyEvaluationFinished($submission);
+    return TRUE;
   }
 
   private function loadReferenceEvaluation(ReferenceSolutionEvaluation $referenceSolutionEvaluation) {
@@ -174,6 +180,7 @@ class BrokerReportsPresenter extends BasePresenter {
         FailureHelper::TYPE_API_ERROR,
         "Evaluation results of the job with ID '{$referenceSolution->getId()}' could not be processed. {$e->getMessage()}"
       );
+      return;
     }
 
     $referenceSolutionEvaluation->setEvaluation($solutionEvaluation);
