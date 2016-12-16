@@ -62,9 +62,11 @@ class TestResult implements ITestResult {
     foreach ($this->executionResults as $result) { $this->status = self::calculateStatus($this->status, $result->getStatus()); }
     $this->status = self::calculateStatus($this->status, $evaluationResult->getStatus());
 
-    if ($this->status === self::STATUS_OK &&
-      (!$this->didExecutionMeetLimits() || ($this->evaluationResult->getScore() !== self::SCORE_MIN))) {
-        $this->status = self::STATUS_FAILED; // the tasks execution was OK, but the result is not OK
+    // if the tested program exceeded its limits or scored zero points, we consider the test failed
+    $isTestResultIncorrect = !$this->didExecutionMeetLimits() || $this->evaluationResult->getScore() === self::SCORE_MIN;
+
+    if ($this->status === self::STATUS_OK && $isTestResultIncorrect) {
+        $this->status = self::STATUS_FAILED;
     }
   }
 
