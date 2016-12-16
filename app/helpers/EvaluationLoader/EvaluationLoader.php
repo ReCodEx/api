@@ -43,7 +43,7 @@ class EvaluationLoader {
   /**
    * Downloads and processes the results for the given submission.
    * @param Submission $submission The submission
-   * @return SolutionEvaluation  Evaluated results for given submission
+   * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
   public function load(Submission $submission) {
@@ -89,7 +89,7 @@ class EvaluationLoader {
   /**
    * Downloads and processes the results for the given submission.
    * @param ReferenceSolutionEvaluation $referenceSolution The reference solution submission
-   * @return SolutionEvaluation  Evaluated results for given submission
+   * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
   public function loadReference(ReferenceSolutionEvaluation $referenceSolution) {

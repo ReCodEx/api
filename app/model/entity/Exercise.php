@@ -5,16 +5,18 @@ namespace App\Model\Entity;
 use \DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
+use Doctrine;
 
 /**
  * @ORM\Entity
  * @method string getId()
  * @method string getName()
- * @method Collection getSolutionRuntimeConfigs()
- * @method Collection getLocalizedAssignments()
+ * @method Doctrine\Common\Collections\Collection getSolutionRuntimeConfigs()
+ * @method Doctrine\Common\Collections\Collection getLocalizedAssignments()
  * @method setName(string $name)
  * @method addSolutionRuntimeConfig(SolutionRuntimeConfig $config)
  * @method removeSolutionRuntimeConfig(SolutionRuntimeConfig $config)
@@ -60,6 +62,7 @@ class Exercise implements JsonSerializable
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises")
+   * @var Collection|Selectable
    */
   protected $localizedAssignments;
 

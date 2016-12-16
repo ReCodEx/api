@@ -55,7 +55,7 @@ class Limits implements JsonSerializable {
   protected $diskFiles = 0;
   /** @var string[] Environmental variables array */
   protected $environVariables = [];
-  /** @var string Change directory */
+  /** @var string|NULL Change directory */
   protected $chdir = NULL;
   /** @var BoundDirectoryConfig[] Bound directories array */
   protected $boundDirectories = [];

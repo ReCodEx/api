@@ -10,7 +10,7 @@ class ExecutionTaskResult extends TaskResult {
   const SANDBOX_RESULTS_KEY = "sandbox_results";
 
   /** @var IStats Statistics of the execution */
-  private $stats = NULL;
+  private $stats;
 
   /**
    * Constructor
@@ -36,7 +36,7 @@ class ExecutionTaskResult extends TaskResult {
 
   /**
    * Get parsed statistics of execution
-   * @return Stats|NULL Statistics of the execution
+   * @return IStats Statistics of the execution
    */
   public function getStats(): IStats {
     return $this->stats;

@@ -1,7 +1,6 @@
 <?php
 namespace App\Security;
 use App\Exceptions\InvalidArgumentException;
-use App\Model\Entity\User;
 use Nette\Security\IIdentity;
 use Nette\Security\IUserStorage;
 use Nette;
@@ -18,7 +17,7 @@ class UserStorage extends Nette\Object implements IUserStorage
 
   private $authenticated;
 
-  /** @var User */
+  /** @var IIdentity */
   private $cachedIdentity;
 
   public function __construct(AccessManager $accessManager, Nette\Http\IRequest $httpRequest)
@@ -82,8 +81,8 @@ class UserStorage extends Nette\Object implements IUserStorage
 
   /**
    * No-op - doesn't really make sense with this implementation
-   * @param  string|int|\DateTimeInterface number of seconds or timestamp
-   * @param  int Log out when the browser is closed | Clear the identity from persistent storage?
+   * @param  string|int|\DateTimeInterface $time number of seconds or timestamp
+   * @param  int $flags Log out when the browser is closed | Clear the identity from persistent storage?
    * @return self
    */
   function setExpiration($time, $flags = 0)
@@ -97,6 +96,6 @@ class UserStorage extends Nette\Object implements IUserStorage
    */
   function getLogoutReason()
   {
-    return NULL;
+    return 0;
   }
 }

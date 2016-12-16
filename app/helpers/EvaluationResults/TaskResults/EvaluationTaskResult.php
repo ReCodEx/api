@@ -13,7 +13,7 @@ class EvaluationTaskResult extends TaskResult {
   /** @var string The output of the judge */
   private $judgeOutput = "";
 
-  /** @var float Explicit score from the results */
+  /** @var float|NULL Explicit score from the results */
   private $score = NULL;
 
   /**

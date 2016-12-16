@@ -54,6 +54,7 @@ class SolutionRuntimeConfig implements JsonSerializable
   /**
    * Created from.
    * @ORM\ManyToOne(targetEntity="SolutionRuntimeConfig")
+   * @var SolutionRuntimeConfig
    */
   protected $solutionRuntimeConfig;
 
@@ -61,7 +62,7 @@ class SolutionRuntimeConfig implements JsonSerializable
     string $name,
     RuntimeEnvironment $runtimeEnvironment,
     string $jobConfigFilePath,
-    $createdFrom = NULL
+    SolutionRuntimeConfig $createdFrom = NULL
   ) {
     $this->name = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;
@@ -72,7 +73,7 @@ class SolutionRuntimeConfig implements JsonSerializable
 
   /**
    * Check the job configurations of all the files.
-   * @return array All the runtime environments have valid job configs.
+   * @return bool True if and only if all the runtime environments have valid job configs.
    */
   public function isValid() {
     try {
@@ -95,7 +96,7 @@ class SolutionRuntimeConfig implements JsonSerializable
       "jobConfig" => $this->getJobConfigFileContent(),
       "isValid" => $this->isValid(),
       "runtimeEnvironmentId" => $this->runtimeEnvironment->getId(),
-      "createdFrom" => $this->solutionRuntimeConfig ? $this->solutionRuntimeConfig->id : ""
+      "createdFrom" => $this->solutionRuntimeConfig ? $this->solutionRuntimeConfig->getId() : ""
     ];
   }
 

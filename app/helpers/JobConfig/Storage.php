@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 
+use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\JobConfigStorageException;
 use Nette\Caching\Cache;
@@ -16,7 +17,7 @@ use Symfony\Component\Yaml\Exception\ParseException;
  */
 class Storage {
 
-  /** @var Cache Run-time memory cache for job configurations */
+  /** @var Cache|NULL Run-time memory cache for job configurations */
   private static $cache = NULL;
 
   /**
@@ -131,9 +132,10 @@ class Storage {
   /**
    * Parse configuration from given string a create and return new instance
    * of JobConfig.
+   * @param string $config raw string configuration
    * @throws MalformedJobConfigException In case of YAML parsing error
    * @throws JobConfigLoadingException In case of semantic error
-   * @return array Parsed YAML config
+   * @return JobConfig Parsed YAML config
    */
   public function parseJobConfig(string $config): JobConfig {
     try {

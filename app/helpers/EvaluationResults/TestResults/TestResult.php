@@ -63,7 +63,7 @@ class TestResult implements ITestResult {
     $this->status = self::calculateStatus($this->status, $evaluationResult->getStatus());
 
     if ($this->status === self::STATUS_OK &&
-      (!$this->didExecutionMeetLimits() || !$this->evaluationResult->getScore() === self::SCORE_MIN)) {
+      (!$this->didExecutionMeetLimits() || ($this->evaluationResult->getScore() !== self::SCORE_MIN))) {
         $this->status = self::STATUS_FAILED; // the tasks execution was OK, but the result is not OK
     }
   }
@@ -101,18 +101,18 @@ class TestResult implements ITestResult {
 
   /**
    * Get parsed result statistics for each task
-   * @return array List of results for each task in this test
+   * @return IStats[] List of results for each task in this test
    */
   public function getStats(): array {
     return array_map(
-      function ($result) {return $result->getStats(); },
+      function (ExecutionTaskResult $result) {return $result->getStats(); },
       $this->executionResults
     );
   }
 
   /**
    * Gets array of execution tasks results
-   * @return array List of results for all execution tasks in this test
+   * @return ExecutionTaskResult[] List of results for all execution tasks in this test
    */
   public function getExecutionResults(): array {
     return $this->executionResults;

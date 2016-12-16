@@ -44,11 +44,11 @@ class Task {
   private $commandBinary = "";
   /** @var array Arguments for execution command */
   private $commandArguments = [];
-  /** @var string Type of the task */
+  /** @var string|NULL Type of the task */
   private $type = NULL;
-  /** @var string ID of the test to which this task corresponds */
+  /** @var string|NULL ID of the test to which this task corresponds */
   private $testId = NULL;
-  /** @var SandboxConfig */
+  /** @var SandboxConfig|NULL */
   private $sandboxConfig = NULL;
   /** @var array Additional data */
   private $data = [];

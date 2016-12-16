@@ -108,7 +108,7 @@ class EvaluationResults {
 
   /**
    * Get results for all logical tests, one result per test
-   * @return TestResult[] Results of all test inside job
+   * @return ITestResult[] Results of all test inside job
    * @internal param string $hardwareGroupId Hardware group
    */
   public function getTestsResults() {
@@ -120,7 +120,7 @@ class EvaluationResults {
   /**
    * Get (aggregate) result for one test
    * @param TestConfig $test Configuration of the test
-   * @return TestResult Results for specified test
+   * @return ITestResult Results for specified test
    */
   public function getTestResult(TestConfig $test) {
     if ($this->initOK === FALSE) {

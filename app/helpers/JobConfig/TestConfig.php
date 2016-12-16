@@ -25,7 +25,7 @@ class TestConfig {
   private $executionTaskType = [];
 
   /** @var EvaluationTaskType The task which defines the evaluation part of the test */
-  private $evaluationTaskType = NULL;
+  private $evaluationTaskType;
 
   /**
    * Construct test configuration with all needed information.
@@ -63,7 +63,7 @@ class TestConfig {
 
   /**
    * Get limits for all included execution tasks.
-   * @param string Desired hwgroup
+   * @param string $hardwareGroupId Desired hwgroup
    * @return array Map with task-id (key) and limits for this task (Limits type)
    */
   public function getLimits($hardwareGroupId): array {
@@ -87,6 +87,7 @@ class TestConfig {
 
   /**
    * Get array of execution tasks (Task).
+   * @return Task[]
    */
   public function getExecutionTasks(): array {
     $tasks = [];

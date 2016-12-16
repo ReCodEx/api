@@ -11,7 +11,7 @@ use App\Model\Entity\Assignment;
 class SolutionRuntimeConfigs extends BaseRepository {
 
   /**
-   * @var RuntimeENvironments
+   * @var RuntimeEnvironments
    */
   private $runtimeEnvironments;
 
@@ -30,7 +30,7 @@ class SolutionRuntimeConfigs extends BaseRepository {
    */
   public function detectOrThrow(Assignment $assignment, array $files): SolutionRuntimeConfig {
     $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($files);
-    $configs = $assignment->getSolutionRuntimeConfigs()->filter(function ($config) use ($runtimeEnvironment) {
+    $configs = $assignment->getSolutionRuntimeConfigs()->filter(function (SolutionRuntimeConfig $config) use ($runtimeEnvironment) {
       return $config->getRuntimeEnvironment()->getId() === $runtimeEnvironment->getId();
     });
 

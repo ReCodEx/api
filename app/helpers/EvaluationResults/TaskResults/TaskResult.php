@@ -95,7 +95,7 @@ class TaskResult {
   /**
    * Get as specific result for execution tasks
    * @throws ResultsLoadingException If cast is not possible
-   * @return ExecutionTaskResult The result
+   * @return TaskResult The result
    */
   public function getAsExecutionTaskResult() {
     if ($this->isSkipped()) {
@@ -107,7 +107,7 @@ class TaskResult {
   /**
    * Get as specific result for evaluation tasks
    * @throws ResultsLoadingException If cast is not possible
-   * @return EvaluationTaskResult The result
+   * @return TaskResult The result
    */
   public function getAsEvaluationTaskResult() {
     if ($this->isSkipped()) {

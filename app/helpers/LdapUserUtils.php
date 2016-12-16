@@ -7,7 +7,6 @@ use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Platform\Native\Driver;
 use Toyota\Component\Ldap\Exception\BindException;
 use Toyota\Component\Ldap\Exception\ConnectionException;
-use Toyota\Component\Ldap\Exception\OptionException;
 
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\LdapConnectException;
@@ -41,7 +40,7 @@ class LdapUserUtils {
   /** @var string Name of userId element (such as cn or cunipersonalid) */
   private $bindName;
 
-  /** @var Manager Anonymous LDAP connection for searching */
+  /** @var Manager|NULL Anonymous LDAP connection for searching */
   private $anonymousManager = NULL;
 
   /**

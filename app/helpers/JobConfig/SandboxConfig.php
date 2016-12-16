@@ -24,11 +24,11 @@ class SandboxConfig {
 
   /** @var string Sandbox name */
   private $name = "";
-  /** @var string Standard input redirection file */
+  /** @var string|NULL Standard input redirection file */
   private $stdin = NULL;
-  /** @var string Standard output redirection file */
+  /** @var string|NULL Standard output redirection file */
   private $stdout = NULL;
-  /** @var string Standard error redirection file */
+  /** @var string|NULL Standard error redirection file */
   private $stderr = NULL;
   /** @var array List of limits */
   private $limits = [];
@@ -128,7 +128,7 @@ class SandboxConfig {
    * Get the configured limits for a specific hardware group.
    * @param string $hardwareGroupId Hardware group ID
    * @return Limits Limits for the specified hardware group
-   * @throws JobConfigLoadingException
+   * @throws MalformedJobConfigException
    */
   public function getLimits(string $hardwareGroupId): Limits {
     if (!isset($this->limits[$hardwareGroupId])) {
@@ -146,7 +146,6 @@ class SandboxConfig {
    */
   public function setLimits(Limits $limits) {
     $this->limits[$limits->getId()] = $limits;
-    return $this;
   }
 
   /**

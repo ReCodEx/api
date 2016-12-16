@@ -10,7 +10,7 @@ class AccessToken {
   const SCOPE_REFRESH = "refresh";
   const SCOPE_CHANGE_PASSWORD = "change-password";
 
-  /** @var string The subject */
+  /** @var string|NULL The subject */
   private $sub = NULL;
 
   /** @var string[] Array of scopes this access can access */
@@ -22,7 +22,7 @@ class AccessToken {
    */
   public function __construct($payload) {
     if (isset($payload->sub)) {
-      $this->sub = $payload->sub;
+      $this->sub = (string) $payload->sub;
     }
 
     if (isset($payload->scopes)) {
@@ -39,7 +39,7 @@ class AccessToken {
       throw new InvalidAccessTokenException("Missing the required 'sub' parameter of the token payload.");
     }
 
-    return (string) $this->sub;
+    return $this->sub;
   }
 
   /**

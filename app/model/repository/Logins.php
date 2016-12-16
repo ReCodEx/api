@@ -33,7 +33,7 @@ class Logins extends BaseRepository {
   /**
    * Find user's login
    * @param   string $userId ID of the user
-   * @return  User|NULL
+   * @return  Login|NULL
    */
   public function findByUserId($userId) {
     return $this->findOneBy([ "user" => $userId ]);
