@@ -5,8 +5,8 @@ App\Model\Entity\Exercise:
                 - @demoAdmin
         difficulty: "moderate"
         name: "Convex hull"
-        addLocalizedAssignment:
-            - @demoLocalizedAssignment
+        addLocalizedText:
+            - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
@@ -15,8 +15,8 @@ App\Model\Entity\Exercise:
                 - @demoAdmin
         difficulty: "easy"
         name: "<current()> exercise"
-        addLocalizedAssignment:
-            - @demoLocalizedAssignment
+        addLocalizedText:
+            - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
 

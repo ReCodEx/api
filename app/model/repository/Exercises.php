@@ -19,16 +19,16 @@ class Exercises extends BaseRepository {
    * @param array $localizations localizations which will be placed to exercise
    * @param bool $flush if true then all changes will be flush at the end
    */
-  public function replaceLocalizedAssignments(Exercise $exercise, array $localizations, bool $flush = TRUE) {
-    $originalLocalizations = $exercise->getLocalizedAssignments()->toArray();
+  public function replaceLocalizedTexts(Exercise $exercise, array $localizations, bool $flush = TRUE) {
+    $originalLocalizations = $exercise->getLocalizedTexts()->toArray();
 
-    foreach ($localizations as $localizedAssignment) {
-      $exercise->addLocalizedAssignment($localizedAssignment);
-      $this->persist($localizedAssignment);
+    foreach ($localizations as $localized) {
+      $exercise->addLocalizedText($localized);
+      $this->persist($localized);
     }
 
     foreach ($originalLocalizations as $localization) {
-      $exercise->removeLocalizedAssignment($localization);
+      $exercise->removeLocalizedText($localization);
     }
 
     if ($flush) {

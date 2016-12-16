@@ -7,17 +7,17 @@ use App\Model\Entity\Assignment;
 
 class Assignments extends BaseSoftDeleteRepository {
 
-  public function replaceLocalizedAssignments(Assignment $assignment, $localizations, $flush = TRUE) {
+  public function replaceLocalizedTexts(Assignment $assignment, $localizations, $flush = TRUE) {
     // TODO solve duplicate code in Exercises class
-    $originalLocalizations = $assignment->getLocalizedAssignments()->toArray();
+    $originalLocalizations = $assignment->getLocalizedTexts()->toArray();
 
-    foreach ($localizations as $localizedAssignment) {
-      $assignment->addLocalizedAssignment($localizedAssignment);
-      $this->persist($localizedAssignment);
+    foreach ($localizations as $localized) {
+      $assignment->addLocalizedText($localized);
+      $this->persist($localized);
     }
 
     foreach ($originalLocalizations as $localization) {
-      $assignment->removeLocalizedAssignment($localization);
+      $assignment->removeLocalizedText($localization);
     }
 
     if ($flush) {

@@ -25,8 +25,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getSubmissionsCountLimit()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
- * @method Collection getLocalizedAssignments()
- * @method removeLocalizedAssignment(Assignment $assignment)
+ * @method Collection getLocalizedTexts()
+ * @method removeLocalizedText(Assignment $assignment)
  */
 class Assignment implements JsonSerializable
 {
@@ -64,7 +64,7 @@ class Assignment implements JsonSerializable
     $this->solutionRuntimeConfigs = $exercise->getSolutionRuntimeConfigs();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
-    $this->localizedAssignments = $exercise->getLocalizedAssignments();
+    $this->localizedTexts = $exercise->getLocalizedTexts();
     $this->canViewLimitRatios = $canViewLimitRatios;
     $this->version = 1;
     $this->isBonus = $isBonus;
@@ -72,7 +72,7 @@ class Assignment implements JsonSerializable
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
-    if ($exercise->getLocalizedAssignments()->count() == 0) {
+    if ($exercise->getLocalizedTexts()->count() == 0) {
       throw new InvalidStateException("There are no localized descriptions of exercise");
     }
 
@@ -230,18 +230,18 @@ class Assignment implements JsonSerializable
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="assignments")
+   * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="assignments")
    * @var Collection|Selectable
    */
-  protected $localizedAssignments;
+  protected $localizedTexts;
 
-  public function addLocalizedAssignment(LocalizedAssignment $assignment) {
-    $this->localizedAssignments->add($assignment);
+  public function addLocalizedText(LocalizedText $assignment) {
+    $this->localizedTexts->add($assignment);
   }
 
-  public function getLocalizedAssignmentByLocale($locale) {
+  public function getLocalizedTextByLocale($locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedAssignments->matching($criteria)->first();
+    $first = $this->localizedTexts->matching($criteria)->first();
     return $first === FALSE ? NULL : $first;
   }
 
@@ -363,7 +363,7 @@ class Assignment implements JsonSerializable
       "name" => $this->name,
       "version" => $this->version,
       "isPublic" => $this->isPublic,
-      "localizedAssignments" => $this->localizedAssignments->getValues(),
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeadline" => $this->secondDeadline->getTimestamp(),

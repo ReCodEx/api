@@ -17,7 +17,7 @@ use App\Helpers\ExerciseFileStorage;
 use App\Model\Entity\SolutionRuntimeConfig;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\HardwareGroups;
-use App\Model\Entity\LocalizedAssignment;
+use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
 use Exception;
@@ -113,7 +113,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="version", description="Version of the edited exercise")
    * @Param(type="post", name="description", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
-   * @Param(type="post", name="localizedAssignments", validation="array", description="A description of the exercise")
+   * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
    */
   public function actionUpdateDetail(string $id) {
@@ -144,35 +144,34 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setDescription($description);
 
     // retrieve localizations and prepare some temp variables
-    $localizedAssignments = $req->getPost("localizedAssignments");
+    $localizedTexts = $req->getPost("localizedTexts");
     $localizations = [];
 
-    // localized assignments cannot be empty
-    if (count($localizedAssignments) == 0) {
+    // localized texts cannot be empty
+    if (count($localizedTexts) == 0) {
       throw new InvalidArgumentException("No entry for localized texts given.");
     }
 
     // go through given localizations and construct database entities
-    foreach ($localizedAssignments as $localization) {
+    foreach ($localizedTexts as $localization) {
       $lang = $localization["locale"];
 
       if (array_key_exists($lang, $localizations)) {
         throw new InvalidArgumentException("Duplicate entry for language $lang");
       }
 
-      // create all new localized assignments
-      $localized = new LocalizedAssignment(
-        $localization["name"],
-        $localization["description"],
+      // create all new localized texts
+      $localized = new LocalizedText(
+        $localization["text"],
         $lang,
-        $exercise->getLocalizedAssignmentByLocale($lang)
+        $exercise->getLocalizedTextByLocale($lang)
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->exercises->replaceLocalizedAssignments($exercise, array_values($localizations), FALSE);
+    $this->exercises->replaceLocalizedTexts($exercise, array_values($localizations), FALSE);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }

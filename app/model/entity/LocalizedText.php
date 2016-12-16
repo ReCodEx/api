@@ -10,21 +10,20 @@ use DateTime;
 /**
  * @ORM\Entity
  */
-class LocalizedAssignment implements JsonSerializable
+class LocalizedText implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
   public function __construct(
-    string $name,
-    string $description,
+    string $text,
     string $locale,
     $createdFrom = NULL
   ) {
-    $this->name = $name;
-    $this->description = $description;
+    $this->text = $text;
     $this->locale = $locale;
     $this->assignments = new ArrayCollection;
-    $this->localizedAssignment = $createdFrom;
+    $this->exercises = new ArrayCollection;
+    $this->createdFrom = $createdFrom;
     $this->createdAt = new DateTime;
   }
 
@@ -37,14 +36,9 @@ class LocalizedAssignment implements JsonSerializable
 
   /**
    * Created from.
-   * @ORM\ManyToOne(targetEntity="LocalizedAssignment")
+   * @ORM\ManyToOne(targetEntity="LocalizedText")
    */
-  protected $localizedAssignment;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
+  protected $createdFrom;
 
   /**
    * @ORM\Column(type="string")
@@ -54,7 +48,7 @@ class LocalizedAssignment implements JsonSerializable
   /**
    * @ORM\Column(type="text")
    */
-  protected $description;
+  protected $text;
 
   /**
    * @ORM\Column(type="datetime")
@@ -62,45 +56,44 @@ class LocalizedAssignment implements JsonSerializable
   protected $createdAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="localizedAssignments")
+   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="localizedTexts")
    */
   protected $assignments;
 
   public function addAssignment(Assignment $assignment) {
     $this->assignments[] = $assignment;
-    $assignment->addLocalizedAssignment($this);
+    $assignment->addLocalizedText($this);
     return $this;
   }
 
   public function removeAssignment(Assignment $assignment) {
     $this->assignments->removeElement($assignment);
-    $assignment->removeLocalizedAssignment($this);
+    $assignment->removeLocalizedText($this);
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="localizedAssignments")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="localizedTexts")
    */
   protected $exercises;
 
   public function addExercise(Exercise $exercise) {
     $this->exercises[] = $exercise;
-    $exercise->addLocalizedAssignment($this);
+    $exercise->addLocalizedText($this);
     return $this;
   }
 
   public function removeExercise(Exercise $exercise) {
     $this->exercises->removeElement($exercise);
-    $exercise->removeLocalizedAssignment($this);
+    $exercise->removeLocalizedText($this);
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "name" => $this->name,
       "locale" => $this->locale,
-      "description" => $this->description,
+      "text" => $this->text,
       "createdAt" => $this->createdAt->getTimestamp(),
-      "createdFrom" => $this->localizedAssignment ? $this->localizedAssignment->id : ""
+      "createdFrom" => $this->createdFrom ? $this->createdFrom->id : ""
     ];
   }
 }

@@ -94,8 +94,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $name = "newAssignmentName";
     $isPublic = true;
-    $localizedAssignments = [
-      [ "locale" => "locA", "description" => "descA", "name" => "nameA" ]
+    $localizedTexts = [
+      [ "locale" => "locA", "text" => "descA" ]
     ];
     $firstDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeFirstDeadline = 123;
@@ -114,7 +114,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'name' => $name,
         'isPublic' => $isPublic,
         'version' => 1,
-        'localizedAssignments' => $localizedAssignments,
+        'localizedTexts' => $localizedTexts,
         'firstDeadline' => $firstDeadline,
         'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
         'submissionsCountLimit' => $submissionsCountLimit,
@@ -149,13 +149,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($isBonus, $updatedAssignment->getIsBonus());
     Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment->getPointsPercentualThreshold());
 
-    // check localized assignment
-    Assert::count(1, $updatedAssignment->getLocalizedAssignments());
-    $localized = current($localizedAssignments);
-    $updatedLocalized = $updatedAssignment->getLocalizedAssignments()->first();
+    // check localized texts
+    Assert::count(1, $updatedAssignment->getLocalizedTexts());
+    $localized = current($localizedTexts);
+    $updatedLocalized = $updatedAssignment->getLocalizedTexts()->first();
     Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
-    Assert::equal($updatedLocalized->getDescription(), $localized["description"]);
-    Assert::equal($updatedLocalized->getName(), $localized["name"]);
+    Assert::equal($updatedLocalized->getText(), $localized["text"]);
   }
 
   public function testCreateAssignment()

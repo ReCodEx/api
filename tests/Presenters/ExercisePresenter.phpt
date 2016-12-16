@@ -123,11 +123,10 @@ class TestExercisesPresenter extends Tester\TestCase
         'difficulty' => 'super hard',
         'isPublic' => FALSE,
         'description' => 'some neaty description',
-        'localizedAssignments' => [
+        'localizedTexts' => [
           [
             'locale' => 'cs-CZ',
-            'description' => 'new descr',
-            'name' => 'SomeNeatyName'
+            'text' => 'new descr',
           ]
         ]
       ]
@@ -142,16 +141,15 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal(FALSE, $result['payload']->isPublic);
     Assert::equal('some neaty description', $result['payload']->description);
 
-    $updatedLocalizedAssignments = $result['payload']->localizedAssignments;
-    Assert::count(count($exercise->localizedAssignments), $updatedLocalizedAssignments);
+    $updatedLocalizedTexts = $result['payload']->localizedTexts;
+    Assert::count(count($exercise->localizedTexts), $updatedLocalizedTexts);
 
-    foreach ($exercise->localizedAssignments as $localized) {
-      Assert::true($updatedLocalizedAssignments->contains($localized));
+    foreach ($exercise->localizedTexts as $localized) {
+      Assert::true($updatedLocalizedTexts->contains($localized));
     }
-    Assert::true($updatedLocalizedAssignments->exists(function ($key, $localized) {
+    Assert::true($updatedLocalizedTexts->exists(function ($key, $localized) {
       if ($localized->locale == "cs-CZ"
-          && $localized->description == "new descr"
-          && $localized->name == "SomeNeatyName") {
+          && $localized->text == "new descr") {
         return TRUE;
       }
 

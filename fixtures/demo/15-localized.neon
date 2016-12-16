@@ -1,6 +1,5 @@
-App\Model\Entity\LocalizedAssignment:
-    demoLocalizedAssignment:
+App\Model\Entity\LocalizedText:
+    demoLocalizedText:
         __construct:
-            - "Convex hull - desc"
             - "A true classic"
             - "en"

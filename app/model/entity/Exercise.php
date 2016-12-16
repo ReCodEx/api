@@ -16,11 +16,11 @@ use Doctrine;
  * @method string getId()
  * @method string getName()
  * @method Doctrine\Common\Collections\Collection getSolutionRuntimeConfigs()
- * @method Doctrine\Common\Collections\Collection getLocalizedAssignments()
+ * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method setName(string $name)
  * @method addSolutionRuntimeConfig(SolutionRuntimeConfig $config)
  * @method removeSolutionRuntimeConfig(SolutionRuntimeConfig $config)
- * @method removeLocalizedAssignment(Assignment $assignment)
+ * @method removeLocalizedText(Assignment $assignment)
  */
 class Exercise implements JsonSerializable
 {
@@ -61,10 +61,10 @@ class Exercise implements JsonSerializable
   protected $updatedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", inversedBy="exercises")
+   * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="exercises")
    * @var Collection|Selectable
    */
-  protected $localizedAssignments;
+  protected $localizedTexts;
 
   /**
    * @ORM\Column(type="string")
@@ -134,14 +134,14 @@ class Exercise implements JsonSerializable
    * Constructor
    */
   private function __construct($name, $version, $difficulty,
-      Collection $localizedAssignments, Collection $solutionRuntimeConfigs,
+      Collection $localizedTexts, Collection $solutionRuntimeConfigs,
       Collection $supplementaryFiles,
       $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
-    $this->localizedAssignments = $localizedAssignments;
+    $this->localizedTexts = $localizedTexts;
     $this->difficulty = $difficulty;
     $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
     $this->exercise = $exercise;
@@ -169,7 +169,7 @@ class Exercise implements JsonSerializable
       $exercise->name,
       1,
       $exercise->difficulty,
-      $exercise->localizedAssignments,
+      $exercise->localizedTexts,
       $exercise->solutionRuntimeConfigs,
       $exercise->supplementaryFiles,
       $exercise,
@@ -183,18 +183,18 @@ class Exercise implements JsonSerializable
     $this->solutionRuntimeConfigs->add($config);
   }
 
-  public function addLocalizedAssignment(LocalizedAssignment $localizedAssignment) {
-    $this->localizedAssignments->add($localizedAssignment);
+  public function addLocalizedText(LocalizedText $localizedText) {
+    $this->localizedTexts->add($localizedText);
   }
 
   /**
-   * Get localized assignment based on given locale.
+   * Get localized text based on given locale.
    * @param string $locale
-   * @return LocalizedAssignment|NULL
+   * @return LocalizedText|NULL
    */
-  public function getLocalizedAssignmentByLocale(string $locale) {
+  public function getLocalizedTextByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedAssignments->matching($criteria)->first();
+    $first = $this->localizedTexts->matching($criteria)->first();
     return $first === FALSE ? NULL : $first;
   }
 
@@ -218,7 +218,7 @@ class Exercise implements JsonSerializable
       "version" => $this->version,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedAssignments" => $this->localizedAssignments->getValues(),
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
       "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
