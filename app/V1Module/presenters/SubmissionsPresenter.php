@@ -136,7 +136,11 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 
-    $stream = $this->fileServerProxy->downloadResultArchive($submission->getResultsUrl());
+    if (!$submission->hasEvaluation()) {
+      throw new ForbiddenRequestException("Submission is not evaluated yet");
+    }
+
+    $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
     $this->sendResponse(new GuzzleResponse($stream, $id . '.zip'));
   }
 

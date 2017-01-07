@@ -114,7 +114,27 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
   public function testDownloadResultArchive()
   {
-    // todo: test it!
+    PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+    $submission = current($this->presenter->submissions->findAll());
+
+    // mock everything you can
+    $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
+    $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
+    $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
+
+    $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+    $this->presenter->fileServerProxy = $mockProxy;
+
+    $request = new Nette\Application\Request('V1:Submissions',
+      'GET',
+      ['action' => 'downloadResultArchive', 'id' => $submission->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal($submission->getId() . '.zip', $response->getName());
   }
 
 }

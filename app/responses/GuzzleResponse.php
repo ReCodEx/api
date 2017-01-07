@@ -7,7 +7,7 @@ use Nette\Application\IResponse;
 use Psr\Http\Message\StreamInterface;
 
 /**
- * Response which can be used for guzzle streams implementing StreamInterface.
+ * File response which is meant to be used for guzzle streams implementing StreamInterface.
  */
 class GuzzleResponse implements IResponse {
 
@@ -38,6 +38,14 @@ class GuzzleResponse implements IResponse {
     $this->name = $name;
     $this->contentType = $contentType ? $contentType : 'application/octet-stream';
     $this->forceDownload = $forceDownload;
+  }
+
+  /**
+   * Get name of the file which will be returned.
+   * @return string
+   */
+  public function getName(): string {
+    return $this->name;
   }
 
   /**

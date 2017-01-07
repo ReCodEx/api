@@ -67,7 +67,7 @@ class FileServerProxy {
    * @param   string $url   URL of the file
    * @return  StreamInterface|NULL Stream with contents of the archive
    */
-  public function downloadResultArchive(string $url) {
+  public function getResultArchiveStream(string $url) {
     return $this->getRequest($url);
   }
 
