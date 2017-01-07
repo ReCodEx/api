@@ -3,8 +3,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\SubmissionsPresenter;
 use Tester\Assert;
-use App\Helpers\JobConfig;
-use App\Model\Entity\Licence;
 
 
 class TestSubmissionsPresenter extends Tester\TestCase
@@ -113,6 +111,12 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $submission = $this->presenter->submissions->get($submission->id);
     Assert::equal(4, $submission->getEvaluation()->getBonusPoints());
   }
+
+  public function testDownloadResultArchive()
+  {
+    // todo: test it!
+  }
+
 }
 
 $testCase = new TestSubmissionsPresenter();

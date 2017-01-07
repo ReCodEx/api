@@ -269,7 +269,12 @@ App\Model\Entity\Permission:
     "resource": @submissions
     "action": "set-bonus-points"
     "isAllowed": 1
-  "supervisor-hardwareGroupss-view-all":
+  "supervisor-submissions-download-result-archive":
+    "role": @supervisor
+    "resource": @submissions
+    "action": "download-result-archive"
+    "isAllowed": 1
+  "supervisor-hardwareGroups-view-all":
     "role": @supervisor
     "resource": @hardwareGroups
     "action": "view-all"
