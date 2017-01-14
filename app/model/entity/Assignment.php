@@ -21,7 +21,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
  * @method Collection getSolutionRuntimeConfigs()
- * @method int getPointsPercentualTreshold()
+ * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
@@ -45,7 +45,7 @@ class Assignment implements JsonSerializable
     int $maxPointsBeforeSecondDeadline = 0,
     bool $canViewLimitRatios = FALSE,
     bool $isBonus = FALSE,
-    $pointsPercentualThreshold = NULL
+    $pointsPercentualThreshold = 0
   ) {
     if ($secondDeadline == null) {
       $secondDeadline = $firstDeadline;
@@ -135,7 +135,7 @@ class Assignment implements JsonSerializable
   protected $isBonus;
 
   /**
-   * @ORM\Column(type="float", nullable=true)
+   * @ORM\Column(type="float")
    */
   protected $pointsPercentualThreshold;
 

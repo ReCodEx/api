@@ -149,7 +149,7 @@ class SolutionEvaluation implements JsonSerializable
 
     // let us know if submission meets points treshold
     $threshold = $submission->getPointsThreshold();
-    if ($threshold !== NULL && $this->score < $threshold) {
+    if ($this->score < $threshold) {
       $this->score = 0;
     }
 

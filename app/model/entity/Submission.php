@@ -65,14 +65,10 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
     /**
      * Get actual points treshold in points.
-     * @return int|NULL minimal points which submission has to gain
+     * @return int minimal points which submission has to gain
      */
-    public function getPointsThreshold() {
+    public function getPointsThreshold(): int {
       $threshold = $this->assignment->getPointsPercentualThreshold();
-      if ($threshold === NULL) {
-        return $threshold;
-      }
-
       return floor($this->getMaxPoints() * $threshold);
     }
 
