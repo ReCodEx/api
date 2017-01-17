@@ -37,6 +37,7 @@ App\Model\Entity\Submission:
                 - @submitUser1
                 - "@demoSolution<current()>"
                 - false
+        resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
 
 App\Model\Entity\SubmissionFailure:

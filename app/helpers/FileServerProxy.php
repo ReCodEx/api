@@ -14,6 +14,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 use ZipArchive;
 
 /**
@@ -57,6 +58,20 @@ class FileServerProxy {
   }
 
   /**
+   * Downloads the contents of a archive file and return it in form of guzzle stream.
+   * <p>
+   * Returning whole body is fine guzzle uses smart streams
+   * which will save content to filesystem if it is too big.
+   * But this must be considered when using it!
+   * </p>
+   * @param   string $url   URL of the file
+   * @return  StreamInterface|NULL Stream with contents of the archive
+   */
+  public function getResultArchiveStream(string $url) {
+    return $this->getRequest($url);
+  }
+
+  /**
    * Downloads the contents of a archive file at the given URL and return
    * unparsed YAML results of evaluation.
    * @param   string $url   URL of the file
@@ -64,13 +79,27 @@ class FileServerProxy {
    * @throws  SubmissionEvaluationFailedException when results are not available
    */
   public function downloadResults(string $url) {
+    $zip = $this->getRequest($url);
+    return $this->getResultYmlContent($zip);
+  }
+
+  /**
+   * Downloads the contents of a file with GET request and return it in form of guzzle stream.
+   * <p>
+   * Returning whole body is fine guzzle uses smart streams
+   * which will save content to filesystem if it is too big.
+   * But this must be considered when using it!
+   * </p>
+   * @param   string $url   URL of the file
+   * @return  StreamInterface|NULL Stream with contents of the archive
+   */
+  private function getRequest(string $url) {
     try {
       $response = $this->client->request("GET", $url);
     } catch (ClientException $e) {
       return NULL;
     }
-    $zip = $response->getBody();
-    return $this->getResultYmlContent($zip);
+    return $response->getBody();
   }
 
   /**
