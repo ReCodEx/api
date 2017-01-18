@@ -5,7 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\SolutionFile;
-use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
@@ -115,7 +115,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $runtimeId = $req->getPost("runtime");
 
     $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $runtimeId));
-    $configsFound = $exercise->getSolutionRuntimeConfigs()->matching($criteria);
+    $configsFound = $exercise->getRuntimeConfigs()->matching($criteria);
     $numOfResults = $configsFound->count();
     if ($numOfResults !== 1) {
       throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
@@ -160,8 +160,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
     $this->referenceEvaluations->persist($evaluation);
 
-    /** @var SolutionRuntimeConfig $runtimeConfig */
-    $runtimeConfig = $referenceSolution->getSolution()->getSolutionRuntimeConfig();
+    /** @var RuntimeConfig $runtimeConfig */
+    $runtimeConfig = $referenceSolution->getSolution()->getRuntimeConfig();
 
     // configure the job and start evaluation
     $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());

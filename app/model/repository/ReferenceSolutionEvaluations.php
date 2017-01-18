@@ -31,7 +31,7 @@ class ReferenceSolutionEvaluations extends BaseRepository {
     $eva = ReferenceSolutionEvaluation::class;
     $query = $this->em->createQuery(
       "SELECT eva FROM $eva eva INNER JOIN eva.referenceSolution ref " .
-      "  INNER JOIN ref.solution sol INNER JOIN sol.solutionRuntimeConfig rc " .
+      "  INNER JOIN ref.solution sol INNER JOIN sol.runtimeConfig rc " .
       "WHERE IDENTITY(ref.exercise) = :exercise " .
       "  AND IDENTITY(rc.runtimeEnvironment) = :environment " .
       "  AND eva.hwGroup = :hwGroup"

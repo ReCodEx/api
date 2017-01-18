@@ -14,7 +14,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
 use App\Helpers\ExerciseFileStorage;
-use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\RuntimeConfig;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedText;
@@ -241,7 +241,7 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new runtime configuration
-      $config = new SolutionRuntimeConfig(
+      $config = new RuntimeConfig(
         $runtimeConfig["name"],
         $environment,
         $jobConfigPath,
@@ -252,7 +252,7 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     // make changes to database
-    $this->exercises->replaceSolutionRuntimeConfigs($exercise, $configs, FALSE);
+    $this->exercises->replaceRuntimeConfigs($exercise, $configs, FALSE);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }

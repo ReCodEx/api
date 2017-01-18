@@ -5,10 +5,10 @@ use App\Model\Entity\UploadedFile;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Exceptions\NotFoundException;
-use App\Model\Entity\SolutionRuntimeConfig;
+use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\Assignment;
 
-class SolutionRuntimeConfigs extends BaseRepository {
+class RuntimeConfigs extends BaseRepository {
 
   /**
    * @var RuntimeEnvironments
@@ -16,7 +16,7 @@ class SolutionRuntimeConfigs extends BaseRepository {
   private $runtimeEnvironments;
 
   public function __construct(EntityManager $em, RuntimeEnvironments $environments) {
-    parent::__construct($em, SolutionRuntimeConfig::class);
+    parent::__construct($em, RuntimeConfig::class);
     $this->runtimeEnvironments = $environments;
   }
 
@@ -25,12 +25,12 @@ class SolutionRuntimeConfigs extends BaseRepository {
    * by the extensions of submitted files.
    * @param Assignment     $assignment   The assignment
    * @param UploadedFile[]  $files        The files
-   * @return SolutionRuntimeConfig
+   * @return RuntimeConfig
    * @throws NotFoundException
    */
-  public function detectOrThrow(Assignment $assignment, array $files): SolutionRuntimeConfig {
+  public function detectOrThrow(Assignment $assignment, array $files): RuntimeConfig {
     $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($files);
-    $configs = $assignment->getSolutionRuntimeConfigs()->filter(function (SolutionRuntimeConfig $config) use ($runtimeEnvironment) {
+    $configs = $assignment->getRuntimeConfigs()->filter(function (RuntimeConfig $config) use ($runtimeEnvironment) {
       return $config->getRuntimeEnvironment()->getId() === $runtimeEnvironment->getId();
     });
 

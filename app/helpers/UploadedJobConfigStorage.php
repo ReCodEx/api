@@ -66,7 +66,7 @@ class UploadedJobConfigStorage {
   }
 
   public function copyToUserAndUpdateRuntimeConfigs(Assignment $assignment, User $user) {
-    foreach ($assignment->getSolutionRuntimeConfigs() as $config) {
+    foreach ($assignment->getRuntimeConfigs() as $config) {
       $filePath = $this->getFilePath($user->getId(), $config->getJobConfigFilePath());
       @mkdir(dirname($filePath), self::DEFAULT_MKDIR_MODE, TRUE);
       if (!@copy($config->getJobConfigFilePath(), $filePath)) {

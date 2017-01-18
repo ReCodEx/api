@@ -264,7 +264,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $runtimeConfig = $assignment->getSolutionRuntimeConfigs()->first();
+    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
     $ext = current($runtimeConfig->getRuntimeEnvironment()->getExtensionsList());
 
     // save fake files into db
@@ -348,7 +348,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $runtimeConfig = $assignment->getSolutionRuntimeConfigs()->first();
+    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
     $ext = current($runtimeConfig->getRuntimeEnvironment()->getExtensionsList());
 
     // save fake files into db
@@ -464,7 +464,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignment = current($this->assignments->findAll());
-    $setLimitsCallCount = count($assignment->getSolutionRuntimeConfigs());
+    $setLimitsCallCount = count($assignment->getRuntimeConfigs());
 
     // prepare limits arrays
     $limit1 = [
@@ -489,7 +489,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     // construct post parameter environments
     $environments = [];
-    foreach ($assignment->getSolutionRuntimeConfigs() as $runtimeConfig) {
+    foreach ($assignment->getRuntimeConfigs() as $runtimeConfig) {
       $environments[] = [
         'environment' => ['id' => $runtimeConfig->getId()],
         'limits' => [

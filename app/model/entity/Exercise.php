@@ -15,11 +15,11 @@ use Doctrine;
  * @ORM\Entity
  * @method string getId()
  * @method string getName()
- * @method Doctrine\Common\Collections\Collection getSolutionRuntimeConfigs()
+ * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method setName(string $name)
- * @method addSolutionRuntimeConfig(SolutionRuntimeConfig $config)
- * @method removeSolutionRuntimeConfig(SolutionRuntimeConfig $config)
+ * @method addRuntimeConfig(RuntimeConfig $config)
+ * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
  */
 class Exercise implements JsonSerializable
@@ -72,9 +72,9 @@ class Exercise implements JsonSerializable
   protected $difficulty;
 
   /**
-   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="RuntimeConfig", cascade={"persist"})
    */
-  protected $solutionRuntimeConfigs;
+  protected $runtimeConfigs;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -134,7 +134,7 @@ class Exercise implements JsonSerializable
    * Constructor
    */
   private function __construct($name, $version, $difficulty,
-      Collection $localizedTexts, Collection $solutionRuntimeConfigs,
+      Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryFiles,
       $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
@@ -143,7 +143,7 @@ class Exercise implements JsonSerializable
     $this->updatedAt = new DateTime;
     $this->localizedTexts = $localizedTexts;
     $this->difficulty = $difficulty;
-    $this->solutionRuntimeConfigs = $solutionRuntimeConfigs;
+    $this->runtimeConfigs = $runtimeConfigs;
     $this->exercise = $exercise;
     $this->author = $user;
     $this->supplementaryFiles = $supplementaryFiles;
@@ -170,7 +170,7 @@ class Exercise implements JsonSerializable
       1,
       $exercise->difficulty,
       $exercise->localizedTexts,
-      $exercise->solutionRuntimeConfigs,
+      $exercise->runtimeConfigs,
       $exercise->supplementaryFiles,
       $exercise,
       $user,
@@ -179,8 +179,8 @@ class Exercise implements JsonSerializable
     );
   }
 
-  public function addRuntimeConfig(SolutionRuntimeConfig $config) {
-    $this->solutionRuntimeConfigs->add($config);
+  public function addRuntimeConfig(RuntimeConfig $config) {
+    $this->runtimeConfigs->add($config);
   }
 
   public function addLocalizedText(LocalizedText $localizedText) {
@@ -201,11 +201,11 @@ class Exercise implements JsonSerializable
   /**
    * Get runtime configuration based on environment identification.
    * @param RuntimeEnvironment $environment
-   * @return SolutionRuntimeConfig|NULL
+   * @return RuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->solutionRuntimeConfigs->filter(
-      function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
+    $first = $this->runtimeConfigs->filter(
+      function (RuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
     return $first === FALSE ? NULL : $first;
@@ -220,7 +220,7 @@ class Exercise implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
-      "solutionRuntimeConfigs" => $this->solutionRuntimeConfigs->getValues(),
+      "runtimeConfigs" => $this->runtimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
       "isPublic" => $this->isPublic,

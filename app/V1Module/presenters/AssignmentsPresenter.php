@@ -26,7 +26,7 @@ use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
-use App\Model\Repository\SolutionRuntimeConfigs;
+use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\Solutions;
@@ -86,7 +86,7 @@ class AssignmentsPresenter extends BasePresenter {
   public $files;
 
   /**
-   * @var SolutionRuntimeConfigs
+   * @var RuntimeConfigs
    * @inject
    */
   public $runtimeConfigurations;
@@ -305,11 +305,11 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   private function getDefaultScoreConfig(Assignment $assignment): string {
-    if (count($assignment->getSolutionRuntimeConfigs()) === 0) {
+    if (count($assignment->getRuntimeConfigs()) === 0) {
       throw new InvalidStateException("Assignment has no runtime configurations");
     }
 
-    $runtimeConfig = $assignment->getSolutionRuntimeConfigs()->first();
+    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
     $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
     try {
       $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
@@ -501,7 +501,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
 
     // get job config and its test cases
-    $environments = $assignment->getSolutionRuntimeConfigs()->map(
+    $environments = $assignment->getRuntimeConfigs()->map(
       function ($environment) use ($assignment) {
         $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
         $referenceEvaluations = [];
@@ -537,7 +537,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionSetLimits(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $assignmentRuntimeConfigsIds = $assignment->getSolutionRuntimeConfigsIds();
+    $assignmentRuntimeConfigsIds = $assignment->getRuntimeConfigsIds();
 
     $req = $this->getRequest();
     $environments = $req->getPost("environments");

@@ -20,7 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
- * @method Collection getSolutionRuntimeConfigs()
+ * @method Collection getRuntimeConfigs()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method bool getCanViewLimitRatios()
@@ -61,7 +61,7 @@ class Assignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
-    $this->solutionRuntimeConfigs = $exercise->getSolutionRuntimeConfigs();
+    $this->runtimeConfigs = $exercise->getRuntimeConfigs();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
     $this->localizedTexts = $exercise->getLocalizedTexts();
@@ -76,7 +76,7 @@ class Assignment implements JsonSerializable
       throw new InvalidStateException("There are no localized descriptions of exercise");
     }
 
-    if ($exercise->getSolutionRuntimeConfigs()->count() == 0) {
+    if ($exercise->getRuntimeConfigs()->count() == 0) {
       throw new InvalidStateException("There are no runtime configurations in exercise");
     }
 
@@ -150,10 +150,10 @@ class Assignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\ManyToMany(targetEntity="SolutionRuntimeConfig")
+   * @ORM\ManyToMany(targetEntity="RuntimeConfig")
    * @var Collection
    */
-  protected $solutionRuntimeConfigs;
+  protected $runtimeConfigs;
 
   /**
    * @ORM\Column(type="string", nullable=true)
@@ -336,23 +336,23 @@ class Assignment implements JsonSerializable
   /**
    * Get runtime configuration based on environment identification.
    * @param RuntimeEnvironment $environment
-   * @return SolutionRuntimeConfig|NULL
+   * @return RuntimeConfig|NULL
    */
   public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->solutionRuntimeConfigs->filter(
-      function (SolutionRuntimeConfig $runtimeConfig) use ($environment) {
+    $first = $this->runtimeConfigs->filter(
+      function (RuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
     return $first === FALSE ? NULL : $first;
   }
 
-  public function getSolutionRuntimeConfigsIds() {
-    return $this->solutionRuntimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+  public function getRuntimeConfigsIds() {
+    return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
   }
 
   public function getRuntimeEnvironmentsIds() {
-    return $this->solutionRuntimeConfigs->map(
-      function(SolutionRuntimeConfig $config) {
+    return $this->runtimeConfigs->map(
+      function(RuntimeConfig $config) {
         return $config->getRuntimeEnvironment()->getId();
       })->getValues();
   }

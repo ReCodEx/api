@@ -171,7 +171,7 @@ services:
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
   - App\Model\Repository\RuntimeEnvironments
-  - App\Model\Repository\SolutionRuntimeConfigs
+  - App\Model\Repository\RuntimeConfigs
   - App\Model\Repository\Solutions
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships

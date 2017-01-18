@@ -16,7 +16,7 @@ use App\Exceptions\JobConfigLoadingException;
  * @method string getJobConfigFilePath()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  */
-class SolutionRuntimeConfig implements JsonSerializable
+class RuntimeConfig implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -53,21 +53,21 @@ class SolutionRuntimeConfig implements JsonSerializable
 
   /**
    * Created from.
-   * @ORM\ManyToOne(targetEntity="SolutionRuntimeConfig")
-   * @var SolutionRuntimeConfig
+   * @ORM\ManyToOne(targetEntity="RuntimeConfig")
+   * @var RuntimeConfig
    */
-  protected $solutionRuntimeConfig;
+  protected $createdFrom;
 
   public function __construct(
     string $name,
     RuntimeEnvironment $runtimeEnvironment,
     string $jobConfigFilePath,
-    SolutionRuntimeConfig $createdFrom = NULL
+    RuntimeConfig $createdFrom = NULL
   ) {
     $this->name = $name;
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->jobConfigFilePath = $jobConfigFilePath;
-    $this->solutionRuntimeConfig = $createdFrom;
+    $this->createdFrom = $createdFrom;
     $this->createdAt = new \DateTime;
   }
 
@@ -96,7 +96,7 @@ class SolutionRuntimeConfig implements JsonSerializable
       "jobConfig" => $this->getJobConfigFileContent(),
       "isValid" => $this->isValid(),
       "runtimeEnvironmentId" => $this->runtimeEnvironment->getId(),
-      "createdFrom" => $this->solutionRuntimeConfig ? $this->solutionRuntimeConfig->getId() : ""
+      "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];
   }
 

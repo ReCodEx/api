@@ -180,7 +180,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @return Submission
    * @throws ForbiddenRequestException
    * @internal param array $files The submitted files
-   * @internal param SolutionRuntimeConfig $runtime Runtime configuration
+   * @internal param RuntimeConfig $runtime Runtime configuration
    */
     public static function createSubmission(
       string $note,

@@ -12,7 +12,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @ORM\Entity
  * @method string getId()
  * @method Collection getFiles()
- * @method SolutionRuntimeConfig getSolutionRuntimeConfig()
+ * @method RuntimeConfig getRuntimeConfig()
  */
 class Solution implements JsonSerializable
 {
@@ -37,12 +37,12 @@ class Solution implements JsonSerializable
     protected $files;
 
     /**
-     * @ORM\ManyToOne(targetEntity="SolutionRuntimeConfig")
+     * @ORM\ManyToOne(targetEntity="RuntimeConfig")
      */
-    protected $solutionRuntimeConfig;
+    protected $runtimeConfig;
 
     public function getHardwareGroupId() {
-      return $this->solutionRuntimeConfig->getHardwareGroup()->getId();
+      return $this->runtimeConfig->getHardwareGroup()->getId();
     }
 
     /**
@@ -64,13 +64,13 @@ class Solution implements JsonSerializable
     /**
      * @param User $user          The user who submits the solution
      * @param array $files
-     * @param SolutionRuntimeConfig $solutionRuntimeConfig
+     * @param RuntimeConfig $runtimeConfig
      */
-    public function __construct(User $user, SolutionRuntimeConfig $solutionRuntimeConfig) {
+    public function __construct(User $user, RuntimeConfig $runtimeConfig) {
       $this->user = $user;
       $this->files = new ArrayCollection;
       $this->evaluated = FALSE;
-      $this->solutionRuntimeConfig = $solutionRuntimeConfig;
+      $this->runtimeConfig = $runtimeConfig;
     }
 
   public function addFile(SolutionFile $file)

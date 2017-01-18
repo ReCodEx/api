@@ -42,16 +42,16 @@ class Exercises extends BaseRepository {
    * @param array $configs configurations which will be placed to exercise
    * @param bool $flush if true then all changes will be flush at the end
    */
-  public function replaceSolutionRuntimeConfigs(Exercise $exercise, array $configs, bool $flush = TRUE) {
-    $originalConfigs = $exercise->getSolutionRuntimeConfigs()->toArray();
+  public function replaceRuntimeConfigs(Exercise $exercise, array $configs, bool $flush = TRUE) {
+    $originalConfigs = $exercise->getRuntimeConfigs()->toArray();
 
     foreach ($configs as $config) {
-      $exercise->addSolutionRuntimeConfig($config);
+      $exercise->addRuntimeConfig($config);
       $this->persist($config);
     }
 
     foreach ($originalConfigs as $config) {
-      $exercise->removeSolutionRuntimeConfig($config);
+      $exercise->removeRuntimeConfig($config);
     }
 
     if ($flush) {

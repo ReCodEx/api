@@ -205,7 +205,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
 
-    $updatedRuntimeConfigs = $result["payload"]->getSolutionRuntimeConfigs();
+    $updatedRuntimeConfigs = $result["payload"]->getRuntimeConfigs();
     Assert::count(1, $updatedRuntimeConfigs);
     Assert::equal($updatedRuntimeConfigs->first()->name, "runtimeConfigName");
   }
