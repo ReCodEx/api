@@ -147,15 +147,15 @@ class SolutionEvaluation implements JsonSerializable
       $this->score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $this->scores);
     }
 
-    // let us know if submission meets points treshold
-    $threshold = $submission->getPointsThreshold();
-    if ($this->score < $threshold) {
-      $this->score = 0;
-    }
-
-    // calculate the score and points
+    // calculate points from the score
     $this->bonusPoints = 0;
     $this->points = floor($this->score * $maxPoints);
+
+    // let us know if submission meets points treshold
+    $threshold = $submission->getPointsThreshold();
+    if ($this->points < $threshold) {
+      $this->points = 0;
+    }
   }
 
 }
