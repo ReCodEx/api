@@ -138,7 +138,7 @@ class GroupMembership implements JsonSerializable
       "joinedAt" => $this->joinedAt ? $this->joinedAt->getTimestamp() : NULL,
       "rejectedAt" => $this->rejectedAt ? $this->rejectedAt->getTimestamp() : NULL,
       "studentSince" => $this->studentSince ? $this->studentSince->getTimestamp() : NULL,
-      "supervisorSince" => $this->supervisorSince ? $this->supervisorSince : NULL,
+      "supervisorSince" => $this->supervisorSince ? $this->supervisorSince->getTimestamp() : NULL,
     ];
   }
 
