@@ -121,8 +121,9 @@ class SolutionEvaluation implements JsonSerializable
 
   /**
    * Loads and processes the results of the submission.
+   * TODO for the sake of design purity, the parts that use the Submission should be moved to another class (even better, let's not calculate score in an entity class)
    * @param  EvaluationResults $results The interpreted results
-   * @param  Submission $submission The submission
+   * @param  Submission $submission|NULL The submission. It can be null in case we're handling a reference solution evaluation
    * @param  IScoreCalculator $calculator Calculates the score from given test results
    * @throws SubmissionEvaluationFailedException
    */
@@ -151,10 +152,12 @@ class SolutionEvaluation implements JsonSerializable
     $this->bonusPoints = 0;
     $this->points = floor($this->score * $maxPoints);
 
-    // let us know if submission meets points treshold
-    $threshold = $submission->getPointsThreshold();
-    if ($this->points < $threshold) {
-      $this->points = 0;
+    // if the submission does not meet point threshold, it does not deserve any points
+    if ($submission !== NULL) {
+      $threshold = $submission->getPointsThreshold();
+      if ($this->points < $threshold) {
+        $this->points = 0;
+      }
     }
   }
 
