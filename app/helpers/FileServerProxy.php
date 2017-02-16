@@ -80,6 +80,11 @@ class FileServerProxy {
    */
   public function downloadResults(string $url) {
     $zip = $this->getRequest($url);
+
+    if ($zip === null) {
+      return NULL; // Results are probably not ready yet
+    }
+
     return $this->getResultYmlContent($zip);
   }
 
