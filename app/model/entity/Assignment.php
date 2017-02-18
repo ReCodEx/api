@@ -307,12 +307,20 @@ class Assignment implements JsonSerializable
     return count($this->getValidSubmissions($user)) >= $this->submissionsCountLimit;
   }
 
+  /**
+   * @param User $user
+   * @return Submission
+   */
   public function getLastSolution(User $user) {
     $usersSolutions = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user));
     return $this->submissions->matching($usersSolutions)->first();
   }
 
+  /**
+   * @param User $user
+   * @return Submission
+   */
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))

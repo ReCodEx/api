@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Model\Entity\Group;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\ExternalLogin;
@@ -313,10 +314,10 @@ class UsersPresenter extends BasePresenter {
       "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
       "student" => $user->getGroupsAsStudent()->getValues(),
       "stats" => $user->getGroupsAsStudent()->map(
-        function ($group) use ($user) {
+        function (Group $group) use ($user) {
           return [
-            "id" => $group->id,
-            "name" => $group->name,
+            "id" => $group->getId(),
+            "name" => $group->getName(),
             "stats" => $group->getStudentsStats($user)
           ];
         }

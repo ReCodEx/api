@@ -15,6 +15,7 @@ use JsonSerializable;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
+ * @method string getName()
  * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  */
@@ -340,6 +341,7 @@ class Group implements JsonSerializable
     $gainedPoints = $this->getPointsGainedByStudent($student);
 
     $statuses = [];
+    /** @var Assignment $assignment */
     foreach ($this->getAssignments() as $assignment) {
       $best = $assignment->getBestSolution($student);
       $solution = $best ? $best : $assignment->getLastSolution($student);
