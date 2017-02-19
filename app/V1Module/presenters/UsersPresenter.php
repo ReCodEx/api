@@ -315,11 +315,12 @@ class UsersPresenter extends BasePresenter {
       "student" => $user->getGroupsAsStudent()->getValues(),
       "stats" => $user->getGroupsAsStudent()->map(
         function (Group $group) use ($user) {
-          return [
+          $stats = $group->getStudentsStats($user);
+          return array_merge([
             "id" => $group->getId(),
             "name" => $group->getName(),
-            "stats" => $group->getStudentsStats($user)
-          ];
+            "stats" => $stats
+          ], $stats);
         }
       )->getValues()
     ]);
