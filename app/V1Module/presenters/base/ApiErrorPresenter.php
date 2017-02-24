@@ -8,6 +8,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions as AE;
 use App\Model\Repository\UserActions;
 
+use Exception;
 use Nette\Http\IResponse;
 use Nette\Application\BadRequestException;
 
@@ -97,7 +98,12 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
       $action = isset($params[self::ACTION_KEY]) ? $params[self::ACTION_KEY] : self::DEFAULT_ACTION;
       unset($params[self::ACTION_KEY]);
       $fullyQualified = ':' . $req->getPresenterName() . ':' . $action;
-      $this->userActions->log($fullyQualified, $params, $code, $msg);
+
+      try {
+        $this->userActions->log($fullyQualified, $params, $code, $msg);
+      } catch (Exception $e) {
+        // Let's not lose our sleep over that...
+      }
     }
 
     // send the error message in the standard format

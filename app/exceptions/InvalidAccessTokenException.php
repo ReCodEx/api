@@ -4,7 +4,7 @@ namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 /**
- * Used when JWT decoding of given access token failed misserably.
+ * Used when JWT decoding of given access token failed miserably.
  */
 class InvalidAccessTokenException extends ApiException {
   /**
