@@ -74,9 +74,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   protected function handleLogging(\Throwable $exception) {
     if ($exception instanceof BadRequestException) {
       // nothing to log here
-    } else if ($exception instanceof UnauthorizedException
-        || $exception instanceof WrongCredentialsException
-        || $exception instanceof AE\BadRequestException) {
+    } else if ($exception instanceof ApiException && $exception->getCode() < 500) {
       $this->logger->log("HTTP code {$exception->getCode()}: {$exception->getMessage()} in {$exception->getFile()}:{$exception->getLine()}", 'access');
     } else {
       $this->logger->log($exception, ILogger::EXCEPTION);
