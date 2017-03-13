@@ -149,6 +149,10 @@ class Instance implements JsonSerializable
     });
   }
 
+  public function isAllowed() {
+    return $this->isAllowed;
+  }
+
   public function getGroupsForUser(User $user) {
     return $this->groups->filter(function ($group) use ($user) {
       if ($group->getDeletedAt() !== NULL) {

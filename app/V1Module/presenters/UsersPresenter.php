@@ -141,6 +141,8 @@ class UsersPresenter extends BasePresenter {
     $instance = $this->instances->get($instanceId);
     if (!$instance) {
       throw new BadRequestException("Instance '$instanceId' does not exist.");
+    } else if (!$instance->getIsOpen()) {
+      throw new BadRequestException("This instance is not open, you cannot register here.");
     }
 
     $username = $req->getPost("username");

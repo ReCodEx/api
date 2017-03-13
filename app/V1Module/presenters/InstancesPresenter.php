@@ -37,7 +37,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $instances = array_filter($this->instances->findAll(),
-        function (Instance $instance) { return $instance->getIsAllowed(); }
+        function (Instance $instance) { return $instance->isAllowed(); }
     );
     /** @var Identity $identity */
     $identity = $this->getUser()->getIdentity();
