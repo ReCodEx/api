@@ -35,9 +35,6 @@ class Stats implements IStats {
   /** @var boolean Whether the process was killed by the evaluation system */
   private $killed;
 
-  /** @var string Standard and error output of the task (if enabled) */
-  private $output;
-
   /**
    * Constructor
    * @param array $data Raw data from basic parsing of sandbox output
@@ -69,12 +66,6 @@ class Stats implements IStats {
       throw new ResultsLoadingException("Sandbox results do not include the '" . self::KILLED_KEY . "' field.");
     }
     $this->killed = $data[self::KILLED_KEY];
-
-    if (isset($data[self::OUTPUT_KEY])) {
-      $this->output = $data[self::OUTPUT_KEY];
-    } else {
-      $this->output = "";
-    }
   }
 
   /**
@@ -142,15 +133,6 @@ class Stats implements IStats {
    */
   public function wasKilled(): bool {
     return $this->killed;
-  }
-
-  /**
-   * Get standard and error output of the program (if enabled).
-   * May be truncated by worker.
-   * @return string The program output
-   */
-  public function getOutput(): string {
-    return $this->output;
   }
 
   /**

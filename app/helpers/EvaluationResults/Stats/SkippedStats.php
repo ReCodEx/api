@@ -81,15 +81,6 @@ class SkippedStats implements IStats {
   }
 
   /**
-   * Get standard and error output of the program (if enabled).
-   * May be truncated by worker.
-   * @return string The program output
-   */
-  public function getOutput(): string {
-    return "";
-  }
-
-  /**
    * Serialization of the data -> make a JSON of all the raw stats.
    * @return string Skipped task identifier "SKIPPED"
    */

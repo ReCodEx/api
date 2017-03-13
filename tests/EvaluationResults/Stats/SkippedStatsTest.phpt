@@ -17,8 +17,7 @@ class TestSkippedStats extends Tester\TestCase
     "message"   => "This is a random message",
     "status"    => "OK",
     "time"      => 0.037,
-    "killed"    => false,
-    "output"    => ""
+    "killed"    => false
 ];
 
   public function testParseStats() {
@@ -31,7 +30,6 @@ class TestSkippedStats extends Tester\TestCase
     Assert::false($stats->doesMeetAllCriteria(new Limits([ 'hw-group-id' => 'X', 'time' => 0.0, 'memory' => 0 ])));
     Assert::false($stats->isMemoryOK(0));
     Assert::false($stats->isTimeOK(0.0));
-    Assert::equal("", $stats->getOutput());
   }
 }
 

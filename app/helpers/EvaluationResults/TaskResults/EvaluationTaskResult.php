@@ -8,10 +8,6 @@ use Nette\Utils\Validators;
  * Results of evaluation tasks (judges)
  */
 class EvaluationTaskResult extends TaskResult {
-  const JUDGE_OUTPUT_KEY = "judge_output";
-
-  /** @var string The output of the judge */
-  private $judgeOutput = "";
 
   /** @var float|NULL Explicit score from the results */
   private $score = NULL;
@@ -24,14 +20,15 @@ class EvaluationTaskResult extends TaskResult {
     parent::__construct($data);
 
     // judge output is optional and only the first token is interpreted as float value between 0 and 1
-    if (isset($data[self::JUDGE_OUTPUT_KEY]) && !empty($data[self::JUDGE_OUTPUT_KEY])) {
-      $this->judgeOutput = $data[self::JUDGE_OUTPUT_KEY];
-      $token = strtok($this->judgeOutput, " ");
+    if (!empty($this->output)) {
+      $token = strtok($this->output, " ");
       if (Validators::isNumeric($token) === FALSE) {
         throw new ResultsLoadingException("First token of the judge's output for task '{$this->getId()}' cannot be interpreted as number.");
       }
 
       $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($token)));
+    } else {
+      $this->score = TaskResult::MAX_SCORE;
     }
   }
 
@@ -45,13 +42,4 @@ class EvaluationTaskResult extends TaskResult {
     }
     return parent::getScore();
   }
-
-  /**
-   * Raw standard output of judge execution
-   * @return string The output
-   */
-  public function getJudgeOutput(): string {
-    return $this->judgeOutput;
-  }
-
 }

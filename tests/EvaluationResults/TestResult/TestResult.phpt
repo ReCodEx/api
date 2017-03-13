@@ -49,7 +49,7 @@ class TestTestResult extends Tester\TestCase
   static $evalRes = [
     "task-id" => "X",
     "status" => TaskResult::STATUS_OK,
-    "judge_output" => "0.123"
+    "output" => "0.123"
   ];
 
   static $execRes = [

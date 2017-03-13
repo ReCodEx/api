@@ -86,7 +86,7 @@ App\Helpers\EvaluationResults\TestResult::__set_state(/* #0b4d */ array(
 	'evaluationResult' => App\Helpers\EvaluationResults\EvaluationTaskResult::__set_state(/* #29f7 */ array(
 		'judgeOutput' => '0.456',
 		'score' => 0.456,
-		'data' => array('task-id' => 'X', 'status' => 'OK', 'judge_output' => '0.456'),
+		'data' => array('task-id' => 'X', 'status' => 'OK', 'output' => '0.456'),
 		'id' => 'X',
 		'status' => 'OK',
 	)),

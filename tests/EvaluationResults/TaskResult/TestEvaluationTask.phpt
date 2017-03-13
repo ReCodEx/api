@@ -14,30 +14,30 @@ class TestEvaluationTask extends Tester\TestCase
     Assert::exception(function() { new EvaluationTaskResult([]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC' ]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new EvaluationTaskResult([ 'status' => 'XYZ' ]); }, ResultsLoadingException::CLASS);
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => NULL ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "123" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => NULL ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "123" ]); });
   }
 
   public function testWrongJudgeOutputDetection() {
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "abc" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "a1" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "1a" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "1e" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "1,0" ]); }, ResultsLoadingException::CLASS);
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "1.0" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "10" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "1" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "0123" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "0123" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "-123" ]); });
+    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "abc" ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "a1" ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1a" ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1e" ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1,0" ]); }, ResultsLoadingException::CLASS);
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1.0" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "10" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "0123" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "0123" ]); });
+    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "-123" ]); });
   }
 
   public function testParsingParams() {
-    $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => "123" ]);
+    $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "123" ]);
     Assert::same("ABC", $result->getId());
     Assert::same("XYZ", $result->getStatus());
-    Assert::equal("123", $result->getJudgeOutput());
+    Assert::equal("123", $result->getOutput());
   }
 
   public function testScoreCalculation() {
@@ -50,7 +50,7 @@ class TestEvaluationTask extends Tester\TestCase
     ];
 
     foreach ($judgeToScore as $judgeOutput => $score) {
-      $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'judge_output' => $judgeOutput ]);
+      $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => $judgeOutput ]);
       Assert::same($score, $result->getScore());
     }
   }

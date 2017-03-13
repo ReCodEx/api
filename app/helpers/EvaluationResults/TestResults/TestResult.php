@@ -233,7 +233,7 @@ class TestResult implements ITestResult {
    * @return string Standard output of judge binary (evaluation task)
    */
   public function getJudgeOutput(): string {
-    return $this->evaluationResult->getJudgeOutput();
+    return $this->evaluationResult->getOutput();
   }
 
 }

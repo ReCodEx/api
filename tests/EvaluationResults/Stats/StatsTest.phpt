@@ -16,8 +16,7 @@ class TestStats extends Tester\TestCase
     "message"   => "This is a random message",
     "status"    => "OK",
     "time"      => 0.037,
-    "killed"    => false,
-    "output"    => "This is an output"
+    "killed"    => false
 ];
 
   public function testParseStats() {
@@ -26,7 +25,6 @@ class TestStats extends Tester\TestCase
     Assert::equal(6032, $stats->getUsedMemory());
     Assert::equal(0.037, $stats->getUsedTime());
     Assert::equal("This is a random message", $stats->getMessage());
-    Assert::equal("This is an output", $stats->getOutput());
   }
 
   public function testTimeLimit() {
@@ -77,13 +75,6 @@ class TestStats extends Tester\TestCase
     $data = self::$sample;
     unset($data["killed"]);
     Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'killed' field.");
-  }
-
-  public function testMissingOutput() {
-    $data = self::$sample;
-    unset($data["output"]);
-    $stats = new Stats($data);
-    Assert::equal("", $stats->getOutput());
   }
 }
 

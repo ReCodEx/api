@@ -16,6 +16,7 @@ class TaskResult {
 
   const TASK_ID_KEY = "task-id";
   const STATUS_KEY = "status";
+  const OUTPUT_KEY = "output";
 
   /** @var array Raw data */
   protected $data;
@@ -25,6 +26,9 @@ class TaskResult {
 
   /** @var string Status of the task */
   private $status;
+
+  /** @var string Output of the task */
+  protected $output;
 
   /**
    * Constructor
@@ -42,6 +46,12 @@ class TaskResult {
       throw new ResultsLoadingException("Task '{$this->id}' result does include the required '" . self::STATUS_KEY . "' field.");
     }
     $this->status = $data[self::STATUS_KEY];
+
+    if (isset($data[self::OUTPUT_KEY])) {
+      $this->output = $data[self::OUTPUT_KEY];
+    } else {
+      $this->output = "";
+    }
   }
 
   /**
@@ -58,6 +68,15 @@ class TaskResult {
    */
   public function getStatus() {
     return $this->status;
+  }
+
+  /**
+   * Get standard and error output of the program (if enabled).
+   * May be truncated by worker.
+   * @return string The standard output
+   */
+  public function getOutput(): string {
+    return $this->output;
   }
 
   /**
@@ -115,5 +134,4 @@ class TaskResult {
     }
     return new EvaluationTaskResult($this->data);
   }
-
 }

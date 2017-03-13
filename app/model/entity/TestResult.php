@@ -39,7 +39,7 @@ class TestResult implements JsonSerializable
     foreach ($result->getExecutionResults() as $executionResult) {
       $stats = $executionResult->getStats();
       $newTask = new TaskResult($executionResult->getId(), $stats->getUsedTime(),
-          $stats->getUsedMemory(), $stats->getOutput(), $this);
+          $stats->getUsedMemory(), $executionResult->getOutput(), $this);
       $this->tasks->add($newTask);
     }
   }
