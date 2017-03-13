@@ -7,6 +7,7 @@ use App\Security\Identity;
 use Nette\Http\IResponse;
 
 use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
@@ -35,7 +36,9 @@ class InstancesPresenter extends BasePresenter {
    * @GET
    */
   public function actionDefault() {
-    $instances = $this->instances->findAll(); // @todo: Filter out the non-public
+    $instances = array_filter($this->instances->findAll(),
+        function (Instance $instance) { return $instance->getIsAllowed(); }
+    );
     /** @var Identity $identity */
     $identity = $this->getUser()->getIdentity();
     $user = $identity ? $identity->getUserData() : NULL;
@@ -110,9 +113,13 @@ class InstancesPresenter extends BasePresenter {
    * Get details of an instance
    * @GET
    * @param string $id An identifier of the instance
+   * @throws BadRequestException if the instance is not allowed
    */
   public function actionDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
+    if (!$instance->getIsAllowed()) {
+      throw new BadRequestException("This instance is not allowed.");
+    }
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse($instance->getData($user));
   }
