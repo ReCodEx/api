@@ -30,9 +30,7 @@ class JobConfigPresenter extends BasePresenter {
     $error = [];
     try {
       $jobConfig = $this->jobConfigStorage->parseJobConfig($config);
-      $diagramSrc = $this->createDiagramSource($jobConfig);
-      $svgUrl = $this->createDiagramSvgUrl($diagramSrc);
-      $this->sendSuccessResponse($svgUrl);
+      $this->sendSuccessResponse("OK");
     } catch (MalformedJobConfigException $e) {
       $parserException = $e->getOriginalException();
       if ($parserException != NULL) {
@@ -49,30 +47,5 @@ class JobConfigPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse($error);
-  }
-
-  private function createDiagramSource(JobConfig $config): string {
-    $diagram = "blockdiag {";
-    foreach ($config->getTasks() as $task) {
-      foreach ($task->getDependencies() as $dep) {
-        $diagram .= $dep . " -> " . $task->getId() . ";";
-      }
-    }
-    $diagram .= "}";
-    return $diagram;
-  }
-
-  // TODO:
-  // TODO: Ugly undocumented exec call
-  // TODO:
-  private function createDiagramSvgUrl(string $source): string {
-    //$src = base64_encode(gzcompress($source));
-    //$urlBase = "http://interactive.blockdiag.com/image?compression=deflate&encoding=base64&src=";
-    //return $urlBase . $src;
-    $outputFile = tempnam(sys_get_temp_dir(), 'recodex_');
-    shell_exec('echo "' . $source . '" | /usr/bin/blockdiag -T SVG -o "' . $outputFile . '" -');
-    $diagram = file_get_contents($outputFile);
-    unlink($outputFile);
-    return $diagram;
   }
 }
