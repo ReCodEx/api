@@ -30,7 +30,7 @@ class JobConfigPresenter extends BasePresenter {
     $error = [];
     try {
       $jobConfig = $this->jobConfigStorage->parseJobConfig($config);
-      $this->sendSuccessResponse("OK");
+      $this->sendSuccessResponse([]);
     } catch (MalformedJobConfigException $e) {
       $parserException = $e->getOriginalException();
       if ($parserException != NULL) {

@@ -318,8 +318,7 @@ class UsersPresenter extends BasePresenter {
           $stats = $group->getStudentsStats($user);
           return array_merge([
             "id" => $group->getId(),
-            "name" => $group->getName(),
-            "stats" => $stats
+            "name" => $group->getName()
           ], $stats);
         }
       )->getValues()
