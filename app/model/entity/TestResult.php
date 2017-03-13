@@ -38,7 +38,8 @@ class TestResult implements JsonSerializable
     $this->tasks = new ArrayCollection;
     foreach ($result->getExecutionResults() as $executionResult) {
       $stats = $executionResult->getStats();
-      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedTime(), $stats->getUsedMemory(), $this);
+      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedTime(),
+          $stats->getUsedMemory(), $stats->getOutput(), $this);
       $this->tasks->add($newTask);
     }
   }

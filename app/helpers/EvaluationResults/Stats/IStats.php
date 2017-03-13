@@ -60,4 +60,11 @@ interface IStats {
    */
   public function wasKilled(): bool;
 
+  /**
+   * Get standard and error output of the program (if enabled).
+   * May be truncated by worker.
+   * @return string The program output
+   */
+  public function getOutput(): string;
+
 }
