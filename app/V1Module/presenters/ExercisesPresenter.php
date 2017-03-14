@@ -24,6 +24,7 @@ use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
 use Exception;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise manipulation

@@ -213,7 +213,7 @@ class Exercise implements JsonSerializable
 
   /**
    * Get IDs of all available runtime configs
-   * @return ArrayList
+   * @return ArrayCollection
    */
   public function getRuntimeConfigsIds() {
     return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();

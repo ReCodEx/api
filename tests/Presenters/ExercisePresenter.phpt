@@ -392,7 +392,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     // construct post parameter environments
     $environments = [];
-    foreach ($assignment->getRuntimeConfigs() as $runtimeConfig) {
+    foreach ($exercise->getRuntimeConfigs() as $runtimeConfig) {
       $environments[] = [
         'environment' => ['id' => $runtimeConfig->getId()],
         'limits' => [
