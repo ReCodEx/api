@@ -57,7 +57,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createAuthRoutes(string $prefix): RouteList {
-    $router = new RouteList("login");
+    $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
     $router[] = new PostRoute("$prefix/<serviceId>", "Login:external");
@@ -70,7 +70,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createBrokerReportsRoutes(string $prefix): RouteList {
-    $router = new RouteList("broker-reports");
+    $router = new RouteList();
     $router[] = new PostRoute("$prefix/error", "BrokerReports:error");
     $router[] = new PostRoute("$prefix/job-status/<jobId>", "BrokerReports:jobStatus");
     return $router;
@@ -82,7 +82,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createCommentsRoutes(string $prefix): RouteList {
-    $router = new RouteList("comments");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix/<id>", "Comments:default");
     $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
     $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/toggle", "Comments:togglePrivate");
@@ -95,7 +95,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createExercisesRoutes(string $prefix): RouteList {
-    $router = new RouteList("exercises");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new PostRoute("$prefix", "Exercises:create");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
@@ -116,7 +116,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createAssignmentsRoutes(string $prefix): RouteList {
-    $router = new RouteList("exercise-assignments");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Assignments:");
     $router[] = new PostRoute("$prefix", "Assignments:create");
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
@@ -137,7 +137,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createGroupsRoutes(string $prefix): RouteList {
-    $router = new RouteList("groups");
+    $router = new RouteList();
 
     $router[] = new GetRoute("$prefix", "Groups:");
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
@@ -172,7 +172,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createInstancesRoutes(string $prefix): RouteList {
-    $router = new RouteList("instances");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Instances:");
     $router[] = new PostRoute("$prefix", "Instances:createInstance");
     $router[] = new GetRoute("$prefix/<id>", "Instances:detail");
@@ -193,7 +193,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createReferenceSolutionsRoutes(string $prefix): RouteList {
-    $router = new RouteList("reference-solutions");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
     $router[] = new PostRoute("$prefix/<id>", "ReferenceExerciseSolutions:createReferenceSolution");
     $router[] = new PostRoute("$prefix/<exerciseId>/evaluate/<id>", "ReferenceExerciseSolutions:evaluate");
@@ -206,7 +206,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createSubmissionRoutes(string $prefix): RouteList {
-    $router = new RouteList("submissions");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Submissions:");
     $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
     $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
@@ -220,7 +220,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createSubmissionFailuresRoutes(string $prefix): RouteList {
-    $router = new RouteList("submission-failures");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "SubmissionFailures:");
     $router[] = new GetRoute("$prefix/unresolved", "SubmissionFailures:unresolved");
     $router[] = new GetRoute("$prefix/submission/<id>", "SubmissionFailures:listBySubmission");
@@ -235,7 +235,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createUploadedFilesRoutes(string $prefix): RouteList {
-    $router = new RouteList("uploaded-files");
+    $router = new RouteList();
     $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
     $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
     $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
@@ -249,7 +249,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createUsersRoutes(string $prefix): RouteList {
-    $router = new RouteList("users");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Users:");
     $router[] = new PostRoute("$prefix", "Users:createAccount");
     $router[] = new PostRoute("$prefix/ext", "Users:createAccountExt");
@@ -269,7 +269,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createForgottenPasswordRoutes(string $prefix): RouteList {
-    $router = new RouteList("forgotten-password");
+    $router = new RouteList();
     $router[] = new PostRoute("$prefix", "ForgottenPassword:");
     $router[] = new PostRoute("$prefix/change", "ForgottenPassword:change");
     $router[] = new PostRoute("$prefix/validate-password-strength", "ForgottenPassword:validatePasswordStrength");
@@ -282,7 +282,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createRuntimeEnvironmentsRoutes(string $prefix): RouteList {
-    $router = new RouteList("runtime-environments");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "RuntimeEnvironments:");
     return $router;
   }
@@ -293,7 +293,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createHardwareGroupsRoutes(string $prefix): RouteList {
-    $router = new RouteList("hardware-groups");
+    $router = new RouteList();
     $router[] = new GetRoute("$prefix", "HardwareGroups:");
     return $router;
   }
@@ -304,7 +304,7 @@ class RouterFactory {
    * @return RouteList All endpoint routes
    */
   private static function createJobConfigRoutes(string $prefix) {
-    $router = new RouteList("job-config");
+    $router = new RouteList();
     $router[] = new PostRoute("$prefix/validate", "JobConfig:validate");
     return $router;
   }
