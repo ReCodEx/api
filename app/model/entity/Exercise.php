@@ -211,6 +211,14 @@ class Exercise implements JsonSerializable
     return $first === FALSE ? NULL : $first;
   }
 
+  /**
+   * Get IDs of all available runtime configs
+   * @return ArrayList
+   */
+  public function getRuntimeConfigsIds() {
+    return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,

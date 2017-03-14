@@ -65,17 +65,6 @@ class UploadedJobConfigStorage {
     return $filePath;
   }
 
-  public function copyToUserAndUpdateRuntimeConfigs(Assignment $assignment, User $user) {
-    foreach ($assignment->getRuntimeConfigs() as $config) {
-      $filePath = $this->getFilePath($user->getId(), $config->getJobConfigFilePath());
-      @mkdir(dirname($filePath), self::DEFAULT_MKDIR_MODE, TRUE);
-      if (!@copy($config->getJobConfigFilePath(), $filePath)) {
-        throw new JobConfigStorageException;
-      }
-      $config->setJobConfigFilePath($filePath);
-    }
-  }
-
   /**
    * Return storage file path for given information.
    * @param string $userId
