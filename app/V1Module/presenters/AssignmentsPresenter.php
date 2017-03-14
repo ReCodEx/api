@@ -373,17 +373,26 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
-    $currentUser = $this->getCurrentUser();
 
-    $isFileOwner = $userId === $currentUser->getId();
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
-    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
-      throw new ForbiddenRequestException("You cannot access these submissions");
-    }
-
+    $this->checkSubmissionAccess($userId, $assignment);
     $this->sendSuccessResponse($submissions);
+  }
+
+  /**
+   * Get the best solution by a user to an assignment
+   * @GET
+   * @UserIsAllowed(assignments="view-submissions")
+   * @param string $id Identifier of the assignment
+   * @param string $userId Identifier of the user
+   * @throws ForbiddenRequestException
+   */
+  public function actionBestSubmission(string $id, string $userId) {
+    /** @var Assignment $assignment */
+    $assignment = $this->assignments->findOrThrow($id);
+    $submission = $assignment->getBestSolution($this->users->findOrThrow($userId));
+
+    $this->checkSubmissionAccess($userId, $assignment);
+    $this->sendSuccessResponse($submission);
   }
 
   /**
@@ -576,5 +585,24 @@ class AssignmentsPresenter extends BasePresenter {
 
     // the same output as get limits
     $this->forward("getLimits", $id);
+  }
+
+  /**
+   * Check if current user can access submissions to given assignment by given user.
+   * @param string $userId The user whose submissions are to be accessed
+   * @param Assignment $assignment The assignment whose submissions are to be accessed
+   * @throws ForbiddenRequestException When current user does not have sufficient rights
+   */
+  private function checkSubmissionAccess(string $userId, Assignment $assignment):void
+  {
+    $currentUser = $this->getCurrentUser();
+
+    $isSubmissionOwner = $userId === $currentUser->getId();
+    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
+    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+
+    if (!$isSubmissionOwner && !$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot access these submissions");
+    }
   }
 }

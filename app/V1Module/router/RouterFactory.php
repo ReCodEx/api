@@ -124,6 +124,7 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
     $router[] = new GetRoute("$prefix/<id>/can-submit", "Assignments:canSubmit");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-submission", "Assignments:bestSubmission");
     $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
     $router[] = new GetRoute("$prefix/<id>/limits", "Assignments:getLimits");
     $router[] = new PostRoute("$prefix/<id>/limits", "Assignments:setLimits");
