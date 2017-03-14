@@ -593,8 +593,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @param Assignment $assignment The assignment whose submissions are to be accessed
    * @throws ForbiddenRequestException When current user does not have sufficient rights
    */
-  private function checkSubmissionAccess(string $userId, Assignment $assignment):void
-  {
+  private function checkSubmissionAccess(string $userId, Assignment $assignment) {
     $currentUser = $this->getCurrentUser();
 
     $isSubmissionOwner = $userId === $currentUser->getId();
