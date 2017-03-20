@@ -10,15 +10,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Doctrine;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method string getName()
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method setName(string $name)
- * @method addRuntimeConfig(RuntimeConfig $config)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
  */
@@ -59,6 +60,11 @@ class Exercise implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $updatedAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="exercises")

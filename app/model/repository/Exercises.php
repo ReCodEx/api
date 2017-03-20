@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Criteria;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\User;
 
-class Exercises extends BaseRepository {
+class Exercises extends BaseSoftDeleteRepository {
 
   public function __construct(EntityManager $em) {
     parent::__construct($em, Exercise::class);

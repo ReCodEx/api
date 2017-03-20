@@ -335,6 +335,19 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Delete an exercise
+   * @DELETE
+   * @UserIsAllowed(exercises="remove")
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionRemove(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $this->exercises->remove($exercise);
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Fork exercise from given one into the completely new one.
    * @GET
    * @UserIsAllowed(exercises="create")
