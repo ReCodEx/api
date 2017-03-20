@@ -107,6 +107,24 @@ class EvaluationResults {
   }
 
   /**
+   * Get outputs for tasks marked with initiation type.
+   * @return string Concatenated outputs for all initiation tasks
+   */
+  public function getInitiationOutputs() {
+    $initTaskCfgs = array_filter($this->config->getTasks(),
+      function($taskCfg) { return $taskCfg->isInitiationTask(); }
+    );
+
+    $outputs = [];
+    foreach ($initTaskCfgs as $taskCfg) {
+      $taskOutput = $this->tasks[$taskCfg->getId()]->getOutput();
+      $outputs[] = $taskOutput;
+    }
+
+    return implode("\n", $outputs);
+  }
+
+  /**
    * Get results for all logical tests, one result per test
    * @return ITestResult[] Results of all test inside job
    * @internal param string $hardwareGroupId Hardware group

@@ -9,6 +9,7 @@ App\Model\Entity\SolutionEvaluation:
         isValid: true
         evaluationFailed: false
         resultYml: ""
+        initiationOutputs: ""
         testResults: []
 
 App\Model\Entity\Solution:

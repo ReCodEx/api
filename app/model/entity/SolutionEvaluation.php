@@ -80,6 +80,11 @@ class SolutionEvaluation implements JsonSerializable
   protected $resultYml;
 
   /**
+   * @ORM\Column(type="text")
+   */
+  protected $initiationOutputs;
+
+  /**
    * @ORM\OneToMany(targetEntity="TestResult", mappedBy="solutionEvaluation", cascade={"persist"})
    */
   protected $testResults;
@@ -111,6 +116,7 @@ class SolutionEvaluation implements JsonSerializable
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
       "evaluationFailed" => $this->evaluationFailed,
+      "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
   }
@@ -136,6 +142,7 @@ class SolutionEvaluation implements JsonSerializable
     $this->score = 0;
     $maxPoints = 0;
     $this->testResults = new ArrayCollection;
+    $this->initiationOutputs = $results->getInitiationOutputs();
 
     if ($submission !== NULL) {
       $submission->setEvaluation($this);
