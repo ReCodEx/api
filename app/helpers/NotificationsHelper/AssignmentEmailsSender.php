@@ -57,7 +57,8 @@ class AssignmentEmailsSender {
    * @return string Mail subject
    */
   private function formatSubject(string $name): string {
-    return $this->subjectPrefix . $name; // TODO
+    // TODO
+    //return $this->subjectPrefix . $name;
   }
 
   /**
