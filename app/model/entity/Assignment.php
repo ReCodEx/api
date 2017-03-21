@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
+ * @method string getName()
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
  * @method Collection getRuntimeConfigs()

@@ -149,6 +149,8 @@ services:
     simple: @App\Helpers\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
+  - App\Helpers\Notifications\AssignmentEmailsSender
+  - App\Helpers\Notifications\SubmissionEmailsSender
 
   # models - repositories
   - App\Model\Repository\Comments
