@@ -134,11 +134,16 @@ class Exercise implements JsonSerializable
    * Can a specific user access this exercise?
    */
   public function canAccessDetail(User $user) {
-    if (!$user->getRole()->hasLimitedRights()) {
+    if (!$user->getRole()->hasLimitedRights() || $this->isAuthor($user)) {
       return TRUE;
     }
 
-    return $this->isPublic === TRUE || $this->isAuthor($user);
+    if ($this->group) {
+      return $this->isPublic() && ($this->group->isAdminOf($user)
+          || $this->group->isSupervisorOf($user));
+    } else {
+      return $this->isPublic();
+    }
   }
 
   /**
@@ -147,7 +152,7 @@ class Exercise implements JsonSerializable
   private function __construct($name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryFiles, $exercise, User $user,
-      $isPublic = TRUE, $description = "", $group = NULL) {
+      $group = NULL, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -163,7 +168,7 @@ class Exercise implements JsonSerializable
     $this->group = $group;
   }
 
-  public static function create(User $user): Exercise {
+  public static function create(User $user, $group = NULL): Exercise {
     return new self(
       "",
       1,
@@ -172,7 +177,8 @@ class Exercise implements JsonSerializable
       new ArrayCollection,
       new ArrayCollection,
       NULL,
-      $user
+      $user,
+      $group
     );
   }
 
@@ -186,9 +192,9 @@ class Exercise implements JsonSerializable
       $exercise->supplementaryFiles,
       $exercise,
       $user,
+      $exercise->group,
       $exercise->isPublic,
-      $exercise->description,
-      $exercise->group
+      $exercise->description
     );
   }
 
