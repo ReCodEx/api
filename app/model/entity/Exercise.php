@@ -126,6 +126,11 @@ class Exercise implements JsonSerializable
   protected $description;
 
   /**
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="exercises")
+   */
+  protected $group;
+
+  /**
    * Can a specific user access this exercise?
    */
   public function canAccessDetail(User $user) {
@@ -141,8 +146,8 @@ class Exercise implements JsonSerializable
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
-      Collection $supplementaryFiles,
-      $exercise, User $user, $isPublic = TRUE, $description = "") {
+      Collection $supplementaryFiles, $exercise, User $user,
+      $isPublic = TRUE, $description = "", $group = NULL) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -155,6 +160,7 @@ class Exercise implements JsonSerializable
     $this->supplementaryFiles = $supplementaryFiles;
     $this->isPublic = $isPublic;
     $this->description = $description;
+    $this->group = $group;
   }
 
   public static function create(User $user): Exercise {
@@ -181,7 +187,8 @@ class Exercise implements JsonSerializable
       $exercise,
       $user,
       $exercise->isPublic,
-      $exercise->description
+      $exercise->description,
+      $exercise->group
     );
   }
 
@@ -229,6 +236,7 @@ class Exercise implements JsonSerializable
       "runtimeConfigs" => $this->runtimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
+      "groupId" => $this->group ? $this->group->getId() : NULL,
       "isPublic" => $this->isPublic,
       "description" => $this->description
     ];

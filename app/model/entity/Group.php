@@ -127,6 +127,11 @@ class Group implements JsonSerializable
   }
 
   /**
+   * @ORM\OneToMany(targetEntity="Exercise", mappedBy="group")
+   */
+  protected $exercises;
+
+  /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
    */
   protected $instance;
