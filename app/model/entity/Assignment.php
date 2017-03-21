@@ -27,6 +27,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Group getGroup()
  * @method Collection getLocalizedTexts()
  * @method removeLocalizedText(Assignment $assignment)
+ * @method DateTime getCreatedAt()
  */
 class Assignment implements JsonSerializable
 {
@@ -69,6 +70,7 @@ class Assignment implements JsonSerializable
     $this->version = 1;
     $this->isBonus = $isBonus;
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
+    $this->createdAt = new \DateTime;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -138,6 +140,11 @@ class Assignment implements JsonSerializable
    * @ORM\Column(type="float")
    */
   protected $pointsPercentualThreshold;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $createdAt;
 
   /**
    * @ORM\Column(type="datetime", nullable=true)
@@ -371,6 +378,7 @@ class Assignment implements JsonSerializable
       "name" => $this->name,
       "version" => $this->version,
       "isPublic" => $this->isPublic,
+      "createdAt" => $this->createdAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
