@@ -73,6 +73,11 @@ class Instance implements JsonSerializable
   protected $needsLicence;
 
   /**
+   * @ORM\ManyToOne(targetEntity="Group")
+   */
+  protected $rootGroup;
+
+  /**
    * @var ArrayCollection
    * @ORM\OneToMany(targetEntity="Licence", mappedBy="instance")
    */
@@ -166,23 +171,6 @@ class Instance implements JsonSerializable
     })->getValues();
   }
 
-  public function getTopLevelGroups(User $user = NULL) {
-    $filter = Criteria::create()->where(Criteria::expr()->eq("parentGroup", NULL));
-    $result = $this->groups->matching($filter);
-
-    if ($user) {
-      $result = $result->filter(function (Group $group) use ($user) {
-        return $group->getDeletedAt() === NULL && $group->canUserAccessGroupDetail($user);
-      });
-    } else {
-      $result = $result->filter(function (Group $group) use ($user) {
-        return $group->getDeletedAt() === NULL && $group->isPublic();
-      });
-    }
-
-    return $result;
-  }
-
   public function getData(User $user = NULL) {
     return [
       "id" => $this->id,
@@ -195,7 +183,7 @@ class Instance implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : NULL,
       "admin" => $this->admin ? $this->admin->getId() : NULL,
-      "topLevelGroups" => $this->getTopLevelGroups($user)->map(function($group) { return $group->getId(); })->getValues()
+      "rootGroupId" => $this->rootGroup !== NULL ? $this->rootGroup->getId() : NULL
     ];
   }
 
@@ -216,10 +204,24 @@ class Instance implements JsonSerializable
     $instance->isOpen = $isOpen;
     $instance->isAllowed = TRUE; //@todo - find out who should set this and how
     $instance->needsLicence = TRUE;
+    $instance->rootGroup = NULL;
     $now = new \DateTime;
     $instance->createdAt = $now;
     $instance->updatedAt = $now;
     $instance->admin = $admin;
+
+    // now create the root group for the instance
+    $instance->rootGroup = new Group(
+      $name,
+      NULL,
+      $description,
+      $instance,
+      $admin,
+      NULL,
+      FALSE,
+      FALSE
+    );
+
     return $instance;
   }
 
