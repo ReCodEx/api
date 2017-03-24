@@ -214,7 +214,10 @@ class Group implements JsonSerializable
   public function canUserAccessGroupDetail(User $user) {
     if ($this->isMemberOf($user)
         || $user->getRole()->isSuperadmin()
-        || $this->isPublic === TRUE) {
+        || $this->isPublic === TRUE
+        || ($user->getInstance() !== NULL
+            && $user->getInstance()->getRootGroup() !== NULL
+            && $this->getId() === $user->getInstance()->getRootGroup()->getId())) {
       return TRUE;
     }
 
