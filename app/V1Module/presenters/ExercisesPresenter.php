@@ -10,6 +10,7 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\UploadedJobConfigStorage;
@@ -302,6 +303,40 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Associate additional exercise files with an exercise
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="files", description="Identifiers of additional files")
+   * @param string $id identification of exercise
+   * @throws BadRequestException
+   * @throws CannotReceiveUploadedFileException
+   * @throws ForbiddenRequestException
+   */
+  public function actionUploadAdditionalFiles(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
+    }
+
+    $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
+    $additionalFiles = [];
+
+    foreach ($files as $file) {
+      if (!($file instanceof UploadedFile)) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
+      }
+
+      $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      $this->uploadedFiles->persist($exerciseFile, FALSE);
+      $this->uploadedFiles->remove($file, FALSE);
+    }
+
+    $this->uploadedFiles->flush();
+    $this->sendSuccessResponse($additionalFiles);
+  }
+
+  /**
    * Get list of all supplementary files for an exercise
    * @GET
    * @UserIsAllowed(exercises="update")
@@ -315,7 +350,7 @@ class ExercisesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
     }
 
-    $this->sendSuccessResponse($exercise->getSupplementaryFiles()->getValues());
+    $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
   }
 
   /**

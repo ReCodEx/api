@@ -63,7 +63,7 @@ class UploadedFileStorage extends Nette\Object {
 
   public function delete(UploadedFile $file) {
     if ($file->getLocalFilePath() !== NULL) {
-      Nette\Utils\FileSystem::delete($file);
+      Nette\Utils\FileSystem::delete($file->getLocalFilePath());
     }
   }
 }
