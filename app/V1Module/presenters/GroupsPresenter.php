@@ -547,12 +547,9 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already member of the group
-    if ($group->isAdminOf($user) === FALSE) {
-      $group->makeAdmin($user);
-      $this->groups->flush();
-    }
-
+    // change admin of the group even if user is superadmin
+    $group->makeAdmin($user);
+    $this->groups->flush();
     $this->sendSuccessResponse($group);
   }
 
