@@ -376,6 +376,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse($submissions);
+  }
 
   /**
    * Get the best solution by a user to an assignment
