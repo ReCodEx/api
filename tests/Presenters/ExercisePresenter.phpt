@@ -288,11 +288,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(2, $result['payload']);
-
-    $file1 = $result['payload'][0];
-    $file2 = $result['payload'][1];
-    Assert::same($expectedFile1, $file1);
-    Assert::same($expectedFile2, $file2);
+    Assert::equal([$expectedFile1, $expectedFile2], $result['payload']);
   }
 
   public function testForkFrom()
