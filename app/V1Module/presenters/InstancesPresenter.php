@@ -42,9 +42,10 @@ class InstancesPresenter extends BasePresenter {
     /** @var Identity $identity */
     $identity = $this->getUser()->getIdentity();
     $user = $identity ? $identity->getUserData() : NULL;
-    $this->sendSuccessResponse(array_map(function (Instance $instance) use ($user) {
+    $instancesData = array_map(function (Instance $instance) use ($user) {
       return $instance->getData($user);
-    }, $instances));
+    }, $instances);
+    $this->sendSuccessResponse(array_values($instancesData));
   }
 
   /**
