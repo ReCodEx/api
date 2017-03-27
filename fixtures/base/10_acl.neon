@@ -279,3 +279,8 @@ App\Model\Entity\Permission:
     "resource": @hardwareGroups
     "action": "view-all"
     "isAllowed": 1
+  "supervisor-groups-set-admin":
+    "role": @supervisor
+    "resource": @groups
+    "action": "set-admin"
+    "isAllowed": 1
