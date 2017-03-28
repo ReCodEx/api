@@ -33,8 +33,8 @@ class Assignments extends BaseSoftDeleteRepository {
   }
 
   public function isAssignedToUser(Exercise $exercise, User $user): bool {
-    return $user->getGroups()->exists(function (Group $group) use ($exercise) {
-      return $group->getAssignments()->exists(function (Assignment $assignment) use ($exercise) {
+    return $user->getGroups()->exists(function ($i, Group $group) use ($exercise) {
+      return $group->getAssignments()->exists(function ($i, Assignment $assignment) use ($exercise) {
         return $assignment->getExercise() === $exercise;
       });
     });

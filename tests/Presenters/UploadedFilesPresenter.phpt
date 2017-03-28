@@ -1,11 +1,13 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Model\Entity\AdditionalExerciseFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Logins;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\UploadedFileStorage;
+use Doctrine\ORM\EntityManager;
 use Tester\Assert;
 use org\bovigo\vfs\vfsStream;
 
@@ -209,6 +211,53 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $response = $this->presenter->run($request);
 
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+  }
+
+  public function testGroupMemberCanAccessAdditionalFiles()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+
+    $filename = "file.ext";
+    $content = "ContentOfContentedFile";
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+
+    /** @var EntityManager $em */
+    $em = $this->container->getByType(EntityManager::class);
+
+    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+    $file->localFilePath = $vfs->getChild($filename)->url();
+    $this->em->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', [
+      'action' => 'download',
+      'id' => $file->id
+    ]);
+    $response = $this->presenter->run($request);
+
+    Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+  }
+
+  public function testOutsiderCannotAccessAdditionalFiles()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->otherUserLogin, $this->otherUserPassword);
+
+    $filename = "file.ext";
+    $content = "ContentOfContentedFile";
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+
+    /** @var EntityManager $em */
+    $em = $this->container->getByType(EntityManager::class);
+
+    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', [
+      'action' => 'download',
+      'id' => $file->id
+    ]);
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ForbiddenRequestException::class);
   }
 }
 
