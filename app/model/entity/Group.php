@@ -42,7 +42,10 @@ class Group implements JsonSerializable
     $this->isPublic = $isPublic;
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
-    $admin->makeSupervisorOf($this);
+    if ($admin !== NULL) {
+      $admin->makeSupervisorOf($this);
+    }
+
     $this->parentGroup = $parentGroup;
     if ($parentGroup !== NULL) {
       $this->parentGroup->addChildGroup($this);

@@ -73,7 +73,7 @@ class Instance implements JsonSerializable
   protected $needsLicence;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Group")
+   * @ORM\ManyToOne(targetEntity="Group", cascade={"persist"})
    */
   protected $rootGroup;
 
@@ -140,7 +140,7 @@ class Instance implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Group", mappedBy="instance")
+   * @ORM\OneToMany(targetEntity="Group", mappedBy="instance", cascade={"persist"})
    */
   protected $groups;
 
@@ -219,7 +219,7 @@ class Instance implements JsonSerializable
       $admin,
       NULL,
       FALSE,
-      FALSE
+      TRUE
     );
 
     return $instance;
