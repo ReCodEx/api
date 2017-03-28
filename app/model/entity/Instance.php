@@ -213,7 +213,7 @@ class Instance implements JsonSerializable
     // now create the root group for the instance
     $instance->rootGroup = new Group(
       $name,
-      NULL,
+      "",
       $description,
       $instance,
       $admin,
