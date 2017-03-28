@@ -42,9 +42,10 @@ class InstancesPresenter extends BasePresenter {
     /** @var Identity $identity */
     $identity = $this->getUser()->getIdentity();
     $user = $identity ? $identity->getUserData() : NULL;
-    $this->sendSuccessResponse(array_map(function (Instance $instance) use ($user) {
+    $instancesData = array_map(function (Instance $instance) use ($user) {
       return $instance->getData($user);
-    }, $instances));
+    }, $instances);
+    $this->sendSuccessResponse(array_values($instancesData));
   }
 
   /**
@@ -137,14 +138,15 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($instance->getGroupsForUser($user));
   }
 
-  /**
-   * Get a list of users registered in an instance
-   * @GET
-   * @LoggedIn
-   * @UserIsAllowed(instances="view-users")
-   * @param string $id An identifier of the instance
-   * @param string $search A result filter
-   */
+    /**
+     * Get a list of users registered in an instance
+     * @GET
+     * @LoggedIn
+     * @UserIsAllowed(instances="view-users")
+     * @param string $id An identifier of the instance
+     * @param string $search A result filter
+     * @throws ForbiddenRequestException
+     */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->instances->findOrThrow($id);
     $user = $this->getCurrentUser();

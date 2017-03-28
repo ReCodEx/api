@@ -72,9 +72,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAddGroup() {
     $req = $this->getHttpRequest();
-    $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
-    $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
     $parentGroupId = $req->getPost("parentGroupId", NULL);
     $user = $this->getCurrentUser();
     $instance = $this->instances->get($instanceId);
@@ -83,14 +81,16 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot create group for instance '$instanceId'");
     }
 
-    $description = $req->getPost("description", "");
-    $publicStats = $req->getPost("publicStats", TRUE);
-    $isPublic = $req->getPost("isPublic") === NULL ? TRUE : $req->getPost("isPublic");
-    $parentGroup = !$parentGroupId ? NULL : $this->groups->get($parentGroupId);
-
+    $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->get($parentGroupId); // may be null
     if ($parentGroup !== NULL && !$parentGroup->isAdminOf($user)) {
       throw new ForbiddenRequestException("Only group administrators can create group.");
     }
+
+    $name = $req->getPost("name");
+    $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
+    $description = $req->getPost("description", "");
+    $publicStats = $req->getPost("publicStats", TRUE);
+    $isPublic = $req->getPost("isPublic") === NULL ? TRUE : $req->getPost("isPublic");
 
     if (!$this->groups->nameIsFree($name, $instance->getId(), $parentGroup !== NULL ? $parentGroup->getId() : NULL)) {
       throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
@@ -115,6 +115,11 @@ class GroupsPresenter extends BasePresenter {
     $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
     $parentGroupId = $req->getPost("parentGroupId", NULL);
+
+    if ($parentGroupId === NULL) {
+      $instance = $this->instances->get($instanceId);
+      $parentGroupId = $instance->getRootGroup() !== NULL ? $instance->getRootGroup()->getId() : NULL;
+    }
 
     $this->sendSuccessResponse([
       "groupNameIsFree" => $this->groups->nameIsFree($name, $instanceId, $parentGroupId)
@@ -171,9 +176,10 @@ class GroupsPresenter extends BasePresenter {
 
     if ($group->isAdminOf($user) === FALSE) {
       throw new ForbiddenRequestException("Only administrator of a group can remove it");
-    }
-    if ($group->getChildGroups()->count() !== 0) {
+    } else if ($group->getChildGroups()->count() !== 0) {
       throw new ForbiddenRequestException("There are subgroups of group '$id'. Please remove them first.");
+    } else if ($group->getInstance() !== NULL && $group->getInstance()->getRootGroup() === $group) {
+      throw new ForbiddenRequestException("Group '$id' is the root group of instance '{$group->getInstance()->getId()}' and root groups cannot be deleted.");
     }
 
     $this->groups->remove($group);
@@ -541,12 +547,9 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
     }
 
-    // make sure that the user is not already member of the group
-    if ($group->isAdminOf($user) === FALSE) {
-      $group->makeAdmin($user);
-      $this->groups->flush();
-    }
-
+    // change admin of the group even if user is superadmin
+    $group->makeAdmin($user);
+    $this->groups->flush();
     $this->sendSuccessResponse($group);
   }
 

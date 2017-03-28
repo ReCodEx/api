@@ -214,14 +214,14 @@ App\Model\Entity\Permission:
     "resource": @runtimeEnvironments
     "action": "view-all"
     "isAllowed": 1
-  "supervisor-assignments-view-limits":
+  "supervisor-exercises-view-limits":
     "role": @supervisor
-    "resource": @assignments
+    "resource": @exercises
     "action": "view-limits"
     "isAllowed": 1
-  "supervisor-assignments-set-limits":
+  "supervisor-exercises-set-limits":
     "role": @supervisor
-    "resource": @assignments
+    "resource": @exercises
     "action": "set-limits"
     "isAllowed": 1
   "supervisor-assignments-create":
@@ -278,4 +278,9 @@ App\Model\Entity\Permission:
     "role": @supervisor
     "resource": @hardwareGroups
     "action": "view-all"
+    "isAllowed": 1
+  "supervisor-groups-set-admin":
+    "role": @supervisor
+    "resource": @groups
+    "action": "set-admin"
     "isAllowed": 1
