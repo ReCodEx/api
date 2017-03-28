@@ -8,6 +8,7 @@ use JsonSerializable;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
+ * @method ArrayCollection getExercises()
  * @ORM\Entity
  */
 class AdditionalExerciseFile extends UploadedFile implements JsonSerializable
