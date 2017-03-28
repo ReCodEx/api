@@ -325,6 +325,23 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
+   * Get list of all supplementary files for an exercise
+   * @GET
+   * @UserIsAllowed(exercises="update")
+   * @param string $id identification of exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetSupplementaryFiles(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
+    }
+
+    $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+  }
+
+  /**
    * Associate additional exercise files with an exercise
    * @POST
    * @UserIsAllowed(exercises="update")
@@ -359,20 +376,20 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   * Get list of all supplementary files for an exercise
+   * Get a list of all additional files for an exercise
    * @GET
    * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
-  public function actionGetSupplementaryFiles(string $id) {
+  public function actionGetAdditionalFiles(string $id) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
     }
 
-    $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+    $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
   }
 
   /**

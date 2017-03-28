@@ -108,6 +108,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/limits", "Exercises:setLimits");
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
+    $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
     $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
 
     return $router;
