@@ -28,7 +28,7 @@ class Group implements JsonSerializable
       string $externalId,
       string $description,
       Instance $instance,
-      User $admin,
+      User $admin = NULL,
       Group $parentGroup = NULL,
       bool $publicStats = TRUE,
       bool $isPublic = TRUE) {
