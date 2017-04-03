@@ -103,7 +103,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
     $router[] = new PostRoute("$prefix/<id>/validate", "Exercises:validate");
-    $router[] = new GetRoute("$prefix/<id>/fork", "Exercises:forkFrom");
+    $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
     $router[] = new GetRoute("$prefix/<id>/limits", "Exercises:getLimits");
     $router[] = new PostRoute("$prefix/<id>/limits", "Exercises:setLimits");
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");

@@ -371,7 +371,7 @@ class ExercisesPresenter extends BasePresenter {
 
   /**
    * Fork exercise from given one into the completely new one.
-   * @GET
+   * @POST
    * @UserIsAllowed(exercises="create")
    */
   public function actionForkFrom(string $id) {
