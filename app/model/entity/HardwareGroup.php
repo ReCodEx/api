@@ -48,7 +48,7 @@ class HardwareGroup implements JsonSerializable
       return FALSE;
     }
 
-    return $latestLog->isActive();
+    return $latestLog->isAvailable();
   }
 
   public function __construct(
