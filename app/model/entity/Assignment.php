@@ -327,7 +327,7 @@ class Assignment implements JsonSerializable
 
   /**
    * @param User $user
-   * @return Submission
+   * @return Submission|NULL
    */
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
@@ -338,6 +338,14 @@ class Assignment implements JsonSerializable
       $this->submissions->matching($usersSolutions)->getValues(),
       function ($best, $submission) {
         if ($best === NULL) {
+          return $submission;
+        }
+
+        if ($best->isAccepted()) {
+          return $best;
+        }
+
+        if ($submission->isAccepted()) {
           return $submission;
         }
 
