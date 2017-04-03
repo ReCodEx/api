@@ -4,7 +4,10 @@
 #
 parameters:
   uploadDir: %appDir%/../uploaded_data
-  jobConfigStorageDir: %appDir%/../job_config
+
+  jobConfig:
+    storageDir: %appDir%/../job_config
+    humanReadable: true
 
   api:
     address: https://recodex.projekty.ms.mff.cuni.cz:4000
@@ -141,8 +144,8 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-  - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
-  - App\Helpers\JobConfig\Storage
+  - App\Helpers\UploadedJobConfigStorage(%jobConfig.storageDir%)
+  - App\Helpers\JobConfig\Storage(%jobConfig.humanReadable%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\SimpleScoreCalculator
   - App\Helpers\ScoreCalculatorAccessor({
