@@ -14,7 +14,6 @@ use App\Model\Entity\Role;
 use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
@@ -212,8 +211,6 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", description="New email address", required=FALSE)
-   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
@@ -222,12 +219,46 @@ class UsersPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
+    // fill user with all provided datas
+    $user = $this->getCurrentUser();
+
+    // change the email only of the user wants to
+    $email = $req->getPost("email");
+    if ($email && strlen($email) > 0) {
+      $user->setEmail($email);
+    }
+
+    $user->setFirstName($firstName);
+    $user->setLastName($lastName);
+    $user->setDegreesBeforeName($degreesBeforeName);
+    $user->setDegreesAfterName($degreesAfterName);
+
+    // make changes permanent
+    $this->users->flush();
+
+    $this->sendSuccessResponse($user);
+  }
+
+  /**
+   * Update internal authentication system user account.
+   * @POST
+   * @LoggedIn
+   * @Param(type="post", name="email", description="New email address", required=FALSE)
+   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
+   */
+  public function actionUpdateLogin() {
+    $req = $this->getRequest();
     $oldPassword = $req->getPost("password");
     $newPassword = $req->getPost("newPassword");
 
     // fill user with all provided datas
     $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
+
+    if ($login === NULL) {
+      throw new BadRequestException("User is not authenticated through system internal mechanism");
+    }
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
@@ -239,13 +270,8 @@ class UsersPresenter extends BasePresenter {
       }
     }
 
-    $user->setFirstName($firstName);
-    $user->setLastName($lastName);
-    $user->setDegreesBeforeName($degreesBeforeName);
-    $user->setDegreesAfterName($degreesAfterName);
-
     // passwords need to be handled differently
-    if ($login && $newPassword) {
+    if ($newPassword) {
       if ($oldPassword) {
         // old password was provided, just check it against the one from db
         if (!$login->passwordsMatch($oldPassword)) {
@@ -258,20 +284,14 @@ class UsersPresenter extends BasePresenter {
       }
     }
 
-    if ($login) {
-      // make password changes permanent
-      $this->logins->persist($login);
-      $this->logins->flush();
-    }
-
-    // make changes permanent
-    $this->users->persist($user);
+    // make password changes permanent
+    $this->logins->flush();
     $this->users->flush();
 
     $this->sendSuccessResponse($user);
   }
 
-   /**
+  /**
    * Update the profile settings
    * @POST
    * @LoggedIn

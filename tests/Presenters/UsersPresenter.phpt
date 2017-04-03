@@ -277,6 +277,39 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::same($updatedUser, $storedUpdatedUser);
   }
 
+  public function testUpdateLogin()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $email = "email@email.email";
+    $password = PresenterTestHelper::ADMIN_PASSWORD;
+    $newPassword = "newPassword";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateLogin'],
+      [
+        'email' => $email,
+        'password' => $password,
+        'newPassword' => $newPassword
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    $updatedLogin = $this->logins->findByUsernameOrThrow($email);
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::equal($email, $updatedUser->getEmail());
+
+    Assert::same($updatedUser, $updatedLogin->getUser());
+    Assert::equal($email, $updatedLogin->getUsername());
+    Assert::false($updatedLogin->passwordsMatch($password));
+    Assert::true($updatedLogin->passwordsMatch($newPassword));
+  }
+
   public function testUpdateSettings()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
