@@ -171,9 +171,9 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     $groups = $result['payload'];
-    Assert::equal(3, count($groups));
+    Assert::equal(4, count($groups));
     Assert::equal(
-      ["Demo group", "Demo child group", "Private group"],
+      ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
       array_map(function (Group $group) { return $group->name; }, $groups)
     );
   }
@@ -308,24 +308,6 @@ class TestInstancesPresenter extends Tester\TestCase
     /** @var Group $group */
     foreach ($response->getPayload()["payload"] as $group) {
       Assert::true($group->isPublic);
-    }
-
-    // Make sure instance detail doesn't contain private groups
-    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'detail', 'id' => $user->instance->id]);
-
-    /** @var \Nette\Application\Responses\JsonResponse $response */
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    /** @var \App\Model\Repository\Groups $groupsRepository */
-    $groupsRepository = $this->container->getByType(\App\Model\Repository\Groups::class);
-
-    $result = Json::decode(Json::encode($response->getPayload()["payload"]), Json::FORCE_ARRAY);
-    $groups = Arrays::get($result, "topLevelGroups", NULL);
-    Assert::type("array", $groups);
-
-    foreach ($groups as $groupId) {
-      Assert::true($groupsRepository->get($groupId)->isPublic, "Group list shouldn't contain private groups");
     }
   }
 }

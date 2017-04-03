@@ -73,7 +73,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result["code"]);
-    Assert::equal(3, count($result["payload"]));
+    Assert::equal(4, count($result["payload"]));
   }
 
   public function testUserCannotJoinPrivateGroup()
