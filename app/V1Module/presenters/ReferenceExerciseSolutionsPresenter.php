@@ -58,12 +58,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
-   * @var MonitorConfig
-   * @inject
-   */
-  public $monitorConfig;
-
-  /**
    * @var JobConfig\Storage
    * @inject
    */
