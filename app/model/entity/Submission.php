@@ -167,7 +167,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
-        "maxPoints" => $this->getMaxPoints()
+        "maxPoints" => $this->getMaxPoints(),
+        "accepted" => $this->accepted
       ];
     }
 
