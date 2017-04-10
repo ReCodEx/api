@@ -181,6 +181,7 @@ services:
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\ExerciseFiles
+  - App\Model\Repository\AdditionalExerciseFiles
 
 doctrine:
   user: 'root'

@@ -7,8 +7,10 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
 use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
 use Nette\Application\Responses\FileResponse;
 
@@ -31,6 +33,12 @@ class UploadedFilesPresenter extends BasePresenter {
   public $fileStorage;
 
   /**
+   * @var Assignments
+   * @inject
+   */
+  public $assignments;
+
+  /**
    *
    * @param UploadedFile $file
    * @throws ForbiddenRequestException
@@ -38,6 +46,16 @@ class UploadedFilesPresenter extends BasePresenter {
   private function throwIfUserCantAccessFile(UploadedFile $file) {
     $user = $this->getCurrentUser();
     $isUserSupervisor = FALSE;
+    $isFileRelatedToUsersAssignment = FALSE;
+
+    if ($file instanceof AdditionalExerciseFile) {
+      foreach ($file->getExercises() as $exercise) {
+        if ($this->assignments->isAssignedToUser($exercise, $user)) {
+          $isFileRelatedToUsersAssignment = TRUE;
+          break;
+        }
+      }
+    }
 
     /** @var Group $group */
     $group = $this->uploadedFiles->findGroupForFile($file);
@@ -47,7 +65,7 @@ class UploadedFilesPresenter extends BasePresenter {
 
     $isUserOwner = $file->getUser()->getId() === $user->getId();
 
-    if (!$isUserOwner && !$isUserSupervisor) {
+    if (!$isUserOwner && !$isUserSupervisor && !$isFileRelatedToUsersAssignment) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
   }

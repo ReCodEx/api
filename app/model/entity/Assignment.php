@@ -29,6 +29,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getLocalizedTexts()
  * @method removeLocalizedText(Assignment $assignment)
  * @method DateTime getCreatedAt()
+ * @method Exercise getExercise()
  */
 class Assignment implements JsonSerializable
 {
