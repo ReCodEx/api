@@ -97,6 +97,15 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $accepted;
+
+    public function isAccepted(): bool {
+      return $this->accepted;
+    }
+
+    /**
      * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
      */
     protected $evaluation;
@@ -158,7 +167,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
-        "maxPoints" => $this->getMaxPoints()
+        "maxPoints" => $this->getMaxPoints(),
+        "accepted" => $this->accepted
       ];
     }
 
@@ -221,6 +231,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->submittedBy = $loggedInUser;
       $entity->asynchronous = $asynchronous;
       $entity->solution = $solution;
+      $entity->accepted = false;
 
       return $entity;
     }
