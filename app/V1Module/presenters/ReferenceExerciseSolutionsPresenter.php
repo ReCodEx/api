@@ -2,7 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\NotReadyException;
 use App\Exceptions\SubmissionFailedException;
+use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
@@ -20,6 +22,7 @@ use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Responses\GuzzleResponse;
 use Doctrine\Common\Collections\Criteria;
 
 /**
@@ -68,6 +71,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $hardwareGroups;
+
+  /**
+   * @var FileServerProxy
+   * @inject
+   */
+  public $fileServerProxy;
 
   /**
    * Get reference solutions for an exercise
@@ -211,5 +220,25 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     return [$evaluations, $errors];
+  }
+
+  /**
+   * Download result archive from backend for a reference solution evaluation
+   * @GET
+   * @UserIsAllowed(assignments="create")
+   * @param string $evaluationId
+   * @throws NotReadyException
+   * @throws ForbiddenRequestException
+   */
+  public function actionDownloadResultArchive(string $evaluationId) {
+    /** @var ReferenceSolutionEvaluation $evaluation */
+    $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+
+    if (!$evaluation->hasEvaluation()) {
+      throw new NotReadyException("Submission is not evaluated yet");
+    }
+
+    $stream = $this->fileServerProxy->getResultArchiveStream($evaluation->getResultsUrl());
+    $this->sendResponse(new GuzzleResponse($stream, $evaluationId . '.zip'));
   }
 }
