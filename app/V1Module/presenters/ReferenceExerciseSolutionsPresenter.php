@@ -159,6 +159,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
 
     $this->sendSuccessResponse([
+      "referenceSolution" => $referenceSolution,
       "evaluations" => $evaluations,
       "errors" => $errors
     ]);
