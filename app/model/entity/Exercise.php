@@ -19,6 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getName()
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
+ * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)

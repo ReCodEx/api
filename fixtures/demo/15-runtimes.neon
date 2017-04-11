@@ -3,6 +3,10 @@ App\Model\Entity\HardwareGroup:
         __construct:
             - group1
             - Our only hardware group
+    demoHWGroup2:
+        __construct:
+            - group2
+            - Our other only hardware group
 
 App\Model\Entity\RuntimeConfig:
     demoRuntimeConfig:

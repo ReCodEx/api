@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\MonitorConfig;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\UploadedFile;
@@ -57,12 +58,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
-   * @var MonitorConfig
-   * @inject
-   */
-  public $monitorConfig;
-
-  /**
    * @var JobConfig\Storage
    * @inject
    */
@@ -78,12 +73,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solutions for an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
-   * @param string $id Identifier of the exercise
    * @throws NotFoundException
+   * @param string $exerciseId Identifier of the exercise
    */
-  public function actionExercise(string $id) {
+  public function actionExercise(string $exerciseId) {
     // @todo check that this user can access this information
-    $exercise = $this->exercises->findOrThrow($id);
+    $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$exercise->canAccessDetail($this->getCurrentUser())) {
       throw new NotFoundException;
     }
@@ -98,16 +93,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="files", description="Files of the reference solution")
    * @Param(type="post", name="runtime", description="ID of runtime for this solution")
    * @UserIsAllowed(exercises="create")
-   * @param string $id Identifier of the exercise
+   * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function actionCreateReferenceSolution(string $id) {
-    $exercise = $this->exercises->findOrThrow($id);
+  public function actionCreateReferenceSolution(string $exerciseId) {
+    $exercise = $this->exercises->findOrThrow($exerciseId);
     $user = $this->getCurrentUser();
 
     if (!$exercise->isAuthor($user)) {
-      throw new ForbiddenRequestException("Only author can create reference assignments");
+      throw new ForbiddenRequestException("Only the exercise author can create reference solutions");
     }
 
     $req = $this->getRequest();
@@ -141,53 +136,80 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
-   * Evaluate reference solutions to an exercise for a hardware group
+   * Evaluate a single reference exercise solution for all configured hardware groups
    * @POST
-   * @Param(type="post", name="hwGroup", description="Identififer of a hardware group")
    * @UserIsAllowed(assignments="create")
-   * @param string $exerciseId Identifier of the exercise
    * @param string $id Identifier of the reference solution
+   * @throws NotFoundException
    */
-  public function actionEvaluate(string $exerciseId, string $id) {
+  public function actionEvaluate(string $id) {
+    /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
-    if ($referenceSolution->getExercise()->getId() !== $exerciseId) {
-      throw new SubmissionFailedException("The reference solution '$id' does not belong to exercise '$exerciseId'");
-    }
-
-    // create the entity and generate the ID
-    $hwGroup = $this->getHttpRequest()->getPost("hwGroup");
-    $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
-    $this->referenceEvaluations->persist($evaluation);
-
     /** @var RuntimeConfig $runtimeConfig */
-    $runtimeConfig = $referenceSolution->getSolution()->getRuntimeConfig();
+    list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
 
-    // configure the job and start evaluation
-    $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());
-    $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
-    $files = $referenceSolution->getFiles()->getValues();
+    $this->sendSuccessResponse([
+      "evaluations" => $evaluations,
+      "errors" => $errors
+    ]);
+  }
 
-    $resultsUrl = $this->submissionHelper->initiateEvaluation(
-      $jobConfig,
-      $files,
-      ['env' => $runtimeConfig->getRuntimeEnvironment()->getId()],
-      $hwGroup
-    );
+  /**
+   * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
+   * @POST
+   * @UserIsAllowed(assignments="create")
+   * @throws SubmissionFailedException
+   * @param string $exerciseId Identifier of the exercise
+   */
+  public function actionEvaluateForExercise($exerciseId) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($exerciseId);
+    $result = [];
 
-    if($resultsUrl !== NULL) {
-      $evaluation->setResultsUrl($resultsUrl);
-      $this->referenceEvaluations->flush();
-      $this->sendSuccessResponse([
-        "evaluation" => $evaluation,
-        "webSocketChannel" => [
-          "id" => $jobConfig->getJobId(),
-          "monitorUrl" => $this->monitorConfig->getAddress(),
-          "expectedTasksCount" => $jobConfig->getTasksCount()
-        ],
-      ]);
-    } else {
-      throw new SubmissionFailedException;
+    foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
+      list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
+      $result[] = [
+        "referenceSolution" => $referenceSolution,
+        "evaluations" => $evaluations,
+        "errors" => $errors
+      ];
     }
+
+    $this->sendSuccessResponse($result);
+  }
+
+  private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
+    $runtimeConfig = $referenceSolution->getRuntimeConfig();
+    $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());
+    $hwGroups = $jobConfig->getHardwareGroups();
+    $evaluations = [];
+    $errors = [];
+
+    foreach ($hwGroups as $hwGroup) {
+      // create the entity and generate the ID
+      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
+      $this->referenceEvaluations->persist($evaluation);
+
+      // configure the job and start evaluation
+      $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
+      $files = $referenceSolution->getFiles()->getValues();
+
+      try {
+        $resultsUrl = $this->submissionHelper->initiateEvaluation(
+          $jobConfig,
+          $files,
+          ['env' => $runtimeConfig->getRuntimeEnvironment()->getId()],
+          $hwGroup
+        );
+        $evaluation->setResultsUrl($resultsUrl);
+        $this->referenceEvaluations->flush();
+        $evaluations[] = $evaluation;
+      } catch (SubmissionFailedException $e) {
+        $errors[] = $hwGroup;
+      }
+    }
+
+    return [$evaluations, $errors];
   }
 }
