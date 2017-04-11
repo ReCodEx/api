@@ -129,7 +129,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(2, $result['payload']);
+    Assert::count(3, $result['payload']);
 
     $evaluations = $result['payload']['evaluations'];
     $errors = $result['payload']['errors'];
