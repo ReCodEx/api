@@ -23,4 +23,12 @@ interface IExternalLoginService {
    */
   function getUser(string $username, string $password): UserData;
 
+
+  /**
+   * Read user's data from the identity provider, if the ticket provided by the user is valid
+   * @param  string $ticket
+   * @return UserData Information known about this user
+   */
+  function getUserWithTicket(string $ticket): UserData;
+
 }

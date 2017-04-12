@@ -60,6 +60,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
+    $router[] = new PostRoute("$prefix/<serviceId>-ticket", "Login:externalTicket");
     $router[] = new PostRoute("$prefix/<serviceId>", "Login:external");
     return $router;
   }

@@ -59,4 +59,16 @@ class ExternalServiceAuthenticator {
     $userData = $service->getUser($username, $password);
     return $this->externalLogins->getUser($serviceId, $userData->getId());
   }
+
+  /**
+   * Authenticate a user against given external authentication service
+   * @param string $serviceId
+   * @param string $ticket Some kind of a temporary ticket/token which should be used for finding the user account
+   * @return User|NULL
+   */
+  public function authenticateWithTicket(string $serviceId, string $ticket) {
+    $service = $this->getById($serviceId);
+    $userData = $service->getUserWithTicket($ticket);
+    return $this->externalLogins->getUser($serviceId, $userData->getId());
+  }
 }

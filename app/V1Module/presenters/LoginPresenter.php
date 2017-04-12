@@ -78,6 +78,20 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
+   * Log in using an external authentication service using a ticket
+   * @POST
+   * @Param(type="post", name="ticket", validation="string", description="Temporary validation ticket")
+   * @param string $serviceId Identifier of the login service
+   */
+  public function actionExternalTicket($serviceId) {
+    $req = $this->getRequest();
+    $ticket = $req->getPost("ticket");
+
+    $user = $this->externalServiceAuthenticator->authenticateWithTicket($serviceId, $ticket);
+    $this->trySendingLoggedInResponse($user);
+  }
+
+  /**
    * Refresh the access token of current user
    * @GET
    * @LoggedIn

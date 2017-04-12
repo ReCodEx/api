@@ -8,10 +8,14 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
 use Nette\Utils\Arrays;
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use Nette\Utils\Validators;
 
 use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Core\NodeAttribute;
+
+use GuzzleHttp\Client;
 
 /**
  * Login provider of Charles University, CAS - Centrální autentizační služba UK.
@@ -98,6 +102,44 @@ class CAS implements IExternalLoginService {
     $degreesAfterName = ""; // @todo
 
     return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
+  }
+
+  /**
+   * Read user's data from the identity provider, if the ticket provided by the user is valid
+   * @param  string $ticket
+   * @param  string $service
+   * @return UserData Information known about this user
+   */
+  function getUserWithTicket(string $ticket, string $service = "https://recodex.projekty.ms.mff.cuni.cz"): UserData {
+    $client = new Client([ "base_uri" => "https://idp.cuni.cz/cas/" ]);
+    $service = urlencode($service);
+    $ticket = urlencode($ticket);
+    $url = "validateService?service=$service&ticket=$ticket&format=json";
+    $res = $client->get($url);
+
+    if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
+      try {
+        $data = Json::decode($res->getBody());
+      } catch (JsonException $e) {
+        throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+      }
+
+      try {
+        $info = Arrays::get($data, ["successResponse", "authenticationSuccess", "attributes"]);
+        $ukco = Arrays::get($info, "cunipersonalid");
+        $email = Arrays::get($info, "mail");
+        $firstName = Arrays::get($info, "givenname");
+        $lastName = Arrays::get($info, "sn");
+        $degreesBeforeName = ""; // @todo
+        $degreesAfterName = ""; // @todo
+
+        return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
+      } catch (InvalidArgumentException $e) {
+        throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
+      }
+    } else {
+      throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable.");
+    }
   }
 
   /**
