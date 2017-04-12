@@ -114,10 +114,9 @@ class CAS implements IExternalLoginService {
      */
   function getUserWithTicket(string $ticket, string $service = "https://recodex.projekty.ms.mff.cuni.cz"): UserData {
     $client = new Client([ "base_uri" => "https://idp.cuni.cz/cas/" ]);
-    $service = "http://localhost:8080/en"; // @todo remove!!
     $service = urlencode($service);
     $ticket = urlencode($ticket);
-    $url = "validateService?service=$service&ticket=$ticket&format=json";
+    $url = "serviceValidate?service=$service&ticket=$ticket&format=json";
     $res = $client->get($url);
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
