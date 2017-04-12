@@ -7,6 +7,7 @@ use App\Helpers\LdapUserUtils;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
+use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
@@ -104,14 +105,16 @@ class CAS implements IExternalLoginService {
     return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
   }
 
-  /**
-   * Read user's data from the identity provider, if the ticket provided by the user is valid
-   * @param  string $ticket
-   * @param  string $service
-   * @return UserData Information known about this user
-   */
+    /**
+     * Read user's data from the identity provider, if the ticket provided by the user is valid
+     * @param  string $ticket
+     * @param  string $service
+     * @return UserData Information known about this user
+     * @throws WrongCredentialsException
+     */
   function getUserWithTicket(string $ticket, string $service = "https://recodex.projekty.ms.mff.cuni.cz"): UserData {
     $client = new Client([ "base_uri" => "https://idp.cuni.cz/cas/" ]);
+    $service = "http://localhost:8080/en"; // @todo remove!!
     $service = urlencode($service);
     $ticket = urlencode($ticket);
     $url = "validateService?service=$service&ticket=$ticket&format=json";
