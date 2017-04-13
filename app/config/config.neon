@@ -46,6 +46,9 @@ parameters:
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:4443/ws
 
+  uploads:
+      removalThreshold: "1 day"
+
   CAS:
     serviceId: "cas-uk"
     ldapConnection:
@@ -118,6 +121,8 @@ services:
     tags: [kdyby.console.command]
   - class: App\Console\GenerateSwagger(@router)
     tags: [kdyby.console.command]
+  - class: App\Console\CleanupUploads()
+    tags: [kdyby.console.command]
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -134,6 +139,7 @@ services:
   - App\Helpers\BrokerConfig(%broker%)
   - App\Helpers\EmailsConfig(%emails%)
   - App\Helpers\ApiConfig(%api%)
+  - App\Helpers\UploadsConfig(%uploads%)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)

@@ -52,4 +52,30 @@ class UploadedFiles extends BaseRepository {
 
     return $result->assignment->group;
   }
+
+  /**
+   * Find uploaded files that are too old and not assigned to an Exercise or Solution
+   * @param DateTime $now Current date
+   * @param string $threshold Maximum allowed age of uploaded files
+   *                          (in a form acceptable by DateTime::modify after prefixing with a "-" sign)
+   * @return array
+   */
+  public function findUnused(DateTime $now, $threshold)
+  {
+    $query = $this->em->createQuery("
+      SELECT f
+      FROM App\Model\Entity\UploadedFile f
+      WHERE f INSTANCE OF App\Model\Entity\UploadedFile
+      AND f.uploadedAt < :threshold
+    ");
+
+    $thresholdDate = clone $now;
+    $thresholdDate->modify("-" . $threshold);
+
+    $query->setParameters([
+      "threshold" => $thresholdDate
+    ]);
+
+    return $query->getResult();
+  }
 }

@@ -131,5 +131,4 @@ class UploadedFilesPresenter extends BasePresenter {
       throw new CannotReceiveUploadedFileException($file->getSanitizedName());
     }
   }
-
 }
