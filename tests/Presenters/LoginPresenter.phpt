@@ -1,5 +1,6 @@
 <?php
 use App\Exceptions\WrongCredentialsException;
+use App\Helpers\ExternalLogin\CAS\LDAPLoginService;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Security\AccessToken;
 use App\Security\Identity;
@@ -83,16 +84,21 @@ class TestLoginPresenter extends Tester\TestCase
   {
     $user = $this->presenter->users->getByEmail($this->userLogin);
     $mockAuthenticator = Mockery::mock(ExternalServiceAuthenticator::class);
+
+    $service = Mockery::mock(LDAPLoginService::class);
+    $mockAuthenticator->shouldReceive("findService")
+      ->with("foo", "default")
+      ->andReturn($service);
+
+    $credentials = [ "username" => $this->userLogin, "password" => $this->userPassword ];
+
     $mockAuthenticator->shouldReceive("authenticate")
-      ->with("foo", $this->userLogin, $this->userPassword)
+      ->with($service, $credentials)
       ->andReturn($user);
 
     $this->presenter->externalServiceAuthenticator = $mockAuthenticator;
 
-    $request = new Request("V1:Login", "POST", ["action" => "external", "serviceId" => "foo"], [
-      "username" => $this->userLogin,
-      "password" => $this->userPassword
-    ]);
+    $request = new Request("V1:Login", "POST", ["action" => "external", "serviceId" => "foo"], $credentials);
 
     /** @var JsonResponse $response */
     $response = $this->presenter->run($request);
