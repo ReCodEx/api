@@ -135,6 +135,7 @@ class UsersPresenter extends BasePresenter {
   public function actionCreateAccountExt() {
     $req = $this->getRequest();
     $serviceId = $req->getPost("serviceId");
+    $authType = $req->getPost("authType");
 
     $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
@@ -145,11 +146,8 @@ class UsersPresenter extends BasePresenter {
       throw new BadRequestException("This instance is not open, you cannot register here.");
     }
 
-    $username = $req->getPost("username");
-    $password = $req->getPost("password");
-
-    $authService = $this->externalServiceAuthenticator->getById($serviceId);
-    $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
+    $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
+    $externalData = $authService->getUser($req->getPost()); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
 
     if ($user !== NULL) {
