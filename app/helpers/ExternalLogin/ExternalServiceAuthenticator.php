@@ -38,11 +38,11 @@ class ExternalServiceAuthenticator {
   /**
    * Get external service depending on the ID
    * @param string $serviceId Identifier of wanted service
-   * @param null|string $type Type of authentication process
+   * @param string $type Type of authentication process
    * @return IExternalLoginService Instance of login service with given ID
    * @throws BadRequestException when such service is not known
    */
-  public function findService(string $serviceId, ?string $type): IExternalLoginService {
+  public function findService(string $serviceId, string $type): IExternalLoginService {
     $found = NULL;
     foreach ($this->services as $service) {
       if ($service->getServiceId() === $serviceId && $service->getType() === $type) {
