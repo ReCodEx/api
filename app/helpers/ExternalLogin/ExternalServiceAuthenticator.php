@@ -3,6 +3,7 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
 
@@ -13,10 +14,10 @@ use App\Model\Repository\ExternalLogins;
 class ExternalServiceAuthenticator {
 
   /**
-   * Auth service of Charles University
-   * @var CAS
+   * External authentication services
+   * @var IExternalLoginService[]
    */
-  private $cas;
+  private $services;
 
   /**
    * @var ExternalLogins
@@ -25,50 +26,67 @@ class ExternalServiceAuthenticator {
 
   /**
    * Constructor with instantiation of all login services
-   * @param CAS $cas Charles University autentication service
+   * @param ExternalLogins $externalLogins
+   * @param array $services
+   * @internal param CAS $cas Charles University autentication service
    */
-  public function __construct(ExternalLogins $externalLogins, CAS $cas) {
+  public function __construct(ExternalLogins $externalLogins, ...$services) {
     $this->externalLogins = $externalLogins;
-    $this->cas = $cas;
+    $this->services = $services;
   }
 
   /**
    * Get external service depending on the ID
    * @param string $serviceId Identifier of wanted service
+   * @param null|string $type Type of authentication process
    * @return IExternalLoginService Instance of login service with given ID
    * @throws BadRequestException when such service is not known
    */
-  public function getById(string $serviceId): IExternalLoginService {
-    switch (strtolower($serviceId)) {
-      case $this->cas->getServiceId():
-        return $this->cas;
-      default:
-        throw new BadRequestException("Authentication service '$serviceId' is not supported.");
+  public function findService(string $serviceId, ?string $type): IExternalLoginService {
+    $found = NULL;
+    foreach ($this->services as $service) {
+      if ($service->getServiceId() === $serviceId && $service->getType() === $type) {
+        $found = $service;
+        break;
+      }
     }
+
+    if ($found === NULL) {
+      throw new BadRequestException("Authentication service '$serviceId' is not supported.");
+    }
+
+    return $found;
   }
 
   /**
    * Authenticate a user against given external authentication service
-   * @param string $serviceId
-   * @param string $username
-   * @param string $password
-   * @return User|NULL
+   * @param IExternalLoginService $service
+   * @param array $credentials
+   * @return User
    */
-  public function authenticate(string $serviceId, string $username, string $password) {
-    $service = $this->getById($serviceId);
-    $userData = $service->getUser($username, $password);
-    return $this->externalLogins->getUser($serviceId, $userData->getId());
+  public function authenticate(IExternalLoginService $service, ...$credentials) {
+    $userData = $service->getUser(...$credentials);
+    return $this->findUser($service, $userData);
   }
 
   /**
-   * Authenticate a user against given external authentication service
-   * @param string $serviceId
-   * @param string $ticket Some kind of a temporary ticket/token which should be used for finding the user account
-   * @return User|NULL
+   * Try to find a user account based on the data collected from
+   * an external login service.
+   * @param IExternalLoginService $service
+   * @param UserData|null $userData
+   * @return User
+   * @throws WrongCredentialsException
    */
-  public function authenticateWithTicket(string $serviceId, string $ticket) {
-    $service = $this->getById($serviceId);
-    $userData = $service->getUserWithTicket($ticket);
-    return $this->externalLogins->getUser($serviceId, $userData->getId());
+  private function findUser(IExternalLoginService $service, ?UserData $userData): User {
+      if ($userData === NULL) {
+          throw new WrongCredentialsException("Authentication failed.");
+      }
+
+      $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
+      if ($user === NULL) {
+          throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}");
+      }
+
+      return $user;
   }
 }

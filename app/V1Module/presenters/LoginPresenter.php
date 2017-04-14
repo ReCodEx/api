@@ -36,7 +36,7 @@ class LoginPresenter extends BasePresenter {
    * Sends response with an access token, if the user exists.
    * @param User $user
    */
-  private function trySendingLoggedInResponse(User $user) {
+  private function sendAccessTokenResponse(User $user) {
     $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]);
     $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
@@ -58,37 +58,20 @@ class LoginPresenter extends BasePresenter {
     $password = $req->getPost("password");
 
     $user = $this->credentialsAuthenticator->authenticate($username, $password);
-    $this->trySendingLoggedInResponse($user);
+    $this->sendAccessTokenResponse($user);
   }
 
   /**
    * Log in using an external authentication service
    * @POST
-   * @Param(type="post", name="username", validation="string", description="User name")
-   * @Param(type="post", name="password", validation="string", description="Password")
    * @param string $serviceId Identifier of the login service
+   * @param string $type Type of the authentication process
    */
-  public function actionExternal($serviceId) {
+  public function actionExternal($serviceId, $type) {
     $req = $this->getRequest();
-    $username = $req->getPost("username");
-    $password = $req->getPost("password");
-
-    $user = $this->externalServiceAuthenticator->authenticate($serviceId, $username, $password);
-    $this->trySendingLoggedInResponse($user);
-  }
-
-  /**
-   * Log in using an external authentication service using a ticket
-   * @POST
-   * @Param(type="post", name="ticket", validation="string", description="Temporary validation ticket")
-   * @param string $serviceId Identifier of the login service
-   */
-  public function actionExternalTicket($serviceId) {
-    $req = $this->getRequest();
-    $ticket = $req->getPost("ticket");
-
-    $user = $this->externalServiceAuthenticator->authenticateWithTicket($serviceId, $ticket);
-    $this->trySendingLoggedInResponse($user);
+    $service = $this->externalServiceAuthenticator->findService($serviceId, $type);
+    $user = $this->externalServiceAuthenticator->authenticate($service, $req->getPost());
+    $this->sendAccessTokenResponse($user);
   }
 
   /**

@@ -16,19 +16,16 @@ interface IExternalLoginService {
   function getServiceId(): string;
 
   /**
-   * Read user's data from the identity provider, if the credentials provided by the user are correct.
-   * @param  string $username Email or identification number of the person
-   * @param  string $password User's password
-   * @return UserData Information known about this user
+   * Gets the identifier of the type of authentication of the service.
+   * @return string Login service unique identifier
    */
-  function getUser(string $username, string $password): UserData;
-
+  function getType(): string;
 
   /**
-   * Read user's data from the identity provider, if the ticket provided by the user is valid
-   * @param  string $ticket
+   * Read user's data from the identity provider, if the credentials provided by the user are correct.
+   * @param array $credentials
    * @return UserData Information known about this user
    */
-  function getUserWithTicket(string $ticket): UserData;
+  function getUser($credentials): UserData;
 
 }

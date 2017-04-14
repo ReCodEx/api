@@ -1,22 +1,19 @@
 <?php
 
-namespace App\Helpers\ExternalLogin;
+namespace App\Helpers\ExternalLogin\CAS;
 
-use App\Model\Entity\User;
+use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExternalLogin\IExternalLoginService;
+use App\Helpers\ExternalLogin\UserData;
 use App\Helpers\LdapUserUtils;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
-use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
-use Nette\Utils\Json;
-use Nette\Utils\JsonException;
 use Nette\Utils\Validators;
 
 use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Core\NodeAttribute;
-
-use GuzzleHttp\Client;
 
 /**
  * Login provider of Charles University, CAS - Centrální autentizační služba UK.
@@ -30,7 +27,7 @@ use GuzzleHttp\Client;
  * database. There is also function to find user by email, but it's not guaranteed
  * to be unique, so this method may fail (but very unlikely).
  */
-class CAS implements IExternalLoginService {
+class LDAPLoginService implements IExternalLoginService {
 
   /** @var string Unique identifier of this login service, for example "cas-uk" */
   private $serviceId;
@@ -40,6 +37,11 @@ class CAS implements IExternalLoginService {
    * @return string Login service unique identifier
    */
   public function getServiceId(): string { return $this->serviceId; }
+
+  /**
+   * @return string The LDAP authentication
+   */
+  public function getType(): string { return "default"; }
 
   /** @var LdapUserUtils Ldap utilities for bindings and searching */
   private $ldap;
@@ -70,6 +72,28 @@ class CAS implements IExternalLoginService {
   }
 
   /**
+   * User can enter either his email or his UKCO identifier. If the user filled in the email address, then this
+   * function will ask the CAS system for the UKCO bound to this email.
+   * @param string $username Email or UKCO
+   * @return string The UKCO
+   * @throws WrongCredentialsException
+   */
+  public function ensureUKCO(string $username) {
+    if (Validators::isEmail($username)) {
+      $username = $this->getUKCO($username);
+      if ($username === NULL) {
+        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
+      }
+    }
+
+    if (Validators::isNumeric($username)) {
+      throw new WrongCredentialsException("The UKCO given by the user is not a number.");
+    }
+
+    return $username;
+  }
+
+  /**
    * Tries to find UKCO for the given email. The ID cannot be determined if there is no
    * person with this email or if there mare multiple people sharing the email.
    * @param  string $email Email address of user, whose UKCO is requested
@@ -81,70 +105,41 @@ class CAS implements IExternalLoginService {
 
   /**
    * Read user's data from the CAS UK, if the credentials provided by the user are correct.
-   * @param  string $username Email or identification number of the person
-   * @param  string $password User's password
+   * @param array $credentials
    * @return UserData Information known about this user
-   * @throws WrongCredentialsException when login is not successfull
+   * @throws InvalidArgumentException
+   * @internal param string $username Email or identification number of the person
+   * @internal param string $password User's password
    */
-  public function getUser(string $username, string $password): UserData {
-    $ukco = $username;
-    if (Validators::isEmail($username)) {
-      $ukco = $this->getUKCO($username);
-      if ($ukco === NULL) {
-        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
-      }
+  public function getUser($credentials): UserData {
+    $username = Arrays::get($credentials, "username", NULL);
+    $password= Arrays::get($credentials, "password", NULL);
+
+    if ($username === NULL || $password === NULL) {
+      throw new InvalidArgumentException("The ticket or the client URL is missing for validation of the request.");
     }
 
+    $ukco = $this->ensureUKCO($username);
     $data = $this->ldap->getUser($ukco, $password); // throws when the credentials are wrong
-    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
-    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
-    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
-    $degreesBeforeName = ""; // @todo
-    $degreesAfterName = ""; // @todo
-
-    return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
-  }
-
-    /**
-     * Read user's data from the identity provider, if the ticket provided by the user is valid
-     * @param  string $ticket
-     * @param  string $service
-     * @return UserData Information known about this user
-     * @throws WrongCredentialsException
-     */
-  function getUserWithTicket(string $ticket, string $service = "https://recodex.projekty.ms.mff.cuni.cz"): UserData {
-    $client = new Client([ "base_uri" => "https://idp.cuni.cz/cas/" ]);
-    $service = urlencode($service);
-    $ticket = urlencode($ticket);
-    $url = "serviceValidate?service=$service&ticket=$ticket&format=json";
-    $res = $client->get($url);
-
-    if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
-      try {
-        $data = Json::decode($res->getBody());
-      } catch (JsonException $e) {
-        throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
-      }
-
-      try {
-        $info = Arrays::get($data, ["successResponse", "authenticationSuccess", "attributes"]);
-        $ukco = Arrays::get($info, "cunipersonalid");
-        $email = Arrays::get($info, "mail");
-        $firstName = Arrays::get($info, "givenname");
-        $lastName = Arrays::get($info, "sn");
-        $degreesBeforeName = ""; // @todo
-        $degreesAfterName = ""; // @todo
-
-        return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
-      } catch (InvalidArgumentException $e) {
-        throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
-      }
-    } else {
-      throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable.");
-    }
+    return $this->getUserData($ukco, $data);
   }
 
   /**
+   * Convert the LDAP data to the UserData container
+   * @param $ukco
+   * @param $data
+   * @return UserData
+   */
+  public function getUserData($ukco, Node $data): UserData {
+    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
+    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
+    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
+
+    // we do not get this information about the degrees of the user
+    return new UserData($ukco, $email, $firstName, $lastName, "", "");
+  }
+
+  /**a
    * Get value of an LDAP attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value
