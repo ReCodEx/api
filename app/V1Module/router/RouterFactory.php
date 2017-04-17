@@ -8,7 +8,6 @@ use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
 use App\V1Module\Router\PostRoute;
-use App\V1Module\Router\PutRoute;
 use App\V1Module\Router\DeleteRoute;
 use App\V1Module\Router\PreflightRoute;
 
@@ -60,7 +59,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
-    $router[] = new PostRoute("$prefix/<serviceId>", "Login:external");
+    $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
     return $router;
   }
 

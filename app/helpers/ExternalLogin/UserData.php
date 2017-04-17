@@ -49,7 +49,6 @@ final class UserData {
    * @param string                $lastName    Last name of user
    * @param string                $degreesBeforeName   Degrees before user's name
    * @param string                $degreesAfterName    Degrees after user's name
-   * @param IExternalLoginService $authService Used authentification service provider class
    */
   public function __construct(
     string $id,
@@ -57,8 +56,7 @@ final class UserData {
     string $firstName,
     string $lastName,
     string $degreesBeforeName,
-    string $degreesAfterName,
-    IExternalLoginService $authService
+    string $degreesAfterName
   ) {
     $this->id = $id;
     $this->firstName = $firstName;
