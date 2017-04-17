@@ -43,19 +43,13 @@ class ExternalServiceAuthenticator {
    * @throws BadRequestException when such service is not known
    */
   public function findService(string $serviceId, ?string $type = "default"): IExternalLoginService {
-    $found = NULL;
     foreach ($this->services as $service) {
       if ($service->getServiceId() === $serviceId && $service->getType() === $type) {
-        $found = $service;
-        break;
+        return $service;
       }
     }
 
-    if ($found === NULL) {
-      throw new BadRequestException("Authentication service '$serviceId' is not supported.");
-    }
-
-    return $found;
+    throw new BadRequestException("Authentication service '$serviceId' is not supported.");
   }
 
   /**
