@@ -87,7 +87,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     $service = Mockery::mock(LDAPLoginService::class);
     $mockAuthenticator->shouldReceive("findService")
-      ->with("foo", "default")
+      ->with("foo", NULL)
       ->andReturn($service);
 
     $credentials = [ "username" => $this->userLogin, "password" => $this->userPassword ];
