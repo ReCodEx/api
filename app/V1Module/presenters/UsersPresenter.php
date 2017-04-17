@@ -127,8 +127,6 @@ class UsersPresenter extends BasePresenter {
   /**
    * Create an account authenticated with an external service
    * @POST
-   * @Param(type="post", name="username", validation="string:2..", description="Login name")
-   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="Authentication password")
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
    */

@@ -156,7 +156,7 @@ class TestUsersPresenter extends Tester\TestCase
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
 
     $mockAuthService->shouldReceive("findService")
-      ->with($serviceId, "default")->andReturn($mockExternalLoginService)->once();
+      ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
 
     $mockExternalLoginService->shouldReceive("getUser")->withAnyArgs()
       ->andReturn(new UserData(
