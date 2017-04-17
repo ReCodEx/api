@@ -44,11 +44,14 @@ class OAuthLoginService implements IExternalLoginService {
    */
   public function getType(): string { return "oauth"; }
 
-  /** @var string Name of JSON field containing user mail address */
+  /** @var string Name of JSON field containing user's UKCO */
   private $ukcoField;
 
   /** @var string Name of JSON field containing user mail address */
   private $emailField;
+
+  /** @var string Name of JSON field containing user's affiliation with CUNI */
+  private $affiliationField;
 
   /** @var string Name of JSON field containing user first name */
   private $firstNameField;
@@ -70,9 +73,10 @@ class OAuthLoginService implements IExternalLoginService {
 
     // The field names of user's information stored in the CAS LDAP
     $this->ukcoField = Arrays::get($fields, "ukco", "cunipersonalid");
+    $this->affiliationField = Arrays::get($fields, "ukco", "edupersonscopedaffiliation");
     $this->emailField = Arrays::get($fields, "email", "mail");
-    $this->firstNameField = Arrays::get($fields, "firstName", "firstName");
-    $this->lastNameField = Arrays::get($fields, "lastName", "lastName");
+    $this->firstNameField = Arrays::get($fields, "firstName", "givenname");
+    $this->lastNameField = Arrays::get($fields, "lastName", "sn");
 
     // The CAS HTTP validation endpoint
     $this->casHttpBaseUri = Arrays::get($options, "baseUri", "https://idp.cuni.cz/cas/");
@@ -112,7 +116,7 @@ class OAuthLoginService implements IExternalLoginService {
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
       try {
-        $data = Json::decode($res->getBody());
+        $data = Json::decode($res->getBody(), Json::FORCE_ARRAY);
       } catch (JsonException $e) {
         throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
       }
@@ -145,7 +149,7 @@ class OAuthLoginService implements IExternalLoginService {
    */
   private function getUserData($ticket, $data): UserData {
     try {
-      $info = Arrays::get($data, ["successResponse", "authenticationSuccess", "attributes"]);
+      $info = Arrays::get($data, ["serviceResponse", "authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
       throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
     }
@@ -155,6 +159,7 @@ class OAuthLoginService implements IExternalLoginService {
       $email = Arrays::get($info, $this->emailField);
       $firstName = Arrays::get($info, $this->firstNameField);
       $lastName = Arrays::get($info, $this->lastNameField);
+      // $affiliation = Arrays::get($info, $this->affiliationField); // @todo automatically change role according to this value
     } catch (InvalidArgumentException $e) {
       throw new CASMissingInfoException("The information of the user received from the CAS is incomplete.");
     }
