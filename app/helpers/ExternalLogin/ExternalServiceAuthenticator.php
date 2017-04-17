@@ -49,7 +49,7 @@ class ExternalServiceAuthenticator {
       }
     }
 
-    throw new BadRequestException("Authentication service '$serviceId' is not supported.");
+    throw new BadRequestException("Authentication service '$serviceId/$type' is not supported.");
   }
 
   /**
