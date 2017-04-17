@@ -1,8 +1,14 @@
 <?php
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\ExternalLogin\IExternalLoginService;
+use App\Helpers\ExternalLogin\UserData;
+use App\Model\Entity\Instance;
+use App\Model\Entity\Role;
+use App\Model\Entity\User;
+use App\Model\Repository\ExternalLogins;
 use Tester\Assert;
 
 include "../bootstrap.php";
@@ -22,7 +28,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getServiceId")->andReturn("x");
         $serviceA->shouldReceive("getType")->andReturn("u");
 
-        $logins = Mockery::mock(\App\Model\Repository\ExternalLogins::class);
+        $logins = Mockery::mock(ExternalLogins::class);
         $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
         Assert::throws(function () use ($authenticator) {
             $authenticator->findService("x");
@@ -34,7 +40,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getServiceId")->andReturn("x");
         $serviceA->shouldReceive("getType")->andReturn("default");
 
-        $logins = Mockery::mock(\App\Model\Repository\ExternalLogins::class);
+        $logins = Mockery::mock(ExternalLogins::class);
         $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
         Assert::equal($serviceA, $authenticator->findService("x"));
     }
@@ -44,10 +50,58 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getServiceId")->andReturn("x");
         $serviceA->shouldReceive("getType")->andReturn("y");
 
-        $logins = Mockery::mock(\App\Model\Repository\ExternalLogins::class);
+        $logins = Mockery::mock(ExternalLogins::class);
         $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
         Assert::equal($serviceA, $authenticator->findService("x", "y"));
     }
+
+    public function testMissingUserData() {
+        $serviceA = Mockery::mock(IExternalLoginService::class);
+        $serviceA->shouldReceive("getUser")->andReturn(NULL);
+
+        $logins = Mockery::mock(ExternalLogins::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        Assert::throws(function () use ($authenticator, $serviceA) {
+            $authenticator->authenticate($serviceA, []);
+        }, WrongCredentialsException::class, "Authentication failed.");
+    }
+
+    public function testMissingUser() {
+        $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+
+        $serviceA = Mockery::mock(IExternalLoginService::class);
+        $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+        $serviceA->shouldReceive("getServiceId")->andReturn("x");
+
+        $logins = Mockery::mock(ExternalLogins::class);
+        $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(NULL);
+
+        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        Assert::throws(function () use ($authenticator, $serviceA) {
+            $authenticator->authenticate($serviceA, [ "a" => "b" ]);
+        }, WrongCredentialsException::class, "Cannot authenticate this user through x.");
+    }
+
+    public function testFindUser() {
+        $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+
+        $serviceA = Mockery::mock(IExternalLoginService::class);
+        $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+        $serviceA->shouldReceive("getServiceId")->andReturn("x");
+
+        $role = Mockery::mock(Role::class);
+        $instance = Mockery::mock(Instance::class);
+        $instance->shouldReceive("addMember");
+        $user = new User("a@b.cd", "A", "B", "", "", $role, $instance, FALSE);
+
+        $logins = Mockery::mock(ExternalLogins::class);
+        $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn($user);
+
+        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+
+        Assert::equal($user, $authenticator->authenticate($serviceA, [ "a" => "b" ]));
+    }
+
 
 }
 

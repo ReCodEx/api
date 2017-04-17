@@ -78,7 +78,7 @@ class ExternalServiceAuthenticator {
 
       $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
       if ($user === NULL) {
-          throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}");
+          throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}.");
       }
 
       return $user;

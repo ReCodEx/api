@@ -26,6 +26,6 @@ interface IExternalLoginService {
    * @param array $credentials
    * @return UserData Information known about this user
    */
-  function getUser($credentials): UserData;
+  function getUser($credentials): ?UserData;
 
 }

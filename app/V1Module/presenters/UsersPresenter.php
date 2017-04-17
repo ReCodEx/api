@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\Instance;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\ExternalLogin;
@@ -63,6 +64,23 @@ class UsersPresenter extends BasePresenter {
   public $externalServiceAuthenticator;
 
   /**
+   * Get an instance by its ID.
+   * @param string $instanceId
+   * @return Instance
+   * @throws BadRequestException
+   */
+  public function getInstance(string $instanceId): Instance {
+    $instance = $this->instances->get($instanceId);
+    if (!$instance) {
+      throw new BadRequestException("Instance '$instanceId' does not exist.");
+    } else if (!$instance->getIsOpen()) {
+      throw new BadRequestException("This instance is not open, you cannot register here.");
+    }
+
+    return $instance;
+  }
+
+  /**
    * Get a list of all users
    * @GET
    * @UserIsAllowed(users="view-all")
@@ -93,12 +111,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     $role = $this->roles->get(Role::STUDENT);
-    $instance = $this->instances->get($req->getPost("instanceId"));
-    if (!$instance) {
-      throw new BadRequestException("Such instance does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instanceId = $req->getPost("instanceId");
+    $instance = $this->getInstance($instanceId);
 
     $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
@@ -137,12 +151,7 @@ class UsersPresenter extends BasePresenter {
 
     $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
-    $instance = $this->instances->get($instanceId);
-    if (!$instance) {
-      throw new BadRequestException("Instance '$instanceId' does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instance = $this->getInstance($instanceId);
 
     $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
     $externalData = $authService->getUser($req->getPost()); // throws if the user cannot be logged in
