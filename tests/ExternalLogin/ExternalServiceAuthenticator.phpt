@@ -9,6 +9,7 @@ use App\Model\Entity\Instance;
 use App\Model\Entity\Role;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
+use App\Model\Repository\Users;
 use Tester\Assert;
 
 include "../bootstrap.php";
@@ -29,7 +30,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getType")->andReturn("u");
 
         $logins = Mockery::mock(ExternalLogins::class);
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::throws(function () use ($authenticator) {
             $authenticator->findService("x");
         }, BadRequestException::class, "Bad Request - Authentication service 'x/default' is not supported.");
@@ -41,7 +43,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getType")->andReturn("default");
 
         $logins = Mockery::mock(ExternalLogins::class);
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::equal($serviceA, $authenticator->findService("x"));
     }
 
@@ -51,7 +54,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getType")->andReturn("y");
 
         $logins = Mockery::mock(ExternalLogins::class);
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::equal($serviceA, $authenticator->findService("x", "y"));
     }
 
@@ -60,7 +64,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $serviceA->shouldReceive("getUser")->andReturn(NULL);
 
         $logins = Mockery::mock(ExternalLogins::class);
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::throws(function () use ($authenticator, $serviceA) {
             $authenticator->authenticate($serviceA, []);
         }, WrongCredentialsException::class, "Authentication failed.");
@@ -76,7 +81,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $logins = Mockery::mock(ExternalLogins::class);
         $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(NULL);
 
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::throws(function () use ($authenticator, $serviceA) {
             $authenticator->authenticate($serviceA, [ "a" => "b" ]);
         }, WrongCredentialsException::class, "Cannot authenticate this user through x.");
@@ -97,7 +103,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $logins = Mockery::mock(ExternalLogins::class);
         $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn($user);
 
-        $authenticator = new ExternalServiceAuthenticator($logins, $serviceA);
+        $users = Mockery::mock(Users::class);
+        $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
 
         Assert::equal($user, $authenticator->authenticate($serviceA, [ "a" => "b" ]));
     }
