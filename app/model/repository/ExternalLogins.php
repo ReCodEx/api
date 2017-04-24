@@ -2,8 +2,7 @@
 
 namespace App\Model\Repository;
 
-use Nette;
-use DateTime;
+use App\Helpers\ExternalLogin\IExternalLoginService;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
@@ -39,6 +38,19 @@ class ExternalLogins extends BaseRepository {
     }
 
     return NULL;
+  }
+
+  /**
+   * Connect the user account with the data received from the authentication service server.
+   * @param IExternalLoginService $service
+   * @param User $user
+   * @param string $externalId
+   * @return bool
+   */
+  public function connect(IExternalLoginService $service, User $user, string $externalId): bool {
+    $externalLogin = new ExternalLogin($user, $service->getServiceId(), $externalId);
+    $this->persist($externalLogin);
+    return TRUE;
   }
 
 }

@@ -176,8 +176,8 @@ class UsersPresenter extends BasePresenter {
     $user = $externalData->createEntity($instance, $role);
     $this->users->persist($user);
 
-    $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());
-    $this->externalLogins->persist($externalLogin);
+    // connect the account to the login method
+    $this->externalLogins->connect($user, $serviceId, $externalData->getId());
 
     // email verification
     $this->emailVerificationHelper->process($user);
