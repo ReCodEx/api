@@ -243,6 +243,13 @@ class Exercise implements JsonSerializable
     return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
   }
 
+  public function getSupplementaryFilesIds() {
+    return $this->supplementaryEvaluationFiles->map(
+      function(ExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -257,6 +264,7 @@ class Exercise implements JsonSerializable
       "authorId" => $this->author->getId(),
       "isPublic" => $this->isPublic,
       "description" => $this->description,
+      "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "additionalFiles" => $this->additionalFiles
     ];
   }
