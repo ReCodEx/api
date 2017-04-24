@@ -19,7 +19,7 @@ class EmailVerificationPresenter extends BasePresenter {
 
   /**
    * Resend the email for the current user to verify his/her email address.
-   * @GET
+   * @POST
    * @LoggedIn
    */
   public function actionResendVerificationEmail() {
@@ -30,7 +30,7 @@ class EmailVerificationPresenter extends BasePresenter {
 
   /**
    * Verify users email.
-   * @GET
+   * @POST
    * @LoggedIn
    */
   public function actionEmailVerification() {
