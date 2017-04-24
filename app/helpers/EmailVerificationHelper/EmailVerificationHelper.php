@@ -2,9 +2,9 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\ForbiddenRequestException;
 use Latte;
 use Nette\Utils\Arrays;
-use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
@@ -53,7 +53,6 @@ class EmailVerificationHelper {
 
   /**
    * Constructor
-   * @param EntityManager $em
    * @param EmailHelper $emailHelper
    * @param AccessManager $accessManager
    * @param array $params Parameters from configuration file
@@ -74,7 +73,13 @@ class EmailVerificationHelper {
    */
   public function process(User $user) {
     // prepare all necessary things
-    $token = $this->accessManager->issueToken($user, [ AccessToken::SCOPE_EMAIL_VERIFICATION ], $this->tokenExpiration);
+    $token = $this->accessManager->issueToken(
+      $user,
+      [ AccessToken::SCOPE_EMAIL_VERIFICATION ],
+      $this->tokenExpiration,
+      [ "email" => $user->getEmail() ]
+    );
+
     $subject = $this->createSubject($user);
     $message = $this->createBody($user, $token);
 
@@ -91,10 +96,20 @@ class EmailVerificationHelper {
    * Verify email verification token against given user.
    * @param User $user
    * @param AccessToken $token
-   * @return boolean
+   * @return bool
+   * @throws ForbiddenRequestException
    */
   public function verify(User $user, AccessToken $token) {
-    return FALSE; // TODO
+    // the token is parsed, which means, it has already been validated in terms of exp, iat, ...
+    // the only verification steps are:
+    // 1] correct scope
+    // 2] the IDs and emails of the user and the token are the same
+
+    if (!$token->isInScope(AccessToken::SCOPE_EMAIL_VERIFICATION)) {
+      throw new ForbiddenRequestException("You cannot verify email with this access token.");
+    }
+
+    return $user->getId() !== $token->getUserId() && $user->getEmail() === $token->getPayload("email");
   }
 
   /**
