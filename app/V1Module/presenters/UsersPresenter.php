@@ -193,10 +193,6 @@ class UsersPresenter extends BasePresenter {
    * @LoggedIn
    */
   public function actionEmailVerification() {
-    if (!$this->isInScope(AccessToken::SCOPE_EMAIL_VERIFICATION)) {
-      throw new ForbiddenRequestException("You cannot verify email with this access token.");
-    }
-
     $user = $this->getCurrentUser();
 
     // verify token
