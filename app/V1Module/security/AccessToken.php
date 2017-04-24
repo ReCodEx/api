@@ -3,6 +3,8 @@
 namespace App\Security;
 
 use App\Exceptions\InvalidAccessTokenException;
+use App\Exceptions\InvalidArgumentException;
+use stdClass;
 
 class AccessToken {
 
@@ -17,6 +19,9 @@ class AccessToken {
   /** @var string[] Array of scopes this access can access */
   private $scopes = [];
 
+  /** @var  stdClass Payload of the token */
+  private $payload;
+
   /**
    * Create a wrapper for a given JWT payload.
    * @param object $payload The decoded payload of the token
@@ -29,11 +34,14 @@ class AccessToken {
     if (isset($payload->scopes)) {
       $this->scopes = $payload->scopes;
     }
+
+    $this->payload = $payload;
   }
 
   /**
    * Extract user's id from the token payload
    * @return string
+   * @throws InvalidAccessTokenException
    */
   public function getUserId(): string {
     if ($this->sub === NULL) {
@@ -52,4 +60,17 @@ class AccessToken {
     return in_array($scope, $this->scopes);
   }
 
+  /**
+   * Access any claim of the payload.
+   * @param $key
+   * @return mixed
+   * @throws InvalidArgumentException
+   */
+  public function getPayload($key) {
+    if (!isset($this->payload->$key)) {
+      throw new InvalidArgumentException("The payload of the access token does not contain claim '$key'");
+    }
+
+    return $this->payload->$key;
+  }
 }
