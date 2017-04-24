@@ -1,6 +1,7 @@
 <?php
 include "../bootstrap.php";
 
+use App\Exceptions\InvalidArgumentException;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
 use Tester\Assert;
@@ -48,6 +49,21 @@ class TestAccessToken extends Tester\TestCase
     Assert::same("refresh", AccessToken::SCOPE_REFRESH);
     Assert::same("change-password", AccessToken::SCOPE_CHANGE_PASSWORD);
   }
+
+  public function testCustomClaim() {
+    $payload = new \stdClass;
+    $payload->xyz = 123;
+    $token = new AccessToken($payload);
+    Assert::same(123, $token->getPayload("xyz"));
+  }
+
+  public function testMissingCustomClaim() {
+    $payload = new \stdClass;
+    $payload->abc = 123;
+    $token = new AccessToken($payload);
+    Assert::throws(function () use ($token) { $token->getPayload("xyz"); }, InvalidArgumentException::class);
+  }
+
 
 }
 
