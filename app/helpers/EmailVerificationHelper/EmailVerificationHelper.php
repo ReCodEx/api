@@ -90,10 +90,10 @@ class EmailVerificationHelper {
   /**
    * Verify email verification token against given user.
    * @param User $user
-   * @param string $token
+   * @param AccessToken $token
    * @return boolean
    */
-  public function verify(User $user, string $token) {
+  public function verify(User $user, AccessToken $token) {
     return FALSE; // TODO
   }
 

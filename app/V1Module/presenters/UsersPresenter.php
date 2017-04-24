@@ -206,7 +206,7 @@ class UsersPresenter extends BasePresenter {
       $user->setVerified();
       $this->users->flush();
     } else {
-      // TODO
+      throw new ForbiddenRequestException("You cannot verify email with this access token.");
     }
 
     $this->sendSuccessResponse("OK");
@@ -280,6 +280,10 @@ class UsersPresenter extends BasePresenter {
       if ($login) {
         $login->setUsername($email);
       }
+
+      // email has to be re-verified
+      $user->setVerified(FALSE);
+      $this->emailVerificationHelper->process($user);
     }
 
     $user->setFirstName($firstName);
