@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Login;
@@ -18,6 +19,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
+use App\Security\Identity;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -195,10 +197,10 @@ class UsersPresenter extends BasePresenter {
   public function actionEmailVerification() {
     $user = $this->getCurrentUser();
 
-    // verify token
-    $verify = $this->emailVerificationHelper->verify($user, $this->getUser()->getIdentity()->getToken());
+    /** @var Identity $identity */
+    $identity = $this->getUser()->getIdentity();
 
-    if ($verify) {
+    if ($this->emailVerificationHelper->verify($user, $identity->getToken())) {
       $user->setVerified();
       $this->users->flush();
     } else {
