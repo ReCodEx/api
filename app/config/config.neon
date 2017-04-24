@@ -152,6 +152,7 @@ services:
   - App\Helpers\ExternalLogin\CAS\OAuthLoginService(%CAS.serviceId%, %CAS.options.oauth%, %CAS.fields.oauth%)
   - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
     @App\Model\Repository\ExternalLogins,
+    @App\Model\Repository\Users,
     @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
     @App\Helpers\ExternalLogin\CAS\OAuthLoginService,
   )

@@ -33,8 +33,8 @@ class ExternalServiceAuthenticator {
   /**
    * Constructor with instantiation of all login services
    * @param ExternalLogins $externalLogins
+   * @param Users $users
    * @param array $services
-   * @internal param CAS $cas Charles University autentication service
    */
   public function __construct(ExternalLogins $externalLogins, Users $users, ...$services) {
     $this->externalLogins = $externalLogins;

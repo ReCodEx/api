@@ -177,7 +177,7 @@ class UsersPresenter extends BasePresenter {
     $this->users->persist($user);
 
     // connect the account to the login method
-    $this->externalLogins->connect($user, $serviceId, $externalData->getId());
+    $this->externalLogins->connect($authService, $user, $externalData->getId());
 
     // email verification
     $this->emailVerificationHelper->process($user);
