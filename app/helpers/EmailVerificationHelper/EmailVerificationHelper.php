@@ -80,16 +80,7 @@ class EmailVerificationHelper {
       [ "email" => $user->getEmail() ]
     );
 
-    $subject = $this->createSubject($user);
-    $message = $this->createBody($user, $token);
-
-    // Send the mail
-    return $this->emailHelper->send(
-      $this->sender,
-      [ $user->getEmail() ],
-      $subject,
-      $message
-    );
+    return $this->sendEmail($token);
   }
 
   /**
@@ -110,6 +101,25 @@ class EmailVerificationHelper {
     }
 
     return $user->getId() !== $token->getUserId() && $user->getEmail() === $token->getPayload("email");
+  }
+
+  /**
+   * Send an email with the token for the verification of the email address of the user.
+   * @param User $user
+   * @param AccessToken $token
+   * @return bool
+   */
+  private function sendEmail(User $user, AccessToken $token): bool {
+    $subject = $this->createSubject($user);
+    $message = $this->createBody($user, $token);
+
+    // Send the mail
+    return $this->emailHelper->send(
+      $this->sender,
+      [ $user->getEmail() ],
+      $subject,
+      $message
+    );
   }
 
   /**
