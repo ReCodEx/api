@@ -16,7 +16,6 @@ use Nette\Application\Responses\FileResponse;
 
 /**
  * Endpoints for management of uploaded files
- * @LoggedIn
  */
 class UploadedFilesPresenter extends BasePresenter {
 
@@ -45,6 +44,7 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   private function throwIfUserCantAccessFile(UploadedFile $file) {
     $user = $this->getCurrentUser();
+
     $isUserSupervisor = FALSE;
     $isFileRelatedToUsersAssignment = FALSE;
 
@@ -73,36 +73,41 @@ class UploadedFilesPresenter extends BasePresenter {
   /**
    * Get details of a file
    * @GET
+   * @LoggedIn
    * @UserIsAllowed(files="view-detail")
    * @param string $id Identifier of the uploaded file
    */
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    $this->throwIfUserCantAccessFile($file);
+    if ($file->isPublic !== TRUE) {
+      $this->throwIfUserCantAccessFile($file);
+    }
     $this->sendSuccessResponse($file);
   }
 
   /**
    * Download a file
    * @GET
-   * @UserIsAllowed(files="view-detail")
    * @param string $id Identifier of the file
    */
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    $this->throwIfUserCantAccessFile($file);
+    if ($file->isPublic !== TRUE) {
+      $this->throwIfUserCantAccessFile($file);
+    }
     $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
   }
 
   /**
    * Get the contents of a file
    * @GET
-   * @UserIsAllowed(files="view-content")
    * @param string $id Identifier of the file
    */
   public function actionContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    $this->throwIfUserCantAccessFile($file);
+    if ($file->isPublic !== TRUE) {
+      $this->throwIfUserCantAccessFile($file);
+    }
     $this->sendSuccessResponse($file->getContent());
   }
 
@@ -110,6 +115,7 @@ class UploadedFilesPresenter extends BasePresenter {
   /**
    * Upload a file
    * @POST
+   * @LoggedIn
    * @UserIsAllowed(files="upload")
    */
   public function actionUpload() {

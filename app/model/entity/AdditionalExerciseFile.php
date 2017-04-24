@@ -20,8 +20,7 @@ class AdditionalExerciseFile extends UploadedFile implements JsonSerializable
 
   public function __construct($name, DateTime $uploadedAt, $fileSize, $filePath, User $user, Exercise $exercise)
   {
-    parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath);
-
+    parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath, TRUE);
     $this->exercises = new ArrayCollection;
     $this->exercises->add($exercise);
     $exercise->addAdditionalFile($this);
