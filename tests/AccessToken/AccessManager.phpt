@@ -129,6 +129,21 @@ class TestAccessManager extends Tester\TestCase
     Assert::equal(time() + 30, $payload->exp);
   }
 
+  public function testCustomPayload() {
+    $users = Mockery::mock(App\Model\Repository\Users::class);
+    $verificationKey = "abc";
+    $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
+
+    $user = Mockery::mock(App\Model\Entity\User::CLASS);
+    $user->shouldReceive("getId")->andReturn("123456");
+    $token = $manager->issueToken($user, NULL, 30, [ "sub" => "abcde", "xyz" => "uvw" ]);
+
+    $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+    Assert::equal(time() + 30, $payload->exp);
+    Assert::equal("123456", $payload->sub);
+    Assert::equal("uvw", $payload->xyz);
+  }
+
   /*
    * Access token extraction
    */
