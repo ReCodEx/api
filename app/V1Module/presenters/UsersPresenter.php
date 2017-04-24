@@ -17,6 +17,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
+use App\Helpers\EmailVerificationHelper;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -62,6 +63,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $externalServiceAuthenticator;
+
+  /**
+   * @var EmailVerificationHelper
+   * @inject
+   */
+  public $emailVerificationHelper;
 
   /**
    * Get an instance by its ID.
@@ -131,6 +138,9 @@ class UsersPresenter extends BasePresenter {
     $this->users->persist($user);
     $this->logins->persist($login);
 
+    // email verification
+    $this->emailVerificationHelper->process($user);
+
     // successful!
     $this->sendSuccessResponse([
       "user" => $user,
@@ -167,11 +177,39 @@ class UsersPresenter extends BasePresenter {
     $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());
     $this->externalLogins->persist($externalLogin);
 
+    // email verification
+    $this->emailVerificationHelper->process($user);
+
     // successful!
     $this->sendSuccessResponse([
       "user" => $user,
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
+  }
+
+  /**
+   * Verify users email.
+   * @GET
+   * @LoggedIn
+   */
+  public function actionEmailVerification() {
+    if (!$this->isInScope(AccessToken::SCOPE_EMAIL_VERIFICATION)) {
+      throw new ForbiddenRequestException("You cannot verify email with this access token.");
+    }
+
+    $user = $this->getCurrentUser();
+
+    // verify token
+    $verify = $this->emailVerificationHelper->verify($user, $this->getUser()->getIdentity()->getToken());
+
+    if ($verify) {
+      $user->setVerified();
+      $this->users->flush();
+    } else {
+      // TODO
+    }
+
+    $this->sendSuccessResponse("OK");
   }
 
   /**

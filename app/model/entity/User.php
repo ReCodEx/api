@@ -109,6 +109,12 @@ class User implements JsonSerializable
    */
   protected $isVerified;
 
+  public function isVerified() { return $this->isVerified; }
+
+  public function setVerified($verified = TRUE) {
+    $this->isVerified = $verified;
+  }
+
   /**
    * @ORM\Column(type="boolean")
    */
