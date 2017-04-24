@@ -250,6 +250,13 @@ class Exercise implements JsonSerializable
       })->getValues();
   }
 
+  public function getAdditionalExerciseFilesIds() {
+    return $this->additionalFiles->map(
+      function(AdditionalExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -265,7 +272,7 @@ class Exercise implements JsonSerializable
       "isPublic" => $this->isPublic,
       "description" => $this->description,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "additionalFiles" => $this->additionalFiles
+      "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];
   }
 
