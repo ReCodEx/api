@@ -33,8 +33,8 @@ class AdditionalExerciseFile extends UploadedFile implements JsonSerializable
       $file->getName(),
       $file->getUploadedAt(),
       $file->getFileSize(),
-      $file->getUser(),
       $file->getLocalFilePath(),
+      $file->getUser(),
       $exercise
     );
   }
