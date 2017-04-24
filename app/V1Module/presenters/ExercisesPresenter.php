@@ -366,7 +366,7 @@ class ExercisesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      $additionalFiles[] = $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
     }
