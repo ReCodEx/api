@@ -190,27 +190,6 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
-   * Verify users email.
-   * @GET
-   * @LoggedIn
-   */
-  public function actionEmailVerification() {
-    $user = $this->getCurrentUser();
-
-    /** @var Identity $identity */
-    $identity = $this->getUser()->getIdentity();
-
-    if ($this->emailVerificationHelper->verify($user, $identity->getToken())) {
-      $user->setVerified();
-      $this->users->flush();
-    } else {
-      throw new ForbiddenRequestException("You cannot verify email with this access token.");
-    }
-
-    $this->sendSuccessResponse("OK");
-  }
-
-  /**
    * Check if the registered E-mail isn't already used and if the password is strong enough
    * @POST
    * @Param(type="post", name="email", description="E-mail address (login name)")
