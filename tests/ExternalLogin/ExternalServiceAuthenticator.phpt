@@ -82,6 +82,8 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(NULL);
 
         $users = Mockery::mock(Users::class);
+        $users->shouldReceive("getByEmail")->andReturn(NULL);
+
         $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
         Assert::throws(function () use ($authenticator, $serviceA) {
             $authenticator->authenticate($serviceA, [ "a" => "b" ]);

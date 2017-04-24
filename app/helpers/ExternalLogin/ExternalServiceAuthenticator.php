@@ -67,13 +67,16 @@ class ExternalServiceAuthenticator {
    * @throws WrongCredentialsException
    */
   public function authenticate(IExternalLoginService $service, ...$credentials) {
-    $userData = $service->getUser(...$credentials);
     $user = NULL;
-
+    $userData = $service->getUser(...$credentials);
     try {
       $user = $this->findUser($service, $userData);
     } catch (WrongCredentialsException $e) {
-      $user = $this->tryConnect($service, $userData);
+      // second try - is there a user with a verified email corresponding to this one?
+      if ($userData !== NULL) {
+        $user = $this->tryConnect($service, $userData);
+      }
+
       if ($user === NULL) {
         throw $e;
       }
