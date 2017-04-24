@@ -80,7 +80,7 @@ class EmailVerificationHelper {
       [ "email" => $user->getEmail() ]
     );
 
-    return $this->sendEmail($token);
+    return $this->sendEmail($user, $token);
   }
 
   /**
@@ -106,10 +106,10 @@ class EmailVerificationHelper {
   /**
    * Send an email with the token for the verification of the email address of the user.
    * @param User $user
-   * @param AccessToken $token
+   * @param string $token
    * @return bool
    */
-  private function sendEmail(User $user, AccessToken $token): bool {
+  private function sendEmail(User $user, string $token): bool {
     $subject = $this->createSubject($user);
     $message = $this->createBody($user, $token);
 
