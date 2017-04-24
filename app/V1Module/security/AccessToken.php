@@ -9,6 +9,7 @@ class AccessToken {
   // predefined scopes
   const SCOPE_REFRESH = "refresh";
   const SCOPE_CHANGE_PASSWORD = "change-password";
+  const SCOPE_EMAIL_VERIFICATION = "email-verification";
 
   /** @var string|NULL The subject */
   private $sub = NULL;

@@ -90,7 +90,14 @@ parameters:
     tokenExpiration: 600 # 10 minues
     emails:
       from: %emails.from%
-      subjectPrefix: "ReCodEx Forgotten Password Request"
+      subjectPrefix: "ReCodEx Forgotten Password Request - "
+
+  emailVerification:
+    redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/email-verification"
+    tokenExpiration: 600 # 10 minues
+    emails:
+      from: %emails.from%
+      subjectPrefix: "ReCodEx Email Verification Request - "
 
   mail:
     smtp: true
@@ -175,6 +182,7 @@ services:
   - App\Helpers\ExerciseFileStorage
   - App\Helpers\Notifications\AssignmentEmailsSender
   - App\Helpers\Notifications\SubmissionEmailsSender
+  - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
 
   # models - repositories
   - App\Model\Repository\Comments
