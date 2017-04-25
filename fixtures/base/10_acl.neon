@@ -269,6 +269,11 @@ App\Model\Entity\Permission:
     "resource": @submissions
     "action": "set-bonus-points"
     "isAllowed": 1
+  "supervisor-submissions-set-accepted":
+    "role": @supervisor
+    "resource": @submissions
+    "action": "set-accepted"
+    "isAllowed": 1
   "supervisor-submissions-download-result-archive":
     "role": @supervisor
     "resource": @submissions

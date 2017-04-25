@@ -18,6 +18,8 @@ class JobConfig {
   /** Tasks config key */
   const TASKS_KEY = "tasks";
 
+  /** @var bool Serialize so that humans are happy with the YAML code */
+  private $humanReadable;
   /** @var array Additional top level data */
   private $data = [];
   /** @var SubmissionHeader Holds data about this job submission */
@@ -28,8 +30,9 @@ class JobConfig {
   /**
    * Construct basic instance of JobConfig.
    */
-  public function __construct() {
+  public function __construct($humanReadable = FALSE) {
     $this->submissionHeader = new SubmissionHeader;
+    $this->humanReadable = $humanReadable;
   }
 
   /**
@@ -256,7 +259,7 @@ class JobConfig {
    * @return string
    */
   public function __toString() {
-    return Yaml::dump($this->toArray());
+    return Yaml::dump($this->toArray(), $this->humanReadable === TRUE ? 100 : -1); // do not inline yaml - 100 nesting limit ~ "infinity"
   }
 
 }

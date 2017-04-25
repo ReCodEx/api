@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\Group;
+use App\Model\Entity\Instance;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\ExternalLogin;
@@ -62,6 +63,23 @@ class UsersPresenter extends BasePresenter {
   public $externalServiceAuthenticator;
 
   /**
+   * Get an instance by its ID.
+   * @param string $instanceId
+   * @return Instance
+   * @throws BadRequestException
+   */
+  public function getInstance(string $instanceId): Instance {
+    $instance = $this->instances->get($instanceId);
+    if (!$instance) {
+      throw new BadRequestException("Instance '$instanceId' does not exist.");
+    } else if (!$instance->getIsOpen()) {
+      throw new BadRequestException("This instance is not open, you cannot register here.");
+    }
+
+    return $instance;
+  }
+
+  /**
    * Get a list of all users
    * @GET
    * @UserIsAllowed(users="view-all")
@@ -92,12 +110,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     $role = $this->roles->get(Role::STUDENT);
-    $instance = $this->instances->get($req->getPost("instanceId"));
-    if (!$instance) {
-      throw new BadRequestException("Such instance does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instanceId = $req->getPost("instanceId");
+    $instance = $this->getInstance($instanceId);
 
     $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
@@ -126,29 +140,20 @@ class UsersPresenter extends BasePresenter {
   /**
    * Create an account authenticated with an external service
    * @POST
-   * @Param(type="post", name="username", validation="string:2..", description="Login name")
-   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="Authentication password")
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
    */
   public function actionCreateAccountExt() {
     $req = $this->getRequest();
     $serviceId = $req->getPost("serviceId");
+    $authType = $req->getPost("authType");
 
     $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
-    $instance = $this->instances->get($instanceId);
-    if (!$instance) {
-      throw new BadRequestException("Instance '$instanceId' does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instance = $this->getInstance($instanceId);
 
-    $username = $req->getPost("username");
-    $password = $req->getPost("password");
-
-    $authService = $this->externalServiceAuthenticator->getById($serviceId);
-    $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
+    $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
+    $externalData = $authService->getUser($req->getPost()); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
 
     if ($user !== NULL) {

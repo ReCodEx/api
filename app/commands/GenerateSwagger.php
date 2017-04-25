@@ -153,7 +153,8 @@ class GenerateSwagger extends Command
       $this->setArrayDefault($paths, $mask, []);
       $this->setArrayDefault($paths[$mask], strtolower($method), []);
 
-      $module = self::getPropertyValue($parentRoute, "module");
+      // TODO hack - we need a better way of getting module names from nested RouteList objects
+      $module = "V1:" . self::getPropertyValue($parentRoute, "module");
       $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module, $defaultSecurity, function ($text) use ($output) {
         $output->writeln("<error>$text</error>");
       });

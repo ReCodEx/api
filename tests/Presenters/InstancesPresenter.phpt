@@ -216,7 +216,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $allInstances = $this->presenter->instances->findAll();
     $instance = array_pop($allInstances);
-    $validUntil = new \DateTime;
+    $validUntil = (new \DateTime)->setTimestamp((new \DateTime)->getTimestamp());
 
     $request = new Nette\Application\Request('V1:Instances',
         'POST',

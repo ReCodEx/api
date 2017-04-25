@@ -4,7 +4,10 @@
 #
 parameters:
   uploadDir: %appDir%/../uploaded_data
-  jobConfigStorageDir: %appDir%/../job_config
+
+  jobConfig:
+    storageDir: %appDir%/../job_config
+    humanReadable: true
 
   api:
     address: https://recodex.projekty.ms.mff.cuni.cz:4000
@@ -43,18 +46,31 @@ parameters:
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:4443/ws
 
+  uploads:
+      removalThreshold: "1 day"
+
   CAS:
     serviceId: "cas-uk"
-    ldapConnection:
-      hostname: "ldap.cuni.cz"
-      base_dn: "ou=people,dc=cuni,dc=cz"
-      #port: 389
-      #security: SSL
-      bindName: "cunipersonalid"
+    options:
+      ldap:
+        hostname: "ldap.cuni.cz"
+        base_dn: "ou=people,dc=cuni,dc=cz"
+        #port: 389
+        #security: SSL
+        bindName: "cunipersonalid"
+      oauth:
+        baseUri: "https://idp.cuni.cz/cas/"
     fields:
-      email: "mail"
-      firstName: "givenName"
-      lastName: "sn"
+      oauth:
+        ukco: "cunipersonalid"
+        email: "mail"
+        firstName: "givenname"
+        lastName: "sn"
+        affiliation: "edupersonscopedaffiliation"
+      ldap:
+        email: "mail"
+        firstName: "givenName"
+        lastName: "sn"
 
   emails:
     apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
@@ -115,6 +131,8 @@ services:
     tags: [kdyby.console.command]
   - class: App\Console\GenerateSwagger(@router)
     tags: [kdyby.console.command]
+  - class: App\Console\CleanupUploads()
+    tags: [kdyby.console.command]
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -123,14 +141,20 @@ services:
   - App\Security\CredentialsAuthenticator
 
   # external login services
-  - App\Helpers\ExternalLogin\CAS(%CAS.serviceId%, %CAS.ldapConnection%, %CAS.fields%)
-  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator
+  - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
+  - App\Helpers\ExternalLogin\CAS\OAuthLoginService(%CAS.serviceId%, %CAS.options.oauth%, %CAS.fields.oauth%)
+  - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
+    @App\Model\Repository\ExternalLogins,
+    @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
+    @App\Helpers\ExternalLogin\CAS\OAuthLoginService,
+  )
 
   # config objects
   - App\Helpers\MonitorConfig(%monitor%)
   - App\Helpers\BrokerConfig(%broker%)
   - App\Helpers\EmailsConfig(%emails%)
   - App\Helpers\ApiConfig(%api%)
+  - App\Helpers\UploadsConfig(%uploads%)
 
   # helpers
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
@@ -141,8 +165,8 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-  - App\Helpers\UploadedJobConfigStorage(%jobConfigStorageDir%)
-  - App\Helpers\JobConfig\Storage
+  - App\Helpers\UploadedJobConfigStorage(%jobConfig.storageDir%)
+  - App\Helpers\JobConfig\Storage(%jobConfig.humanReadable%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\SimpleScoreCalculator
   - App\Helpers\ScoreCalculatorAccessor({
@@ -178,6 +202,7 @@ services:
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\ExerciseFiles
+  - App\Model\Repository\AdditionalExerciseFiles
 
 doctrine:
   user: 'root'

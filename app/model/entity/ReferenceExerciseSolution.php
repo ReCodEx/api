@@ -10,6 +10,7 @@ use DateTime;
 /**
  * @ORM\Entity
  * @method Solution getSolution()
+ * @method Exercise getExercise()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {
@@ -71,5 +72,9 @@ class ReferenceExerciseSolution implements JsonSerializable
     $this->description = $description;
     $this->solution = new Solution($user, $runtime);
     $this->evaluations = new ArrayCollection;
+  }
+
+  public function getRuntimeConfig() {
+    return $this->solution->getRuntimeConfig();
   }
 }

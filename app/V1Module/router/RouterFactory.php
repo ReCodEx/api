@@ -8,7 +8,6 @@ use Nette\Application\Routers\RouteList;
 use Nette\Application\Routers\Route;
 use App\V1Module\Router\GetRoute;
 use App\V1Module\Router\PostRoute;
-use App\V1Module\Router\PutRoute;
 use App\V1Module\Router\DeleteRoute;
 use App\V1Module\Router\PreflightRoute;
 
@@ -60,7 +59,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
-    $router[] = new PostRoute("$prefix/<serviceId>", "Login:external");
+    $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
     return $router;
   }
 
@@ -103,11 +102,14 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
     $router[] = new PostRoute("$prefix/<id>/validate", "Exercises:validate");
-    $router[] = new GetRoute("$prefix/<id>/fork", "Exercises:forkFrom");
+    $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
     $router[] = new GetRoute("$prefix/<id>/limits", "Exercises:getLimits");
     $router[] = new PostRoute("$prefix/<id>/limits", "Exercises:setLimits");
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
+    $router[] = new GetRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
+    $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
+
     return $router;
   }
 
@@ -194,9 +196,11 @@ class RouterFactory {
    */
   private static function createReferenceSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix/<id>", "ReferenceExerciseSolutions:exercise");
-    $router[] = new PostRoute("$prefix/<id>", "ReferenceExerciseSolutions:createReferenceSolution");
-    $router[] = new PostRoute("$prefix/<exerciseId>/evaluate/<id>", "ReferenceExerciseSolutions:evaluate");
+    $router[] = new GetRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:exercise");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:createReferenceSolution");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/evaluate", "ReferenceExerciseSolutions:evaluateForExercise");
+    $router[] = new PostRoute("$prefix/<id>/evaluate", "ReferenceExerciseSolutions:evaluate");
+    $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
     return $router;
   }
 
@@ -210,6 +214,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix", "Submissions:");
     $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
     $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
+    $router[] = new GetRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
     $router[] = new GetRoute("$prefix/<id>/download-result", "Submissions:downloadResultArchive");
     return $router;
   }

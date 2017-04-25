@@ -19,6 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getName()
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
+ * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
@@ -98,9 +99,14 @@ class Exercise implements JsonSerializable
   protected $referenceSolutions;
 
   /**
-   * @ORM\OneToMany(targetEntity="ExerciseFile", mappedBy="exercise")
+   * @ORM\ManyToMany(targetEntity="ExerciseFile", inversedBy="exercises")
    */
-  protected $supplementaryFiles;
+  protected $supplementaryEvaluationFiles;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="AdditionalExerciseFile", inversedBy="exercises")
+   */
+  protected $additionalFiles;
 
   /**
    * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
@@ -141,7 +147,8 @@ class Exercise implements JsonSerializable
    */
   private function __construct($name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
-      Collection $supplementaryFiles,
+      Collection $supplementaryEvaluationFiles,
+      Collection $additionalFiles,
       $exercise, User $user, $isPublic = TRUE, $description = "") {
     $this->name = $name;
     $this->version = $version;
@@ -152,9 +159,10 @@ class Exercise implements JsonSerializable
     $this->runtimeConfigs = $runtimeConfigs;
     $this->exercise = $exercise;
     $this->author = $user;
-    $this->supplementaryFiles = $supplementaryFiles;
+    $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
     $this->description = $description;
+    $this->additionalFiles = $additionalFiles;
   }
 
   public static function create(User $user): Exercise {
@@ -162,6 +170,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -177,7 +186,8 @@ class Exercise implements JsonSerializable
       $exercise->difficulty,
       $exercise->localizedTexts,
       $exercise->runtimeConfigs,
-      $exercise->supplementaryFiles,
+      $exercise->supplementaryEvaluationFiles,
+      $exercise->additionalFiles,
       $exercise,
       $user,
       $exercise->isPublic,
@@ -191,6 +201,14 @@ class Exercise implements JsonSerializable
 
   public function addLocalizedText(LocalizedText $localizedText) {
     $this->localizedTexts->add($localizedText);
+  }
+
+  public function addSupplementaryEvaluationFile(ExerciseFile $exerciseFile) {
+    $this->supplementaryEvaluationFiles->add($exerciseFile);
+  }
+
+  public function addAdditionalFile(AdditionalExerciseFile $exerciseFile) {
+    $this->additionalFiles->add($exerciseFile);
   }
 
   /**
@@ -225,6 +243,20 @@ class Exercise implements JsonSerializable
     return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
   }
 
+  public function getSupplementaryFilesIds() {
+    return $this->supplementaryEvaluationFiles->map(
+      function(ExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
+  public function getAdditionalExerciseFilesIds() {
+    return $this->additionalFiles->map(
+      function(AdditionalExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -238,12 +270,10 @@ class Exercise implements JsonSerializable
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
       "isPublic" => $this->isPublic,
-      "description" => $this->description
+      "description" => $this->description,
+      "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
+      "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];
-  }
-
-  public function addSupplementaryFile(UploadedFile $file) {
-    $this->supplementaryFiles->add($file);
   }
 
 }

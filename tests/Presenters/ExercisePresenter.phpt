@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
+use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExercisesPresenter;
 use App\Model\Entity\ExerciseFile;
@@ -39,6 +40,9 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Exercises */
   protected $exercises;
 
+  /** @var App\Model\Repository\AdditionalExerciseFiles */
+  protected $additionalFiles;
+
   public function __construct()
   {
     global $container;
@@ -50,6 +54,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->supplementaryFiles = $container->getByType(\App\Model\Repository\ExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
+    $this->additionalFiles = $container->getByType(\App\Model\Repository\AdditionalExerciseFiles::class);
   }
 
   protected function setUp()
@@ -292,11 +297,40 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(2, $result['payload']);
+    $expectedFiles = [$expectedFile1, $expectedFile2];
 
-    $file1 = $result['payload'][0];
-    $file2 = $result['payload'][1];
-    Assert::same($expectedFile1, $file1);
-    Assert::same($expectedFile2, $file2);
+    sort($expectedFiles);
+    sort($result['payload']);
+    Assert::equal($expectedFiles, $result['payload']);
+  }
+
+  public function testGetAdditionalFiles() {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // prepare files into exercise
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = $this->presenter->exercises->findOneBy([
+      "name" => "aloha exercise"
+    ]);
+    $expectedFile1 = new AdditionalExerciseFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
+    $expectedFile2 = new AdditionalExerciseFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
+    $this->additionalFiles->persist($expectedFile1, FALSE);
+    $this->additionalFiles->persist($expectedFile2, FALSE);
+    $this->additionalFiles->flush();
+
+    $request = new Nette\Application\Request("V1:Exercises", 'GET',
+      ['action' => 'getAdditionalFiles', 'id' => $exercise->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+    $expectedFiles = [$expectedFile1, $expectedFile2];
+
+    sort($expectedFiles);
+    sort($result['payload']);
+    Assert::equal($expectedFiles, $result['payload']);
   }
 
   public function testForkFrom()

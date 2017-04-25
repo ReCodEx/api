@@ -119,6 +119,41 @@ class SubmissionsPresenter extends BasePresenter {
   }
 
   /**
+   * Set submission of student as accepted, this submission will be then presented as the best one.
+   * @GET
+   * @UserIsAllowed(submissions="set-accepted")
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionSetAcceptedSubmission(string $id) {
+    $submission = $this->submissions->findOrThrow($id);
+
+    if (!$submission->hasEvaluation()) {
+      throw new ForbiddenRequestException("Submission does not have evaluation yet");
+    }
+
+    $currentUser = $this->getCurrentUser();
+    $groupOfSubmission = $submission->getAssignment()->getGroup();
+    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
+    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+    if (!$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
+    }
+
+    // accepted flag has to be set to false for all other submissions
+    $assignmentSubmissions = $submission->getAssignment()->getValidSubmissions($submission->getUser());
+    foreach ($assignmentSubmissions as $assignmentSubmission) {
+      $assignmentSubmission->setAccepted(false);
+    }
+
+    // finally set the right submission as accepted
+    $submission->setAccepted(true);
+    $this->submissions->flush();
+
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Download result archive from backend for particular submission.
    * @GET
    * @UserIsAllowed(submissions="download-result-archive")

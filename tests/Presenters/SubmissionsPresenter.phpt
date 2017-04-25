@@ -112,6 +112,29 @@ class TestSubmissionsPresenter extends Tester\TestCase
     Assert::equal(4, $submission->getEvaluation()->getBonusPoints());
   }
 
+  public function testSetAcceptedSubmission()
+  {
+    PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+
+    $allSubmissions = $this->presenter->submissions->findAll();
+    $submission = array_pop($allSubmissions);
+
+    $request = new Nette\Application\Request('V1:Submissions',
+      'GET',
+      ['action' => 'setAcceptedSubmission', 'id' => $submission->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    // Check invariants
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    $submission = $this->presenter->submissions->get($submission->id);
+    Assert::equal(true, $submission->isAccepted());
+  }
+
   public function testDownloadResultArchive()
   {
     PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
