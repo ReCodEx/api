@@ -60,6 +60,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
+    $router[] = new PostRoute("$prefix/change-password", "Login:changePassword");
     return $router;
   }
 
@@ -264,7 +265,6 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
     $router[] = new PostRoute("$prefix/<id>", "Users:updateProfile");
-    $router[] = new PostRoute("$prefix/<id>/login", "Users:updateLogin");
     $router[] = new PostRoute("$prefix/<id>/settings", "Users:updateSettings");
     return $router;
   }
