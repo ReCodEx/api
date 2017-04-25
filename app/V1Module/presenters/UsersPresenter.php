@@ -229,8 +229,15 @@ class UsersPresenter extends BasePresenter {
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
+    // @todo Isn't there another user already using that email???
     if ($email && strlen($email) > 0) {
-      $user->setEmail($email);
+      $user->setEmail($email); // @todo: The email address must be now validated
+
+      // do not forget to change local login (if any)
+      $login = $this->logins->findCurrent();
+      if ($login) {
+        $login->setUsername($email);
+      }
     }
 
     $user->setFirstName($firstName);
@@ -239,58 +246,6 @@ class UsersPresenter extends BasePresenter {
     $user->setDegreesAfterName($degreesAfterName);
 
     // make changes permanent
-    $this->users->flush();
-
-    $this->sendSuccessResponse($user);
-  }
-
-  /**
-   * Update internal authentication system user account.
-   * @POST
-   * @LoggedIn
-   * @Param(type="post", name="email", description="New email address", required=FALSE)
-   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
-   */
-  public function actionUpdateLogin() {
-    $req = $this->getRequest();
-    $oldPassword = $req->getPost("password");
-    $newPassword = $req->getPost("newPassword");
-
-    // fill user with all provided datas
-    $login = $this->logins->findCurrent();
-    $user = $this->getCurrentUser();
-
-    if ($login === NULL) {
-      throw new BadRequestException("User is not authenticated through system internal mechanism");
-    }
-
-    // change the email only of the user wants to
-    $email = $req->getPost("email");
-    if ($email && strlen($email) > 0) {
-      $user->setEmail($email);
-      // do not forget to change local login (if any)
-      if ($login) {
-        $login->setUsername($email);
-      }
-    }
-
-    // passwords need to be handled differently
-    if ($newPassword) {
-      if ($oldPassword) {
-        // old password was provided, just check it against the one from db
-        if (!$login->passwordsMatch($oldPassword)) {
-          throw new WrongCredentialsException("The old password is incorrect");
-        }
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      } else if ($this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
-        // user is in modify-password scope and can change password without providing old one
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      }
-    }
-
-    // make password changes permanent
-    $this->logins->flush();
     $this->users->flush();
 
     $this->sendSuccessResponse($user);
