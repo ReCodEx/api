@@ -28,12 +28,16 @@ class TestLoginPresenter extends Tester\TestCase
   /** @var Nette\Security\User */
   private $user;
 
+  /** @var \App\Model\Repository\Logins */
+  private $logins;
+
   public function __construct()
   {
     global $container;
     $this->container = $container;
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
+    $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
   }
 
   protected function setUp()
@@ -162,6 +166,32 @@ class TestLoginPresenter extends Tester\TestCase
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, \App\Exceptions\ForbiddenRequestException::class);
+  }
+
+  public function testUpdateLogin()
+  {
+    PresenterTestHelper::login($this->container, $this->userLogin);
+    $password = $this->userPassword;
+    $newPassword = "newPassword";
+
+    $request = new Nette\Application\Request("V1:Login", 'POST',
+      ['action' => 'changePassword'],
+      [
+        'password' => $password,
+        'newPassword' => $newPassword
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    $updatedLogin = $this->logins->findByUsernameOrThrow($this->userLogin);
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::false($updatedLogin->passwordsMatch($password));
+    Assert::true($updatedLogin->passwordsMatch($newPassword));
   }
 }
 

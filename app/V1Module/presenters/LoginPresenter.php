@@ -108,7 +108,7 @@ class LoginPresenter extends BasePresenter {
    * @POST
    * @LoggedIn
    * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
+   * @Param(type="post", name="newPassword", required=TRUE, validation="string:1..", description="New password of current user")
    */
   public function actionChangePassword() {
     $req = $this->getRequest();
@@ -122,13 +122,11 @@ class LoginPresenter extends BasePresenter {
     // passwords need to be handled differently
     $oldPassword = $req->getPost("password");
     $newPassword = $req->getPost("newPassword");
-    if ($newPassword) {
-      if (($oldPassword !== NULL && !empty($oldPassword) && $login->passwordsMatch($oldPassword)) // old password was provided, just check it against the one from db
-        || $this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) { // user is not in modify-password scope and can change password without providing old one
-        $login->changePassword($newPassword);
-      } else {
-        throw new WrongCredentialsException("You are not allowed to change your password.");
-      }
+    if (($oldPassword !== NULL && !empty($oldPassword) && $login->passwordsMatch($oldPassword)) // old password was provided, just check it against the one from db
+      || $this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) { // user is not in modify-password scope and can change password without providing old one
+      $login->changePassword($newPassword);
+    } else {
+      throw new WrongCredentialsException("You are not allowed to change your password.");
     }
 
     // make password changes permanent

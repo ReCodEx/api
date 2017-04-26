@@ -61,7 +61,7 @@ class Login
    * @param string $password New password
    */
   public function changePassword($password) {
-    $this->passwordHash = self::hashPassword($password);
+    $this->setPasswordHash(self::hashPassword($password));
   }
 
   /**
