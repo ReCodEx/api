@@ -14,6 +14,12 @@
 			"homepage": "https://github.com/ReCodEx/api/graphs/contributors"
 		}
 	],
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/jiripudil/tester"
+		}
+	],
 	"require": {
 		"php": ">=7.0",
 		"nette/application": "^2.4",
@@ -43,10 +49,11 @@
 		"rixxi/gedmo": "^1.0"
 	},
 	"require-dev": {
-		"nette/tester": "^1.7",
+		"nette/tester": "dev-feature/teamcity-output",
 		"mockery/mockery": "@stable",
 		"mikey179/vfsStream": "@stable",
 		"phpstan/phpstan": "^0.4.2"
 	},
-	"minimum-stability": "stable"
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }
