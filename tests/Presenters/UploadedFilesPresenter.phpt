@@ -67,8 +67,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testUserCannotAccessDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
-
-    $file = current($this->presenter->uploadedFiles->findAll());
+    $file = current($this->presenter->uploadedFiles->findBy([ "isPublic" => FALSE ]));
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
       ['action' => 'detail', 'id' => $file->getId()]);
@@ -237,7 +236,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
   }
 
-  public function testOutsiderCannotAccessAdditionalFiles()
+  public function testOutsiderCanAccessAdditionalFiles()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
 
@@ -255,9 +254,10 @@ class TestUploadedFilesPresenter extends Tester\TestCase
       'id' => $file->id
     ]);
 
+    // an exception means success here: the FileResponse tries to open a file which does not in fact exist...
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, ForbiddenRequestException::class);
+    }, Nette\Application\BadRequestException::class, "File '{$file->getLocalFilePath()}' doesn't exist.");
   }
 }
 
