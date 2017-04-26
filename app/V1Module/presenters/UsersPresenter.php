@@ -15,7 +15,6 @@ use App\Model\Entity\Role;
 use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
@@ -217,8 +216,6 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", description="New email address", required=FALSE)
-   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
@@ -227,18 +224,23 @@ class UsersPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
-    $oldPassword = $req->getPost("password");
-    $newPassword = $req->getPost("newPassword");
-
     // fill user with all provided datas
-    $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
     if ($email && strlen($email) > 0) {
-      $user->setEmail($email);
+
+      // check if there is not another user using provided email
+      $userEmail = $this->users->getByEmail($email);
+      if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+        throw new BadRequestException("This email address is already taken.");
+      }
+
+      $user->setEmail($email); // @todo: The email address must be now validated
+
       // do not forget to change local login (if any)
+      $login = $this->logins->findCurrent();
       if ($login) {
         $login->setUsername($email);
       }
@@ -249,34 +251,13 @@ class UsersPresenter extends BasePresenter {
     $user->setDegreesBeforeName($degreesBeforeName);
     $user->setDegreesAfterName($degreesAfterName);
 
-    // passwords need to be handled differently
-    if ($login && $newPassword) {
-      if ($oldPassword) {
-        // old password was provided, just check it against the one from db
-        if (!$login->passwordsMatch($oldPassword)) {
-          throw new WrongCredentialsException("The old password is incorrect");
-        }
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      } else if ($this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
-        // user is in modify-password scope and can change password without providing old one
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      }
-    }
-
-    if ($login) {
-      // make password changes permanent
-      $this->logins->persist($login);
-      $this->logins->flush();
-    }
-
     // make changes permanent
-    $this->users->persist($user);
     $this->users->flush();
 
     $this->sendSuccessResponse($user);
   }
 
-   /**
+  /**
    * Update the profile settings
    * @POST
    * @LoggedIn
