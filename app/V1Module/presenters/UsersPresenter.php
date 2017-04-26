@@ -227,15 +227,16 @@ class UsersPresenter extends BasePresenter {
     // fill user with all provided datas
     $user = $this->getCurrentUser();
 
-    // check if there is not another user using provided email
-    $email = $req->getPost("email");
-    $userEmail = $this->users->getByEmail($email);
-    if ($userEmail !== NULL && $userEmail !== $user) {
-      throw new BadRequestException("This email address is already taken.");
-    }
-
     // change the email only of the user wants to
+    $email = $req->getPost("email");
     if ($email && strlen($email) > 0) {
+
+      // check if there is not another user using provided email
+      $userEmail = $this->users->getByEmail($email);
+      if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+        throw new BadRequestException("This email address is already taken.");
+      }
+
       $user->setEmail($email); // @todo: The email address must be now validated
 
       // do not forget to change local login (if any)
