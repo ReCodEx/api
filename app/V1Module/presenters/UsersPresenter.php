@@ -229,8 +229,14 @@ class UsersPresenter extends BasePresenter {
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
-    // @todo Isn't there another user already using that email???
     if ($email && strlen($email) > 0) {
+
+      // check if there is not another user using provided email
+      $userEmail = $this->users->getByEmail($email);
+      if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+        throw new BadRequestException("This email address is already taken.");
+      }
+
       $user->setEmail($email); // @todo: The email address must be now validated
 
       // do not forget to change local login (if any)
