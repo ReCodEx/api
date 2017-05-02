@@ -235,7 +235,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
   }
 
-  public function testOutsiderCanAccessAdditionalFiles()
+  public function testOutsiderCannotAccessAdditionalFiles()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
 
