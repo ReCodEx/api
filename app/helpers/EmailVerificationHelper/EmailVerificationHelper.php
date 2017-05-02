@@ -100,7 +100,7 @@ class EmailVerificationHelper {
       throw new ForbiddenRequestException("You cannot verify email with this access token.");
     }
 
-    return $user->getId() !== $token->getUserId() && $user->getEmail() === $token->getPayload("email");
+    return $user->getId() === $token->getUserId() && $user->getEmail() === $token->getPayload("email");
   }
 
   /**
