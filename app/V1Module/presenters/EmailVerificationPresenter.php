@@ -47,7 +47,7 @@ class EmailVerificationPresenter extends BasePresenter {
       $user->setVerified();
       $this->users->flush();
     } else {
-      throw new ForbiddenRequestException("You cannot verify email with this access token.");
+      throw new ForbiddenRequestException("The email was not verified.");
     }
 
     $this->sendSuccessResponse("OK");
