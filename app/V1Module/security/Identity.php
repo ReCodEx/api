@@ -40,6 +40,10 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
     return $this->user;
   }
 
+  public function getToken() {
+    return $this->token;
+  }
+
   function isInScope($scope)
   {
     return $this->token->isInScope($scope);

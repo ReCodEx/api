@@ -210,7 +210,7 @@ class TestUsersPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $userId = "userIdExt";
-    $username = "usernameExt";
+    $username = "user@domain.tld";
     $firstname = "firstnameExt";
     $lastname = "lastnameExt";
     $password = "passwordExt";
@@ -221,9 +221,10 @@ class TestUsersPresenter extends Tester\TestCase
     $serviceId = "serviceId";
 
     // setup mocking authService
-    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
+    $mockExternalLoginService->shouldReceive("getServiceId")->withAnyArgs()->andReturn($serviceId);
 
+    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
     $mockAuthService->shouldReceive("findService")
       ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
 

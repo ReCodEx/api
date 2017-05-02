@@ -99,12 +99,13 @@ class AccessManager {
 
   /**
    * Issue a new JWT for the user with optional scopes and optional explicit expiration time.
-   * @param   User     $user
-   * @param   string[] $scopes   Array of scopes
-   * @param   int      $exp      Expiration of the token in seconds
-   * @return  string
+   * @param   User $user
+   * @param   string[] $scopes Array of scopes
+   * @param   int $exp Expiration of the token in seconds
+   * @param   array $payload
+   * @return string
    */
-  public function issueToken(User $user, $scopes = NULL, $exp = NULL) {
+  public function issueToken(User $user, $scopes = NULL, $exp = NULL, $payload = []) {
     if ($exp === NULL || !is_numeric($exp)) {
       $exp = $this->expiration;
     }
@@ -113,15 +114,18 @@ class AccessManager {
       $scopes = [];
     }
 
-    $tokenPayload = [
-      "iss" => $this->issuer,
-      "aud" => $this->audience,
-      "iat" => time(),
-      "nbf" => time(),
-      "exp" => time() + $exp,
-      "sub" => $user->getId(),
-      "scopes" => $scopes
-    ];
+    $tokenPayload = array_merge(
+      $payload,
+      [
+        "iss" => $this->issuer,
+        "aud" => $this->audience,
+        "iat" => time(),
+        "nbf" => time(),
+        "exp" => time() + $exp,
+        "sub" => $user->getId(),
+        "scopes" => $scopes
+      ]
+    );
 
     return JWT::encode($tokenPayload, $this->verificationKey, $this->usedAlgorithm);
   }

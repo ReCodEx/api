@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
+use App\Model\Repository\Users;
 
 
 /**
@@ -25,13 +26,19 @@ class ExternalServiceAuthenticator {
   private $externalLogins;
 
   /**
+   * @var Users
+   */
+  private $users;
+
+  /**
    * Constructor with instantiation of all login services
    * @param ExternalLogins $externalLogins
+   * @param Users $users
    * @param array $services
-   * @internal param CAS $cas Charles University autentication service
    */
-  public function __construct(ExternalLogins $externalLogins, ...$services) {
+  public function __construct(ExternalLogins $externalLogins, Users $users, ...$services) {
     $this->externalLogins = $externalLogins;
+    $this->users = $users;
     $this->services = $services;
   }
 
@@ -57,10 +64,25 @@ class ExternalServiceAuthenticator {
    * @param IExternalLoginService $service
    * @param array $credentials
    * @return User
+   * @throws WrongCredentialsException
    */
   public function authenticate(IExternalLoginService $service, ...$credentials) {
+    $user = NULL;
     $userData = $service->getUser(...$credentials);
-    return $this->findUser($service, $userData);
+    try {
+      $user = $this->findUser($service, $userData);
+    } catch (WrongCredentialsException $e) {
+      // second try - is there a user with a verified email corresponding to this one?
+      if ($userData !== NULL) {
+        $user = $this->tryConnect($service, $userData);
+      }
+
+      if ($user === NULL) {
+        throw $e;
+      }
+    }
+
+    return $user;
   }
 
   /**
@@ -72,15 +94,35 @@ class ExternalServiceAuthenticator {
    * @throws WrongCredentialsException
    */
   private function findUser(IExternalLoginService $service, ?UserData $userData): User {
-      if ($userData === NULL) {
-          throw new WrongCredentialsException("Authentication failed.");
-      }
+    if ($userData === NULL) {
+      throw new WrongCredentialsException("Authentication failed.");
+    }
 
-      $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
-      if ($user === NULL) {
-          throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}.");
-      }
+    $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
+    if ($user === NULL) {
+      throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}.");
+    }
 
-      return $user;
+    return $user;
+  }
+
+
+  /**
+   * @param IExternalLoginService $service
+   * @param UserData $userData
+   * @return User|bool|null
+   */
+  private function tryConnect(IExternalLoginService $service, UserData $userData): ?User {
+    if (!empty($userData->getEmail())) {
+      $unconnectedUser = $this->users->getByEmail($userData->getEmail());
+      if ($unconnectedUser
+        && $unconnectedUser->isVerified()
+        && $this->externalLogins->connect($service, $unconnectedUser, $userData->getId())
+      ) {
+        return $unconnectedUser;
+      }
+    }
+
+    return NULL;
   }
 }

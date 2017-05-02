@@ -42,6 +42,7 @@ class RouterFactory {
     $router[] = self::createSubmissionFailuresRoutes("$prefix/submission-failures");
     $router[] = self::createUploadedFilesRoutes("$prefix/uploaded-files");
     $router[] = self::createUsersRoutes("$prefix/users");
+    $router[] = self::createEmailVerificationRoutes("$prefix/email-verification");
     $router[] = self::createForgottenPasswordRoutes("$prefix/forgotten-password");
     $router[] = self::createRuntimeEnvironmentsRoutes("$prefix/runtime-environments");
     $router[] = self::createHardwareGroupsRoutes("$prefix/hardware-groups");
@@ -260,12 +261,25 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Users:createAccount");
     $router[] = new PostRoute("$prefix/ext", "Users:createAccountExt");
     $router[] = new PostRoute("$prefix/validate-registration-data", "Users:validateRegistrationData");
+
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
     $router[] = new PostRoute("$prefix/<id>", "Users:updateProfile");
     $router[] = new PostRoute("$prefix/<id>/settings", "Users:updateSettings");
+    return $router;
+  }
+
+  /**
+   * All endpoints for email addresses verification.
+   * @param string $prefix
+   * @return RouteList
+   */
+  private static function createEmailVerificationRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new PostRoute("$prefix/verify", "EmailVerification:emailVerification");
+    $router[] = new PostRoute("$prefix/resend", "EmailVerification:resendVerificationEmail");
     return $router;
   }
 

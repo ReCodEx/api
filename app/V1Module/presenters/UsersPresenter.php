@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Login;
@@ -16,6 +17,8 @@ use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
+use App\Helpers\EmailVerificationHelper;
+use App\Security\Identity;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -61,6 +64,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $externalServiceAuthenticator;
+
+  /**
+   * @var EmailVerificationHelper
+   * @inject
+   */
+  public $emailVerificationHelper;
 
   /**
    * Get an instance by its ID.
@@ -130,6 +139,9 @@ class UsersPresenter extends BasePresenter {
     $this->users->persist($user);
     $this->logins->persist($login);
 
+    // email verification
+    $this->emailVerificationHelper->process($user);
+
     // successful!
     $this->sendSuccessResponse([
       "user" => $user,
@@ -163,8 +175,11 @@ class UsersPresenter extends BasePresenter {
     $user = $externalData->createEntity($instance, $role);
     $this->users->persist($user);
 
-    $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());
-    $this->externalLogins->persist($externalLogin);
+    // connect the account to the login method
+    $this->externalLogins->connect($authService, $user, $externalData->getId());
+
+    // email verification
+    $this->emailVerificationHelper->process($user);
 
     // successful!
     $this->sendSuccessResponse([
@@ -244,6 +259,10 @@ class UsersPresenter extends BasePresenter {
       if ($login) {
         $login->setUsername($email);
       }
+
+      // email has to be re-verified
+      $user->setVerified(FALSE);
+      $this->emailVerificationHelper->process($user);
     }
 
     $user->setFirstName($firstName);
