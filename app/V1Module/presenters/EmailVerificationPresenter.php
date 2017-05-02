@@ -25,7 +25,7 @@ class EmailVerificationPresenter extends BasePresenter {
   public function actionResendVerificationEmail() {
     $user = $this->getCurrentUser();
     if (!$this->emailVerificationHelper->process($user)) {
-      throw new ForbiddenRequestException("You cannot request another verification email.");
+      throw new ForbiddenRequestException("Email cannot be sent, please try it later.");
     }
 
     $this->sendSuccessResponse("OK");
