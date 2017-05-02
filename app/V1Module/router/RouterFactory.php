@@ -277,8 +277,8 @@ class RouterFactory {
    */
   private static function createEmailVerificationRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new PostRoute("$prefix/verify", "Users:emailVerification");
-    $router[] = new PostRoute("$prefix/resend", "Users:resendVerificationEmail");
+    $router[] = new PostRoute("$prefix/verify", "EmailVerification:emailVerification");
+    $router[] = new PostRoute("$prefix/resend", "EmailVerification:resendVerificationEmail");
     return $router;
   }
 
