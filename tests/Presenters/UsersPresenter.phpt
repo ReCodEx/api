@@ -1,6 +1,8 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\BadRequestException;
+use App\Model\Repository\Users;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
 use App\Helpers\ExternalLogin\UserData;
@@ -49,7 +51,7 @@ class TestUsersPresenter extends Tester\TestCase
     $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
-    $this->users = $container->getByType(\App\Model\Repository\Users::class);
+    $this->users = $container->getByType(Users::class);
     $this->groupMemberships = $container->getByType(\App\Model\Repository\GroupMemberships::class);
   }
 
@@ -102,14 +104,14 @@ class TestUsersPresenter extends Tester\TestCase
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createAccount'],
       [
-        'email' => $email,
-        'firstName' => $firstName,
-        'lastName' => $lastName,
-        'password' => $password,
-        'instanceId' => $instanceId,
-        'degreesBeforeName' => $degreesBeforeName,
-        'degreesAfterName' => $degreesAfterName
-      ]
+          'email' => $email,
+          'firstName' => $firstName,
+          'lastName' => $lastName,
+          'password' => $password,
+          'instanceId' => $instanceId,
+          'degreesBeforeName' => $degreesBeforeName,
+          'degreesAfterName' => $degreesAfterName
+        ]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -136,12 +138,79 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true($login->passwordsMatch($password));
   }
 
+  public function testCreateAccountIcorrectInstance()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $email = "email@email.email";
+    $firstName = "firstName";
+    $lastName = "lastName";
+    $password = "password";
+    $instanceId = "bla bla bla random string";
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccount'],
+      [
+        'email' => $email,
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'password' => $password,
+        'instanceId' => $instanceId,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+
+    Assert::throws(function () use ($request) {
+        $this->presenter->run($request);
+    }, BadRequestException::class, "Bad Request - Instance '$instanceId' does not exist.");
+  }
+
+  public function testCreateAccountMissingFields()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $email = "email@email.email";
+    $firstName = "firstName";
+    $lastName = "lastName";
+    $password = "password";
+    $instanceId = "bla bla bla random string";
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccount'],
+      [
+        'email' => $email,
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'password' => $password,
+        'instanceId' => $instanceId,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+
+    // mock users model
+    $mockUsers = Mockery::mock(Users::class);
+    $mockUsers->shouldReceive("getByEmail")
+        ->with($email)
+        ->once()
+        ->andReturn(TRUE);
+
+    $this->presenter->users = $mockUsers;
+
+    Assert::throws(function () use ($request) {
+        $this->presenter->run($request);
+    }, BadRequestException::class, "Bad Request - This email address is already taken.");
+  }
+
   public function testCreateAccountExt()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $userId = "userIdExt";
-    $username = "usernameExt";
+    $username = "user@domain.tld";
     $firstname = "firstnameExt";
     $lastname = "lastnameExt";
     $password = "passwordExt";
@@ -152,9 +221,13 @@ class TestUsersPresenter extends Tester\TestCase
     $serviceId = "serviceId";
 
     // setup mocking authService
-    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
-    $mockAuthService->shouldReceive("getById")->with($serviceId)->andReturn($mockExternalLoginService)->once();
+    $mockExternalLoginService->shouldReceive("getServiceId")->withAnyArgs()->andReturn($serviceId);
+
+    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
+    $mockAuthService->shouldReceive("findService")
+      ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
+
     $mockExternalLoginService->shouldReceive("getUser")->withAnyArgs()
       ->andReturn(new UserData(
         $userId, $username, $firstname, $lastname, $degreesBeforeName, $degreesAfterName, $mockExternalLoginService

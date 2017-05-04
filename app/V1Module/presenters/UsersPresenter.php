@@ -2,7 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
+use App\Model\Entity\Instance;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\ExternalLogin;
@@ -14,8 +16,9 @@ use App\Model\Entity\Role;
 use App\Security\AccessManager;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
+use App\Helpers\EmailVerificationHelper;
+use App\Security\Identity;
 use Nette\Http\IResponse;
 use App\Security\AccessToken;
 
@@ -63,6 +66,29 @@ class UsersPresenter extends BasePresenter {
   public $externalServiceAuthenticator;
 
   /**
+   * @var EmailVerificationHelper
+   * @inject
+   */
+  public $emailVerificationHelper;
+
+  /**
+   * Get an instance by its ID.
+   * @param string $instanceId
+   * @return Instance
+   * @throws BadRequestException
+   */
+  public function getInstance(string $instanceId): Instance {
+    $instance = $this->instances->get($instanceId);
+    if (!$instance) {
+      throw new BadRequestException("Instance '$instanceId' does not exist.");
+    } else if (!$instance->getIsOpen()) {
+      throw new BadRequestException("This instance is not open, you cannot register here.");
+    }
+
+    return $instance;
+  }
+
+  /**
    * Get a list of all users
    * @GET
    * @UserIsAllowed(users="view-all")
@@ -93,12 +119,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     $role = $this->roles->get(Role::STUDENT);
-    $instance = $this->instances->get($req->getPost("instanceId"));
-    if (!$instance) {
-      throw new BadRequestException("Such instance does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instanceId = $req->getPost("instanceId");
+    $instance = $this->getInstance($instanceId);
 
     $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
@@ -117,6 +139,9 @@ class UsersPresenter extends BasePresenter {
     $this->users->persist($user);
     $this->logins->persist($login);
 
+    // email verification
+    $this->emailVerificationHelper->process($user);
+
     // successful!
     $this->sendSuccessResponse([
       "user" => $user,
@@ -127,29 +152,20 @@ class UsersPresenter extends BasePresenter {
   /**
    * Create an account authenticated with an external service
    * @POST
-   * @Param(type="post", name="username", validation="string:2..", description="Login name")
-   * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="Authentication password")
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
    */
   public function actionCreateAccountExt() {
     $req = $this->getRequest();
     $serviceId = $req->getPost("serviceId");
+    $authType = $req->getPost("authType");
 
     $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
-    $instance = $this->instances->get($instanceId);
-    if (!$instance) {
-      throw new BadRequestException("Instance '$instanceId' does not exist.");
-    } else if (!$instance->getIsOpen()) {
-      throw new BadRequestException("This instance is not open, you cannot register here.");
-    }
+    $instance = $this->getInstance($instanceId);
 
-    $username = $req->getPost("username");
-    $password = $req->getPost("password");
-
-    $authService = $this->externalServiceAuthenticator->getById($serviceId);
-    $externalData = $authService->getUser($username, $password); // throws if the user cannot be logged in
+    $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
+    $externalData = $authService->getUser($req->getPost()); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
 
     if ($user !== NULL) {
@@ -159,8 +175,11 @@ class UsersPresenter extends BasePresenter {
     $user = $externalData->createEntity($instance, $role);
     $this->users->persist($user);
 
-    $externalLogin = new ExternalLogin($user, $serviceId, $externalData->getId());
-    $this->externalLogins->persist($externalLogin);
+    // connect the account to the login method
+    $this->externalLogins->connect($authService, $user, $externalData->getId());
+
+    // email verification
+    $this->emailVerificationHelper->process($user);
 
     // successful!
     $this->sendSuccessResponse([
@@ -212,8 +231,6 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", description="New email address", required=FALSE)
-   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="newPassword", required=FALSE, validation="string:1..", description="New password of current user")
    */
   public function actionUpdateProfile() {
     $req = $this->getRequest();
@@ -222,21 +239,30 @@ class UsersPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
-    $oldPassword = $req->getPost("password");
-    $newPassword = $req->getPost("newPassword");
-
     // fill user with all provided datas
-    $login = $this->logins->findCurrent();
     $user = $this->getCurrentUser();
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
     if ($email && strlen($email) > 0) {
-      $user->setEmail($email);
+
+      // check if there is not another user using provided email
+      $userEmail = $this->users->getByEmail($email);
+      if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+        throw new BadRequestException("This email address is already taken.");
+      }
+
+      $user->setEmail($email); // @todo: The email address must be now validated
+
       // do not forget to change local login (if any)
+      $login = $this->logins->findCurrent();
       if ($login) {
         $login->setUsername($email);
       }
+
+      // email has to be re-verified
+      $user->setVerified(FALSE);
+      $this->emailVerificationHelper->process($user);
     }
 
     $user->setFirstName($firstName);
@@ -244,34 +270,13 @@ class UsersPresenter extends BasePresenter {
     $user->setDegreesBeforeName($degreesBeforeName);
     $user->setDegreesAfterName($degreesAfterName);
 
-    // passwords need to be handled differently
-    if ($login && $newPassword) {
-      if ($oldPassword) {
-        // old password was provided, just check it against the one from db
-        if (!$login->passwordsMatch($oldPassword)) {
-          throw new WrongCredentialsException("The old password is incorrect");
-        }
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      } else if ($this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
-        // user is in modify-password scope and can change password without providing old one
-        $login->setPasswordHash(Login::hashPassword($newPassword));
-      }
-    }
-
-    if ($login) {
-      // make password changes permanent
-      $this->logins->persist($login);
-      $this->logins->flush();
-    }
-
     // make changes permanent
-    $this->users->persist($user);
     $this->users->flush();
 
     $this->sendSuccessResponse($user);
   }
 
-   /**
+  /**
    * Update the profile settings
    * @POST
    * @LoggedIn

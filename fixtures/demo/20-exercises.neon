@@ -33,3 +33,13 @@ App\Model\Entity\ReferenceSolutionEvaluation:
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
+
+App\Model\Entity\AdditionalExerciseFile:
+    demoExerciseAdditionalFile:
+        __construct:
+            - Our additional file
+            - "<dateTimeBetween('-3 years', '-1 years')>"
+            - 42
+            - "/some/path"
+            - @demoAdmin
+            - @demoExercise

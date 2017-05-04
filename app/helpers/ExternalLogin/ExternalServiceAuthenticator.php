@@ -3,8 +3,10 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
+use App\Model\Repository\Users;
 
 
 /**
@@ -13,10 +15,10 @@ use App\Model\Repository\ExternalLogins;
 class ExternalServiceAuthenticator {
 
   /**
-   * Auth service of Charles University
-   * @var CAS
+   * External authentication services
+   * @var IExternalLoginService[]
    */
-  private $cas;
+  private $services;
 
   /**
    * @var ExternalLogins
@@ -24,39 +26,103 @@ class ExternalServiceAuthenticator {
   private $externalLogins;
 
   /**
-   * Constructor with instantiation of all login services
-   * @param CAS $cas Charles University autentication service
+   * @var Users
    */
-  public function __construct(ExternalLogins $externalLogins, CAS $cas) {
+  private $users;
+
+  /**
+   * Constructor with instantiation of all login services
+   * @param ExternalLogins $externalLogins
+   * @param Users $users
+   * @param array $services
+   */
+  public function __construct(ExternalLogins $externalLogins, Users $users, ...$services) {
     $this->externalLogins = $externalLogins;
-    $this->cas = $cas;
+    $this->users = $users;
+    $this->services = $services;
   }
 
   /**
    * Get external service depending on the ID
    * @param string $serviceId Identifier of wanted service
+   * @param string|null $type Type of authentication process
    * @return IExternalLoginService Instance of login service with given ID
    * @throws BadRequestException when such service is not known
    */
-  public function getById(string $serviceId): IExternalLoginService {
-    switch (strtolower($serviceId)) {
-      case $this->cas->getServiceId():
-        return $this->cas;
-      default:
-        throw new BadRequestException("Authentication service '$serviceId' is not supported.");
+  public function findService(string $serviceId, ?string $type = "default"): IExternalLoginService {
+    foreach ($this->services as $service) {
+      if ($service->getServiceId() === $serviceId && $service->getType() === $type) {
+        return $service;
+      }
     }
+
+    throw new BadRequestException("Authentication service '$serviceId/$type' is not supported.");
   }
 
   /**
    * Authenticate a user against given external authentication service
-   * @param string $serviceId
-   * @param string $username
-   * @param string $password
-   * @return User|NULL
+   * @param IExternalLoginService $service
+   * @param array $credentials
+   * @return User
+   * @throws WrongCredentialsException
    */
-  public function authenticate(string $serviceId, string $username, string $password) {
-    $service = $this->getById($serviceId);
-    $userData = $service->getUser($username, $password);
-    return $this->externalLogins->getUser($serviceId, $userData->getId());
+  public function authenticate(IExternalLoginService $service, ...$credentials) {
+    $user = NULL;
+    $userData = $service->getUser(...$credentials);
+    try {
+      $user = $this->findUser($service, $userData);
+    } catch (WrongCredentialsException $e) {
+      // second try - is there a user with a verified email corresponding to this one?
+      if ($userData !== NULL) {
+        $user = $this->tryConnect($service, $userData);
+      }
+
+      if ($user === NULL) {
+        throw $e;
+      }
+    }
+
+    return $user;
+  }
+
+  /**
+   * Try to find a user account based on the data collected from
+   * an external login service.
+   * @param IExternalLoginService $service
+   * @param UserData|null $userData
+   * @return User
+   * @throws WrongCredentialsException
+   */
+  private function findUser(IExternalLoginService $service, ?UserData $userData): User {
+    if ($userData === NULL) {
+      throw new WrongCredentialsException("Authentication failed.");
+    }
+
+    $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
+    if ($user === NULL) {
+      throw new WrongCredentialsException("Cannot authenticate this user through {$service->getServiceId()}.");
+    }
+
+    return $user;
+  }
+
+
+  /**
+   * @param IExternalLoginService $service
+   * @param UserData $userData
+   * @return User|bool|null
+   */
+  private function tryConnect(IExternalLoginService $service, UserData $userData): ?User {
+    if (!empty($userData->getEmail())) {
+      $unconnectedUser = $this->users->getByEmail($userData->getEmail());
+      if ($unconnectedUser
+        && $unconnectedUser->isVerified()
+        && $this->externalLogins->connect($service, $unconnectedUser, $userData->getId())
+      ) {
+        return $unconnectedUser;
+      }
+    }
+
+    return NULL;
   }
 }

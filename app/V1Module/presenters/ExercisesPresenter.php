@@ -10,17 +10,22 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
+use App\Helpers\JobConfig;
 use App\Helpers\UploadedJobConfigStorage;
 use App\Helpers\ExerciseFileStorage;
 use App\Model\Entity\RuntimeConfig;
+use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
 use Exception;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise manipulation
@@ -36,6 +41,12 @@ class ExercisesPresenter extends BasePresenter {
   public $exercises;
 
   /**
+   * @var JobConfig\Storage
+   * @inject
+   */
+  public $jobConfigs;
+
+  /**
    * @var UploadedJobConfigStorage
    * @inject
    */
@@ -46,6 +57,18 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $runtimeEnvironments;
+
+  /**
+   * @var RuntimeConfigs
+   * @inject
+   */
+  public $runtimeConfigurations;
+
+  /**
+   * @var ReferenceSolutionEvaluations
+   * @inject
+   */
+  public $referenceSolutionEvaluations;
 
   /**
    * @var HardwareGroups
@@ -315,7 +338,58 @@ class ExercisesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
     }
 
-    $this->sendSuccessResponse($exercise->getSupplementaryFiles()->getValues());
+    $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+  }
+
+  /**
+   * Associate additional exercise files with an exercise
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="files", description="Identifiers of additional files")
+   * @param string $id identification of exercise
+   * @throws BadRequestException
+   * @throws CannotReceiveUploadedFileException
+   * @throws ForbiddenRequestException
+   */
+  public function actionUploadAdditionalFiles(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
+    }
+
+    $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
+    $additionalFiles = [];
+
+    foreach ($files as $file) {
+      if (!($file instanceof UploadedFile)) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
+      }
+
+      $additionalFiles[] = $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      $this->uploadedFiles->persist($exerciseFile, FALSE);
+      $this->uploadedFiles->remove($file, FALSE);
+    }
+
+    $this->uploadedFiles->flush();
+    $this->sendSuccessResponse($additionalFiles);
+  }
+
+  /**
+   * Get a list of all additional files for an exercise
+   * @GET
+   * @UserIsAllowed(exercises="update")
+   * @param string $id identification of exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetAdditionalFiles(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->isAuthor($user) && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
+    }
+
+    $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
   }
 
   /**
@@ -349,7 +423,7 @@ class ExercisesPresenter extends BasePresenter {
 
   /**
    * Fork exercise from given one into the completely new one.
-   * @GET
+   * @POST
    * @UserIsAllowed(exercises="create")
    */
   public function actionForkFrom(string $id) {
@@ -363,5 +437,92 @@ class ExercisesPresenter extends BasePresenter {
     $exercise = Exercise::forkFrom($forkFrom, $user);
     $this->exercises->persist($exercise);
     $this->sendSuccessResponse($exercise);
+  }
+
+  /**
+   * Get a description of resource limits for an exercise
+   * @GET
+   * @UserIsAllowed(exercises="view-limits")
+   * @param string $id Identifier of the exercise
+   */
+  public function actionGetLimits(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+
+    // get job config and its test cases
+    $environments = $exercise->getRuntimeConfigs()->map(
+      function ($environment) use ($exercise) {
+        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
+        $referenceEvaluations = [];
+        foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
+          $referenceEvaluations[$hwGroup] = $this->referenceSolutionEvaluations->find(
+            $exercise,
+            $environment->getRuntimeEnvironment(),
+            $hwGroup
+          );
+        }
+
+        return [
+          "environment" => $environment,
+          "hardwareGroups" => $jobConfig->getHardwareGroups(),
+          "limits" => $jobConfig->getLimits(),
+          "referenceSolutionsEvaluations" => $referenceEvaluations
+        ];
+      }
+    );
+
+    $this->sendSuccessResponse([ "environments" => $environments->getValues() ]);
+  }
+
+  /**
+   * Set resource limits for an exercise
+   * @POST
+   * @UserIsAllowed(exercises="set-limits")
+   * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionSetLimits(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $exerciseRuntimeConfigsIds = $exercise->getRuntimeConfigsIds();
+
+    $req = $this->getRequest();
+    $environments = $req->getPost("environments");
+
+    if (count($environments) === 0) {
+      throw new NotFoundException("No environment specified");
+    }
+
+    foreach ($environments as $environment) {
+      $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
+      $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
+      if (!in_array($runtimeId, $exerciseRuntimeConfigsIds)) {
+        throw new ForbiddenRequestException("Cannot configure solution runtime configuration $runtimeId for exercise $id");
+      }
+
+      // open the job config and update the limits for all hardware groups
+      $path = $runtimeConfig->getJobConfigFilePath();
+      $jobConfig = $this->jobConfigs->getJobConfig($path);
+
+      // get through all defined limits indexed by hwgroup
+      $limits = Arrays::get($environment, ["limits"], []);
+      foreach ($limits as $hwGroupLimits) {
+        if (!isset($hwGroupLimits["hardwareGroup"])) {
+          throw new InvalidArgumentException("environments[][limits][][hardwareGroup]");
+        }
+
+        $hardwareGroup = $hwGroupLimits["hardwareGroup"];
+        $tests = Arrays::get($hwGroupLimits, ["tests"], []);
+        $newLimits = array_reduce(array_values($tests), "array_merge", []);
+        $jobConfig->setLimits($hardwareGroup, $newLimits);
+      }
+
+      // save the new & archive the old config
+      $this->jobConfigs->saveJobConfig($jobConfig, $path);
+    }
+
+    // the same output as get limits
+    $this->forward("getLimits", $id);
   }
 }

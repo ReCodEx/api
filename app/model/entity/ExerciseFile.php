@@ -5,11 +5,12 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
  */
-class ExerciseFile extends UploadedFile
+class ExerciseFile extends UploadedFile implements JsonSerializable
 {
   /**
    * @ORM\Column(type="string")
@@ -22,9 +23,9 @@ class ExerciseFile extends UploadedFile
   protected $fileServerPath;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="supplementaryFiles")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
    */
-  protected $exercise;
+  protected $exercises;
 
   public function __construct(
     string $name,
@@ -38,8 +39,10 @@ class ExerciseFile extends UploadedFile
     parent::__construct($name, $uploadedAt, $fileSize, $user);
     $this->hashName = $hashName;
     $this->fileServerPath = $fileServerPath;
-    $this->exercise = $exercise;
-    $exercise->addSupplementaryFile($this);
+
+    $this->exercises = new ArrayCollection;
+    $this->exercises->add($exercise);
+    $exercise->addSupplementaryEvaluationFile($this);
   }
 
   public static function fromUploadedFile(UploadedFile $file, Exercise $exercise, string $hashName, string $fileServerPath) {
@@ -57,7 +60,6 @@ class ExerciseFile extends UploadedFile
   public function jsonSerialize() {
     $result = parent::jsonSerialize();
     $result["hashName"] = $this->hashName;
-    $result["exerciseId"] = $this->exercise->getId();
     return $result;
   }
 }

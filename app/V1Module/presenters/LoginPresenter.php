@@ -3,8 +3,10 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
+use App\Model\Repository\Logins;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\CredentialsAuthenticator;
@@ -33,10 +35,16 @@ class LoginPresenter extends BasePresenter {
   public $externalServiceAuthenticator;
 
   /**
+   * @var Logins
+   * @inject
+   */
+  public $logins;
+
+  /**
    * Sends response with an access token, if the user exists.
    * @param User $user
    */
-  private function trySendingLoggedInResponse(User $user) {
+  private function sendAccessTokenResponse(User $user) {
     $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]);
     $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
@@ -58,23 +66,20 @@ class LoginPresenter extends BasePresenter {
     $password = $req->getPost("password");
 
     $user = $this->credentialsAuthenticator->authenticate($username, $password);
-    $this->trySendingLoggedInResponse($user);
+    $this->sendAccessTokenResponse($user);
   }
 
   /**
    * Log in using an external authentication service
    * @POST
-   * @Param(type="post", name="username", validation="string", description="User name")
-   * @Param(type="post", name="password", validation="string", description="Password")
    * @param string $serviceId Identifier of the login service
+   * @param string $type Type of the authentication process
    */
-  public function actionExternal($serviceId) {
+  public function actionExternal($serviceId, $type) {
     $req = $this->getRequest();
-    $username = $req->getPost("username");
-    $password = $req->getPost("password");
-
-    $user = $this->externalServiceAuthenticator->authenticate($serviceId, $username, $password);
-    $this->trySendingLoggedInResponse($user);
+    $service = $this->externalServiceAuthenticator->findService($serviceId, $type);
+    $user = $this->externalServiceAuthenticator->authenticate($service, $req->getPost());
+    $this->sendAccessTokenResponse($user);
   }
 
   /**
@@ -96,5 +101,40 @@ class LoginPresenter extends BasePresenter {
       "user" => $user
     ]);
   }
+
+
+  /**
+   * Change the password for the internal authentication system.
+   * @POST
+   * @LoggedIn
+   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="newPassword", required=TRUE, validation="string:1..", description="New password of current user")
+   */
+  public function actionChangePassword() {
+    $req = $this->getRequest();
+
+    // fill user with all provided data
+    $login = $this->logins->findCurrent();
+    if (!$login) {
+      throw new WrongCredentialsException("You are do not use this authentication method so you can't change your password.");
+    }
+
+    // passwords need to be handled differently
+    $oldPassword = $req->getPost("password");
+    $newPassword = $req->getPost("newPassword");
+    if (($oldPassword !== NULL && !empty($oldPassword) && $login->passwordsMatch($oldPassword)) // old password was provided, just check it against the one from db
+      || $this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) { // user is not in modify-password scope and can change password without providing old one
+      $login->changePassword($newPassword);
+    } else {
+      throw new WrongCredentialsException("You are not allowed to change your password.");
+    }
+
+    // make password changes permanent
+    $this->logins->flush();
+
+    $user = $this->getCurrentUser();
+    $this->sendSuccessResponse($user);
+  }
+
 
 }

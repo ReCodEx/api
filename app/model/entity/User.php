@@ -109,6 +109,12 @@ class User implements JsonSerializable
    */
   protected $isVerified;
 
+  public function isVerified() { return $this->isVerified; }
+
+  public function setVerified($verified = TRUE) {
+    $this->isVerified = $verified;
+  }
+
   /**
    * @ORM\Column(type="boolean")
    */
@@ -205,7 +211,15 @@ class User implements JsonSerializable
     }
   }
 
-  protected function getGroups(string $type) {
+  public function getGroups(string $type = NULL) {
+    if ($type === NULL) {
+      return $this->getMemberships()->map(
+        function ($membership) {
+          return $membership->getGroup();
+        }
+      );
+    }
+
     $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
     return $this->getMemberships()->matching($filter)->map(
       function ($membership) {

@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
+use App\Exceptions\UploadedFileException;
 use Nette;
 use Nette\Http\FileUpload;
 
@@ -63,7 +64,11 @@ class UploadedFileStorage extends Nette\Object {
 
   public function delete(UploadedFile $file) {
     if ($file->getLocalFilePath() !== NULL) {
-      Nette\Utils\FileSystem::delete($file);
+      try {
+        Nette\Utils\FileSystem::delete($file->getLocalFilePath());
+      } catch (\Exception $e) {
+        throw new UploadedFileException("File {$file->getName()} cannot be deleted", $e);
+      }
     }
   }
 }

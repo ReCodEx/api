@@ -59,6 +59,11 @@ class UploadedFile implements JsonSerializable
     protected $uploadedAt;
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isPublic;
+
+    /**
      * @ORM\Column(type="integer")
      */
     protected $fileSize;
@@ -72,19 +77,21 @@ class UploadedFile implements JsonSerializable
       return $this->id;
     }
 
-    /**
-     * @param string $name Name of the file
-     * @param DateTime $uploadedAt Time of the upload
-     * @param int $fileSize Size of the file
-     * @param User $user The user who uploaded the file
-     * @param string $filePath Path where the file is stored
-     */
-    public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null) {
+  /**
+   * @param string $name Name of the file
+   * @param DateTime $uploadedAt Time of the upload
+   * @param int $fileSize Size of the file
+   * @param User $user The user who uploaded the file
+   * @param string $filePath Path where the file is stored
+   * @param bool $isPublic
+   */
+    public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null, $isPublic = FALSE) {
       $this->localFilePath = $filePath;
       $this->name = $name;
       $this->uploadedAt = $uploadedAt;
       $this->fileSize = $fileSize;
       $this->user = $user;
+      $this->isPublic = $isPublic;
     }
 
     public function jsonSerialize() {
@@ -93,7 +100,8 @@ class UploadedFile implements JsonSerializable
         "name" => $this->name,
         "size" => $this->fileSize,
         "uploadedAt" => $this->uploadedAt->getTimestamp(),
-        "userId" => $this->user->getId()
+        "userId" => $this->user->getId(),
+        "isPublic" => $this->isPublic
       ];
     }
 }

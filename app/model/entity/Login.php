@@ -47,10 +47,28 @@ class Login
     "cost" => 11
   ];
 
+  /**
+   * Hash the password accordingly.
+   * @param string $password Plaintext password
+   * @return string Password hash
+   */
   public static function hashPassword($password) {
     return Passwords::hash($password, self::HASHING_OPTIONS);
   }
 
+  /**
+   * Change the password to the given one (the password will be hashed).
+   * @param string $password New password
+   */
+  public function changePassword($password) {
+    $this->setPasswordHash(self::hashPassword($password));
+  }
+
+  /**
+   * Verify that the given password matches the stored password.
+   * @param string $password The password given by the user
+   * @return bool
+   */
   public function passwordsMatch($password) {
     if (Passwords::verify($password, $this->passwordHash)) {
       if (Passwords::needsRehash($this->passwordHash, self::HASHING_OPTIONS)) {

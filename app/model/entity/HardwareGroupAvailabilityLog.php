@@ -30,6 +30,10 @@ class HardwareGroupAvailabilityLog implements JsonSerializable
    */
   protected $isAvailable;
 
+  public function isAvailable() {
+    return $this->isAvailable;
+  }
+
   /**
    * @ORM\Column(type="datetime")
    */

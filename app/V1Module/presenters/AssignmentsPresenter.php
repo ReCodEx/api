@@ -25,7 +25,6 @@ use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
-use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
@@ -90,12 +89,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $runtimeConfigurations;
-
-  /**
-   * @var ReferenceSolutionEvaluations
-   * @inject
-   */
-  public $referenceSolutionEvaluations;
 
   /**
    * @var SubmissionHelper
@@ -299,7 +292,6 @@ class AssignmentsPresenter extends BasePresenter {
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
-    $this->uploadedJobConfigStorage->copyToUserAndUpdateRuntimeConfigs($assignment, $user);
     $assignment->setScoreConfig($this->getDefaultScoreConfig($assignment));
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
@@ -374,8 +366,16 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $submissions = $this->submissions->findSubmissions($assignment, $userId);
+    $currentUser = $this->getCurrentUser();
 
-    $this->checkSubmissionAccess($userId, $assignment);
+    $isFileOwner = $userId === $currentUser->getId();
+    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
+    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
+
+    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot access these submissions");
+    }
+
     $this->sendSuccessResponse($submissions);
   }
 
@@ -499,93 +499,6 @@ class AssignmentsPresenter extends BasePresenter {
     $failure = new SubmissionFailure(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
     throw new SubmissionFailedException($message);
-  }
-
-  /**
-   * Get a description of resource limits for an assignment
-   * @GET
-   * @UserIsAllowed(assignments="view-limits")
-   * @param string $id Identifier of the exercise
-   */
-  public function actionGetLimits(string $id) {
-    $assignment = $this->assignments->findOrThrow($id);
-
-    // get job config and its test cases
-    $environments = $assignment->getRuntimeConfigs()->map(
-      function ($environment) use ($assignment) {
-        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
-        $referenceEvaluations = [];
-        foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
-          $referenceEvaluations[$hwGroup] = $this->referenceSolutionEvaluations->find(
-            $assignment->getExercise(),
-            $environment->getRuntimeEnvironment(),
-            $hwGroup
-          );
-        }
-
-        return [
-          "environment" => $environment,
-          "hardwareGroups" => $jobConfig->getHardwareGroups(),
-          "limits" => $jobConfig->getLimits(),
-          "referenceSolutionsEvaluations" => $referenceEvaluations
-        ];
-      }
-    );
-
-    $this->sendSuccessResponse([ "environments" => $environments->getValues() ]);
-  }
-
-  /**
-   * Set resource limits for an assignment
-   * @POST
-   * @UserIsAllowed(assignments="set-limits")
-   * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
-   * @param string $id Identifier of the assignment
-   * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
-   * @throws NotFoundException
-   */
-  public function actionSetLimits(string $id) {
-    $assignment = $this->assignments->findOrThrow($id);
-    $assignmentRuntimeConfigsIds = $assignment->getRuntimeConfigsIds();
-
-    $req = $this->getRequest();
-    $environments = $req->getPost("environments");
-
-    if (count($environments) === 0) {
-      throw new NotFoundException("No environment specified");
-    }
-
-    foreach ($environments as $environment) {
-      $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
-      $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
-      if (!in_array($runtimeId, $assignmentRuntimeConfigsIds)) {
-        throw new ForbiddenRequestException("Cannot configure solution runtime configuration $runtimeId for assignment $id");
-      }
-
-      // open the job config and update the limits for all hardware groups
-      $path = $runtimeConfig->getJobConfigFilePath();
-      $jobConfig = $this->jobConfigs->getJobConfig($path);
-
-      // get through all defined limits indexed by hwgroup
-      $limits = Arrays::get($environment, ["limits"], []);
-      foreach ($limits as $hwGroupLimits) {
-        if (!isset($hwGroupLimits["hardwareGroup"])) {
-          throw new InvalidArgumentException("environments[][limits][][hardwareGroup]");
-        }
-
-        $hardwareGroup = $hwGroupLimits["hardwareGroup"];
-        $tests = Arrays::get($hwGroupLimits, ["tests"], []);
-        $limits = array_reduce(array_values($tests), "array_merge", []);
-        $jobConfig->setLimits($hardwareGroup, $limits);
-      }
-
-      // save the new & archive the old config
-      $this->jobConfigs->saveJobConfig($jobConfig, $path);
-    }
-
-    // the same output as get limits
-    $this->forward("getLimits", $id);
   }
 
   /**

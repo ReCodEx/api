@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Helpers\ExternalLogin;
+namespace App\Helpers\ExternalLogin\CAS;
 
-use App\Model\Entity\User;
+use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExternalLogin\IExternalLoginService;
+use App\Helpers\ExternalLogin\UserData;
 use App\Helpers\LdapUserUtils;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
@@ -25,7 +27,7 @@ use Toyota\Component\Ldap\Core\NodeAttribute;
  * database. There is also function to find user by email, but it's not guaranteed
  * to be unique, so this method may fail (but very unlikely).
  */
-class CAS implements IExternalLoginService {
+class LDAPLoginService implements IExternalLoginService {
 
   /** @var string Unique identifier of this login service, for example "cas-uk" */
   private $serviceId;
@@ -35,6 +37,11 @@ class CAS implements IExternalLoginService {
    * @return string Login service unique identifier
    */
   public function getServiceId(): string { return $this->serviceId; }
+
+  /**
+   * @return string The LDAP authentication
+   */
+  public function getType(): string { return "default"; }
 
   /** @var LdapUserUtils Ldap utilities for bindings and searching */
   private $ldap;
@@ -65,6 +72,28 @@ class CAS implements IExternalLoginService {
   }
 
   /**
+   * User can enter either his email or his UKCO identifier. If the user filled in the email address, then this
+   * function will ask the CAS system for the UKCO bound to this email.
+   * @param string $username Email or UKCO
+   * @return string The UKCO
+   * @throws WrongCredentialsException
+   */
+  public function ensureUKCO(string $username) {
+    if (Validators::isEmail($username)) {
+      $username = $this->getUKCO($username);
+      if ($username === NULL) {
+        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
+      }
+    }
+
+    if (Validators::isNumeric($username)) {
+      throw new WrongCredentialsException("The UKCO given by the user is not a number.");
+    }
+
+    return $username;
+  }
+
+  /**
    * Tries to find UKCO for the given email. The ID cannot be determined if there is no
    * person with this email or if there mare multiple people sharing the email.
    * @param  string $email Email address of user, whose UKCO is requested
@@ -76,31 +105,41 @@ class CAS implements IExternalLoginService {
 
   /**
    * Read user's data from the CAS UK, if the credentials provided by the user are correct.
-   * @param  string $username Email or identification number of the person
-   * @param  string $password User's password
+   * @param array $credentials
    * @return UserData Information known about this user
-   * @throws WrongCredentialsException when login is not successfull
+   * @throws InvalidArgumentException
+   * @internal param string $username Email or identification number of the person
+   * @internal param string $password User's password
    */
-  public function getUser(string $username, string $password): UserData {
-    $ukco = $username;
-    if (Validators::isEmail($username)) {
-      $ukco = $this->getUKCO($username);
-      if ($ukco === NULL) {
-        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
-      }
+  public function getUser($credentials): UserData {
+    $username = Arrays::get($credentials, "username", NULL);
+    $password= Arrays::get($credentials, "password", NULL);
+
+    if ($username === NULL || $password === NULL) {
+      throw new InvalidArgumentException("The ticket or the client URL is missing for validation of the request.");
     }
 
+    $ukco = $this->ensureUKCO($username);
     $data = $this->ldap->getUser($ukco, $password); // throws when the credentials are wrong
-    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
-    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
-    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
-    $degreesBeforeName = ""; // @todo
-    $degreesAfterName = ""; // @todo
-
-    return new UserData($ukco, $email, $firstName, $lastName, $degreesBeforeName, $degreesAfterName, $this);
+    return $this->getUserData($ukco, $data);
   }
 
   /**
+   * Convert the LDAP data to the UserData container
+   * @param $ukco
+   * @param $data
+   * @return UserData
+   */
+  public function getUserData($ukco, Node $data): UserData {
+    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
+    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
+    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
+
+    // we do not get this information about the degrees of the user
+    return new UserData($ukco, $email, $firstName, $lastName, "", "");
+  }
+
+  /**a
    * Get value of an LDAP attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value

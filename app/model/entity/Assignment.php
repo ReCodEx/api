@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
+ * @method string getName()
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
  * @method Collection getRuntimeConfigs()
@@ -28,6 +29,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getLocalizedTexts()
  * @method removeLocalizedText(Assignment $assignment)
  * @method DateTime getCreatedAt()
+ * @method Exercise getExercise()
  */
 class Assignment implements JsonSerializable
 {
@@ -332,7 +334,7 @@ class Assignment implements JsonSerializable
 
   /**
    * @param User $user
-   * @return Submission
+   * @return Submission|NULL
    */
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
@@ -343,6 +345,14 @@ class Assignment implements JsonSerializable
       $this->submissions->matching($usersSolutions)->getValues(),
       function ($best, $submission) {
         if ($best === NULL) {
+          return $submission;
+        }
+
+        if ($best->isAccepted()) {
+          return $best;
+        }
+
+        if ($submission->isAccepted()) {
           return $submission;
         }
 

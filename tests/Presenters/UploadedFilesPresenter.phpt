@@ -1,11 +1,13 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Model\Entity\AdditionalExerciseFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Logins;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\UploadedFileStorage;
+use Doctrine\ORM\EntityManager;
 use Tester\Assert;
 use org\bovigo\vfs\vfsStream;
 
@@ -64,10 +66,8 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testUserCannotAccessDetail()
   {
-    $token = PresenterTestHelper::login($this->container, $this->otherUserLogin, $this->otherUserPassword);
-
-    $file = current($this->presenter->uploadedFiles->findAll());
-
+    $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
+    $file = current($this->presenter->uploadedFiles->findBy([ "isPublic" => FALSE ]));
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
       ['action' => 'detail', 'id' => $file->getId()]);
     Assert::exception(function () use ($request) {
@@ -107,7 +107,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testDownload()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     // create virtual filesystem setup
     $filename = "file.ext";
@@ -132,7 +132,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testContent()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     // create virtual filesystem setup
     $filename = "file.ext";
@@ -158,7 +158,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testNoFilesUpload()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST', ['action' => 'upload']);
     Assert::exception(function () use ($request) {
@@ -168,7 +168,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testUpload()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $user = current($this->presenter->users->findAll());
     $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname'];
@@ -192,7 +192,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
   public function testGroupSupervisorCanDownloadSubmissions()
   {
-    $token = PresenterTestHelper::login($this->container, $this->supervisorLogin, $this->supervisorPassword);
+    $token = PresenterTestHelper::login($this->container, $this->supervisorLogin);
 
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
@@ -209,6 +209,55 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $response = $this->presenter->run($request);
 
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+  }
+
+  public function testGroupMemberCanAccessAdditionalFiles()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+    $filename = "file.ext";
+    $content = "ContentOfContentedFile";
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+
+    /** @var EntityManager $em */
+    $em = $this->container->getByType(EntityManager::class);
+
+    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+    $file->localFilePath = $vfs->getChild($filename)->url();
+    $this->em->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', [
+      'action' => 'download',
+      'id' => $file->id
+    ]);
+    $response = $this->presenter->run($request);
+
+    Assert::type(Nette\Application\Responses\FileResponse::class, $response);
+  }
+
+  public function testOutsiderCannotAccessAdditionalFiles()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
+
+    $filename = "file.ext";
+    $content = "ContentOfContentedFile";
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+
+    /** @var EntityManager $em */
+    $em = $this->container->getByType(EntityManager::class);
+
+    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET', [
+      'action' => 'download',
+      'id' => $file->id
+    ]);
+
+    // an exception being thrown is success in this case - it means that the FileResponse
+    // tries to access the file, but the file does not exist on this machine
+    Assert::throws(function() use ($request) {
+      $this->presenter->run($request);
+    }, \Nette\Application\BadRequestException::class, "File '/some/path' doesn't exist.");
   }
 }
 
