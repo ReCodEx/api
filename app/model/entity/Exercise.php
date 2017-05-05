@@ -146,10 +146,18 @@ class Exercise implements JsonSerializable
 
     if ($this->group) {
       return $this->isPublic() && ($this->group->isAdminOf($user)
-          || $this->group->isSupervisorOf($user));
+          || $this->group->isSupervisorOf($user)); // @todo: is this feasible? isPublic in this case is more like isVisible to other supervisors...
     } else {
       return $this->isPublic();
     }
+  }
+
+  /**
+   * Can a specific user modify this exercise?
+   */
+  public function canModifyDetail(User $user) {
+    // @todo: ... similarly like above? or maybe there should be only one access controlling method?
+    return $this->isAuthor($user) || !$user->getRole()->hasLimitedRights();
   }
 
   /**

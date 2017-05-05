@@ -323,6 +323,26 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get all exercises for a group
+   * @GET
+   * @UserIsAllowed(groups="view-detail")
+   * @param string $id Identifier of the group
+   * @throws ForbiddenRequestException
+   */
+  public function actionExercises(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    $user = $this->getCurrentUser();
+
+    if (!$group->isMemberOf($user)
+      && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not allowed to view exercises of this group.");
+    }
+
+    $exercises = $group->getExercisesForUser($user);
+    $this->sendSuccessResponse($exercises->getValues());
+  }
+
+  /**
    * Get statistics of a group
    * @GET
    * @UserIsAllowed(groups="view-detail")

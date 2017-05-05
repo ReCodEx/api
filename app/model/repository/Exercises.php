@@ -65,6 +65,8 @@ class Exercises extends BaseSoftDeleteRepository {
    * @return array
    */
   public function searchByName($search, User $user) {
+    // @todo: this maybe has to be somehow rewritten according to group exercises
+
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()->where(Criteria::expr()->contains("name", $search));
       if ($user->getRole()->hasLimitedRights()) {
