@@ -224,6 +224,26 @@ App\Model\Entity\Permission:
     "resource": @exercises
     "action": "set-limits"
     "isAllowed": 1
+  "supervisor-exercises-create":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "create"
+    "isAllowed": 1
+  "supervisor-exercises-fork":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "fork"
+    "isAllowed": 1
+  "supervisor-exercises-update":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "update"
+    "isAllowed": 1
+  "supervisor-exercises-remove":
+    "role": @supervisor
+    "resource": @exercises
+    "action": "remove"
+    "isAllowed": 1
   "supervisor-assignments-create":
     "role": @supervisor
     "resource": @assignments
@@ -244,25 +264,15 @@ App\Model\Entity\Permission:
     "resource": @groups
     "action": "view-all"
     "isAllowed": 1
+  "supervisor-groups-set-admin":
+    "role": @supervisor
+    "resource": @groups
+    "action": "set-admin"
+    "isAllowed": 1
   "supervisor-instances-view-users":
     "role": @supervisor
     "resource": @instances
     "action": "view-users"
-    "isAllowed": 1
-  "supervisor-exercises-create":
-    "role": @supervisor
-    "resource": @exercises
-    "action": "create"
-    "isAllowed": 1
-  "supervisor-exercises-fork":
-    "role": @supervisor
-    "resource": @exercises
-    "action": "fork"
-    "isAllowed": 1
-  "supervisor-exercises-update":
-    "role": @supervisor
-    "resource": @exercises
-    "action": "update"
     "isAllowed": 1
   "supervisor-submissions-set-bonus-points":
     "role": @supervisor
@@ -283,9 +293,4 @@ App\Model\Entity\Permission:
     "role": @supervisor
     "resource": @hardwareGroups
     "action": "view-all"
-    "isAllowed": 1
-  "supervisor-groups-set-admin":
-    "role": @supervisor
-    "resource": @groups
-    "action": "set-admin"
     "isAllowed": 1
