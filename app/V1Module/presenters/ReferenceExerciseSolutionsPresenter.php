@@ -100,7 +100,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
-   * @Param(type="post", name="runtime", description="ID of runtime for this solution")
+   * @Param(type="post", name="runtimeEnvironmentId", description="ID of runtime for this solution")
    * @UserIsAllowed(exercises="create")
    * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
@@ -116,7 +116,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     $req = $this->getRequest();
     $note = $req->getPost("note");
-    $runtimeId = $req->getPost("runtime");
+    $runtimeId = $req->getPost("runtimeEnvironmentId");
 
     $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $runtimeId));
     $configsFound = $exercise->getRuntimeConfigs()->matching($criteria);
