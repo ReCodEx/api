@@ -1,6 +1,9 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Security\Identity;
+use App\Security\AccessToken;
+use App\Helpers\EmailVerificationHelper;
 use App\V1Module\Presenters\EmailVerificationPresenter;
 use Tester\Assert;
 
@@ -43,10 +46,57 @@ class TestEmailVerificationPresenter extends Tester\TestCase
     }
   }
 
-  public function testListAllExercises()
+  public function testResendVerificationEmail()
   {
-    Assert::equal(TRUE, TRUE);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    /** @var Mockery\Mock | EmailHelper $mockEmailVerificationHelper */
+    $mockEmailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
+    $mockEmailVerificationHelper->shouldReceive("process")->with($user)->andReturn(TRUE);
+    $this->presenter->emailVerificationHelper = $mockEmailVerificationHelper;
+
+    $request = new Nette\Application\Request(
+      'V1:EmailVerification',
+      'POST',
+      ['action' => 'resendVerificationEmail']
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
   }
+
+  public function testEmailVerification()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    // prepare token for email verification
+    $token = $this->accessManager->issueToken(
+      $user, [ AccessToken::SCOPE_EMAIL_VERIFICATION ],
+      600, [ "email" => $user->getEmail() ]
+    );
+    // login with obtained token
+    $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
+
+    $request = new Nette\Application\Request(
+      'V1:EmailVerification',
+      'POST',
+      ['action' => 'emailVerification']
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+  }
+
 }
 
 $testCase = new TestEmailVerificationPresenter();
