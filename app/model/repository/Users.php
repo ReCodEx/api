@@ -2,14 +2,10 @@
 
 namespace App\Model\Repository;
 
-use Nette;
-use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\User;
-use Nette\Security as NS;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\ForbiddenRequestException;
 
 class Users extends BaseRepository {
   public function __construct(EntityManager $em) {

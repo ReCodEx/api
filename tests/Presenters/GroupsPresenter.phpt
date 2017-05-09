@@ -120,6 +120,35 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(200, $result["code"]);
   }
 
+  public function testRemoveStudent()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[0];
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+    $user->makeStudentOf($group); // ! necessary
+    $this->presenter->users->flush();
+
+    // initial checks
+    Assert::equal(TRUE, $group->isStudentOf($user));
+
+    $request = new Nette\Application\Request('V1:Groups', 'DELETE', [
+      'action' => 'removeStudent',
+      'id' => $group->id,
+      'userId' => $user->id
+    ]);
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result["payload"];
+    Assert::equal(200, $result["code"]);
+
+    Assert::equal(FALSE, $payload->isStudentOf($user));
+  }
+
   public function testAddGroup()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -258,7 +287,236 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal($group->getId(), $payload->id);
   }
 
-  // @todo: more tests
+  public function testSubgroups()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'subgroups', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal($group->getAllSubgroups(), $payload); // admin can access everything
+  }
+
+  public function testMembers()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'members', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getSupervisors()->getValues(), $payload["supervisors"]);
+    Assert::equal($group->getStudents()->getValues(), $payload["students"]);
+  }
+
+  public function testSupervisors()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'supervisors', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getSupervisors()->getValues(), $payload);
+  }
+
+  public function testStudents()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'students', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getStudents()->getValues(), $payload);
+  }
+
+  public function testAssignments()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'assignments', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getAssignments()->toArray(), $payload); // admin can access everything
+  }
+
+  public function testExercises()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'exercises', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getExercises()->toArray(), $payload); // admin can access everything
+  }
+
+  public function testAddSupervisor()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[0];
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+
+    // initial checks
+    Assert::equal(FALSE, $group->isSupervisorOf($user));
+
+    $request = new Nette\Application\Request('V1:Groups', 'POST', [
+      'action' => 'addSupervisor',
+      'id' => $group->id,
+      'userId' => $user->id
+    ]);
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result["payload"];
+    Assert::equal(200, $result["code"]);
+
+    Assert::equal(TRUE, $payload->isSupervisorOf($user));
+  }
+
+  public function testRemoveSupervisor()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[0];
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+    $user->makeSupervisorOf($group); // ! necessary
+    $this->presenter->users->flush();
+
+    // initial checks
+    Assert::equal(TRUE, $group->isSupervisorOf($user));
+
+    $request = new Nette\Application\Request('V1:Groups', 'DELETE', [
+      'action' => 'removeSupervisor',
+      'id' => $group->id,
+      'userId' => $user->id
+    ]);
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result["payload"];
+    Assert::equal(200, $result["code"]);
+
+    Assert::equal(FALSE, $payload->isSupervisorOf($user));
+  }
+
+  public function testGetAdmin()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'admin', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getAdminsIds(), $payload);
+  }
+
+  public function testMakeAdmin()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[0];
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+
+    // initial checks
+    Assert::equal(FALSE, $group->isAdminOf($user));
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'makeAdmin', 'id' => $group->id],
+      ['userId' => $user->id]
+    );
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result["payload"];
+    Assert::equal(200, $result["code"]);
+
+    Assert::equal(TRUE, $payload->isAdminOf($user));
+  }
+
 }
 
 $testCase = new TestGroupsPresenter();

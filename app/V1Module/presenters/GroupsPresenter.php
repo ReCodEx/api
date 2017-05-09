@@ -544,7 +544,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAdmin($id) {
     $group = $this->groups->findOrThrow($id);
-    $this->sendSuccessResponse($group->getAdminIds());
+    $this->sendSuccessResponse($group->getAdminsIds());
   }
 
   /**
@@ -556,7 +556,7 @@ class GroupsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionMakeAdmin(string $id) {
-    $userId = $this->getHttpRequest()->getPost("userId");
+    $userId = $this->getRequest()->getPost("userId");
     $user = $this->users->findOrThrow($userId);
     $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
