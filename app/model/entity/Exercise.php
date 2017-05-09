@@ -23,6 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
+ * @method \DateTime getDeletedAt()
  */
 class Exercise implements JsonSerializable
 {
@@ -146,7 +147,7 @@ class Exercise implements JsonSerializable
 
     if ($this->group) {
       return $this->isPublic() && ($this->group->isAdminOf($user)
-          || $this->group->isSupervisorOf($user)); // @todo: is this feasible? isPublic in this case is more like isVisible to other supervisors...
+          || $this->group->isSupervisorOf($user));
     } else {
       return $this->isPublic();
     }
@@ -156,7 +157,6 @@ class Exercise implements JsonSerializable
    * Can a specific user modify this exercise?
    */
   public function canModifyDetail(User $user) {
-    // @todo: ... similarly like above? or maybe there should be only one access controlling method?
     return $this->isAuthor($user) || !$user->getRole()->hasLimitedRights();
   }
 

@@ -119,6 +119,146 @@ class TestGroupsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result["code"]);
   }
+
+  public function testAddGroup()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $instance = $this->presenter->instances->findAll()[0];
+    $allGroupsCount = count($this->presenter->groups->findAll());
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'addGroup'],
+      [
+        'name' => 'new name',
+        'description' => 'some neaty description',
+        'instanceId' => $instance->getId(),
+        'externalId' => 'external identification of exercise',
+        'parentGroupId' => NULL,
+        'publicStats' => TRUE,
+        'isPublic' => TRUE
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
+    Assert::equal('new name', $payload->name);
+    Assert::equal('some neaty description', $payload->description);
+    Assert::equal($instance->getId(), $payload->instance->id);
+    Assert::equal('external identification of exercise', $payload->externalId);
+    Assert::equal($instance->rootGroup, $payload->parentGroup);
+    Assert::equal(TRUE, $payload->publicStats);
+    Assert::equal(TRUE, $payload->isPublic);
+  }
+
+  public function testValidateAddGroupData()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $instance = $this->presenter->instances->findAll()[0];
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'validateAddGroupData'],
+      [
+        'name' => 'new name',
+        'instanceId' => $instance->getId(),
+        'parentGroupId' => NULL,
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal(TRUE, $payload['groupNameIsFree']);
+  }
+
+  public function testUpdateGroup()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $allGroups = $this->presenter->groups->findAll();
+    $group = array_pop($allGroups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'updateGroup', 'id' => $group->getId()],
+      [
+        'name' => 'new name',
+        'description' => 'some neaty description',
+        'externalId' => 'external identification of exercise',
+        'publicStats' => TRUE,
+        'isPublic' => TRUE,
+        'threshold' => 80
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal($group->getId(), $payload->getId());
+    Assert::equal('new name', $payload->name);
+    Assert::equal('some neaty description', $payload->description);
+    Assert::equal('external identification of exercise', $payload->externalId);
+    Assert::equal(TRUE, $payload->publicStats);
+    Assert::equal(TRUE, $payload->isPublic);
+    Assert::equal(0.8, $payload->threshold);
+  }
+
+  public function testRemoveGroup()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $instance = $this->presenter->instances->findAll()[0];
+    $groups = $this->presenter->groups->findAll();
+    $allGroupsCount = count($groups);
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'DELETE',
+      ['action' => 'removeGroup', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $payload);
+    Assert::count($allGroupsCount - 1, $this->presenter->groups->findAll());
+  }
+
+  public function testDetail()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'detail', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal($group->getId(), $payload->id);
+  }
+
+  // @todo: more tests
 }
 
 $testCase = new TestGroupsPresenter();

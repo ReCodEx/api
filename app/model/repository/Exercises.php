@@ -4,8 +4,10 @@ namespace App\Model\Repository;
 
 use Kdyby\Doctrine\EntityManager;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Collection;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\User;
+use App\Model\Entity\Group;
 
 class Exercises extends BaseSoftDeleteRepository {
 
@@ -60,54 +62,62 @@ class Exercises extends BaseSoftDeleteRepository {
   }
 
   /**
+   * Search exercises names based on given string.
+   * @param User $user
+   * @param string|NULL $search
+   * @return Collection
+   */
+  private function search(User $user, $search = NULL) {
+    $filter = Criteria::create();
+
+    // @todo: Criteria::expr()->in($user->getGroups()->map( <get id> ))
+
+    if ($search !== NULL && !empty($search)) {
+      $filter->where(Criteria::expr()->contains("name", $search));
+    }
+
+    if ($user->getRole()->hasLimitedRights()) {
+      $filter->andWhere(Criteria::expr()->orX(
+        Criteria::expr()->andX(Criteria::expr()->eq("isPublic", TRUE),
+          Criteria::expr()->eq("group", NULL)),
+        Criteria::expr()->andX(Criteria::expr()->eq("isPublic", TRUE),
+          Criteria::expr()->in("group", $user->getGroupsAsSupervisor()->map(
+            function (Group $group) {
+              return $group->getId();
+          })->getValues())),
+        Criteria::expr()->eq("author", $user)
+      ));
+    }
+
+    return $this->matching($filter);
+  }
+
+  /**
    *
    * @param string|NULL $search
+   * @param User $user
    * @return array
    */
   public function searchByName($search, User $user) {
-    // @todo: this maybe has to be somehow rewritten according to group exercises
-
-    if ($search !== NULL && !empty($search)) {
-      $filter = Criteria::create()->where(Criteria::expr()->contains("name", $search));
-      if ($user->getRole()->hasLimitedRights()) {
-        $filter->andWhere(Criteria::expr()->orX(
-          Criteria::expr()->eq("isPublic", TRUE),
-          Criteria::expr()->eq("author", $user)
-        ));
-      }
-
-      $foundExercises = $this->matching($filter);
-      if ($foundExercises->count() > 0) {
-        return $foundExercises->toArray();
-      }
-
-      // weaker filter - the strict one did not match anything
-      foreach (explode(" ", $search) as $part) {
-        // skip empty parts
-        $part = trim($part);
-        if (empty($part)) {
-          continue;
-        }
-
-        $filter = Criteria::create()->where(Criteria::expr()->contains("name", $part));
-        if ($user->getRole()->hasLimitedRights()) {
-          $filter->andWhere(Criteria::expr()->orX(
-            Criteria::expr()->eq("isPublic", TRUE),
-            Criteria::expr()->eq("author", $user)
-          ));
-        }
-
-        $foundExercises = $this->matching($filter);
-      }
-
+    $foundExercises = $this->search($user, $search);
+    if ($foundExercises->count() > 0) {
       return $foundExercises->toArray();
-    } else {
-      // no query is present
-      $filter = Criteria::create()
-        ->where(Criteria::expr()->eq("isPublic", TRUE))
-        ->orWhere(Criteria::expr()->eq("author", $user));
-      return $this->matching($filter)->toArray();
     }
+
+    // weaker filter - the strict one did not match anything
+    $foundExercises = array();
+    foreach (explode(" ", $search) as $part) {
+      // skip empty parts
+      $part = trim($part);
+      if (empty($part)) {
+        continue;
+      }
+
+      $weakExercises = $this->search($user, $part);
+      $foundExercises = array_merge($foundExercises, $weakExercises->toArray());
+    }
+
+    return $foundExercises;
   }
 
 
