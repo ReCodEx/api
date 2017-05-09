@@ -139,8 +139,10 @@ class Exercise implements JsonSerializable
 
   /**
    * Can a specific user access this exercise?
+   * @param User $user
+   * @return boolean
    */
-  public function canAccessDetail(User $user) {
+  public function canAccessDetail(User $user): bool {
     if (!$user->getRole()->hasLimitedRights() || $this->isAuthor($user)) {
       return TRUE;
     }
@@ -155,19 +157,21 @@ class Exercise implements JsonSerializable
 
   /**
    * Can a specific user modify this exercise?
+   * @param \App\Model\Entity\User $user
+   * @return boolean
    */
-  public function canModifyDetail(User $user) {
+  public function canModifyDetail(User $user): bool {
     return $this->isAuthor($user) || !$user->getRole()->hasLimitedRights();
   }
 
   /**
    * Constructor
    */
-  private function __construct($name, $version, $difficulty,
+  private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      $exercise, User $user, $group = NULL, $isPublic = TRUE,
-      $description = "") {
+      ?Exercise $exercise, User $user, ?Group $group = NULL,
+      bool $isPublic = TRUE, string $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -184,7 +188,7 @@ class Exercise implements JsonSerializable
     $this->additionalFiles = $additionalFiles;
   }
 
-  public static function create(User $user, $group = NULL): Exercise {
+  public static function create(User $user, ?Group $group = NULL): Exercise {
     return new self(
       "",
       1,

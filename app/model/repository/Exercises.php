@@ -62,12 +62,12 @@ class Exercises extends BaseSoftDeleteRepository {
   }
 
   /**
-   * Search exercises names based on given string.
+   * Internal simple search of exercises names based on given string.
    * @param User $user
    * @param string|NULL $search
    * @return Collection
    */
-  private function search(User $user, $search = NULL) {
+  private function search(User $user, ?string $search = NULL): Collection {
     $filter = Criteria::create();
 
     // @todo: Criteria::expr()->in($user->getGroups()->map( <get id> ))
@@ -93,12 +93,12 @@ class Exercises extends BaseSoftDeleteRepository {
   }
 
   /**
-   *
+   * Search exercises names based on given string.
    * @param string|NULL $search
    * @param User $user
    * @return array
    */
-  public function searchByName($search, User $user) {
+  public function searchByName(?string $search, User $user): array {
     $foundExercises = $this->search($user, $search);
     if ($foundExercises->count() > 0) {
       return $foundExercises->toArray();
