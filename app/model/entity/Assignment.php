@@ -73,6 +73,7 @@ class Assignment implements JsonSerializable
     $this->isBonus = $isBonus;
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
     $this->createdAt = new \DateTime;
+    $this->updatedAt = new \DateTime;
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -147,6 +148,11 @@ class Assignment implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $updatedAt;
 
   /**
    * @ORM\Column(type="datetime", nullable=true)
@@ -389,6 +395,7 @@ class Assignment implements JsonSerializable
       "version" => $this->version,
       "isPublic" => $this->isPublic,
       "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),

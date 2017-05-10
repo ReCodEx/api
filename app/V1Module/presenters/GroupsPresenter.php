@@ -71,11 +71,11 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
    */
   public function actionAddGroup() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $instanceId = $req->getPost("instanceId");
-    $parentGroupId = $req->getPost("parentGroupId", NULL);
+    $parentGroupId = $req->getPost("parentGroupId");
     $user = $this->getCurrentUser();
-    $instance = $this->instances->get($instanceId);
+    $instance = $this->instances->findOrThrow($instanceId);
 
     if (!$user->belongsTo($instance)) {
       throw new ForbiddenRequestException("You cannot create group for instance '$instanceId'");
@@ -88,9 +88,9 @@ class GroupsPresenter extends BasePresenter {
 
     $name = $req->getPost("name");
     $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
-    $description = $req->getPost("description", "");
-    $publicStats = $req->getPost("publicStats", TRUE);
-    $isPublic = $req->getPost("isPublic") === NULL ? TRUE : $req->getPost("isPublic");
+    $description = $req->getPost("description") === NULL ? "" : $req->getPost("description");
+    $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
     if (!$this->groups->nameIsFree($name, $instance->getId(), $parentGroup !== NULL ? $parentGroup->getId() : NULL)) {
       throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
@@ -108,13 +108,13 @@ class GroupsPresenter extends BasePresenter {
    * @UserIsAllowed(groups="add")
    * @Param(name="name", type="post", description="Name of the group")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
-   * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group")
+   * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
    */
   public function actionValidateAddGroupData() {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $name = $req->getPost("name");
     $instanceId = $req->getPost("instanceId");
-    $parentGroupId = $req->getPost("parentGroupId", NULL);
+    $parentGroupId = $req->getPost("parentGroupId");
 
     if ($parentGroupId === NULL) {
       $instance = $this->instances->get($instanceId);
@@ -140,7 +140,7 @@ class GroupsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionUpdateGroup(string $id) {
-    $req = $this->getHttpRequest();
+    $req = $this->getRequest();
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
@@ -151,7 +151,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Only group administrators can update group detail.");
     }
 
-    $group->setName($req->getPost("externalId"));
+    $group->setExternalId($req->getPost("externalId"));
     $group->setName($req->getPost("name"));
     $group->setDescription($req->getPost("description"));
     $group->setPublicStats($publicStats);
@@ -320,6 +320,26 @@ class GroupsPresenter extends BasePresenter {
 
     $assignments = $group->getAssignmentsForUser($user);
     $this->sendSuccessResponse($assignments->getValues());
+  }
+
+  /**
+   * Get all exercises for a group
+   * @GET
+   * @UserIsAllowed(groups="view-detail")
+   * @param string $id Identifier of the group
+   * @throws ForbiddenRequestException
+   */
+  public function actionExercises(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    $user = $this->getCurrentUser();
+
+    if (!$group->isMemberOf($user)
+      && $user->getRole()->hasLimitedRights()) {
+      throw new ForbiddenRequestException("You are not allowed to view exercises of this group.");
+    }
+
+    $exercises = $group->getExercisesForUser($user);
+    $this->sendSuccessResponse($exercises->getValues());
   }
 
   /**
@@ -524,7 +544,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAdmin($id) {
     $group = $this->groups->findOrThrow($id);
-    $this->sendSuccessResponse($group->getAdminIds());
+    $this->sendSuccessResponse($group->getAdminsIds());
   }
 
   /**
@@ -536,7 +556,7 @@ class GroupsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionMakeAdmin(string $id) {
-    $userId = $this->getHttpRequest()->getPost("userId");
+    $userId = $this->getRequest()->getPost("userId");
     $user = $this->users->findOrThrow($userId);
     $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);

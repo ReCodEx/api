@@ -1,7 +1,5 @@
 <?php
 
-use Nette\Utils\Arrays;
-
 class PresenterTestHelper
 {
   const ADMIN_LOGIN = "admin@admin.com";

@@ -23,6 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
+ * @method \DateTime getDeletedAt()
  */
 class Exercise implements JsonSerializable
 {
@@ -132,24 +133,45 @@ class Exercise implements JsonSerializable
   protected $description;
 
   /**
-   * Can a specific user access this exercise?
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="exercises")
    */
-  public function canAccessDetail(User $user) {
-    if (!$user->getRole()->hasLimitedRights()) {
+  protected $group;
+
+  /**
+   * Can a specific user access this exercise?
+   * @param User $user
+   * @return boolean
+   */
+  public function canAccessDetail(User $user): bool {
+    if (!$user->getRole()->hasLimitedRights() || $this->isAuthor($user)) {
       return TRUE;
     }
 
-    return $this->isPublic === TRUE || $this->isAuthor($user);
+    if ($this->group) {
+      return $this->isPublic() && ($this->group->isAdminOf($user)
+          || $this->group->isSupervisorOf($user));
+    } else {
+      return $this->isPublic();
+    }
+  }
+
+  /**
+   * Can a specific user modify this exercise?
+   * @param \App\Model\Entity\User $user
+   * @return boolean
+   */
+  public function canModifyDetail(User $user): bool {
+    return $this->isAuthor($user) || !$user->getRole()->hasLimitedRights();
   }
 
   /**
    * Constructor
    */
-  private function __construct($name, $version, $difficulty,
+  private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
-      Collection $supplementaryEvaluationFiles,
-      Collection $additionalFiles,
-      $exercise, User $user, $isPublic = TRUE, $description = "") {
+      Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
+      ?Exercise $exercise, User $user, ?Group $group = NULL,
+      bool $isPublic = TRUE, string $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -162,10 +184,11 @@ class Exercise implements JsonSerializable
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
     $this->description = $description;
+    $this->group = $group;
     $this->additionalFiles = $additionalFiles;
   }
 
-  public static function create(User $user): Exercise {
+  public static function create(User $user, ?Group $group = NULL): Exercise {
     return new self(
       "",
       1,
@@ -175,7 +198,8 @@ class Exercise implements JsonSerializable
       new ArrayCollection,
       new ArrayCollection,
       NULL,
-      $user
+      $user,
+      $group
     );
   }
 
@@ -190,6 +214,7 @@ class Exercise implements JsonSerializable
       $exercise->additionalFiles,
       $exercise,
       $user,
+      $exercise->group,
       $exercise->isPublic,
       $exercise->description
     );
@@ -269,6 +294,7 @@ class Exercise implements JsonSerializable
       "runtimeConfigs" => $this->runtimeConfigs->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
+      "groupId" => $this->group ? $this->group->getId() : NULL,
       "isPublic" => $this->isPublic,
       "description" => $this->description,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
