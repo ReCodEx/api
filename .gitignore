@@ -16,4 +16,5 @@ docs/*
 phpDocumentor.phar
 .vscode
 /job_config
-
+coverage.xml
+coverage.html
