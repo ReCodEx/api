@@ -19,6 +19,28 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+    privateAdminExercise:
+        __construct:
+            create:
+                - @demoAdmin
+        difficulty: "moderate"
+        name: "alalal"
+        isPublic: FALSE
+        addLocalizedText:
+            - @demoLocalizedText
+        addRuntimeConfig:
+            - @demoRuntimeConfig
+    publicSupervisor2Exercise:
+        __construct:
+            create:
+                - @demoGroupSupervisor2
+                - @demoGroup
+        difficulty: "moderate"
+        name: "group supervisor alalal"
+        addLocalizedText:
+            - @demoLocalizedText
+        addRuntimeConfig:
+            - @demoRuntimeConfig
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:

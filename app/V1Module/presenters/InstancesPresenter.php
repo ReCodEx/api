@@ -6,13 +6,11 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Security\Identity;
 use Nette\Http\IResponse;
 
-use App\Exceptions\NotFoundException;
 use App\Exceptions\BadRequestException;
 use App\Model\Repository\Instances;
 use App\Model\Repository\Licences;
 use App\Model\Entity\Instance;
 use App\Model\Entity\Licence;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for instance manipulation

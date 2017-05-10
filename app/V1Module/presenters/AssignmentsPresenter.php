@@ -193,6 +193,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
+    $assignment->setUpdatedAt(new \DateTime);
     $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));

@@ -130,6 +130,22 @@ class Group implements JsonSerializable
   }
 
   /**
+   * @ORM\OneToMany(targetEntity="Exercise", mappedBy="group")
+   */
+  protected $exercises;
+
+  /**
+   * For provided user get all visible exercises.
+   * @param User $user
+   * @return array
+   */
+  public function getExercisesForUser(User $user) {
+    return $this->exercises->filter(function (Exercise $exercise) use ($user) {
+      return $exercise->getDeletedAt() === NULL && $exercise->canAccessDetail($user);
+    });
+  }
+
+  /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
    */
   protected $instance;
