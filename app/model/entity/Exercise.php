@@ -20,6 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
+ * @method Doctrine\Common\Collections\Collection getExerciseLimits()
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
@@ -138,6 +139,11 @@ class Exercise implements JsonSerializable
   protected $group;
 
   /**
+   * @ORM\OneToMany(targetEntity="ExerciseLimits", mappedBy="exercise", cascade={"persist"})
+   */
+  protected $exerciseLimits;
+
+  /**
    * Can a specific user access this exercise?
    * @param User $user
    * @return boolean
@@ -170,8 +176,8 @@ class Exercise implements JsonSerializable
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      ?Exercise $exercise, User $user, ?Group $group = NULL,
-      bool $isPublic = TRUE, string $description = "") {
+      Collection $exerciseLimits, ?Exercise $exercise, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -186,6 +192,7 @@ class Exercise implements JsonSerializable
     $this->description = $description;
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
+    $this->exerciseLimits = $exerciseLimits;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -193,6 +200,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -212,6 +220,7 @@ class Exercise implements JsonSerializable
       $exercise->runtimeConfigs,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
+      $exercise->exerciseLimits, // @todo: limits should be copied... or the same behaviour as for runtimes and texts should be engaged?
       $exercise,
       $user,
       $exercise->group,
