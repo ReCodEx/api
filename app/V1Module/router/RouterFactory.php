@@ -166,6 +166,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/admin", "Groups:makeAdmin");
 
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
+    $router[] = new GetRoute("$prefix/<id>/exercises", "Groups:exercises");
 
     return $router;
   }

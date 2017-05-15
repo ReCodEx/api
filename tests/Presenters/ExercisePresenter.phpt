@@ -12,6 +12,7 @@ use Tester\Assert;
 class TestExercisesPresenter extends Tester\TestCase
 {
   private $adminLogin = "admin@admin.com";
+  private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
 
   /** @var ExercisesPresenter */
   protected $presenter;
@@ -87,7 +88,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::count(count($this->presenter->exercises->findAll()), $result['payload']);
   }
 
-  public function testListSearchExercises()
+  public function testAdminListSearchExercises()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
@@ -97,7 +98,20 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(3, $result['payload']);
+    Assert::count(5, $result['payload']);
+  }
+
+  public function testSupervisorListSearchExercises()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin);
+
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'al']);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(4, $result['payload']);
   }
 
   public function testDetail()
