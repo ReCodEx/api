@@ -4,24 +4,26 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\NotReadyException;
 use App\Exceptions\SubmissionFailedException;
+use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
+use App\Helpers\JobConfig;
+use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\UploadedFile;
+use App\Model\Entity\ReferenceExerciseSolution;
+use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Repository\RuntimeEnvironments;
 
-use App\Helpers\JobConfig;
-use App\Helpers\SubmissionHelper;
-use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\NotFoundException;
 use App\Responses\GuzzleResponse;
 use Doctrine\Common\Collections\Criteria;
 
@@ -79,6 +81,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $fileServerProxy;
 
   /**
+   * @var RuntimeEnvironments
+   * @inject
+   */
+  public $runtimeEnvironments;
+
+  /**
    * Get reference solutions for an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
@@ -118,17 +126,23 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $note = $req->getPost("note");
     $runtimeId = $req->getPost("runtimeEnvironmentId");
 
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $runtimeId));
-    $configsFound = $exercise->getRuntimeConfigs()->matching($criteria);
-    $numOfResults = $configsFound->count();
-    if ($numOfResults !== 1) {
-      throw new NotFoundException("Runtime config ID not specified correctly. Got ${numOfResults} matches from exercise runtimes.");
+    // detect the runtime configuration
+    if ($runtimeId !== NULL) {
+      $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
+      $runtimeConfiguration = $exercise->getRuntimeConfigByEnvironment($runtimeEnvironment);
+      if ($runtimeConfiguration === NULL) {
+        throw new NotFoundException("RuntimeConfiguration was not found");
+      }
+    } else {
+      throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");
     }
 
-    $runtime = $configsFound->first();
-    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtime);
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeConfiguration);
 
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
+    if (count($uploadedFiles) === 0) {
+      throw new SubmissionEvaluationFailedException("No files were uploaded");
+    }
 
     foreach ($uploadedFiles as $file) {
       if (!($file instanceof UploadedFile)) {
