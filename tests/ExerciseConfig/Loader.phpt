@@ -5,7 +5,10 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 
-
+/**
+ * Exercise configuration builder is mostly tested in components which are constructed/built by it.
+ * This is only general test which tests only simple cases.
+ */
 class TestExerciseConfigLoader extends Tester\TestCase
 {
   /** @var Loader */
@@ -16,7 +19,7 @@ class TestExerciseConfigLoader extends Tester\TestCase
   }
 
   public function testCorrect() {
-    // @TODO
+    // @TODO: later when loader is finished
     Assert::true(TRUE);
   }
 

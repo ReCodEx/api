@@ -38,7 +38,7 @@ class Limits implements JsonSerializable {
    * @param float $time wall time limit
    * @return $this
    */
-  public function setWallTime(float $time) {
+  public function setWallTime(float $time): Limits {
     $this->wallTime = $time;
     return $this;
   }
@@ -56,7 +56,7 @@ class Limits implements JsonSerializable {
    * @param int $memory memory limit
    * @return $this
    */
-  public function setMemoryLimit(int $memory) {
+  public function setMemoryLimit(int $memory): Limits {
     $this->memory = $memory;
     return $this;
   }
@@ -74,7 +74,7 @@ class Limits implements JsonSerializable {
    * @param int $parallel number of processes
    * @return $this
    */
-  public function setParallel(int $parallel) {
+  public function setParallel(int $parallel): Limits {
     $this->parallel = $parallel;
     return $this;
   }
