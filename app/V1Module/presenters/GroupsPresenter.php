@@ -276,8 +276,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if ($group->isPrivate() && !$group->isMemberOf($user)
-      && $user->getRole()->hasLimitedRights()) {
+    if ($group->isPrivate() && $user->getRole()->hasLimitedRights()) {
       throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
     }
 
