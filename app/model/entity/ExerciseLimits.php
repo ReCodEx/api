@@ -2,14 +2,20 @@
 
 namespace App\Model\Entity;
 
+use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
+use DateTime;
 
 /**
  * @ORM\Entity
- * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(name="exercise_runtime_hwgroup_key", columns={"exercise_id", "runtime_config_id", "hardware_group_id"})})
  * @method string getId()
  * @method string getLimits()
+ * @method RuntimeEnvironment getRuntimeEnvironment()
+ * @method HardwareGroup getHardwareGroup()
  */
 class ExerciseLimits implements JsonSerializable
 {
@@ -28,14 +34,24 @@ class ExerciseLimits implements JsonSerializable
   protected $limits;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="exercises")
+   * @ORM\Column(type="datetime")
    */
-  protected $exercise;
+  protected $createdAt;
 
   /**
-   * @ORM\ManyToOne(targetEntity="RuntimeConfig")
+   * @ORM\ManyToOne(targetEntity="ExerciseLimits")
    */
-  protected $runtimeConfig;
+  protected $createdFrom;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseLimits")
+   */
+  protected $exercises;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
+   */
+  protected $runtimeEnvironment;
 
   /**
    * @ORM\ManyToOne(targetEntity="HardwareGroup")
@@ -45,21 +61,37 @@ class ExerciseLimits implements JsonSerializable
   /**
    * Constructor
    */
-  public function __construct(Exercise $exercise, RuntimeConfig $runtimeConfig,
-      HardwareGroup $hardwareGroup, string $limits) {
-    $this->exercise = $exercise;
-    $this->runtimeConfig = $runtimeConfig;
+  public function __construct(RuntimeEnvironment $runtimeEnvironment,
+      HardwareGroup $hardwareGroup, string $limits, ?ExerciseLimits $createdFrom = NULL) {
+    $this->exercises = new ArrayCollection();
+    $this->runtimeEnvironment = $runtimeEnvironment;
     $this->hardwareGroup = $hardwareGroup;
     $this->limits = $limits;
+    $this->createdAt = new DateTime;
+    $this->createdFrom = $createdFrom;
+  }
+
+  /**
+   * Return array-like structure containing limits.
+   * @return array|string
+   * @throws ExerciseConfigException
+   */
+  public function getStructuredLimits() {
+    try {
+      return Yaml::parse($this->limits);
+    } catch (ParseException $e) {
+      throw new ExerciseConfigException("Exercise limits configuration is not a valid YAML and it cannot be parsed.");
+    }
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "exerciseId" => $this->exercise->getId(),
-      "runtimeConfigId" => $this->runtimeConfig->getId(),
+      "runtimeConfigId" => $this->runtimeEnvironment->getId(),
       "hardwareGroupId" => $this->hardwareGroup->getId(),
-      "limits" => $this->limits
+      "limits" => $this->limits,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "createdFrom" => $this->createdFrom ? $this->createdFrom->id : ""
     ];
   }
 

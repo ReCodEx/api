@@ -139,7 +139,7 @@ class Exercise implements JsonSerializable
   protected $group;
 
   /**
-   * @ORM\OneToMany(targetEntity="ExerciseLimits", mappedBy="exercise", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
    */
   protected $exerciseLimits;
 
@@ -220,7 +220,7 @@ class Exercise implements JsonSerializable
       $exercise->runtimeConfigs,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
-      $exercise->exerciseLimits, // @todo: limits should be copied... or the same behaviour as for runtimes and texts should be engaged?
+      $exercise->exerciseLimits,
       $exercise,
       $user,
       $exercise->group,
@@ -245,6 +245,14 @@ class Exercise implements JsonSerializable
     $this->additionalFiles->add($exerciseFile);
   }
 
+  public function addExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->add($exerciseLimits);
+  }
+
+  public function removeExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->removeElement($exerciseLimits);
+  }
+
   /**
    * Get localized text based on given locale.
    * @param string $locale
@@ -266,6 +274,21 @@ class Exercise implements JsonSerializable
       function (RuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
+    return $first === FALSE ? NULL : $first;
+  }
+
+  /**
+   * Get exercise limits based on environment and hardware group.
+   * @param RuntimeEnvironment $environment
+   * @param HardwareGroup $hwGroup
+   * @return ExerciseLimits|NULL
+   */
+  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
+    $first = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
+          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
+      })->first();
     return $first === FALSE ? NULL : $first;
   }
 

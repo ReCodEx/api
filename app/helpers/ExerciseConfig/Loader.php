@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 
-use App\Exceptions\ExerciseConfigLoadingException;
+use App\Exceptions\ExerciseConfigException;
 
 /**
  * Loader service which is able to load exercise configuration into internal
@@ -16,30 +16,27 @@ class Loader {
    * @param array $data
    * @param string $boxId Box identifier (name) for better error messages
    * @return Limits
-   * @throws ExerciseConfigLoadingException
+   * @throws ExerciseConfigException
    */
   public function loadLimits($data, $boxId = ""): Limits {
     $limits = new Limits;
 
     if (!is_array($data)) {
-      throw new ExerciseConfigLoadingException("Box '" . $boxId . "': limits are not array");
+      throw new ExerciseConfigException("Box '" . $boxId . "': limits are not array");
     }
 
     // *** LOAD OPTIONAL DATAS
 
     if (isset($data[Limits::WALL_TIME_KEY])) {
       $limits->setWallTime(floatval($data[Limits::WALL_TIME_KEY]));
-      unset($data[Limits::WALL_TIME_KEY]);
     }
 
     if (isset($data[Limits::MEMORY_KEY])) {
       $limits->setMemoryLimit(intval($data[Limits::MEMORY_KEY]));
-      unset($data[Limits::MEMORY_KEY]);
     }
 
     if (isset($data[Limits::PARALLEL_KEY])) {
       $limits->setParallel(intval($data[Limits::PARALLEL_KEY]));
-      unset($data[Limits::PARALLEL_KEY]);
     }
 
     return $limits;
@@ -49,7 +46,7 @@ class Loader {
     $limits = new ExerciseLimits;
 
     if (!is_array($data)) {
-      throw new ExerciseConfigLoadingException("Exercise limits are not array");
+      throw new ExerciseConfigException("Exercise limits are not array");
     }
 
     foreach ($data as $key => $values) {

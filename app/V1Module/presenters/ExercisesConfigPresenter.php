@@ -5,10 +5,12 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\ExerciseConfig\Loader;
+use App\Model\Entity\ExerciseLimits;
 use App\Model\Repository\Exercises;
-use App\Helpers\JobConfig;
-use App\Model\Repository\RuntimeConfigs;
+use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\RuntimeEnvironments;
 use Nette\Utils\Arrays;
 
 /**
@@ -25,16 +27,22 @@ class ExercisesConfigPresenter extends BasePresenter {
   public $exercises;
 
   /**
-   * @var JobConfig\Storage
+   * @var Loader
    * @inject
    */
-  public $jobConfigs;
+  public $exerciseConfigLoader;
 
   /**
-   * @var RuntimeConfigs
+   * @var RuntimeEnvironments
    * @inject
    */
-  public $runtimeConfigurations;
+  public $runtimeEnvironments;
+
+  /**
+   * @var HardwareGroups
+   * @inject
+   */
+  public $hardwareGroups;
 
   /**
    * @var ReferenceSolutionEvaluations
@@ -47,100 +55,73 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(exercises="view-limits")
    * @param string $id Identifier of the exercise
+   * @param string $runtimeEnvironmentId
+   * @param string $hwGroupId
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
-  public function actionGetLimits(string $id) {
-
-    // @todo: rewrite
-
+  public function actionGetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->canModifyDetail($user)) {
       throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
     }
 
-    // get job config and its test cases
-    $environments = $exercise->getRuntimeConfigs()->map(
-      function ($environment) use ($exercise) {
-        $jobConfig = $this->jobConfigs->getJobConfig($environment->getJobConfigFilePath());
-        $referenceEvaluations = [];
-        foreach ($jobConfig->getHardwareGroups() as $hwGroup) {
-          $referenceEvaluations[$hwGroup] = $this->referenceSolutionEvaluations->find(
-            $exercise,
-            $environment->getRuntimeEnvironment(),
-            $hwGroup
-          );
-        }
+    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+    $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
 
-        return [
-          "environment" => $environment,
-          "hardwareGroups" => $jobConfig->getHardwareGroups(),
-          "limits" => $jobConfig->getLimits(),
-          "referenceSolutionsEvaluations" => $referenceEvaluations
-        ];
-      }
-    );
+    $limits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
+    if ($limits === NULL) {
+      throw new NotFoundException("Limits for exercise cannot be found");
+    }
 
-    $this->sendSuccessResponse([ "environments" => $environments->getValues() ]);
+    $this->sendSuccessResponse($limits->getStructuredLimits());
   }
 
   /**
    * Set resource limits for an exercise
    * @POST
    * @UserIsAllowed(exercises="set-limits")
-   * @Param(type="post", name="environments", description="A list of resource limits for the environments and hardware groups", validation="array")
+   * @Param(type="post", name="limits", description="A list of resource limits for the given environment and hardware group", validation="array")
    * @param string $id Identifier of the exercise
+   * @param string $runtimeEnvironmentId
+   * @param string $hwGroupId
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws NotFoundException
    */
-  public function actionSetLimits(string $id) {
-
-    // @todo: rewrite
-
+  public function actionSetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    $exerciseRuntimeConfigsIds = $exercise->getRuntimeConfigsIds();
-
     if (!$exercise->canModifyDetail($user)) {
       throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
     }
 
+    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+    $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
+
+    $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
+    if ($oldLimits === NULL) {
+      throw new NotFoundException("Limits for exercise cannot be found");
+    }
+
     $req = $this->getRequest();
-    $environments = $req->getPost("environments");
+    $limits = $req->getPost("limits");
 
-    if (count($environments) === 0) {
-      throw new NotFoundException("No environment specified");
+    if (count($limits) === 0) {
+      throw new NotFoundException("No limits specified");
     }
 
-    foreach ($environments as $environment) {
-      $runtimeId = Arrays::get($environment, ["environment", "id"], NULL);
-      $runtimeConfig = $this->runtimeConfigurations->findOrThrow($runtimeId);
-      if (!in_array($runtimeId, $exerciseRuntimeConfigsIds)) {
-        throw new ForbiddenRequestException("Cannot configure solution runtime configuration $runtimeId for exercise $id");
-      }
+    // using loader load limits into internal structure which should detect formatting errors
+    $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
+    // new limits were provided, so construct new database entity
+    $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $oldLimits);
 
-      // open the job config and update the limits for all hardware groups
-      $path = $runtimeConfig->getJobConfigFilePath();
-      $jobConfig = $this->jobConfigs->getJobConfig($path);
+    // remove old limits for corresponding environment and hwgroup and add new ones
+    $exercise->removeExerciseLimits($oldLimits);
+    $exercise->addExerciseLimits($newLimits);
+    $this->exercises->flush();
 
-      // get through all defined limits indexed by hwgroup
-      $limits = Arrays::get($environment, ["limits"], []);
-      foreach ($limits as $hwGroupLimits) {
-        if (!isset($hwGroupLimits["hardwareGroup"])) {
-          throw new InvalidArgumentException("environments[][limits][][hardwareGroup]");
-        }
-
-        $hardwareGroup = $hwGroupLimits["hardwareGroup"];
-        $tests = Arrays::get($hwGroupLimits, ["tests"], []);
-        $newLimits = array_reduce(array_values($tests), "array_merge", []);
-        $jobConfig->setLimits($hardwareGroup, $newLimits);
-      }
-
-      // save the new & archive the old config
-      $this->jobConfigs->saveJobConfig($jobConfig, $path);
-    }
-
-    // the same output as get limits
-    $this->forward("getLimits", $id);
+    $this->sendSuccessResponse($newLimits->getStructuredLimits());
   }
 }

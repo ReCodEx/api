@@ -52,26 +52,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
-
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
-    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $limits = [
-      [
-        'hardwareGroup' => 'group1',
-        'tests' => []
-      ]
-    ];
-
-    $mockJobConfig->shouldReceive("getHardwareGroups")->withAnyArgs()->andReturn(["group1", "group2"])->atLeast(1)
-      ->shouldReceive("getLimits")->withAnyArgs()->andReturn($limits)->atLeast(1);
-
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig);
-    $this->presenter->jobConfigs = $mockStorage;
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
-      ['action' => 'getLimits', 'id' => $exercise->getId()]
+      [
+          'action' => 'getLimits',
+          'id' => $exercise->getId(),
+          'runtimeEnvironmentId' => $exerciseLimits->getRuntimeEnvironment()->getId(),
+          'hwGroupId' => $exerciseLimits->getHardwareGroup()->getId()
+      ]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -80,12 +69,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count(1, $result['payload']);
 
-    $environments = $result['payload']['environments'];
-    Assert::count(1, $environments);
-
-    $environment = current($environments);
-    Assert::equal(["group1", "group2"], $environment['hardwareGroups']);
-    Assert::equal($limits, $environment['limits']);
+    $structured = $exerciseLimits->getStructuredLimits();
+    Assert::equal($structured, $result['payload']);
   }
 
   public function testSetLimits()
@@ -93,57 +78,32 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
-    $setLimitsCallCount = count($exercise->getRuntimeConfigs());
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
 
     // prepare limits arrays
-    $limit1 = [
-      'task1' => ['hw-group-id' => 'group1'],
-      'task2' => ['hw-group-id' => 'group1']
+    $limits = [
+      'box-id-1' => ['wall-time' => 1.0],
+      'box-id-2' => ['wall-time' => 2.0]
     ];
-    $limit2 = [
-      'task1' => ['hw-group-id' => 'group2'],
-      'task2' => ['hw-group-id' => 'group2']
-    ];
-
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
-    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("setLimits")->withArgs(['group1', $limit1])->andReturn()->times($setLimitsCallCount);
-    $mockJobConfig->shouldReceive("setLimits")->withArgs(['group2', $limit2])->andReturn()->times($setLimitsCallCount);
-
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->times($setLimitsCallCount);
-    $mockStorage->shouldReceive("saveJobConfig")->withAnyArgs()->andReturn()->times($setLimitsCallCount);
-    $this->presenter->jobConfigs = $mockStorage;
-
-    // construct post parameter environments
-    $environments = [];
-    foreach ($exercise->getRuntimeConfigs() as $runtimeConfig) {
-      $environments[] = [
-        'environment' => ['id' => $runtimeConfig->getId()],
-        'limits' => [
-          [
-            'hardwareGroup' => 'group1',
-            'tests' => ['testA' => $limit1]
-          ],
-          [
-            'hardwareGroup' => 'group2',
-            'tests' => ['testB' => $limit2]
-          ]
-        ]
-      ];
-    }
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
-      ['action' => 'setLimits', 'id' => $exercise->getId()],
-      ['environments' => $environments]
+      [
+          'action' => 'setLimits',
+          'id' => $exercise->getId(),
+          'runtimeEnvironmentId' => $exerciseLimits->getRuntimeEnvironment()->getId(),
+          'hwGroupId' => $exerciseLimits->getHardwareGroup()->getId()
+      ],
+      ['limits' => $limits]
     );
     $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\ForwardResponse::class, $response);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    // result of setLimits is forward response which is set to getLimits action
-    $req = $response->getRequest();
-    Assert::equal(Nette\Application\Request::FORWARD, $req->getMethod());
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+
+    $updatedLimits = $result['payload'];
+    Assert::same($updatedLimits, $limits);
   }
 }
 

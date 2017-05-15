@@ -184,6 +184,7 @@ services:
   - App\Helpers\Notifications\AssignmentEmailsSender
   - App\Helpers\Notifications\SubmissionEmailsSender
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
+  - App\Helpers\ExerciseConfig\Loader
 
   # models - repositories
   - App\Model\Repository\Comments
