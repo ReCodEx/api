@@ -461,44 +461,62 @@ class AssignmentsPresenter extends BasePresenter {
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
 
-    // get the job config with correct job id
-    $path = $runtimeConfiguration->getJobConfigFilePath();
-    $jobConfig = $this->jobConfigs->getJobConfig($path);
-    $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
-    $resultsUrl = NULL;
-
-    try {
-      $resultsUrl = $this->submissionHelper->initiateEvaluation(
-        $jobConfig,
-        $submission->getSolution()->getFiles()->getValues(),
-        ['env' => $runtimeConfiguration->runtimeEnvironment->id]
-      );
-    } catch (Exception $e) {
-      $this->submissionFailed($submission, $e->getMessage());
-    }
-
-    // if the submission was accepted we now have the URL where to look for the results later
-    if($resultsUrl === NULL) {
-      $this->submissionFailed($submission, "The broker rejected our request");
-      return;
-    }
-
-    $submission->setResultsUrl($resultsUrl);
-    $this->submissions->persist($submission);
-    $this->sendSuccessResponse([
-      "submission" => $submission,
-      "webSocketChannel" => [
-        "id" => $jobConfig->getJobId(),
-        "monitorUrl" => $this->monitorConfig->getAddress(),
-        "expectedTasksCount" => $jobConfig->getTasksCount()
-      ]
-    ]);
+    $this->sendSuccessResponse($this->finishSubmission($submission));
   }
 
   private function submissionFailed(Submission $submission, string $message) {
     $failure = new SubmissionFailure(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
     throw new SubmissionFailedException($message);
+  }
+
+  /**
+   * Take a complete submission entity and submit it to the backend
+   * @param Submission $submission a persisted submission entity
+   * @return array The response that can be sent to the client
+   * @throws InvalidArgumentException
+   */
+  private function finishSubmission(Submission $submission) {
+    if ($submission->getId() === null) {
+      throw new InvalidArgumentException("The submission object is missing an id");
+    }
+
+    // Fill in the job configuration header
+    $runtimeConfiguration = $submission->getSolution()->getRuntimeConfig();
+    $path = $runtimeConfiguration->getJobConfigFilePath();
+    $jobConfig = $this->jobConfigs->getJobConfig($path);
+    $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
+
+    // Send the submission to the broker
+    $resultsUrl = NULL;
+
+    try {
+      $resultsUrl = $this->submissionHelper->initiateEvaluation(
+        $jobConfig,
+        $submission->getSolution()->getFiles()->getValues(),
+        ['env' => $runtimeConfiguration->getRuntimeEnvironment()->getId()]
+      );
+    } catch (Exception $e) {
+      $this->submissionFailed($submission, $e->getMessage());
+    }
+
+    if ($resultsUrl === NULL) {
+      $this->submissionFailed($submission, "The broker rejected our request");
+      return;
+    }
+
+    // If the submission was accepted we now have the URL where to look for the results later -> persist it
+    $submission->setResultsUrl($resultsUrl);
+    $this->submissions->persist($submission);
+
+    return [
+      "submission" => $submission,
+      "webSocketChannel" => [
+        "id" => $jobConfig->getJobId(),
+        "monitorUrl" => $this->monitorConfig->getAddress(),
+        "expectedTasksCount" => $jobConfig->getTasksCount()
+      ]
+    ];
   }
 
   /**
@@ -517,5 +535,78 @@ class AssignmentsPresenter extends BasePresenter {
     if (!$isSubmissionOwner && !$isSupervisor && !$isAdmin) {
       throw new ForbiddenRequestException("You cannot access these submissions");
     }
+  }
+
+  /**
+   * Resubmit a submission (for example in case of broker failure)
+   * @POST
+   * @param string $id Identifier of the submission
+   * @throws ForbiddenRequestException
+   */
+  public function actionResubmit(string $id) {
+    $user = $this->getCurrentUser();
+
+    /** @var Submission $oldSubmission */
+    $oldSubmission = $this->submissions->findOrThrow($id);
+
+    $isSupervisor = $oldSubmission->getAssignment()->getGroup()->isSupervisorOf($user);
+    $isAdmin = $oldSubmission->getAssignment()->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
+
+    if (!$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot resubmit this submission");
+    }
+
+    $submission = Submission::createSubmission(
+      $oldSubmission->getNote(),
+      $oldSubmission->getAssignment(),
+      $oldSubmission->getUser(),
+      $user,
+      $oldSubmission->getSolution()
+    );
+
+    // persist all the data in the database - this will also assign the UUID to the submission
+    $this->submissions->persist($submission);
+
+    $this->sendSuccessResponse($this->finishSubmission($submission));
+  }
+
+  /**
+   * Resubmit all submissions to an assignment
+   * @POST
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
+   */
+  public function actionResubmitAll(string $id) {
+    $user = $this->getCurrentUser();
+
+    /** @var Assignment $assignment */
+    $assignment = $this->assignments->findOrThrow($id);
+
+    $isSupervisor = $assignment->getGroup()->isSupervisorOf($user);
+    $isAdmin = $assignment->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
+
+    if (!$isSupervisor && !$isAdmin) {
+      throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
+    }
+
+    $result = [];
+
+    /** @var Submission $oldSubmission */
+    foreach ($assignment->getSubmissions() as $oldSubmission) {
+      $submission = Submission::createSubmission(
+        $oldSubmission->getNote(),
+        $oldSubmission->getAssignment(),
+        $oldSubmission->getUser(),
+        $user,
+        $oldSubmission->getSolution()
+      );
+
+      // persist all the data in the database - this will also assign the UUID to the submission
+      $this->submissions->persist($submission);
+
+      $result[] = $this->finishSubmission($submission);
+    }
+
+    $this->sendSuccessResponse($result); // TODO better response format
   }
 }
