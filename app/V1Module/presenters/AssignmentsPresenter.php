@@ -502,7 +502,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     if ($resultsUrl === NULL) {
       $this->submissionFailed($submission, "The broker rejected our request");
-      return;
+      return []; // never reached
     }
 
     // If the submission was accepted we now have the URL where to look for the results later -> persist it

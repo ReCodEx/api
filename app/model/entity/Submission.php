@@ -76,7 +76,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     /**
      * @ORM\Column(type="boolean")
      */
-    protected $private;
+    protected $private = FALSE;
 
     public function isPrivate() {
       return $this->private;
@@ -86,7 +86,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return !$this->private;
     }
 
-    public function setPrivate($private = true) {
+    public function setPrivate($private = TRUE) {
       $this->private = $private;
     }
 
