@@ -129,7 +129,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     // Check invariants
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
+    Assert::equal(true, $result['payload']->isAccepted());
 
     $submission = $this->presenter->submissions->get($submission->id);
     Assert::equal(true, $submission->isAccepted());
