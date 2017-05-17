@@ -24,4 +24,15 @@ class Submissions extends BaseRepository {
     ]);
   }
 
+  public function findPublicSubmissions($assignment, $userId)
+  {
+    return $this->findBy([
+      "user" => $userId,
+      "assignment" => $assignment,
+      "private" => FALSE
+    ], [
+      "submittedAt" => "DESC"
+    ]);
+  }
+
 }

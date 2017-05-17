@@ -365,14 +365,18 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
-    $submissions = $this->submissions->findSubmissions($assignment, $userId);
     $currentUser = $this->getCurrentUser();
 
-    $isFileOwner = $userId === $currentUser->getId();
     $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
     $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
-    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
+    $submissions = ($isSupervisor || $isAdmin)
+      ? $this->submissions->findSubmissions($assignment, $userId)
+      : $this->submissions->findPublicSubmissions($assignment, $userId);
+
+    $isOwner = $userId === $currentUser->getId();
+
+    if (!$isOwner && !$isSupervisor && !$isAdmin) {
       throw new ForbiddenRequestException("You cannot access these submissions");
     }
 
@@ -392,7 +396,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $submission = $assignment->getBestSolution($this->users->findOrThrow($userId));
 
-    $this->checkSubmissionAccess($userId, $assignment);
+    $this->checkSubmissionAccess($userId, $assignment, $submission);
     $this->sendSuccessResponse($submission);
   }
 
@@ -523,16 +527,17 @@ class AssignmentsPresenter extends BasePresenter {
    * Check if current user can access submissions to given assignment by given user.
    * @param string $userId The user whose submissions are to be accessed
    * @param Assignment $assignment The assignment whose submissions are to be accessed
+   * @param Submission $submission
    * @throws ForbiddenRequestException When current user does not have sufficient rights
    */
-  private function checkSubmissionAccess(string $userId, Assignment $assignment) {
+  private function checkSubmissionAccess(string $userId, Assignment $assignment, Submission $submission) {
     $currentUser = $this->getCurrentUser();
 
     $isSubmissionOwner = $userId === $currentUser->getId();
     $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
     $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
-    if (!$isSubmissionOwner && !$isSupervisor && !$isAdmin) {
+    if (!($isSubmissionOwner && $submission->isPublic()) && !$isSupervisor && !$isAdmin) {
       throw new ForbiddenRequestException("You cannot access these submissions");
     }
   }
@@ -541,6 +546,7 @@ class AssignmentsPresenter extends BasePresenter {
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
+   * @Param(type="post", name="private", type="bool", "Flag the submission as private (not visible to students)")
    * @throws ForbiddenRequestException
    */
   public function actionResubmit(string $id) {
@@ -563,6 +569,8 @@ class AssignmentsPresenter extends BasePresenter {
       $user,
       $oldSubmission->getSolution()
     );
+
+    $submission->setPrivate($this->getRequest()->getPost(filter_var("private")));
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
