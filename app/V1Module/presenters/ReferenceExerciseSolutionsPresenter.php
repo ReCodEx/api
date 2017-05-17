@@ -131,7 +131,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
       $runtimeConfiguration = $exercise->getRuntimeConfigByEnvironment($runtimeEnvironment);
       if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration was not found");
+        throw new NotFoundException("RuntimeConfiguration '$runtimeId' was not found");
       }
     } else {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");

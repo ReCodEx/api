@@ -411,6 +411,10 @@ class ExercisesPresenter extends BasePresenter {
     $group = NULL;
     if ($this->getRequest()->getPost("groupId")) {
       $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+
+      if (!$group->isAdminOf($user) && !$group->isSupervisorOf($user)) {
+        throw new ForbiddenRequestException("You are not allowed to create exercise in this group");
+      }
     }
 
     $exercise = Exercise::create($user, $group);
