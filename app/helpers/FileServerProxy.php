@@ -135,7 +135,7 @@ class FileServerProxy {
   }
 
   /**
-   * Send files to remote fileserver
+   * Send files submitted as a solution to an assignment to the fileserver
    * @param string   $jobId     Identifier of job for which these files are intended
    * @param string   $jobConfig Content of job configuration for this submission
    * @param UploadedFile[] $files Files submitted by user

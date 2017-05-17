@@ -53,11 +53,11 @@ class SubmissionsPresenter extends BasePresenter {
    * @UserIsAllowed(submissions="view-all")
    */
   public function actionDefault() {
-    $submissions = $this->submissions->findAll()->filter(function (Submission $submission) {
+    $submissions = array_filter($this->submissions->findAll(), (function (Submission $submission) {
       return $submission->isPublic()
         || $submission->getAssignment()->getGroup()->isAdminOf($this->getCurrentUser())
         || $submission->getAssignment()->getGroup()->isSupervisorOf($this->getCurrentUser());
-    });
+    }));
     $this->sendSuccessResponse($submissions);
   }
 

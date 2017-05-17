@@ -101,7 +101,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     protected $submittedBy;
 
     /**
-     * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
      */
     protected $solution;
 

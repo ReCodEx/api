@@ -41,7 +41,7 @@ class SubmissionHelper {
     // firstly let us set address of fileserver to job configuration
     $jobConfig->setFileCollector($this->fileServer->getFileserverTasksUrl());
 
-    // send all datas to fileserver
+    // send all data to fileserver
     list($archiveUrl, $resultsUrl) = $this->fileServer->sendFiles(
       $jobConfig->getJobId(),
       (string) $jobConfig,

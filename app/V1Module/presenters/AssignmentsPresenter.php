@@ -481,7 +481,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   private function finishSubmission(Submission $submission) {
-    if ($submission->getId() === null) {
+    if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
@@ -546,7 +546,7 @@ class AssignmentsPresenter extends BasePresenter {
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
-   * @Param(type="post", name="private", type="bool", "Flag the submission as private (not visible to students)")
+   * @Param(type="post", name="private", validationRule="bool", "Flag the submission as private (not visible to students)")
    * @throws ForbiddenRequestException
    */
   public function actionResubmit(string $id) {
