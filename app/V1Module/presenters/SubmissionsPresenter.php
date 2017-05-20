@@ -150,7 +150,7 @@ class SubmissionsPresenter extends BasePresenter {
     $submission->setAccepted(true);
     $this->submissions->flush();
 
-    $this->sendSuccessResponse("OK");
+    $this->sendSuccessResponse($submission);
   }
 
   /**
