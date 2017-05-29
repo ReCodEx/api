@@ -58,11 +58,25 @@ App\Model\Entity\ReferenceExerciseSolution:
             - Brute force solution
             - @demoRuntimeConfig
 
+App\Model\Entity\SolutionEvaluation:
+    demoReferenceExerciseSolutionEvaluationEvaluation:
+        __construct: false
+        evaluatedAt: "<dateTime()>"
+        initFailed: false
+        score: 0.95
+        points: 10
+        isValid: true
+        evaluationFailed: false
+        resultYml: ""
+        initiationOutputs: ""
+
 App\Model\Entity\ReferenceSolutionEvaluation:
     demoReferenceExerciseSolutionEvaluation:
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
+        evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
+        resultsUrl: "chacha cheche chichi chocho"
 
 App\Model\Entity\AdditionalExerciseFile:
     demoExerciseAdditionalFile:
