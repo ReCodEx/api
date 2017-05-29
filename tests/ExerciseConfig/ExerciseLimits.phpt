@@ -59,7 +59,7 @@ class TestExerciseLimits extends Tester\TestCase
   }
 
   public function testParsing() {
-    $limits = $this->loader->loadExerciseLimits(self::$parse)->getLimits();
+    $limits = $this->loader->loadExerciseLimits(self::$parse)->getLimitsArray();
     Assert::count(2, $limits);
 
     Assert::equal(123, $limits['box-id-1']->getMemoryLimit());
@@ -74,7 +74,7 @@ class TestExerciseLimits extends Tester\TestCase
   }
 
   public function testOptional() {
-    $limits = $this->loader->loadExerciseLimits(self::$optional)->getLimits();
+    $limits = $this->loader->loadExerciseLimits(self::$optional)->getLimitsArray();
     Assert::count(2, $limits);
 
     Assert::equal(2.0, $limits['box-id-1']->getWallTime());

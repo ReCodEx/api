@@ -47,6 +47,58 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     }
   }
 
+  public function testGetConfiguration()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+      [
+        'action' => 'getConfiguration',
+        'id' => $exercise->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+
+    // todo
+  }
+
+  public function testSetConfiguration()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+
+    // prepare config array
+    $config = [
+      ''
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setConfiguration',
+        'id' => $exercise->getId()
+      ],
+      ['config' => $config]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+
+    // todo
+  }
+
   public function testGetLimits()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

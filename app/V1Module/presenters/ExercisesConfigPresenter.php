@@ -50,6 +50,68 @@ class ExercisesConfigPresenter extends BasePresenter {
    */
   public $referenceSolutionEvaluations;
 
+
+  /**
+   * Get a basic exercise high level configuration.
+   * @GET
+   * @UserIsAllowed(exercises="update")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionGetConfiguration(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->canModifyDetail($user)) {
+      throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
+    }
+
+    $exerciseConfig = $exercise->getExerciseConfig();
+    if ($exerciseConfig === NULL) {
+      throw new NotFoundException("Configuration for the exercise not exists");
+    }
+
+    $parsedConfig = $this->exerciseConfigLoader->loadExerciseConfig($exerciseConfig->getParsedConfig());
+
+    $config = array();
+    // todo
+    $this->sendSuccessResponse($config);
+  }
+
+  /**
+   * Set basic exercise configuration
+   * @POST
+   * @UserIsAllowed(exercises="update")
+   * @Param(type="post", name="config", description="A list of basic high level exercise configuration", validation="array")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionSetConfiguration(string $id) {
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$exercise->canModifyDetail($user)) {
+      throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
+    }
+
+    $oldConfig = $exercise->getExerciseConfig();
+    if ($oldConfig === NULL) {
+      throw new NotFoundException("Configuration for the exercise not exists");
+    }
+
+    $req = $this->getRequest();
+    $config = $req->getPost("config");
+
+    if (count($config) === 0) {
+      throw new NotFoundException("No tests specified");
+    }
+
+    // todo
+    $newConfig = array();
+    $this->sendSuccessResponse($newConfig);
+  }
+
   /**
    * Get a description of resource limits for an exercise
    * @GET
@@ -122,6 +184,6 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->addExerciseLimits($newLimits);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse($newLimits->getStructuredLimits());
+    $this->sendSuccessResponse($newLimits->getParsedLimits());
   }
 }
