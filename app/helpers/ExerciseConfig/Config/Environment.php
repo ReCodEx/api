@@ -56,7 +56,7 @@ class Environment implements JsonSerializable {
   }
 
   /**
-   * Add ariable to this environment.
+   * Add variable to this environment.
    * @param string $key
    * @param string $value
    * @return $this
@@ -64,6 +64,25 @@ class Environment implements JsonSerializable {
   public function addVariable(string $key, string $value): Environment {
     $this->variables[$key] = $value;
     return $this;
+  }
+
+  /**
+   * Remove variable based on given variable name.
+   * @param string $key
+   * @return $this
+   */
+  public function removeVariable(string $key): Environment {
+    unset($this->variables[$key]);
+    return $this;
+  }
+
+  /**
+   * Get value of the variable based on given variable name.
+   * @param string $key
+   * @return string
+   */
+  public function getVariableValue(string $key): string {
+    return $this->variables[$key];
   }
 
 

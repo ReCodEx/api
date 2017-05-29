@@ -100,6 +100,25 @@ class Test implements JsonSerializable {
   }
 
   /**
+   * Remove variable based on given variable name.
+   * @param string $key
+   * @return $this
+   */
+  public function removeVariable(string $key): Test {
+    unset($this->variables[$key]);
+    return $this;
+  }
+
+  /**
+   * Get value of the variable based on given variable name.
+   * @param string $key
+   * @return string
+   */
+  public function getVariableValue(string $key): string {
+    return $this->variables[$key];
+  }
+
+  /**
    * Get associative array of environments.
    * @return array
    */
@@ -127,6 +146,16 @@ class Test implements JsonSerializable {
     return $this;
   }
 
+  /**
+   * Remove environment with given identification.
+   * @param string $id
+   * @return $this
+   */
+  public function removeEnvironment(string $id): Test {
+    unset($this->environments[$id]);
+    return $this;
+  }
+
 
   /**
    * Creates and returns properly structured array representing this object.
@@ -145,8 +174,8 @@ class Test implements JsonSerializable {
       $data[self::VARIABLES_KEY][$key] = $value;
     }
     $data[self::ENVIRONMENTS_KEY] = array();
-    foreach ($this->environments as $environment) {
-      $data[self::ENVIRONMENTS_KEY][$environment->getId()] = $environment->toArray();
+    foreach ($this->environments as $key => $environment) {
+      $data[self::ENVIRONMENTS_KEY][$key] = $environment->toArray();
     }
 
     return $data;

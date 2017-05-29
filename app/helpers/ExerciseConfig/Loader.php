@@ -43,7 +43,7 @@ class Loader {
     if (!isset($data[Test::NAME_KEY])) {
       throw new ExerciseConfigException("Exercise test has no name");
     }
-    $test->setName(Test::NAME_KEY);
+    $test->setName($data[Test::NAME_KEY]);
 
     if (!isset($data[Test::PIPELINES_KEY]) || !is_array($data[Test::PIPELINES_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
@@ -52,14 +52,14 @@ class Loader {
       $test->addPipeline($pipeline);
     }
 
-    if (isset($data[Test::VARIABLES_KEY]) && is_array($data[Test::VARIABLES_KEY])) {
+    if (!isset($data[Test::VARIABLES_KEY]) || !is_array($data[Test::VARIABLES_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined variables");
     }
     foreach ($data[Test::VARIABLES_KEY] as $name => $value) {
       $test->addVariable($name, $value);
     }
 
-    if (isset($data[Test::ENVIRONMENTS_KEY]) && is_array($data[Test::ENVIRONMENTS_KEY])) {
+    if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined environments");
     }
     foreach ($data[Test::ENVIRONMENTS_KEY] as $id => $environment) {
@@ -76,7 +76,10 @@ class Loader {
 
     $config = new ExerciseConfig;
 
-    foreach ($data as $test) {
+    if (!isset($data[ExerciseConfig::TESTS_KEY]) || !is_array($data[ExerciseConfig::TESTS_KEY])) {
+      throw new ExerciseConfigException("Exercise configuration does not have any tests");
+    }
+    foreach ($data[ExerciseConfig::TESTS_KEY] as $test) {
       $config->addTest($this->loadTest($test));
     }
 

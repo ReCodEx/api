@@ -10,6 +10,9 @@ use JsonSerializable;
  */
 class ExerciseConfig implements JsonSerializable {
 
+  /** Key for the tests item */
+  const TESTS_KEY = "tests";
+
   /** @var array tests indexed by test name */
   protected $tests = array();
 
@@ -41,6 +44,16 @@ class ExerciseConfig implements JsonSerializable {
     return $this;
   }
 
+  /**
+   * Remove test according to given test identification.
+   * @param string $id
+   * @return $this
+   */
+  public function removeTest(string $id): ExerciseConfig {
+    unset($this->tests[$id]);
+    return $this;
+  }
+
 
   /**
    * Creates and returns properly structured array representing this object.
@@ -48,8 +61,10 @@ class ExerciseConfig implements JsonSerializable {
    */
   public function toArray(): array {
     $data = [];
-    foreach ($this->tests as $key => $value) {
-      $data[$key] = $value->toArray();
+
+    $data[self::TESTS_KEY] = array();
+    foreach ($this->tests as $test) {
+      $data[self::TESTS_KEY][] = $test->toArray();
     }
     return $data;
   }
