@@ -122,7 +122,7 @@ class SubmissionsPresenter extends BasePresenter {
    * Set submission of student as accepted, this submission will be then presented as the best one.
    * @GET
    * @UserIsAllowed(submissions="set-accepted")
-   * @param string $id
+   * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
    */
   public function actionSetAcceptedSubmission(string $id) {
@@ -150,7 +150,7 @@ class SubmissionsPresenter extends BasePresenter {
     $submission->setAccepted(true);
     $this->submissions->flush();
 
-    $this->sendSuccessResponse($submission);
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getUser()->getId());
   }
 
   /**
