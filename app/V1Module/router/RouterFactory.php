@@ -204,6 +204,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>/evaluate", "ReferenceExerciseSolutions:evaluateForExercise");
     $router[] = new PostRoute("$prefix/<id>/evaluate", "ReferenceExerciseSolutions:evaluate");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
+    $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
     return $router;
   }
 
