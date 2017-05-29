@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\Criteria;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class HardwareGroup implements JsonSerializable
 {

@@ -20,6 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
+ * @method Doctrine\Common\Collections\Collection getExerciseLimits()
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
@@ -138,6 +139,11 @@ class Exercise implements JsonSerializable
   protected $group;
 
   /**
+   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
+   */
+  protected $exerciseLimits;
+
+  /**
    * Can a specific user access this exercise?
    * @param User $user
    * @return boolean
@@ -170,8 +176,8 @@ class Exercise implements JsonSerializable
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      ?Exercise $exercise, User $user, ?Group $group = NULL,
-      bool $isPublic = TRUE, string $description = "") {
+      Collection $exerciseLimits, ?Exercise $exercise, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -186,6 +192,7 @@ class Exercise implements JsonSerializable
     $this->description = $description;
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
+    $this->exerciseLimits = $exerciseLimits;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -193,6 +200,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -212,6 +220,7 @@ class Exercise implements JsonSerializable
       $exercise->runtimeConfigs,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
+      $exercise->exerciseLimits,
       $exercise,
       $user,
       $exercise->group,
@@ -236,6 +245,14 @@ class Exercise implements JsonSerializable
     $this->additionalFiles->add($exerciseFile);
   }
 
+  public function addExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->add($exerciseLimits);
+  }
+
+  public function removeExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->removeElement($exerciseLimits);
+  }
+
   /**
    * Get localized text based on given locale.
    * @param string $locale
@@ -257,6 +274,21 @@ class Exercise implements JsonSerializable
       function (RuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
+    return $first === FALSE ? NULL : $first;
+  }
+
+  /**
+   * Get exercise limits based on environment and hardware group.
+   * @param RuntimeEnvironment $environment
+   * @param HardwareGroup $hwGroup
+   * @return ExerciseLimits|NULL
+   */
+  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
+    $first = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
+          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
+      })->first();
     return $first === FALSE ? NULL : $first;
   }
 

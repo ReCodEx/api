@@ -9,6 +9,8 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
@@ -19,6 +21,8 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
     privateAdminExercise:
         __construct:
             create:
@@ -30,6 +34,8 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
     publicSupervisor2Exercise:
         __construct:
             create:
@@ -41,6 +47,8 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:

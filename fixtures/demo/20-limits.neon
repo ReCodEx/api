@@ -1,0 +1,11 @@
+App\Model\Entity\ExerciseLimits:
+    demoExerciseLimits:
+        __construct:
+            - @CRuntime
+            - @demoHWGroup
+            - '''
+              box-id-1:
+                  wall-time: 5
+                  memory: 50
+                  parallel: 500
+              '''
