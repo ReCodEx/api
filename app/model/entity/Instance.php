@@ -14,6 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
+ * @method Group getRootGroup()
  * @method setAdmin(User $admin)
  * @method Group getRootGroup()
  */

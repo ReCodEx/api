@@ -147,6 +147,13 @@ services:
   security.userStorage: App\Security\UserStorage
   - App\Security\CredentialsAuthenticator
   - class: App\Security\PolicyRegistry
+    setup:
+        - addPolicy("groups", @App\Security\Policies\GroupPermissionPolicy)
+        - addPolicy("instances", @App\Security\Policies\InstancePermissionPolicy)
+        - addPolicy("users", @App\Security\Policies\UserPermissionPolicy)
+  - App\Security\Policies\GroupPermissionPolicy
+  - App\Security\Policies\InstancePermissionPolicy
+  - App\Security\Policies\UserPermissionPolicy
 
   # external login services
   - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)

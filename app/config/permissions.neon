@@ -9,3 +9,79 @@ roles:
 
     - name: superadmin
 permissions: []
+    - allow: true
+      role: superadmin
+
+    - allow: true
+      role: student
+      resource: groups
+      actions: view-assignments
+      conditions: isGroupMember
+
+    - allow: true
+      role: student
+      resource: groups
+      actions:
+          - view-students
+          - view-detail
+          - view-subgroups
+          - view-students
+          - view-admin
+      conditions: canAccessGroupDetail
+
+    - allow: true
+      role: student
+      resource: groups
+      actions:
+          - view-supervisors
+          - set-admin
+      conditions: isGroupAdmin
+
+    - allow: true
+      role: student
+      resource: groups
+      actions: view-supervisors
+      conditions: isGroupPublic
+
+    - allow: true
+      role: student
+      resource: groups
+      actions: view-stats
+      conditions: areGroupStatsPublic
+
+    - allow: true
+      role: student
+      resource: groups
+      actions: view-stats
+      conditions: areGroupStatsPublic
+
+    - allow: true
+      role: student
+      resource: groups
+      actions:
+          - add-student
+          - remove-student
+          - view-exercises
+          - view-stats
+      conditions: isGroupSupervisor
+
+    - allow: true
+      role: student
+      resource: groups
+      actions:
+          - update
+          - remove
+          - add-subgroup
+      conditions: isGroupAdmin
+
+    - allow: true
+      role: supervisor
+      resource: instances
+      actions: add-group
+      conditions: isInstanceMember
+
+    - allow: true
+      role: student
+      resource: users
+      actions: view-stats
+      conditions: isSameUser
