@@ -22,7 +22,6 @@ class TestTest extends Tester\TestCase
 
   protected function setUp() {
     self::$config = [
-      "name" => "proper test name",
       "pipelines" => [
         "hello",
         "world"
@@ -60,13 +59,6 @@ class TestTest extends Tester\TestCase
 
     Assert::exception(function () {
       $this->loader->loadTest("hello");
-    }, ExerciseConfigException::class);
-  }
-
-  public function testMissingName() {
-    unset(self::$config[Test::NAME_KEY]);
-    Assert::exception(function () {
-      $this->loader->loadTest(self::$config);
     }, ExerciseConfigException::class);
   }
 
@@ -120,8 +112,6 @@ class TestTest extends Tester\TestCase
 
   public function testCorrect() {
     $test = $this->loader->loadTest(self::$config);
-
-    Assert::equal("proper test name", $test->getName());
 
     Assert::count(2, $test->getPipelines());
     Assert::equal(self::$config["pipelines"], $test->getPipelines());

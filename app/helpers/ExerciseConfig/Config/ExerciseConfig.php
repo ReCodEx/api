@@ -40,21 +40,22 @@ class ExerciseConfig implements JsonSerializable {
 
   /**
    * Add test into this holder.
+   * @param string $name
    * @param Test $test
    * @return $this
    */
-  public function addTest(Test $test): ExerciseConfig {
-    $this->tests[$test->getName()] = $test;
+  public function addTest(string $name, Test $test): ExerciseConfig {
+    $this->tests[$name] = $test;
     return $this;
   }
 
   /**
    * Remove test according to given test identification.
-   * @param string $id
+   * @param string $name
    * @return $this
    */
-  public function removeTest(string $id): ExerciseConfig {
-    unset($this->tests[$id]);
+  public function removeTest(string $name): ExerciseConfig {
+    unset($this->tests[$name]);
     return $this;
   }
 
@@ -67,8 +68,8 @@ class ExerciseConfig implements JsonSerializable {
     $data = [];
 
     $data[self::TESTS_KEY] = array();
-    foreach ($this->tests as $test) {
-      $data[self::TESTS_KEY][] = $test->toArray();
+    foreach ($this->tests as $testId => $test) {
+      $data[self::TESTS_KEY][$testId] = $test->toArray();
     }
     return $data;
   }

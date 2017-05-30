@@ -3,7 +3,7 @@ App\Model\Entity\ExerciseConfig:
         __construct:
             - '''
               tests:
-                - name: "Test 1"
+                "Test 1":
                   pipelines:
                     - pipeline1
                   variables:
@@ -17,7 +17,7 @@ App\Model\Entity\ExerciseConfig:
                     cpp11:
                       variables:
                         varCpp: valCpp
-                - name: "Test 2"
+                "Test 2":
                   pipelines:
                     - pipeline2
                   variables:

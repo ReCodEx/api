@@ -40,11 +40,6 @@ class Loader {
 
     $test = new Test;
 
-    if (!isset($data[Test::NAME_KEY])) {
-      throw new ExerciseConfigException("Exercise test has no name");
-    }
-    $test->setName($data[Test::NAME_KEY]);
-
     if (!isset($data[Test::PIPELINES_KEY]) || !is_array($data[Test::PIPELINES_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
     }
@@ -79,8 +74,8 @@ class Loader {
     if (!isset($data[ExerciseConfig::TESTS_KEY]) || !is_array($data[ExerciseConfig::TESTS_KEY])) {
       throw new ExerciseConfigException("Exercise configuration does not have any tests");
     }
-    foreach ($data[ExerciseConfig::TESTS_KEY] as $test) {
-      $config->addTest($this->loadTest($test));
+    foreach ($data[ExerciseConfig::TESTS_KEY] as $testId => $test) {
+      $config->addTest($testId, $this->loadTest($test));
     }
 
     return $config;

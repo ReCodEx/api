@@ -2,20 +2,18 @@
 
 include '../bootstrap.php';
 
+use App\Helpers\ExerciseConfig\Loader;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Transformer;
 
-/**
- * Exercise configuration builder is mostly tested in components which are constructed/built by it.
- * This is only general test which tests only simple cases.
- */
+
 class TestExerciseConfigTransformer extends Tester\TestCase
 {
   /** @var Transformer */
   private $transformer;
 
   public function __construct() {
-    $this->transformer = new Transformer;
+    $this->transformer = new Transformer(new Loader);
   }
 
   public function testCorrect() {

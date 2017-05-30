@@ -36,10 +36,10 @@ class Transformer {
 
     // create default values
     $config['default'] = array();
-    foreach ($exerciseConfig->getTests() as $test) {
-      $config['default'][$test->getName()] = array();
-      $config['default'][$test->getName()]['pipelines'] = $test->getPipelines();
-      $config['default'][$test->getName()]['variables'] = $test->getVariables();
+    foreach ($exerciseConfig->getTests() as $testId => $test) {
+      $config['default'][$testId] = array();
+      $config['default'][$testId]['pipelines'] = $test->getPipelines();
+      $config['default'][$testId]['variables'] = $test->getVariables();
     }
 
     // prepare buckets for runtime environment of exercise
@@ -48,15 +48,15 @@ class Transformer {
       $config[$environmentId] = array();
 
       // fill tests into environment
-      foreach ($exerciseConfig->getTests() as $test) {
-        $config[$environmentId][$test->getName()] = array();
-        $config[$environmentId][$test->getName()]["pipelines"] = $test->getPipelines();
-        $config[$environmentId][$test->getName()]["variables"] = $test->getVariables();
+      foreach ($exerciseConfig->getTests() as $testId => $test) {
+        $config[$environmentId][$testId] = array();
+        $config[$environmentId][$testId]["pipelines"] = $test->getPipelines();
+        $config[$environmentId][$testId]["variables"] = $test->getVariables();
 
         $environment = $test->getEnvironment($environmentId);
         if ($environment) {
-          $config[$environmentId][$test->getName()]["pipelines"] = $environment->getPipelines();
-          $config[$environmentId][$test->getName()]["variables"] = $environment->getVariables();
+          $config[$environmentId][$testId]["pipelines"] = $environment->getPipelines();
+          $config[$environmentId][$testId]["variables"] = $environment->getVariables();
         }
       }
     }
@@ -87,7 +87,6 @@ class Transformer {
     // retrieve defaults for tests
     foreach ($data['default'] as $testId => $test) {
       $tests[$testId] = array();
-      $tests[$testId][Test::NAME_KEY] = $testId;
       $tests[$testId][Test::PIPELINES_KEY] = $test['pipelines'];
       $tests[$testId][Test::VARIABLES_KEY] = $test['variables'];
       $tests[$testId][Test::ENVIRONMENTS_KEY] = array();

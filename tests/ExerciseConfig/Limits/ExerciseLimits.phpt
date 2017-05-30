@@ -1,6 +1,6 @@
 <?php
 
-include '../bootstrap.php';
+include '../../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;

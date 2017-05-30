@@ -13,27 +13,25 @@ class TestExerciseConfig extends Tester\TestCase
 {
   static $config = [
     "tests" => [
-      [
-        "name" => "testA",
-        "pipelines" => [
-          "hello",
-        ],
-        "variables" => [
-          "world" => "hello"
-        ],
-        "environments" => [
-          "envA" => [
-            "pipelines" => [],
-            "variables" => []
+      "testA" => [
+          "pipelines" => [
+            "hello",
           ],
-          "envB" => [
-            "pipelines" => [],
-            "variables" => []
+          "variables" => [
+            "world" => "hello"
+          ],
+          "environments" => [
+            "envA" => [
+              "pipelines" => [],
+              "variables" => []
+            ],
+            "envB" => [
+              "pipelines" => [],
+              "variables" => []
+            ]
           ]
-        ]
       ],
-      [
-        "name" => "testB",
+      "testB" => [
         "pipelines" => [
           "world"
         ],
@@ -85,9 +83,8 @@ class TestExerciseConfig extends Tester\TestCase
   public function testTestsOperations() {
     $conf = new ExerciseConfig;
     $test = new Test;
-    $test->setName("testA");
 
-    $conf->addTest($test);
+    $conf->addTest("testA", $test);
     Assert::count(1, $conf->getTests());
 
     $conf->removeTest("non-existant");
@@ -104,8 +101,8 @@ class TestExerciseConfig extends Tester\TestCase
     Assert::type(Test::class, $conf->getTest("testA"));
     Assert::type(Test::class, $conf->getTest("testB"));
 
-    Assert::equal("testA", $conf->getTest("testA")->getName());
-    Assert::equal("testB", $conf->getTest("testB")->getName());
+    Assert::equal(["hello"], $conf->getTest("testA")->getPipelines());
+    Assert::equal(["world"], $conf->getTest("testB")->getPipelines());
   }
 
 }

@@ -11,19 +11,11 @@ use JsonSerializable;
 class Test implements JsonSerializable {
 
   /** Name of the test key */
-  const NAME_KEY = "name";
-  /** Name of the test key */
   const PIPELINES_KEY = "pipelines";
   /** Name of the test key */
   const VARIABLES_KEY = "variables";
   /** Name of the test key */
   const ENVIRONMENTS_KEY = "environments";
-
-  /**
-   * Identification of the test.
-   * @var string
-   */
-  protected $name = "";
 
   /**
    * Array containing identifications of default pipelines.
@@ -43,24 +35,6 @@ class Test implements JsonSerializable {
    */
   protected $environments = array();
 
-
-  /**
-   * Get name of the test.
-   * @return string
-   */
-  public function getName(): string {
-    return $this->name;
-  }
-
-  /**
-   * Set name of this test.
-   * @param string $name
-   * @return $this
-   */
-  public function setName(string $name): Test {
-    $this->name = $name;
-    return $this;
-  }
 
   /**
    * Get default pipelines for this test.
@@ -172,7 +146,6 @@ class Test implements JsonSerializable {
   public function toArray(): array {
     $data = [];
 
-    $data[self::NAME_KEY] = $this->name;
     $data[self::PIPELINES_KEY] = array();
     foreach ($this->pipelines as $pipeline) {
       $data[self::PIPELINES_KEY][] = $pipeline;
