@@ -216,20 +216,22 @@ class BasePresenter extends \App\Presenters\BasePresenter {
         foreach ($item as $resourceName => $action) {
           $resource = NULL;
 
-          foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
-            if ($resourceName === $type) {
-              if (array_key_exists($idParam, $this->getRequest()->parameters)) {
-                $value = $this->getRequest()->parameters[$idParam];
-              } else {
-                $value = $this->parameters->$idParam;
-              }
+          if ($reflection->hasAnnotation("Resource")) {
+            foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
+              if ($resourceName === $type) {
+                if (array_key_exists($idParam, $this->getRequest()->parameters)) {
+                  $value = $this->getRequest()->parameters[$idParam];
+                } else {
+                  $value = $this->parameters->$idParam;
+                }
 
-              $resource = new Resource($resourceName, $value);
+                $resource = new Resource($resourceName, $value);
+              }
             }
           }
 
           if ($resource === NULL) {
-            throw new Exception();
+            throw new LogicException(sprintf("No @Resource annotation found for resource %s", $resourceName));
           }
 
           if (!$this->authorizator->isAllowed($identity, $resource, $action)) {

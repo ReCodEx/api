@@ -21,6 +21,27 @@ class FakePresenter extends BasePresenter
   {
     $this->sendSuccessResponse("OK");
   }
+
+  /**
+   * @POST
+   * @UserIsAllowed(groups="action")
+   * @UserIsAllowed(users="action")
+   * @Resource(groups="id", users="id")
+   * @param $id
+   */
+  public function actionOrCondition($id)
+  {
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
+   * @POST
+   * @UserIsAllowed(groups="action")
+   */
+  public function actionNoResource()
+  {
+    $this->sendSuccessResponse("OK");
+  }
 }
 
 class TestBasePresenter extends Tester\TestCase
@@ -85,6 +106,72 @@ class TestBasePresenter extends Tester\TestCase
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, App\Exceptions\ForbiddenRequestException::class);
+  }
+
+  public function testOrConditionAllowed()
+  {
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(FALSE);
+
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "users" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(TRUE);
+
+    $request = new Request("Fake", "POST", [
+      "action" => "orCondition",
+      "id" => 42
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
+  }
+
+  public function testOrConditionDenied()
+  {
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(FALSE);
+
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "users" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(FALSE);
+
+    $request = new Request("Fake", "POST", [
+      "action" => "orCondition",
+      "id" => 42
+    ]);
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\ForbiddenRequestException::class);
+  }
+
+  public function testNoResourceAnnotation()
+  {
+    $request = new Request("Fake", "POST", [
+      "action" => "noResource"
+    ]);
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, LogicException::class);
   }
 }
 
