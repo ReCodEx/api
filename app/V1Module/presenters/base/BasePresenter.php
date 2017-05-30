@@ -4,6 +4,9 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Entity\User;
 use App\Security\Identity;
+use App\Security\Resource;
+use Exception;
+use LogicException;
 use Nette\Reflection\ClassType;
 use ReflectionException;
 use App\Exceptions\BadRequestException;
@@ -51,6 +54,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $application;
+
+  /**
+   * @var Authorizator
+   * @inject
+   */
+  public $authorizator;
 
   /** @var object Processed parameters from annotations */
   protected $parameters;
@@ -194,10 +203,48 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     if ($reflection->hasAnnotation("UserIsAllowed")) {
-      foreach ($reflection->getAnnotation("UserIsAllowed") as $resource => $action) {
-        if ($this->getUser()->isAllowed($resource, $action) === FALSE) {
-          throw new ForbiddenRequestException("You are not allowed to perform this action.");
+      $satisfied = FALSE;
+
+      $identity = $this->getUser()->getIdentity();
+      if (!($identity instanceof Identity)) {
+        throw new LogicException(); // Never reached
+      }
+
+      foreach ($reflection->getAnnotations()["UserIsAllowed"] as $item) {
+        $itemSatisfied = TRUE;
+
+        foreach ($item as $resourceName => $action) {
+          $resource = NULL;
+
+          foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
+            if ($resourceName === $type) {
+              if (array_key_exists($idParam, $this->getRequest()->parameters)) {
+                $value = $this->getRequest()->parameters[$idParam];
+              } else {
+                $value = $this->parameters->$idParam;
+              }
+
+              $resource = new Resource($resourceName, $value);
+            }
+          }
+
+          if ($resource === NULL) {
+            throw new Exception();
+          }
+
+          if (!$this->authorizator->isAllowed($identity, $resource, $action)) {
+            $itemSatisfied = FALSE;
+          }
         }
+
+        if ($itemSatisfied) {
+          $satisfied = TRUE;
+          break;
+        }
+      }
+
+      if (!$satisfied) {
+        throw new ForbiddenRequestException("You are not allowed to perform this action.");
       }
     }
   }

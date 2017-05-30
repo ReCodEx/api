@@ -15,6 +15,7 @@ $configurator->addParameters(['appDir' => $appDir]);
 $configurator->createRobotLoader()
 	->addDirectory($appDir)
   ->addDirectory(__DIR__ . '/base')
+  ->addDirectory(__DIR__ . '/Authorizator')
 	->register();
 
 $configurator->addConfig(__DIR__ . '/../app/config/config.neon');

@@ -1,0 +1,11 @@
+roles:
+    - name: unauthenticated
+
+    - name: student
+      parents: unauthenticated
+
+    - name: supervisor
+      parents: student
+
+    - name: superadmin
+permissions: []

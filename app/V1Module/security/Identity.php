@@ -11,7 +11,9 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
   /** @var AccessToken */
   private $token;
 
-  public function __construct(User $user, AccessToken $token)
+  public const UNAUTHENTICATED_ROLE = "unauthenticated";
+
+  public function __construct(?User $user, ?AccessToken $token)
   {
     $this->user = $user;
     $this->token = $token;
@@ -23,7 +25,7 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
    */
   function getId()
   {
-    return $this->user->getId();
+    return $this->user ? $this->user->getId() : null;
   }
 
   /**
@@ -32,7 +34,7 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
    */
   function getRoles()
   {
-    return [$this->user->getRole()->getId()];
+    return $this->user ? [$this->user->getRole()->getId()] : [self::UNAUTHENTICATED_ROLE];
   }
 
   function getUserData()
@@ -40,12 +42,13 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
     return $this->user;
   }
 
-  public function getToken() {
+  public function getToken()
+  {
     return $this->token;
   }
 
   function isInScope($scope)
   {
-    return $this->token->isInScope($scope);
+    return $this->token ? $this->token->isInScope($scope) : FALSE;
   }
 }

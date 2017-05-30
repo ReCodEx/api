@@ -68,7 +68,7 @@ class UserStorage extends Nette\Object implements IUserStorage
       $token = $this->accessManager->getGivenAccessToken($this->httpRequest);
 
       if ($token === NULL) {
-        return NULL;
+        $this->cachedIdentity = new Identity(NULL, NULL);
       }
 
       $decodedToken = $this->accessManager->decodeToken($token);

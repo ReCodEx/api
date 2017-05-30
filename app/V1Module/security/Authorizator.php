@@ -2,116 +2,91 @@
 
 namespace App\Security;
 
-use Nette;
+use Nette\InvalidArgumentException;
+use Nette\Neon\Neon;
+use Nette\Security\User;
+use App\Security\Policies\GroupPermissionPolicy;
 use Nette\Security as NS;
+use Nette\Utils\Arrays;
 
-use App\Model\Repository\Permissions;
-use App\Model\Entity\Resource;
-use App\Model\Entity\Permission;
-use App\Model\Repository\Resources;
-use App\Model\Repository\Roles;
-
-class Authorizator implements NS\IAuthorizator {
+class Authorizator implements IAuthorizator {
   /** @var NS\Permission */
   private $acl;
 
-  /** @var Roles */
-  private $roles;
+  /** @var Identity */
+  private $queriedIdentity;
 
-  /** @var Resources */
-  private $resources;
+  /** @var PolicyRegistry */
+  private $policy;
 
-  /** @var Permissions */
-  private $permissions;
+  private $configPath;
 
-  /** @var array Scopes of the current user */
-  private $scopes;
-
-  public function __construct(Roles $roles, Resources $resources, Permissions $permissions) {
-    $this->roles = $roles;
-    $this->resources = $resources;
-    $this->permissions = $permissions;
+  public function __construct(string $configPath, PolicyRegistry $policy) {
+    $this->policy = $policy;
+    $this->configPath = $configPath;
   }
 
   private function setup() {
     $this->acl = new NS\Permission();
 
-    $roles = $this->roles->findAll();
-    $insertedRoleIds = [];
-    while (count($insertedRoleIds) < count($roles)) {
-      $insertedRoles = 0;
+    $this->acl->addResource("groups");
+    $this->acl->addResource("users");
+    $this->acl->addResource("instances");
 
-      foreach ($roles as $role) {
-        if ($role->getParentRoleId() === NULL || in_array($role->getParentRoleId(), $insertedRoleIds)) {
-          $this->acl->addRole($role->getId(), $role->getParentRoleId());
-          $insertedRoleIds[] = $role->getId();
-          $insertedRoles += 1;
+    $this->loadConfig();
+  }
+
+  private function loadConfig() {
+    $config = Neon::decode(file_get_contents($this->configPath));
+
+    if (!array_key_exists("roles", $config)) {
+      throw new InvalidArgumentException("The configuration file does not contain a 'roles' section");
+    }
+
+    foreach ($config["roles"] as $roleDefinition) {
+      $this->acl->addRole($roleDefinition["name"], (array) Arrays::get($roleDefinition, "parents", []));
+    }
+
+    foreach (Arrays::get($config, "permissions", []) as $ruleDefinition) {
+      $role = Arrays::get($ruleDefinition, "role", NS\Permission::ALL);
+      $resource = Arrays::get($ruleDefinition, "resource", NS\Permission::ALL);
+      $actions = Arrays::get($ruleDefinition, "actions", NS\Permission::ALL);
+      $actions = $actions !== NS\Permission::ALL ? (array) $actions : $actions;
+      $conditions = (array) Arrays::get($ruleDefinition, "conditions", []);
+      $callbacks = [];
+
+      foreach ($conditions as $assertion) {
+        $callbacks[] = $this->policy->get($resource, $assertion);
+      }
+
+      $this->acl->{Arrays::get($ruleDefinition, "allow", TRUE) ? "allow" : "deny"}(
+        $role,
+        $resource,
+        $actions,
+        $this->assert($callbacks)
+      );
+    }
+  }
+
+  private function assert($callbacks) {
+    return function (NS\Permission $acl, $role, $resource, $privilege) use ($callbacks) {
+      foreach ($callbacks as $callback) {
+        if (!$callback($this->queriedIdentity, $acl->getQueriedResource())) {
+          return FALSE;
         }
       }
 
-      if ($insertedRoles === 0) {
-        throw new Nette\InvalidStateException("Cycle detected in Role hierarchy");
-      }
-    }
-
-    foreach ($this->resources->findAll() as $resource) {
-      $this->acl->addResource($resource->getId());
-    }
-
-    foreach ($this->permissions->findAll() as $permission) {
-      if ($permission->getAction() === Permission::ACTION_WILDCARD) {
-        $this->acl->{$permission->isAllowed() ? "allow" : "deny"}(
-          $permission->getRoleId(),
-          $permission->getResourceId()
-        );
-
-        continue;
-      }
-
-      if ($permission->isAllowed()) {
-        $this->acl->allow($permission->getRoleId(), $permission->getResourceId(), $permission->getAction());
-      } else {
-        $this->acl->deny($permission->getRoleId(), $permission->getResourceId(), $permission->getId());
-      }
-    }
+      return TRUE;
+    };
   }
 
-  public function isAllowed($role, $resource, $privilege) {
-    if ($this->acl === null) {
+  public function isAllowed(Identity $identity, $resource, string $privilege): bool {
+    $this->queriedIdentity = $identity;
+
+    if ($this->acl === NULL) {
       $this->setup();
     }
 
-    try {
-      return $this->acl->isAllowed($role, $resource, $privilege);
-    } catch (Nette\InvalidStateException $e) {
-      $resourceEntity = $this->resources->get($resource);
-      if (!$resourceEntity) {
-        // unknown resource - add it to the database so it does not trigger the error again
-        $resourceEntity = new Resource($resource);
-        $this->resources->persist($resourceEntity);
-      }
-
-      return FALSE;
-    }
-  }
-
-  /**
-   * Set scopes for given user.
-   * @param NS\User $user   The user
-   * @param array   $scopes List of scopes
-   * @return void
-   */
-  public function setScopes(NS\User $user, array $scopes) {
-    $this->scopes[$user->getId()] = $scopes;
-  }
-
-  /**
-   * Is the given user in the specified scope?
-   * @param NS\User $user   The user
-   * @param string  $scope  Scope
-   * @return bool
-   */
-  public function isInScope(NS\User $user, string $scope): bool {
-    return in_array($scope, $this->scopes[$user->getId()]);
+    return $this->acl->isAllowed($identity->getRoles()[0], $resource, $privilege);
   }
 }

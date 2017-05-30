@@ -143,9 +143,10 @@ services:
 
   # security
   - App\Security\AccessManager(%accessManager%)
-  - App\Security\Authorizator
+  - App\Security\Authorizator(%appDir%/config/permissions.neon)
   security.userStorage: App\Security\UserStorage
   - App\Security\CredentialsAuthenticator
+  - class: App\Security\PolicyRegistry
 
   # external login services
   - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
@@ -236,6 +237,7 @@ annotations:
   ignore:
     - LoggedIn
     - Role
+    - Resource
     - UserIsAllowed
     - POST
     - GET
