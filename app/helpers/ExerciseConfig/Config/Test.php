@@ -112,9 +112,13 @@ class Test implements JsonSerializable {
   /**
    * Get value of the variable based on given variable name.
    * @param string $key
-   * @return string
+   * @return string|null
    */
-  public function getVariableValue(string $key): string {
+  public function getVariableValue(string $key): ?string {
+    if (!array_key_exists($key, $this->variables)) {
+      return null;
+    }
+
     return $this->variables[$key];
   }
 
@@ -132,6 +136,10 @@ class Test implements JsonSerializable {
    * @return Environment|null
    */
   public function getEnvironment(string $name): ?Environment {
+    if (!array_key_exists($name, $this->environments)) {
+      return null;
+    }
+
     return $this->environments[$name];
   }
 

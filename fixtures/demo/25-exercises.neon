@@ -11,6 +11,7 @@ App\Model\Entity\Exercise:
             - @demoRuntimeConfig
         addExerciseLimits:
             - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
@@ -23,6 +24,7 @@ App\Model\Entity\Exercise:
             - @demoRuntimeConfig
         addExerciseLimits:
             - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     privateAdminExercise:
         __construct:
             create:
@@ -36,6 +38,7 @@ App\Model\Entity\Exercise:
             - @demoRuntimeConfig
         addExerciseLimits:
             - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     publicSupervisor2Exercise:
         __construct:
             create:
@@ -49,6 +52,7 @@ App\Model\Entity\Exercise:
             - @demoRuntimeConfig
         addExerciseLimits:
             - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:

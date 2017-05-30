@@ -1,0 +1,29 @@
+App\Model\Entity\ExerciseConfig:
+    demoExerciseConfig:
+        __construct:
+            - '''
+              tests:
+                - name: "Test 1"
+                  pipelines:
+                    - pipeline1
+                  variables:
+                    varA: valA
+                  environments:
+                    java8:
+                      pipelines:
+                        - pipelineJava
+                      variables:
+                        varJava: valJava
+                    cpp11:
+                      variables:
+                        varCpp: valCpp
+                - name: "Test 2"
+                  pipelines:
+                    - pipeline2
+                  variables:
+                    varB: valB
+                  environments:
+                    cpp11:
+                      variables:
+                        varCpp: valCpp
+              '''

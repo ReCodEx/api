@@ -31,6 +31,10 @@ class ExerciseConfig implements JsonSerializable {
    * @return Test|null
    */
   public function getTest(string $name): ?Test {
+    if (!array_key_exists($name, $this->tests)) {
+      return null;
+    }
+
     return $this->tests[$name];
   }
 

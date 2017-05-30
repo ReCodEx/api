@@ -52,6 +52,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
+    $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
       [
@@ -67,7 +68,20 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $payload = $result['payload'];
 
-    // todo
+    // check the default values for each test
+    Assert::true(array_key_exists('default', $payload));
+    Assert::count(count($exerciseConfig->getTests()), $payload['default']);
+
+    // check all environments
+    foreach ($exercise->getRuntimeConfigs() as $runtimeConfig) {
+      $environmentId = $runtimeConfig->getRuntimeEnvironment()->getId();
+      Assert::true(array_key_exists($environmentId, $payload));
+      Assert::count(count($exerciseConfig->getTests()), $payload[$environmentId]);
+
+      foreach ($payload[$environmentId] as $testId => $test) {
+        Assert::notEqual($exerciseConfig->getTest($testId), null);
+      }
+    }
   }
 
   public function testSetConfiguration()
@@ -121,7 +135,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count(1, $result['payload']);
 
-    $structured = $exerciseLimits->getStructuredLimits();
+    $structured = $exerciseLimits->getParsedLimits();
     Assert::equal($structured, $result['payload']);
   }
 

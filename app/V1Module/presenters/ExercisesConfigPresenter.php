@@ -6,12 +6,13 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Helpers\ExerciseConfig\Transformer;
+use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\RuntimeEnvironments;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise configuration manipulation
@@ -31,6 +32,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseConfigLoader;
+
+  /**
+   * @var Transformer
+   * @inject
+   */
+  public $exerciseConfigTransformer;
 
   /**
    * @var RuntimeEnvironments
@@ -73,8 +80,8 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $parsedConfig = $this->exerciseConfigLoader->loadExerciseConfig($exerciseConfig->getParsedConfig());
 
-    $config = array();
-    // todo
+    // create configuration array which will be returned
+    $config = $this->exerciseConfigTransformer->fromExerciseConfig($exercise, $parsedConfig);
     $this->sendSuccessResponse($config);
   }
 
@@ -100,16 +107,19 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new NotFoundException("Configuration for the exercise not exists");
     }
 
+    // get configuration from post request and transform it into internal structure
     $req = $this->getRequest();
     $config = $req->getPost("config");
+    $exerciseConfig = $this->exerciseConfigTransformer->toExerciseConfig($config);
 
-    if (count($config) === 0) {
-      throw new NotFoundException("No tests specified");
-    }
+    // new config was provided, so construct new database entity
+    $newConfig = new ExerciseConfig((string) $exerciseConfig, $oldConfig);
 
-    // todo
-    $newConfig = array();
-    $this->sendSuccessResponse($newConfig);
+    // remove old limits for corresponding environment and hwgroup and add new ones
+    $exercise->setExerciseConfig($newConfig);
+    $this->exercises->flush();
+
+    $this->sendSuccessResponse("OK");
   }
 
   /**
@@ -137,7 +147,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new NotFoundException("Limits for exercise cannot be found");
     }
 
-    $this->sendSuccessResponse($limits->getStructuredLimits());
+    $this->sendSuccessResponse($limits->getParsedLimits());
   }
 
   /**
