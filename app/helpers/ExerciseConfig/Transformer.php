@@ -82,7 +82,8 @@ class Transformer {
 
     // parse config from format given by web-app to internal structure
     $parsedConfig = array();
-    $tests = $parsedConfig[ExerciseConfig::TESTS_KEY] = array();
+    $parsedConfig[ExerciseConfig::TESTS_KEY] = array();
+    $tests =& $parsedConfig[ExerciseConfig::TESTS_KEY];
 
     // retrieve defaults for tests
     foreach ($data['default'] as $testId => $test) {
@@ -97,7 +98,12 @@ class Transformer {
 
     // iterate through all environments
     foreach ($data as $environmentId => $environment) {
-      ;
+      foreach ($environment as $testId => $test) {
+        $tests[$testId][Test::ENVIRONMENTS_KEY][$environmentId] = array();
+        $environmentConfig =& $tests[$testId][Test::ENVIRONMENTS_KEY][$environmentId];
+        $environmentConfig[Environment::PIPELINES_KEY] = $test['pipelines'];
+        $environmentConfig[Environment::VARIABLES_KEY] = $test['variables'];
+      }
     }
 
     // using loader to load config into internal structure which should detect formatting errors

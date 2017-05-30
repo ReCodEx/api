@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\ExerciseConfig\Test;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
 
@@ -92,7 +93,18 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare config array
     $config = [
-      ''
+      "default" => [
+        "testA" => ["pipelines" => ["defaultTestA"], "variables" => ["defVarA" => "defValA"]],
+        "testB" => ["pipelines" => ["defaultTestB"], "variables" => ["defVarB" => "defValB"]]
+      ],
+      "environmentA" => [
+        "testA" => ["pipelines" => ["ATestA"], "variables" => ["AVarA" => "AValA"]],
+        "testB" => ["pipelines" => ["ATestB"], "variables" => ["AVarB" => "AValB"]]
+      ],
+      "environmentB" => [
+        "testA" => ["pipelines" => ["BTestA"], "variables" => ["BVarA" => "BValA"]],
+        "testB" => ["pipelines" => ["BTestB"], "variables" => ["BVarB" => "BValB"]]
+      ]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
@@ -107,10 +119,16 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
 
-    $payload = $result['payload'];
-
-    // todo
+    $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    Assert::count(2, $exerciseConfig->getTests());
+    Assert::type(Test::class, $exerciseConfig->getTest('testA'));
+    Assert::type(Test::class, $exerciseConfig->getTest('testB'));
+    Assert::equal(["defaultTestA"], $exerciseConfig->getTest('testA')->getPipelines());
+    Assert::equal(["defaultTestB"], $exerciseConfig->getTest('testB')->getPipelines());
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getVariableValue('defVarA'));
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getVariableValue('defVarB'));
   }
 
   public function testGetLimits()
