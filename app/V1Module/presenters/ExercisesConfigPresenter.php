@@ -81,7 +81,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $parsedConfig = $this->exerciseConfigLoader->loadExerciseConfig($exerciseConfig->getParsedConfig());
 
     // create configuration array which will be returned
-    $config = $this->exerciseConfigTransformer->fromExerciseConfig($exercise, $parsedConfig);
+    $config = $this->exerciseConfigTransformer->fromExerciseConfig($parsedConfig);
     $this->sendSuccessResponse($config);
   }
 
