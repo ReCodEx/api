@@ -34,7 +34,6 @@ use App\Model\Repository\RuntimeEnvironments;
 
 use DateTime;
 use Exception;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise assignment manipulation

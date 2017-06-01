@@ -214,6 +214,7 @@ class Exercise implements JsonSerializable
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
+    $this->exerciseConfig = $exerciseConfig;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {

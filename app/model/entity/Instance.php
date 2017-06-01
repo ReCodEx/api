@@ -15,6 +15,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method setAdmin(User $admin)
+ * @method Group getRootGroup()
  */
 class Instance implements JsonSerializable
 {

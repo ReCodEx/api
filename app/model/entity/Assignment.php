@@ -5,7 +5,6 @@ namespace App\Model\Entity;
 use App\Exceptions\InvalidStateException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
@@ -30,6 +29,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method removeLocalizedText(Assignment $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
+ * @method string getScoreConfig()
  */
 class Assignment implements JsonSerializable
 {
