@@ -8,7 +8,7 @@ roles:
       parents: student
 
     - name: superadmin
-permissions: []
+permissions:
     - allow: true
       role: superadmin
 
@@ -40,7 +40,9 @@ permissions: []
     - allow: true
       role: student
       resource: groups
-      actions: view-supervisors
+      actions:
+        - join
+        - view-supervisors
       conditions: isGroupPublic
 
     - allow: true
