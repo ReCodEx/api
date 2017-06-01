@@ -2,6 +2,9 @@ App\Model\Entity\ExerciseConfig:
     demoExerciseConfig:
         __construct:
             - '''
+              environments:
+                - java8
+                - cpp11
               tests:
                 "Test 1":
                   pipelines:

@@ -10,12 +10,46 @@ use JsonSerializable;
  */
 class ExerciseConfig implements JsonSerializable {
 
+  /** Key for the environments list item */
+  const ENVIRONMENTS_KEY = "environments";
   /** Key for the tests item */
   const TESTS_KEY = "tests";
 
   /** @var array tests indexed by test name */
   protected $tests = array();
+  /** @var array list of which can be present in tests environments */
+  protected $environments = array();
 
+
+  /**
+   * Get environments list.
+   * @return array
+   */
+  public function getEnvironments(): array {
+    return $this->environments;
+  }
+
+  /**
+   * Add environment into this holder.
+   * @param string $name
+   * @return $this
+   */
+  public function addEnvironment(string $name): ExerciseConfig {
+    $this->environments[] = $name;
+    return $this;
+  }
+
+  /**
+   * Remove environment according to given name identification.
+   * @param string $name
+   * @return $this
+   */
+  public function removeEnvironment(string $name): ExerciseConfig {
+    if(($key = array_search($name, $this->environments)) !== false) {
+      unset($this->environments[$key]);
+    }
+    return $this;
+  }
 
   /**
    * Get associative array of tests.
@@ -67,10 +101,16 @@ class ExerciseConfig implements JsonSerializable {
   public function toArray(): array {
     $data = [];
 
+    $data[self::ENVIRONMENTS_KEY] = array();
+    foreach ($this->environments as $envId) {
+      $data[self::ENVIRONMENTS_KEY][] = $envId;
+    }
+
     $data[self::TESTS_KEY] = array();
     foreach ($this->tests as $testId => $test) {
       $data[self::TESTS_KEY][$testId] = $test->toArray();
     }
+
     return $data;
   }
 

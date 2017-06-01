@@ -12,6 +12,7 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestExerciseConfig extends Tester\TestCase
 {
   static $config = [
+    "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
           "pipelines" => [
@@ -92,6 +93,19 @@ class TestExerciseConfig extends Tester\TestCase
 
     $conf->removeTest("testA");
     Assert::count(0, $conf->getTests());
+  }
+
+  public function testEnvironmentsOperations() {
+    $conf = new ExerciseConfig;
+
+    $conf->addEnvironment("newEnvironment");
+    Assert::count(1, $conf->getEnvironments());
+
+    $conf->removeEnvironment("non-existant");
+    Assert::count(1, $conf->getEnvironments());
+
+    $conf->removeEnvironment("newEnvironment");
+    Assert::count(0, $conf->getEnvironments());
   }
 
   public function testCorrect() {

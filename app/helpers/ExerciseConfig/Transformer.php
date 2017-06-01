@@ -33,39 +33,35 @@ class Transformer {
   public function fromExerciseConfig(ExerciseConfig $exerciseConfig): array {
     $config = array();
 
-    // create default values
-    $config['default'] = array();
-    foreach ($exerciseConfig->getTests() as $testId => $test) {
-      $config['default'][$testId] = array();
-      $config['default'][$testId]['pipelines'] = $test->getPipelines();
-      $config['default'][$testId]['variables'] = $test->getVariables();
+    // prepare environments array with default
+    $environments = array_merge([ "default" ], $exerciseConfig->getEnvironments());
+
+    // initialize all possible environments which can be present in tests
+    // with respective default values
+    foreach ($environments as $environmentId) {
+      $config[$environmentId] = array();
+      foreach ($exerciseConfig->getTests() as $testId => $test) {
+        // initialize environment for each test with defaults
+        $config[$environmentId][$testId] = array();
+        $config[$environmentId][$testId]['pipelines'] = $test->getPipelines();
+        $config[$environmentId][$testId]['variables'] = $test->getVariables();
+      }
     }
 
+    // go through defined tests and environments and fill values if present
     foreach ($exerciseConfig->getTests() as $testId => $test) {
       foreach ($test->getEnvironments() as $environmentId => $environment) {
 
-        // we have never been here before, so create an entry in configuration
-        // for this environment
-        if (!array_key_exists($environmentId, $config)) {
-          $config[$environmentId] = array();
-        }
-
-        // fill defaults into test
-        $config[$environmentId][$testId] = array();
-
-        // fill values from environment
         $environment = $test->getEnvironment($environmentId);
-        $config[$environmentId][$testId]["pipelines"] = $environment->getPipelines();
-        $config[$environmentId][$testId]["variables"] = $environment->getVariables();
 
-        // if pipelines were empty use default ones
-        if (empty($environment->getPipelines())) {
-          $config[$environmentId][$testId]["pipelines"] = $test->getPipelines();
+        // there are specific pipelines for this environment
+        if (!empty($environment->getPipelines())) {
+          $config[$environmentId][$testId]["pipelines"] = $environment->getPipelines();
         }
 
-        // if variables were empty use default ones
-        if (empty($environment->getVariables())) {
-          $config[$environmentId][$testId]["variables"] = $test->getVariables();
+        // there are specific variables for this environment
+        if (!empty($environment->getVariables())) {
+          $config[$environmentId][$testId]["variables"] = $environment->getVariables();
         }
       }
     }
@@ -89,10 +85,13 @@ class Transformer {
       throw new ExerciseConfigException("No tests specified");
     }
 
-    // parse config from format given by web-app to internal structure
-    $parsedConfig = array();
+    // helper variables
     $testIds = array();
     $testsCount = 0;
+    $environments = array();
+
+    // parse config from format given by web-app to internal structure
+    $parsedConfig = array();
     $parsedConfig[ExerciseConfig::TESTS_KEY] = array();
     $tests =& $parsedConfig[ExerciseConfig::TESTS_KEY];
 
@@ -111,6 +110,8 @@ class Transformer {
     // iterate through all environments
     foreach ($data as $environmentId => $environment) {
       $envTestsCount = 0;
+      $environments[] = $environmentId;
+
       foreach ($environment as $testId => $test) {
         if (!in_array($testId, $testIds)) {
           throw new ExerciseConfigException("Test $testId was not specified in defaults");
@@ -138,6 +139,9 @@ class Transformer {
         throw new ExerciseConfigException("Tests differs from defaults in environment $environmentId");
       }
     }
+
+    // all visited environments has to be written into exercise config
+    $parsedConfig[ExerciseConfig::ENVIRONMENTS_KEY] = array_unique($environments);
 
     // using loader to load config into internal structure which should detect formatting errors
     return $this->loader->loadExerciseConfig($parsedConfig);

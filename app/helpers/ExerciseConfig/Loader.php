@@ -71,6 +71,13 @@ class Loader {
 
     $config = new ExerciseConfig;
 
+    if (!isset($data[ExerciseConfig::ENVIRONMENTS_KEY]) || !is_array($data[ExerciseConfig::ENVIRONMENTS_KEY])) {
+      throw new ExerciseConfigException("Exercise configuration does not have any environments");
+    }
+    foreach ($data[ExerciseConfig::ENVIRONMENTS_KEY] as $envId) {
+      $config->addEnvironment($envId);
+    }
+
     if (!isset($data[ExerciseConfig::TESTS_KEY]) || !is_array($data[ExerciseConfig::TESTS_KEY])) {
       throw new ExerciseConfigException("Exercise configuration does not have any tests");
     }

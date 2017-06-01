@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\Transformer;
 class TestExerciseConfigTransformer extends Tester\TestCase
 {
   static $exerciseConfig = [
+    "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
         "pipelines" => [ "hello" ],

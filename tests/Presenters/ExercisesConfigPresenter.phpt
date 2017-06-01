@@ -72,10 +72,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     // check the default values for each test
     Assert::true(array_key_exists('default', $payload));
     Assert::count(count($exerciseConfig->getTests()), $payload['default']);
-
+	
     // check all environments
-    foreach ($exercise->getRuntimeConfigs() as $runtimeConfig) {
-      $environmentId = $runtimeConfig->getRuntimeEnvironment()->getId();
+    foreach ([ "java8", "cpp11" ] as $environmentId) {
       Assert::true(array_key_exists($environmentId, $payload));
       Assert::count(count($exerciseConfig->getTests()), $payload[$environmentId]);
 
