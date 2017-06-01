@@ -563,11 +563,8 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $submission = Submission::createSubmission(
-      $oldSubmission->getNote(),
-      $oldSubmission->getAssignment(),
-      $oldSubmission->getUser(),
-      $user,
-      $oldSubmission->getSolution()
+      $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
+      $oldSubmission->getSolution(), FALSE, $oldSubmission
     );
 
     $submission->setPrivate($this->getRequest()->getPost(filter_var("private")));
@@ -602,11 +599,8 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Submission $oldSubmission */
     foreach ($assignment->getSubmissions() as $oldSubmission) {
       $submission = Submission::createSubmission(
-        $oldSubmission->getNote(),
-        $oldSubmission->getAssignment(),
-        $oldSubmission->getUser(),
-        $user,
-        $oldSubmission->getSolution()
+        $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
+        $oldSubmission->getSolution(), FALSE, $oldSubmission
       );
 
       // persist all the data in the database - this will also assign the UUID to the submission

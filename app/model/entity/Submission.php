@@ -60,6 +60,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
      */
     protected $assignment;
 
+  /**
+   * @var Submission
+   * @ORM\ManyToOne(targetEntity="Submission")
+   */
+    protected $originalSubmission;
+
     public function getMaxPoints() {
       return $this->assignment->getMaxPoints($this->submittedAt);
     }
@@ -186,7 +192,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
         "maxPoints" => $this->getMaxPoints(),
-        "accepted" => $this->accepted
+        "accepted" => $this->accepted,
+        "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
       ];
     }
 
@@ -205,6 +212,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
    * @param bool $asynchronous Flag if submitted by student (FALSE) or supervisor (TRUE)
+   * @param Submission $originalSubmission
    * @return Submission
    * @throws ForbiddenRequestException
    * @internal param array $files The submitted files
@@ -216,7 +224,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
       User $author,
       User $submitter,
       Solution $solution,
-      bool $asynchronous = false
+      bool $asynchronous = false,
+      ?Submission $originalSubmission = NULL
     ) {
       // the author must be a student and the submitter must be either this student, or a supervisor of their group
       if ($assignment->canAccessAsStudent($author) === FALSE &&
@@ -250,6 +259,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->asynchronous = $asynchronous;
       $entity->solution = $solution;
       $entity->accepted = false;
+      $entity->originalSubmission = $originalSubmission;
 
       return $entity;
     }
