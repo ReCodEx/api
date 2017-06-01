@@ -8,6 +8,7 @@ use Nette\Security\User;
 use App\Security\Policies\GroupPermissionPolicy;
 use Nette\Security as NS;
 use Nette\Utils\Arrays;
+use TypeError;
 
 class Authorizator implements IAuthorizator {
   /** @var NS\Permission */
@@ -71,7 +72,11 @@ class Authorizator implements IAuthorizator {
   private function assert($callbacks) {
     return function (NS\Permission $acl, $role, $resource, $privilege) use ($callbacks) {
       foreach ($callbacks as $callback) {
-        if (!$callback($this->queriedIdentity, $acl->getQueriedResource())) {
+        try {
+          if (!$callback($this->queriedIdentity, $acl->getQueriedResource())) {
+            return FALSE;
+          }
+        } catch (TypeError $e) {
           return FALSE;
         }
       }

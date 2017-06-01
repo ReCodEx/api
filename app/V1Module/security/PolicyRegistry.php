@@ -26,7 +26,8 @@ class PolicyRegistry {
       $policyObject = $this->policies[$resource];
 
       if ($queriedResource instanceof Resource) {
-        $queriedResource = $policyObject->getByID($queriedResource->getId());
+        $id = $queriedResource->getId();
+        $queriedResource = $id !== NULL ? $policyObject->getByID($id) : NULL;
         if ($queriedResource == NULL) {
           $reflection = Method::from($policyObject, $policyName);
           if (!$reflection->parameters[1]->optional) {

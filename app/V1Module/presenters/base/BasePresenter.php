@@ -228,10 +228,17 @@ class BasePresenter extends \App\Presenters\BasePresenter {
                 $resource = new Resource($resourceName, $value);
               }
             }
+
+            if ($resource === NULL) {
+              throw new LogicException(sprintf(
+                "No entry found in @Resource annotation for resource %s",
+                $resourceName
+              ));
+            }
           }
 
           if ($resource === NULL) {
-            throw new LogicException(sprintf("No @Resource annotation found for resource %s", $resourceName));
+            $resource = $resourceName;
           }
 
           if (!$this->authorizator->isAllowed($identity, $resource, $action)) {

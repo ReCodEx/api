@@ -36,6 +36,17 @@ class FakePresenter extends BasePresenter
 
   /**
    * @POST
+   * @UserIsAllowed(groups="action", users="action")
+   * @Resource(groups="id", users="id")
+   * @param $id
+   */
+  public function actionAndCondition($id)
+  {
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
+   * @POST
    * @UserIsAllowed(groups="action")
    */
   public function actionNoResource()
@@ -163,15 +174,77 @@ class TestBasePresenter extends Tester\TestCase
     }, App\Exceptions\ForbiddenRequestException::class);
   }
 
-  public function testNoResourceAnnotation()
+  public function testAndConditionAllowed()
   {
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(TRUE);
+
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "users" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(TRUE);
+
     $request = new Request("Fake", "POST", [
-      "action" => "noResource"
+      "action" => "andCondition",
+      "id" => 42
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
+  }
+
+  public function testAndConditionDenied()
+  {
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(FALSE);
+
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (Resource $resource) {
+        return $resource->getResourceId() === "users" && $resource->getId() === "42";
+      }),
+      "action"
+    ])->andReturn(FALSE);
+
+    $request = new Request("Fake", "POST", [
+      "action" => "andCondition",
+      "id" => 42
     ]);
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, LogicException::class);
+    }, App\Exceptions\ForbiddenRequestException::class);
+  }
+
+  public function testNoResourceAnnotation()
+  {
+    $this->authorizator->shouldReceive("isAllowed")->withArgs([
+      Mockery::any(),
+      Mockery::on(function (string $resource) {
+        return $resource === "groups";
+      }),
+      "action"
+    ])->andReturn(TRUE);
+
+    $request = new Request("Fake", "POST", [
+      "action" => "noResource"
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
   }
 }
 
