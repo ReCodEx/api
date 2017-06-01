@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\ExerciseConfig\Test;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
 
@@ -47,6 +48,88 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     }
   }
 
+  public function testGetConfiguration()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+    $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+      [
+        'action' => 'getConfiguration',
+        'id' => $exercise->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+
+    // check the default values for each test
+    Assert::true(array_key_exists('default', $payload));
+    Assert::count(count($exerciseConfig->getTests()), $payload['default']);
+	
+    // check all environments
+    foreach ([ "java8", "cpp11" ] as $environmentId) {
+      Assert::true(array_key_exists($environmentId, $payload));
+      Assert::count(count($exerciseConfig->getTests()), $payload[$environmentId]);
+
+      foreach ($payload[$environmentId] as $testId => $test) {
+        Assert::notEqual($exerciseConfig->getTest($testId), null);
+      }
+    }
+  }
+
+  public function testSetConfiguration()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+
+    // prepare config array
+    $config = [
+      "default" => [
+        "testA" => ["pipelines" => ["defaultTestA"], "variables" => ["defVarA" => "defValA"]],
+        "testB" => ["pipelines" => ["defaultTestB"], "variables" => ["defVarB" => "defValB"]]
+      ],
+      "environmentA" => [
+        "testA" => ["pipelines" => ["ATestA"], "variables" => ["AVarA" => "AValA"]],
+        "testB" => ["pipelines" => ["ATestB"], "variables" => ["AVarB" => "AValB"]]
+      ],
+      "environmentB" => [
+        "testA" => ["pipelines" => ["BTestA"], "variables" => ["BVarA" => "BValA"]],
+        "testB" => ["pipelines" => ["BTestB"], "variables" => ["BVarB" => "BValB"]]
+      ]
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setConfiguration',
+        'id' => $exercise->getId()
+      ],
+      ['config' => $config]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    Assert::count(2, $exerciseConfig->getTests());
+    Assert::type(Test::class, $exerciseConfig->getTest('testA'));
+    Assert::type(Test::class, $exerciseConfig->getTest('testB'));
+    Assert::equal(["defaultTestA"], $exerciseConfig->getTest('testA')->getPipelines());
+    Assert::equal(["defaultTestB"], $exerciseConfig->getTest('testB')->getPipelines());
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getVariableValue('defVarA'));
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getVariableValue('defVarB'));
+  }
+
   public function testGetLimits()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -69,7 +152,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count(1, $result['payload']);
 
-    $structured = $exerciseLimits->getStructuredLimits();
+    $structured = $exerciseLimits->getParsedLimits();
     Assert::equal($structured, $result['payload']);
   }
 

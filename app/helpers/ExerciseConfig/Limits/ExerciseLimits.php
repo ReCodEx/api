@@ -18,8 +18,17 @@ class ExerciseLimits implements JsonSerializable {
    * Get associative array of limits.
    * @return array
    */
-  public function getLimits(): array {
+  public function getLimitsArray(): array {
     return $this->limits;
+  }
+
+  /**
+   * Get limits for the given box identification.
+   * @param string $boxId
+   * @return Limits|null
+   */
+  public function getLimits(string $boxId): ?Limits {
+    return $this->limits[$boxId];
   }
 
   /**

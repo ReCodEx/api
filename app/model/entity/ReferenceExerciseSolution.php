@@ -10,6 +10,7 @@ use DateTime;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  * @method string getDescription()
  * @method Solution getSolution()
  * @method Exercise getExercise()

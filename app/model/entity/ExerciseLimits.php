@@ -60,6 +60,10 @@ class ExerciseLimits implements JsonSerializable
 
   /**
    * Constructor
+   * @param RuntimeEnvironment $runtimeEnvironment
+   * @param HardwareGroup $hardwareGroup
+   * @param string $limits
+   * @param ExerciseLimits|null $createdFrom
    */
   public function __construct(RuntimeEnvironment $runtimeEnvironment,
       HardwareGroup $hardwareGroup, string $limits, ?ExerciseLimits $createdFrom = NULL) {
@@ -76,7 +80,7 @@ class ExerciseLimits implements JsonSerializable
    * @return array|string
    * @throws ExerciseConfigException
    */
-  public function getStructuredLimits() {
+  public function getParsedLimits() {
     try {
       return Yaml::parse($this->limits);
     } catch (ParseException $e) {

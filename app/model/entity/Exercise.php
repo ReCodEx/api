@@ -25,6 +25,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
  * @method \DateTime getDeletedAt()
+ * @method ExerciseConfig getExerciseConfig()
  */
 class Exercise implements JsonSerializable
 {
@@ -144,6 +145,11 @@ class Exercise implements JsonSerializable
   protected $exerciseLimits;
 
   /**
+   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
+   */
+  protected $exerciseConfig;
+
+  /**
    * Can a specific user access this exercise?
    * @param User $user
    * @return boolean
@@ -172,12 +178,27 @@ class Exercise implements JsonSerializable
 
   /**
    * Constructor
+   * @param string $name
+   * @param $version
+   * @param $difficulty
+   * @param Collection $localizedTexts
+   * @param Collection $runtimeConfigs
+   * @param Collection $supplementaryEvaluationFiles
+   * @param Collection $additionalFiles
+   * @param Collection $exerciseLimits
+   * @param Exercise|null $exercise
+   * @param User $user
+   * @param Group|null $group
+   * @param bool $isPublic
+   * @param string $description
+   * @param ExerciseConfig|null $exerciseConfig
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
       Collection $exerciseLimits, ?Exercise $exercise, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -193,6 +214,7 @@ class Exercise implements JsonSerializable
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
+    $this->exerciseConfig = $exerciseConfig;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -225,7 +247,8 @@ class Exercise implements JsonSerializable
       $user,
       $exercise->group,
       $exercise->isPublic,
-      $exercise->description
+      $exercise->description,
+      $exercise->exerciseConfig
     );
   }
 
