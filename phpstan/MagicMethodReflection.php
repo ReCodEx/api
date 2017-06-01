@@ -1,11 +1,10 @@
 <?php
 namespace App\PHPStan;
 
-use Nette\Reflection\Property;
 use Nette\Utils\Arrays;
-use Nette\Utils\ObjectMixin;
 use Nette;
 use Nette\Utils\Strings;
+use PHPStan\Analyser\NameScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Type;
@@ -46,7 +45,7 @@ class MagicMethodReflection implements MethodReflection
         $methodName = Strings::before($parts[1], "(");
         $type = $parts[0] === "void"
           ? new PHPStan\Type\NullType()
-          : PHPStan\Type\TypehintHelper::getTypeObjectFromTypehint($parts[0], FALSE, $class->getName());
+          : PHPStan\Type\TypehintHelper::getTypeObjectFromTypehint($parts[0], $class->getName(), new NameScope($reflection->getNamespaceName(), []));
       } else {
         continue;
       }
@@ -106,5 +105,10 @@ class MagicMethodReflection implements MethodReflection
   public function getReturnType(): Type
   {
     return $this->type;
+  }
+
+  public function getPrototype(): MethodReflection
+  {
+    return $this;
   }
 }

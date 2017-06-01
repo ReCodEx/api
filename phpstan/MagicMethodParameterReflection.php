@@ -38,4 +38,9 @@ class MagicMethodParameterReflection implements ParameterReflection
   {
     return FALSE;
   }
+
+  public function isVariadic(): bool
+  {
+    return FALSE;
+  }
 }
