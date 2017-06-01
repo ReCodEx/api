@@ -136,7 +136,7 @@ class LdapUserUtils {
 
     // the ID can be extracted only if there is exactly one result
     $results->next();
-    if ($dn === NULL || $results->current() !== NULL) {
+    if ($dn === NULL || $results->current() !== FALSE) {
       return NULL;
     }
 
