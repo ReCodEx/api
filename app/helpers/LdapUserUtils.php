@@ -134,8 +134,13 @@ class LdapUserUtils {
 
     $dn = $results->key();
 
-    // the ID can be extracted only if there is exactely one result
-    if ($dn === NULL || $results->next() !== NULL) {
+    // the ID can be extracted only if there is exactly one result
+    $results->next();
+
+    /** @var Node|bool $nextResult */
+    $nextResult = $results->current();
+
+    if ($dn === NULL || $nextResult !== FALSE) {
       return NULL;
     }
 

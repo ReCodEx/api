@@ -2,7 +2,9 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
@@ -67,7 +69,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET', [
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
       'action' => 'exercise',
       'exerciseId' => $exercise->getId()
     ]);
@@ -78,6 +80,70 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal(1, count($result['payload']));
+  }
+
+  public function testGetSolutionEvaluations()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $solution = current($this->referenceSolutions->findAll());
+    $environmentId = $solution->getRuntimeConfig()->getRuntimeEnvironment()->getId();
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
+      'action' => 'evaluations',
+      'solutionId' => $solution->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::equal(1, count($payload));
+    Assert::count(1, $payload[$environmentId]);
+    Assert::type(ReferenceSolutionEvaluation::class, $payload[$environmentId][0]);
+  }
+
+  public function testCreateReferenceSolution()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
+    $environment = $exercise->getRuntimeConfigs()->first()->getRuntimeEnvironment();
+    $user = current($this->presenter->users->findAll());
+
+    // save fake files into db
+    $ext = current($environment->getExtensionsList());
+    $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
+    $file2 = new UploadedFile("file2." . $ext, new \DateTime, 0, $user, "file2." . $ext);
+    $this->presenter->files->persist($file1);
+    $this->presenter->files->persist($file2);
+    $this->presenter->files->flush();
+    $files = [ $file1->getId(), $file2->getId() ];
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST', [
+      'action' => 'createReferenceSolution',
+      'exerciseId' => $exercise->getId()
+    ], [
+      'note' => 'new reference solution',
+      'files' => $files,
+      'runtimeEnvironmentId' => $environment->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    /** @var ReferenceExerciseSolution $payload */
+    $payload = $result['payload'];
+    Assert::type(ReferenceExerciseSolution::class, $payload);
+    Assert::equal('new reference solution', $payload->getDescription());
+    Assert::equal($exercise->getId(), $payload->getExercise()->getId());
   }
 
   public function testEvaluateSingle()
@@ -135,6 +201,39 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $errors = $result['payload']['errors'];
     Assert::equal(2, count($evaluations));
     Assert::equal(0, count($errors));
+  }
+
+  public function testEvaluateMultiple()
+  {
+    // @todo
+  }
+
+  public function testDownloadResultArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Evaluation $evaluation */
+    $evaluation = current($this->presenter->referenceEvaluations->findAll());
+
+    // mock everything you can
+    $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
+    $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
+    $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
+
+    $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+    $this->presenter->fileServerProxy = $mockProxy;
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
+      'action' => 'downloadResultArchive',
+      'evaluationId' => $evaluation->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal($evaluation->getId() . '.zip', $response->getName());
   }
 
 }

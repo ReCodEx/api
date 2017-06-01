@@ -31,6 +31,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method removeLocalizedText(Assignment $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
+ * @method string getScoreConfig()
  */
 class Assignment implements JsonSerializable
 {

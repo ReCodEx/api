@@ -20,10 +20,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
  * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
  * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
+ * @method Doctrine\Common\Collections\Collection getExerciseLimits()
  * @method setName(string $name)
  * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
  * @method \DateTime getDeletedAt()
+ * @method ExerciseConfig getExerciseConfig()
  */
 class Exercise implements JsonSerializable
 {
@@ -138,6 +140,16 @@ class Exercise implements JsonSerializable
   protected $group;
 
   /**
+   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
+   */
+  protected $exerciseLimits;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
+   */
+  protected $exerciseConfig;
+
+  /**
    * Can a specific user access this exercise?
    * @param User $user
    * @return boolean
@@ -166,12 +178,27 @@ class Exercise implements JsonSerializable
 
   /**
    * Constructor
+   * @param string $name
+   * @param $version
+   * @param $difficulty
+   * @param Collection $localizedTexts
+   * @param Collection $runtimeConfigs
+   * @param Collection $supplementaryEvaluationFiles
+   * @param Collection $additionalFiles
+   * @param Collection $exerciseLimits
+   * @param Exercise|null $exercise
+   * @param User $user
+   * @param Group|null $group
+   * @param bool $isPublic
+   * @param string $description
+   * @param ExerciseConfig|null $exerciseConfig
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeConfigs,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      ?Exercise $exercise, User $user, ?Group $group = NULL,
-      bool $isPublic = TRUE, string $description = "") {
+      Collection $exerciseLimits, ?Exercise $exercise, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -186,6 +213,8 @@ class Exercise implements JsonSerializable
     $this->description = $description;
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
+    $this->exerciseLimits = $exerciseLimits;
+    $this->exerciseConfig = $exerciseConfig;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -193,6 +222,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -212,11 +242,13 @@ class Exercise implements JsonSerializable
       $exercise->runtimeConfigs,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
+      $exercise->exerciseLimits,
       $exercise,
       $user,
       $exercise->group,
       $exercise->isPublic,
-      $exercise->description
+      $exercise->description,
+      $exercise->exerciseConfig
     );
   }
 
@@ -234,6 +266,14 @@ class Exercise implements JsonSerializable
 
   public function addAdditionalFile(AdditionalExerciseFile $exerciseFile) {
     $this->additionalFiles->add($exerciseFile);
+  }
+
+  public function addExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->add($exerciseLimits);
+  }
+
+  public function removeExerciseLimits(ExerciseLimits $exerciseLimits) {
+    $this->exerciseLimits->removeElement($exerciseLimits);
   }
 
   /**
@@ -257,6 +297,21 @@ class Exercise implements JsonSerializable
       function (RuntimeConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
     })->first();
+    return $first === FALSE ? NULL : $first;
+  }
+
+  /**
+   * Get exercise limits based on environment and hardware group.
+   * @param RuntimeEnvironment $environment
+   * @param HardwareGroup $hwGroup
+   * @return ExerciseLimits|NULL
+   */
+  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
+    $first = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
+          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
+      })->first();
     return $first === FALSE ? NULL : $first;
   }
 

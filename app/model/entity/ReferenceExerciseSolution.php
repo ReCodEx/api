@@ -3,14 +3,18 @@
 namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use DateTime;
 
 /**
  * @ORM\Entity
+ * @method string getId()
+ * @method string getDescription()
  * @method Solution getSolution()
  * @method Exercise getExercise()
+ * @method Collection getEvaluations()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {

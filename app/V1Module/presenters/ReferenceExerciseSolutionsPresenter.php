@@ -8,7 +8,6 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
-use App\Helpers\MonitorConfig;
 use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
@@ -23,9 +22,7 @@ use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
-
 use App\Responses\GuzzleResponse;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -90,17 +87,43 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solutions for an exercise
    * @GET
    * @UserIsAllowed(exercises="view-detail")
-   * @throws NotFoundException
    * @param string $exerciseId Identifier of the exercise
+   * @throws ForbiddenRequestException
    */
   public function actionExercise(string $exerciseId) {
-    // @todo check that this user can access this information
     $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$exercise->canAccessDetail($this->getCurrentUser())) {
-      throw new NotFoundException;
+      throw new ForbiddenRequestException("You cannot access this exercise solutions");
     }
 
     $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
+  }
+
+  /**
+   * Get reference solution evaluations for an exercise solution. Evaluations
+   * are grouped by environment identification.
+   * @GET
+   * @UserIsAllowed(exercises="view-detail")
+   * @param string $solutionId identifier of the reference exercise solution
+   * @throws ForbiddenRequestException
+   */
+  public function actionEvaluations(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    $exercise = $solution->getExercise();
+    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
+      throw new ForbiddenRequestException("You cannot access this exercise evaluations");
+    }
+
+    $evaluations = array();
+    foreach ($exercise->getRuntimeConfigs() as $runtime) {
+      $evaluations[$runtime->getRuntimeEnvironment()->getId()] = array();
+    }
+
+    foreach ($solution->getEvaluations() as $evaluation) {
+      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeConfig()->getRuntimeEnvironment()->getId()][] = $evaluation;
+    }
+
+    $this->sendSuccessResponse($evaluations);
   }
 
   /**
@@ -113,6 +136,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws SubmissionEvaluationFailedException
    */
   public function actionCreateReferenceSolution(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -131,7 +155,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
       $runtimeConfiguration = $exercise->getRuntimeConfigByEnvironment($runtimeEnvironment);
       if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration was not found");
+        throw new NotFoundException("RuntimeConfiguration '$runtimeId' was not found");
       }
     } else {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");

@@ -124,13 +124,9 @@ class TestSubmissionsPresenter extends Tester\TestCase
       ['action' => 'setAcceptedSubmission', 'id' => $submission->id]
     );
     $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+    Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
     // Check invariants
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-
     $submission = $this->presenter->submissions->get($submission->id);
     Assert::equal(true, $submission->isAccepted());
   }

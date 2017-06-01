@@ -9,6 +9,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
@@ -19,6 +22,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     privateAdminExercise:
         __construct:
             create:
@@ -30,6 +36,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
     publicSupervisor2Exercise:
         __construct:
             create:
@@ -41,6 +50,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeConfig:
             - @demoRuntimeConfig
+        addExerciseLimits:
+            - @demoExerciseLimits
+        exerciseConfig: @demoExerciseConfig
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:
@@ -50,11 +62,25 @@ App\Model\Entity\ReferenceExerciseSolution:
             - Brute force solution
             - @demoRuntimeConfig
 
+App\Model\Entity\SolutionEvaluation:
+    demoReferenceExerciseSolutionEvaluationEvaluation:
+        __construct: false
+        evaluatedAt: "<dateTime()>"
+        initFailed: false
+        score: 0.95
+        points: 10
+        isValid: true
+        evaluationFailed: false
+        resultYml: ""
+        initiationOutputs: ""
+
 App\Model\Entity\ReferenceSolutionEvaluation:
     demoReferenceExerciseSolutionEvaluation:
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
+        evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
+        resultsUrl: "chacha cheche chichi chocho"
 
 App\Model\Entity\AdditionalExerciseFile:
     demoExerciseAdditionalFile:

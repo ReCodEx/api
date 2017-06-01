@@ -34,7 +34,6 @@ use App\Model\Repository\RuntimeEnvironments;
 
 use DateTime;
 use Exception;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -175,7 +174,9 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to gain point from assignment")
    * @param string $id Identifier of the updated assignment
+   * @throws BadRequestException
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -410,6 +411,8 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="runtimeEnvironmentId", required=false, description="Identifier of the runtime environment used for evaluation")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws SubmissionEvaluationFailedException
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
