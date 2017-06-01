@@ -132,6 +132,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-submission", "Assignments:bestSubmission");
     $router[] = new PostRoute("$prefix/<id>/submit", "Assignments:submit");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
+    $router[] = new PostRoute("$prefix/<id>/resubmit-all", "Assignments:resubmitAll");
     return $router;
   }
 
@@ -220,6 +221,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
     $router[] = new GetRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
     $router[] = new GetRoute("$prefix/<id>/download-result", "Submissions:downloadResultArchive");
+    $router[] = new PostRoute("$prefix/<id>/resubmit", "Assignments:resubmit");
     return $router;
   }
 

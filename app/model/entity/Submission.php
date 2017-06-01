@@ -15,6 +15,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @ORM\Entity
  *
  * @method string getId()
+ * @method string getNote()
  * @method Solution getSolution()
  * @method Assignment getAssignment()
  * @method string getResultsUrl()
@@ -59,6 +60,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
      */
     protected $assignment;
 
+  /**
+   * @var Submission
+   * @ORM\ManyToOne(targetEntity="Submission")
+   */
+    protected $originalSubmission;
+
     public function getMaxPoints() {
       return $this->assignment->getMaxPoints($this->submittedAt);
     }
@@ -73,6 +80,23 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
     /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $private = FALSE;
+
+    public function isPrivate() {
+      return $this->private;
+    }
+
+    public function isPublic() {
+      return !$this->private;
+    }
+
+    public function setPrivate($private = TRUE) {
+      $this->private = $private;
+    }
+
+    /**
      * @ORM\ManyToOne(targetEntity="User")
      */
     protected $user;
@@ -83,7 +107,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     protected $submittedBy;
 
     /**
-     * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
      */
     protected $solution;
 
@@ -168,7 +192,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
         "maxPoints" => $this->getMaxPoints(),
-        "accepted" => $this->accepted
+        "accepted" => $this->accepted,
+        "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
       ];
     }
 
@@ -183,10 +208,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * The name of the user
    * @param string $note
    * @param Assignment $assignment
-   * @param User $user The user who submits the solution
-   * @param User $loggedInUser The logged in user - might be the student or his/her supervisor
+   * @param User $author The author of the solution
+   * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
    * @param bool $asynchronous Flag if submitted by student (FALSE) or supervisor (TRUE)
+   * @param Submission $originalSubmission
    * @return Submission
    * @throws ForbiddenRequestException
    * @internal param array $files The submitted files
@@ -195,16 +221,17 @@ class Submission implements JsonSerializable, ES\IEvaluable
     public static function createSubmission(
       string $note,
       Assignment $assignment,
-      User $user,
-      User $loggedInUser,
+      User $author,
+      User $submitter,
       Solution $solution,
-      bool $asynchronous = false
+      bool $asynchronous = false,
+      ?Submission $originalSubmission = NULL
     ) {
-      // the "user" must be a student and the "loggedInUser" must be either this student, or a supervisor of this group
-      if ($assignment->canAccessAsStudent($user) === FALSE &&
-        ($user->getId() === $loggedInUser->getId()
-          && $assignment->canAccessAsSupervisor($loggedInUser) === FALSE)) {
-        throw new ForbiddenRequestException("{$user->getName()} cannot submit solutions for this assignment.");
+      // the author must be a student and the submitter must be either this student, or a supervisor of their group
+      if ($assignment->canAccessAsStudent($author) === FALSE &&
+        ($author->getId() === $submitter->getId()
+          && $assignment->canAccessAsSupervisor($submitter) === FALSE)) {
+        throw new ForbiddenRequestException("{$author->getName()} cannot submit solutions for this assignment.");
       }
 
       if ($assignment->getGroup()->hasValidLicence() === FALSE) {
@@ -212,12 +239,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
           IResponse::S402_PAYMENT_REQUIRED);
       }
 
-      if ($assignment->canAccessAsSupervisor($loggedInUser) === FALSE) {
+      if ($assignment->canAccessAsSupervisor($submitter) === FALSE) {
         if ($assignment->isAfterDeadline() === TRUE) { // supervisors can force-submit even after the deadline
           throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
         }
 
-        if ($assignment->hasReachedSubmissionsCountLimit($user)) {
+        if ($assignment->hasReachedSubmissionsCountLimit($author)) {
           throw new ForbiddenRequestException("The limit of {$assignment->getSubmissionsCountLimit()} submissions for this assignment has been reached. You cannot submit any more solutions.");
         }
       }
@@ -225,13 +252,14 @@ class Submission implements JsonSerializable, ES\IEvaluable
       // now that the conditions for submission are validated, here comes the easy part:
       $entity = new Submission;
       $entity->assignment = $assignment;
-      $entity->user = $user;
+      $entity->user = $author;
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
-      $entity->submittedBy = $loggedInUser;
+      $entity->submittedBy = $submitter;
       $entity->asynchronous = $asynchronous;
       $entity->solution = $solution;
       $entity->accepted = false;
+      $entity->originalSubmission = $originalSubmission;
 
       return $entity;
     }

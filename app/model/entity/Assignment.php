@@ -24,6 +24,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getRuntimeConfigs()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
+ * @method Collection getSubmissions()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
  * @method Collection getLocalizedTexts()

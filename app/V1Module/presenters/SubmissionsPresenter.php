@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Helpers\EvaluationLoader;
 use App\Helpers\FileServerProxy;
+use App\Model\Entity\Submission;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Users;
@@ -52,7 +53,11 @@ class SubmissionsPresenter extends BasePresenter {
    * @UserIsAllowed(submissions="view-all")
    */
   public function actionDefault() {
-    $submissions = $this->submissions->findAll();
+    $submissions = array_filter($this->submissions->findAll(), (function (Submission $submission) {
+      return $submission->isPublic()
+        || $submission->getAssignment()->getGroup()->isAdminOf($this->getCurrentUser())
+        || $submission->getAssignment()->getGroup()->isSupervisorOf($this->getCurrentUser());
+    }));
     $this->sendSuccessResponse($submissions);
   }
 
@@ -64,6 +69,7 @@ class SubmissionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $id) {
+    /** @var Submission $submission */
     $submission = $this->submissions->findOrThrow($id);
     $currentUser = $this->getCurrentUser();
     $groupOfSubmission = $submission->getAssignment()->getGroup();
@@ -72,7 +78,7 @@ class SubmissionsPresenter extends BasePresenter {
     $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
     $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
 
-    if (!$isFileOwner && !$isSupervisor && !$isAdmin) {
+    if (!($isFileOwner && $submission->isPublic()) && !$isSupervisor && !$isAdmin) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
