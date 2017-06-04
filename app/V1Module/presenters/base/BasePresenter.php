@@ -202,59 +202,46 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
     }
 
-    if ($reflection->hasAnnotation("UserIsAllowed")) {
-      $satisfied = FALSE;
+    if (!$reflection->hasAnnotation("UserIsAllowed")) {
+      return;
+    }
 
-      $identity = $this->getUser()->getIdentity();
-      if (!($identity instanceof Identity)) {
-        throw new LogicException(); // Never reached
-      }
+    $requirementsSatisfied = FALSE;
 
-      foreach ($reflection->getAnnotations()["UserIsAllowed"] as $item) {
-        $itemSatisfied = TRUE;
+    $identity = $this->getUser()->getIdentity();
+    if (!($identity instanceof Identity)) {
+      throw new LogicException(); // Never reached
+    }
 
-        foreach ($item as $resourceName => $action) {
-          $resource = NULL;
+    $context = [];
 
-          if ($reflection->hasAnnotation("Resource")) {
-            foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
-              if ($resourceName === $type) {
-                if (array_key_exists($idParam, $this->getRequest()->parameters)) {
-                  $value = $this->getRequest()->parameters[$idParam];
-                } else {
-                  $value = $this->parameters->$idParam;
-                }
-
-                $resource = new Resource($resourceName, $value);
-              }
-            }
-
-            if ($resource === NULL) {
-              throw new LogicException(sprintf(
-                "No entry found in @Resource annotation for resource %s",
-                $resourceName
-              ));
-            }
-          }
-
-          if ($resource === NULL) {
-            $resource = $resourceName;
-          }
-
-          if (!$this->authorizator->isAllowed($identity, $resource, $action)) {
-            $itemSatisfied = FALSE;
-          }
+    if ($reflection->hasAnnotation("Resource")) {
+      foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
+        if (array_key_exists($idParam, $this->getRequest()->parameters)) {
+          $context[$type] = $this->getRequest()->parameters[$idParam];
+        } else {
+          $context[$type] = $this->parameters->$idParam;
         }
+      }
+    }
 
-        if ($itemSatisfied) {
-          $satisfied = TRUE;
-          break;
+    foreach ($reflection->getAnnotations()["UserIsAllowed"] as $item) {
+      $itemSatisfied = TRUE;
+
+      foreach ($item as $resource => $action) {
+        if (!$this->authorizator->isAllowed($identity, $resource, $action, $context)) {
+          $itemSatisfied = FALSE;
         }
       }
 
-      if (!$satisfied) {
-        throw new ForbiddenRequestException("You are not allowed to perform this action.");
+      if ($itemSatisfied) {
+        $requirementsSatisfied = TRUE;
+        break;
       }
+    }
+
+    if (!$requirementsSatisfied) {
+      throw new ForbiddenRequestException("You are not allowed to perform this action.");
     }
   }
 

@@ -356,8 +356,7 @@ class GroupsPresenter extends BasePresenter {
    * Add a student to a group
    * @POST
    * @UserIsAllowed(groups="add-student")
-   * @UserIsAllowed(groups="join")
-   * @Resource(groups="id")
+   * @Resource(groups="id", users="userId")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException

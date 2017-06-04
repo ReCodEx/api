@@ -41,9 +41,17 @@ permissions:
       role: student
       resource: groups
       actions:
-        - join
         - view-supervisors
       conditions: isGroupPublic
+
+    - allow: true # A student can join public groups
+      role: student
+      resource: groups
+      actions:
+        - add-student
+      conditions:
+        - isGroupPublic
+        - users.isSameUser
 
     - allow: true
       role: student

@@ -17,6 +17,9 @@ class Authorizator implements IAuthorizator {
   /** @var Identity */
   private $queriedIdentity;
 
+  /** @var string[] */
+  private $queriedContext;
+
   /** @var PolicyRegistry */
   private $policy;
 
@@ -57,7 +60,13 @@ class Authorizator implements IAuthorizator {
       $callbacks = [];
 
       foreach ($conditions as $assertion) {
-        $callbacks[] = $this->policy->get($resource, $assertion);
+        $callbackResource = $resource;
+
+        if (strpos($assertion, ".") !== FALSE) {
+          list($callbackResource, $assertion) = explode(".", $assertion, 2);
+        }
+
+        $callbacks[] = $this->policy->get($callbackResource, $assertion);
       }
 
       $this->acl->{Arrays::get($ruleDefinition, "allow", TRUE) ? "allow" : "deny"}(
@@ -85,8 +94,9 @@ class Authorizator implements IAuthorizator {
     };
   }
 
-  public function isAllowed(Identity $identity, $resource, string $privilege): bool {
+  public function isAllowed(Identity $identity, string $resource, string $privilege, array $context): bool {
     $this->queriedIdentity = $identity;
+    $this->queriedContext = $context;
 
     if ($this->acl === NULL) {
       $this->setup();

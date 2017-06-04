@@ -8,5 +8,12 @@ namespace App\Security;
  * instead of a role.
  */
 interface IAuthorizator {
-  function isAllowed(Identity $identity, $resource, string $privilege): bool;
+  /**
+   * @param Identity $identity
+   * @param string $resource
+   * @param string $privilege
+   * @param string[] $context
+   * @return bool
+   */
+  function isAllowed(Identity $identity, string $resource, string $privilege, array $context): bool;
 }

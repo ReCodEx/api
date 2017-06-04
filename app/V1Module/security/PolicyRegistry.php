@@ -4,6 +4,7 @@ namespace App\Security;
 use Nette\InvalidArgumentException;
 use App\Security\Policies\IPermissionPolicy;
 use Nette\Reflection\Method;
+use Nette\Utils\Arrays;
 
 class PolicyRegistry {
   /** @var IPermissionPolicy[] */
@@ -22,21 +23,19 @@ class PolicyRegistry {
       throw new InvalidArgumentException(sprintf("Unknown policy '%s' for resource '%s'", $policyName, $resource));
     }
 
-    return function (Identity $queriedUser, $queriedResource) use ($policyName, $resource) {
+    return function (Identity $queriedUser, $context) use ($policyName, $resource) {
       $policyObject = $this->policies[$resource];
+      $contextId = Arrays::get($context, $resource, NULL);
+      $contextObject = $contextId !== NULL ? $policyObject->getByID($contextId) : NULL;
 
-      if ($queriedResource instanceof Resource) {
-        $id = $queriedResource->getId();
-        $queriedResource = $id !== NULL ? $policyObject->getByID($id) : NULL;
-        if ($queriedResource == NULL) {
-          $reflection = Method::from($policyObject, $policyName);
-          if (!$reflection->parameters[1]->optional) {
-            return FALSE;
-          }
+      if ($contextObject == NULL) {
+        $reflection = Method::from($policyObject, $policyName);
+        if (!$reflection->parameters[1]->optional) {
+          return FALSE;
         }
       }
 
-      return $policyObject->$policyName($queriedUser, $queriedResource);
+      return $policyObject->$policyName($queriedUser, $contextObject);
     };
   }
 }
