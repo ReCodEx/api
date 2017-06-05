@@ -105,12 +105,15 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/runtime-configs", "Exercises:updateRuntimeConfigs");
     $router[] = new PostRoute("$prefix/<id>/validate", "Exercises:validate");
     $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
-    $router[] = new GetRoute("$prefix/<id>/limits", "Exercises:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/limits", "Exercises:setLimits");
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "Exercises:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
     $router[] = new GetRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
     $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
+
+    $router[] = new GetRoute("$prefix/<id>/config", "ExercisesConfig:getConfiguration");
+    $router[] = new PostRoute("$prefix/<id>/config", "ExercisesConfig:setConfiguration");
+    $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setLimits");
 
     return $router;
   }
