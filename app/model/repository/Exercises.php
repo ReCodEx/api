@@ -70,12 +70,11 @@ class Exercises extends BaseSoftDeleteRepository {
   private function search(User $user, ?string $search = NULL): Collection {
     $filter = Criteria::create();
 
-    // @todo: Criteria::expr()->in($user->getGroups()->map( <get id> ))
-
     if ($search !== NULL && !empty($search)) {
       $filter->where(Criteria::expr()->contains("name", $search));
     }
 
+    // user is not supervisor
     if ($user->getRole()->hasLimitedRights()) {
       $filter->andWhere(Criteria::expr()->orX(
         Criteria::expr()->andX(Criteria::expr()->eq("isPublic", TRUE),

@@ -269,6 +269,11 @@ App\Model\Entity\Permission:
     "resource": @groups
     "action": "set-admin"
     "isAllowed": 1
+  "supervisor-groups-view-exercises":
+    "role": @supervisor
+    "resource": @groups
+    "action": "view-exercises"
+    "isAllowed": 1
   "supervisor-instances-view-users":
     "role": @supervisor
     "resource": @instances

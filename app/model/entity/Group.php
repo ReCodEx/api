@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
 use JsonSerializable;
@@ -138,12 +139,23 @@ class Group implements JsonSerializable
   /**
    * For provided user get all visible exercises.
    * @param User $user
-   * @return array
+   * @return Collection
    */
   public function getExercisesForUser(User $user) {
-    return $this->exercises->filter(function (Exercise $exercise) use ($user) {
+    // get exercises from parent group
+    $parentExercises = new ArrayCollection;
+    if ($this->parentGroup) {
+      $parentExercises = $this->parentGroup->getExercisesForUser($user);
+    }
+
+    // get exercises for this group
+    $exercises = $this->exercises->filter(function (Exercise $exercise) use ($user) {
       return $exercise->getDeletedAt() === NULL && $exercise->canAccessDetail($user);
     });
+
+    return new ArrayCollection(
+      array_merge($parentExercises->toArray(), $exercises->toArray())
+    );
   }
 
   /**
