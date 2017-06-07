@@ -322,7 +322,7 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get all exercises for a group
    * @GET
-   * @UserIsAllowed(groups="view-detail")
+   * @UserIsAllowed(groups="view-exercises")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
@@ -330,7 +330,7 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if (!$group->isAdminOf($user) && !$group->isMemberOf($user)) {
+    if (!$group->isAdminOf($user) && !$group->isSupervisorOf($user)) {
       throw new ForbiddenRequestException("You are not allowed to view exercises of this group.");
     }
 
