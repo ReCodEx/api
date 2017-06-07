@@ -12,7 +12,6 @@ use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
-use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
@@ -193,7 +192,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
-    /** @var RuntimeConfig $runtimeConfig */
     list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
 
     $this->sendSuccessResponse([

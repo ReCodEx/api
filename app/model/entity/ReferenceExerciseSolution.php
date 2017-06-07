@@ -70,7 +70,7 @@ class ReferenceExerciseSolution implements JsonSerializable
     ];
   }
 
-  public function __construct(Exercise $exercise, User $user, string $description, RuntimeConfig $runtime) {
+  public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {
     $this->exercise = $exercise;
     $this->uploadedAt = new \DateTime;
     $this->description = $description;

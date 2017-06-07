@@ -17,12 +17,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method string getName()
- * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
- * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
- * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
- * @method Doctrine\Common\Collections\Collection getExerciseLimits()
+ * @method Collection getRuntimeEnvironments()
+ * @method Collection getLocalizedTexts()
+ * @method Collection getReferenceSolutions()
+ * @method Collection getExerciseLimits()
  * @method setName(string $name)
- * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(Assignment $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
@@ -82,9 +81,9 @@ class Exercise implements JsonSerializable
   protected $difficulty;
 
   /**
-   * @ORM\ManyToMany(targetEntity="RuntimeConfig", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    */
-  protected $runtimeConfigs;
+  protected $runtimeEnvironments;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -182,7 +181,7 @@ class Exercise implements JsonSerializable
    * @param $version
    * @param $difficulty
    * @param Collection $localizedTexts
-   * @param Collection $runtimeConfigs
+   * @param Collection $runtimeEnvironments
    * @param Collection $supplementaryEvaluationFiles
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
@@ -194,7 +193,7 @@ class Exercise implements JsonSerializable
    * @param ExerciseConfig|null $exerciseConfig
    */
   private function __construct(string $name, $version, $difficulty,
-      Collection $localizedTexts, Collection $runtimeConfigs,
+      Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
       Collection $exerciseLimits, ?Exercise $exercise, User $user,
       ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
@@ -205,7 +204,7 @@ class Exercise implements JsonSerializable
     $this->updatedAt = new DateTime;
     $this->localizedTexts = $localizedTexts;
     $this->difficulty = $difficulty;
-    $this->runtimeConfigs = $runtimeConfigs;
+    $this->runtimeEnvironments = $runtimeEnvironments;
     $this->exercise = $exercise;
     $this->author = $user;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
@@ -239,7 +238,7 @@ class Exercise implements JsonSerializable
       1,
       $exercise->difficulty,
       $exercise->localizedTexts,
-      $exercise->runtimeConfigs,
+      $exercise->runtimeEnvironments,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
@@ -252,8 +251,8 @@ class Exercise implements JsonSerializable
     );
   }
 
-  public function addRuntimeConfig(RuntimeConfig $config) {
-    $this->runtimeConfigs->add($config);
+  public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment) {
+    $this->runtimeEnvironments->add($runtimeEnvironment);
   }
 
   public function addLocalizedText(LocalizedText $localizedText) {
@@ -288,19 +287,6 @@ class Exercise implements JsonSerializable
   }
 
   /**
-   * Get runtime configuration based on environment identification.
-   * @param RuntimeEnvironment $environment
-   * @return RuntimeConfig|NULL
-   */
-  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->runtimeConfigs->filter(
-      function (RuntimeConfig $runtimeConfig) use ($environment) {
-        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
-    })->first();
-    return $first === FALSE ? NULL : $first;
-  }
-
-  /**
    * Get exercise limits based on environment and hardware group.
    * @param RuntimeEnvironment $environment
    * @param HardwareGroup $hwGroup
@@ -316,11 +302,11 @@ class Exercise implements JsonSerializable
   }
 
   /**
-   * Get IDs of all available runtime configs
+   * Get IDs of all available runtime environments
    * @return ArrayCollection
    */
-  public function getRuntimeConfigsIds() {
-    return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+  public function getRuntimeEnvironmentsIds() {
+    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
   }
 
   public function getSupplementaryFilesIds() {
@@ -346,7 +332,7 @@ class Exercise implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
-      "runtimeConfigs" => $this->runtimeConfigs->getValues(),
+      "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
       "groupId" => $this->group ? $this->group->getId() : NULL,

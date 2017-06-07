@@ -16,8 +16,6 @@ use App\Model\Entity\Exercise;
 use App\Helpers\JobConfig;
 use App\Helpers\UploadedJobConfigStorage;
 use App\Helpers\ExerciseFileStorage;
-use App\Model\Entity\RuntimeConfig;
-use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\HardwareGroups;
@@ -26,7 +24,6 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\Groups;
 use Exception;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise manipulation
@@ -64,12 +61,6 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $runtimeEnvironments;
-
-  /**
-   * @var RuntimeConfigs
-   * @inject
-   */
-  public $runtimeConfigurations;
 
   /**
    * @var ReferenceSolutionEvaluations
@@ -124,6 +115,7 @@ class ExercisesPresenter extends BasePresenter {
    * @GET
    * @UserIsAllowed(exercises="view-detail")
    * @param string $id identification of exercise
+   * @throws NotFoundException
    */
   public function actionDetail(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -145,6 +137,8 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
+   * @throws BadRequestException
+   * @throws InvalidArgumentException
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
@@ -212,6 +206,7 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="version", validation="numericint", description="Version of the exercise.")
    * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
    */
   public function actionValidate($id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -236,9 +231,12 @@ class ExercisesPresenter extends BasePresenter {
    * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
    * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws JobConfigStorageException
    */
   public function actionUpdateRuntimeConfigs(string $id) {
-    $req = $this->getRequest();
+    /*$req = $this->getRequest();
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
     if (!$exercise->canModifyDetail($user)) {
@@ -283,7 +281,7 @@ class ExercisesPresenter extends BasePresenter {
     // make changes to database
     $this->exercises->replaceRuntimeConfigs($exercise, $configs, FALSE);
     $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($exercise);*/
   }
 
   /**

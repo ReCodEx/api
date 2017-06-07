@@ -25,7 +25,6 @@ use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
-use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\Solutions;
@@ -82,12 +81,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $files;
-
-  /**
-   * @var RuntimeConfigs
-   * @inject
-   */
-  public $runtimeConfigurations;
 
   /**
    * @var SubmissionHelper
@@ -299,11 +292,11 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   private function getDefaultScoreConfig(Assignment $assignment): string {
-    if (count($assignment->getRuntimeConfigs()) === 0) {
+    if (count($assignment->getRuntimeEnvironments()) === 0) {
       throw new InvalidStateException("Assignment has no runtime configurations");
     }
 
-    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
+    $runtimeConfig = $assignment->getRuntimeEnvironments()->first();
     $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
     try {
       $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
@@ -436,7 +429,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     // detect the runtime configuration
     if ($req->getPost("runtimeEnvironmentId") === NULL) {
-      $runtimeConfiguration = $this->runtimeConfigurations->detectOrThrow($assignment, $uploadedFiles);
+      $runtimeConfiguration = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
     } else {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
       $runtimeConfiguration = $assignment->getRuntimeConfigByEnvironment($runtimeEnvironment);
@@ -482,6 +475,8 @@ class AssignmentsPresenter extends BasePresenter {
    * @param Submission $submission a persisted submission entity
    * @return array The response that can be sent to the client
    * @throws InvalidArgumentException
+   *
+   * @todo: REWRITE, runtime config is not present anymore
    */
   private function finishSubmission(Submission $submission) {
     if ($submission->getId() === NULL) {
