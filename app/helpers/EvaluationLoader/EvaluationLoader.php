@@ -75,7 +75,7 @@ class EvaluationLoader {
 
     $jobConfigPath = $submission->getSolution()->getRuntimeConfig()->getJobConfigFilePath();
     try {
-      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
       return $resultsYml === NULL
@@ -118,7 +118,7 @@ class EvaluationLoader {
 
     $jobConfigPath = $evaluation->getReferenceSolution()->getSolution()->getRuntimeConfig()->getJobConfigFilePath();
     try {
-      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($evaluation->getResultsUrl());
       return $resultsYml === NULL

@@ -5,6 +5,7 @@ namespace App\Helpers\JobConfig;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\MalformedJobConfigException;
 use App\Exceptions\JobConfigStorageException;
+use App\Model\Entity\User;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\MemoryStorage;
 use Symfony\Component\Yaml\Yaml;
@@ -17,6 +18,8 @@ use Symfony\Component\Yaml\Exception\ParseException;
  */
 class Storage {
 
+  const DEFAULT_MKDIR_MODE = 0777;
+
   /** @var Cache|NULL Run-time memory cache for job configurations */
   private static $cache = NULL;
 
@@ -27,11 +30,18 @@ class Storage {
   private $jobLoader;
 
   /**
+   * Target directory, where the files will be stored
+   * @var string
+   */
+  private $jobConfigDir;
+
+  /**
    * @var bool
    */
   private $humanReadable;
 
-  public function __construct($humanReadable = FALSE) {
+  public function __construct(string $jobConfigDir, $humanReadable = FALSE) {
+    $this->jobConfigDir = $jobConfigDir;
     $this->jobLoader = new Loader;
     $this->humanReadable = $humanReadable;
   }
@@ -51,75 +61,83 @@ class Storage {
   /**
    * Try to load configuration from cache if present, if not load it from given
    * path and parse it info JobConfig structure.
+   * @param string $path
    * @return JobConfig Config for the evaluation server for this submission (updated job-id)
    */
-  public function getJobConfig(string $path): JobConfig {
+  public function get(string $path): JobConfig {
     return $this->getCache()->load($path, function () use ($path) {
       $yml = $this->loadConfig($path);
-      return $this->parseJobConfig($yml);
+      return $this->parse($yml);
     });
   }
 
   /**
-   * Store new configuration object to the file storage.
-   * @param  JobConfig   $config        The configuration to be stored
-   * @param  string      $path          Path of the configuration file
-   * @param  boolean     $doNotArchive  Whether to archive the file (if there is some existing file)
-   * @return string|NULL                Path of the archived configuration file.
-   * @throws JobConfigStorageException In case of any error
+   * Store given content into job config file.
+   * @param JobConfig $config
+   * @param User $user
+   * @return string Path to newly stored file
+   * @throws JobConfigStorageException
    */
-  public function saveJobConfig(JobConfig $config, string $path, $doNotArchive = FALSE) {
-    $archivedConfigPath = NULL;
-    if (is_file($path) && $doNotArchive !== TRUE) {
-      $archivedConfigPath = $this->archiveJobConfig($path);
-    }
+  public function save(JobConfig $config, User $user): string {
+    $filePath = $this->getFilePath($user->getId());
 
     // make sure the directory exists and that the file is stored correctly
-    $dirname = dirname($path);
-    if (!is_dir($dirname) && mkdir($dirname, 0777, TRUE) === FALSE) {
+    $dirname = dirname($filePath);
+    if (!is_dir($dirname) && mkdir($dirname, self::DEFAULT_MKDIR_MODE, TRUE) === FALSE) {
       throw new JobConfigStorageException("Cannot create the directory for the job config.");
     }
 
-    if (!file_put_contents($path, (string) $config)) {
+    if (!file_put_contents($filePath, (string) $config)) {
       throw new JobConfigStorageException("Cannot write the new job config to the storage.");
     }
 
     // save the config to the cache
-    $this->getCache()->save($path, $config);
+    $this->getCache()->save($filePath, $config);
 
-    return $archivedConfigPath;
+    return $filePath;
   }
 
   /**
    * Archive job config on the given path, file will be moved and renamed.
-   * @param  string $path     Path of the old config
-   * @param  string $prefix  Prefix of the archived file name
-   * @return string           New file path
+   * @param  string $path Path of the old config
+   * @param  string $prefix Prefix of the archived file name
+   * @return string New file path
    * @throws JobConfigStorageException  When the file cannot be renamed (within in the same directory)
    */
-  public function archiveJobConfig(string $path, string $prefix = "arch_") {
+  public function archive(string $path, string $prefix = "arch_") {
     $dirname = dirname($path);
     $filename = pathinfo($path, PATHINFO_FILENAME);
     $ext = pathinfo($path, PATHINFO_EXTENSION);
     $copyId = 0;
-
     do {
       $copyId++;
       $newFileName = "{$prefix}{$filename}_{$copyId}.{$ext}";
     } while (is_file("$dirname/$newFileName"));
-
     $newPath = "$dirname/$newFileName";
     if (!rename($path, $newPath)) {
       throw new JobConfigStorageException("Cannot archive job config.");
     }
-
     return $newPath;
   }
 
   /**
+   * Return storage file path for given information.
+   * @param string $userId
+   * @param string $fileName
+   * @return string Path, where the newly stored file will be saved
+   */
+  protected function getFilePath($userId, $fileName = "job-config.yml"): string {
+    $fileNameOnly = pathinfo($fileName, PATHINFO_FILENAME);
+    $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+    $uniqueId = uniqid();
+    return "{$this->jobConfigDir}/user_{$userId}/{$fileNameOnly}_{$uniqueId}.$ext";
+  }
+
+  /**
    * Load file content from given path and return it.
+   * @param string $path
+   * @return string In case of file reading error
    * @throws MalformedJobConfigException In case of file reading error
-   * @return string YAML config file contents
    */
   private function loadConfig(string $path): string {
     $configFileName = realpath($path);
@@ -143,7 +161,7 @@ class Storage {
    * @throws JobConfigLoadingException In case of semantic error
    * @return JobConfig Parsed YAML config
    */
-  public function parseJobConfig(string $config): JobConfig {
+  public function parse(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
     } catch (ParseException $e) {

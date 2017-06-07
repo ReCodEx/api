@@ -78,7 +78,7 @@ class ReferenceExerciseSolution implements JsonSerializable
     $this->evaluations = new ArrayCollection;
   }
 
-  public function getRuntimeConfig() {
-    return $this->solution->getRuntimeConfig();
+  public function getRuntimeEnvironment() {
+    return $this->solution->getRuntimeEnvironment();
   }
 }

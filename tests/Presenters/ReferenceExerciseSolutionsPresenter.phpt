@@ -87,7 +87,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $solution = current($this->referenceSolutions->findAll());
-    $environmentId = $solution->getRuntimeConfig()->getRuntimeEnvironment()->getId();
+    $environmentId = $solution->getRuntimeEnvironment()->getId();
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
       'action' => 'evaluations',

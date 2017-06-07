@@ -225,9 +225,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($result);
   }
 
+  /**
+   * @todo: REWRITE
+   */
   private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
     $runtimeConfig = $referenceSolution->getRuntimeConfig();
-    $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());
+    $jobConfig = $this->jobConfigs->get($runtimeConfig->getJobConfigFilePath());
     $hwGroups = $jobConfig->getHardwareGroups();
     $evaluations = [];
     $errors = [];

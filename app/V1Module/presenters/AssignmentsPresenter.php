@@ -20,7 +20,6 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
-use App\Helpers\UploadedJobConfigStorage;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
@@ -105,12 +104,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $jobConfigs;
-
-  /**
-   * @var UploadedJobConfigStorage
-   * @inject
-   */
-  public $uploadedJobConfigStorage;
 
   /**
    * @var RuntimeEnvironments
@@ -299,7 +292,7 @@ class AssignmentsPresenter extends BasePresenter {
     $runtimeConfig = $assignment->getRuntimeEnvironments()->first();
     $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
     try {
-      $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigs->get($jobConfigPath);
       $tests = array_map(
         function ($test) { return $test->getId(); },
         $jobConfig->getTests()
@@ -486,7 +479,7 @@ class AssignmentsPresenter extends BasePresenter {
     // Fill in the job configuration header
     $runtimeConfiguration = $submission->getSolution()->getRuntimeConfig();
     $path = $runtimeConfiguration->getJobConfigFilePath();
-    $jobConfig = $this->jobConfigs->getJobConfig($path);
+    $jobConfig = $this->jobConfigs->get($path);
     $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
 
     // Send the submission to the broker

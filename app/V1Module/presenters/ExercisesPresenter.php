@@ -13,15 +13,11 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Helpers\JobConfig;
-use App\Helpers\UploadedJobConfigStorage;
+use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\ExerciseFileStorage;
 use App\Model\Repository\RuntimeEnvironments;
-use App\Model\Repository\ReferenceSolutionEvaluations;
-use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
-use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\Groups;
 use Exception;
 
@@ -45,46 +41,16 @@ class ExercisesPresenter extends BasePresenter {
   public $groups;
 
   /**
-   * @var JobConfig\Storage
-   * @inject
-   */
-  public $jobConfigs;
-
-  /**
-   * @var UploadedJobConfigStorage
-   * @inject
-   */
-  public $uploadedJobConfigStorage;
-
-  /**
    * @var RuntimeEnvironments
    * @inject
    */
   public $runtimeEnvironments;
 
   /**
-   * @var ReferenceSolutionEvaluations
-   * @inject
-   */
-  public $referenceSolutionEvaluations;
-
-  /**
-   * @var HardwareGroups
-   * @inject
-   */
-  public $hardwareGroups;
-
-  /**
    * @var UploadedFiles
    * @inject
    */
   public $uploadedFiles;
-
-  /**
-   * @var ExerciseFiles
-   * @inject
-   */
-  public $supplementaryFiles;
 
   /**
    * @var ExerciseFileStorage
@@ -97,6 +63,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $uploadedFileStorage;
+
+  /**
+   * @var JobConfigStorage
+   * @inject
+   */
+  public $jobConfigStorage;
 
   /**
    * Get a list of exercises with an optional filter
@@ -444,6 +416,8 @@ class ExercisesPresenter extends BasePresenter {
    * Fork exercise from given one into the completely new one.
    * @POST
    * @UserIsAllowed(exercises="create")
+   * @param string $id
+   * @throws ForbiddenRequestException
    */
   public function actionForkFrom(string $id) {
     $user = $this->getCurrentUser();
