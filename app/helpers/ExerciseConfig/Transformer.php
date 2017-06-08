@@ -39,17 +39,22 @@ class Transformer {
     // initialize all possible environments which can be present in tests
     // with respective default values
     foreach ($environments as $environmentId) {
-      $config[$environmentId] = array();
+      $environment = array();
+      $environment['name'] = $environmentId;
+      $environment['tests'] = array();
       foreach ($exerciseConfig->getTests() as $testId => $test) {
         // initialize environment for each test with defaults
-        $config[$environmentId][$testId] = array();
-        $config[$environmentId][$testId]['pipelines'] = $test->getPipelines();
-        $config[$environmentId][$testId]['variables'] = $test->getVariables();
+        $tests = array();
+        $tests['name'] = $testId;
+        $tests['pipelines'] = $test->getPipelines();
+        $tests['variables'] = $test->getVariables();
+        $environment['tests'][] = $tests;
       }
+      $config[] = $environment;
     }
 
     // go through defined tests and environments and fill values if present
-    foreach ($exerciseConfig->getTests() as $testId => $test) {
+    /*foreach ($exerciseConfig->getTests() as $testId => $test) {
       foreach ($test->getEnvironments() as $environmentId => $environment) {
 
         $environment = $test->getEnvironment($environmentId);
@@ -64,7 +69,7 @@ class Transformer {
           $config[$environmentId][$testId]["variables"] = $environment->getVariables();
         }
       }
-    }
+    }*/
 
     return $config;
   }
