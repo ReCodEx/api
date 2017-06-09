@@ -207,6 +207,7 @@ class GroupsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionSubgroups(string $id) {
+    /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
 
     /** @var Identity $identity */
@@ -218,11 +219,17 @@ class GroupsPresenter extends BasePresenter {
     $subgroups = array_values(
       array_filter(
         $group->getAllSubgroups(),
-        function ($subgroup) use ($identity) {
-          return $this->authorizator->isAllowed($identity, $subgroup, "view-detail");
+        function (Group $subgroup) use ($identity) {
+          return $this->authorizator->isAllowed(
+            $identity,
+            "groups",
+            "view-detail",
+            ["groups" => $subgroup->getId()]
+          );
         }
       )
     );
+
     $this->sendSuccessResponse($subgroups);
   }
 
@@ -336,14 +343,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudentsStats(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
-
-    if ($user->getId() !== $this->getUser()->getId()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot view these stats.");
-    }
 
     if ($group->isStudentOf($user) === FALSE) {
       throw new BadRequestException("User $userId is not student of $id");
@@ -363,20 +363,7 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
-
-    // check if current user isn't trying to add someone to a private group without sufficient rights
-    $currentUserHasRights = $group->isSupervisorOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if ($group->isPrivate() && !$currentUserHasRights) {
-      throw new ForbiddenRequestException("You cannot add user '$userId' to private group '$id'.");
-    }
-
-    // check that the user has rights to join the group
-    if ($user->getId() !== $currentUser->getId() && !$currentUserHasRights) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
-    }
 
     // make sure that the user is not already member of the group
     if ($group->isStudentOf($user) === FALSE) {
@@ -392,22 +379,14 @@ class GroupsPresenter extends BasePresenter {
    * Remove a student from a group
    * @DELETE
    * @UserIsAllowed(groups="remove-student")
-   * @Resource(groups="id")
+   * @Resource(groups="id", users="userId")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException
    */
   public function actionRemoveStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
-
-    // check that the user has rights to join the group
-    if ($user->getId() !== $currentUser->getId()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
-    }
 
     // make sure that the user is student of the group
     if ($group->isStudentOf($user) === TRUE) {
@@ -426,20 +405,14 @@ class GroupsPresenter extends BasePresenter {
    * Add a supervisor to a group
    * @POST
    * @UserIsAllowed(groups="add-supervisor")
-   * @Resource(groups="id")
+   * @Resource(groups="id", users="userId")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the supervisor
    * @throws ForbiddenRequestException
    */
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
-
-    // check that the user is the admin of the group
-    if (!$group->isAdminOf($currentUser)) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
-    }
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
@@ -458,21 +431,14 @@ class GroupsPresenter extends BasePresenter {
    * Remove a supervisor from a group
    * @DELETE
    * @UserIsAllowed(groups="remove-supervisor")
-   * @Resource(groups="id")
+   * @Resource(groups="id", users="userId")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the supervisor
    * @throws ForbiddenRequestException
    */
   public function actionRemoveSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
-
-    // check that the user has rights to join the group
-    if (!$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
-    }
 
     // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
@@ -507,7 +473,7 @@ class GroupsPresenter extends BasePresenter {
    * Make a user an administrator of a group
    * @POST
    * @UserIsAllowed(groups="set-admin")
-   * @Resource(groups="id")
+   * @Resource(groups="id", users="userId")
    * @Param(type="post", name="userId", description="Identifier of a user to be made administrator")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException

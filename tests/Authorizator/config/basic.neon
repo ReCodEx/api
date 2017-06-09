@@ -9,3 +9,11 @@ permissions:
       resource: groups
       actions: action1
       conditions: condition1
+
+    - allow: true
+      role: parent
+      resource: users
+      actions: action2
+      conditions:
+          - groups.condition1
+          - condition2

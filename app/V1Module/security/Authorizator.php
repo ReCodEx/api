@@ -23,6 +23,9 @@ class Authorizator implements IAuthorizator {
   /** @var PolicyRegistry */
   private $policy;
 
+  /** @var array */
+  private $callbacks = [];
+
   private $configPath;
 
   public function __construct(string $configPath, PolicyRegistry $policy) {
@@ -82,7 +85,7 @@ class Authorizator implements IAuthorizator {
     return function (NS\Permission $acl, $role, $resource, $privilege) use ($callbacks) {
       foreach ($callbacks as $callback) {
         try {
-          if (!$callback($this->queriedIdentity, $acl->getQueriedResource())) {
+          if (!$callback($this->queriedIdentity, $this->queriedContext)) {
             return FALSE;
           }
         } catch (TypeError $e) {

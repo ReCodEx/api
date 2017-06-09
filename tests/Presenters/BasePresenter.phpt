@@ -84,10 +84,9 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["groups" => "42"]
     ])->andReturn(TRUE);
 
     $request = new Request("Fake", "POST", [
@@ -103,10 +102,9 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["groups" => "42"]
     ])->andReturn(FALSE);
 
     $request = new Request("Fake", "POST", [
@@ -123,18 +121,16 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(FALSE);
 
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "users" && $resource->getId() === "42";
-      }),
-      "action"
+      "users",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(TRUE);
 
     $request = new Request("Fake", "POST", [
@@ -150,18 +146,16 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(FALSE);
 
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "users" && $resource->getId() === "42";
-      }),
-      "action"
+      "users",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(FALSE);
 
     $request = new Request("Fake", "POST", [
@@ -178,18 +172,16 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(TRUE);
 
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "users" && $resource->getId() === "42";
-      }),
-      "action"
+      "users",
+      "action",
+      ["groups" => "42", "users" => "42"]
     ])->andReturn(TRUE);
 
     $request = new Request("Fake", "POST", [
@@ -205,18 +197,16 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "groups" && $resource->getId() === "42";
-      }),
-      "action"
+      "groups",
+      "action",
+      ["users" => 42, "groups" => 42]
     ])->andReturn(FALSE);
 
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (Resource $resource) {
-        return $resource->getResourceId() === "users" && $resource->getId() === "42";
-      }),
-      "action"
+      "users",
+      "action",
+      ["users" => 42, "groups" => 42]
     ])->andReturn(FALSE);
 
     $request = new Request("Fake", "POST", [
@@ -233,10 +223,9 @@ class TestBasePresenter extends Tester\TestCase
   {
     $this->authorizator->shouldReceive("isAllowed")->withArgs([
       Mockery::any(),
-      Mockery::on(function (string $resource) {
-        return $resource === "groups";
-      }),
-      "action"
+      "groups",
+      "action",
+      []
     ])->andReturn(TRUE);
 
     $request = new Request("Fake", "POST", [

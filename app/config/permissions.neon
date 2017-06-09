@@ -12,6 +12,10 @@ permissions:
     - allow: true
       role: superadmin
 
+    #####################
+    # Group permissions #
+    #####################
+
     - allow: true
       role: student
       resource: groups
@@ -53,6 +57,15 @@ permissions:
         - isGroupPublic
         - users.isSameUser
 
+    - allow: true # A student can leave any group
+      role: student
+      resource: groups
+      actions:
+        - add-student
+      conditions:
+        - isGroupMember
+        - users.isSameUser
+
     - allow: true
       role: student
       resource: groups
@@ -82,6 +95,8 @@ permissions:
           - update
           - remove
           - add-subgroup
+          - add-supervisor
+          - remove-supervisor
       conditions: isGroupAdmin
 
     - allow: true
