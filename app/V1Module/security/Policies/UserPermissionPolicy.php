@@ -8,17 +8,8 @@ use App\Security\Identity;
 
 class UserPermissionPolicy implements IPermissionPolicy
 {
-  /** @var Users */
-  private $users;
-
-  public function __construct(Users $users)
-  {
-    $this->users = $users;
-  }
-
-  function getByID($id)
-  {
-    return $this->users->get($id);
+  public function getAssociatedClass() {
+    return User::class;
   }
 
   public function isSameUser(Identity $identity, User $user): bool

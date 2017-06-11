@@ -2,5 +2,5 @@
 namespace App\Security\Policies;
 
 interface IPermissionPolicy {
-  function getByID($id);
+  function getAssociatedClass();
 }

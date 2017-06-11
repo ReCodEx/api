@@ -6,15 +6,8 @@ use App\Model\Repository\Instances;
 use App\Security\Identity;
 
 class InstancePermissionPolicy implements IPermissionPolicy {
-  /** @var Instances */
-  private $instances;
-
-  public function __construct(Instances $instances) {
-    $this->instances = $instances;
-  }
-
-  function getByID($id) {
-    return $this->instances->get($id);
+  public function getAssociatedClass() {
+    return Instance::class;
   }
 
   public function isInstanceMember(Identity $identity, Instance $instance) {

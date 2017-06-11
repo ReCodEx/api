@@ -60,7 +60,7 @@ class UserStorage extends Nette\Object implements IUserStorage
 
   /**
    * Returns current user identity, if any.
-   * @return IIdentity|NULL
+   * @return Identity
    */
   function getIdentity()
   {

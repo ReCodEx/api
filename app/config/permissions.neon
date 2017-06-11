@@ -18,95 +18,98 @@ permissions:
 
     - allow: true
       role: student
-      resource: groups
-      actions: view-assignments
-      conditions: isGroupMember
+      resource: group
+      actions: viewAssignments
+      conditions: group.isMember
 
     - allow: true
       role: student
-      resource: groups
+      resource: group
       actions:
-          - view-students
-          - view-detail
-          - view-subgroups
-          - view-students
-          - view-admin
-      conditions: canAccessGroupDetail
+          - viewStudents
+          - viewDetail
+          - viewSubgroups
+          - viewStudents
+          - viewAdmin
+      conditions: group.canAccessDetail
 
     - allow: true
       role: student
-      resource: groups
+      resource: group
       actions:
-          - view-supervisors
-          - set-admin
-      conditions: isGroupAdmin
+          - viewSupervisors
+          - setAdmin
+      conditions: group.isAdmin
 
     - allow: true
       role: student
-      resource: groups
+      resource: group
       actions:
-        - view-supervisors
-      conditions: isGroupPublic
+        - viewSupervisors
+      conditions: group.isPublic
 
     - allow: true # A student can join public groups
       role: student
-      resource: groups
+      resource: group
       actions:
-        - add-student
+        - addStudent
       conditions:
-        - isGroupPublic
-        - users.isSameUser
+        - group.isPublic
+        - student.isSameUser
 
     - allow: true # A student can leave any group
       role: student
-      resource: groups
+      resource: group
       actions:
-        - add-student
+        - removeStudent
       conditions:
-        - isGroupMember
-        - users.isSameUser
+        - group.isMember
+        - student.isSameUser
 
     - allow: true
       role: student
-      resource: groups
-      actions: view-stats
-      conditions: areGroupStatsPublic
+      resource: group
+      actions: viewStats
+      conditions: group.areStatsPublic
 
     - allow: true
       role: student
-      resource: groups
-      actions: view-stats
-      conditions: areGroupStatsPublic
+      resource: group
+      actions: viewStats
+      conditions: group.areStatsPublic
 
     - allow: true
       role: student
-      resource: groups
+      resource: group
       actions:
-          - add-student
-          - remove-student
-          - view-exercises
-          - view-stats
-      conditions: isGroupSupervisor
+          - addStudent
+          - removeStudent
+          - viewExercises
+          - viewStats
+      conditions: group.isSupervisor
 
     - allow: true
       role: student
-      resource: groups
+      resource: group
+      actions:
+        - viewStats
+      conditions:
+        - group.isMember
+        - student.isSameUser
+
+    - allow: true
+      role: student
+      resource: group
       actions:
           - update
           - remove
-          - add-subgroup
-          - add-supervisor
-          - remove-supervisor
-      conditions: isGroupAdmin
+          - addSubgroup
+          - addSupervisor
+          - removeSupervisor
+      conditions: group.isAdmin
 
     - allow: true
       role: supervisor
-      resource: instances
-      actions: add-group
-      conditions: isInstanceMember
-
-    - allow: true
-      role: student
-      resource: users
-      actions: view-stats
-      conditions: isSameUser
+      resource: instance
+      actions: addGroup
+      conditions: instance.isMember

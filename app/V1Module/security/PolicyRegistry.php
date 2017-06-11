@@ -10,32 +10,44 @@ class PolicyRegistry {
   /** @var IPermissionPolicy[] */
   private $policies = [];
 
-  public function addPolicy($resource, $policy) {
-    $this->policies[$resource] = $policy;
+  public function addPolicy($policy) {
+    $this->policies[] = $policy;
   }
 
   public function get($resource, $policyName) {
-    if (!array_key_exists($resource, $this->policies)) {
-      throw new InvalidArgumentException(sprintf("Unknown resource '%s'", $resource));
-    }
+    $policy = $this->findPolicyOrThrow($resource);
+    $this->checkPolicy($policy, $policyName);
 
-    if (!method_exists($this->policies[$resource], $policyName)) {
-      throw new InvalidArgumentException(sprintf("Unknown policy '%s' for resource '%s'", $policyName, $resource));
-    }
-
-    return function (Identity $queriedUser, $context) use ($policyName, $resource) {
-      $policyObject = $this->policies[$resource];
-      $contextId = Arrays::get($context, $resource, NULL);
-      $contextObject = $contextId !== NULL ? $policyObject->getByID($contextId) : NULL;
-
-      if ($contextObject == NULL) {
-        $reflection = Method::from($policyObject, $policyName);
-        if (!$reflection->parameters[1]->optional) {
-          return FALSE;
-        }
-      }
-
-      return $policyObject->$policyName($queriedUser, $contextObject);
+    return function (Identity $queriedIdentity, $subject) use ($policyName, $resource) {
+      return $this->check($subject, $policyName, $queriedIdentity);
     };
+  }
+
+  public function check($subject, $policyName, $queriedIdentity): bool {
+    $policyObject = $this->findPolicyOrThrow($subject);
+    $this->checkPolicy($policyObject, $policyName);
+
+    return $policyObject->$policyName($queriedIdentity, $subject);
+  }
+
+  private function findPolicyOrThrow($subject): IPermissionPolicy {
+    foreach ($this->policies as $policy) {
+      $associatedClass = $policy->getAssociatedClass();
+      if ($subject instanceof $associatedClass) {
+        return $policy;
+      }
+    }
+
+    throw new InvalidArgumentException(sprintf("No policy for resource of type '%s'", get_class($subject)));
+  }
+
+  private function checkPolicy($policy, $policyName): void {
+    if (!method_exists($policy, $policyName)) {
+      throw new InvalidArgumentException(sprintf(
+        "Unknown policy '%s' for class '%s'",
+        $policyName,
+        get_class($policy)
+      ));
+    }
   }
 }
