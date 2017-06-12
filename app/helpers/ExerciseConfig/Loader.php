@@ -47,11 +47,10 @@ class Loader {
       $test->addPipeline($pipeline);
     }
 
-    if (!isset($data[Test::VARIABLES_KEY]) || !is_array($data[Test::VARIABLES_KEY])) {
-      throw new ExerciseConfigException("Exercise test does not have any defined variables");
-    }
-    foreach ($data[Test::VARIABLES_KEY] as $name => $value) {
-      $test->addVariable($name, $value);
+    if (isset($data[Test::VARIABLES_KEY]) && is_array($data[Test::VARIABLES_KEY])) {
+      foreach ($data[Test::VARIABLES_KEY] as $name => $value) {
+        $test->addVariable($name, $value);
+      }
     }
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
