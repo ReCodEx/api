@@ -108,8 +108,51 @@ permissions:
           - removeSupervisor
       conditions: group.isAdmin
 
+    ########################
+    # Instance permissions #
+    ########################
+
+    - allow: true
+      role: unauthenticated
+      resource: instance
+      actions: viewAll
+
     - allow: true
       role: supervisor
       resource: instance
       actions: addGroup
       conditions: instance.isMember
+
+    - allow: true
+      role: student
+      resource: instance
+      actions:
+          - viewGroups
+
+    - allow: true
+      role: supervisor
+      resource: instance
+      actions: []
+
+    - allow: true
+      role: superadmin # TODO instance admin role
+      resource: instance
+      actions:
+          - viewUsers
+          - viewLicences
+      conditions:
+          - instance.isMember
+
+     ####################
+     # User permissions #
+     ####################
+
+    - allow: true
+      role: student
+      resource: user
+      actions:
+          - updateProfile
+          - viewExercises
+          - viewInstances
+          - viewGroups
+      conditions: user.isSameUser

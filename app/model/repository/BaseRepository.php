@@ -34,6 +34,12 @@ class BaseRepository extends Nette\Object {
     return $this->repository->findOneBy($params);
   }
 
+  /**
+   * Find an entity by id and throw an exception if no such entity exists
+   * @param $id
+   * @return mixed
+   * @throws NotFoundException
+   */
   public function findOrThrow($id) {
     $entity = $this->get($id);
     if (!$entity) {

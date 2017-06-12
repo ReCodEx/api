@@ -2,10 +2,12 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Security\ACL\IUserPermissions;
 
 /**
  * User management endpoints
@@ -25,11 +27,21 @@ class UsersPresenter extends BasePresenter {
   public $emailVerificationHelper;
 
   /**
+   * @var IUserPermissions
+   * @inject
+   */
+  public $userAcl;
+
+  /**
    * Get a list of all users
    * @GET
-   * @UserIsAllowed(users="view-all")
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
+    if (!$this->userAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
     $users = $this->users->findAll();
     $this->sendSuccessResponse($users);
   }
@@ -37,19 +49,20 @@ class UsersPresenter extends BasePresenter {
   /**
    * Get details of a user account
    * @GET
-   * @LoggedIn
-   * @UserIsAllowed(users="view-all")
    * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canViewDetail($user)) {
+      throw new ForbiddenRequestException();
+    }
     $this->sendSuccessResponse($user);
   }
 
   /**
    * Update the profile associated with a user account
    * @POST
-   * @LoggedIn
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
@@ -63,8 +76,12 @@ class UsersPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
-    // fill user with all provided datas
+    // fill user with provided data
     $user = $this->getCurrentUser();
+
+    if (!$this->userAcl->canUpdateProfile($user)) {
+      throw new ForbiddenRequestException();
+    }
 
     // change the email only of the user wants to
     $email = $req->getPost("email");
@@ -103,7 +120,6 @@ class UsersPresenter extends BasePresenter {
   /**
    * Update the profile settings
    * @POST
-   * @LoggedIn
    * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=FALSE)
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
    * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=FALSE)
@@ -113,6 +129,10 @@ class UsersPresenter extends BasePresenter {
     $req = $this->getRequest();
     $user = $this->getCurrentUser();
     $settings = $user->getSettings();
+
+    if ($this->userAcl->canUpdateProfile($user)) {
+      throw new ForbiddenRequestException();
+    }
 
     $darkTheme = $req->getPost("darkTheme") !== NULL
       ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
@@ -137,12 +157,16 @@ class UsersPresenter extends BasePresenter {
   /**
    * Get a list of groups for a user
    * @GET
-   * @LoggedIn
-   * @UserIsAllowed(users="view-groups")
    * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionGroups(string $id) {
     $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canViewGroups($user)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
       "student" => $user->getGroupsAsStudent()->getValues(),
@@ -161,12 +185,16 @@ class UsersPresenter extends BasePresenter {
   /**
    * Get a list of instances where a user is registered
    * @GET
-   * @LoggedIn
-   * @UserIsAllowed(users="view-instances")
    * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionInstances(string $id) {
     $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canViewInstances($user)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse([
       $user->getInstance() // @todo change when the user can be member of multiple instances
     ]);
@@ -175,12 +203,16 @@ class UsersPresenter extends BasePresenter {
   /**
    * Get a list of exercises authored by a user
    * @GET
-   * @LoggedIn
-   * @UserIsAllowed(users="view-exercises")
    * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canViewExercises($user)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse($user->getExercises()->getValues());
   }
 

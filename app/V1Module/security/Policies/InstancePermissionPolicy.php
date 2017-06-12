@@ -10,7 +10,7 @@ class InstancePermissionPolicy implements IPermissionPolicy {
     return Instance::class;
   }
 
-  public function isInstanceMember(Identity $identity, Instance $instance) {
+  public function isMember(Identity $identity, Instance $instance) {
     $user = $identity->getUserData();
     return $user ? $user->belongsTo($instance) : FALSE;
   }
