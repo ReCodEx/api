@@ -119,7 +119,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseConfig($newConfig);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse("OK");
+    $this->sendSuccessResponse($this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig));
   }
 
   /**

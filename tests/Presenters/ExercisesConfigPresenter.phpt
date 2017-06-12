@@ -123,7 +123,6 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
 
     $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     Assert::count(2, $exerciseConfig->getTests());
