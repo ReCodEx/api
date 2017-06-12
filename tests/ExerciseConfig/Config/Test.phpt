@@ -69,13 +69,6 @@ class TestTest extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testMissingVariables() {
-    unset(self::$config[Test::VARIABLES_KEY]);
-    Assert::exception(function () {
-      $this->loader->loadTest(self::$config);
-    }, ExerciseConfigException::class);
-  }
-
   public function testMissingEnvironments() {
     unset(self::$config[Test::ENVIRONMENTS_KEY]);
     Assert::exception(function () {
