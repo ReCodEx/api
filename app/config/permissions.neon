@@ -180,6 +180,7 @@ permissions:
           - remove
           - submit
           - viewSubmissions
+          - resubmitSubmissions
       conditions:
           - assignment.isSupervisor
 
@@ -199,6 +200,13 @@ permissions:
           - assignExercise
       conditions:
           - exercise.isGroupSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
           - group.isSupervisor
 
     - allow: true

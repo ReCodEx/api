@@ -362,7 +362,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get a list of solutions submitted by a user of an assignment
    * @GET
-   * @UserIsAllowed(assignments="view-submissions")
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
@@ -385,7 +384,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get the best solution by a user to an assignment
    * @GET
-   * @UserIsAllowed(assignments="view-submissions")
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
@@ -393,16 +391,20 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionBestSubmission(string $id, string $userId) {
     /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
-    $submission = $assignment->getBestSolution($this->users->findOrThrow($userId));
+    $user = $this->users->findOrThrow($userId);
+    $submission = $assignment->getBestSolution($user);
 
-    $this->checkSubmissionAccess($userId, $assignment, $submission);
+    if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
+        !$this->submissionAcl->canViewDetail($submission)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse($submission);
   }
 
   /**
    * Submit a solution of an assignment
    * @POST
-   * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
@@ -421,6 +423,10 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $userId !== NULL
       ? $this->users->findOrThrow($userId)
       : $loggedInUser;
+
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
+      throw new ForbiddenRequestException();
+    }
 
     if (!$assignment->canReceiveSubmissions($loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
@@ -525,25 +531,6 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Check if current user can access submissions to given assignment by given user.
-   * @param string $userId The user whose submissions are to be accessed
-   * @param Assignment $assignment The assignment whose submissions are to be accessed
-   * @param Submission $submission
-   * @throws ForbiddenRequestException When current user does not have sufficient rights
-   */
-  private function checkSubmissionAccess(string $userId, Assignment $assignment, Submission $submission) {
-    $currentUser = $this->getCurrentUser();
-
-    $isSubmissionOwner = $userId === $currentUser->getId();
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
-    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if (!($isSubmissionOwner && $submission->isPublic()) && !$isSupervisor && !$isAdmin) {
-      throw new ForbiddenRequestException("You cannot access these submissions");
-    }
-  }
-
-  /**
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
@@ -556,10 +543,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Submission $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
 
-    $isSupervisor = $oldSubmission->getAssignment()->getGroup()->isSupervisorOf($user);
-    $isAdmin = $oldSubmission->getAssignment()->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
-
-    if (!$isSupervisor && !$isAdmin) {
+    if ($this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
     }
 
@@ -588,10 +572,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
 
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($user);
-    $isAdmin = $assignment->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
-
-    if (!$isSupervisor && !$isAdmin) {
+    if ($this->assignmentAcl->canResubmitSubmissions($assignment)) {
       throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
     }
 
