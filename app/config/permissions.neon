@@ -156,3 +156,84 @@ permissions:
           - viewInstances
           - viewGroups
       conditions: user.isSameUser
+
+    ##########################
+    # Assignment permissions #
+    ##########################
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - view-detail
+          - submit
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - viewDetail
+          - update
+          - remove
+          - submit
+          - viewSubmissions
+      conditions:
+          - assignment.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isAuthor
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isGroupSupervisor
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isPublic
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - viewSubmissions
+      conditions:
+          - student.isSameUser
+
+    #########################
+    # Submission permissions #
+    ##########################
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewDetail
+      conditions:
+          - submission.isPublic
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewDetail
+      conditions:
+          - submission.isSupervisor

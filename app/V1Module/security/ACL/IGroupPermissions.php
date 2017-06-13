@@ -2,6 +2,7 @@
 namespace App\Security\ACL;
 
 
+use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
 
@@ -24,5 +25,6 @@ interface IGroupPermissions
   function canAddSubgroup(Group $group): bool;
   function canUpdate(Group $group): bool;
   function canRemove(Group $group): bool;
-  function canViewExercises($group): bool;
+  function canViewExercises(Group $group): bool;
+  function canAssignExercise(Group $group, Exercise $exercise): bool;
 }

@@ -26,6 +26,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method removeLocalizedText(Assignment $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
+ * @method User getAuthor()
+ * @method Group getGroup()
  */
 class Exercise implements JsonSerializable
 {
