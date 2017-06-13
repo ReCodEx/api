@@ -3,6 +3,7 @@
 include '../../bootstrap.php';
 
 use App\Helpers\ExerciseConfig\Environment;
+use App\Helpers\ExerciseConfig\Pipeline;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -11,27 +12,27 @@ class TestEnvironment extends Tester\TestCase
 {
   static $config = [
     "pipelines" => [
-      "hello",
-      "world"
+      "hello" => [
+        "variables" => [
+          "hello" => [ "type" => "string", "value" => "world" ],
+          "world" => [ "type" => "string", "value" => "hello" ]
+        ]
+      ],
+      "world" => [
+        "variables" => []
+      ]
     ],
-    "variables" => [
-      "hello" => "world",
-      "world" => "hello"
-    ]
+
   ];
 
   static $pipelines = [
     "pipelines" => [
-      "pipelineA",
-      "pipelineB"
-    ]
-  ];
-
-  static $variables = [
-    "variables" => [
-      "varA" => "valA",
-      "varB" => "valB",
-      "varC" => "valC"
+      "pipelineA" => [
+        "variables" => []
+      ],
+      "pipelineB" => [
+        "variables" => []
+      ]
     ]
   ];
 
@@ -50,43 +51,30 @@ class TestEnvironment extends Tester\TestCase
   public function testParsingPipelines() {
     $env = $this->loader->loadEnvironment(self::$pipelines);
     Assert::count(2, $env->getPipelines());
-    Assert::count(0, $env->getVariables());
-    Assert::equal(self::$pipelines["pipelines"], $env->getPipelines());
 
-    Assert::contains("pipelineA", $env->getPipelines());
-    Assert::contains("pipelineB", $env->getPipelines());
+    Assert::type(Pipeline::class, $env->getPipeline("pipelineA"));
+    Assert::type(Pipeline::class, $env->getPipeline("pipelineB"));
   }
 
-  public function testParsingVariables() {
-    $env = $this->loader->loadEnvironment(self::$variables);
-    Assert::count(0, $env->getPipelines());
-    Assert::count(3, $env->getVariables());
-    Assert::equal(self::$variables["variables"], $env->getVariables());
+  public function testPipelinesOperations() {
+    $environment = new Environment();
+    $pipeline = new Pipeline;
 
-    Assert::equal("valA", $env->getVariableValue("varA"));
-    Assert::equal("valB", $env->getVariableValue("varB"));
-    Assert::equal("valC", $env->getVariableValue("varC"));
-  }
+    $environment->addPipeline("pipelineA", $pipeline);
+    Assert::type(Pipeline::class, $environment->getPipeline("pipelineA"));
 
-  public function testVariablesOperations() {
-    $env = new Environment;
+    $environment->removePipeline("non-existant");
+    Assert::count(1, $environment->getPipelines());
 
-    $env->addVariable("variableA", "valueA");
-    Assert::equal("valueA", $env->getVariableValue("variableA"));
-
-    $env->removeVariable("non-existant");
-    Assert::count(1, $env->getVariables());
-
-    $env->removeVariable("variableA");
-    Assert::count(0, $env->getVariables());
+    $environment->removePipeline("pipelineA");
+    Assert::count(0, $environment->getPipelines());
   }
 
   public function testCorrect() {
     $env = $this->loader->loadEnvironment(self::$config);
     Assert::count(2, $env->getPipelines());
-    Assert::count(2, $env->getVariables());
-    Assert::equal(self::$config["pipelines"], $env->getPipelines());
-    Assert::equal(self::$config["variables"], $env->getVariables());
+    Assert::equal("hello", $env->getPipeline("hello")->getVariable("world")->getValue());
+    Assert::equal("world", $env->getPipeline("hello")->getVariable("hello")->getValue());
     Assert::equal(self::$config, $env->toArray());
   }
 

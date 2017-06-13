@@ -8,25 +8,33 @@ App\Model\Entity\ExerciseConfig:
               tests:
                 "Test 1":
                   pipelines:
-                    - pipeline1
-                  variables:
-                    varA: valA
+                    "pipeline1":
+                      variables:
+                        varA:
+                          type: string
+                          value: valA
                   environments:
                     java8:
                       pipelines:
-                        - pipelineJava
-                      variables:
-                        varJava: valJava
-                    cpp11:
-                      variables:
-                        varCpp: valCpp
+                        "pipelineJava":
+                          variables:
+                            varJava:
+                              type: string
+                              value: valJava
+                    cpp11: []
                 "Test 2":
                   pipelines:
-                    - pipeline2
-                  variables:
-                    varB: valB
+                    "pipeline2":
+                      variables:
+                        varB:
+                          type: file
+                          value: valB
                   environments:
                     cpp11:
-                      variables:
-                        varCpp: valCpp
+                      pipelines:
+                        "pipeline2":
+                          variables:
+                            varCpp:
+                              type: file
+                              value: valCpp
               '''
