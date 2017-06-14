@@ -4,12 +4,14 @@ namespace App\V1Module\Presenters;
 
 use App\Helpers\EvaluationLoader;
 use App\Helpers\FileServerProxy;
+use App\Model\Entity\Group;
 use App\Model\Entity\Submission;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
+use App\Security\ACL\ISubmissionPermissions;
 
 /**
  * Endpoints for manipulation of solution submissions
@@ -48,37 +50,38 @@ class SubmissionsPresenter extends BasePresenter {
   public $fileServerProxy;
 
   /**
+   * @var ISubmissionPermissions
+   * @inject
+   */
+  public $submissionAcl;
+
+  /**
    * Get a list of all submissions, ever
    * @GET
-   * @UserIsAllowed(submissions="view-all")
    */
   public function actionDefault() {
+    if (!$this->submissionAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
     $submissions = array_filter($this->submissions->findAll(), (function (Submission $submission) {
-      return $submission->isPublic()
-        || $submission->getAssignment()->getGroup()->isAdminOf($this->getCurrentUser())
-        || $submission->getAssignment()->getGroup()->isSupervisorOf($this->getCurrentUser());
+      return $this->submissionAcl->canViewDetail($submission);
     }));
+
     $this->sendSuccessResponse($submissions);
   }
 
   /**
    * Get information about the evaluation of a submission
    * @GET
-   * @UserIsAllowed(submissions="view-evaluation")
    * @param string $id Identifier of the submission
    * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $id) {
     /** @var Submission $submission */
     $submission = $this->submissions->findOrThrow($id);
-    $currentUser = $this->getCurrentUser();
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
 
-    $isFileOwner = $submission->getUser()->getId() === $currentUser->getId();
-    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
-    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if (!($isFileOwner && $submission->isPublic()) && !$isSupervisor && !$isAdmin) {
+    if ($this->submissionAcl->canViewEvaluation($submission)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
@@ -93,7 +96,7 @@ class SubmissionsPresenter extends BasePresenter {
       }
     }
 
-    $canViewDetails = $submission->getAssignment()->getCanViewLimitRatios() || $isAdmin || $isSupervisor;
+    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
     $this->sendSuccessResponse($submission->getData($canViewDetails));
   }
 
@@ -101,7 +104,6 @@ class SubmissionsPresenter extends BasePresenter {
    * Set new amount of bonus points for a submission
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-   * @UserIsAllowed(submissions="set-bonus-points")
    * @param string $id Identifier of the submission
    * @throws ForbiddenRequestException
    */
@@ -110,11 +112,7 @@ class SubmissionsPresenter extends BasePresenter {
     $submission = $this->submissions->findOrThrow($id);
     $evaluation = $submission->getEvaluation();
 
-    $currentUser = $this->getCurrentUser();
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
-    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-    if (!$isSupervisor && !$isAdmin) {
+    if (!$this->submissionAcl->canSetBonusPoints($submission)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }
 
@@ -127,7 +125,6 @@ class SubmissionsPresenter extends BasePresenter {
   /**
    * Set submission of student as accepted, this submission will be then presented as the best one.
    * @GET
-   * @UserIsAllowed(submissions="set-accepted")
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
    */
@@ -138,11 +135,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Submission does not have evaluation yet");
     }
 
-    $currentUser = $this->getCurrentUser();
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
-    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-    if (!$isSupervisor && !$isAdmin) {
+    if (!$this->submissionAcl->canSetAccepted($submission)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
 
@@ -156,6 +149,8 @@ class SubmissionsPresenter extends BasePresenter {
     $submission->setAccepted(true);
     $this->submissions->flush();
 
+    /** @var Group $groupOfSubmission */
+    $groupOfSubmission = $submission->getAssignment()->getGroup();
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getUser()->getId());
   }
 
@@ -169,11 +164,7 @@ class SubmissionsPresenter extends BasePresenter {
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->submissions->findOrThrow($id);
 
-    $currentUser = $this->getCurrentUser();
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $isSupervisor = $groupOfSubmission->isSupervisorOf($currentUser);
-    $isAdmin = $groupOfSubmission->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-    if (!$isSupervisor && !$isAdmin) {
+    if (!$this->submissionAcl->canDownloadResultArchive($submission)) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 

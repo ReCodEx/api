@@ -25,4 +25,18 @@ class SubmissionPermissionPolicy implements IPermissionPolicy {
 
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
+
+  public function isAuthor(Identity $identity, Submission $submission) {
+    $user = $identity->getUserData();
+
+    if ($user === NULL) {
+      return FALSE;
+    }
+
+    return $user === $submission->getUser();
+  }
+
+  public function areEvaluationDetailsPublic(Identity $identity, Submission $submission) {
+    return $submission->getAssignment()->getCanViewLimitRatios();
+  }
 }

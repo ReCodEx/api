@@ -235,7 +235,19 @@ permissions:
       resource: submission
       actions:
           - viewDetail
+          - viewEvaluation
       conditions:
+          - submission.isPublic
+          - submission.isAuthor
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewEvaluationDetails
+      conditions:
+          - submission.areEvaluationDetailsPublic
+          - submission.isAuthor
           - submission.isPublic
 
     - allow: true
@@ -243,5 +255,10 @@ permissions:
       resource: submission
       actions:
           - viewDetail
+          - viewEvaluation
+          - viewEvaluationDetails
+          - setBonusBoints
+          - setAccepted
+          - downloadResultArchive
       conditions:
           - submission.isSupervisor
