@@ -79,8 +79,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
     Validators::init();
     $this->processParams($actionReflection);
-    $this->restrictUnauthorizedAccess($presenterReflection);
-    $this->restrictUnauthorizedAccess($actionReflection);
   }
 
   /**
@@ -184,65 +182,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     return $value;
-  }
-
-  /**
-   * Restricts access to certain actions according to ACL
-   * @param  ClassType|Reflection\Method $reflection Information about current action
-   * @throws ForbiddenRequestException
-   * @throws UnauthorizedException
-   */
-  private function restrictUnauthorizedAccess($reflection) {
-    if ($reflection->hasAnnotation("LoggedIn") && !$this->getUser()->isLoggedIn()) {
-      throw new UnauthorizedException;
-    }
-
-    if ($reflection->hasAnnotation("Role")
-      && !$this->getUser()->isInRole($reflection->getAnnotation("Role"))) {
-      throw new ForbiddenRequestException("You do not have sufficient rights to perform this action.");
-    }
-
-    if (!$reflection->hasAnnotation("UserIsAllowed")) {
-      return;
-    }
-
-    $requirementsSatisfied = FALSE;
-
-    $identity = $this->getUser()->getIdentity();
-    if (!($identity instanceof Identity)) {
-      throw new LogicException(); // Never reached
-    }
-
-    $context = [];
-
-    if ($reflection->hasAnnotation("Resource")) {
-      foreach ($reflection->getAnnotation("Resource") as $type => $idParam) {
-        if (array_key_exists($idParam, $this->getRequest()->parameters)) {
-          $context[$type] = $this->getRequest()->parameters[$idParam];
-        } else {
-          $context[$type] = $this->parameters->$idParam;
-        }
-      }
-    }
-
-    foreach ($reflection->getAnnotations()["UserIsAllowed"] as $item) {
-      $itemSatisfied = TRUE;
-
-      foreach ($item as $resource => $action) {
-        if (!$this->authorizator->isAllowed($identity, $resource, $action, $context)) {
-          $itemSatisfied = FALSE;
-        }
-      }
-
-      if ($itemSatisfied) {
-        $requirementsSatisfied = TRUE;
-        break;
-      }
-    }
-
-    if (!$requirementsSatisfied) {
-      throw new ForbiddenRequestException("You are not allowed to perform this action.");
-    }
   }
 
   protected function sendSuccessResponse($payload, $code = IResponse::S200_OK) {

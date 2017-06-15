@@ -157,7 +157,6 @@ class SubmissionsPresenter extends BasePresenter {
   /**
    * Download result archive from backend for particular submission.
    * @GET
-   * @UserIsAllowed(submissions="download-result-archive")
    * @param string $id
    * @throws ForbiddenRequestException
    */
