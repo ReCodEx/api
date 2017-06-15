@@ -3,6 +3,7 @@ namespace App\Security;
 
 
 use Nette\IOException;
+use Nette\Reflection\ClassType;
 use Nette\Utils\Arrays;
 use Nette\Utils\Neon;
 
@@ -25,6 +26,22 @@ class Loader {
     $this->aclModuleBuilder = new ACLModuleBuilder();
   }
 
+  private function calculateHash($configFilePath, $aclInterfaces) {
+    $interfaceHashes = [];
+
+    foreach ($aclInterfaces as $interface) {
+      $reflection = new ClassType($interface);
+      $interfaceHashes[$interface] = sha1_file($reflection->getFileName());
+    }
+
+    $hash = sha1(serialize([
+      "config" => sha1_file($configFilePath),
+      "interfaces" => $interfaceHashes
+    ]));
+
+    return substr($hash, 0, 10);
+  }
+
   private function loadGeneratedClasses() {
     if ($this->loaded) {
       return;
@@ -34,7 +51,9 @@ class Loader {
       @mkdir($this->tempDirectory); // @ - directory may already exist
     }
 
-    $file = $this->tempDirectory . '/generated_classes.php';
+    $hash = $this->calculateHash($this->configFilePath, $this->aclInterfaces);
+
+    $file = $this->tempDirectory . '/generated_classes_' . $hash . '.php';
     $lock = fopen($file . '.lock', 'c+');
     flock($lock, LOCK_EX);
 
@@ -59,11 +78,12 @@ class Loader {
       file_put_contents($file, $content);
     }
 
+    flock($lock, LOCK_UN);
+
     if ((@include $file) === FALSE) {
       throw new IOException("Could not read generated security classes");
     }
 
-    flock($lock, LOCK_UN);
     $this->loaded = TRUE;
   }
 
