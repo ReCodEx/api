@@ -31,9 +31,4 @@ class Comments extends BaseRepository {
   public function persistThread(CommentThread $thread) {
     $this->persist($thread);
   }
-
-  public function findUsersComment(User $user, string $id) {
-    return $this->comments->findOneBy([ "user" => $user, "id" => $id ]);
-  }
-
 }

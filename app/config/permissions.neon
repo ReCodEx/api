@@ -262,3 +262,23 @@ permissions:
           - downloadResultArchive
       conditions:
           - submission.isSupervisor
+
+    #######################
+    # Comment permissions #
+    #######################
+
+    - allow: true
+      role: student
+      resource: comment
+      actions:
+          - alter
+      conditions:
+          - comment.isAuthor
+
+    - allow: true # TODO
+      role: student
+      resource: comment
+      actions:
+          - createThread
+          - viewThread
+          - addComment

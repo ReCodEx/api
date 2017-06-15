@@ -8,6 +8,8 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method User getUser()
+ * @method CommentThread getThread()
  */
 class Comment implements JsonSerializable
 {
