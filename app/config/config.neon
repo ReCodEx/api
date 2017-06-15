@@ -130,10 +130,23 @@ acl:
     group: App\Security\ACL\IGroupPermissions
     instance: App\Security\ACL\IInstancePermissions
     user: App\Security\ACL\IUserPermissions
+    assignment: App\Security\ACL\IAssignmentPermissions
+    comment: App\Security\ACL\ICommentPermissions
+    exercise: App\Security\ACL\IExercisePermissions
+    hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
+    runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
+    submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
+    submission: App\Security\ACL\ISubmissionPermissions
+    uploadedFile: App\Security\ACL\IUploadedFilePermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
     user: App\Security\Policies\UserPermissionPolicy
+    assignment: App\Security\Policies\AssignmentPermissionPolicy
+    comment: App\Security\Policies\CommentPermissionPolicy
+    exercise: App\Security\Policies\ExercisePermissionPolicy
+    submission: App\Security\Policies\SubmissionPermissionPolicy
+    uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
