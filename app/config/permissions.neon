@@ -282,3 +282,50 @@ permissions:
           - createThread
           - viewThread
           - addComment
+
+    ########################
+    # Exercise permissions #
+    ########################
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - update
+          - remove
+          - fork
+      conditions:
+          - exercise.isAuthor
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - fork
+      conditions:
+          - exercise.isGroupSupervisor
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - fork
+      conditions:
+          - exercise.isPublic
+
+    - allow: true
+      role: supervisor
+      resource: exercise
+      actions:
+          - create
+
+    - allow: true
+      role: supervisor
+      resource: group
+      actions:
+          - createExercise
+      conditions:
+          - group.isSupervisor

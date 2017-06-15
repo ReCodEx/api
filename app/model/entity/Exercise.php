@@ -28,6 +28,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
  * @method Group getGroup()
+ * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
+ * @method int getVersion()
+ * @method void setDifficulty(string $difficulty)
+ * @method void setIsPublic(bool $isPublic)
+ * @method void setUpdatedAt(DateTime $date)
+ * @method void setDescription(string $description)
  */
 class Exercise implements JsonSerializable
 {

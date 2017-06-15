@@ -7,7 +7,6 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
@@ -25,8 +24,9 @@ use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\ExerciseFiles;
 use App\Model\Repository\Groups;
+use App\Security\ACL\IExercisePermissions;
+use App\Security\ACL\IGroupPermissions;
 use Exception;
-use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise manipulation
@@ -108,12 +108,28 @@ class ExercisesPresenter extends BasePresenter {
   public $uploadedFileStorage;
 
   /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
+
+  /**
+   * @var IGroupPermissions
+   * @inject
+   */
+  public $groupAcl;
+
+  /**
    * Get a list of exercises with an optional filter
    * @GET
-   * @UserIsAllowed(exercises="view-all")
    * @param string $search text which will be searched in exercises names
+   * @throws ForbiddenRequestException
    */
   public function actionDefault(string $search = NULL) {
+    if (!$this->exerciseAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
     $user = $this->getCurrentUser();
     $exercises = $this->exercises->searchByName($search, $user);
     $this->sendSuccessResponse($exercises);
@@ -122,13 +138,14 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Get details of an exercise
    * @GET
-   * @UserIsAllowed(exercises="view-detail")
    * @param string $id identification of exercise
+   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
-      throw new NotFoundException;
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse($exercise);
@@ -137,8 +154,10 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Update detail of an exercise
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
+   * @throws BadRequestException
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    * @Param(type="post", name="name", description="Name of exercise")
    * @Param(type="post", name="version", description="Version of the edited exercise")
    * @Param(type="post", name="description", description="Some brief description of this exercise for supervisors")
@@ -153,11 +172,10 @@ class ExercisesPresenter extends BasePresenter {
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $description = $req->getPost("description");
 
-    // check if user can modify requested exercise
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new BadRequestException("You are not author of this exercise, thus you cannot update it.");
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot update this exercise.");
     }
 
     $version = intval($req->getPost("version"));
@@ -165,7 +183,7 @@ class ExercisesPresenter extends BasePresenter {
       throw new BadRequestException("The exercise was edited in the meantime and the version has changed. Current version is {$exercise->getVersion()}."); // @todo better exception
     }
 
-    // make changes to newly created excercise
+    // make changes to newly created exercise
     $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
     $exercise->setIsPublic($isPublic);
@@ -209,15 +227,14 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Check if the version of the exercise is up-to-date.
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="version", validation="numericint", description="Version of the exercise.")
    * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
    */
   public function actionValidate($id) {
     $exercise = $this->exercises->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$exercise->canModifyDetail($user)) {
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You cannot modify this assignment.");
     }
 
@@ -233,16 +250,18 @@ class ExercisesPresenter extends BasePresenter {
    * Change runtime configuration of exercise.
    * Configurations can be added or deleted here, based on what is provided in arguments.
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws JobConfigStorageException
    * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
    */
   public function actionUpdateRuntimeConfigs(string $id) {
     $req = $this->getRequest();
     $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot update it.");
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannnot update this exercise.");
     }
 
     // retrieve configuration and prepare some temp variables
@@ -289,7 +308,6 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Associate supplementary files with an exercise and upload them to remote file server
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of exercise
    * @throws BadRequestException
@@ -297,18 +315,18 @@ class ExercisesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionUploadSupplementaryFiles(string $id) {
-    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot update this exercise.");
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $supplementaryFiles = [];
     $deletedFiles = [];
 
+    /** @var UploadedFile $file */
     foreach ($files as $file) {
-      if (!($file instanceof UploadedFile)) {
+      if (get_class($file) !== UploadedFile::class) {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
@@ -333,15 +351,13 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Get list of all supplementary files for an exercise
    * @GET
-   * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
   public function actionGetSupplementaryFiles(string $id) {
-    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException("You cannot view supplementary files for this exercise.");
     }
 
     $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
@@ -350,7 +366,6 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Associate additional exercise files with an exercise
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="files", description="Identifiers of additional files")
    * @param string $id identification of exercise
    * @throws BadRequestException
@@ -358,17 +373,17 @@ class ExercisesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionUploadAdditionalFiles(string $id) {
-    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot upload files for it.");
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot upload files for this exercise.");
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $additionalFiles = [];
 
+    /** @var UploadedFile $file */
     foreach ($files as $file) {
-      if (!($file instanceof UploadedFile)) {
+      if (get_class($file) !== UploadedFile::class) {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
@@ -384,15 +399,14 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Get a list of all additional files for an exercise
    * @GET
-   * @UserIsAllowed(exercises="update")
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
   public function actionGetAdditionalFiles(string $id) {
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not author of this exercise, thus you cannot view supplementary files for it.");
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot view supplementary files for this exercise.");
     }
 
     $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
@@ -402,7 +416,6 @@ class ExercisesPresenter extends BasePresenter {
    * Create exercise with all default values.
    * Exercise detail can be then changed in appropriate endpoint.
    * @POST
-   * @UserIsAllowed(exercises="create")
    * @Param(type="post", name="groupId", required=FALSE, description="Identifier of the group to which exercise belongs to")
    */
   public function actionCreate() {
@@ -411,10 +424,10 @@ class ExercisesPresenter extends BasePresenter {
     $group = NULL;
     if ($this->getRequest()->getPost("groupId")) {
       $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    }
 
-      if (!$group->isAdminOf($user) && !$group->isSupervisorOf($user)) {
-        throw new ForbiddenRequestException("You are not allowed to create exercise in this group");
-      }
+    if (!$this->exerciseAcl->canCreate() || ($group && !$this->groupAcl->canCreateExercise($group))) {
+      throw new ForbiddenRequestException();
     }
 
     $exercise = Exercise::create($user, $group);
@@ -427,14 +440,13 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Delete an exercise
    * @DELETE
-   * @UserIsAllowed(exercises="remove")
    * @param string $id
    * @throws ForbiddenRequestException
    */
   public function actionRemove(string $id) {
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
+    if (!$this->exerciseAcl->canRemove($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to remove this exercise.");
     }
 
@@ -445,13 +457,14 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * Fork exercise from given one into the completely new one.
    * @POST
-   * @UserIsAllowed(exercises="create")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
    */
   public function actionForkFrom(string $id) {
     $user = $this->getCurrentUser();
     $forkFrom = $this->exercises->findOrThrow($id);
 
-    if (!$forkFrom->canAccessDetail($user)) {
+    if (!$this->exerciseAcl->canFork($forkFrom)) {
       throw new ForbiddenRequestException("Exercise cannot be forked by you");
     }
 
