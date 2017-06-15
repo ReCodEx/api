@@ -23,6 +23,8 @@ use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
+use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IExercisePermissions;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -84,15 +86,20 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $runtimeEnvironments;
 
   /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
+
+  /**
    * Get reference solutions for an exercise
    * @GET
-   * @UserIsAllowed(exercises="view-detail")
    * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
    */
   public function actionExercise(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise solutions");
     }
 
@@ -103,14 +110,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solution evaluations for an exercise solution. Evaluations
    * are grouped by environment identification.
    * @GET
-   * @UserIsAllowed(exercises="view-detail")
    * @param string $solutionId identifier of the reference exercise solution
    * @throws ForbiddenRequestException
    */
   public function actionEvaluations(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
     $exercise = $solution->getExercise();
-    if (!$exercise->canAccessDetail($this->getCurrentUser())) {
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
     }
 
@@ -142,8 +148,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $user = $this->getCurrentUser();
 
-    if (!$exercise->isAuthor($user)) {
-      throw new ForbiddenRequestException("Only the exercise author can create reference solutions");
+    if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
+      throw new ForbiddenRequestException("You cannot create reference solutions for this exercise");
     }
 
     $req = $this->getRequest();
@@ -185,13 +191,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Evaluate a single reference exercise solution for all configured hardware groups
    * @POST
-   * @UserIsAllowed(assignments="create")
    * @param string $id Identifier of the reference solution
-   * @throws NotFoundException
+   * @throws ForbiddenRequestException
    */
   public function actionEvaluate(string $id) {
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
+
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($referenceSolution->getExercise())) {
+      throw new ForbiddenRequestException();
+    }
 
     /** @var RuntimeConfig $runtimeConfig */
     list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
@@ -206,14 +215,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
    * @POST
-   * @UserIsAllowed(assignments="create")
-   * @throws SubmissionFailedException
    * @param string $exerciseId Identifier of the exercise
+   * @throws ForbiddenRequestException
    */
   public function actionEvaluateForExercise($exerciseId) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $result = [];
+
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($exercise)) {
+      throw new ForbiddenRequestException();
+    }
 
     foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
       list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
@@ -264,7 +276,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Download result archive from backend for a reference solution evaluation
    * @GET
-   * @UserIsAllowed(assignments="create")
    * @param string $evaluationId
    * @throws NotReadyException
    * @throws ForbiddenRequestException
@@ -272,6 +283,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public function actionDownloadResultArchive(string $evaluationId) {
     /** @var ReferenceSolutionEvaluation $evaluation */
     $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($evaluation->getReferenceSolution()->getExercise())) {
+      throw new ForbiddenRequestException();
+    }
 
     if (!$evaluation->hasEvaluation()) {
       throw new NotReadyException("Submission is not evaluated yet");

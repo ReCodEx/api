@@ -13,4 +13,6 @@ interface IExercisePermissions {
   function canFork(Exercise $exercise): bool;
   function canViewLimits(Exercise $exercise): bool;
   function canSetLimits(Exercise $exercise): bool;
+  function canAddReferenceSolution(Exercise $exercise): bool;
+  function canEvaluateReferenceSolution(Exercise $exercise): bool;
 }

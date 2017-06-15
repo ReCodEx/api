@@ -297,6 +297,8 @@ permissions:
           - update
           - remove
           - fork
+          - addReferenceSolution
+          - evaluateReferenceSolution
       conditions:
           - exercise.isAuthor
 
@@ -308,6 +310,7 @@ permissions:
           - viewLimits
           - setLimits
           - fork
+          - evaluateReferenceSolution
       conditions:
           - exercise.isGroupSupervisor
 
