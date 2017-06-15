@@ -11,4 +11,6 @@ interface IExercisePermissions {
   function canCreate(): bool;
   function canRemove(Exercise $exercise): bool;
   function canFork(Exercise $exercise): bool;
+  function canViewLimits(Exercise $exercise): bool;
+  function canSetLimits(Exercise $exercise): bool;
 }

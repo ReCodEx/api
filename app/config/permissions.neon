@@ -292,6 +292,8 @@ permissions:
       resource: exercise
       actions:
           - viewDetail
+          - viewLimits
+          - setLimits
           - update
           - remove
           - fork
@@ -303,6 +305,8 @@ permissions:
       resource: exercise
       actions:
           - viewDetail
+          - viewLimits
+          - setLimits
           - fork
       conditions:
           - exercise.isGroupSupervisor
