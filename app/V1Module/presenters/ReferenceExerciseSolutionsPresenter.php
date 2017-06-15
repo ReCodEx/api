@@ -138,7 +138,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
    * @Param(type="post", name="runtimeEnvironmentId", description="ID of runtime for this solution")
-   * @UserIsAllowed(exercises="create")
    * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
