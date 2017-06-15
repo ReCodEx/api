@@ -45,36 +45,6 @@ class UploadedFilesPresenter extends BasePresenter {
   public $uploadedFileAcl;
 
   /**
-   *
-   * @param UploadedFile $file
-   * @throws ForbiddenRequestException
-   */
-  private function throwIfUserCantAccessFile(UploadedFile $file) {
-    $user = $this->getCurrentUser();
-
-    $isUserSupervisor = FALSE;
-    $isFileRelatedToUsersAssignment = FALSE;
-
-    if ($file instanceof AdditionalExerciseFile) {
-      foreach ($file->getExercises() as $exercise) {
-        if ($this->assignments->isAssignedToUser($exercise, $user)) {
-          $isFileRelatedToUsersAssignment = TRUE;
-          break;
-        }
-      }
-    }
-
-    /** @var Group $group */
-    $group = $this->uploadedFiles->findGroupForFile($file);
-    if ($group && ($group->isSupervisorOf($user) || $group->isAdminOf($user))) {
-      $isUserSupervisor = TRUE;
-    }
-
-    $isUserOwner = $file->getUser()->getId() === $user->getId();
-
-  }
-
-  /**
    * Get details of a file
    * @GET
    * @LoggedIn
