@@ -104,4 +104,8 @@ class UploadedFile implements JsonSerializable
         "isPublic" => $this->isPublic
       ];
     }
+
+    public function isPublic() {
+      return $this->isPublic;
+    }
 }

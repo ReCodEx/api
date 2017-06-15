@@ -247,9 +247,6 @@ fixtures:
 annotations:
   ignore:
     - LoggedIn
-    - Role
-    - Resource
-    - UserIsAllowed
     - POST
     - GET
     - PUT

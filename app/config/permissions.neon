@@ -336,3 +336,22 @@ permissions:
           - createExercise
       conditions:
           - group.isSupervisor
+
+    #############################
+    # Uploaded file permissions #
+    #############################
+
+    - allow: true
+      role: student
+      resource: uploadedFile
+      actions:
+          - upload
+
+    - allow: true
+      role: student
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isAccessible
