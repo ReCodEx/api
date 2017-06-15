@@ -15,6 +15,7 @@ class AuthorizatorBuilder {
     $class = new ClassType($this->getClassName());
     $class->addExtend(Authorizator::class);
     $setup = $class->addMethod("setup");
+    $setup->setVisibility("protected");
 
     foreach ($roles as $role) {
       $setup->addBody('$this->addRole(?, [...?]);', [

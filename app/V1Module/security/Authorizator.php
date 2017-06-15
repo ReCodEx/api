@@ -19,13 +19,21 @@ abstract class Authorizator implements IAuthorizator {
 
   protected $roles = [];
 
+  private $initialized = FALSE;
+
   public function __construct(PolicyRegistry $policy) {
     $this->policy = $policy;
   }
 
   protected abstract function checkPermissions(string $role, string $resource, string $privilege): bool;
 
+  protected abstract function setup();
+
   public function isAllowed(Identity $identity, string $resource, string $privilege, array $context): bool {
+    if (!$this->initialized) {
+      $this->setup();
+    }
+
     $this->queriedIdentity = $identity;
     $this->queriedContext = $context;
 
