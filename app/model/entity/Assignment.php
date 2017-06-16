@@ -280,20 +280,6 @@ class Assignment implements JsonSerializable
   }
 
   /**
-   * Can a specific user access this assignment as student?
-   */
-  public function canAccessAsStudent(User $user) {
-    return $this->isPublic === TRUE && $this->group->isStudentOf($user);
-  }
-
-  /**
-   * Can a specific user access this assignment as supervisor?
-   */
-  public function canAccessAsSupervisor(User $user) {
-    return $this->group->isAdminOf($user) || $this->group->isSupervisorOf($user);
-  }
-
-  /**
    * @ORM\OneToMany(targetEntity="Submission", mappedBy="assignment")
    * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
