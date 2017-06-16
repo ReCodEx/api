@@ -6,14 +6,14 @@ roles:
 permissions:
     - allow: true
       role: child
-      resource: groups
+      resource: resource1
       actions: action1
-      conditions: condition1
+      conditions: resource.condition1
 
     - allow: true
       role: parent
-      resource: users
+      resource: resource2
       actions: action2
       conditions:
-          - groups.condition1
-          - condition2
+          - resource1.condition1
+          - resource2.condition2

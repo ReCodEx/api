@@ -2,11 +2,22 @@
 include __DIR__ . "/../bootstrap.php";
 
 use App\Security\Authorizator;
+use App\Security\Loader;
 use App\Security\Policies\IPermissionPolicy;
 use App\Security\PolicyRegistry;
-use App\Security\Resource;
 use Tester\Assert;
 use Mockery\Mock;
+
+class Resource1 { }
+class Resource2 { }
+
+interface ITestResource1Permissions {
+  function canAction1(Resource1 $resource): bool;
+}
+
+interface ITestResource2Permissions {
+  function canAction2(Resource1 $resource1, Resource2 $resource2): bool;
+}
 
 class TestAuthorizatorBasic extends Tester\TestCase
 {
@@ -19,77 +30,90 @@ class TestAuthorizatorBasic extends Tester\TestCase
   private $authorizator;
 
   /** @var Mock|IPermissionPolicy */
-  private $groupsPolicy;
+  private $policy1;
 
   /** @var Mock|IPermissionPolicy */
-  private $usersPolicy;
+  private $policy2;
+
+  /** @var Loader */
+  private $loader;
+
+  public function __construct()
+  {
+    $this->loader = new Loader(TEMP_DIR . '/security', __DIR__ . '/config/basic.neon', [
+      'resource1' => ITestResource1Permissions::class,
+      'resource2' => ITestResource2Permissions::class
+    ]);
+  }
 
   public function setUp()
   {
     $this->policies = new PolicyRegistry();
-    $this->authorizator = new Authorizator(__DIR__ . '/config/basic.neon', $this->policies);
-    $this->groupsPolicy = Mockery::mock(MockPolicy::class)->makePartial();
-    $this->usersPolicy = Mockery::mock(MockPolicy::class)->makePartial();
-    $this->policies->addPolicy("groups", $this->groupsPolicy);
-    $this->policies->addPolicy("users", $this->usersPolicy);
+    $this->authorizator = $this->loader->loadAuthorizator($this->policies);
+    $this->policy1 = Mockery::mock(MockPolicy::class)->makePartial();
+    $this->policy1->shouldReceive('getAssociatedClass')->withAnyArgs()->andReturn(Resource1::class);
+    $this->policy2 = Mockery::mock(MockPolicy::class)->makePartial();
+    $this->policy2->shouldReceive('getAssociatedClass')->withAnyArgs()->andReturn(Resource2::class);
+    $this->policies->addPolicy($this->policy1);
+    $this->policies->addPolicy($this->policy2);
   }
 
   public function testConditionTrue()
   {
-    $this->groupsPolicy->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
 
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'child' ]),
-      'groups',
+      'resource1',
       'action1',
       [
-        'groups' => 'id'
+        'resource' => new Resource1()
       ]
     ));
   }
 
   public function testConditionFalse()
   {
-    $this->groupsPolicy->shouldReceive("condition1")->withAnyArgs()->andReturn(FALSE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(FALSE);
 
     Assert::false($this->authorizator->isAllowed(
       new MockIdentity([ 'child' ]),
-      'groups',
+      'resource1',
       'action1',
       [
-        'groups' => 'id'
+        'resource' => new Resource1()
       ]
     ));
   }
 
   public function testComplexConditionTrue()
   {
-    $this->groupsPolicy->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
-    $this->usersPolicy->shouldReceive("condition2")->withAnyArgs()->andReturn(TRUE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(TRUE);
 
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'parent' ]),
-      'users',
+      'resource2',
       'action2',
       [
-        'groups' => 'id',
-        'users' => 'id'
+        'resource1' => new Resource1(),
+        'resource2' => new Resource2()
       ]
     ));
   }
 
   public function testComplexConditionFalse()
   {
-    $this->groupsPolicy->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
-    $this->usersPolicy->shouldReceive("condition2")->withAnyArgs()->andReturn(FALSE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(FALSE);
 
     Assert::false($this->authorizator->isAllowed(
       new MockIdentity([ 'parent' ]),
-      'users',
+      'resource2',
       'action2',
       [
-        'groups' => 'id',
-        'users' => 'id'
+        'resource1' => new Resource1(),
+        'resource2' => new Resource2()
       ]
     ));
   }

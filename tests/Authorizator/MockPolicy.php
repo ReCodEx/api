@@ -4,11 +4,6 @@ use App\Security\Identity;
 
 class MockPolicy implements \App\Security\Policies\IPermissionPolicy
 {
-  function getByID($id)
-  {
-    return NULL;
-  }
-
   public function condition1(Identity $identity, $resource = NULL)
   {
     return FALSE;
@@ -22,5 +17,10 @@ class MockPolicy implements \App\Security\Policies\IPermissionPolicy
   public function condition3(Identity $identity, $resource = NULL)
   {
     return FALSE;
+  }
+
+  function getAssociatedClass()
+  {
+    return NULL;
   }
 }
