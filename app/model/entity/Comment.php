@@ -9,7 +9,6 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @method User getUser()
- * @method CommentThread getThread()
  */
 class Comment implements JsonSerializable
 {
@@ -42,6 +41,10 @@ class Comment implements JsonSerializable
    */
   public function togglePrivate() {
     $this->isPrivate = !$this->isPrivate;
+  }
+
+  public function getThread() {
+    return $this->commentThread;
   }
 
   /**

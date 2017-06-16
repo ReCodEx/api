@@ -37,7 +37,7 @@ class CommentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $thread = $this->comments->get($id);
+    $thread = $this->comments->getThread($id);
     if (!$thread) {
       $thread = CommentThread::createThread($id);
       $this->comments->persistThread($thread);

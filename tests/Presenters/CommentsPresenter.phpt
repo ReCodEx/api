@@ -53,7 +53,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($this->presenter->comments->get('mainThread'), $result['payload']);
+    Assert::equal($this->presenter->comments->getThread('mainThread'), $result['payload']);
     $comments = $result['payload']->jsonSerialize()['comments'];
 
     // Two comments for this user
