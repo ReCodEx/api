@@ -4,10 +4,13 @@ namespace App\Security;
 
 use Nette\IOException;
 use Nette\Reflection\ClassType;
+use Nette\SmartObject;
 use Nette\Utils\Arrays;
 use Nette\Utils\Neon;
 
 class Loader {
+  use SmartObject;
+
   private $authorizatorBuilder;
 
   private $aclModuleBuilder;
@@ -19,6 +22,8 @@ class Loader {
   private $aclInterfaces;
 
   private $hash;
+
+  private $tempDirectory;
 
   public function __construct($tempDirectory, $configFilePath, $aclInterfaces) {
     $this->tempDirectory = $tempDirectory;

@@ -3,8 +3,6 @@ namespace App\Security;
 
 use Nette\InvalidArgumentException;
 use App\Security\Policies\IPermissionPolicy;
-use Nette\Reflection\Method;
-use Nette\Utils\Arrays;
 
 class PolicyRegistry {
   /** @var IPermissionPolicy[] */
@@ -18,7 +16,7 @@ class PolicyRegistry {
     $policy = $this->findPolicyOrThrow($resource);
     $this->checkPolicy($policy, $policyName);
 
-    return function (Identity $queriedIdentity, $subject) use ($policyName, $resource) {
+    return function (Identity $queriedIdentity, $subject) use ($policyName) {
       return $this->check($subject, $policyName, $queriedIdentity);
     };
   }
