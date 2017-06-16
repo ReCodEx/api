@@ -7,12 +7,12 @@ use Nette\Security\Permission;
 use Nette\Utils\Arrays;
 
 class AuthorizatorBuilder {
-  public function getClassName() {
-    return "AuthorizatorImpl";
+  public function getClassName($uniqueId) {
+    return "AuthorizatorImpl_" . $uniqueId;
   }
 
-  public function build($aclInterfaces, $roles, $permissions): ClassType {
-    $class = new ClassType($this->getClassName());
+  public function build($aclInterfaces, $roles, $permissions, $uniqueId): ClassType {
+    $class = new ClassType($this->getClassName($uniqueId));
     $class->addExtend(Authorizator::class);
     $setup = $class->addMethod("setup");
     $setup->setVisibility("protected");

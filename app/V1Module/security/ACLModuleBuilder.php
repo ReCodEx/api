@@ -9,7 +9,7 @@ use Nette\Reflection\Method;
 use Nette\Utils\Strings;
 
 class ACLModuleBuilder {
-  public function getClassName($interfaceName) {
+  public function getClassName($interfaceName, $uniqueId) {
     $interfaceName = Strings::after($interfaceName, '\\', -1) ?: $interfaceName;
     if (Strings::startsWith($interfaceName, "I")) {
       $rest = Strings::after($interfaceName, "I");
@@ -19,11 +19,11 @@ class ACLModuleBuilder {
       }
     }
 
-    return $interfaceName . "Impl";
+    return $interfaceName . "Impl_" . $uniqueId;
   }
 
-  public function build($interfaceName, $name): ClassType {
-    $class = new ClassType($this->getClassName($interfaceName));
+  public function build($interfaceName, $name, $uniqueId): ClassType {
+    $class = new ClassType($this->getClassName($interfaceName, $uniqueId));
     $class->addImplement($interfaceName);
     $class->addExtend(ACLModule::class);
 

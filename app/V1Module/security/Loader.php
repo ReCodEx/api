@@ -18,12 +18,15 @@ class Loader {
 
   private $aclInterfaces;
 
+  private $hash;
+
   public function __construct($tempDirectory, $configFilePath, $aclInterfaces) {
     $this->tempDirectory = $tempDirectory;
     $this->configFilePath = $configFilePath;
     $this->aclInterfaces = $aclInterfaces;
     $this->authorizatorBuilder = new AuthorizatorBuilder();
     $this->aclModuleBuilder = new ACLModuleBuilder();
+    $this->hash = $this->calculateHash($this->configFilePath, $this->aclInterfaces);
   }
 
   private function calculateHash($configFilePath, $aclInterfaces) {
@@ -51,9 +54,7 @@ class Loader {
       @mkdir($this->tempDirectory); // @ - directory may already exist
     }
 
-    $hash = $this->calculateHash($this->configFilePath, $this->aclInterfaces);
-
-    $file = $this->tempDirectory . '/generated_classes_' . $hash . '.php';
+    $file = $this->tempDirectory . '/generated_classes_' . $this->hash . '.php';
     $lock = fopen($file . '.lock', 'c+');
     flock($lock, LOCK_EX);
 
@@ -64,13 +65,14 @@ class Loader {
       $authorizator = $this->authorizatorBuilder->build(
         $this->aclInterfaces,
         Arrays::get($config, "roles"),
-        Arrays::get($config, "permissions")
+        Arrays::get($config, "permissions"),
+        $this->hash
       );
 
       $content .= (string) $authorizator;
 
       foreach ($this->aclInterfaces as $name => $interfaceName) {
-        $module = $this->aclModuleBuilder->build($interfaceName, $name);
+        $module = $this->aclModuleBuilder->build($interfaceName, $name, $this->hash);
         $content .= "\n\n";
         $content .= (string) $module;
       }
@@ -89,13 +91,13 @@ class Loader {
 
   public function loadAuthorizator(PolicyRegistry $registry): Authorizator {
     $this->loadGeneratedClasses();
-    $class = $this->authorizatorBuilder->getClassName();
+    $class = $this->authorizatorBuilder->getClassName($this->hash);
     return new $class($registry);
   }
 
   public function loadACLModule($name, UserStorage $userStorage, IAuthorizator $authorizator) {
     $this->loadGeneratedClasses();
-    $class = $this->aclModuleBuilder->getClassName($this->aclInterfaces[$name]);
+    $class = $this->aclModuleBuilder->getClassName($this->aclInterfaces[$name], $this->hash);
     return new $class($userStorage, $authorizator);
   }
 }
