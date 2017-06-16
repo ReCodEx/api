@@ -130,7 +130,7 @@ class UsersPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $settings = $user->getSettings();
 
-    if ($this->userAcl->canUpdateProfile($user)) {
+    if (!$this->userAcl->canUpdateProfile($user)) {
       throw new ForbiddenRequestException();
     }
 

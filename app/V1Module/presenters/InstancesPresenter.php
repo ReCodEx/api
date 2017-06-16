@@ -127,7 +127,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDeleteInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    if ($this->instanceAcl->canRemove($instance)) {
+    if (!$this->instanceAcl->canRemove($instance)) {
       throw new ForbiddenRequestException();
     }
 

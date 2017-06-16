@@ -81,7 +81,7 @@ class SubmissionsPresenter extends BasePresenter {
     /** @var Submission $submission */
     $submission = $this->submissions->findOrThrow($id);
 
-    if ($this->submissionAcl->canViewEvaluation($submission)) {
+    if (!$this->submissionAcl->canViewEvaluation($submission)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 

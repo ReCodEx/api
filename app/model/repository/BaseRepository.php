@@ -19,7 +19,7 @@ class BaseRepository extends Nette\Object {
   }
 
   public function get($id) {
-    return $this->repository->findOneById($id);
+    return $this->repository->find($id);
   }
 
   public function findAll() {

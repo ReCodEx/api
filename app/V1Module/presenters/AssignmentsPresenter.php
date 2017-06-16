@@ -543,7 +543,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Submission $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
 
-    if ($this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
+    if (!$this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
     }
 
@@ -572,7 +572,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
 
-    if ($this->assignmentAcl->canResubmitSubmissions($assignment)) {
+    if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
       throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
     }
 

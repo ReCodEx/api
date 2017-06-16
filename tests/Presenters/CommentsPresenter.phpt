@@ -121,7 +121,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
   public function testTogglePrivate()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    PresenterTestHelper::login($this->container, $this->userLogin);
 
     $comments = $this->presenter->comments->findAll();
     $exampleComment = array_pop($comments);

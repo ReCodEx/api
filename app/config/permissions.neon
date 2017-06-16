@@ -328,6 +328,7 @@ permissions:
       resource: exercise
       actions:
           - create
+          - viewAll
 
     - allow: true
       role: supervisor
