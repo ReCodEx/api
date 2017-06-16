@@ -18,6 +18,7 @@ use Symfony\Component\Yaml\Yaml;
  * @ORM\Entity
  *
  * @method DateTime getEvaluatedAt()
+ * @method bool getEvaluationFailed()
  */
 class SolutionEvaluation implements JsonSerializable
 {

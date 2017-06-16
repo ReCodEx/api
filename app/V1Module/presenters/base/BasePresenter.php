@@ -4,14 +4,9 @@ namespace App\V1Module\Presenters;
 
 use App\Model\Entity\User;
 use App\Security\Identity;
-use App\Security\Resource;
-use Exception;
-use LogicException;
-use Nette\Reflection\ClassType;
 use ReflectionException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\UnauthorizedException;
 use App\Exceptions\WrongHttpMethodException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\InvalidArgumentException;

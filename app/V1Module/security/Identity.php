@@ -34,7 +34,7 @@ class Identity extends Nette\Object implements Nette\Security\IIdentity
    */
   function getRoles()
   {
-    return $this->user ? [$this->user->getRole()->getId()] : [self::UNAUTHENTICATED_ROLE];
+    return $this->user ? [$this->user->getRole()] : [self::UNAUTHENTICATED_ROLE];
   }
 
   function getUserData()

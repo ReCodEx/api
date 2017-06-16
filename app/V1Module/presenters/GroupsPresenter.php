@@ -2,16 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Model\Entity\Assignment;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
-use App\Model\Entity\Role;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
-use App\Model\Repository\Roles;
 use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 
 /**
@@ -39,12 +41,6 @@ class GroupsPresenter extends BasePresenter {
   public $users;
 
   /**
-   * @var Roles
-   * @inject
-   */
-  public $roles;
-
-  /**
    * @var GroupMemberships
    * @inject
    */
@@ -55,6 +51,18 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $groupAcl;
+
+  /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
+
+  /**
+   * @var IAssignmentPermissions
+   * @inject
+   */
+  public $assignmentAcl;
 
   /**
    * Get a list of all groups
@@ -297,15 +305,17 @@ class GroupsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionAssignments(string $id) {
+    /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
     if (!$this->groupAcl->canViewAssignments($group)) {
       throw new ForbiddenRequestException();
     }
 
-    $assignments = $group->getAssignmentsForUser($user);
-    $this->sendSuccessResponse($assignments->getValues());
+    $assignments = $group->getAssignments();
+    $this->sendSuccessResponse(array_filter($assignments->getValues(), function (Assignment $assignment) {
+      return $this->assignmentAcl->canViewDetail($assignment);
+    }));
   }
 
   /**
@@ -316,14 +326,16 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionExercises(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
     if (!$this->groupAcl->canViewExercises($group)) {
       throw new ForbiddenRequestException();
     }
 
-    $exercises = $group->getExercisesForUser($user);
-    $this->sendSuccessResponse($exercises->getValues());
+    $exercises = array_filter($group->getExercises()->getValues(), function (Exercise $exercise) {
+      return $this->exerciseAcl->canViewDetail($exercise);
+    });
+
+    $this->sendSuccessResponse($exercises);
   }
 
   /**
@@ -442,8 +454,8 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
-      if ($user->getRole()->isStudent()) {
-        $user->setRole($this->roles->get(Role::SUPERVISOR));
+      if ($user->getRole() === "student") {
+        $user->setRole("supervisor");
       }
       $user->makeSupervisorOf($group);
       $this->users->flush();
@@ -476,8 +488,8 @@ class GroupsPresenter extends BasePresenter {
 
       // if user is not supervisor in any other group, lets downgrade his/hers privileges
       if (empty($user->findGroupMembershipsAsSupervisor())
-        && $user->getRole()->isSupervisor()) {
-        $user->setRole($this->roles->get(Role::STUDENT));
+        && $user->getRole() === "supervisor") {
+        $user->setRole("student");
         $this->users->flush();
       }
     }

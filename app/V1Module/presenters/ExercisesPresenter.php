@@ -131,7 +131,10 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     $user = $this->getCurrentUser();
-    $exercises = $this->exercises->searchByName($search, $user);
+    $exercises = $this->exercises->searchByName($search);
+    $exercises = array_filter($exercises, function (Exercise $exercise) {
+      return $this->exerciseAcl->canViewDetail($exercise);
+    });
     $this->sendSuccessResponse($exercises);
   }
 

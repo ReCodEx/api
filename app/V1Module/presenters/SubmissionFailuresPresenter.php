@@ -2,6 +2,7 @@
 namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
@@ -64,6 +65,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionListBySubmission(string $submissionId) {
+    /** @var Submission $submission */
     $submission = $this->submissions->get($submissionId);
     if (!$this->submissionFailureAcl->canViewForSubmission($submission)) {
       throw new ForbiddenRequestException();
@@ -83,6 +85,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
+    /** @var SubmissionFailure $failure */
     $failure = $this->submissionFailures->get($id);
     if ($failure === NULL) {
       throw new BadRequestException();

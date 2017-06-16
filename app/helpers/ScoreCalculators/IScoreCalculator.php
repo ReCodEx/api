@@ -27,7 +27,7 @@ interface IScoreCalculator {
   /**
    * Make default configuration for array of test names. Each test will
    * have the same priority as others.
-   * @param array List of string names of tests
+   * @param array $tests List of string names of tests
    * @return string Default configuration for given tests
    */
   public static function getDefaultConfig(array $tests): string;

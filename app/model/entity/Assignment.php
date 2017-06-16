@@ -28,7 +28,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
  * @method Collection getLocalizedTexts()
- * @method removeLocalizedText(Assignment $assignment)
+ * @method removeLocalizedText(LocalizedText $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
@@ -303,7 +303,7 @@ class Assignment implements JsonSerializable
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
-    $validSubmissions = function ($submission) {
+    $validSubmissions = function (Submission $submission) {
       if (!$submission->hasEvaluation()) {
         // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
         // -> otherwise the user would be able to submit many solutions before they are evaluated
@@ -345,7 +345,7 @@ class Assignment implements JsonSerializable
 
     return array_reduce(
       $this->submissions->matching($usersSolutions)->getValues(),
-      function ($best, $submission) {
+      function (Submission $best, Submission $submission) {
         if ($best === NULL) {
           return $submission;
         }
@@ -380,7 +380,7 @@ class Assignment implements JsonSerializable
   }
 
   public function getRuntimeConfigsIds() {
-    return $this->runtimeConfigs->map(function($config) { return $config->getId(); })->getValues();
+    return $this->runtimeConfigs->map(function(RuntimeConfig $config) { return $config->getId(); })->getValues();
   }
 
   public function getRuntimeEnvironmentsIds() {

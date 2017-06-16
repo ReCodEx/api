@@ -26,7 +26,7 @@ class PreflightRoute implements IRouter {
 
   /**
    * @param string $prefix      Prefix of the URL
-   * @param string destination  Handler name
+   * @param string $destination  Handler name
    */
   public function __construct(string $prefix, string $destination) {
     $this->prefix = Strings::startsWith("/", $prefix) ? $prefix : "/$prefix";
