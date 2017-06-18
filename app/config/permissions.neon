@@ -155,6 +155,7 @@ permissions:
           - viewExercises
           - viewInstances
           - viewGroups
+          - viewDetail
       conditions: user.isSameUser
 
     ##########################
