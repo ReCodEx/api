@@ -115,7 +115,9 @@ permissions:
     - allow: true
       role: unauthenticated
       resource: instance
-      actions: viewAll
+      actions:
+        - viewAll
+        - viewDetail
 
     - allow: true
       role: supervisor
