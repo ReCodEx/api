@@ -356,3 +356,13 @@ permissions:
           - viewDetail
       conditions:
           - file.isAccessible
+
+    #####################################
+    # Runtime environments permisssions #
+    #####################################
+
+    - allow: true
+      role: student
+      resource: runtimeEnvironment
+      actions:
+        - viewAll
