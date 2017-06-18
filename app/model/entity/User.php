@@ -13,7 +13,7 @@ use forxer\Gravatar\Gravatar;
  * @ORM\Entity
  * @method string getId()
  * @method string getEmail()
- * @method Role getRole()
+ * @method string getRole()
  * @method Instance getInstance()
  * @method Collection getExercises()
  * @method UserSettings getSettings()
@@ -22,7 +22,7 @@ use forxer\Gravatar\Gravatar;
  * @method setLastName(string $lastName)
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
- * @method setRole(Role $role)
+ * @method setRole(string $role)
  */
 class User implements JsonSerializable
 {
@@ -34,7 +34,7 @@ class User implements JsonSerializable
     string $lastName,
     string $degreesBeforeName,
     string $degreesAfterName,
-    Role $role,
+    string $role,
     Instance $instance,
     bool $instanceAdmin = FALSE
   ) {
@@ -214,7 +214,7 @@ class User implements JsonSerializable
   public function getGroups(string $type = NULL) {
     if ($type === NULL) {
       return $this->getMemberships()->map(
-        function ($membership) {
+        function (GroupMembership $membership) {
           return $membership->getGroup();
         }
       );
@@ -222,7 +222,7 @@ class User implements JsonSerializable
 
     $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
     return $this->getMemberships()->matching($filter)->map(
-      function ($membership) {
+      function (GroupMembership $membership) {
         return $membership->getGroup();
       }
     );
@@ -250,7 +250,7 @@ class User implements JsonSerializable
   protected $exercises;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Role")
+   * @ORM\Column(type="string")
    */
   protected $role;
 
@@ -267,10 +267,10 @@ class User implements JsonSerializable
       "instanceId" => $this->instance->getId(),
       "avatarUrl" => $this->avatarUrl,
       "isVerified" => $this->isVerified,
-      "role" => $this->role->jsonSerialize(),
+      "role" => $this->role,
       "groups" => [
-        "studentOf" => $this->getGroupsAsStudent()->map(function ($group) { return $group->getId(); })->getValues(),
-        "supervisorOf" => $this->getGroupsAsSupervisor()->map(function ($group) { return $group->getId(); })->getValues()
+        "studentOf" => $this->getGroupsAsStudent()->map(function (Group $group) { return $group->getId(); })->getValues(),
+        "supervisorOf" => $this->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
       ],
       "settings" => $this->settings
     ];

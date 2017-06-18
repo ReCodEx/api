@@ -5,7 +5,6 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
 use JsonSerializable;
@@ -125,7 +124,7 @@ class Group implements JsonSerializable
    * @return array
    */
   public function getAllSubgroups() {
-    $subtrees = $this->childGroups->map(function ($group) {
+    $subtrees = $this->childGroups->map(function (Group $group) {
       return $group->getAllSubgroups();
     });
     return array_merge($this->childGroups->getValues(), ...$subtrees);
@@ -135,28 +134,6 @@ class Group implements JsonSerializable
    * @ORM\OneToMany(targetEntity="Exercise", mappedBy="group")
    */
   protected $exercises;
-
-  /**
-   * For provided user get all visible exercises.
-   * @param User $user
-   * @return Collection
-   */
-  public function getExercisesForUser(User $user) {
-    // get exercises from parent group
-    $parentExercises = new ArrayCollection;
-    if ($this->parentGroup) {
-      $parentExercises = $this->parentGroup->getExercisesForUser($user);
-    }
-
-    // get exercises for this group
-    $exercises = $this->exercises->filter(function (Exercise $exercise) use ($user) {
-      return $exercise->getDeletedAt() === NULL && $exercise->canAccessDetail($user);
-    });
-
-    return new ArrayCollection(
-      array_merge($parentExercises->toArray(), $exercises->toArray())
-    );
-  }
 
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
@@ -239,24 +216,6 @@ class Group implements JsonSerializable
   }
 
   /**
-   * Can given user access information about this group.
-   * @param User $user
-   * @return bool true if user can access group
-   */
-  public function canUserAccessGroupDetail(User $user) {
-    if ($this->isMemberOf($user)
-        || $user->getRole()->isSuperadmin()
-        || $this->isPublic === TRUE
-        || ($user->getInstance() !== NULL
-            && $user->getInstance()->getRootGroup() !== NULL
-            && $this->getId() === $user->getInstance()->getRootGroup()->getId())) {
-      return TRUE;
-    }
-
-    return FALSE;
-  }
-
-  /**
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $admin;
@@ -281,10 +240,6 @@ class Group implements JsonSerializable
    * @return bool
    */
   public function isAdminOf(User $user) {
-    if (!$user->getRole()->hasLimitedRights()) {
-      return TRUE;
-    }
-
     $admins = $this->getAdminsIds();
     return array_search($user->getId(), $admins, TRUE) !== FALSE;
   }
@@ -319,14 +274,14 @@ class Group implements JsonSerializable
   public function getMaxPoints(): int {
     return array_reduce(
       $this->getAssignments()->getValues(),
-      function ($carry, $assignment) { return $carry + $assignment->getGroupPoints(); },
+      function ($carry, Assignment $assignment) { return $carry + $assignment->getGroupPoints(); },
       0
     );
   }
 
   public function getBestSolutions(User $user): array {
     return $this->getAssignments()->map(
-      function ($assignment) use ($user) {
+      function (Assignment $assignment) use ($user) {
         return $assignment->getBestSolution($user);
       }
     )->getValues();
@@ -334,7 +289,7 @@ class Group implements JsonSerializable
 
   public function getCompletedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
-      function($assignment) use ($student) {
+      function(Assignment $assignment) use ($student) {
         return $assignment->getBestSolution($student) !== NULL;
       }
     );
@@ -342,7 +297,7 @@ class Group implements JsonSerializable
 
   public function getMissedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
-      function($assignment) use ($student) {
+      function(Assignment $assignment) use ($student) {
         return $assignment->isAfterDeadline() && $assignment->getBestSolution($student) === NULL;
       }
     );
@@ -351,7 +306,7 @@ class Group implements JsonSerializable
   public function getPointsGainedByStudent(User $student) {
     return array_reduce(
       $this->getCompletedAssignmentsByStudent($student)->getValues(),
-      function ($carry, $assignment) use ($student) {
+      function ($carry, Assignment $assignment) use ($student) {
         $best = $assignment->getBestSolution($student);
         if ($best !== NULL) {
           $carry += $best->getTotalPoints();
@@ -402,26 +357,11 @@ class Group implements JsonSerializable
   }
 
   /**
-   * Get all possible assignment for user based on his/hers role.
-   * @param User $user
-   * @return ArrayCollection list of assignments
-   */
-  public function getAssignmentsForUser(User $user) {
-    if ($this->isAdminOf($user) || $this->isSupervisorOf($user)) {
-      return $this->getAssignments();
-    } else if ($this->isStudentOf($user)) {
-      return $this->getPublicAssignments();
-    } else {
-      return new ArrayCollection;
-    }
-  }
-
-  /**
    * Student can view only public assignments.
    */
   public function getPublicAssignments() {
     return $this->getAssignments()->filter(
-      function ($assignment) { return $assignment->isPublic(); }
+      function (Assignment $assignment) { return $assignment->isPublic(); }
     );
   }
 
@@ -434,23 +374,23 @@ class Group implements JsonSerializable
       "description" => $this->description,
       "adminId" => $this->admin ? $this->admin->getId() : NULL,
       "admins" => $this->getAdminsIds(),
-      "supervisors" => $this->getSupervisors()->map(function($s) { return $s->getId(); })->getValues(),
-      "students" => $this->getStudents()->map(function($s) { return $s->getId(); })->getValues(),
+      "supervisors" => $this->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
+      "students" => $this->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
       "instanceId" => $instance ? $instance->getId() : NULL,
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "childGroups" => [
         "all" => $this->getChildGroups()->map(
-          function($group) {
+          function(Group $group) {
             return $group->getId();
           }
         )->getValues(),
         "public" => $this->getChildGroups()->filter(
-          function($g) {
+          function(Group $g) {
             return $g->isPublic();
           }
         )->map(
-          function($group) {
+          function(Group $group) {
             return $group->getId();
           }
         )->getValues()

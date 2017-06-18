@@ -20,8 +20,8 @@ class Comments extends BaseRepository {
     $this->comments = $em->getRepository(Comment::class);
   }
 
-  public function get($id) {
-    return $this->threads->findOneById($id);
+  public function getThread(string $id) {
+    return $this->threads->find($id);
   }
 
   public function persistComment(Comment $comment) {
@@ -31,9 +31,4 @@ class Comments extends BaseRepository {
   public function persistThread(CommentThread $thread) {
     $this->persist($thread);
   }
-
-  public function findUsersComment(User $user, string $id) {
-    return $this->comments->findOneBy([ "user" => $user, "id" => $id ]);
-  }
-
 }

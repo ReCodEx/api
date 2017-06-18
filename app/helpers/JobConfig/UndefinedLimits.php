@@ -13,7 +13,7 @@ class UndefinedLimits extends Limits {
 
   /**
    * Construct limits only with given hardware group identification.
-   * @param type $id
+   * @param string $id
    */
   public function __construct(string $id) {
     $this->setId($id);

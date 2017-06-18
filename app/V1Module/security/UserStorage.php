@@ -60,7 +60,7 @@ class UserStorage extends Nette\Object implements IUserStorage
 
   /**
    * Returns current user identity, if any.
-   * @return IIdentity|NULL
+   * @return Identity
    */
   function getIdentity()
   {
@@ -68,7 +68,8 @@ class UserStorage extends Nette\Object implements IUserStorage
       $token = $this->accessManager->getGivenAccessToken($this->httpRequest);
 
       if ($token === NULL) {
-        return NULL;
+        $this->cachedIdentity = new Identity(NULL, NULL);
+        return $this->cachedIdentity;
       }
 
       $decodedToken = $this->accessManager->decodeToken($token);

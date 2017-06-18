@@ -2,15 +2,19 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Model\Entity\Assignment;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
-use App\Model\Entity\Role;
+use App\Model\Entity\Instance;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
-use App\Model\Repository\Roles;
 use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IExercisePermissions;
+use App\Security\ACL\IGroupPermissions;
 
 /**
  * Endpoints for group manipulation
@@ -37,23 +41,38 @@ class GroupsPresenter extends BasePresenter {
   public $users;
 
   /**
-   * @var Roles
-   * @inject
-   */
-  public $roles;
-
-  /**
    * @var GroupMemberships
    * @inject
    */
   public $groupMemberships;
 
   /**
+   * @var IGroupPermissions
+   * @inject
+   */
+  public $groupAcl;
+
+  /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
+
+  /**
+   * @var IAssignmentPermissions
+   * @inject
+   */
+  public $assignmentAcl;
+
+  /**
    * Get a list of all groups
    * @GET
-   * @UserIsAllowed(groups="view-all")
    */
   public function actionDefault() {
+    if (!$this->groupAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
     $groups = $this->groups->findAll();
     $this->sendSuccessResponse($groups);
   }
@@ -61,7 +80,6 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Create a new group
    * @POST
-   * @UserIsAllowed(groups="add")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the group")
    * @Param(type="post", name="description", required=FALSE, description="Description of the group")
    * @Param(type="post", name="instanceId", validation="string:36", description="An identifier of the instance where the group should be created")
@@ -75,15 +93,14 @@ class GroupsPresenter extends BasePresenter {
     $instanceId = $req->getPost("instanceId");
     $parentGroupId = $req->getPost("parentGroupId");
     $user = $this->getCurrentUser();
+
+    /** @var Instance $instance */
     $instance = $this->instances->findOrThrow($instanceId);
 
-    if (!$user->belongsTo($instance)) {
-      throw new ForbiddenRequestException("You cannot create group for instance '$instanceId'");
-    }
+    $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
-    $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->get($parentGroupId); // may be null
-    if ($parentGroup !== NULL && !$parentGroup->isAdminOf($user)) {
-      throw new ForbiddenRequestException("Only group administrators can create group.");
+    if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
+      throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
 
     $name = $req->getPost("name");
@@ -105,7 +122,6 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Validate group creation data
    * @POST
-   * @UserIsAllowed(groups="add")
    * @Param(name="name", type="post", description="Name of the group")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
    * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
@@ -121,6 +137,12 @@ class GroupsPresenter extends BasePresenter {
       $parentGroupId = $instance->getRootGroup() !== NULL ? $instance->getRootGroup()->getId() : NULL;
     }
 
+    $parentGroup = $this->groups->findOrThrow($parentGroupId);
+
+    if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse([
       "groupNameIsFree" => $this->groups->nameIsFree($name, $instanceId, $parentGroupId)
     ]);
@@ -129,7 +151,6 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Update group info
    * @POST
-   * @UserIsAllowed(groups="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the group")
    * @Param(type="post", name="description", required=FALSE, description="Description of the group")
    * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
@@ -144,11 +165,10 @@ class GroupsPresenter extends BasePresenter {
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
-    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if (!$group->isAdminOf($user)) {
-      throw new ForbiddenRequestException("Only group administrators can update group detail.");
+    if (!$this->groupAcl->canUpdate($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $group->setExternalId($req->getPost("externalId"));
@@ -166,17 +186,17 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Delete a group
    * @DELETE
-   * @UserIsAllowed(groups="remove")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionRemoveGroup(string $id) {
-    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if ($group->isAdminOf($user) === FALSE) {
-      throw new ForbiddenRequestException("Only administrator of a group can remove it");
-    } else if ($group->getChildGroups()->count() !== 0) {
+    if (!$this->groupAcl->canRemove($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    if ($group->getChildGroups()->count() !== 0) {
       throw new ForbiddenRequestException("There are subgroups of group '$id'. Please remove them first.");
     } else if ($group->getInstance() !== NULL && $group->getInstance()->getRootGroup() === $group) {
       throw new ForbiddenRequestException("Group '$id' is the root group of instance '{$group->getInstance()->getId()}' and root groups cannot be deleted.");
@@ -191,21 +211,13 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get details of a group
    * @GET
-   * @UserIsAllowed(groups="view-detail")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
-    if (!$user->belongsTo($group->getInstance())
-      && $user->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You are not member of the same instance as the group.");
-    }
-
-    if (!$group->canUserAccessGroupDetail($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view this group detail.");
+    if (!$this->groupAcl->canViewDetail($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse($group);
@@ -214,48 +226,40 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get a list of subgroups of a group
    * @GET
-   * @UserIsAllowed(groups="view-subgroups")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionSubgroups(string $id) {
+    /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$user->belongsTo($group->getInstance())
-      && $user->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You are not member of the same instance as the group.");
-    }
-
-    if (!$group->canUserAccessGroupDetail($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view this group detail.");
+    if (!$this->groupAcl->canViewSubgroups($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $subgroups = array_values(
       array_filter(
         $group->getAllSubgroups(),
-        function ($subgroup) use ($user) {
-          return $subgroup->canUserAccessGroupDetail($user);
+        function (Group $subgroup) {
+          return $this->groupAcl->canViewDetail($subgroup);
         }
       )
     );
+
     $this->sendSuccessResponse($subgroups);
   }
 
   /**
    * Get a list of members of a group
    * @GET
-   * @UserIsAllowed(groups="view-students")
-   * @UserIsAllowed(groups="view-supervisors")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionMembers(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$group->isAdminOf($user) && !$group->isMemberOf($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view members of this group.");
+    if (!($this->groupAcl->canViewStudents($group) && $this->groupAcl->canViewSupervisors($group))) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse([
@@ -267,16 +271,13 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get a list of supervisors in a group
    * @GET
-   * @UserIsAllowed(groups="view-supervisors")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionSupervisors(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
-    if ($group->isPrivate() && !$group->isAdminOf($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view supervisors of this group.");
+    if (!$this->groupAcl->canViewSupervisors($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse($group->getSupervisors()->getValues());
@@ -285,16 +286,13 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get a list of students in a group
    * @GET
-   * @UserIsAllowed(groups="view-students")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionStudents(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
-    if (!$group->isAdminOf($user) && !$group->isMemberOf($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view students of this group.");
+    if (!$this->groupAcl->canViewStudents($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse($group->getStudents()->getValues());
@@ -303,60 +301,54 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get all exercise assignments for a group
    * @GET
-   * @UserIsAllowed(groups="view-detail")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionAssignments(string $id) {
+    /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$group->isAdminOf($user) && !$group->isMemberOf($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view assignments of this group.");
+    if (!$this->groupAcl->canViewAssignments($group)) {
+      throw new ForbiddenRequestException();
     }
 
-    $assignments = $group->getAssignmentsForUser($user);
-    $this->sendSuccessResponse($assignments->getValues());
+    $assignments = $group->getAssignments();
+    $this->sendSuccessResponse(array_filter($assignments->getValues(), function (Assignment $assignment) {
+      return $this->assignmentAcl->canViewDetail($assignment);
+    }));
   }
 
   /**
    * Get all exercises for a group
    * @GET
-   * @UserIsAllowed(groups="view-exercises")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionExercises(string $id) {
     $group = $this->groups->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$group->isAdminOf($user) && !$group->isSupervisorOf($user)) {
-      throw new ForbiddenRequestException("You are not allowed to view exercises of this group.");
+    if (!$this->groupAcl->canViewExercises($group)) {
+      throw new ForbiddenRequestException();
     }
 
-    $exercises = $group->getExercisesForUser($user);
-    $this->sendSuccessResponse($exercises->getValues());
+    $exercises = array_filter($group->getExercises()->getValues(), function (Exercise $exercise) {
+      return $this->exerciseAcl->canViewDetail($exercise);
+    });
+
+    $this->sendSuccessResponse($exercises);
   }
 
   /**
    * Get statistics of a group
    * @GET
-   * @UserIsAllowed(groups="view-detail")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
   public function actionStats(string $id) {
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if (!$group->statsArePublic()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot view these stats.");
-    }
-
-    if (!$group->canUserAccessGroupDetail($currentUser)) {
-      throw new ForbiddenRequestException("You are not allowed to view this group detail.");
+    if (!$this->groupAcl->canViewStats($group)) {
+      throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse(
@@ -372,7 +364,6 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get statistics of a single student in a group
    * @GET
-   * @UserIsAllowed(groups="view-detail")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws BadRequestException
@@ -380,13 +371,10 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionStudentsStats(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    if ($user->getId() !== $this->getUser()->getId()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot view these stats.");
+    if (!$this->groupAcl->canViewStudentStats($group, $user)) {
+      throw new ForbiddenRequestException();
     }
 
     if ($group->isStudentOf($user) === FALSE) {
@@ -399,26 +387,16 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Add a student to a group
    * @POST
-   * @UserIsAllowed(groups="add-student")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException
    */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    // check if current user isn't trying to add someone to a private group without sufficient rights
-    $currentUserHasRights = $group->isSupervisorOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if ($group->isPrivate() && !$currentUserHasRights) {
-      throw new ForbiddenRequestException("You cannot add user '$userId' to private group '$id'.");
-    }
-
-    // check that the user has rights to join the group
-    if ($user->getId() !== $currentUser->getId() && !$currentUserHasRights) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    if (!$this->groupAcl->canAddStudent($group, $user)) {
+      throw new ForbiddenRequestException();
     }
 
     // make sure that the user is not already member of the group
@@ -434,21 +412,16 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Remove a student from a group
    * @DELETE
-   * @UserIsAllowed(groups="remove-student")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException
    */
   public function actionRemoveStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    // check that the user has rights to join the group
-    if ($user->getId() !== $currentUser->getId()
-      && !$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    if (!$this->groupAcl->canRemoveStudent($group, $user)) {
+      throw new ForbiddenRequestException();
     }
 
     // make sure that the user is student of the group
@@ -467,25 +440,22 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Add a supervisor to a group
    * @POST
-   * @UserIsAllowed(groups="add-supervisor")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the supervisor
    * @throws ForbiddenRequestException
    */
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    // check that the user is the admin of the group
-    if (!$group->isAdminOf($currentUser)) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    if (!$this->groupAcl->canAddSupervisor($group, $user)) {
+      throw new ForbiddenRequestException();
     }
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === FALSE) {
-      if ($user->getRole()->isStudent()) {
-        $user->setRole($this->roles->get(Role::SUPERVISOR));
+      if ($user->getRole() === "student") {
+        $user->setRole("supervisor");
       }
       $user->makeSupervisorOf($group);
       $this->users->flush();
@@ -498,20 +468,16 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Remove a supervisor from a group
    * @DELETE
-   * @UserIsAllowed(groups="remove-supervisor")
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the supervisor
    * @throws ForbiddenRequestException
    */
   public function actionRemoveSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    // check that the user has rights to join the group
-    if (!$group->isSupervisorOf($currentUser)
-      && $currentUser->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    if (!$this->groupAcl->canRemoveSupervisor($group, $user)) {
+      throw new ForbiddenRequestException();
     }
 
     // make sure that the user is really supervisor of the group
@@ -522,8 +488,8 @@ class GroupsPresenter extends BasePresenter {
 
       // if user is not supervisor in any other group, lets downgrade his/hers privileges
       if (empty($user->findGroupMembershipsAsSupervisor())
-        && $user->getRole()->isSupervisor()) {
-        $user->setRole($this->roles->get(Role::STUDENT));
+        && $user->getRole() === "supervisor") {
+        $user->setRole("student");
         $this->users->flush();
       }
     }
@@ -534,18 +500,21 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Get identifiers of administrators of a group
    * @GET
-   * @UserIsAllowed(groups="view-admin")
    * @param string $id Identifier of the group
+   * @throws ForbiddenRequestException
    */
   public function actionAdmin($id) {
     $group = $this->groups->findOrThrow($id);
+    if (!$this->groupAcl->canViewAdmin($group)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse($group->getAdminsIds());
   }
 
   /**
    * Make a user an administrator of a group
    * @POST
-   * @UserIsAllowed(groups="set-admin")
    * @Param(type="post", name="userId", description="Identifier of a user to be made administrator")
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
@@ -553,12 +522,10 @@ class GroupsPresenter extends BasePresenter {
   public function actionMakeAdmin(string $id) {
     $userId = $this->getRequest()->getPost("userId");
     $user = $this->users->findOrThrow($userId);
-    $currentUser = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($id);
 
-    // check that the user has rights to join the group
-    if ($group->isAdminOf($currentUser) === FALSE) {
-      throw new ForbiddenRequestException("You cannot alter membership status of user '$userId' in group '$id'.");
+    if (!$this->groupAcl->canSetAdmin($group)) {
+      throw new ForbiddenRequestException();
     }
 
     // change admin of the group even if user is superadmin

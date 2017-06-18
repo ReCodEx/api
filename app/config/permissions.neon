@@ -1,0 +1,358 @@
+roles:
+    - name: unauthenticated
+
+    - name: student
+      parents: unauthenticated
+
+    - name: supervisor
+      parents: student
+
+    - name: superadmin
+permissions:
+    - allow: true
+      role: superadmin
+
+    #####################
+    # Group permissions #
+    #####################
+
+    - allow: true
+      role: student
+      resource: group
+      actions: viewAssignments
+      conditions: group.isMember
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - viewStudents
+          - viewDetail
+          - viewSubgroups
+          - viewStudents
+          - viewAdmin
+      conditions: group.canAccessDetail
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - viewSupervisors
+          - setAdmin
+      conditions: group.isAdmin
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+        - viewSupervisors
+      conditions: group.isPublic
+
+    - allow: true # A student can join public groups
+      role: student
+      resource: group
+      actions:
+        - addStudent
+      conditions:
+        - group.isPublic
+        - student.isSameUser
+
+    - allow: true # A student can leave any group
+      role: student
+      resource: group
+      actions:
+        - removeStudent
+      conditions:
+        - group.isMember
+        - student.isSameUser
+
+    - allow: true
+      role: student
+      resource: group
+      actions: viewStats
+      conditions: group.areStatsPublic
+
+    - allow: true
+      role: student
+      resource: group
+      actions: viewStats
+      conditions: group.areStatsPublic
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - addStudent
+          - removeStudent
+          - viewExercises
+          - viewStats
+      conditions: group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+        - viewStats
+      conditions:
+        - group.isMember
+        - student.isSameUser
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - update
+          - remove
+          - addSubgroup
+          - addSupervisor
+          - removeSupervisor
+      conditions: group.isAdmin
+
+    ########################
+    # Instance permissions #
+    ########################
+
+    - allow: true
+      role: unauthenticated
+      resource: instance
+      actions: viewAll
+
+    - allow: true
+      role: supervisor
+      resource: instance
+      actions: addGroup
+      conditions: instance.isMember
+
+    - allow: true
+      role: student
+      resource: instance
+      actions:
+          - viewGroups
+
+    - allow: true
+      role: supervisor
+      resource: instance
+      actions: []
+
+    - allow: true
+      role: superadmin # TODO instance admin role
+      resource: instance
+      actions:
+          - viewUsers
+          - viewLicences
+      conditions:
+          - instance.isMember
+
+     ####################
+     # User permissions #
+     ####################
+
+    - allow: true
+      role: student
+      resource: user
+      actions:
+          - updateProfile
+          - viewExercises
+          - viewInstances
+          - viewGroups
+      conditions: user.isSameUser
+
+    ##########################
+    # Assignment permissions #
+    ##########################
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - view-detail
+          - submit
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - viewDetail
+          - update
+          - remove
+          - submit
+          - viewSubmissions
+          - resubmitSubmissions
+      conditions:
+          - assignment.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isAuthor
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isGroupSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
+          - assignExercise
+      conditions:
+          - exercise.isPublic
+          - group.isSupervisor
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - viewSubmissions
+      conditions:
+          - student.isSameUser
+
+    #########################
+    # Submission permissions #
+    ##########################
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewDetail
+          - viewEvaluation
+      conditions:
+          - submission.isPublic
+          - submission.isAuthor
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewEvaluationDetails
+      conditions:
+          - submission.areEvaluationDetailsPublic
+          - submission.isAuthor
+          - submission.isPublic
+
+    - allow: true
+      role: student
+      resource: submission
+      actions:
+          - viewDetail
+          - viewEvaluation
+          - viewEvaluationDetails
+          - setBonusBoints
+          - setAccepted
+          - downloadResultArchive
+      conditions:
+          - submission.isSupervisor
+
+    #######################
+    # Comment permissions #
+    #######################
+
+    - allow: true
+      role: student
+      resource: comment
+      actions:
+          - alter
+      conditions:
+          - comment.isAuthor
+
+    - allow: true # TODO
+      role: student
+      resource: comment
+      actions:
+          - createThread
+          - viewThread
+          - addComment
+
+    ########################
+    # Exercise permissions #
+    ########################
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - viewLimits
+          - setLimits
+          - update
+          - remove
+          - fork
+          - addReferenceSolution
+          - evaluateReferenceSolution
+      conditions:
+          - exercise.isAuthor
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - viewLimits
+          - setLimits
+          - fork
+          - evaluateReferenceSolution
+      conditions:
+          - exercise.isGroupSupervisor
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+          - viewDetail
+          - fork
+      conditions:
+          - exercise.isPublic
+
+    - allow: true
+      role: supervisor
+      resource: exercise
+      actions:
+          - create
+          - viewAll
+
+    - allow: true
+      role: supervisor
+      resource: group
+      actions:
+          - createExercise
+      conditions:
+          - group.isSupervisor
+
+    #############################
+    # Uploaded file permissions #
+    #############################
+
+    - allow: true
+      role: student
+      resource: uploadedFile
+      actions:
+          - upload
+
+    - allow: true
+      role: student
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isAccessible

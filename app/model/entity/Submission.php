@@ -228,25 +228,9 @@ class Submission implements JsonSerializable, ES\IEvaluable
       ?Submission $originalSubmission = NULL
     ) {
       // the author must be a student and the submitter must be either this student, or a supervisor of their group
-      if ($assignment->canAccessAsStudent($author) === FALSE &&
-        ($author->getId() === $submitter->getId()
-          && $assignment->canAccessAsSupervisor($submitter) === FALSE)) {
-        throw new ForbiddenRequestException("{$author->getName()} cannot submit solutions for this assignment.");
-      }
-
       if ($assignment->getGroup()->hasValidLicence() === FALSE) {
         throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
           IResponse::S402_PAYMENT_REQUIRED);
-      }
-
-      if ($assignment->canAccessAsSupervisor($submitter) === FALSE) {
-        if ($assignment->isAfterDeadline() === TRUE) { // supervisors can force-submit even after the deadline
-          throw new ForbiddenRequestException("It is after the deadline, you cannot submit solutions any more. Contact your supervisor for assistance.");
-        }
-
-        if ($assignment->hasReachedSubmissionsCountLimit($author)) {
-          throw new ForbiddenRequestException("The limit of {$assignment->getSubmissionsCountLimit()} submissions for this assignment has been reached. You cannot submit any more solutions.");
-        }
       }
 
       // now that the conditions for submission are validated, here comes the easy part:
