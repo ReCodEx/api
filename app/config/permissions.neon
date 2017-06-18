@@ -366,3 +366,13 @@ permissions:
       resource: runtimeEnvironment
       actions:
         - viewAll
+
+    ##############################
+    # Hardware group permissions #
+    ##############################
+
+    - allow: true
+      role: supervisor
+      resource: hardwareGroup
+      actions:
+        - viewAll
