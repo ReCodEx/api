@@ -331,7 +331,7 @@ class Assignment implements JsonSerializable
 
     return array_reduce(
       $this->submissions->matching($usersSolutions)->getValues(),
-      function (Submission $best, Submission $submission) {
+      function (?Submission $best, Submission $submission) {
         if ($best === NULL) {
           return $submission;
         }
