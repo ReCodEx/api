@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Test;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -16,37 +17,35 @@ class TestExerciseConfig extends Tester\TestCase
     "tests" => [
       "testA" => [
           "pipelines" => [
-            "hello",
-          ],
-          "variables" => [
-            "world" => "hello"
+            "hello" => [
+              "variables" => [
+                "world" => [ "type" => "string", "value" => "hello" ]
+              ]
+            ]
           ],
           "environments" => [
             "envA" => [
-              "pipelines" => [],
-              "variables" => []
+              "pipelines" => []
             ],
             "envB" => [
-              "pipelines" => [],
-              "variables" => []
+              "pipelines" => []
             ]
           ]
       ],
       "testB" => [
         "pipelines" => [
-          "world"
-        ],
-        "variables" => [
-          "hello" => "world",
+          "world" => [
+            "variables" => [
+              "hello" => [ "type" => "string", "value" => "world" ]
+            ]
+          ]
         ],
         "environments" => [
           "envA" => [
-            "pipelines" => [],
-            "variables" => []
+            "pipelines" => []
           ],
           "envB" => [
-            "pipelines" => [],
-            "variables" => []
+            "pipelines" => []
           ]
         ]
       ]
@@ -115,8 +114,8 @@ class TestExerciseConfig extends Tester\TestCase
     Assert::type(Test::class, $conf->getTest("testA"));
     Assert::type(Test::class, $conf->getTest("testB"));
 
-    Assert::equal(["hello"], $conf->getTest("testA")->getPipelines());
-    Assert::equal(["world"], $conf->getTest("testB")->getPipelines());
+    Assert::type(Pipeline::class, $conf->getTest("testA")->getPipeline("hello"));
+    Assert::type(Pipeline::class, $conf->getTest("testB")->getPipeline("world"));
   }
 
 }

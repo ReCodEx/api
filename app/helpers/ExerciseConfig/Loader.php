@@ -11,6 +11,54 @@ use App\Exceptions\ExerciseConfigException;
  */
 class Loader {
 
+  public function loadVariable($data): Variable {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Exercise variable is not array");
+    }
+
+    $variable = new Variable;
+
+    if (!isset($data[Variable::TYPE_KEY])) {
+      throw new ExerciseConfigException("Exercise variable does not have any type");
+    }
+    $variable->setType($data[Variable::TYPE_KEY]);
+
+    if (!isset($data[Variable::VALUE_KEY])) {
+      throw new ExerciseConfigException("Exercise variable does not have any value");
+    }
+    $variable->setValue($data[Variable::VALUE_KEY]);
+
+    return $variable;
+  }
+
+  /**
+   * Builds and checks pipeline configuration from given structured data.
+   * @param $data
+   * @return Pipeline
+   * @throws ExerciseConfigException
+   */
+  public function loadPipeline($data): Pipeline {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Exercise pipeline is not array");
+    }
+
+    $pipeline = new Pipeline();
+
+    if (isset($data[Pipeline::VARIABLES_KEY]) && is_array($data[Pipeline::VARIABLES_KEY])) {
+      foreach ($data[Pipeline::VARIABLES_KEY] as $name => $value) {
+        $pipeline->addVariable($name, $this->loadVariable($value));
+      }
+    }
+
+    return $pipeline;
+  }
+
+  /**
+   * Builds and checks environment configuration from given structured data.
+   * @param $data
+   * @return Environment
+   * @throws ExerciseConfigException
+   */
   public function loadEnvironment($data): Environment {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise environment is not array");
@@ -19,20 +67,20 @@ class Loader {
     $environment = new Environment();
 
     if (isset($data[Environment::PIPELINES_KEY]) && is_array($data[Environment::PIPELINES_KEY])) {
-      foreach ($data[Environment::PIPELINES_KEY] as $pipeline) {
-        $environment->addPipeline($pipeline);
-      }
-    }
-
-    if (isset($data[Environment::VARIABLES_KEY]) && is_array($data[Environment::VARIABLES_KEY])) {
-      foreach ($data[Environment::VARIABLES_KEY] as $name => $value) {
-        $environment->addVariable($name, $value);
+      foreach ($data[Environment::PIPELINES_KEY] as $key => $pipeline) {
+        $environment->addPipeline($key, $this->loadPipeline($pipeline));
       }
     }
 
     return $environment;
   }
 
+  /**
+   * Builds and checks test configuration from given structured data.
+   * @param $data
+   * @return Test
+   * @throws ExerciseConfigException
+   */
   public function loadTest($data): Test {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise test is not array");
@@ -43,14 +91,8 @@ class Loader {
     if (!isset($data[Test::PIPELINES_KEY]) || !is_array($data[Test::PIPELINES_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
     }
-    foreach ($data[Test::PIPELINES_KEY] as $pipeline) {
-      $test->addPipeline($pipeline);
-    }
-
-    if (isset($data[Test::VARIABLES_KEY]) && is_array($data[Test::VARIABLES_KEY])) {
-      foreach ($data[Test::VARIABLES_KEY] as $name => $value) {
-        $test->addVariable($name, $value);
-      }
+    foreach ($data[Test::PIPELINES_KEY] as $key => $pipeline) {
+      $test->addPipeline($key, $this->loadPipeline($pipeline));
     }
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
@@ -63,6 +105,12 @@ class Loader {
     return $test;
   }
 
+  /**
+   * Builds and checks exercise configuration from given structured data.
+   * @param $data
+   * @return ExerciseConfig
+   * @throws ExerciseConfigException
+   */
   public function loadExerciseConfig($data): ExerciseConfig {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise configuration is not array");

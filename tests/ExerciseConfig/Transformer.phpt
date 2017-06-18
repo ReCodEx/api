@@ -14,19 +14,21 @@ class TestExerciseConfigTransformer extends Tester\TestCase
     "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
-        "pipelines" => [ "hello" ],
-        "variables" => [ "world" => "hello" ],
+        "pipelines" => [
+          "hello" => [ "variables" => [ "world" => [ "type" => "string", "value" => "hello" ] ] ]
+        ],
         "environments" => [
-          "envA" => [ "pipelines" => [ "envPipeline" ], "variables" => [] ],
-          "envB" => [ "pipelines" => [], "variables" => [ "varA" => "valA" ] ]
+          "envA" => [ "pipelines" => [ "envPipeline" => [ "variables" => [] ] ] ],
+          "envB" => [ "pipelines" => [ "hello" => [ "variables" => [ "varA" => [ "type" => "string", "value" => "valA" ] ] ] ] ]
         ]
       ],
       "testB" => [
-        "pipelines" => [ "world" ],
-        "variables" => [ "hello" => "world" ],
+        "pipelines" => [
+          "world" => [ "variables" => [ "hello" => [ "type" => "string", "value" => "world" ] ] ]
+        ],
         "environments" => [
-          "envA" => [ "pipelines" => [], "variables" => [] ],
-          "envB" => [ "pipelines" => [], "variables" => [] ]
+          "envA" => [ "pipelines" => [] ],
+          "envB" => [ "pipelines" => [] ]
         ]
       ]
     ]
@@ -52,22 +54,42 @@ class TestExerciseConfigTransformer extends Tester\TestCase
       [
         "name" => "default",
         "tests" => [
-          [ "name" => "testA", "pipelines" => [ "hello" ], "variables" => [ "world" => "hello" ] ],
-          [ "name" => "testB", "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+          [ "name" => "testA", "pipelines" => [ [
+            "name" => "hello", "variables" => [
+              [ "name" => "world", "type" => "string", "value" => "hello" ]
+            ]
+          ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world", "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
         ]
       ],
       [
         "name" => "envA",
         "tests" => [
-          [ "name" => "testA", "pipelines" => [ "envPipeline" ], "variables" => [ "world" => "hello" ] ],
-          [ "name" => "testB", "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+          [ "name" => "testA", "pipelines" => [ [ "name" => "envPipeline", "variables" => [] ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world" , "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
         ]
       ],
       [
         "name" => "envB",
         "tests" => [
-          [ "name" => "testA", "pipelines" => [ "hello" ], "variables" => [ "varA" => "valA" ] ],
-          [ "name" => "testB", "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+          [ "name" => "testA", "pipelines" => [ [
+            "name" => "hello" , "variables" => [
+              [ "name" => "varA", "type" => "string", "value" => "valA" ]
+            ]
+          ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world" , "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
         ]
       ]
     ];

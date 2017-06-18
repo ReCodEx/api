@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Test;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
@@ -91,22 +92,22 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "default",
         "tests" => [
-          ["name" => "testA", "pipelines" => ["defaultTestA"], "variables" => ["defVarA" => "defValA"]],
-          ["name" => "testB", "pipelines" => ["defaultTestB"], "variables" => ["defVarB" => "defValB"]]
+          ["name" => "testA", "pipelines" => [["name" => "defaultTestA", "variables" => [["name" => "defVarA", "type" => "string", "value" => "defValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "defaultTestB", "variables" => [["name" => "defVarB", "type" => "file", "value" => "defValB"]]]]]
         ]
       ],
       [
         "name" => "environmentA",
         "tests" => [
-          ["name" => "testA", "pipelines" => ["ATestA"], "variables" => ["AVarA" => "AValA"]],
-          ["name" => "testB", "pipelines" => ["ATestB"], "variables" => ["AVarB" => "AValB"]]
+          ["name" => "testA", "pipelines" => [["name" => "ATestA", "variables" => [["name" => "AVarA", "type" => "string", "value" => "AValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "ATestB", "variables" => [["name" => "AVarB", "type" => "string", "value" => "AValB"]]]]]
         ]
       ],
       [
         "name" => "environmentB",
         "tests" => [
-          ["name" => "testA", "pipelines" => ["BTestA"], "variables" => ["BVarA" => "BValA"]],
-          ["name" => "testB", "pipelines" => ["BTestB"], "variables" => ["BVarB" => "BValB"]]
+          ["name" => "testA", "pipelines" => [["name" => "BTestA", "variables" => [["name" => "BVarA", "type" => "string", "value" => "BValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "BTestB", "variables" => [["name" => "BVarB", "type" => "string", "value" => "BValB"]]]]]
         ]
       ]
     ];
@@ -128,10 +129,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(2, $exerciseConfig->getTests());
     Assert::type(Test::class, $exerciseConfig->getTest('testA'));
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::equal(["defaultTestA"], $exerciseConfig->getTest('testA')->getPipelines());
-    Assert::equal(["defaultTestB"], $exerciseConfig->getTest('testB')->getPipelines());
-    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getVariableValue('defVarA'));
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getVariableValue('defVarB'));
+    Assert::type(Pipeline::class, $exerciseConfig->getTest('testA')->getPipeline('defaultTestA'));
+    Assert::type(Pipeline::class, $exerciseConfig->getTest('testB')->getPipeline('defaultTestB'));
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline('defaultTestA')->getVariable('defVarA')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline('defaultTestB')->getVariable('defVarB')->getValue());
   }
 
   public function testGetLimits()
