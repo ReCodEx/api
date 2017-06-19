@@ -33,7 +33,7 @@ App\Model\Entity\User:
             - "<lastName()>"
             - ""
             - ""
-            - @student
+            - student
             - @demoInstance
         makeStudentOf:
             - @demoGroup
@@ -45,7 +45,7 @@ App\Model\Entity\User:
             - "<lastName()>"
             - ""
             - ""
-            - @supervisor
+            - supervisor
             - @demoInstance
         makeSupervisorOf:
             - @demoGroup
@@ -57,13 +57,13 @@ App\Model\Entity\User:
             - "<lastName()>"
             - ""
             - ""
-            - @supervisor
+            - supervisor
             - @demoInstance
         makeSupervisorOf:
             - @demoGroup
 
     "submitUser1":
-        __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", @student, @demoInstance]
+        __construct: ["submitUser1@example.com", "<firstName()>", "<lastName()>", "", "", student, @demoInstance]
         makeStudentOf: [@demoGroup]
 
 App\Model\Entity\Login:

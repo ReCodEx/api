@@ -10,23 +10,15 @@ use JsonSerializable;
  */
 class Environment implements JsonSerializable {
 
-  /** Name of the test key */
+  /** Name of the pipelines key */
   const PIPELINES_KEY = "pipelines";
-  /** Name of the test key */
-  const VARIABLES_KEY = "variables";
 
 
   /**
-   * Array containing identifications of environment pipelines.
+   * Array indexed by pipelines name.
    * @var array
    */
   protected $pipelines = array();
-
-  /**
-   * Variables indexed by name and containing values.
-   * @var array
-   */
-  protected $variables = array();
 
 
   /**
@@ -38,55 +30,37 @@ class Environment implements JsonSerializable {
   }
 
   /**
-   * Add pipeline to this environment.
-   * @param string $pipeline
-   * @return $this
+   * Get pipeline for the given name.
+   * @param string $name
+   * @return Pipeline|null
    */
-  public function addPipeline(string $pipeline): Environment {
-    $this->pipelines[] = $pipeline;
-    return $this;
-  }
-
-  /**
-   * Get variables for this environment.
-   * @return array
-   */
-  public function getVariables(): array {
-    return $this->variables;
-  }
-
-  /**
-   * Add variable to this environment.
-   * @param string $key
-   * @param string $value
-   * @return $this
-   */
-  public function addVariable(string $key, string $value): Environment {
-    $this->variables[$key] = $value;
-    return $this;
-  }
-
-  /**
-   * Remove variable based on given variable name.
-   * @param string $key
-   * @return $this
-   */
-  public function removeVariable(string $key): Environment {
-    unset($this->variables[$key]);
-    return $this;
-  }
-
-  /**
-   * Get value of the variable based on given variable name.
-   * @param string $key
-   * @return string|null
-   */
-  public function getVariableValue(string $key): ?string {
-    if (!array_key_exists($key, $this->variables)) {
+  public function getPipeline(string $name): ?Pipeline {
+    if (!array_key_exists($name, $this->pipelines)) {
       return null;
     }
 
-    return $this->variables[$key];
+    return $this->pipelines[$name];
+  }
+
+  /**
+   * Add pipeline to this environment.
+   * @param string $id
+   * @param Pipeline $pipeline
+   * @return $this
+   */
+  public function addPipeline(string $id, Pipeline $pipeline): Environment {
+    $this->pipelines[$id] = $pipeline;
+    return $this;
+  }
+
+  /**
+   * Remove pipeline with given identification.
+   * @param string $id
+   * @return $this
+   */
+  public function removePipeline(string $id): Environment {
+    unset($this->pipelines[$id]);
+    return $this;
   }
 
 
@@ -98,12 +72,8 @@ class Environment implements JsonSerializable {
     $data = [];
 
     $data[self::PIPELINES_KEY] = array();
-    foreach ($this->pipelines as $pipeline) {
-      $data[self::PIPELINES_KEY][] = $pipeline;
-    }
-    $data[self::VARIABLES_KEY] = array();
-    foreach ($this->variables as $key => $value) {
-      $data[self::VARIABLES_KEY][$key] = $value;
+    foreach ($this->pipelines as $key => $pipeline) {
+      $data[self::PIPELINES_KEY][$key] = $pipeline->toArray();
     }
 
     return $data;

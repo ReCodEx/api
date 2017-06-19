@@ -10,24 +10,16 @@ use JsonSerializable;
  */
 class Test implements JsonSerializable {
 
-  /** Name of the test key */
+  /** Name of the pipelines key */
   const PIPELINES_KEY = "pipelines";
-  /** Name of the test key */
-  const VARIABLES_KEY = "variables";
-  /** Name of the test key */
+  /** Name of the environments key */
   const ENVIRONMENTS_KEY = "environments";
 
   /**
-   * Array containing identifications of default pipelines.
+   * Array of default pipelines indexed by pipeline name.
    * @var array
    */
   protected $pipelines = array();
-
-  /**
-   * Default variables indexed by name and containing values.
-   * @var array
-   */
-  protected $variables = array();
 
   /**
    * Array of environments with their specific settings.
@@ -45,55 +37,37 @@ class Test implements JsonSerializable {
   }
 
   /**
-   * Add default pipeline to this test.
-   * @param string $pipeline
-   * @return $this
+   * Get pipeline for the given name.
+   * @param string $name
+   * @return Pipeline|null
    */
-  public function addPipeline(string $pipeline): Test {
-    $this->pipelines[] = $pipeline;
-    return $this;
-  }
-
-  /**
-   * Get default variables for this test.
-   * @return array
-   */
-  public function getVariables(): array {
-    return $this->variables;
-  }
-
-  /**
-   * Add default variable to this test.
-   * @param string $key
-   * @param string $value
-   * @return $this
-   */
-  public function addVariable(string $key, string $value): Test {
-    $this->variables[$key] = $value;
-    return $this;
-  }
-
-  /**
-   * Remove variable based on given variable name.
-   * @param string $key
-   * @return $this
-   */
-  public function removeVariable(string $key): Test {
-    unset($this->variables[$key]);
-    return $this;
-  }
-
-  /**
-   * Get value of the variable based on given variable name.
-   * @param string $key
-   * @return string|null
-   */
-  public function getVariableValue(string $key): ?string {
-    if (!array_key_exists($key, $this->variables)) {
+  public function getPipeline(string $name): ?Pipeline {
+    if (!array_key_exists($name, $this->pipelines)) {
       return null;
     }
 
-    return $this->variables[$key];
+    return $this->pipelines[$name];
+  }
+
+  /**
+   * Add default pipeline to this test.
+   * @param string $id
+   * @param Pipeline $pipeline
+   * @return $this
+   */
+  public function addPipeline(string $id, Pipeline $pipeline): Test {
+    $this->pipelines[$id] = $pipeline;
+    return $this;
+  }
+
+  /**
+   * Remove pipeline with given identification.
+   * @param string $id
+   * @return $this
+   */
+  public function removePipeline(string $id): Test {
+    unset($this->pipelines[$id]);
+    return $this;
   }
 
   /**
@@ -147,12 +121,8 @@ class Test implements JsonSerializable {
     $data = [];
 
     $data[self::PIPELINES_KEY] = array();
-    foreach ($this->pipelines as $pipeline) {
-      $data[self::PIPELINES_KEY][] = $pipeline;
-    }
-    $data[self::VARIABLES_KEY] = array();
-    foreach ($this->variables as $key => $value) {
-      $data[self::VARIABLES_KEY][$key] = $value;
+    foreach ($this->pipelines as $key => $pipeline) {
+      $data[self::PIPELINES_KEY][$key] = $pipeline->toArray();
     }
     $data[self::ENVIRONMENTS_KEY] = array();
     foreach ($this->environments as $key => $environment) {

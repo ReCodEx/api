@@ -7,9 +7,7 @@ use App\Model\Entity\User;
 use App\Model\Entity\Instance;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
-use App\Model\Repository\Roles;
 use App\Model\Repository\Instances;
-use App\Model\Entity\Role;
 use App\Security\AccessManager;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
@@ -21,6 +19,7 @@ use ZxcvbnPhp\Zxcvbn;
  * Registration management endpoints
  */
 class RegistrationPresenter extends BasePresenter {
+  const DEFAULT_ROLE = "student";
 
   /**
    * @var Logins
@@ -39,12 +38,6 @@ class RegistrationPresenter extends BasePresenter {
    * @inject
    */
   public $accessManager;
-
-  /**
-   * @var Roles
-   * @inject
-   */
-  public $roles;
 
   /**
    * @var Instances
@@ -101,7 +94,6 @@ class RegistrationPresenter extends BasePresenter {
       throw new BadRequestException("This email address is already taken.");
     }
 
-    $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
     $instance = $this->getInstance($instanceId);
 
@@ -114,7 +106,7 @@ class RegistrationPresenter extends BasePresenter {
       $req->getPost("lastName"),
       $degreesBeforeName,
       $degreesAfterName,
-      $role,
+      self::DEFAULT_ROLE,
       $instance
     );
     $login = Login::createLogin($user, $email, $req->getPost("password"));
@@ -143,7 +135,6 @@ class RegistrationPresenter extends BasePresenter {
     $serviceId = $req->getPost("serviceId");
     $authType = $req->getPost("authType");
 
-    $role = $this->roles->get(Role::STUDENT);
     $instanceId = $req->getPost("instanceId");
     $instance = $this->getInstance($instanceId);
 
@@ -155,7 +146,7 @@ class RegistrationPresenter extends BasePresenter {
       throw new BadRequestException("User is already registered.");
     }
 
-    $user = $externalData->createEntity($instance, $role);
+    $user = $externalData->createEntity($instance, self::DEFAULT_ROLE);
     $this->users->persist($user);
 
     // connect the account to the login method

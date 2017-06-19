@@ -7,7 +7,6 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Collection;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\User;
-use App\Model\Entity\Group;
 
 class Exercises extends BaseSoftDeleteRepository {
 
@@ -40,29 +39,14 @@ class Exercises extends BaseSoftDeleteRepository {
 
   /**
    * Internal simple search of exercises names based on given string.
-   * @param User $user
    * @param string|NULL $search
    * @return Collection
    */
-  private function search(User $user, ?string $search = NULL): Collection {
+  private function search(?string $search = NULL): Collection {
     $filter = Criteria::create();
 
     if ($search !== NULL && !empty($search)) {
       $filter->where(Criteria::expr()->contains("name", $search));
-    }
-
-    // user is not supervisor
-    if ($user->getRole()->hasLimitedRights()) {
-      $filter->andWhere(Criteria::expr()->orX(
-        Criteria::expr()->andX(Criteria::expr()->eq("isPublic", TRUE),
-          Criteria::expr()->eq("group", NULL)),
-        Criteria::expr()->andX(Criteria::expr()->eq("isPublic", TRUE),
-          Criteria::expr()->in("group", $user->getGroupsAsSupervisor()->map(
-            function (Group $group) {
-              return $group->getId();
-          })->getValues())),
-        Criteria::expr()->eq("author", $user)
-      ));
     }
 
     return $this->matching($filter);
@@ -71,11 +55,10 @@ class Exercises extends BaseSoftDeleteRepository {
   /**
    * Search exercises names based on given string.
    * @param string|NULL $search
-   * @param User $user
-   * @return array
+   * @return Exercise[]
    */
-  public function searchByName(?string $search, User $user): array {
-    $foundExercises = $this->search($user, $search);
+  public function searchByName(?string $search): array {
+    $foundExercises = $this->search($search);
     if ($foundExercises->count() > 0) {
       return $foundExercises->toArray();
     }
@@ -89,7 +72,7 @@ class Exercises extends BaseSoftDeleteRepository {
         continue;
       }
 
-      $weakExercises = $this->search($user, $part);
+      $weakExercises = $this->search($part);
       $foundExercises = array_merge($foundExercises, $weakExercises->toArray());
     }
 

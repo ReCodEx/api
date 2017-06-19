@@ -123,6 +123,31 @@ session:
   autoStart: false
   useCookies: 0
 
+
+acl:
+  config: %appDir%/config/permissions.neon
+  acl:
+    group: App\Security\ACL\IGroupPermissions
+    instance: App\Security\ACL\IInstancePermissions
+    user: App\Security\ACL\IUserPermissions
+    assignment: App\Security\ACL\IAssignmentPermissions
+    comment: App\Security\ACL\ICommentPermissions
+    exercise: App\Security\ACL\IExercisePermissions
+    hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
+    runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
+    submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
+    submission: App\Security\ACL\ISubmissionPermissions
+    uploadedFile: App\Security\ACL\IUploadedFilePermissions
+  policies:
+    group: App\Security\Policies\GroupPermissionPolicy
+    instance: App\Security\Policies\InstancePermissionPolicy
+    user: App\Security\Policies\UserPermissionPolicy
+    assignment: App\Security\Policies\AssignmentPermissionPolicy
+    comment: App\Security\Policies\CommentPermissionPolicy
+    exercise: App\Security\Policies\ExercisePermissionPolicy
+    submission: App\Security\Policies\SubmissionPermissionPolicy
+    uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
+
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
   events: Kdyby\Events\DI\EventsExtension
@@ -130,6 +155,7 @@ extensions:
   gedmo: Rixxi\Gedmo\DI\OrmExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
+  acl: App\Security\SecurityExtension(%tempDir%)
 
 services:
   router: App\RouterFactory::createRouter
@@ -143,7 +169,6 @@ services:
 
   # security
   - App\Security\AccessManager(%accessManager%)
-  - App\Security\Authorizator
   security.userStorage: App\Security\UserStorage
   - App\Security\CredentialsAuthenticator
 
@@ -195,11 +220,8 @@ services:
   - App\Model\Repository\Instances
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
-  - App\Model\Repository\Permissions
   - App\Model\Repository\ReferenceExerciseSolutions
   - App\Model\Repository\ReferenceSolutionEvaluations
-  - App\Model\Repository\Resources
-  - App\Model\Repository\Roles
   - App\Model\Repository\Submissions
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
@@ -233,8 +255,6 @@ fixtures:
 annotations:
   ignore:
     - LoggedIn
-    - Role
-    - UserIsAllowed
     - POST
     - GET
     - PUT

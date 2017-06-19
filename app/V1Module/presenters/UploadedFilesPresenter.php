@@ -12,6 +12,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
+use App\Security\ACL\IUploadedFilePermissions;
 use Nette\Application\Responses\FileResponse;
 
 /**
@@ -38,49 +39,22 @@ class UploadedFilesPresenter extends BasePresenter {
   public $assignments;
 
   /**
-   *
-   * @param UploadedFile $file
-   * @throws ForbiddenRequestException
+   * @var IUploadedFilePermissions
+   * @inject
    */
-  private function throwIfUserCantAccessFile(UploadedFile $file) {
-    $user = $this->getCurrentUser();
-
-    $isUserSupervisor = FALSE;
-    $isFileRelatedToUsersAssignment = FALSE;
-
-    if ($file instanceof AdditionalExerciseFile) {
-      foreach ($file->getExercises() as $exercise) {
-        if ($this->assignments->isAssignedToUser($exercise, $user)) {
-          $isFileRelatedToUsersAssignment = TRUE;
-          break;
-        }
-      }
-    }
-
-    /** @var Group $group */
-    $group = $this->uploadedFiles->findGroupForFile($file);
-    if ($group && ($group->isSupervisorOf($user) || $group->isAdminOf($user))) {
-      $isUserSupervisor = TRUE;
-    }
-
-    $isUserOwner = $file->getUser()->getId() === $user->getId();
-
-    if (!$isUserOwner && !$isUserSupervisor && !$isFileRelatedToUsersAssignment) {
-      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
-    }
-  }
+  public $uploadedFileAcl;
 
   /**
    * Get details of a file
    * @GET
    * @LoggedIn
-   * @UserIsAllowed(files="view-detail")
    * @param string $id Identifier of the uploaded file
+   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    if ($file->isPublic !== TRUE) {
-      $this->throwIfUserCantAccessFile($file);
+    if (!$this->uploadedFileAcl->canViewDetail($file)) {
+      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
     $this->sendSuccessResponse($file);
   }
@@ -89,11 +63,12 @@ class UploadedFilesPresenter extends BasePresenter {
    * Download a file
    * @GET
    * @param string $id Identifier of the file
+   * @throws ForbiddenRequestException
    */
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    if ($file->isPublic !== TRUE) {
-      $this->throwIfUserCantAccessFile($file);
+    if (!$this->uploadedFileAcl->canDownload($file)) {
+      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
     $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
   }
@@ -102,11 +77,12 @@ class UploadedFilesPresenter extends BasePresenter {
    * Get the contents of a file
    * @GET
    * @param string $id Identifier of the file
+   * @throws ForbiddenRequestException
    */
   public function actionContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    if ($file->isPublic !== TRUE) {
-      $this->throwIfUserCantAccessFile($file);
+    if (!$this->uploadedFileAcl->canDownload($file)) {
+      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
     $this->sendSuccessResponse($file->getContent());
   }
@@ -116,9 +92,12 @@ class UploadedFilesPresenter extends BasePresenter {
    * Upload a file
    * @POST
    * @LoggedIn
-   * @UserIsAllowed(files="upload")
    */
   public function actionUpload() {
+    if (!$this->uploadedFileAcl->canUpload()) {
+      throw new ForbiddenRequestException();
+    }
+
     $user = $this->getCurrentUser();
     $files = $this->getRequest()->getFiles();
     if (count($files) === 0) {

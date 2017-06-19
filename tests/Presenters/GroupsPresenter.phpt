@@ -102,14 +102,16 @@ class TestGroupsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
 
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
+
+    /** @var Group $group */
     $group = $user->instance->getGroups()->filter(
-      function (Group $group) { return $group->isPublic; }
+      function (Group $group) { return $group->isPublic(); }
     )->first();
 
     $request = new Nette\Application\Request('V1:Groups', 'POST', [
       'action' => 'addStudent',
-      'id' => $group->id,
-      'userId' => $user->id
+      'id' => $group->getId(),
+      'userId' => $user->getId()
     ]);
 
     /** @var \Nette\Application\Responses\JsonResponse $response */

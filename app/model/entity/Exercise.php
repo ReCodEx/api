@@ -22,9 +22,17 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
  * @method setName(string $name)
- * @method removeLocalizedText(Assignment $assignment)
+ * @method removeLocalizedText(LocalizedText $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
+ * @method User getAuthor()
+ * @method Group getGroup()
+ * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
+ * @method int getVersion()
+ * @method void setDifficulty(string $difficulty)
+ * @method void setIsPublic(bool $isPublic)
+ * @method void setUpdatedAt(DateTime $date)
+ * @method void setDescription(string $description)
  */
 class Exercise implements JsonSerializable
 {
@@ -147,33 +155,6 @@ class Exercise implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
    */
   protected $exerciseConfig;
-
-  /**
-   * Can a specific user access this exercise?
-   * @param User $user
-   * @return boolean
-   */
-  public function canAccessDetail(User $user): bool {
-    if (!$user->getRole()->hasLimitedRights() || $this->isAuthor($user)) {
-      return TRUE;
-    }
-
-    if ($this->group) {
-      return $this->isPublic() && ($this->group->isAdminOf($user)
-          || $this->group->isSupervisorOf($user));
-    } else {
-      return $this->isPublic();
-    }
-  }
-
-  /**
-   * Can a specific user modify this exercise?
-   * @param \App\Model\Entity\User $user
-   * @return boolean
-   */
-  public function canModifyDetail(User $user): bool {
-    return $this->isAuthor($user) || !$user->getRole()->hasLimitedRights();
-  }
 
   /**
    * Constructor

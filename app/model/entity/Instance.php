@@ -14,8 +14,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method setAdmin(User $admin)
  * @method Group getRootGroup()
+ * @method setAdmin(User $admin)
  */
 class Instance implements JsonSerializable
 {
@@ -157,19 +157,6 @@ class Instance implements JsonSerializable
 
   public function isAllowed() {
     return $this->isAllowed;
-  }
-
-  public function getGroupsForUser(User $user) {
-    return $this->groups->filter(function ($group) use ($user) {
-      if ($group->getDeletedAt() !== NULL) {
-        return FALSE;
-      }
-      if ($group->canUserAccessGroupDetail($user)) {
-        return TRUE;
-      }
-
-      return FALSE;
-    })->getValues();
   }
 
   public function getData(User $user = NULL) {

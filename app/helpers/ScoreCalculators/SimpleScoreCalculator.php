@@ -3,8 +3,6 @@
 namespace App\Helpers;
 
 use App\Exceptions\SubmissionEvaluationFailedException;
-use App\Model\Entity\SubmissionEvaluation;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -86,7 +84,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
   /**
    * Make default configuration for array of test names. Each test will
    * have the same priority as others.
-   * @param array List of string names of tests
+   * @param array $tests of string names of tests
    * @return string Default configuration for given tests
    */
   public static function getDefaultConfig(array $tests): string {

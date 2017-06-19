@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Test;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
@@ -66,19 +67,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-
     $payload = $result['payload'];
 
-    // check the default values for each test
-    Assert::true(array_key_exists('default', $payload));
-    Assert::count(count($exerciseConfig->getTests()), $payload['default']);
-	
     // check all environments
-    foreach ([ "java8", "cpp11" ] as $environmentId) {
-      Assert::true(array_key_exists($environmentId, $payload));
-      Assert::count(count($exerciseConfig->getTests()), $payload[$environmentId]);
+    foreach ($payload as $environment) {
+      Assert::contains($environment['name'], [ "default", "java8", "cpp11" ]);
+      Assert::count(count($exerciseConfig->getTests()), $environment['tests']);
 
-      foreach ($payload[$environmentId] as $testId => $test) {
+      foreach ($environment['tests'] as $test) {
+        $testId = $test['name'];
         Assert::notEqual($exerciseConfig->getTest($testId), null);
       }
     }
@@ -92,17 +89,26 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare config array
     $config = [
-      "default" => [
-        "testA" => ["pipelines" => ["defaultTestA"], "variables" => ["defVarA" => "defValA"]],
-        "testB" => ["pipelines" => ["defaultTestB"], "variables" => ["defVarB" => "defValB"]]
+      [
+        "name" => "default",
+        "tests" => [
+          ["name" => "testA", "pipelines" => [["name" => "defaultTestA", "variables" => [["name" => "defVarA", "type" => "string", "value" => "defValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "defaultTestB", "variables" => [["name" => "defVarB", "type" => "file", "value" => "defValB"]]]]]
+        ]
       ],
-      "environmentA" => [
-        "testA" => ["pipelines" => ["ATestA"], "variables" => ["AVarA" => "AValA"]],
-        "testB" => ["pipelines" => ["ATestB"], "variables" => ["AVarB" => "AValB"]]
+      [
+        "name" => "environmentA",
+        "tests" => [
+          ["name" => "testA", "pipelines" => [["name" => "ATestA", "variables" => [["name" => "AVarA", "type" => "string", "value" => "AValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "ATestB", "variables" => [["name" => "AVarB", "type" => "string", "value" => "AValB"]]]]]
+        ]
       ],
-      "environmentB" => [
-        "testA" => ["pipelines" => ["BTestA"], "variables" => ["BVarA" => "BValA"]],
-        "testB" => ["pipelines" => ["BTestB"], "variables" => ["BVarB" => "BValB"]]
+      [
+        "name" => "environmentB",
+        "tests" => [
+          ["name" => "testA", "pipelines" => [["name" => "BTestA", "variables" => [["name" => "BVarA", "type" => "string", "value" => "BValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "BTestB", "variables" => [["name" => "BVarB", "type" => "string", "value" => "BValB"]]]]]
+        ]
       ]
     ];
 
@@ -118,16 +124,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
 
     $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     Assert::count(2, $exerciseConfig->getTests());
     Assert::type(Test::class, $exerciseConfig->getTest('testA'));
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::equal(["defaultTestA"], $exerciseConfig->getTest('testA')->getPipelines());
-    Assert::equal(["defaultTestB"], $exerciseConfig->getTest('testB')->getPipelines());
-    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getVariableValue('defVarA'));
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getVariableValue('defVarB'));
+    Assert::type(Pipeline::class, $exerciseConfig->getTest('testA')->getPipeline('defaultTestA'));
+    Assert::type(Pipeline::class, $exerciseConfig->getTest('testB')->getPipeline('defaultTestB'));
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline('defaultTestA')->getVariable('defVarA')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline('defaultTestB')->getVariable('defVarB')->getValue());
   }
 
   public function testGetLimits()

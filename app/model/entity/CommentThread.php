@@ -9,6 +9,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class CommentThread implements JsonSerializable
 {

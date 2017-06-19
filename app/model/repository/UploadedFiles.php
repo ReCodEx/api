@@ -11,7 +11,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\UploadedFile;
 
 /**
- * @method UploadedFile findOrThrow(string $id)
+ * @method UploadedFile findOrThrow($id)
  */
 class UploadedFiles extends BaseRepository {
 

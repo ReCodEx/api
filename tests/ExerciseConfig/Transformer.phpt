@@ -14,19 +14,21 @@ class TestExerciseConfigTransformer extends Tester\TestCase
     "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
-        "pipelines" => [ "hello" ],
-        "variables" => [ "world" => "hello" ],
+        "pipelines" => [
+          "hello" => [ "variables" => [ "world" => [ "type" => "string", "value" => "hello" ] ] ]
+        ],
         "environments" => [
-          "envA" => [ "pipelines" => [ "envPipeline" ], "variables" => [] ],
-          "envB" => [ "pipelines" => [], "variables" => [ "varA" => "valA" ] ]
+          "envA" => [ "pipelines" => [ "envPipeline" => [ "variables" => [] ] ] ],
+          "envB" => [ "pipelines" => [ "hello" => [ "variables" => [ "varA" => [ "type" => "string", "value" => "valA" ] ] ] ] ]
         ]
       ],
       "testB" => [
-        "pipelines" => [ "world" ],
-        "variables" => [ "hello" => "world" ],
+        "pipelines" => [
+          "world" => [ "variables" => [ "hello" => [ "type" => "string", "value" => "world" ] ] ]
+        ],
         "environments" => [
-          "envA" => [ "pipelines" => [], "variables" => [] ],
-          "envB" => [ "pipelines" => [], "variables" => [] ]
+          "envA" => [ "pipelines" => [] ],
+          "envB" => [ "pipelines" => [] ]
         ]
       ]
     ]
@@ -49,17 +51,46 @@ class TestExerciseConfigTransformer extends Tester\TestCase
 
   protected function setUp() {
     self::$externalConfig = [
-      "default" => [
-        "testA" => [ "pipelines" => [ "hello" ], "variables" => [ "world" => "hello" ] ],
-        "testB" => [ "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+      [
+        "name" => "default",
+        "tests" => [
+          [ "name" => "testA", "pipelines" => [ [
+            "name" => "hello", "variables" => [
+              [ "name" => "world", "type" => "string", "value" => "hello" ]
+            ]
+          ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world", "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
+        ]
       ],
-      "envA" => [
-        "testA" => [ "pipelines" => [ "envPipeline" ], "variables" => [ "world" => "hello" ] ],
-        "testB" => [ "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+      [
+        "name" => "envA",
+        "tests" => [
+          [ "name" => "testA", "pipelines" => [ [ "name" => "envPipeline", "variables" => [] ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world" , "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
+        ]
       ],
-      "envB" => [
-        "testA" => [ "pipelines" => [ "hello" ], "variables" => [ "varA" => "valA" ] ],
-        "testB" => [ "pipelines" => [ "world" ], "variables" => [ "hello" => "world" ] ]
+      [
+        "name" => "envB",
+        "tests" => [
+          [ "name" => "testA", "pipelines" => [ [
+            "name" => "hello" , "variables" => [
+              [ "name" => "varA", "type" => "string", "value" => "valA" ]
+            ]
+          ] ] ],
+          [ "name" => "testB", "pipelines" => [ [
+            "name" => "world" , "variables" => [
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
+            ]
+          ] ] ]
+        ]
       ]
     ];
   }
@@ -72,30 +103,29 @@ class TestExerciseConfigTransformer extends Tester\TestCase
 
   public function testToExerciseConfigMissingDefaultSection() {
     Assert::exception(function () {
-      unset(self::$externalConfig["default"]);
+      unset(self::$externalConfig[0]);
       $this->transformer->toExerciseConfig(self::$externalConfig);
     }, ExerciseConfigException::class);
   }
 
   public function testToExerciseConfigDefineOnlyDefault() {
     Assert::exception(function () {
-      unset(self::$externalConfig["envA"]);
-      unset(self::$externalConfig["envB"]);
+      unset(self::$externalConfig[1]);
+      unset(self::$externalConfig[2]);
       $this->transformer->toExerciseConfig(self::$externalConfig);
     }, ExerciseConfigException::class);
   }
 
   public function testToExerciseConfigDifferentTestIds() {
     Assert::exception(function () {
-      self::$externalConfig["envA"]["testNew"] = self::$externalConfig["envA"]["testA"];
-      unset(self::$externalConfig["envA"]["testA"]);
+      self::$externalConfig[1]["tests"][0]["name"] = 'testNew';
       $this->transformer->toExerciseConfig(self::$externalConfig);
     }, ExerciseConfigException::class);
   }
 
   public function testToExerciseConfigDifferentNumberOfTests() {
     Assert::exception(function () {
-      self::$externalConfig["envA"]["testNew"] = self::$externalConfig["envA"]["testA"];
+      self::$externalConfig[1]["tests"][] = self::$externalConfig[1]["tests"][0];
       $this->transformer->toExerciseConfig(self::$externalConfig);
     }, ExerciseConfigException::class);
 

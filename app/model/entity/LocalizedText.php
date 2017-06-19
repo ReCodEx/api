@@ -9,6 +9,7 @@ use DateTime;
 
 /**
  * @ORM\Entity
+ * @method string getId()
  */
 class LocalizedText implements JsonSerializable
 {
@@ -37,6 +38,7 @@ class LocalizedText implements JsonSerializable
   /**
    * Created from.
    * @ORM\ManyToOne(targetEntity="LocalizedText")
+   * @var LocalizedText
    */
   protected $createdFrom;
 
@@ -93,7 +95,7 @@ class LocalizedText implements JsonSerializable
       "locale" => $this->locale,
       "text" => $this->text,
       "createdAt" => $this->createdAt->getTimestamp(),
-      "createdFrom" => $this->createdFrom ? $this->createdFrom->id : ""
+      "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];
   }
 }

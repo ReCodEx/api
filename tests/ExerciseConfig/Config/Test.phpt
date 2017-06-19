@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Environment;
+use App\Helpers\ExerciseConfig\Pipeline;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -23,21 +24,29 @@ class TestTest extends Tester\TestCase
   protected function setUp() {
     self::$config = [
       "pipelines" => [
-        "hello",
-        "world"
+        "hello" => [
+          "variables" => [
+            "hello" => [ "type" => "string", "value" => "world" ],
+            "world" => [ "type" => "file", "value" => "hello" ]
+          ],
+        ],
+        "world" => [
+          "variables" => []
+        ]
       ],
-      "variables" => [
-        "hello" => "world",
-        "world" => "hello"
-      ],
+
       "environments" => [
         "envA" => [
-          "pipelines" => [],
-          "variables" => []
+          "pipelines" => [
+            "newEnvAPipeline" => [
+              "variables" => [
+                "varA" => [ "type" => "string", "value" => "valA" ]
+              ]
+            ]
+          ]
         ],
         "envB" => [
-          "pipelines" => [],
-          "variables" => []
+          "pipelines" => []
         ]
       ]
     ];
@@ -69,13 +78,6 @@ class TestTest extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testMissingVariables() {
-    unset(self::$config[Test::VARIABLES_KEY]);
-    Assert::exception(function () {
-      $this->loader->loadTest(self::$config);
-    }, ExerciseConfigException::class);
-  }
-
   public function testMissingEnvironments() {
     unset(self::$config[Test::ENVIRONMENTS_KEY]);
     Assert::exception(function () {
@@ -83,17 +85,18 @@ class TestTest extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testVariablesOperations() {
+  public function testPipelinesOperations() {
     $test = new Test;
+    $pipeline = new Pipeline;
 
-    $test->addVariable("variableA", "valueA");
-    Assert::equal("valueA", $test->getVariableValue("variableA"));
+    $test->addPipeline("pipelineA", $pipeline);
+    Assert::type(Pipeline::class, $test->getPipeline("pipelineA"));
 
-    $test->removeVariable("non-existant");
-    Assert::count(1, $test->getVariables());
+    $test->removePipeline("non-existant");
+    Assert::count(1, $test->getPipelines());
 
-    $test->removeVariable("variableA");
-    Assert::count(0, $test->getVariables());
+    $test->removePipeline("pipelineA");
+    Assert::count(0, $test->getPipelines());
   }
 
   public function testEnvironmentsOperations() {
@@ -114,14 +117,8 @@ class TestTest extends Tester\TestCase
     $test = $this->loader->loadTest(self::$config);
 
     Assert::count(2, $test->getPipelines());
-    Assert::equal(self::$config["pipelines"], $test->getPipelines());
-    Assert::contains("hello", $test->getPipelines());
-    Assert::contains("world", $test->getPipelines());
-
-    Assert::count(2, $test->getVariables());
-    Assert::equal(self::$config["variables"], $test->getVariables());
-    Assert::equal("world", $test->getVariableValue("hello"));
-    Assert::equal("hello", $test->getVariableValue("world"));
+    Assert::type(Pipeline::class, $test->getPipeline("hello"));
+    Assert::type(Pipeline::class, $test->getPipeline("world"));
 
     Assert::count(2, $test->getEnvironments());
     Assert::type(Environment::class, $test->getEnvironment("envA"));

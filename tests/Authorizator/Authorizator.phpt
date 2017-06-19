@@ -1,133 +1,123 @@
 <?php
-include "../bootstrap.php";
+include __DIR__ . "/../bootstrap.php";
 
+use App\Security\Authorizator;
+use App\Security\Loader;
+use App\Security\Policies\IPermissionPolicy;
+use App\Security\PolicyRegistry;
 use Tester\Assert;
+use Mockery\Mock;
 
-class TestAuthorizator extends Tester\TestCase
+class Resource1 { }
+class Resource2 { }
+
+interface ITestResource1Permissions {
+  function canAction1(Resource1 $resource): bool;
+}
+
+interface ITestResource2Permissions {
+  function canAction2(Resource1 $resource1, Resource2 $resource2): bool;
+}
+
+class TestAuthorizatorBasic extends Tester\TestCase
 {
   use MockeryTrait;
 
-  /** @var Mockery\Mock | App\Model\Repository\Roles */
-  private $roles;
+  /** @var PolicyRegistry */
+  private $policies;
 
-  /** @var Mockery\Mock | App\Model\Repository\Resources */
-  private $resources;
-
-  /** @var Mockery\Mock | App\Model\Repository\Permissions */
-  private $permissions;
-
-  /** @var Mockery\Mock | App\Security\Authorizator */
+  /** @var Authorizator */
   private $authorizator;
 
-  protected function setUp()
-  {
-    $this->roles = Mockery::mock(App\Model\Repository\Roles::class);
-    $this->resources = Mockery::mock(App\Model\Repository\Resources::class);
-    $this->permissions = Mockery::mock(App\Model\Repository\Permissions::class);
+  /** @var Mock|IPermissionPolicy */
+  private $policy1;
 
-    $this->authorizator = new \App\Security\Authorizator($this->roles, $this->resources, $this->permissions);
+  /** @var Mock|IPermissionPolicy */
+  private $policy2;
+
+  /** @var Loader */
+  private $loader;
+
+  public function __construct()
+  {
+    $this->loader = new Loader(TEMP_DIR . '/security', __DIR__ . '/config/basic.neon', [
+      'resource1' => ITestResource1Permissions::class,
+      'resource2' => ITestResource2Permissions::class
+    ]);
   }
 
-  public function testDenyByDefault()
+  public function setUp()
   {
-    list($role, $resource) = $this->setupSimple();
-    $this->permissions->shouldReceive("findAll")->andReturn([]);
-
-    Assert::false($this->authorizator->isAllowed($role->getId(), $resource->getId(), "whatever"));
+    $this->policies = new PolicyRegistry();
+    $this->authorizator = $this->loader->loadAuthorizator($this->policies);
+    $this->policy1 = Mockery::mock(MockPolicy::class)->makePartial();
+    $this->policy1->shouldReceive('getAssociatedClass')->withAnyArgs()->andReturn(Resource1::class);
+    $this->policy2 = Mockery::mock(MockPolicy::class)->makePartial();
+    $this->policy2->shouldReceive('getAssociatedClass')->withAnyArgs()->andReturn(Resource2::class);
+    $this->policies->addPolicy($this->policy1);
+    $this->policies->addPolicy($this->policy2);
   }
 
-  public function testAllowedAction()
+  public function testConditionTrue()
   {
-    list($role, $resource) = $this->setupSimple();
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
 
-    $permission = new App\Model\Entity\Permission();
-    $permission->setIsAllowed(true);
-    $permission->setResource($resource);
-    $permission->setAction("whatever");
-    $permission->setRole($role);
-
-    $this->permissions->shouldReceive("findAll")->andReturn([
-      $permission
-    ]);
-
-    Assert::true($this->authorizator->isAllowed($role->getId(), $resource->getId(), "whatever"));
+    Assert::true($this->authorizator->isAllowed(
+      new MockIdentity([ 'child' ]),
+      'resource1',
+      'action1',
+      [
+        'resource' => new Resource1()
+      ]
+    ));
   }
 
-  public function testDisabledAction()
+  public function testConditionFalse()
   {
-    list($role, $resource) = $this->setupSimple();
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(FALSE);
 
-    $permission = new App\Model\Entity\Permission();
-    $permission->setIsAllowed(false);
-    $permission->setResource($resource);
-    $permission->setAction("whatever");
-    $permission->setRole($role);
-
-    $this->permissions->shouldReceive("findAll")->andReturn([
-      $permission
-    ]);
-
-    Assert::false($this->authorizator->isAllowed($role->getId(), $resource->getId(), "whatever"));
+    Assert::false($this->authorizator->isAllowed(
+      new MockIdentity([ 'child' ]),
+      'resource1',
+      'action1',
+      [
+        'resource' => new Resource1()
+      ]
+    ));
   }
 
-  public function testAllowedActionWildcard()
+  public function testComplexConditionTrue()
   {
-    list($role, $resource) = $this->setupSimple();
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(TRUE);
 
-    $permission = new App\Model\Entity\Permission();
-    $permission->setIsAllowed(true);
-    $permission->setResource($resource);
-    $permission->setAction(\App\Model\Entity\Permission::ACTION_WILDCARD);
-    $permission->setRole($role);
-
-    $this->permissions->shouldReceive("findAll")->andReturn([
-      $permission
-    ]);
-
-    Assert::true($this->authorizator->isAllowed($role->getId(), $resource->getId(), "whatever"));
+    Assert::true($this->authorizator->isAllowed(
+      new MockIdentity([ 'parent' ]),
+      'resource2',
+      'action2',
+      [
+        'resource1' => new Resource1(),
+        'resource2' => new Resource2()
+      ]
+    ));
   }
 
-  public function testDeniedActionWildcard()
+  public function testComplexConditionFalse()
   {
-    list($role, $resource) = $this->setupSimple();
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(FALSE);
 
-    $permission = new App\Model\Entity\Permission();
-    $permission->setIsAllowed(false);
-    $permission->setResource($resource);
-    $permission->setAction(\App\Model\Entity\Permission::ACTION_WILDCARD);
-    $permission->setRole($role);
-
-    $this->permissions->shouldReceive("findAll")->andReturn([
-      $permission
-    ]);
-
-    Assert::false($this->authorizator->isAllowed($role->getId(), $resource->getId(), "whatever"));
-  }
-
-  /**
-   * A simple setup with one role and one resource
-   * @return array
-   */
-  protected function setupSimple():array
-  {
-    $role = new \App\Model\Entity\Role();
-    $role->setId("roleA");
-    $this->roles->shouldReceive("findAll")->andReturn([
-      $role
-    ]);
-
-    $this->roles->shouldReceive("findLowestLevelRoles")->andReturn([
-      $role,
-    ]);
-
-    $resource = new App\Model\Entity\Resource("resourceA");
-    $this->resources->shouldReceive("findAll")->andReturn([
-      $resource
-    ]);
-
-    return array($role, $resource);
+    Assert::false($this->authorizator->isAllowed(
+      new MockIdentity([ 'parent' ]),
+      'resource2',
+      'action2',
+      [
+        'resource1' => new Resource1(),
+        'resource2' => new Resource2()
+      ]
+    ));
   }
 }
 
-$testCase = new TestAuthorizator();
+$testCase = new TestAuthorizatorBasic();
 $testCase->run();

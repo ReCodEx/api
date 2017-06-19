@@ -7,12 +7,14 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Security\ACL\IExercisePermissions;
 
 /**
  * Endpoints for exercise configuration manipulation
@@ -57,19 +59,23 @@ class ExercisesConfigPresenter extends BasePresenter {
    */
   public $referenceSolutionEvaluations;
 
+  /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
 
   /**
    * Get a basic exercise high level configuration.
    * @GET
-   * @UserIsAllowed(exercises="update")
    * @param string $id Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionGetConfiguration(string $id) {
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
     }
 
@@ -88,7 +94,6 @@ class ExercisesConfigPresenter extends BasePresenter {
   /**
    * Set basic exercise configuration
    * @POST
-   * @UserIsAllowed(exercises="update")
    * @Param(type="post", name="config", description="A list of basic high level exercise configuration", validation="array")
    * @param string $id Identifier of the exercise
    * @throws ForbiddenRequestException
@@ -96,9 +101,8 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionSetConfiguration(string $id) {
-    $user = $this->getCurrentUser();
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
     }
 
@@ -119,13 +123,12 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseConfig($newConfig);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse("OK");
+    $this->sendSuccessResponse($this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig));
   }
 
   /**
    * Get a description of resource limits for an exercise
    * @GET
-   * @UserIsAllowed(exercises="view-limits")
    * @param string $id Identifier of the exercise
    * @param string $runtimeEnvironmentId
    * @param string $hwGroupId
@@ -133,9 +136,9 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionGetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
+    if (!$this->exerciseAcl->canViewLimits($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
     }
 
@@ -153,7 +156,6 @@ class ExercisesConfigPresenter extends BasePresenter {
   /**
    * Set resource limits for an exercise
    * @POST
-   * @UserIsAllowed(exercises="set-limits")
    * @Param(type="post", name="limits", description="A list of resource limits for the given environment and hardware group", validation="array")
    * @param string $id Identifier of the exercise
    * @param string $runtimeEnvironmentId
@@ -163,10 +165,10 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionSetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
-    $user = $this->getCurrentUser();
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$exercise->canModifyDetail($user)) {
-      throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
+    if (!$this->exerciseAcl->canSetLimits($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to set limits for this exercise.");
     }
 
     $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);

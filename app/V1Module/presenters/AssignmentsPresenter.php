@@ -30,6 +30,9 @@ use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 
+use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IGroupPermissions;
+use App\Security\ACL\ISubmissionPermissions;
 use DateTime;
 use Exception;
 
@@ -112,11 +115,32 @@ class AssignmentsPresenter extends BasePresenter {
   public $runtimeEnvironments;
 
   /**
+   * @var IAssignmentPermissions
+   * @inject
+   */
+  public $assignmentAcl;
+
+  /**
+   * @var IGroupPermissions
+   * @inject
+   */
+  public $groupAcl;
+
+  /**
+   * @var ISubmissionPermissions
+   * @inject
+   */
+  public $submissionAcl;
+
+  /**
    * Get a list of all assignments
    * @GET
-   * @UserIsAllowed(assignments="view-all")
    */
   public function actionDefault() {
+    if (!$this->assignmentAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
     $assignments = $this->assignments->findAll();
     $this->sendSuccessResponse($assignments);
   }
@@ -124,7 +148,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get details of an assignment
    * @GET
-   * @UserIsAllowed(assignments="view-detail")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    */
@@ -132,9 +155,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if (!$assignment->canAccessAsStudent($user)
-        && !$assignment->canAccessAsSupervisor($user)
-        && $user->getRole()->hasLimitedRights()) {
+    if (!$this->assignmentAcl->canViewDetail($assignment)) {
       throw new ForbiddenRequestException("You cannot view this assignment.");
     }
 
@@ -144,7 +165,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Update details of an assignment
    * @POST
-   * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
@@ -166,9 +186,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->getCurrentUser();
-    if (!$assignment->canAccessAsSupervisor($user)
-        && $user->getRole()->hasLimitedRights()) {
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
       throw new ForbiddenRequestException("You cannot update this assignment.");
     }
 
@@ -230,16 +248,13 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Check if the version of the assignment is up-to-date.
    * @POST
-   * @UserIsAllowed(assignments="update")
    * @Param(type="post", name="version", validation="numericint", description="Version of the assignment.")
    * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
    */
   public function actionValidate($id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
-    if (!$assignment->canAccessAsSupervisor($user)
-        && $user->getRole()->hasLimitedRights()) {
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
       throw new ForbiddenRequestException("You cannot access this assignment.");
     }
 
@@ -254,7 +269,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Assign an exercise to a group
    * @POST
-   * @UserIsAllowed(assignments="create")
    * @Param(type="post", name="exerciseId", description="Identifier of the exercise")
    * @Param(type="post", name="groupId", description="Identifier of the group")
    */
@@ -264,16 +278,10 @@ class AssignmentsPresenter extends BasePresenter {
     $groupId = $req->getPost("groupId");
 
     $group = $this->groups->findOrThrow($groupId);
-    $user = $this->getCurrentUser();
-
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    if (!$exercise->canAccessDetail($user)) {
-      throw new NotFoundException("Exercise was not found");
-    }
 
-    // test, if the user has privileges to the given group
-    if ($group->isSupervisorOf($user) === FALSE && $user->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("Only supervisors of group '$groupId' can assign new exercises.");
+    if (!$this->groupAcl->canAssignExercise($group, $exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
     }
 
     // create an assignment for the group based on the given exercise but without any params
@@ -306,17 +314,14 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Delete an assignment
    * @DELETE
-   * @UserIsAllowed(assignments="remove")
    * @param string $id Identifier of the assignment to be removed
    * @throws ForbiddenRequestException
    */
   public function actionRemove(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->getCurrentUser();
 
-    if (!$assignment->canAccessAsSupervisor($user)
-      && $user->getRole()->hasLimitedRights()) {
-      throw new ForbiddenRequestException("Only supervisors of the group can remove assigned exercises.");
+    if (!$this->assignmentAcl->canRemove($assignment)) {
+      throw new ForbiddenRequestException("You cannot remove this assignment.");
     }
 
     $this->assignments->remove($assignment);
@@ -326,7 +331,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Check if the current user can submit solutions to the assignment
    * @GET
-   * @UserIsAllowed(assignments="submit")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    */
@@ -334,8 +338,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->getCurrentUser();
 
-    if (!$assignment->canAccessAsStudent($user)
-        && !$assignment->canAccessAsSupervisor($user)) {
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
       throw new ForbiddenRequestException("You cannot access this assignment.");
     }
 
@@ -345,27 +348,21 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get a list of solutions submitted by a user of an assignment
    * @GET
-   * @UserIsAllowed(assignments="view-submissions")
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
    */
   public function actionSubmissions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
-    $currentUser = $this->getCurrentUser();
+    $user = $this->users->findOrThrow($userId);
 
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
-    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    $submissions = ($isSupervisor || $isAdmin)
-      ? $this->submissions->findSubmissions($assignment, $userId)
-      : $this->submissions->findPublicSubmissions($assignment, $userId);
-
-    $isOwner = $userId === $currentUser->getId();
-
-    if (!$isOwner && !$isSupervisor && !$isAdmin) {
-      throw new ForbiddenRequestException("You cannot access these submissions");
+    if (!$this->assignmentAcl->canViewSubmissions($assignment, $user)) {
+      throw new ForbiddenRequestException();
     }
+
+    $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (Submission $submission) {
+      return $this->submissionAcl->canViewDetail($submission);
+    });
 
     $this->sendSuccessResponse($submissions);
   }
@@ -373,7 +370,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get the best solution by a user to an assignment
    * @GET
-   * @UserIsAllowed(assignments="view-submissions")
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
@@ -381,16 +377,20 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionBestSubmission(string $id, string $userId) {
     /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
-    $submission = $assignment->getBestSolution($this->users->findOrThrow($userId));
+    $user = $this->users->findOrThrow($userId);
+    $submission = $assignment->getBestSolution($user);
 
-    $this->checkSubmissionAccess($userId, $assignment, $submission);
+    if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
+        !$this->submissionAcl->canViewDetail($submission)) {
+      throw new ForbiddenRequestException();
+    }
+
     $this->sendSuccessResponse($submission);
   }
 
   /**
    * Submit a solution of an assignment
    * @POST
-   * @UserIsAllowed(assignments="submit")
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
@@ -409,6 +409,10 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $userId !== NULL
       ? $this->users->findOrThrow($userId)
       : $loggedInUser;
+
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
+      throw new ForbiddenRequestException();
+    }
 
     if (!$assignment->canReceiveSubmissions($loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
@@ -515,25 +519,6 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Check if current user can access submissions to given assignment by given user.
-   * @param string $userId The user whose submissions are to be accessed
-   * @param Assignment $assignment The assignment whose submissions are to be accessed
-   * @param Submission $submission
-   * @throws ForbiddenRequestException When current user does not have sufficient rights
-   */
-  private function checkSubmissionAccess(string $userId, Assignment $assignment, Submission $submission) {
-    $currentUser = $this->getCurrentUser();
-
-    $isSubmissionOwner = $userId === $currentUser->getId();
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($currentUser);
-    $isAdmin = $assignment->getGroup()->isAdminOf($currentUser) || !$currentUser->getRole()->hasLimitedRights();
-
-    if (!($isSubmissionOwner && $submission->isPublic()) && !$isSupervisor && !$isAdmin) {
-      throw new ForbiddenRequestException("You cannot access these submissions");
-    }
-  }
-
-  /**
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
@@ -546,10 +531,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Submission $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
 
-    $isSupervisor = $oldSubmission->getAssignment()->getGroup()->isSupervisorOf($user);
-    $isAdmin = $oldSubmission->getAssignment()->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
-
-    if (!$isSupervisor && !$isAdmin) {
+    if (!$this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
     }
 
@@ -578,10 +560,7 @@ class AssignmentsPresenter extends BasePresenter {
     /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
 
-    $isSupervisor = $assignment->getGroup()->isSupervisorOf($user);
-    $isAdmin = $assignment->getGroup()->isAdminOf($user) || !$user->getRole()->hasLimitedRights();
-
-    if (!$isSupervisor && !$isAdmin) {
+    if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
       throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -34,6 +35,7 @@ class Licence implements JsonSerializable
   /**
    * The very last date on which this licence is valid (unless invalidated manually)
    * @ORM\Column(type="datetime")
+   * @var DateTime
    */
   protected $validUntil;
 

@@ -52,6 +52,7 @@ class SubmissionFailure implements JsonSerializable {
 
   /**
    * @ORM\Column(type="datetime", nullable=true)
+   * @var DateTime
    */
   protected $resolvedAt;
 
@@ -76,7 +77,7 @@ class SubmissionFailure implements JsonSerializable {
     return [
       "type" => $this->type,
       "description" => $this->description,
-      "submission" => $this->submission->id,
+      "submission" => $this->submission->getId(),
       "createdAt" => $this->createdAt->getTimestamp(),
       "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : NULL,
       "resolutionNote" => $this->resolutionNote

@@ -3,7 +3,6 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Model\Entity\Instance;
-use App\Model\Entity\Role;
 use App\Model\Entity\User;
 
 /**
@@ -69,10 +68,10 @@ final class UserData {
   /**
    * Create database entity for current user
    * @param Instance $instance Used instance of ReCodEx
-   * @param Role     $role     Base permission role for current user
+   * @param string     $role     Base permission role for current user
    * @return User Database entity for the user
    */
-  public function createEntity(Instance $instance, Role $role): User {
+  public function createEntity(Instance $instance, string $role): User {
     return new User(
       $this->email,
       $this->firstName,
