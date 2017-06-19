@@ -29,23 +29,18 @@ permissions:
           - viewStudents
           - viewDetail
           - viewSubgroups
+          - viewSupervisors
           - viewStudents
           - viewAdmin
-      conditions: group.canAccessDetail
+      conditions:
+          - group.canAccessDetail
+          - group.isInSameInstance
 
     - allow: true
       resource: group
       actions:
-          - viewSupervisors
           - setAdmin
       conditions: group.isAdmin
-
-    - allow: true
-      role: student
-      resource: group
-      actions:
-        - viewSupervisors
-      conditions: group.isPublic
 
     - allow: true # A student can join public groups
       role: student
@@ -54,6 +49,7 @@ permissions:
         - addStudent
       conditions:
         - group.isPublic
+        - group.isInSameInstance
         - student.isSameUser
 
     - allow: true # A student can leave any group

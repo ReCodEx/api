@@ -51,14 +51,19 @@ class GroupPermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    if ($user->getInstance() !== $group->getInstance()) {
-      return FALSE;
-    }
-
     return $group->isMemberOf($user)
         || $group->isPublic()
         || ($user->getInstance() !== NULL
             && $user->getInstance()->getRootGroup() !== NULL
             && $group->getId() === $user->getInstance()->getRootGroup()->getId());
+  }
+
+  public function isInSameInstance(Identity $identity, Group $group): bool {
+    $user = $identity->getUserData();
+    if ($user === NULL) {
+      return FALSE;
+    }
+
+    return $user->getInstance() !== $group->getInstance();
   }
 }
