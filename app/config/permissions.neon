@@ -165,7 +165,7 @@ permissions:
       role: student
       resource: assignment
       actions:
-          - view-detail
+          - viewDetail
           - submit
       conditions:
           - assignment.isAssignee
