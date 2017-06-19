@@ -331,9 +331,15 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $exercises = array_filter($group->getExercises()->getValues(), function (Exercise $exercise) {
-      return $this->exerciseAcl->canViewDetail($exercise);
-    });
+    $exercises = array();
+    while ($group !== null) {
+      $groupExercises = $group->getExercises()->filter(function (Exercise $exercise) {
+        return $this->exerciseAcl->canViewDetail($exercise);
+      })->toArray();
+
+      $exercises = array_merge($groupExercises, $exercises);
+      $group = $group->getParentGroup();
+    }
 
     $this->sendSuccessResponse($exercises);
   }
