@@ -7,7 +7,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Group;
 
 /**
- * @method Group findOrThrow()
+ * @method Group findOrThrow($id)
  */
 class Groups extends BaseSoftDeleteRepository  {
 

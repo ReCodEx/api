@@ -61,8 +61,8 @@ class AuthorizatorBuilder {
 
       $actionsString = '"' . implode('", "', $actions) . '"';
 
-      $check->addBody('if ($this->isInRole($role, ?) && ? && ? && ?) {', [
-        $role,
+      $check->addBody('if (? && ? && ? && ?) {', [
+        $role !== NULL ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : TRUE,
         $resource !== NULL ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : TRUE,
         count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : TRUE,
         $assertion !== NULL ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : TRUE

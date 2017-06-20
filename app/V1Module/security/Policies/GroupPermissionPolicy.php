@@ -64,6 +64,6 @@ class GroupPermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    return $user->getInstance() !== $group->getInstance();
+    return $user->getInstance() === $group->getInstance();
   }
 }

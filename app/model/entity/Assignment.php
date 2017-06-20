@@ -285,6 +285,10 @@ class Assignment implements JsonSerializable
    */
   protected $submissions;
 
+  /**
+   * @param User $user
+   * @return Submission[]
+   */
   public function getValidSubmissions(User $user) {
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
