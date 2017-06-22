@@ -68,12 +68,6 @@ permissions:
       conditions: group.areStatsPublic
 
     - allow: true
-      role: student
-      resource: group
-      actions: viewStats
-      conditions: group.areStatsPublic
-
-    - allow: true
       resource: group
       actions:
           - addStudent
@@ -86,7 +80,7 @@ permissions:
       role: student
       resource: group
       actions:
-        - viewStats
+        - viewStudentStats
       conditions:
         - group.isMember
         - student.isSameUser
