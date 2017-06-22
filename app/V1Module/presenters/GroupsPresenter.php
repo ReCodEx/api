@@ -345,7 +345,8 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
-   * Get statistics of a group
+   * Get statistics of a group. If the user does not have the rights to view all of these, try to at least
+   * return their statistics.
    * @GET
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
@@ -354,6 +355,11 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewStats($group)) {
+      $user = $this->getCurrentUser();
+      if ($this->groupAcl->canViewStudentStats($group, $user) && $group->isStudentOf($user)) {
+        $this->sendSuccessResponse([$group->getStudentsStats($user)]);
+      }
+
       throw new ForbiddenRequestException();
     }
 
