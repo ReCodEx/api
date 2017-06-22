@@ -240,7 +240,7 @@ permissions:
           - viewDetail
           - viewEvaluation
           - viewEvaluationDetails
-          - setBonusBoints
+          - setBonusPoints
           - setAccepted
           - downloadResultArchive
       conditions:
