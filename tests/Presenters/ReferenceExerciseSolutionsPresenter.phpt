@@ -112,7 +112,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
-    $environment = $exercise->getRuntimeConfigs()->first()->getRuntimeEnvironment();
+    $environment = $exercise->getRuntimeEnvironments()->first();
     $user = current($this->presenter->users->findAll());
 
     // save fake files into db

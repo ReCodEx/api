@@ -32,6 +32,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
+ * @method ExerciseConfig getExerciseConfig()
  */
 class Assignment implements JsonSerializable
 {
@@ -67,6 +68,7 @@ class Assignment implements JsonSerializable
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
+    $this->exerciseConfig = $exercise->getExerciseConfig();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
     $this->localizedTexts = $exercise->getLocalizedTexts();
@@ -171,6 +173,11 @@ class Assignment implements JsonSerializable
    * @var Collection
    */
   protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises")
+   */
+  protected $exerciseConfig;
 
   /**
    * @ORM\Column(type="string", nullable=true)

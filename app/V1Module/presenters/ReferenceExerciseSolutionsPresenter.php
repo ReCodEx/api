@@ -120,12 +120,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $evaluations = array();
-    foreach ($exercise->getRuntimeConfigs() as $runtime) {
-      $evaluations[$runtime->getRuntimeEnvironment()->getId()] = array();
+    foreach ($exercise->getRuntimeEnvironments() as $runtime) {
+      $evaluations[$runtime->getId()] = array();
     }
 
     foreach ($solution->getEvaluations() as $evaluation) {
-      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeConfig()->getRuntimeEnvironment()->getId()][] = $evaluation;
+      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeEnvironment()->getId()][] = $evaluation;
     }
 
     $this->sendSuccessResponse($evaluations);
@@ -157,15 +157,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     // detect the runtime configuration
     if ($runtimeId !== NULL) {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
-      $runtimeConfiguration = $exercise->getRuntimeConfigByEnvironment($runtimeEnvironment);
-      if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration '$runtimeId' was not found");
-      }
     } else {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");
     }
 
-    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeConfiguration);
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
 
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
     if (count($uploadedFiles) === 0) {
@@ -240,7 +236,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @todo: REWRITE
    */
   private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
-    $runtimeConfig = $referenceSolution->getRuntimeConfig();
+    /*$runtimeConfig = $referenceSolution->getRuntimeConfig();
     $jobConfig = $this->jobConfigs->get($runtimeConfig->getJobConfigFilePath());
     $hwGroups = $jobConfig->getHardwareGroups();
     $evaluations = [];
@@ -270,7 +266,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       }
     }
 
-    return [$evaluations, $errors];
+    return [$evaluations, $errors];*/
+
+    return array();
   }
 
   /**

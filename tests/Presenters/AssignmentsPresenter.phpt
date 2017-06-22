@@ -266,8 +266,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
-    $ext = current($runtimeConfig->getRuntimeEnvironment()->getExtensionsList());
+    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
 
     // save fake files into db
     $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);

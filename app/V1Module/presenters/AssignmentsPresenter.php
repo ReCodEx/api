@@ -20,6 +20,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
+use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
@@ -34,7 +35,6 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\ISubmissionPermissions;
 use DateTime;
-use Exception;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -131,6 +131,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionAcl;
+
+  /**
+   * @var ExerciseConfigLoader
+   * @inject
+   */
+  public $exerciseConfigLoader;
 
   /**
    * Get a list of all assignments
@@ -297,18 +303,9 @@ class AssignmentsPresenter extends BasePresenter {
       throw new InvalidStateException("Assignment has no runtime configurations");
     }
 
-    $runtimeConfig = $assignment->getRuntimeEnvironments()->first();
-    $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
-    try {
-      $jobConfig = $this->jobConfigs->get($jobConfigPath);
-      $tests = array_map(
-        function ($test) { return $test->getId(); },
-        $jobConfig->getTests()
-      );
-      return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
-    } catch (JobConfigLoadingException $e) {
-      return "";
-    }
+    $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($assignment->getExerciseConfig()->getParsedConfig());
+    $tests = array_keys($exerciseConfig->getTests());
+    return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
   }
 
   /**
@@ -476,7 +473,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @todo: REWRITE, runtime config is not present anymore
    */
   private function finishSubmission(Submission $submission) {
-    if ($submission->getId() === NULL) {
+    /*if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
@@ -515,7 +512,9 @@ class AssignmentsPresenter extends BasePresenter {
         "monitorUrl" => $this->monitorConfig->getAddress(),
         "expectedTasksCount" => $jobConfig->getTasksCount()
       ]
-    ];
+    ];*/
+
+    return array();
   }
 
   /**
