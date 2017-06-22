@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
@@ -257,6 +258,38 @@ class TestUsersPresenter extends Tester\TestCase
       Assert::type(\App\Model\Entity\Exercise::class, $exercise);
       Assert::true($exercise->isAuthor($user));
     }
+  }
+
+  public function testPublicData() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'publicData', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::true(array_key_exists('id', $payload));
+    Assert::true(array_key_exists('fullName', $payload));
+    Assert::true(array_key_exists('name', $payload));
+    Assert::true(array_key_exists('avatarUrl', $payload));
+  }
+
+  public function testUnauthenticatedUserCannotViewPublicData() {
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'publicData', 'id' => $user->getId()]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ForbiddenRequestException::class);
   }
 
 }

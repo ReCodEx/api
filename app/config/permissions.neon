@@ -135,6 +135,13 @@ permissions:
      ####################
      # User permissions #
      ####################
+    - allow: true
+      role: student
+      resource: user
+      actions:
+        - viewPublicData
+      conditions:
+        - user.isInSameInstance
 
     - allow: true
       role: student
