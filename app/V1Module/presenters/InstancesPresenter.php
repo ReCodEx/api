@@ -168,9 +168,9 @@ class InstancesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse(array_filter($instance->getGroups()->getValues(), function (Group $group) {
+    $this->sendSuccessResponse(array_values(array_filter($instance->getGroups()->getValues(), function (Group $group) {
       return $this->groupAcl->canViewDetail($group);
-    }));
+    })));
   }
 
     /**
