@@ -199,13 +199,6 @@ permissions:
       actions:
           - assignExercise
       conditions:
-          - group.isSupervisor
-
-    - allow: true
-      resource: group
-      actions:
-          - assignExercise
-      conditions:
           - exercise.isPublic
           - group.isSupervisor
 
