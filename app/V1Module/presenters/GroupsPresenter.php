@@ -313,9 +313,9 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $assignments = $group->getAssignments();
-    $this->sendSuccessResponse(array_filter($assignments->getValues(), function (Assignment $assignment) {
+    $this->sendSuccessResponse(array_values(array_filter($assignments->getValues(), function (Assignment $assignment) {
       return $this->assignmentAcl->canViewDetail($assignment);
-    }));
+    })));
   }
 
   /**
@@ -331,15 +331,22 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $exercises = array_filter($group->getExercises()->getValues(), function (Exercise $exercise) {
-      return $this->exerciseAcl->canViewDetail($exercise);
-    });
+    $exercises = array();
+    while ($group !== null) {
+      $groupExercises = $group->getExercises()->filter(function (Exercise $exercise) {
+        return $this->exerciseAcl->canViewDetail($exercise);
+      })->toArray();
+
+      $exercises = array_merge($groupExercises, $exercises);
+      $group = $group->getParentGroup();
+    }
 
     $this->sendSuccessResponse($exercises);
   }
 
   /**
-   * Get statistics of a group
+   * Get statistics of a group. If the user does not have the rights to view all of these, try to at least
+   * return their statistics.
    * @GET
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
@@ -348,6 +355,11 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewStats($group)) {
+      $user = $this->getCurrentUser();
+      if ($this->groupAcl->canViewStudentStats($group, $user) && $group->isStudentOf($user)) {
+        $this->sendSuccessResponse([$group->getStudentsStats($user)]);
+      }
+
       throw new ForbiddenRequestException();
     }
 

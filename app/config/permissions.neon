@@ -29,24 +29,18 @@ permissions:
           - viewStudents
           - viewDetail
           - viewSubgroups
+          - viewSupervisors
           - viewStudents
           - viewAdmin
-      conditions: group.canAccessDetail
+      conditions:
+          - group.canAccessDetail
+          - group.isInSameInstance
 
     - allow: true
-      role: student
       resource: group
       actions:
-          - viewSupervisors
           - setAdmin
       conditions: group.isAdmin
-
-    - allow: true
-      role: student
-      resource: group
-      actions:
-        - viewSupervisors
-      conditions: group.isPublic
 
     - allow: true # A student can join public groups
       role: student
@@ -55,6 +49,7 @@ permissions:
         - addStudent
       conditions:
         - group.isPublic
+        - group.isInSameInstance
         - student.isSameUser
 
     - allow: true # A student can leave any group
@@ -73,13 +68,6 @@ permissions:
       conditions: group.areStatsPublic
 
     - allow: true
-      role: student
-      resource: group
-      actions: viewStats
-      conditions: group.areStatsPublic
-
-    - allow: true
-      role: student
       resource: group
       actions:
           - addStudent
@@ -92,13 +80,12 @@ permissions:
       role: student
       resource: group
       actions:
-        - viewStats
+        - viewStudentStats
       conditions:
         - group.isMember
         - student.isSameUser
 
     - allow: true
-      role: student
       resource: group
       actions:
           - update
@@ -115,7 +102,9 @@ permissions:
     - allow: true
       role: unauthenticated
       resource: instance
-      actions: viewAll
+      actions:
+        - viewAll
+        - viewDetail
 
     - allow: true
       role: supervisor
@@ -155,6 +144,7 @@ permissions:
           - viewExercises
           - viewInstances
           - viewGroups
+          - viewDetail
       conditions: user.isSameUser
 
     ##########################
@@ -172,7 +162,6 @@ permissions:
           - assignment.isPublic
 
     - allow: true
-      role: student
       resource: assignment
       actions:
           - viewDetail
@@ -185,7 +174,6 @@ permissions:
           - assignment.isSupervisor
 
     - allow: true
-      role: student
       resource: group
       actions:
           - assignExercise
@@ -194,7 +182,6 @@ permissions:
           - group.isSupervisor
 
     - allow: true
-      role: student
       resource: group
       actions:
           - assignExercise
@@ -202,15 +189,6 @@ permissions:
           - exercise.isGroupSupervisor
 
     - allow: true
-      role: student
-      resource: group
-      actions:
-          - assignExercise
-      conditions:
-          - group.isSupervisor
-
-    - allow: true
-      role: student
       resource: group
       actions:
           - assignExercise
@@ -251,13 +229,12 @@ permissions:
           - submission.isPublic
 
     - allow: true
-      role: student
       resource: submission
       actions:
           - viewDetail
           - viewEvaluation
           - viewEvaluationDetails
-          - setBonusBoints
+          - setBonusPoints
           - setAccepted
           - downloadResultArchive
       conditions:
@@ -288,7 +265,6 @@ permissions:
     ########################
 
     - allow: true
-      role: student
       resource: exercise
       actions:
           - viewDetail
@@ -303,7 +279,6 @@ permissions:
           - exercise.isAuthor
 
     - allow: true
-      role: student
       resource: exercise
       actions:
           - viewDetail
@@ -315,7 +290,7 @@ permissions:
           - exercise.isGroupSupervisor
 
     - allow: true
-      role: student
+      role: supervisor
       resource: exercise
       actions:
           - viewDetail
@@ -349,10 +324,63 @@ permissions:
           - upload
 
     - allow: true
-      role: student
       resource: uploadedFile
       actions:
           - download
           - viewDetail
       conditions:
-          - file.isAccessible
+          - file.isSolutionInSupervisedGroup
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isPublic
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isOwner
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isRelatedToAssignment
+
+    - allow: true
+      role: supervisor
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isAdditionalExerciseFile
+          - file.isExercisePublic
+
+    #####################################
+    # Runtime environments permisssions #
+    #####################################
+
+    - allow: true
+      role: student
+      resource: runtimeEnvironment
+      actions:
+        - viewAll
+
+    ##############################
+    # Hardware group permissions #
+    ##############################
+
+    - allow: true
+      role: supervisor
+      resource: hardwareGroup
+      actions:
+        - viewAll

@@ -21,6 +21,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method string getResultsUrl()
  * @method User getUser()
  * @method setResultsUrl(string $url)
+ * @method setAccepted(bool $accepted)
  */
 class Submission implements JsonSerializable, ES\IEvaluable
 {

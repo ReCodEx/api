@@ -285,6 +285,10 @@ class Assignment implements JsonSerializable
    */
   protected $submissions;
 
+  /**
+   * @param User $user
+   * @return Submission[]
+   */
   public function getValidSubmissions(User $user) {
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
@@ -331,7 +335,7 @@ class Assignment implements JsonSerializable
 
     return array_reduce(
       $this->submissions->matching($usersSolutions)->getValues(),
-      function (Submission $best, Submission $submission) {
+      function (?Submission $best, Submission $submission) {
         if ($best === NULL) {
           return $submission;
         }

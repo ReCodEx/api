@@ -9,6 +9,9 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 
+/**
+ * @method Submission findOrThrow($id)
+ */
 class Submissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
