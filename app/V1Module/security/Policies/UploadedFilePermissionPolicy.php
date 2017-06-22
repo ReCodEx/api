@@ -2,7 +2,7 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\AdditionalExerciseFile;
-use App\Model\Entity\Group;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
@@ -24,36 +24,55 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     return UploadedFile::class;
   }
 
-  public function isAccessible(Identity $identity, UploadedFile $file) {
-    if ($file->isPublic()) {
-      return TRUE;
-    }
+  public function isPublic(Identity $identity, UploadedFile $file) {
+    return $file->isPublic();
+  }
 
+  public function isAdditionalExerciseFile(Identity $identity, UploadedFile $file) {
+    return $file instanceof AdditionalExerciseFile;
+  }
+
+  public function isExercisePublic(Identity $identity, UploadedFile $file) {
+    return $file instanceof AdditionalExerciseFile && $file->getExercises()->exists(function ($i, Exercise $exercise) {
+      return $exercise->isPublic();
+    });
+  }
+
+  public function isOwner(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === NULL) {
       return FALSE;
     }
 
-    $isUserSupervisor = FALSE;
-    $isFileRelatedToUsersAssignment = FALSE;
+    return $file->getUser()->getId() === $user->getId();
+  }
+
+  public function isSolutionInSupervisedGroup(Identity $identity, UploadedFile $file) {
+    $user = $identity->getUserData();
+    if ($user === NULL) {
+      return FALSE;
+    }
+
+    $group = $this->files->findGroupForSolutionFile($file);
+    return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+  }
+
+  public function isRelatedToAssignment(Identity $identity, UploadedFile $file) {
+    $user = $identity->getUserData();
+    if ($user === NULL) {
+      return FALSE;
+    }
 
     if ($file instanceof AdditionalExerciseFile) {
       foreach ($file->getExercises() as $exercise) {
-        if ($this->assignments->isAssignedToUser($exercise, $user)) {
-          $isFileRelatedToUsersAssignment = TRUE;
-          break;
+        foreach ($user->getGroups() as $group) {
+          if ($this->assignments->isAssignedToGroup($exercise, $group)) {
+            return TRUE;
+          }
         }
       }
     }
 
-    /** @var Group $group */
-    $group = $this->files->findGroupForFile($file);
-    if ($group && ($group->isSupervisorOf($user) || $group->isAdminOf($user))) {
-      $isUserSupervisor = TRUE;
-    }
-
-    $isUserOwner = $file->getUser()->getId() === $user->getId();
-
-    return $isUserOwner || $isUserSupervisor || $isFileRelatedToUsersAssignment;
+    return FALSE;
   }
 }

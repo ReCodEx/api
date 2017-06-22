@@ -212,16 +212,14 @@ class User implements JsonSerializable
   }
 
   public function getGroups(string $type = NULL) {
-    if ($type === NULL) {
-      return $this->getMemberships()->map(
-        function (GroupMembership $membership) {
-          return $membership->getGroup();
-        }
-      );
+    $result = $this->getMemberships();
+
+    if ($type !== NULL) {
+      $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+      $result = $result->matching($filter);
     }
 
-    $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
-    return $this->getMemberships()->matching($filter)->map(
+    return $result->map(
       function (GroupMembership $membership) {
         return $membership->getGroup();
       }

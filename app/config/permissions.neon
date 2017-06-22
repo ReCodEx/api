@@ -278,7 +278,6 @@ permissions:
     ########################
 
     - allow: true
-      role: student
       resource: exercise
       actions:
           - viewDetail
@@ -304,7 +303,7 @@ permissions:
           - exercise.isGroupSupervisor
 
     - allow: true
-      role: student
+      role: supervisor
       resource: exercise
       actions:
           - viewDetail
@@ -338,13 +337,46 @@ permissions:
           - upload
 
     - allow: true
-      role: student
       resource: uploadedFile
       actions:
           - download
           - viewDetail
       conditions:
-          - file.isAccessible
+          - file.isSolutionInSupervisedGroup
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isPublic
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isOwner
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isRelatedToAssignment
+
+    - allow: true
+      role: supervisor
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
+          - file.isAdditionalExerciseFile
+          - file.isExercisePublic
 
     #####################################
     # Runtime environments permisssions #
