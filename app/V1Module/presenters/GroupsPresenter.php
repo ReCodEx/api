@@ -313,9 +313,9 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $assignments = $group->getAssignments();
-    $this->sendSuccessResponse(array_filter($assignments->getValues(), function (Assignment $assignment) {
+    $this->sendSuccessResponse(array_values(array_filter($assignments->getValues(), function (Assignment $assignment) {
       return $this->assignmentAcl->canViewDetail($assignment);
-    }));
+    })));
   }
 
   /**
