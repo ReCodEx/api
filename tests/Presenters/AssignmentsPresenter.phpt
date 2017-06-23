@@ -6,6 +6,7 @@ use App\Helpers\BrokerProxy;
 use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
 use App\Helpers\BackendSubmitHelper;
+use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Submissions;
@@ -47,7 +48,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::fillDatabase($this->container);
 
     $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
-    $this->presenter->backendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
+    $this->presenter->submissionHelper = Mockery::mock(App\Helpers\SubmissionHelper::class);
     $this->presenter->monitorConfig = new App\Helpers\MonitorConfig(['address' => 'localhost']);
   }
 
@@ -179,7 +180,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
     $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig);
+    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig);
     $this->presenter->jobConfigs = $mockStorage;
 
     $exercise = $this->presenter->exercises->findAll()[0];
@@ -301,8 +302,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
     $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->once();
-    $this->presenter->jobConfigs = $mockStorage;
+    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->once();
 
     // mock fileserver and broker proxies
     $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
@@ -312,8 +312,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
       ->andReturn($evaluationStarted)->once();
-    $submissionHelper = new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy);
-    $this->presenter->backendSubmitHelper = $submissionHelper;
+    $submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy), $mockStorage);
+    $this->presenter->submissionHelper = $submissionHelper;
 
     // fake monitor configuration
     $monitorConfig = new MonitorConfig([
@@ -349,8 +349,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
-    $ext = current($runtimeConfig->getRuntimeEnvironment()->getExtensionsList());
+    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
 
     // save fake files into db
     $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
@@ -384,8 +383,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
     $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->once();
-    $this->presenter->jobConfigs = $mockStorage;
+    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->once();
 
     // mock fileserver and broker proxies
     $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
@@ -395,8 +393,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
       ->andThrow(SubmissionFailedException::class)->once();
-    $submissionHelper = new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy);
-    $this->presenter->backendSubmitHelper = $submissionHelper;
+    $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy), $mockStorage);
 
     // fake monitor configuration
     $monitorConfig = new MonitorConfig([
@@ -452,8 +449,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
     $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->once();
-    $this->presenter->jobConfigs = $mockStorage;
+    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->once();
 
     // mock fileserver and broker proxies
     /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */
@@ -465,8 +461,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
       ->andReturn($evaluationStarted = TRUE)->once();
-    $submissionHelper = new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy);
-    $this->presenter->backendSubmitHelper = $submissionHelper;
+    $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy), $mockStorage);
 
     // fake monitor configuration
     $monitorConfig = new MonitorConfig([
@@ -535,8 +530,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
     $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->times($submissionCount);
-    $this->presenter->jobConfigs = $mockStorage;
+    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->times($submissionCount);
 
     // mock fileserver and broker proxies
     /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */
@@ -548,8 +542,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
       ->andReturn($evaluationStarted = TRUE)->times($submissionCount);
-    $submissionHelper = new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy);
-    $this->presenter->backendSubmitHelper = $submissionHelper;
+    $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy), $mockStorage);
 
     // fake monitor configuration
     $monitorConfig = new MonitorConfig([

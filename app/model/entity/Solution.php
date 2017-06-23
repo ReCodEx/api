@@ -13,6 +13,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @method string getId()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
+ * @method string getJobConfigPath()
  */
 class Solution implements JsonSerializable
 {

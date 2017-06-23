@@ -9,6 +9,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeEnvironment:
             - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
         exerciseConfig: @demoExerciseConfig
@@ -22,6 +25,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeEnvironment:
             - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
         exerciseConfig: @demoExerciseConfig
@@ -36,6 +42,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeEnvironment:
             - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
         exerciseConfig: @demoExerciseConfig
@@ -50,6 +59,9 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         addRuntimeEnvironment:
             - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
         exerciseConfig: @demoExerciseConfig

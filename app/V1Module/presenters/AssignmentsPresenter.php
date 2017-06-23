@@ -6,7 +6,6 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\InvalidStateException;
@@ -18,10 +17,10 @@ use App\Model\Entity\SolutionFile;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
-use App\Helpers\BackendSubmitHelper;
+use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
-use App\Helpers\ExerciseConfig\Generator as JobConfigGenerator;
+use App\Helpers\ExerciseConfig\Compiler as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
@@ -86,10 +85,10 @@ class AssignmentsPresenter extends BasePresenter {
   public $files;
 
   /**
-   * @var BackendSubmitHelper
+   * @var SubmissionHelper
    * @inject
    */
-  public $backendSubmitHelper;
+  public $submissionHelper;
 
   /**
    * @var MonitorConfig
@@ -435,11 +434,8 @@ class AssignmentsPresenter extends BasePresenter {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
     }
 
-    // generate job configuration for this particular submission
-    $this->jobConfigGenerator->generateJobConfig($assignment->getExerciseConfig(), $runtimeEnvironment);
-
     // create Solution object
-    $solution = new Solution($user, $runtimeEnvironment);
+    $solution = new Solution($user, $runtimeEnvironment, ""); // todo: job config path
 
     foreach ($uploadedFiles as $file) {
       if ($file instanceof SolutionFile) {
@@ -475,36 +471,23 @@ class AssignmentsPresenter extends BasePresenter {
    * @param Submission $submission a persisted submission entity
    * @return array The response that can be sent to the client
    * @throws InvalidArgumentException
-   *
-   * @todo: REWRITE, runtime config is not present anymore
    */
   private function finishSubmission(Submission $submission) {
-    /*if ($submission->getId() === NULL) {
+    if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
-    // Fill in the job configuration header
-    $runtimeConfiguration = $submission->getSolution()->getRuntimeConfig();
-    $path = $runtimeConfiguration->getJobConfigFilePath();
-    $jobConfig = $this->jobConfigs->get($path);
-    $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
-
-    // Send the submission to the broker
-    $resultsUrl = NULL;
-
+    $jobConfig = null;
+    $resultsUrl = null;
     try {
-      $resultsUrl = $this->submissionHelper->initiateEvaluation(
-        $jobConfig,
+      list($jobConfig, $resultsUrl) = $this->submissionHelper->submit(
+        $submission->getId(),
+        $submission->getSolution()->getRuntimeEnvironment()->getId(),
         $submission->getSolution()->getFiles()->getValues(),
-        ['env' => $runtimeConfiguration->getRuntimeEnvironment()->getId()]
+        $submission->getSolution()->getJobConfigPath()
       );
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       $this->submissionFailed($submission, $e->getMessage());
-    }
-
-    if ($resultsUrl === NULL) {
-      $this->submissionFailed($submission, "The broker rejected our request");
-      return []; // never reached
     }
 
     // If the submission was accepted we now have the URL where to look for the results later -> persist it
@@ -518,9 +501,7 @@ class AssignmentsPresenter extends BasePresenter {
         "monitorUrl" => $this->monitorConfig->getAddress(),
         "expectedTasksCount" => $jobConfig->getTasksCount()
       ]
-    ];*/
-
-    return array();
+    ];
   }
 
   /**

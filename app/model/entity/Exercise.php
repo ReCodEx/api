@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method string getName()
  * @method Collection getRuntimeEnvironments()
+ * @method Collection getHardwareGroups()
  * @method Collection getLocalizedTexts()
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
@@ -92,6 +93,11 @@ class Exercise implements JsonSerializable
    * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    */
   protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="HardwareGroup")
+   */
+  protected $hardwareGroups;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -175,9 +181,10 @@ class Exercise implements JsonSerializable
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
-      Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      Collection $exerciseLimits, ?Exercise $exercise, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
+      Collection $additionalFiles, Collection $exerciseLimits,
+      ?Exercise $exercise, User $user, ?Group $group = NULL,
+      bool $isPublic = TRUE, string $description = "",
       ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
     $this->version = $version;
@@ -195,6 +202,7 @@ class Exercise implements JsonSerializable
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
+    $this->hardwareGroups = $hardwareGroups;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -202,6 +210,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -220,6 +229,7 @@ class Exercise implements JsonSerializable
       $exercise->difficulty,
       $exercise->localizedTexts,
       $exercise->runtimeEnvironments,
+      $exercise->hardwareGroups,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
@@ -235,6 +245,10 @@ class Exercise implements JsonSerializable
   public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment) {
     $this->runtimeEnvironments->add($runtimeEnvironment);
   }
+
+    public function addHardwareGroup(HardwareGroup $hardwareGroup) {
+        $this->hardwareGroups->add($hardwareGroup);
+    }
 
   public function addLocalizedText(LocalizedText $localizedText) {
     $this->localizedTexts->add($localizedText);

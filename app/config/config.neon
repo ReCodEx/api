@@ -211,7 +211,7 @@ services:
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer
-  - App\Helpers\ExerciseConfig\Generator
+  - App\Helpers\ExerciseConfig\Compiler
   - App\Helpers\ExerciseConfig\Validator
 
   # models - repositories

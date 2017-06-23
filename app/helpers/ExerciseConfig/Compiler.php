@@ -9,15 +9,14 @@ use App\Model\Entity\RuntimeEnvironment;
 /**
  * @todo
  */
-class Generator {
+class Compiler {
 
   /**
-   * @todo: generate actual job config
-   *
+   * Generate job configuration from given exercise configuration.
    * @param ExerciseConfig $config
    * @return JobConfig
    */
-  public function generateJobConfig(ExerciseConfig $config, RuntimeEnvironment $runtimeEnvironment): JobConfig {
+  public function compileExerciseConfig(ExerciseConfig $config, RuntimeEnvironment $runtimeEnvironment): JobConfig {
     return new JobConfig;
   }
 }
