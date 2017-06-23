@@ -17,7 +17,6 @@ App\Model\Entity\Solution:
         __construct:
             - @submitUser1
             - @CRuntime
-            - "jobConfigPath"
 
 App\Model\Entity\SolutionFile:
     "uploadedFile{1..2}":
@@ -38,6 +37,7 @@ App\Model\Entity\Submission:
                 - @submitUser1
                 - @submitUser1
                 - "@demoSolution<current()>"
+                - "jobConfigPath"
                 - false
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"

@@ -20,7 +20,7 @@ use App\Model\Entity\LocalizedText;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
-use App\Helpers\ExerciseConfig\Compiler as JobConfigGenerator;
+use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
@@ -435,7 +435,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     // create Solution object
-    $solution = new Solution($user, $runtimeEnvironment, ""); // todo: job config path
+    $solution = new Solution($user, $runtimeEnvironment);
 
     foreach ($uploadedFiles as $file) {
       if ($file instanceof SolutionFile) {
@@ -450,9 +450,10 @@ class AssignmentsPresenter extends BasePresenter {
     // persist the new solution and flush all the changes to the files
     $this->solutions->persist($solution);
 
-    // submit the solution
+    // generate job configuration and create submission
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution);
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser);
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
@@ -477,14 +478,17 @@ class AssignmentsPresenter extends BasePresenter {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
-    $jobConfig = null;
+    // load job configuration
+    $jobConfig = $this->jobConfigs->get($submission->getJobConfigPath());
+
+    // initiate submission
     $resultsUrl = null;
     try {
-      list($jobConfig, $resultsUrl) = $this->submissionHelper->submit(
+      $resultsUrl = $this->submissionHelper->submit(
         $submission->getId(),
         $submission->getSolution()->getRuntimeEnvironment()->getId(),
         $submission->getSolution()->getFiles()->getValues(),
-        $submission->getSolution()->getJobConfigPath()
+        $jobConfig
       );
     } catch (\Exception $e) {
       $this->submissionFailed($submission, $e->getMessage());
@@ -523,7 +527,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     $submission = Submission::createSubmission(
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-      $oldSubmission->getSolution(), FALSE, $oldSubmission
+      $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
     );
 
     $submission->setPrivate($this->getRequest()->getPost(filter_var("private")));
@@ -556,7 +560,7 @@ class AssignmentsPresenter extends BasePresenter {
     foreach ($assignment->getSubmissions() as $oldSubmission) {
       $submission = Submission::createSubmission(
         $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-        $oldSubmission->getSolution(), FALSE, $oldSubmission
+        $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
       );
 
       // persist all the data in the database - this will also assign the UUID to the submission

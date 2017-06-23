@@ -73,7 +73,7 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $submission->getSolution()->getJobConfigPath();
+    $jobConfigPath = $submission->getJobConfigPath();
     try {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
@@ -116,7 +116,7 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $evaluation->getReferenceSolution()->getSolution()->getJobConfigPath();
+    $jobConfigPath = $evaluation->getJobConfigPath();
     try {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);

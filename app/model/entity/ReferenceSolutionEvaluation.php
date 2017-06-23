@@ -15,6 +15,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method string getResultsUrl()
  * @method ReferenceExerciseSolution getReferenceSolution()
  * @method string setResultsUrl(string $url)
+ * @method string getJobConfigPath()
  */
 class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 {
@@ -43,6 +44,11 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
    * @ORM\Column(type="string", nullable=true)
    */
   protected $resultsUrl;
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $jobConfigPath;
 
   public function canBeEvaluated(): bool {
     return $this->resultsUrl !== NULL;
@@ -79,9 +85,10 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, HardwareGroup $hwGroup) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution, HardwareGroup $hwGroup, string $jobConfigPath) {
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
+    $this->jobConfigPath = $jobConfigPath;
   }
 
   function isValid(): bool {

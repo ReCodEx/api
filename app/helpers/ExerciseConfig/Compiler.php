@@ -14,9 +14,10 @@ class Compiler {
   /**
    * Generate job configuration from given exercise configuration.
    * @param ExerciseConfig $config
+   * @param RuntimeEnvironment $runtimeEnvironment
    * @return JobConfig
    */
-  public function compileExerciseConfig(ExerciseConfig $config, RuntimeEnvironment $runtimeEnvironment): JobConfig {
+  public function compileExerciseConfig(): JobConfig {
     return new JobConfig;
   }
 }

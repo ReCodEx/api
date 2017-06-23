@@ -162,9 +162,10 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(2)
       ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader);
 
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->times(2);
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()->andReturn(array("", $mockJobConfig))->once();
+    $this->presenter->jobConfigGenerator = $mockGenerator;
 
     /** @var Mockery\Mock | BackendSubmitHelper $mockBackendSubmitHelper */
     $mockBackendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
@@ -180,7 +181,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
       ["env" => "c-gcc-linux"],
       "group2"
     ])->once()->andReturn("resultUrl2");
-    $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper, $mockStorage);
+    $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST',
       ['action' => 'evaluate', 'id' => $solution->getId()]

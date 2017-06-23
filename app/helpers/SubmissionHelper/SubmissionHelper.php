@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\SubmissionFailedException;
+use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Storage;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Entity\Submission;
@@ -16,34 +17,28 @@ class SubmissionHelper {
   /** @var BackendSubmitHelper */
   private $backendSubmitHelper;
 
-  /** @var Storage */
-  private $storage;
-
-    /**
-     * SubmissionHelper constructor.
-     * @param BackendSubmitHelper $backendSubmitHelper
-     * @param Storage $storage
-     */
-  public function __construct(BackendSubmitHelper $backendSubmitHelper, Storage $storage) {
+  /**
+   * SubmissionHelper constructor.
+   * @param BackendSubmitHelper $backendSubmitHelper
+   */
+  public function __construct(BackendSubmitHelper $backendSubmitHelper) {
     $this->backendSubmitHelper = $backendSubmitHelper;
-    $this->storage = $storage;
   }
 
-    /**
-     * @param string $jobId
-     * @param string $jobType
-     * @param string $environment
-     * @param array $files
-     * @param string $jobConfigPath
-     * @param null|string $hwgroup
-     * @return array first element is JobConfig and second fileserver results URL
-     * @throws SubmissionFailedException
-     */
+  /**
+   * @param string $jobId
+   * @param string $jobType
+   * @param string $environment
+   * @param array $files
+   * @param JobConfig $jobConfig
+   * @param null|string $hwgroup
+   * @return string fileserver results URL
+   * @throws SubmissionFailedException
+   */
   private function internalSubmit(string $jobId, string $jobType,
-      string $environment, array $files, string $jobConfigPath,
-      ?string $hwgroup = null): array {
+      string $environment, array $files, JobConfig $jobConfig,
+      ?string $hwgroup = null): string {
     // Fill in the job configuration header
-    $jobConfig = $this->storage->get($jobConfigPath);
     $jobConfig->getSubmissionHeader()->setId($jobId)->setType($jobType);
 
     // Send the submission to the broker
@@ -60,7 +55,7 @@ class SubmissionHelper {
       throw new SubmissionFailedException("The broker rejected our request");
     }
 
-    return [ $jobConfig, $resultsUrl ];
+    return $resultsUrl;
   }
 
   /**
@@ -68,27 +63,27 @@ class SubmissionHelper {
    * @param string $jobId
    * @param string $environment
    * @param array $files
-   * @param string $jobConfigPath
-   * @return array first element is JobConfig and second fileserver results URL
+   * @param JobConfig $jobConfig
+   * @return string fileserver results URL
    * @throws SubmissionFailedException
    */
   public function submit(string $jobId, string $environment, array $files,
-      string $jobConfigPath): array {
-    return $this->internalSubmit($jobId, Submission::JOB_TYPE, $environment, $files, $jobConfigPath);
+      JobConfig $jobConfig): string {
+    return $this->internalSubmit($jobId, Submission::JOB_TYPE, $environment, $files, $jobConfig);
   }
 
-    /**
-     *
-     * @param string $jobId
-     * @param string $environment
-     * @param null|string $hwgroup
-     * @param array $files
-     * @param string $jobConfigPath
-     * @return string fileserver results URL
-     */
+  /**
+   *
+   * @param string $jobId
+   * @param string $environment
+   * @param null|string $hwgroup
+   * @param array $files
+   * @param JobConfig $jobConfig
+   * @return string fileserver results URL
+   */
   public function submitReference(string $jobId, string $environment,
-      ?string $hwgroup, array $files, string $jobConfigPath): string {
-    return $this->internalSubmit($jobId, ReferenceSolutionEvaluation::JOB_TYPE, $environment, $files, $jobConfigPath, $hwgroup)[1];
+      ?string $hwgroup, array $files, JobConfig $jobConfig): string {
+    return $this->internalSubmit($jobId, ReferenceSolutionEvaluation::JOB_TYPE, $environment, $files, $jobConfig, $hwgroup);
   }
 
 }

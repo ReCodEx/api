@@ -9,6 +9,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\SubmissionHelper;
+use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\UploadedFile;
@@ -83,6 +84,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $exerciseAcl;
 
   /**
+   * @var JobConfigGenerator
+   * @inject
+   */
+  public $jobConfigGenerator;
+
+  /**
    * Get reference solutions for an exercise
    * @GET
    * @param string $exerciseId Identifier of the exercise
@@ -153,7 +160,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");
     }
 
-    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment, ""); // todo: job config path
+    // create reference solution
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
 
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
     if (count($uploadedFiles) === 0) {
@@ -229,9 +237,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $evaluations = [];
     $errors = [];
 
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser());
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup);
+      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);
       $this->referenceEvaluations->persist($evaluation);
 
       try {
@@ -240,7 +249,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
           $referenceSolution->getRuntimeEnvironment()->getId(),
           $hwGroup->getId(),
           $referenceSolution->getFiles()->getValues(),
-          $referenceSolution->getSolution()->getJobConfigPath()
+          $jobConfig
         );
 
         $evaluation->setResultsUrl($resultsUrl);
