@@ -18,9 +18,10 @@ use App\Model\Entity\SolutionFile;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
-use App\Helpers\SubmissionHelper;
+use App\Helpers\BackendSubmitHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
+use App\Helpers\ExerciseConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
@@ -85,10 +86,10 @@ class AssignmentsPresenter extends BasePresenter {
   public $files;
 
   /**
-   * @var SubmissionHelper
+   * @var BackendSubmitHelper
    * @inject
    */
-  public $submissionHelper;
+  public $backendSubmitHelper;
 
   /**
    * @var MonitorConfig
@@ -137,6 +138,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseConfigLoader;
+
+  /**
+   * @var JobConfigGenerator
+   * @inject
+   */
+  public $jobConfigGenerator;
 
   /**
    * Get a list of all assignments
@@ -421,19 +428,18 @@ class AssignmentsPresenter extends BasePresenter {
       throw new SubmissionEvaluationFailedException("No files were uploaded");
     }
 
-    // detect the runtime configuration
+    // detect the runtime environment
     if ($req->getPost("runtimeEnvironmentId") === NULL) {
-      $runtimeConfiguration = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
+      $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
     } else {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-      $runtimeConfiguration = $assignment->getRuntimeConfigByEnvironment($runtimeEnvironment);
-      if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration was not found");
-      }
     }
 
+    // generate job configuration for this particular submission
+    $this->jobConfigGenerator->generateJobConfig($assignment->getExerciseConfig(), $runtimeEnvironment);
+
     // create Solution object
-    $solution = new Solution($user, $runtimeConfiguration);
+    $solution = new Solution($user, $runtimeEnvironment);
 
     foreach ($uploadedFiles as $file) {
       if ($file instanceof SolutionFile) {

@@ -17,6 +17,7 @@ App\Model\Entity\Solution:
         __construct:
             - @submitUser1
             - @CRuntime
+            - "jobConfigPath"
 
 App\Model\Entity\SolutionFile:
     "uploadedFile{1..2}":

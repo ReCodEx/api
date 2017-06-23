@@ -61,6 +61,7 @@ App\Model\Entity\ReferenceExerciseSolution:
             - @demoAdmin
             - Brute force solution
             - @CRuntime
+            - "jobConfigPath"
 
 App\Model\Entity\SolutionEvaluation:
     demoReferenceExerciseSolutionEvaluationEvaluation:

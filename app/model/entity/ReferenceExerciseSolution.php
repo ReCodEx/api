@@ -70,11 +70,11 @@ class ReferenceExerciseSolution implements JsonSerializable
     ];
   }
 
-  public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {
+  public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime, string $jobConfigPath) {
     $this->exercise = $exercise;
     $this->uploadedAt = new \DateTime;
     $this->description = $description;
-    $this->solution = new Solution($user, $runtime);
+    $this->solution = new Solution($user, $runtime, $jobConfigPath);
     $this->evaluations = new ArrayCollection;
   }
 

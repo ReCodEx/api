@@ -47,6 +47,11 @@ class Solution implements JsonSerializable
   protected $evaluated;
 
   /**
+   * @ORM\Column(type="text")
+   */
+  protected $jobConfigPath;
+
+  /**
    * @return array
    */
   public function jsonSerialize() {
@@ -62,11 +67,12 @@ class Solution implements JsonSerializable
    * @param User $user The user who submits the solution
    * @param RuntimeEnvironment $runtimeEnvironment
    */
-  public function __construct(User $user, RuntimeEnvironment $runtimeEnvironment) {
+  public function __construct(User $user, RuntimeEnvironment $runtimeEnvironment, string $jobConfigPath) {
     $this->user = $user;
     $this->files = new ArrayCollection;
     $this->evaluated = FALSE;
     $this->runtimeEnvironment = $runtimeEnvironment;
+    $this->jobConfigPath = $jobConfigPath;
   }
 
   public function addFile(SolutionFile $file)

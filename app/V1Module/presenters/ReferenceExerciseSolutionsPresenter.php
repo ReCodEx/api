@@ -9,7 +9,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\JobConfig;
-use App\Helpers\SubmissionHelper;
+use App\Helpers\BackendSubmitHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\UploadedFile;
@@ -55,7 +55,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $referenceEvaluations;
 
   /**
-   * @var SubmissionHelper
+   * @var BackendSubmitHelper
    * @inject
    */
   public $submissionHelper;

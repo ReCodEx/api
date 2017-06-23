@@ -194,6 +194,7 @@ services:
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
+  - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
@@ -210,6 +211,8 @@ services:
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer
+  - App\Helpers\ExerciseConfig\Generator
+  - App\Helpers\ExerciseConfig\Validator
 
   # models - repositories
   - App\Model\Repository\Comments

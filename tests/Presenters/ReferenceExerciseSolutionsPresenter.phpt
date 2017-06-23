@@ -28,7 +28,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   /** @var ReferenceExerciseSolutions */
   private $referenceSolutions;
 
-  /** @var Mockery\Mock|\App\Helpers\SubmissionHelper */
+  /** @var Mockery\Mock|\App\Helpers\BackendSubmitHelper */
   private $submissionHelper;
 
   /** @var Exercises */
@@ -49,7 +49,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::fillDatabase($this->container);
 
     $this->presenter = PresenterTestHelper::createPresenter($this->container, ReferenceExerciseSolutionsPresenter::class);
-    $this->submissionHelper = Mockery::mock(App\Helpers\SubmissionHelper::class);
+    $this->submissionHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
     $this->presenter->submissionHelper = $this->submissionHelper;
   }
 
