@@ -99,13 +99,13 @@ class TestGroupsPresenter extends Tester\TestCase
 
   public function testUserCanJoinPublicGroup()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
 
     /** @var Group $group */
-    $group = $user->instance->getGroups()->filter(
-      function (Group $group) { return $group->isPublic(); }
+    $group = $user->getInstance()->getGroups()->filter(
+      function (Group $group) use ($user) { return $group->isPublic() && !$group->isMemberOf($user); }
     )->first();
 
     $request = new Nette\Application\Request('V1:Groups', 'POST', [

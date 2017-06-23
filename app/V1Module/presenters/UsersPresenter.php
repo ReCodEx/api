@@ -60,6 +60,20 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($user);
   }
 
+  public function actionPublicData(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canViewPublicData($user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $this->sendSuccessResponse([
+      'id' => $user->getId(),
+      'fullName' => $user->getName(),
+      'name' => $user->getNameParts(),
+      'avatarUrl' => $user->getAvatarUrl()
+    ]);
+  }
+
   /**
    * Update the profile associated with a user account
    * @POST

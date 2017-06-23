@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -19,6 +20,7 @@ use JsonSerializable;
  * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
+ * @method Group getParentGroup()
  */
 class Group implements JsonSerializable
 {
@@ -134,6 +136,12 @@ class Group implements JsonSerializable
    * @ORM\OneToMany(targetEntity="Exercise", mappedBy="group")
    */
   protected $exercises;
+
+  public function getExercises() {
+    return $this->exercises->filter(function (Exercise $exercise) {
+      return $exercise->getDeletedAt() === NULL;
+    });
+  }
 
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")

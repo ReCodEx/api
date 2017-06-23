@@ -14,6 +14,7 @@ use forxer\Gravatar\Gravatar;
  * @method string getId()
  * @method string getEmail()
  * @method string getRole()
+ * @method string getAvatarUrl()
  * @method Instance getInstance()
  * @method Collection getExercises()
  * @method UserSettings getSettings()
@@ -212,16 +213,14 @@ class User implements JsonSerializable
   }
 
   public function getGroups(string $type = NULL) {
-    if ($type === NULL) {
-      return $this->getMemberships()->map(
-        function (GroupMembership $membership) {
-          return $membership->getGroup();
-        }
-      );
+    $result = $this->getMemberships();
+
+    if ($type !== NULL) {
+      $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+      $result = $result->matching($filter);
     }
 
-    $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
-    return $this->getMemberships()->matching($filter)->map(
+    return $result->map(
       function (GroupMembership $membership) {
         return $membership->getGroup();
       }
@@ -258,12 +257,7 @@ class User implements JsonSerializable
     return [
       "id" => $this->id,
       "fullName" => $this->getName(),
-      "name" => [
-        "degreesBeforeName" => $this->degreesBeforeName,
-        "firstName" => $this->firstName,
-        "lastName" => $this->lastName,
-        "degreesAfterName" => $this->degreesAfterName,
-      ],
+      "name" => $this->getNameParts(),
       "instanceId" => $this->instance->getId(),
       "avatarUrl" => $this->avatarUrl,
       "isVerified" => $this->isVerified,
@@ -273,6 +267,18 @@ class User implements JsonSerializable
         "supervisorOf" => $this->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
       ],
       "settings" => $this->settings
+    ];
+  }
+
+  /**
+   * @return array
+   */
+  public function getNameParts(): array {
+    return [
+      "degreesBeforeName" => $this->degreesBeforeName,
+      "firstName" => $this->firstName,
+      "lastName" => $this->lastName,
+      "degreesAfterName" => $this->degreesAfterName,
     ];
   }
 }

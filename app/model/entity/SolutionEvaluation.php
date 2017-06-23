@@ -19,6 +19,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @method DateTime getEvaluatedAt()
  * @method bool getEvaluationFailed()
+ * @method setBonusPoints(int $points)
  */
 class SolutionEvaluation implements JsonSerializable
 {

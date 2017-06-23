@@ -28,7 +28,7 @@ class UploadedFiles extends BaseRepository {
    * @param UploadedFile $file
    * @return Group|null
    */
-  public function findGroupForFile(UploadedFile $file)
+  public function findGroupForSolutionFile(UploadedFile $file)
   {
     if (!($file instanceof SolutionFile)) {
       return NULL;

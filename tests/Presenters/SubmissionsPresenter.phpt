@@ -1,6 +1,8 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Model\Entity\Submission;
+use App\Model\Entity\User;
 use App\V1Module\Presenters\SubmissionsPresenter;
 use Tester\Assert;
 
@@ -114,20 +116,29 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
   public function testSetAcceptedSubmission()
   {
-    PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
-
     $allSubmissions = $this->presenter->submissions->findAll();
+    /** @var Submission $submission */
     $submission = array_pop($allSubmissions);
+    $assignment = $submission->getAssignment();
+
+    $user = $assignment->getGroup()->getSupervisors()->filter(
+      function (User $user) use ($submission) {
+        return $submission->getUser() !== $user && $user->getRole() !== 'superadmin';
+      })->first();
+
+    Assert::notSame(NULL, $user);
+
+    PresenterTestHelper::login($this->container, $user->getEmail());
 
     $request = new Nette\Application\Request('V1:Submissions',
       'GET',
-      ['action' => 'setAcceptedSubmission', 'id' => $submission->id]
+      ['action' => 'setAcceptedSubmission', 'id' => $submission->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
     // Check invariants
-    $submission = $this->presenter->submissions->get($submission->id);
+    $submission = $this->presenter->submissions->get($submission->getId());
     Assert::equal(true, $submission->isAccepted());
   }
 
