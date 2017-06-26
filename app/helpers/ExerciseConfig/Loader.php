@@ -11,6 +11,12 @@ use App\Exceptions\ExerciseConfigException;
  */
 class Loader {
 
+  /**
+   * Builds and checks variable configuration from given structured data.
+   * @param $data
+   * @return Variable
+   * @throws ExerciseConfigException
+   */
   public function loadVariable($data): Variable {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise variable is not array");
@@ -29,6 +35,26 @@ class Loader {
     $variable->setValue($data[Variable::VALUE_KEY]);
 
     return $variable;
+  }
+
+  /**
+   * Builds and checks variables table configuration from given structured data.
+   * @param $data
+   * @return VariablesTable
+   * @throws ExerciseConfigException
+   */
+  public function loadVariablesTable($data): VariablesTable {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Exercise variable is not array");
+    }
+
+    $table = new VariablesTable;
+
+    foreach ($data as $key => $value) {
+      $table->set($key, $this->loadVariable($value));
+    }
+
+    return $table;
   }
 
   /**

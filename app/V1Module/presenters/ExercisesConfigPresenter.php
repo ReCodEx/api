@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
@@ -66,6 +67,65 @@ class ExercisesConfigPresenter extends BasePresenter {
   public $exerciseAcl;
 
   /**
+   * Change runtime configuration of exercise.
+   * Configurations can be added or deleted here, based on what is provided in arguments.
+   * @POST
+   * @param string $id identification of exercise
+   * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws JobConfigStorageException
+   */
+  public function actionUpdateRuntimeConfigs(string $id) {
+    /*$req = $this->getRequest();
+    $user = $this->getCurrentUser();
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannnot update this exercise.");
+    }
+
+    // retrieve configuration and prepare some temp variables
+    $runtimeConfigs = $req->getPost("runtimeConfigs");
+    $configs = [];
+
+    // configurations cannot be empty
+    if (count($runtimeConfigs) == 0) {
+      throw new InvalidArgumentException("No entry for runtime configurations given.");
+    }
+
+    // go through given configurations and construct database entities
+    foreach ($runtimeConfigs as $runtimeConfig) {
+      $environmentId = $runtimeConfig["runtimeEnvironmentId"];
+      $environment = $this->runtimeEnvironments->findOrThrow($environmentId);
+
+      if (array_key_exists($environmentId, $configs)) {
+        throw new InvalidArgumentException("Duplicate entry for configuration $environmentId");
+      }
+
+      // store job configuration into file
+      $jobConfigPath = $this->uploadedJobConfigStorage->storeContent($runtimeConfig["jobConfig"], $user);
+      if ($jobConfigPath === NULL) {
+        throw new JobConfigStorageException;
+      }
+
+      // create all new runtime configuration
+      $config = new RuntimeConfig(
+        $runtimeConfig["name"],
+        $environment,
+        $jobConfigPath,
+        $exercise->getRuntimeConfigByEnvironment($environment)
+      );
+
+      $configs[$environmentId] = $config;
+    }
+
+    // make changes to database
+    $this->exercises->replaceRuntimeConfigs($exercise, $configs, FALSE);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($exercise);*/
+  }
+
+  /**
    * Get a basic exercise high level configuration.
    * @GET
    * @param string $id Identifier of the exercise
@@ -123,7 +183,8 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseConfig($newConfig);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse($this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig));
+    $config = $this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig);
+    $this->sendSuccessResponse($config);
   }
 
   /**

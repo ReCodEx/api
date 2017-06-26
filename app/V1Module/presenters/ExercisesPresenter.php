@@ -5,16 +5,13 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\ExerciseFileStorage;
-use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Entity\LocalizedText;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Groups;
@@ -40,12 +37,6 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $groups;
-
-  /**
-   * @var RuntimeEnvironments
-   * @inject
-   */
-  public $runtimeEnvironments;
 
   /**
    * @var UploadedFiles
@@ -206,68 +197,6 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse([
       "versionIsUpToDate" => $exercise->getVersion() === $version
     ]);
-  }
-
-  /**
-   * Change runtime configuration of exercise.
-   * Configurations can be added or deleted here, based on what is provided in arguments.
-   * @POST
-   * @param string $id identification of exercise
-   * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
-   * @throws JobConfigStorageException
-   * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
-   * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
-   * @throws JobConfigStorageException
-   */
-  public function actionUpdateRuntimeConfigs(string $id) {
-    /*$req = $this->getRequest();
-    $user = $this->getCurrentUser();
-    $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannnot update this exercise.");
-    }
-
-    // retrieve configuration and prepare some temp variables
-    $runtimeConfigs = $req->getPost("runtimeConfigs");
-    $configs = [];
-
-    // configurations cannot be empty
-    if (count($runtimeConfigs) == 0) {
-      throw new InvalidArgumentException("No entry for runtime configurations given.");
-    }
-
-    // go through given configurations and construct database entities
-    foreach ($runtimeConfigs as $runtimeConfig) {
-      $environmentId = $runtimeConfig["runtimeEnvironmentId"];
-      $environment = $this->runtimeEnvironments->findOrThrow($environmentId);
-
-      if (array_key_exists($environmentId, $configs)) {
-        throw new InvalidArgumentException("Duplicate entry for configuration $environmentId");
-      }
-
-      // store job configuration into file
-      $jobConfigPath = $this->uploadedJobConfigStorage->storeContent($runtimeConfig["jobConfig"], $user);
-      if ($jobConfigPath === NULL) {
-        throw new JobConfigStorageException;
-      }
-
-      // create all new runtime configuration
-      $config = new RuntimeConfig(
-        $runtimeConfig["name"],
-        $environment,
-        $jobConfigPath,
-        $exercise->getRuntimeConfigByEnvironment($environment)
-      );
-
-      $configs[$environmentId] = $config;
-    }
-
-    // make changes to database
-    $this->exercises->replaceRuntimeConfigs($exercise, $configs, FALSE);
-    $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);*/
   }
 
   /**

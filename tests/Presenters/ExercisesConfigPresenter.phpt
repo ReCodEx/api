@@ -49,6 +49,44 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     }
   }
 
+  public function testUpdateRuntimeConfigs()
+  {
+    /*$token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $allExercises = $this->presenter->exercises->findAll();
+    $exercise = array_pop($allExercises);
+
+    $environments = $this->runtimeEnvironments->findAll();
+    $hardwareGroups = $this->hardwareGroups->findAll();
+    $environmentId = array_pop($environments)->getId();
+    $hardwareGroupId = array_pop($hardwareGroups)->getId();
+
+    $request = new Nette\Application\Request('V1:Exercises',
+      'POST',
+      ['action' => 'updateRuntimeConfigs', 'id' => $exercise->id],
+      [
+        'runtimeConfigs' => [
+          [
+            'name' => 'runtimeConfigName',
+            'runtimeEnvironmentId' => $environmentId,
+            'jobConfig' => 'JobConfiguration',
+            'hardwareGroupId' => $hardwareGroupId
+          ]
+        ]
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
+
+    $updatedRuntimeConfigs = $result["payload"]->getRuntimeConfigs();
+    Assert::count(1, $updatedRuntimeConfigs);
+    Assert::equal($updatedRuntimeConfigs->first()->name, "runtimeConfigName");*/
+  }
+
   public function testGetConfiguration()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
