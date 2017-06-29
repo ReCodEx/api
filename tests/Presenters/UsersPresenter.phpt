@@ -101,7 +101,7 @@ class TestUsersPresenter extends Tester\TestCase
     $degreesAfterName = "degreesAfterNameUpdated";
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
-      ['action' => 'updateProfile'],
+      ['action' => 'updateProfile', 'id' => $user->getId()],
       [
         'firstName' => $firstName,
         'lastName' => $lastName,
@@ -136,7 +136,7 @@ class TestUsersPresenter extends Tester\TestCase
     $defaultLanguage = "de";
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
-      ['action' => 'updateSettings'],
+      ['action' => 'updateSettings', 'id' => $user->getId()],
       [
         'darkTheme' => $darkTheme,
         'vimMode' => $vimMode,

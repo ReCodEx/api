@@ -71,19 +71,21 @@ class UsersPresenter extends BasePresenter {
       'fullName' => $user->getName(),
       'name' => $user->getNameParts(),
       'avatarUrl' => $user->getAvatarUrl(),
-      'isVerified' => $user->getIsVerified()
+      'isVerified' => $user->isVerified()
     ]);
   }
 
   /**
    * Update the profile associated with a user account
-   * @param string $id Identifier of the user
    * @POST
+   * @param string $id Identifier of the user
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", description="New email address", required=FALSE)
+   * @throws BadRequestException
+   * @throws ForbiddenRequestException
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();
@@ -135,12 +137,13 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * Update the profile settings
-   * @param string $id Identifier of the user
    * @POST
+   * @param string $id Identifier of the user
    * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=FALSE)
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
    * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=FALSE)
    * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=FALSE)
+   * @throws ForbiddenRequestException
    */
   public function actionUpdateSettings(string $id) {
     $req = $this->getRequest();
