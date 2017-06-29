@@ -49,16 +49,16 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     }
   }
 
-  public function testGetRuntimeConfigs()
+  public function testGetEnvironmentConfigs()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->presenter->exercises->findAll());
     $environment = $exercise->getRuntimeEnvironments()->first();
 
-    $request = new Nette\Application\Request('V1:Exercises',
+    $request = new Nette\Application\Request('V1:ExercisesConfig',
       'GET',
-      ['action' => 'getRuntimeConfigs', 'id' => $exercise->id]
+      ['action' => 'getEnvironmentConfigs', 'id' => $exercise->id]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -87,16 +87,16 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal("valB", $variablesTable["varB"]["value"]);
   }
 
-  public function testUpdateRuntimeConfigs()
+  public function testUpdateEnvironmentConfigs()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->presenter->exercises->findAll());
     $environment = current($this->presenter->runtimeEnvironments->findAll());
 
-    $request = new Nette\Application\Request('V1:Exercises',
+    $request = new Nette\Application\Request('V1:ExercisesConfig',
       'POST',
-      ['action' => 'updateRuntimeConfigs', 'id' => $exercise->id],
+      ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->id],
       [
         'runtimeConfigs' => [ [
             'runtimeEnvironmentId' => $environment->getId(),
@@ -125,7 +125,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(1, $result['payload']->getRuntimeEnvironments());
     Assert::equal($environment->getId(), $result['payload']->getRuntimeEnvironments()->first()->getId());
 
-    $updatedRuntimeConfigs = $result["payload"]->getRuntimeConfigs();
+    $updatedRuntimeConfigs = $result["payload"]->getExerciseEnvironmentConfigs();
     Assert::count(1, $updatedRuntimeConfigs);
 
     $runtimeConfig = $updatedRuntimeConfigs->first();

@@ -109,8 +109,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
     $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
 
-    $router[] = new GetRoute("$prefix/<id>/runtime-configs", "ExercisesConfig:getRuntimeConfigs");
-    $router[] = new PostRoute("$prefix/<id>/runtime-configs", "ExercisesConfig:updateRuntimeConfigs");
+    $router[] = new GetRoute("$prefix/<id>/environment-configs", "ExercisesConfig:getEnvironmentConfigs");
+    $router[] = new PostRoute("$prefix/<id>/environment-configs", "ExercisesConfig:updateEnvironmentConfigs");
     $router[] = new GetRoute("$prefix/<id>/config", "ExercisesConfig:getConfiguration");
     $router[] = new PostRoute("$prefix/<id>/config", "ExercisesConfig:setConfiguration");
     $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getLimits");

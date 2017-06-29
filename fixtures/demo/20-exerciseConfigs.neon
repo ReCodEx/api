@@ -1,5 +1,5 @@
-App\Model\Entity\RuntimeConfig:
-    demoRuntimeConfig:
+App\Model\Entity\ExerciseEnvironmentConfig:
+    demoEnvironmentConfig:
         __construct:
             - @CRuntime
             - '''

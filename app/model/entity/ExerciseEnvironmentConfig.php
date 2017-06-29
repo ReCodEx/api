@@ -14,7 +14,7 @@ use Symfony\Component\Yaml\Yaml;
  * @method string getId()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  */
-class RuntimeConfig
+class ExerciseEnvironmentConfig
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -36,7 +36,7 @@ class RuntimeConfig
   protected $variablesTable;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="runtimeConfigs")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exercisesEnvironmentConfigs")
    */
   protected $exercises;
 
@@ -47,8 +47,8 @@ class RuntimeConfig
 
   /**
    * Created from.
-   * @ORM\ManyToOne(targetEntity="RuntimeConfig")
-   * @var RuntimeConfig
+   * @ORM\ManyToOne(targetEntity="ExerciseEnvironmentConfig")
+   * @var ExerciseEnvironmentConfig
    */
   protected $createdFrom;
 
@@ -56,12 +56,12 @@ class RuntimeConfig
    * RuntimeConfig constructor.
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param string $variablesTable
-   * @param RuntimeConfig|null $createdFrom
+   * @param ExerciseEnvironmentConfig|null $createdFrom
    */
   public function __construct(
     RuntimeEnvironment $runtimeEnvironment,
     string $variablesTable,
-    RuntimeConfig $createdFrom = null
+    ExerciseEnvironmentConfig $createdFrom = null
   ) {
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->variablesTable = $variablesTable;

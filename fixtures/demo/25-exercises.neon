@@ -14,8 +14,8 @@ App\Model\Entity\Exercise:
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
@@ -32,8 +32,8 @@ App\Model\Entity\Exercise:
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     privateAdminExercise:
         __construct:
@@ -51,8 +51,8 @@ App\Model\Entity\Exercise:
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     publicSupervisor2Exercise:
         __construct:
@@ -70,8 +70,8 @@ App\Model\Entity\Exercise:
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
 
 App\Model\Entity\ReferenceExerciseSolution:

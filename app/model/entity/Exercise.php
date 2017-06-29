@@ -22,7 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getLocalizedTexts()
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
- * @method Collection getRuntimeConfigs()
+ * @method Collection getExerciseEnvironmentConfigs()
  * @method setName(string $name)
  * @method removeLocalizedText(LocalizedText $assignment)
  * @method \DateTime getDeletedAt()
@@ -159,10 +159,10 @@ class Exercise implements JsonSerializable
   protected $exerciseLimits;
 
   /**
-   * @ORM\ManyToMany(targetEntity="RuntimeConfig", inversedBy="exercises", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", inversedBy="exercises", cascade={"persist"})
    * @var Collection|Selectable
    */
-  protected $runtimeConfigs;
+  protected $exerciseEnvironmentConfigs;
 
   /**
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
@@ -180,6 +180,7 @@ class Exercise implements JsonSerializable
    * @param Collection $supplementaryEvaluationFiles
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
+   * @param Collection $exerciseEnvironmentConfigs
    * @param Exercise|null $exercise
    * @param User $user
    * @param Group|null $group
@@ -191,7 +192,7 @@ class Exercise implements JsonSerializable
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
-      Collection $runtimeConfigs, ?Exercise $exercise, User $user,
+      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise, User $user,
       ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
       ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
@@ -211,7 +212,7 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
-    $this->runtimeConfigs = $runtimeConfigs;
+    $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -243,7 +244,7 @@ class Exercise implements JsonSerializable
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
-      $exercise->runtimeConfigs,
+      $exercise->exerciseEnvironmentConfigs,
       $exercise,
       $user,
       $exercise->group,
@@ -285,12 +286,12 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits->removeElement($exerciseLimits);
   }
 
-  public function addRuntimeConfig(RuntimeConfig $runtimeConfig) {
-    $this->runtimeConfigs->add($runtimeConfig);
+  public function addExerciseEnvironmentConfig(ExerciseEnvironmentConfig $exerciseEnvironmentConfig) {
+    $this->exerciseEnvironmentConfigs->add($exerciseEnvironmentConfig);
   }
 
-  public function removeRuntimeConfig(RuntimeConfig $runtimeConfig) {
-    $this->runtimeConfigs->removeElement($runtimeConfig);
+  public function removeExerciseEnvironmentConfig(ExerciseEnvironmentConfig $runtimeConfig) {
+    $this->exerciseEnvironmentConfigs->removeElement($runtimeConfig);
   }
 
   /**
@@ -307,11 +308,11 @@ class Exercise implements JsonSerializable
   /**
    * Get runtime configuration based on environment identification.
    * @param RuntimeEnvironment $environment
-   * @return RuntimeConfig|NULL
+   * @return ExerciseEnvironmentConfig|NULL
    */
-  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->runtimeConfigs->filter(
-      function (RuntimeConfig $runtimeConfig) use ($environment) {
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+    $first = $this->exerciseEnvironmentConfigs->filter(
+      function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
       })->first();
     return $first === false ? null : $first;

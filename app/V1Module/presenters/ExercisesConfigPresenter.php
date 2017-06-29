@@ -11,7 +11,7 @@ use App\Helpers\ExerciseConfig\Transformer;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
-use App\Model\Entity\RuntimeConfig;
+use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceSolutionEvaluations;
@@ -75,22 +75,22 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function actionGetRuntimeConfigs(string $id) {
+  public function actionGetEnvironmentConfigs(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to get configuration of this exercise.");
     }
 
-    $runtimeConfigs = array();
-    foreach ($exercise->getRuntimeConfigs() as $runtimeConfig) {
+    $configs = array();
+    foreach ($exercise->getExerciseEnvironmentConfigs() as $runtimeConfig) {
       $runtimeConfigArr = array();
       $runtimeConfigArr["runtimeEnvironmentId"] = $runtimeConfig->getRuntimeEnvironment()->getId();
       $runtimeConfigArr["variablesTable"] = $runtimeConfig->getParsedVariablesTable();
-      $runtimeConfigs[] = $runtimeConfigArr;
+      $configs[] = $runtimeConfigArr;
     }
 
-    $this->sendSuccessResponse($runtimeConfigs);
+    $this->sendSuccessResponse($configs);
   }
 
   /**
@@ -103,7 +103,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    * @throws JobConfigStorageException
    */
-  public function actionUpdateRuntimeConfigs(string $id) {
+  public function actionUpdateEnvironmentConfigs(string $id) {
     $req = $this->getRequest();
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
@@ -138,10 +138,10 @@ class ExercisesConfigPresenter extends BasePresenter {
       $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($runtimeConfig["variablesTable"]);
 
       // create all new runtime configuration
-      $config = new RuntimeConfig(
+      $config = new ExerciseEnvironmentConfig(
         $environment,
         (string) $variablesTable,
-        $exercise->getRuntimeConfigByEnvironment($environment)
+        $exercise->getExerciseEnvironmentConfigByEnvironment($environment)
       );
 
       $configs[$environmentId] = $config;
@@ -151,7 +151,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
 
     // make changes to database
-    $this->exercises->replaceRuntimeConfigs($exercise, $configs, FALSE);
+    $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }
