@@ -278,6 +278,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists('fullName', $payload));
     Assert::true(array_key_exists('name', $payload));
     Assert::true(array_key_exists('avatarUrl', $payload));
+    Assert::true(array_key_exists('isVerified', $payload));
   }
 
   public function testUnauthenticatedUserCannotViewPublicData() {
