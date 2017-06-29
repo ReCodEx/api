@@ -293,6 +293,22 @@ class TestUsersPresenter extends Tester\TestCase
     }, ForbiddenRequestException::class);
   }
 
+  public function testDeleteUser() {
+    $victim = "user2@example.com";
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail($victim);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'DELETE',
+      ['action' => 'delete', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::null($this->users->getByEmail($victim));
+  }
+
 }
 
 $testCase = new TestUsersPresenter();

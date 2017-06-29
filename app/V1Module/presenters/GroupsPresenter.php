@@ -445,7 +445,6 @@ class GroupsPresenter extends BasePresenter {
       }
     }
 
-    // join the group
     $this->sendSuccessResponse($group);
   }
 

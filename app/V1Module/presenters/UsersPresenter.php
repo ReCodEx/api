@@ -60,6 +60,21 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($user);
   }
 
+  /**
+   * Delete a user account
+   * @DELETE
+   * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
+   */
+  public function actionDelete(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canDelete($user)) {
+      throw new ForbiddenRequestException();
+    }
+    $this->users->remove($user);
+    $this->sendSuccessResponse("OK");
+  }
+
   public function actionPublicData(string $id) {
     $user = $this->users->findOrThrow($id);
     if (!$this->userAcl->canViewPublicData($user)) {

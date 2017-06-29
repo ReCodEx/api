@@ -12,4 +12,5 @@ interface IUserPermissions {
   function canViewExercises($user): bool;
   function canViewGroups($user): bool;
   function canViewInstances($user): bool;
+  function canDelete($user): bool;
 }

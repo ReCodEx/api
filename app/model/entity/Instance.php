@@ -105,17 +105,21 @@ class Instance implements JsonSerializable
   protected $members;
 
   public function getMembers($search = NULL) {
+    $result = $this->members->filter(function (User $user) {
+      return $user->getDeletedAt() === NULL;
+    });
+
     if ($search !== NULL && !empty($search)) {
       $filter = Criteria::create()
                   ->where(Criteria::expr()->contains("firstName", $search))
                   ->orWhere(Criteria::expr()->contains("lastName", $search));
-      $members = $this->members->matching($filter);
+      $members = $result->matching($filter);
       if ($members->count() > 0) {
         return $members;
       }
 
       // weaker filter - the strict one did not match anything
-      $members = $this->members;
+      $members = $result;
       foreach (explode(" ", $search) as $part) {
         // skip empty parts
         $part = trim($part);
@@ -130,10 +134,10 @@ class Instance implements JsonSerializable
       }
 
       return $members;
-    } else {
-      // no query is present
-      return $this->members;
     }
+
+    // no query is present
+    return $result;
   }
 
   public function addMember(User $user) {

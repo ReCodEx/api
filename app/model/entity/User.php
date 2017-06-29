@@ -2,8 +2,10 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use JsonSerializable;
@@ -11,6 +13,8 @@ use forxer\Gravatar\Gravatar;
 
 /**
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
  * @method string getId()
  * @method string getEmail()
  * @method string getRole()
@@ -24,6 +28,7 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
+ * @method DateTime getDeletedAt()
  */
 class User implements JsonSerializable
 {
@@ -49,7 +54,8 @@ class User implements JsonSerializable
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
     $this->role = $role;
-    $this->createdAt = new \DateTime;
+    $this->createdAt = new DateTime();
+    $this->deletedAt = NULL;
     $this->instance = $instance;
     $instance->addMember($this);
     $this->settings = new UserSettings(TRUE, FALSE, "en");
@@ -127,6 +133,11 @@ class User implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="members")
