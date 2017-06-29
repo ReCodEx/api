@@ -270,6 +270,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
 
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
+    $router[] = new DeleteRoute("$prefix/<id>", "Users:delete");
     $router[] = new GetRoute("$prefix/<id>/public", "Users:publicData");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");

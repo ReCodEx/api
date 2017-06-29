@@ -170,19 +170,25 @@ class Group implements JsonSerializable
    */
   protected $memberships;
 
+  protected function getMemberships() {
+    return $this->memberships->filter(function (GroupMembership $membership) {
+      return $membership->getUser()->getDeletedAt() === NULL;
+    });
+  }
+
   public function addMembership(GroupMembership $membership) {
     $this->memberships->add($membership);
   }
 
   public function removeMembership(GroupMembership $membership) {
-    $this->memberships->remove($membership);
+    $this->getMemberships()->remove($membership);
   }
 
   protected function getActiveMemberships() {
     $filter = Criteria::create()
                 ->where(Criteria::expr()->eq("status", GroupMembership::STATUS_ACTIVE));
 
-    return $this->memberships->matching($filter);
+    return $this->getMemberships()->matching($filter);
   }
 
   /**

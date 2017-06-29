@@ -7,7 +7,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\User;
 use App\Exceptions\NotFoundException;
 
-class Users extends BaseRepository {
+class Users extends BaseSoftDeleteRepository {
   public function __construct(EntityManager $em) {
     parent::__construct($em, User::class);
   }
