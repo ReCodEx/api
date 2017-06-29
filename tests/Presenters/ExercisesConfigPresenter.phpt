@@ -49,28 +49,67 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     }
   }
 
+  public function testGetRuntimeConfigs()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $environment = $exercise->getRuntimeEnvironments()->first();
+
+    $request = new Nette\Application\Request('V1:Exercises',
+      'GET',
+      ['action' => 'getRuntimeConfigs', 'id' => $exercise->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $payload = $result['payload'];
+
+    // there is only one runtime configuration in fixtures
+    Assert::count(1, $payload);
+
+    // check runtime environment
+    $config = current($payload);
+    Assert::equal($config["runtimeEnvironmentId"], $environment->getId());
+
+    // check variables, again defined in fixtures
+    $variablesTable = $config["variablesTable"];
+    Assert::count(2, $variablesTable);
+    Assert::true(array_key_exists("varA", $variablesTable));
+    Assert::true(array_key_exists("varB", $variablesTable));
+
+    // check types of variables and values
+    Assert::equal("file", $variablesTable["varA"]["type"]);
+    Assert::equal("string", $variablesTable["varB"]["type"]);
+    Assert::equal("valA", $variablesTable["varA"]["value"]);
+    Assert::equal("valB", $variablesTable["varB"]["value"]);
+  }
+
   public function testUpdateRuntimeConfigs()
   {
-    /*$token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $allExercises = $this->presenter->exercises->findAll();
-    $exercise = array_pop($allExercises);
-
-    $environments = $this->runtimeEnvironments->findAll();
-    $hardwareGroups = $this->hardwareGroups->findAll();
-    $environmentId = array_pop($environments)->getId();
-    $hardwareGroupId = array_pop($hardwareGroups)->getId();
+    $exercise = current($this->presenter->exercises->findAll());
+    $environment = current($this->presenter->runtimeEnvironments->findAll());
 
     $request = new Nette\Application\Request('V1:Exercises',
       'POST',
       ['action' => 'updateRuntimeConfigs', 'id' => $exercise->id],
       [
-        'runtimeConfigs' => [
-          [
-            'name' => 'runtimeConfigName',
-            'runtimeEnvironmentId' => $environmentId,
-            'jobConfig' => 'JobConfiguration',
-            'hardwareGroupId' => $hardwareGroupId
+        'runtimeConfigs' => [ [
+            'runtimeEnvironmentId' => $environment->getId(),
+            'variablesTable' => [
+              'varA' => [
+                'type' => 'string',
+                'value' => 'valA'
+              ],
+              'varB' => [
+                'type' => 'file',
+                'value' => 'valB'
+              ]
+            ]
           ]
         ]
       ]
@@ -82,9 +121,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
 
+    // check runtime environments directly on exercise
+    Assert::count(1, $result['payload']->getRuntimeEnvironments());
+    Assert::equal($environment->getId(), $result['payload']->getRuntimeEnvironments()->first()->getId());
+
     $updatedRuntimeConfigs = $result["payload"]->getRuntimeConfigs();
     Assert::count(1, $updatedRuntimeConfigs);
-    Assert::equal($updatedRuntimeConfigs->first()->name, "runtimeConfigName");*/
+
+    $runtimeConfig = $updatedRuntimeConfigs->first();
+    Assert::equal($environment->getId(), $runtimeConfig->getRuntimeEnvironment()->getId());
   }
 
   public function testGetConfiguration()

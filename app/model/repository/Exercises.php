@@ -38,6 +38,25 @@ class Exercises extends BaseSoftDeleteRepository {
   }
 
   /**
+   * Replace all runtime configurations in exercise with given ones.
+   * @param Exercise $exercise
+   * @param array $configs configurations which will be placed to exercise
+   * @param bool $flush if true then all changes will be flush at the end
+   */
+  public function replaceRuntimeConfigs(Exercise $exercise, array $configs, bool $flush = TRUE) {
+    $originalConfigs = $exercise->getRuntimeConfigs()->toArray();
+    foreach ($configs as $config) {
+      $exercise->addRuntimeConfig($config);
+    }
+    foreach ($originalConfigs as $config) {
+      $exercise->removeRuntimeConfig($config);
+    }
+    if ($flush) {
+      $this->flush();
+    }
+  }
+
+  /**
    * Internal simple search of exercises names based on given string.
    * @param string|NULL $search
    * @return Collection

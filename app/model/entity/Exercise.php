@@ -22,6 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getLocalizedTexts()
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
+ * @method Collection getRuntimeConfigs()
  * @method setName(string $name)
  * @method removeLocalizedText(LocalizedText $assignment)
  * @method \DateTime getDeletedAt()
@@ -158,6 +159,12 @@ class Exercise implements JsonSerializable
   protected $exerciseLimits;
 
   /**
+   * @ORM\ManyToMany(targetEntity="RuntimeConfig", inversedBy="exercises", cascade={"persist"})
+   * @var Collection|Selectable
+   */
+  protected $runtimeConfigs;
+
+  /**
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
    */
   protected $exerciseConfig;
@@ -169,6 +176,7 @@ class Exercise implements JsonSerializable
    * @param $difficulty
    * @param Collection $localizedTexts
    * @param Collection $runtimeEnvironments
+   * @param Collection $hardwareGroups
    * @param Collection $supplementaryEvaluationFiles
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
@@ -183,8 +191,8 @@ class Exercise implements JsonSerializable
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
-      ?Exercise $exercise, User $user, ?Group $group = NULL,
-      bool $isPublic = TRUE, string $description = "",
+      Collection $runtimeConfigs, ?Exercise $exercise, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
       ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
     $this->version = $version;
@@ -203,6 +211,7 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
+    $this->runtimeConfigs = $runtimeConfigs;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -210,6 +219,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -233,6 +243,7 @@ class Exercise implements JsonSerializable
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
+      $exercise->runtimeConfigs,
       $exercise,
       $user,
       $exercise->group,
@@ -240,6 +251,10 @@ class Exercise implements JsonSerializable
       $exercise->description,
       $exercise->exerciseConfig
     );
+  }
+
+  public function setRuntimeEnvironments(Collection $runtimeEnvironments) {
+    $this->runtimeEnvironments = $runtimeEnvironments;
   }
 
   public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment) {
@@ -270,6 +285,14 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits->removeElement($exerciseLimits);
   }
 
+  public function addRuntimeConfig(RuntimeConfig $runtimeConfig) {
+    $this->runtimeConfigs->add($runtimeConfig);
+  }
+
+  public function removeRuntimeConfig(RuntimeConfig $runtimeConfig) {
+    $this->runtimeConfigs->removeElement($runtimeConfig);
+  }
+
   /**
    * Get localized text based on given locale.
    * @param string $locale
@@ -278,7 +301,20 @@ class Exercise implements JsonSerializable
   public function getLocalizedTextByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
     $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === FALSE ? NULL : $first;
+    return $first === false ? null : $first;
+  }
+
+  /**
+   * Get runtime configuration based on environment identification.
+   * @param RuntimeEnvironment $environment
+   * @return RuntimeConfig|NULL
+   */
+  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
+    $first = $this->runtimeConfigs->filter(
+      function (RuntimeConfig $runtimeConfig) use ($environment) {
+        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
+      })->first();
+    return $first === false ? null : $first;
   }
 
   /**
