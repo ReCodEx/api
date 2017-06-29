@@ -70,7 +70,8 @@ class UsersPresenter extends BasePresenter {
       'id' => $user->getId(),
       'fullName' => $user->getName(),
       'name' => $user->getNameParts(),
-      'avatarUrl' => $user->getAvatarUrl()
+      'avatarUrl' => $user->getAvatarUrl(),
+      'isVerified' => $user->getIsVerified()
     ]);
   }
 
