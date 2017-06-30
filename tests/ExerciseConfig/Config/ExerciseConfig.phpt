@@ -6,6 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Test;
+use App\Helpers\ExerciseConfig\VariableFactory;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -56,7 +57,7 @@ class TestExerciseConfig extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
   }
 
   public function testSerialization() {

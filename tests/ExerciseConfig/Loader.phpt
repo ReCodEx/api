@@ -2,6 +2,7 @@
 
 include '../bootstrap.php';
 
+use App\Helpers\ExerciseConfig\VariableFactory;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 
@@ -15,7 +16,7 @@ class TestExerciseConfigLoader extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
   }
 
   public function testCorrect() {

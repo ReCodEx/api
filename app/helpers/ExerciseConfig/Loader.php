@@ -12,6 +12,19 @@ use App\Exceptions\ExerciseConfigException;
 class Loader {
 
   /**
+   * @var VariableFactory
+   */
+  private $variableFactory;
+
+  /**
+   * Loader constructor.
+   * @param VariableFactory $variableFactory
+   */
+  public function __construct(VariableFactory $variableFactory) {
+    $this->variableFactory = $variableFactory;
+  }
+
+  /**
    * Builds and checks variable configuration from given structured data.
    * @param $data
    * @return Variable
@@ -22,19 +35,19 @@ class Loader {
       throw new ExerciseConfigException("Exercise variable is not array");
     }
 
-    $variable = new Variable;
+    $variable = new VariableMeta;
 
-    if (!isset($data[Variable::TYPE_KEY])) {
+    if (!isset($data[VariableMeta::TYPE_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have any type");
     }
-    $variable->setType($data[Variable::TYPE_KEY]);
+    $variable->setType($data[VariableMeta::TYPE_KEY]);
 
-    if (!isset($data[Variable::VALUE_KEY])) {
+    if (!isset($data[VariableMeta::VALUE_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have any value");
     }
-    $variable->setValue($data[Variable::VALUE_KEY]);
+    $variable->setValue($data[VariableMeta::VALUE_KEY]);
 
-    return $variable;
+    return $this->variableFactory->create($variable);
   }
 
   /**

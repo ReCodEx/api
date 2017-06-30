@@ -4,7 +4,9 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline;
-use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\StringVariable;
+use App\Helpers\ExerciseConfig\VariableFactory;
+use App\Helpers\ExerciseConfig\VariableMeta;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -22,7 +24,7 @@ class TestPipeline extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
   }
 
   public function testIncorrectData() {
@@ -43,9 +45,9 @@ class TestPipeline extends Tester\TestCase
   public function testVariablesOperations() {
     $pipeline = new Pipeline;
 
-    $variable = new Variable;
+    $variable = new StringVariable(new VariableMeta);
     $pipeline->addVariable("variableA", $variable);
-    Assert::type(Variable::class, $pipeline->getVariable("variableA"));
+    Assert::type(StringVariable::class, $pipeline->getVariable("variableA"));
 
     $pipeline->removeVariable("non-existant");
     Assert::count(1, $pipeline->getVariables());

@@ -3,7 +3,12 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\FileArrayVariable;
+use App\Helpers\ExerciseConfig\FileVariable;
+use App\Helpers\ExerciseConfig\StringArrayVariable;
+use App\Helpers\ExerciseConfig\StringVariable;
+use App\Helpers\ExerciseConfig\VariableFactory;
+use App\Helpers\ExerciseConfig\VariableMeta;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -11,7 +16,7 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestVariable extends Tester\TestCase
 {
   static $config = [
-    "type" => "varType",
+    "type" => "string",
     "value" => "varValue"
   ];
 
@@ -19,7 +24,7 @@ class TestVariable extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
   }
 
   public function testIncorrectData() {
@@ -34,6 +39,38 @@ class TestVariable extends Tester\TestCase
     Assert::exception(function () {
       $this->loader->loadVariable("hello");
     }, ExerciseConfigException::class);
+  }
+
+  public function testIncorrectTypes() {
+    Assert::exception(function () {
+      $this->loader->loadVariable(["type" => "strings", "value" => "varValue"]);
+    }, ExerciseConfigException::class);
+
+    Assert::exception(function () {
+      $this->loader->loadVariable(["type" => "files", "value" => "varValue"]);
+    }, ExerciseConfigException::class);
+
+    Assert::exception(function () {
+      $this->loader->loadVariable(["type" => "[]string", "value" => "varValue"]);
+    }, ExerciseConfigException::class);
+
+    Assert::exception(function () {
+      $this->loader->loadVariable(["type" => "[]file", "value" => "varValue"]);
+    }, ExerciseConfigException::class);
+  }
+
+  public function testCorrectTypes() {
+    Assert::type(StringVariable::class, $this->loader->loadVariable(["type" => "string", "value" => "val"]));
+    Assert::type(StringVariable::class, $this->loader->loadVariable(["type" => "StRiNg", "value" => "val"]));
+
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["type" => "string[]", "value" => "val"]));
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["type" => "StRiNg[]", "value" => "val"]));
+
+    Assert::type(FileVariable::class, $this->loader->loadVariable(["type" => "file", "value" => "val"]));
+    Assert::type(FileVariable::class, $this->loader->loadVariable(["type" => "FiLe", "value" => "val"]));
+
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["type" => "file[]", "value" => "val"]));
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["type" => "FiLe[]", "value" => "val"]));
   }
 
   public function testMissingType() {
@@ -58,7 +95,7 @@ class TestVariable extends Tester\TestCase
   }
 
   public function testVariablesOperations() {
-    $variable = new Variable;
+    $variable = new VariableMeta;
 
     Assert::equal(null, $variable->getType());
     Assert::equal(null, $variable->getValue());
@@ -72,7 +109,7 @@ class TestVariable extends Tester\TestCase
 
   public function testCorrect() {
     $variable = $this->loader->loadVariable(self::$config);
-    Assert::equal("varType", $variable->getType());
+    Assert::equal("string", $variable->getType());
     Assert::equal("varValue", $variable->getValue());
   }
 

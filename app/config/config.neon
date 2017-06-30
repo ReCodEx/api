@@ -214,6 +214,7 @@ services:
   - App\Helpers\ExerciseConfig\Transformer
   - App\Helpers\ExerciseConfig\Compiler
   - App\Helpers\ExerciseConfig\Validator
+  - App\Helpers\ExerciseConfig\VariableFactory
 
   # models - repositories
   - App\Model\Repository\Comments

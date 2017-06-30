@@ -1,82 +1,55 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
-use Symfony\Component\Yaml\Yaml;
+
+
 use JsonSerializable;
+use Symfony\Component\Yaml\Yaml;
 
-
-/**
- * High-level configuration variable holder.
- */
-class Variable implements JsonSerializable {
-
-  /** Name of the type key */
-  const TYPE_KEY = "type";
-  /** Name of the value key */
-  const VALUE_KEY = "value";
+abstract class Variable implements JsonSerializable
+{
+  public static $FILE_TYPE = "file";
+  public static $FILE_ARRAY_TYPE = "file[]";
+  public static $STRING_TYPE = "string";
+  public static $STRING_ARRAY_TYPE = "string[]";
 
 
   /**
-   * Variable type.
-   * @var string
+   * Meta information about variable.
+   * @var VariableMeta
    */
-  protected $type = null;
+  protected $meta;
 
   /**
-   * Variable value.
-   * @var string
+   * Variable constructor.
+   * @param VariableMeta $meta
    */
-  protected $value = null;
-
+  public function __construct(VariableMeta $meta) {
+    $this->meta = $meta;
+  }
 
   /**
    * Get type of this variable.
    * @return null|string
    */
   public function getType(): ?string {
-    return $this->type;
+    return $this->meta->getType();
   }
 
   /**
-   * Set type of this variable.
-   * @param string $type
-   * @return Variable
-   */
-  public function setType(string $type): Variable {
-    $this->type = $type;
-    return $this;
-  }
-
-  /**
-   * Get value of this variable.
+   * Get value of the variable.
    * @return null|string
    */
   public function getValue(): ?string {
-    return $this->value;
+    return $this->meta->getValue();
   }
-
-  /**
-   * Set value of this variable.
-   * @param string $value
-   * @return Variable
-   */
-  public function setValue(string $value): Variable {
-    $this->value = $value;
-    return $this;
-  }
-
 
   /**
    * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
-    $data = [];
-
-    $data[self::TYPE_KEY] = $this->type;
-    $data[self::VALUE_KEY] = $this->value;
-
-    return $data;
+    return $this->meta->toArray();
   }
 
   /**
