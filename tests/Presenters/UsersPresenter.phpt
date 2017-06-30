@@ -101,7 +101,7 @@ class TestUsersPresenter extends Tester\TestCase
     $degreesAfterName = "degreesAfterNameUpdated";
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
-      ['action' => 'updateProfile'],
+      ['action' => 'updateProfile', 'id' => $user->getId()],
       [
         'firstName' => $firstName,
         'lastName' => $lastName,
@@ -136,7 +136,7 @@ class TestUsersPresenter extends Tester\TestCase
     $defaultLanguage = "de";
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
-      ['action' => 'updateSettings'],
+      ['action' => 'updateSettings', 'id' => $user->getId()],
       [
         'darkTheme' => $darkTheme,
         'vimMode' => $vimMode,
@@ -278,6 +278,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists('fullName', $payload));
     Assert::true(array_key_exists('name', $payload));
     Assert::true(array_key_exists('avatarUrl', $payload));
+    Assert::true(array_key_exists('isVerified', $payload));
   }
 
   public function testUnauthenticatedUserCannotViewPublicData() {
@@ -290,6 +291,22 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, ForbiddenRequestException::class);
+  }
+
+  public function testDeleteUser() {
+    $victim = "user2@example.com";
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail($victim);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'DELETE',
+      ['action' => 'delete', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::null($this->users->getByEmail($victim));
   }
 
 }
