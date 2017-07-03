@@ -21,7 +21,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getName()
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
- * @method Collection getRuntimeConfigs()
+ * @method Collection getRuntimeEnvironments()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getSubmissions()
@@ -32,6 +32,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
+ * @method ExerciseConfig getExerciseConfig()
  */
 class Assignment implements JsonSerializable
 {
@@ -66,7 +67,8 @@ class Assignment implements JsonSerializable
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
-    $this->runtimeConfigs = $exercise->getRuntimeConfigs();
+    $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
+    $this->exerciseConfig = $exercise->getExerciseConfig();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
     $this->localizedTexts = $exercise->getLocalizedTexts();
@@ -83,8 +85,8 @@ class Assignment implements JsonSerializable
       throw new InvalidStateException("There are no localized descriptions of exercise");
     }
 
-    if ($exercise->getRuntimeConfigs()->count() == 0) {
-      throw new InvalidStateException("There are no runtime configurations in exercise");
+    if ($exercise->getRuntimeEnvironments()->count() == 0) {
+      throw new InvalidStateException("There are no runtime environments in exercise");
     }
 
     $assignment = new self(
@@ -167,10 +169,15 @@ class Assignment implements JsonSerializable
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\ManyToMany(targetEntity="RuntimeConfig")
+   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    * @var Collection
    */
-  protected $runtimeConfigs;
+  protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises")
+   */
+  protected $exerciseConfig;
 
   /**
    * @ORM\Column(type="string", nullable=true)
@@ -356,28 +363,8 @@ class Assignment implements JsonSerializable
     );
   }
 
-  /**
-   * Get runtime configuration based on environment identification.
-   * @param RuntimeEnvironment $environment
-   * @return RuntimeConfig|NULL
-   */
-  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->runtimeConfigs->filter(
-      function (RuntimeConfig $runtimeConfig) use ($environment) {
-        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
-    })->first();
-    return $first === FALSE ? NULL : $first;
-  }
-
-  public function getRuntimeConfigsIds() {
-    return $this->runtimeConfigs->map(function(RuntimeConfig $config) { return $config->getId(); })->getValues();
-  }
-
   public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeConfigs->map(
-      function(RuntimeConfig $config) {
-        return $config->getRuntimeEnvironment()->getId();
-      })->getValues();
+    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
   }
 
   public function jsonSerialize() {

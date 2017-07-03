@@ -52,8 +52,9 @@ class FailureHelper {
 
   /**
    * Report an issue in system to administrator
-   * @param string $type    Type of the error like backend error or api error
+   * @param string $type Type of the error like backend error or api error
    * @param string $message Text of the error message
+   * @return bool
    */
   public function report(string $type, string $message) {
     $subject = $this->formatSubject($type);

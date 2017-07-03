@@ -20,7 +20,7 @@ class TestJobConfigStorage extends Tester\TestCase
     $filePath = sys_get_temp_dir() . '/test-job-config-loader.yml';
     file_put_contents($filePath, self::$jobConfig);
     $this->jobConfigFileName = $filePath;
-    $this->storage = new Storage;
+    $this->storage = new Storage(sys_get_temp_dir());
   }
 
   public function tearDown() {
@@ -29,7 +29,7 @@ class TestJobConfigStorage extends Tester\TestCase
 
   public function testArchivation() {
     $oldContents = file_get_contents($this->jobConfigFileName);
-    $newFilePath = $this->storage->archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
+    $newFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
     $newContents = file_get_contents($newFilePath);
     $newFileName = pathinfo($newFilePath, PATHINFO_FILENAME);
     Assert::true(Strings::startsWith($newFileName, "my_custom_prefix_"));
@@ -43,9 +43,9 @@ class TestJobConfigStorage extends Tester\TestCase
     // first make sure the file is real
     Assert::true(is_file($this->jobConfigFileName));
 
-    $firstArchivedFilePath = $this->storage->archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
+    $firstArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
     file_put_contents($this->jobConfigFileName, self::$jobConfig);
-    $secondArchivedFilePath = $this->storage->archiveJobConfig($this->jobConfigFileName, "my_custom_prefix_");
+    $secondArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
 
     // both archives must exist
     Assert::true(is_file($firstArchivedFilePath));
@@ -61,7 +61,7 @@ class TestJobConfigStorage extends Tester\TestCase
   }
 
   public function testCanBeLoaded() {
-    $jobConfig = $this->storage->parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->storage->parse(self::$jobConfig);
     Assert::type(JobConfig::CLASS, $jobConfig);
     Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
   }
@@ -72,18 +72,18 @@ class TestJobConfigStorage extends Tester\TestCase
             \t- ratatat:
             - foo
             - bar";
-        $this->storage->parseJobConfig($invalidCfg);
+        $this->storage->parse($invalidCfg);
     }, MalformedJobConfigException::CLASS);
   }
 
   public function testLoadFromFile() {
-    $jobConfig = $this->storage->getJobConfig($this->jobConfigFileName);
+    $jobConfig = $this->storage->get($this->jobConfigFileName);
     Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
     Assert::type(JobConfig::CLASS, $jobConfig);
   }
 
   public function testCorrectInterpretation() {
-    $jobConfig = $this->storage->parseJobConfig(self::$jobConfig);
+    $jobConfig = $this->storage->parse(self::$jobConfig);
     Assert::equal(31, $jobConfig->getTasksCount());
     Assert::equal(31, count($jobConfig->getTasks()));
     Assert::equal(6, count($jobConfig->getTests()));

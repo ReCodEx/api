@@ -7,10 +7,3 @@ App\Model\Entity\HardwareGroup:
         __construct:
             - group2
             - Our other only hardware group
-
-App\Model\Entity\RuntimeConfig:
-    demoRuntimeConfig:
-        __construct:
-            - A demo runtime config
-            - @CRuntime
-            - "job-config.yml"

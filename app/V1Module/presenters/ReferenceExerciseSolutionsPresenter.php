@@ -8,11 +8,10 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
-use App\Helpers\JobConfig;
 use App\Helpers\SubmissionHelper;
+use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
-use App\Model\Entity\RuntimeConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
@@ -23,7 +22,6 @@ use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
-use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 
 /**
@@ -62,12 +60,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $submissionHelper;
 
   /**
-   * @var JobConfig\Storage
-   * @inject
-   */
-  public $jobConfigs;
-
-  /**
    * @var HardwareGroups
    * @inject
    */
@@ -90,6 +82,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseAcl;
+
+  /**
+   * @var JobConfigGenerator
+   * @inject
+   */
+  public $jobConfigGenerator;
 
   /**
    * Get reference solutions for an exercise
@@ -121,12 +119,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $evaluations = array();
-    foreach ($exercise->getRuntimeConfigs() as $runtime) {
-      $evaluations[$runtime->getRuntimeEnvironment()->getId()] = array();
+    foreach ($exercise->getRuntimeEnvironments() as $runtime) {
+      $evaluations[$runtime->getId()] = array();
     }
 
     foreach ($solution->getEvaluations() as $evaluation) {
-      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeConfig()->getRuntimeEnvironment()->getId()][] = $evaluation;
+      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeEnvironment()->getId()][] = $evaluation;
     }
 
     $this->sendSuccessResponse($evaluations);
@@ -158,15 +156,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     // detect the runtime configuration
     if ($runtimeId !== NULL) {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
-      $runtimeConfiguration = $exercise->getRuntimeConfigByEnvironment($runtimeEnvironment);
-      if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration '$runtimeId' was not found");
-      }
     } else {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");
     }
 
-    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeConfiguration);
+    // create reference solution
+    $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
 
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
     if (count($uploadedFiles) === 0) {
@@ -201,7 +196,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    /** @var RuntimeConfig $runtimeConfig */
     list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
 
     $this->sendSuccessResponse([
@@ -239,33 +233,30 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
-    $runtimeConfig = $referenceSolution->getRuntimeConfig();
-    $jobConfig = $this->jobConfigs->getJobConfig($runtimeConfig->getJobConfigFilePath());
-    $hwGroups = $jobConfig->getHardwareGroups();
+    $hwGroups = $referenceSolution->getExercise()->getHardwareGroups();
     $evaluations = [];
     $errors = [];
 
-    foreach ($hwGroups as $hwGroup) {
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser());
+    foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $this->hardwareGroups->findOrThrow($hwGroup));
+      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);
       $this->referenceEvaluations->persist($evaluation);
 
-      // configure the job and start evaluation
-      $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
-      $files = $referenceSolution->getFiles()->getValues();
-
       try {
-        $resultsUrl = $this->submissionHelper->initiateEvaluation(
-          $jobConfig,
-          $files,
-          ['env' => $runtimeConfig->getRuntimeEnvironment()->getId()],
-          $hwGroup
+        $resultsUrl = $this->submissionHelper->submitReference(
+          $evaluation->getId(),
+          $referenceSolution->getRuntimeEnvironment()->getId(),
+          $hwGroup->getId(),
+          $referenceSolution->getFiles()->getValues(),
+          $jobConfig
         );
+
         $evaluation->setResultsUrl($resultsUrl);
         $this->referenceEvaluations->flush();
         $evaluations[] = $evaluation;
       } catch (SubmissionFailedException $e) {
-        $errors[] = $hwGroup;
+        $errors[] = $hwGroup->getId();
       }
     }
 

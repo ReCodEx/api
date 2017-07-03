@@ -8,7 +8,7 @@ use JsonSerializable;
 /**
  * High-level configuration variable holder.
  */
-class Variable implements JsonSerializable {
+class VariableMeta implements JsonSerializable {
 
   /** Name of the type key */
   const TYPE_KEY = "type";
@@ -40,9 +40,9 @@ class Variable implements JsonSerializable {
   /**
    * Set type of this variable.
    * @param string $type
-   * @return Variable
+   * @return VariableMeta
    */
-  public function setType(string $type): Variable {
+  public function setType(string $type): VariableMeta {
     $this->type = $type;
     return $this;
   }
@@ -58,9 +58,9 @@ class Variable implements JsonSerializable {
   /**
    * Set value of this variable.
    * @param string $value
-   * @return Variable
+   * @return VariableMeta
    */
-  public function setValue(string $value): Variable {
+  public function setValue(string $value): VariableMeta {
     $this->value = $value;
     return $this;
   }

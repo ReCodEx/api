@@ -5,6 +5,7 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\VariableFactory;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -18,7 +19,7 @@ class TestTest extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
   }
 
   protected function setUp() {

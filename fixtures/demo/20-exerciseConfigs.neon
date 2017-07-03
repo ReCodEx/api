@@ -1,3 +1,17 @@
+App\Model\Entity\ExerciseEnvironmentConfig:
+    demoEnvironmentConfig:
+        __construct:
+            - @CRuntime
+            - '''
+              "varA":
+                type: "file"
+                value: "valA"
+              "varB":
+                type: "string"
+                value: "valB"
+              '''
+
+
 App\Model\Entity\ExerciseConfig:
     demoExerciseConfig:
         __construct:

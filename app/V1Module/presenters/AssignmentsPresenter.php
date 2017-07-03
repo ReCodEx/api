@@ -6,7 +6,6 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\InvalidStateException;
@@ -20,12 +19,12 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
-use App\Helpers\UploadedJobConfigStorage;
+use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
+use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
-use App\Model\Repository\RuntimeConfigs;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\Solutions;
@@ -36,7 +35,6 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\ISubmissionPermissions;
 use DateTime;
-use Exception;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -87,12 +85,6 @@ class AssignmentsPresenter extends BasePresenter {
   public $files;
 
   /**
-   * @var RuntimeConfigs
-   * @inject
-   */
-  public $runtimeConfigurations;
-
-  /**
    * @var SubmissionHelper
    * @inject
    */
@@ -117,12 +109,6 @@ class AssignmentsPresenter extends BasePresenter {
   public $jobConfigs;
 
   /**
-   * @var UploadedJobConfigStorage
-   * @inject
-   */
-  public $uploadedJobConfigStorage;
-
-  /**
    * @var RuntimeEnvironments
    * @inject
    */
@@ -145,6 +131,18 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionAcl;
+
+  /**
+   * @var ExerciseConfigLoader
+   * @inject
+   */
+  public $exerciseConfigLoader;
+
+  /**
+   * @var JobConfigGenerator
+   * @inject
+   */
+  public $jobConfigGenerator;
 
   /**
    * Get a list of all assignments
@@ -307,22 +305,13 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   private function getDefaultScoreConfig(Assignment $assignment): string {
-    if (count($assignment->getRuntimeConfigs()) === 0) {
+    if (count($assignment->getRuntimeEnvironments()) === 0) {
       throw new InvalidStateException("Assignment has no runtime configurations");
     }
 
-    $runtimeConfig = $assignment->getRuntimeConfigs()->first();
-    $jobConfigPath = $runtimeConfig->getJobConfigFilePath();
-    try {
-      $jobConfig = $this->jobConfigs->getJobConfig($jobConfigPath);
-      $tests = array_map(
-        function ($test) { return $test->getId(); },
-        $jobConfig->getTests()
-      );
-      return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
-    } catch (JobConfigLoadingException $e) {
-      return "";
-    }
+    $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($assignment->getExerciseConfig()->getParsedConfig());
+    $tests = array_keys($exerciseConfig->getTests());
+    return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
   }
 
   /**
@@ -441,19 +430,15 @@ class AssignmentsPresenter extends BasePresenter {
       throw new SubmissionEvaluationFailedException("No files were uploaded");
     }
 
-    // detect the runtime configuration
+    // detect the runtime environment
     if ($req->getPost("runtimeEnvironmentId") === NULL) {
-      $runtimeConfiguration = $this->runtimeConfigurations->detectOrThrow($assignment, $uploadedFiles);
+      $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
     } else {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-      $runtimeConfiguration = $assignment->getRuntimeConfigByEnvironment($runtimeEnvironment);
-      if ($runtimeConfiguration === NULL) {
-        throw new NotFoundException("RuntimeConfiguration was not found");
-      }
     }
 
     // create Solution object
-    $solution = new Solution($user, $runtimeConfiguration);
+    $solution = new Solution($user, $runtimeEnvironment);
 
     foreach ($uploadedFiles as $file) {
       if ($file instanceof SolutionFile) {
@@ -468,9 +453,10 @@ class AssignmentsPresenter extends BasePresenter {
     // persist the new solution and flush all the changes to the files
     $this->solutions->persist($solution);
 
-    // submit the solution
+    // generate job configuration and create submission
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution);
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser);
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
@@ -495,28 +481,20 @@ class AssignmentsPresenter extends BasePresenter {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
-    // Fill in the job configuration header
-    $runtimeConfiguration = $submission->getSolution()->getRuntimeConfig();
-    $path = $runtimeConfiguration->getJobConfigFilePath();
-    $jobConfig = $this->jobConfigs->getJobConfig($path);
-    $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
+    // load job configuration
+    $jobConfig = $this->jobConfigs->get($submission->getJobConfigPath());
 
-    // Send the submission to the broker
-    $resultsUrl = NULL;
-
+    // initiate submission
+    $resultsUrl = null;
     try {
-      $resultsUrl = $this->submissionHelper->initiateEvaluation(
-        $jobConfig,
+      $resultsUrl = $this->submissionHelper->submit(
+        $submission->getId(),
+        $submission->getSolution()->getRuntimeEnvironment()->getId(),
         $submission->getSolution()->getFiles()->getValues(),
-        ['env' => $runtimeConfiguration->getRuntimeEnvironment()->getId()]
+        $jobConfig
       );
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       $this->submissionFailed($submission, $e->getMessage());
-    }
-
-    if ($resultsUrl === NULL) {
-      $this->submissionFailed($submission, "The broker rejected our request");
-      return []; // never reached
     }
 
     // If the submission was accepted we now have the URL where to look for the results later -> persist it
@@ -552,7 +530,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     $submission = Submission::createSubmission(
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-      $oldSubmission->getSolution(), FALSE, $oldSubmission
+      $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
     );
 
     $submission->setPrivate($this->getRequest()->getPost(filter_var("private")));
@@ -585,7 +563,7 @@ class AssignmentsPresenter extends BasePresenter {
     foreach ($assignment->getSubmissions() as $oldSubmission) {
       $submission = Submission::createSubmission(
         $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-        $oldSubmission->getSolution(), FALSE, $oldSubmission
+        $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
       );
 
       // persist all the data in the database - this will also assign the UUID to the submission

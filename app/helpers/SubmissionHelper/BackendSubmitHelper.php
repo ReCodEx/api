@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\JobConfig;
  * Easy submit new job to the backend. This means prepare the archive, upload it to the
  * fileserver and then tell broker to evaluate the submission.
  */
-class SubmissionHelper {
+class BackendSubmitHelper {
 
   /** @var BrokerProxy Communication with broker */
   private $broker;

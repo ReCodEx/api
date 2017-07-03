@@ -7,10 +7,15 @@ App\Model\Entity\Exercise:
         name: "Convex hull"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addRuntimeEnvironment:
+            - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
@@ -20,10 +25,15 @@ App\Model\Entity\Exercise:
         name: "<current()> exercise"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addRuntimeEnvironment:
+            - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     privateAdminExercise:
         __construct:
@@ -34,10 +44,15 @@ App\Model\Entity\Exercise:
         isPublic: FALSE
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addRuntimeEnvironment:
+            - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     publicSupervisor2Exercise:
         __construct:
@@ -48,10 +63,15 @@ App\Model\Entity\Exercise:
         name: "group supervisor alalal"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeConfig:
-            - @demoRuntimeConfig
+        addRuntimeEnvironment:
+            - @CRuntime
+        hardwareGroups:
+            - @demoHWGroup
+            - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
+        addExerciseEnvironmentConfig:
+            - @demoEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
 
 App\Model\Entity\ReferenceExerciseSolution:
@@ -60,7 +80,7 @@ App\Model\Entity\ReferenceExerciseSolution:
             - @demoExercise
             - @demoAdmin
             - Brute force solution
-            - @demoRuntimeConfig
+            - @CRuntime
 
 App\Model\Entity\SolutionEvaluation:
     demoReferenceExerciseSolutionEvaluationEvaluation:
@@ -79,6 +99,7 @@ App\Model\Entity\ReferenceSolutionEvaluation:
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
+            - "jobConfigPath"
         evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
         resultsUrl: "chacha cheche chichi chocho"
 

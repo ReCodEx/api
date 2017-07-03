@@ -113,8 +113,8 @@ class Transformer {
 
     foreach ($data['variables'] as $variable) {
       $variableArr = array();
-      $variableArr[Variable::TYPE_KEY] = $variable['type'];
-      $variableArr[Variable::VALUE_KEY] = $variable['value'];
+      $variableArr[VariableMeta::TYPE_KEY] = $variable['type'];
+      $variableArr[VariableMeta::VALUE_KEY] = $variable['value'];
 
       // do not forget to add constructed variable to pipeline
       $pipelineArr[Pipeline::VARIABLES_KEY][$variable['name']] = $variableArr;

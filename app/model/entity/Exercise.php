@@ -17,12 +17,13 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method string getName()
- * @method Doctrine\Common\Collections\Collection getRuntimeConfigs()
- * @method Doctrine\Common\Collections\Collection getLocalizedTexts()
- * @method Doctrine\Common\Collections\Collection getReferenceSolutions()
- * @method Doctrine\Common\Collections\Collection getExerciseLimits()
+ * @method Collection getRuntimeEnvironments()
+ * @method Collection getHardwareGroups()
+ * @method Collection getLocalizedTexts()
+ * @method Collection getReferenceSolutions()
+ * @method Collection getExerciseLimits()
+ * @method Collection getExerciseEnvironmentConfigs()
  * @method setName(string $name)
- * @method removeRuntimeConfig(RuntimeConfig $config)
  * @method removeLocalizedText(LocalizedText $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
@@ -90,9 +91,14 @@ class Exercise implements JsonSerializable
   protected $difficulty;
 
   /**
-   * @ORM\ManyToMany(targetEntity="RuntimeConfig", cascade={"persist"})
+   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    */
-  protected $runtimeConfigs;
+  protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="HardwareGroup")
+   */
+  protected $hardwareGroups;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -153,6 +159,12 @@ class Exercise implements JsonSerializable
   protected $exerciseLimits;
 
   /**
+   * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", inversedBy="exercises", cascade={"persist"})
+   * @var Collection|Selectable
+   */
+  protected $exerciseEnvironmentConfigs;
+
+  /**
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
    */
   protected $exerciseConfig;
@@ -163,10 +175,12 @@ class Exercise implements JsonSerializable
    * @param $version
    * @param $difficulty
    * @param Collection $localizedTexts
-   * @param Collection $runtimeConfigs
+   * @param Collection $runtimeEnvironments
+   * @param Collection $hardwareGroups
    * @param Collection $supplementaryEvaluationFiles
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
+   * @param Collection $exerciseEnvironmentConfigs
    * @param Exercise|null $exercise
    * @param User $user
    * @param Group|null $group
@@ -175,9 +189,10 @@ class Exercise implements JsonSerializable
    * @param ExerciseConfig|null $exerciseConfig
    */
   private function __construct(string $name, $version, $difficulty,
-      Collection $localizedTexts, Collection $runtimeConfigs,
-      Collection $supplementaryEvaluationFiles, Collection $additionalFiles,
-      Collection $exerciseLimits, ?Exercise $exercise, User $user,
+      Collection $localizedTexts, Collection $runtimeEnvironments,
+      Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
+      Collection $additionalFiles, Collection $exerciseLimits,
+      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise, User $user,
       ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
       ?ExerciseConfig $exerciseConfig = NULL) {
     $this->name = $name;
@@ -186,7 +201,7 @@ class Exercise implements JsonSerializable
     $this->updatedAt = new DateTime;
     $this->localizedTexts = $localizedTexts;
     $this->difficulty = $difficulty;
-    $this->runtimeConfigs = $runtimeConfigs;
+    $this->runtimeEnvironments = $runtimeEnvironments;
     $this->exercise = $exercise;
     $this->author = $user;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
@@ -196,6 +211,8 @@ class Exercise implements JsonSerializable
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
+    $this->hardwareGroups = $hardwareGroups;
+    $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -203,6 +220,8 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -220,10 +239,12 @@ class Exercise implements JsonSerializable
       1,
       $exercise->difficulty,
       $exercise->localizedTexts,
-      $exercise->runtimeConfigs,
+      $exercise->runtimeEnvironments,
+      $exercise->hardwareGroups,
       $exercise->supplementaryEvaluationFiles,
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
+      $exercise->exerciseEnvironmentConfigs,
       $exercise,
       $user,
       $exercise->group,
@@ -233,9 +254,17 @@ class Exercise implements JsonSerializable
     );
   }
 
-  public function addRuntimeConfig(RuntimeConfig $config) {
-    $this->runtimeConfigs->add($config);
+  public function setRuntimeEnvironments(Collection $runtimeEnvironments) {
+    $this->runtimeEnvironments = $runtimeEnvironments;
   }
+
+  public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment) {
+    $this->runtimeEnvironments->add($runtimeEnvironment);
+  }
+
+    public function addHardwareGroup(HardwareGroup $hardwareGroup) {
+        $this->hardwareGroups->add($hardwareGroup);
+    }
 
   public function addLocalizedText(LocalizedText $localizedText) {
     $this->localizedTexts->add($localizedText);
@@ -257,6 +286,14 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits->removeElement($exerciseLimits);
   }
 
+  public function addExerciseEnvironmentConfig(ExerciseEnvironmentConfig $exerciseEnvironmentConfig) {
+    $this->exerciseEnvironmentConfigs->add($exerciseEnvironmentConfig);
+  }
+
+  public function removeExerciseEnvironmentConfig(ExerciseEnvironmentConfig $runtimeConfig) {
+    $this->exerciseEnvironmentConfigs->removeElement($runtimeConfig);
+  }
+
   /**
    * Get localized text based on given locale.
    * @param string $locale
@@ -265,20 +302,20 @@ class Exercise implements JsonSerializable
   public function getLocalizedTextByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
     $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === FALSE ? NULL : $first;
+    return $first === false ? null : $first;
   }
 
   /**
    * Get runtime configuration based on environment identification.
    * @param RuntimeEnvironment $environment
-   * @return RuntimeConfig|NULL
+   * @return ExerciseEnvironmentConfig|NULL
    */
-  public function getRuntimeConfigByEnvironment(RuntimeEnvironment $environment) {
-    $first = $this->runtimeConfigs->filter(
-      function (RuntimeConfig $runtimeConfig) use ($environment) {
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+    $first = $this->exerciseEnvironmentConfigs->filter(
+      function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
-    })->first();
-    return $first === FALSE ? NULL : $first;
+      })->first();
+    return $first === false ? null : $first;
   }
 
   /**
@@ -297,11 +334,11 @@ class Exercise implements JsonSerializable
   }
 
   /**
-   * Get IDs of all available runtime configs
-   * @return RuntimeConfig[]
+   * Get IDs of all available runtime environments
+   * @return ArrayCollection
    */
-  public function getRuntimeConfigsIds() {
-    return $this->runtimeConfigs->map(function(RuntimeConfig $config) { return $config->getId(); })->getValues();
+  public function getRuntimeEnvironmentsIds() {
+    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
   }
 
   public function getSupplementaryFilesIds() {
@@ -327,7 +364,7 @@ class Exercise implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
-      "runtimeConfigs" => $this->runtimeConfigs->getValues(),
+      "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
       "groupId" => $this->group ? $this->group->getId() : NULL,

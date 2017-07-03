@@ -65,15 +65,17 @@ class EvaluationLoader {
    * @param Submission $submission The submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
+   *
+   * @todo: REWRITE, runtime config is not present anymore
    */
   private function getResults(Submission $submission) {
     if (!$submission->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $submission->getSolution()->getRuntimeConfig()->getJobConfigFilePath();
+    $jobConfigPath = $submission->getJobConfigPath();
     try {
-      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
       return $resultsYml === NULL
@@ -106,15 +108,17 @@ class EvaluationLoader {
    * @param ReferenceSolutionEvaluation $evaluation The reference solution submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
+   *
+   * @todo: REWRITE, runtime config is not present anymore
    */
   private function getReferenceResults(ReferenceSolutionEvaluation $evaluation) {
     if (!$evaluation->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
 
-    $jobConfigPath = $evaluation->getReferenceSolution()->getSolution()->getRuntimeConfig()->getJobConfigFilePath();
+    $jobConfigPath = $evaluation->getJobConfigPath();
     try {
-      $jobConfig = $this->jobConfigStorage->getJobConfig($jobConfigPath);
+      $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($evaluation->getResultsUrl());
       return $resultsYml === NULL

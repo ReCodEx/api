@@ -4,6 +4,7 @@ include '../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Helpers\ExerciseConfig\VariableFactory;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Transformer;
 
@@ -44,7 +45,7 @@ class TestExerciseConfigTransformer extends Tester\TestCase
   private $transformer;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new VariableFactory());
     $this->transformer = new Transformer($this->loader);
   }
 

@@ -22,6 +22,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method User getUser()
  * @method setResultsUrl(string $url)
  * @method setAccepted(bool $accepted)
+ * @method string getJobConfigPath()
  */
 class Submission implements JsonSerializable, ES\IEvaluable
 {
@@ -50,6 +51,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @ORM\Column(type="string", nullable=true)
      */
     protected $resultsUrl;
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $jobConfigPath;
 
     public function canBeEvaluated(): bool {
       return $this->resultsUrl !== NULL;
@@ -212,6 +218,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @param User $author The author of the solution
    * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
+   * @param string $jobConfigPath
    * @param bool $asynchronous Flag if submitted by student (FALSE) or supervisor (TRUE)
    * @param Submission $originalSubmission
    * @return Submission
@@ -225,6 +232,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       User $author,
       User $submitter,
       Solution $solution,
+      string $jobConfigPath,
       bool $asynchronous = false,
       ?Submission $originalSubmission = NULL
     ) {
@@ -245,6 +253,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->solution = $solution;
       $entity->accepted = false;
       $entity->originalSubmission = $originalSubmission;
+      $entity->jobConfigPath = $jobConfigPath;
 
       return $entity;
     }

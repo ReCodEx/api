@@ -194,13 +194,14 @@ services:
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
+  - App\Helpers\BackendSubmitHelper
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
-  - App\Helpers\UploadedJobConfigStorage(%jobConfig.storageDir%)
-  - App\Helpers\JobConfig\Storage(%jobConfig.humanReadable%)
+  - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%, %jobConfig.humanReadable%)
   - App\Helpers\JobConfig\Loader
+  - App\Helpers\JobConfig\Generator
   - App\Helpers\SimpleScoreCalculator
   - App\Helpers\ScoreCalculatorAccessor({
     simple: @App\Helpers\SimpleScoreCalculator
@@ -211,6 +212,9 @@ services:
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer
+  - App\Helpers\ExerciseConfig\Compiler
+  - App\Helpers\ExerciseConfig\Validator
+  - App\Helpers\ExerciseConfig\VariableFactory
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -229,7 +233,6 @@ services:
   - App\Model\Repository\UploadedFiles
   - App\Model\Repository\Users
   - App\Model\Repository\RuntimeEnvironments
-  - App\Model\Repository\RuntimeConfigs
   - App\Model\Repository\Solutions
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships

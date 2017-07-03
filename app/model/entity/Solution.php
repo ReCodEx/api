@@ -12,66 +12,62 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @ORM\Entity
  * @method string getId()
  * @method Collection getFiles()
- * @method RuntimeConfig getRuntimeConfig()
+ * @method RuntimeEnvironment getRuntimeEnvironment()
  */
 class Solution implements JsonSerializable
 {
-    use MagicAccessors;
+  use MagicAccessors;
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
-    protected $id;
+  /**
+   * @ORM\Id
+   * @ORM\Column(type="guid")
+   * @ORM\GeneratedValue(strategy="UUID")
+   */
+  protected $id;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    protected $user;
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+   */
+  protected $user;
 
-    /**
-     * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
-     */
-    protected $files;
+  /**
+   * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
+   */
+  protected $files;
 
-    /**
-     * @ORM\ManyToOne(targetEntity="RuntimeConfig")
-     */
-    protected $runtimeConfig;
+  /**
+   * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
+   */
+  protected $runtimeEnvironment;
 
-    public function getHardwareGroupId() {
-      return $this->runtimeConfig->getHardwareGroup()->getId();
-    }
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $evaluated;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $evaluated;
+  /**
+   * @return array
+   */
+  public function jsonSerialize() {
+    return [
+      "id" => $this->id,
+      "userId" => $this->user->getId(),
+      "files" => $this->files->getValues()
+    ];
+  }
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize() {
-      return [
-        "id" => $this->id,
-        "userId" => $this->user->getId(),
-        "files" => $this->files->getValues()
-      ];
-    }
-
-    /**
-     * @param User $user          The user who submits the solution
-     * @param array $files
-     * @param RuntimeConfig $runtimeConfig
-     */
-    public function __construct(User $user, RuntimeConfig $runtimeConfig) {
-      $this->user = $user;
-      $this->files = new ArrayCollection;
-      $this->evaluated = FALSE;
-      $this->runtimeConfig = $runtimeConfig;
-    }
+  /**
+   * Constructor
+   * @param User $user The user who submits the solution
+   * @param RuntimeEnvironment $runtimeEnvironment
+   */
+  public function __construct(User $user, RuntimeEnvironment $runtimeEnvironment) {
+    $this->user = $user;
+    $this->files = new ArrayCollection;
+    $this->evaluated = FALSE;
+    $this->runtimeEnvironment = $runtimeEnvironment;
+  }
 
   public function addFile(SolutionFile $file)
   {

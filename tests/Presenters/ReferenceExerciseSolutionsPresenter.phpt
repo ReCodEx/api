@@ -1,6 +1,8 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\BackendSubmitHelper;
+use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionEvaluation;
@@ -28,9 +30,6 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   /** @var ReferenceExerciseSolutions */
   private $referenceSolutions;
 
-  /** @var Mockery\Mock|\App\Helpers\SubmissionHelper */
-  private $submissionHelper;
-
   /** @var Exercises */
   private $exercises;
 
@@ -47,10 +46,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   protected function setUp()
   {
     PresenterTestHelper::fillDatabase($this->container);
-
     $this->presenter = PresenterTestHelper::createPresenter($this->container, ReferenceExerciseSolutionsPresenter::class);
-    $this->submissionHelper = Mockery::mock(App\Helpers\SubmissionHelper::class);
-    $this->presenter->submissionHelper = $this->submissionHelper;
   }
 
   protected function tearDown()
@@ -87,7 +83,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $solution = current($this->referenceSolutions->findAll());
-    $environmentId = $solution->getRuntimeConfig()->getRuntimeEnvironment()->getId();
+    $environmentId = $solution->getRuntimeEnvironment()->getId();
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
       'action' => 'evaluations',
@@ -112,7 +108,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
-    $environment = $exercise->getRuntimeConfigs()->first()->getRuntimeEnvironment();
+    $environment = $exercise->getRuntimeEnvironments()->first();
     $user = current($this->presenter->users->findAll());
 
     // save fake files into db
@@ -164,27 +160,28 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
     $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(2)
-      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->times(2)
-      ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(2);
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader);
 
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("getJobConfig")->withAnyArgs()->andReturn($mockJobConfig)->once();
-    $this->presenter->jobConfigs = $mockStorage;
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()->andReturn(array("", $mockJobConfig))->once();
+    $this->presenter->jobConfigGenerator = $mockGenerator;
 
-    $this->submissionHelper->shouldReceive("initiateEvaluation")->withArgs([
+    /** @var Mockery\Mock | BackendSubmitHelper $mockBackendSubmitHelper */
+    $mockBackendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
+    $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withArgs([
       $mockJobConfig,
       [],
       ["env" => "c-gcc-linux"],
       "group1"
     ])->once()->andReturn("resultUrl1");
-
-    $this->submissionHelper->shouldReceive("initiateEvaluation")->withArgs([
+    $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withArgs([
       $mockJobConfig,
       [],
       ["env" => "c-gcc-linux"],
       "group2"
     ])->once()->andReturn("resultUrl2");
+    $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST',
       ['action' => 'evaluate', 'id' => $solution->getId()]
