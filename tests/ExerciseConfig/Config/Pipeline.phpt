@@ -3,7 +3,7 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\PipelineConfig;
 use App\Helpers\ExerciseConfig\StringVariable;
 use App\Helpers\ExerciseConfig\VariableFactory;
 use App\Helpers\ExerciseConfig\VariableMeta;
@@ -43,7 +43,7 @@ class TestPipeline extends Tester\TestCase
   }
 
   public function testVariablesOperations() {
-    $pipeline = new Pipeline;
+    $pipeline = new PipelineConfig;
 
     $variable = new StringVariable(new VariableMeta);
     $pipeline->addVariable("variableA", $variable);

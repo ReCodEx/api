@@ -32,9 +32,9 @@ class Environment implements JsonSerializable {
   /**
    * Get pipeline for the given name.
    * @param string $name
-   * @return Pipeline|null
+   * @return PipelineConfig|null
    */
-  public function getPipeline(string $name): ?Pipeline {
+  public function getPipeline(string $name): ?PipelineConfig {
     if (!array_key_exists($name, $this->pipelines)) {
       return null;
     }
@@ -45,10 +45,10 @@ class Environment implements JsonSerializable {
   /**
    * Add pipeline to this environment.
    * @param string $id
-   * @param Pipeline $pipeline
+   * @param PipelineConfig $pipeline
    * @return $this
    */
-  public function addPipeline(string $id, Pipeline $pipeline): Environment {
+  public function addPipeline(string $id, PipelineConfig $pipeline): Environment {
     $this->pipelines[$id] = $pipeline;
     return $this;
   }

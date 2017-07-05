@@ -3,7 +3,7 @@
 include '../../bootstrap.php';
 
 use App\Helpers\ExerciseConfig\Environment;
-use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\PipelineConfig;
 use App\Helpers\ExerciseConfig\VariableFactory;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -53,16 +53,16 @@ class TestEnvironment extends Tester\TestCase
     $env = $this->loader->loadEnvironment(self::$pipelines);
     Assert::count(2, $env->getPipelines());
 
-    Assert::type(Pipeline::class, $env->getPipeline("pipelineA"));
-    Assert::type(Pipeline::class, $env->getPipeline("pipelineB"));
+    Assert::type(PipelineConfig::class, $env->getPipeline("pipelineA"));
+    Assert::type(PipelineConfig::class, $env->getPipeline("pipelineB"));
   }
 
   public function testPipelinesOperations() {
     $environment = new Environment();
-    $pipeline = new Pipeline;
+    $pipeline = new PipelineConfig;
 
     $environment->addPipeline("pipelineA", $pipeline);
-    Assert::type(Pipeline::class, $environment->getPipeline("pipelineA"));
+    Assert::type(PipelineConfig::class, $environment->getPipeline("pipelineA"));
 
     $environment->removePipeline("non-existant");
     Assert::count(1, $environment->getPipelines());

@@ -6,9 +6,9 @@ use JsonSerializable;
 
 
 /**
- * High-level configuration pipeline holder.
+ * High-level configuration exercise config pipeline holder.
  */
-class Pipeline implements JsonSerializable {
+class PipelineConfig implements JsonSerializable {
 
   /** Name of the variables key */
   const VARIABLES_KEY = "variables";
@@ -48,7 +48,7 @@ class Pipeline implements JsonSerializable {
    * @param Variable $value
    * @return $this
    */
-  public function addVariable(string $key, Variable $value): Pipeline {
+  public function addVariable(string $key, Variable $value): PipelineConfig {
     $this->variables[$key] = $value;
     return $this;
   }
@@ -58,7 +58,7 @@ class Pipeline implements JsonSerializable {
    * @param string $key
    * @return $this
    */
-  public function removeVariable(string $key): Pipeline {
+  public function removeVariable(string $key): PipelineConfig {
     unset($this->variables[$key]);
     return $this;
   }

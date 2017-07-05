@@ -73,18 +73,18 @@ class Loader {
   /**
    * Builds and checks pipeline configuration from given structured data.
    * @param $data
-   * @return Pipeline
+   * @return PipelineConfig
    * @throws ExerciseConfigException
    */
-  public function loadPipeline($data): Pipeline {
+  public function loadPipeline($data): PipelineConfig {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise pipeline is not array");
     }
 
-    $pipeline = new Pipeline();
+    $pipeline = new PipelineConfig();
 
-    if (isset($data[Pipeline::VARIABLES_KEY]) && is_array($data[Pipeline::VARIABLES_KEY])) {
-      foreach ($data[Pipeline::VARIABLES_KEY] as $name => $value) {
+    if (isset($data[PipelineConfig::VARIABLES_KEY]) && is_array($data[PipelineConfig::VARIABLES_KEY])) {
+      foreach ($data[PipelineConfig::VARIABLES_KEY] as $name => $value) {
         $pipeline->addVariable($name, $this->loadVariable($value));
       }
     }

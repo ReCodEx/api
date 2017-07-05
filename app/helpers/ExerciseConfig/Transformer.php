@@ -26,10 +26,10 @@ class Transformer {
   /**
    * Transform Pipeline internal structure into presented array.
    * @param string $pipelineId
-   * @param Pipeline $pipeline
+   * @param PipelineConfig $pipeline
    * @return array
    */
-  private function fromPipeline(string $pipelineId, Pipeline $pipeline): array {
+  private function fromPipeline(string $pipelineId, PipelineConfig $pipeline): array {
     $pipelineArr = array();
     $pipelineArr["name"] = $pipelineId;
     $pipelineArr["variables"] = array();
@@ -109,7 +109,7 @@ class Transformer {
    */
   private function toPipeline(array $data): array {
     $pipelineArr = array();
-    $pipelineArr[Pipeline::VARIABLES_KEY] = array();
+    $pipelineArr[PipelineConfig::VARIABLES_KEY] = array();
 
     foreach ($data['variables'] as $variable) {
       $variableArr = array();
@@ -117,7 +117,7 @@ class Transformer {
       $variableArr[VariableMeta::VALUE_KEY] = $variable['value'];
 
       // do not forget to add constructed variable to pipeline
-      $pipelineArr[Pipeline::VARIABLES_KEY][$variable['name']] = $variableArr;
+      $pipelineArr[PipelineConfig::VARIABLES_KEY][$variable['name']] = $variableArr;
     }
 
     return array($data['name'], $pipelineArr);

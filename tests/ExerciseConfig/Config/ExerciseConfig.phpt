@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
-use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\PipelineConfig;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\VariableFactory;
 use Symfony\Component\Yaml\Yaml;
@@ -115,8 +115,8 @@ class TestExerciseConfig extends Tester\TestCase
     Assert::type(Test::class, $conf->getTest("testA"));
     Assert::type(Test::class, $conf->getTest("testB"));
 
-    Assert::type(Pipeline::class, $conf->getTest("testA")->getPipeline("hello"));
-    Assert::type(Pipeline::class, $conf->getTest("testB")->getPipeline("world"));
+    Assert::type(PipelineConfig::class, $conf->getTest("testA")->getPipeline("hello"));
+    Assert::type(PipelineConfig::class, $conf->getTest("testB")->getPipeline("world"));
   }
 
 }
