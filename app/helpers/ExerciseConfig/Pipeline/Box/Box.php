@@ -1,41 +1,37 @@
 <?php
 
-namespace App\Helpers\ExerciseConfig;
-
+namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
-abstract class Variable implements JsonSerializable
+
+/**
+ * Abstract base class for all boxes which contains only basic meta information
+ * about box.
+ */
+abstract class Box implements JsonSerializable
 {
   /**
-   * Meta information about variable.
-   * @var VariableMeta
+   * Meta information about this box.
+   * @var BoxMeta
    */
   protected $meta;
 
   /**
-   * Variable constructor.
-   * @param VariableMeta $meta
+   * Box constructor.
+   * @param BoxMeta $meta
    */
-  public function __construct(VariableMeta $meta) {
+  public function __construct(BoxMeta $meta) {
     $this->meta = $meta;
   }
 
   /**
-   * Get type of this variable.
+   * Get name of this box.
    * @return null|string
    */
-  public function getType(): ?string {
-    return $this->meta->getType();
-  }
-
-  /**
-   * Get value of the variable.
-   * @return null|string
-   */
-  public function getValue(): ?string {
-    return $this->meta->getValue();
+  public function getName(): ?string {
+    return $this->meta->getName();
   }
 
   /**
