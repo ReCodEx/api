@@ -47,6 +47,7 @@ class RouterFactory {
     $router[] = self::createRuntimeEnvironmentsRoutes("$prefix/runtime-environments");
     $router[] = self::createHardwareGroupsRoutes("$prefix/hardware-groups");
     $router[] = self::createJobConfigRoutes("$prefix/job-config");
+    $router[] = self::createPipelinesRoutes("$prefix/pipelines");
 
     return $router;
   }
@@ -336,6 +337,17 @@ class RouterFactory {
   private static function createJobConfigRoutes(string $prefix) {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix/validate", "JobConfig:validate");
+    return $router;
+  }
+
+  /**
+   * Adds all Pipelines endpoints to given router.
+   * @param string $prefix Route prefix
+   * @return RouteList All endpoint routes
+   */
+  private static function createPipelinesRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new GetRoute("$prefix/<id>", "Pipelines:getPipeline");
     return $router;
   }
 

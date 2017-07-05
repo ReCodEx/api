@@ -29,7 +29,6 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $this->container = $container;
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
-    $this->runtimeEnvironments = $container->getByType(\App\Model\Repository\RuntimeEnvironments::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
   }
 

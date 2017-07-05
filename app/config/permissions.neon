@@ -380,7 +380,7 @@ permissions:
       role: student
       resource: runtimeEnvironment
       actions:
-        - viewAll
+          - viewAll
 
     ##############################
     # Hardware group permissions #
@@ -390,4 +390,23 @@ permissions:
       role: supervisor
       resource: hardwareGroup
       actions:
-        - viewAll
+          - viewAll
+
+    #########################
+    # Pipelines permissions #
+    #########################
+
+    - allow: true
+      role: supervisor
+      resource: pipeline
+      actions:
+          - viewAll
+
+    - allow: true
+      role: supervisor
+      resource: pipeline
+      actions:
+          - viewDetail
+      conditions:
+          - pipeline.isPublic
+          - pipeline.isAuthor
