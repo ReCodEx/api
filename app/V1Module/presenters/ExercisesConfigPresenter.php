@@ -108,7 +108,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannnot update this exercise.");
+      throw new ForbiddenRequestException("You cannot update this exercise.");
     }
 
     // retrieve configuration and prepare some temp variables
@@ -210,7 +210,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // new config was provided, so construct new database entity
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $oldConfig);
 
-    // remove old limits for corresponding environment and hwgroup and add new ones
+    // set new exercise configuration into exercise and flush changes
     $exercise->setExerciseConfig($newConfig);
     $this->exercises->flush();
 

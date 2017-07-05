@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use DateTime;
+use JsonSerializable;
 
 /**
  * @ORM\Entity
@@ -14,8 +15,11 @@ use DateTime;
  * @method string getId()
  * @method string getName()
  * @method User getAuthor()
+ * @method PipelineConfig getPipelineConfig()
+ * @method setName($name)
+ * @method setPipelineConfig($config)
  */
-class Pipeline
+class Pipeline implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -32,9 +36,9 @@ class Pipeline
   protected $name;
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\ManyToOne(targetEntity="PipelineConfig", inversedBy="pipelines", cascade={"persist"})
    */
-  protected $pipeline;
+  protected $pipelineConfig;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
@@ -47,38 +51,57 @@ class Pipeline
   protected $createdAt;
 
   /**
-   * @ORM\ManyToOne(targetEntity="ExerciseConfig")
+   * @ORM\ManyToOne(targetEntity="Pipeline")
    */
   protected $createdFrom;
 
   /**
    * Constructor
    * @param string $name
-   * @param string $pipeline
+   * @param PipelineConfig $pipelineConfig
    * @param User $author
    * @param ExerciseConfig|null $createdFrom
    */
-  public function __construct(string $name, string $pipeline, User $author,
-      ExerciseConfig $createdFrom = NULL) {
+  private function __construct(string $name, PipelineConfig $pipelineConfig,
+      User $author, ExerciseConfig $createdFrom = null) {
     $this->createdAt = new DateTime;
 
     $this->name = $name;
-    $this->pipeline = $pipeline;
+    $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
     $this->createdFrom = $createdFrom;
   }
 
   /**
-   * Return array-like structure containing pipeline.
-   * @return array|string
-   * @throws ExerciseConfigException
+   * Create empty pipeline entity.
+   * @param User $user
+   * @return Pipeline
    */
-  public function getParsedPipeline() {
-    try {
-      return Yaml::parse($this->pipeline);
-    } catch (ParseException $e) {
-      throw new ExerciseConfigException("Pipeline is not a valid YAML and it cannot be parsed.");
-    }
+  public static function create(User $user): Pipeline {
+    return new self("", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
   }
 
+  /**
+   * Fork pipeline entity into new one.
+   * @param User $user
+   * @param Pipeline $pipeline
+   * @return Pipeline
+   */
+  public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
+    return new self(
+      $pipeline->getName(),
+      $pipeline->getPipelineConfig(),
+      $user,
+      $pipeline
+    );
+  }
+
+  public function jsonSerialize() {
+    return [
+      "id" => $this->id,
+      "name" => $this->name,
+      "author" => $this->author->getId(),
+      "pipeline" => $this->pipelineConfig->getParsedPipeline()
+    ];
+  }
 }
