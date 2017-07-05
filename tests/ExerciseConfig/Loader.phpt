@@ -16,7 +16,7 @@ class TestExerciseConfigLoader extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader(new VariableFactory());
+    $this->loader = new Loader;
   }
 
   public function testCorrect() {

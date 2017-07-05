@@ -24,21 +24,21 @@ class TestPipeline extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader(new VariableFactory());
+    $this->loader = new Loader;
   }
 
   public function testIncorrectData() {
     Assert::exception(function () {
-      $this->loader->loadPipeline(null);
+      $this->loader->loadPipelineConfig(null);
     }, ExerciseConfigException::class);
 
     Assert::exception(function () {
-      $this->loader->loadPipeline("hello");
+      $this->loader->loadPipelineConfig("hello");
     }, ExerciseConfigException::class);
   }
 
   public function testSerialization() {
-    $deserialized = Yaml::parse((string)$this->loader->loadPipeline(self::$config));
+    $deserialized = Yaml::parse((string)$this->loader->loadPipelineConfig(self::$config));
     Assert::equal(self::$config, $deserialized);
   }
 
@@ -57,7 +57,7 @@ class TestPipeline extends Tester\TestCase
   }
 
   public function testCorrect() {
-    $pipeline = $this->loader->loadPipeline(self::$config);
+    $pipeline = $this->loader->loadPipelineConfig(self::$config);
     Assert::count(2, $pipeline->getVariables());
 
     Assert::equal("string", $pipeline->getVariable("varA")->getType());

@@ -3,6 +3,10 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxFactory;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
 
 /**
  * Loader service which is able to load exercise configuration into internal
@@ -17,11 +21,16 @@ class Loader {
   private $variableFactory;
 
   /**
-   * Loader constructor.
-   * @param VariableFactory $variableFactory
+   * @var BoxFactory
    */
-  public function __construct(VariableFactory $variableFactory) {
-    $this->variableFactory = $variableFactory;
+  private $boxFactory;
+
+  /**
+   * Loader constructor.
+   */
+  public function __construct() {
+    $this->variableFactory = new VariableFactory();
+    $this->boxFactory = new BoxFactory();
   }
 
   /**
@@ -76,7 +85,7 @@ class Loader {
    * @return PipelineConfig
    * @throws ExerciseConfigException
    */
-  public function loadPipeline($data): PipelineConfig {
+  public function loadPipelineConfig($data): PipelineConfig {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise pipeline is not array");
     }
@@ -107,7 +116,7 @@ class Loader {
 
     if (isset($data[Environment::PIPELINES_KEY]) && is_array($data[Environment::PIPELINES_KEY])) {
       foreach ($data[Environment::PIPELINES_KEY] as $key => $pipeline) {
-        $environment->addPipeline($key, $this->loadPipeline($pipeline));
+        $environment->addPipeline($key, $this->loadPipelineConfig($pipeline));
       }
     }
 
@@ -131,7 +140,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
     }
     foreach ($data[Test::PIPELINES_KEY] as $key => $pipeline) {
-      $test->addPipeline($key, $this->loadPipeline($pipeline));
+      $test->addPipeline($key, $this->loadPipelineConfig($pipeline));
     }
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
@@ -211,7 +220,7 @@ class Loader {
    * @return ExerciseLimits
    * @throws ExerciseConfigException
    */
-  public function loadExerciseLimits($data) {
+  public function loadExerciseLimits($data): ExerciseLimits {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise limits are not array");
     }
@@ -223,6 +232,70 @@ class Loader {
     }
 
     return $limits;
+  }
+
+  /**
+   * Builds and checks box structure from given data.
+   * @param $data
+   * @return Box
+   * @throws ExerciseConfigException
+   */
+  public function loadBox($data): Box {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Box is not array");
+    }
+
+    $boxMeta = new BoxMeta;
+
+    if (!isset($data[BoxMeta::NAME_KEY])) {
+      throw new ExerciseConfigException("Box metadatas do not have name specified");
+    }
+    $boxMeta->setName($data[BoxMeta::NAME_KEY]);
+
+    if (!isset($data[BoxMeta::TYPE_KEY])) {
+      throw new ExerciseConfigException("Box metadatas do not have type specified");
+    }
+    $boxMeta->setType($data[BoxMeta::TYPE_KEY]);
+
+    if (!isset($data[BoxMeta::PORTS_IN_KEY]) || !is_array($data[BoxMeta::PORTS_IN_KEY])) {
+      throw new ExerciseConfigException("Box metadatas do not have input ports specified");
+    }
+    foreach ($data[BoxMeta::PORTS_IN_KEY] as $name => $variable) {
+      $port = new Port;
+      $port->setName($name)->setVariable($variable);
+      $boxMeta->addInputPort($port);
+    }
+
+    if (!isset($data[BoxMeta::PORTS_OUT_KEY]) || !is_array($data[BoxMeta::PORTS_OUT_KEY])) {
+      throw new ExerciseConfigException("Box metadatas do not have output ports specified");
+    }
+    foreach ($data[BoxMeta::PORTS_OUT_KEY] as $name => $variable) {
+      $port = new Port;
+      $port->setName($name)->setVariable($variable);
+      $boxMeta->addOutputPort($port);
+    }
+
+    return $this->boxFactory->create($boxMeta);
+  }
+
+  /**
+   * Builds and checks pipeline wrapper from given data.
+   * @param $data
+   * @return Pipeline
+   * @throws ExerciseConfigException
+   */
+  public function loadPipeline($data): Pipeline {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Pipeline is not array");
+    }
+
+    $pipeline = new Pipeline;
+
+    foreach ($data as $box) {
+      $pipeline->set($this->loadBox($box));
+    }
+
+    return $pipeline;
   }
 
 }
