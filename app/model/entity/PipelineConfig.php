@@ -56,10 +56,10 @@ class PipelineConfig
    * Constructor
    * @param string $pipeline
    * @param User $author
-   * @param ExerciseConfig|null $createdFrom
+   * @param PipelineConfig|null $createdFrom
    */
   public function __construct(string $pipeline, User $author,
-      ExerciseConfig $createdFrom = NULL) {
+      PipelineConfig $createdFrom = NULL) {
     $this->createdAt = new DateTime;
     $this->pipelines = new ArrayCollection;
 

@@ -41,7 +41,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     }
   }
 
-  public function testListAllExercises()
+  public function testGetAllPipelines()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -73,11 +73,75 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+
     $payload = $result['payload'];
+    Assert::same($pipeline, $payload);
+  }
 
+  public function testCreatePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    // @todo
-    Assert::true(false);
+    $pipelines = $this->presenter->pipelines->findAll();
+    $pipelinesCount = count($pipelines);
+
+    $request = new Nette\Application\Request('V1:Pipelines', 'POST', ['action' => 'createPipeline']);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::count($pipelinesCount + 1, $this->presenter->pipelines->findAll());
+
+    Assert::type(\App\Model\Entity\Pipeline::class, $payload);
+    Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
+    Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+  }
+
+  public function testUpdatePipeline()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $pipeline = current($this->presenter->pipelines->findAll());
+    $pipelineConfig = [
+      [
+        'name' => 'infile',
+        'type' => 'data',
+        'portsIn' => [],
+        'portsOut' => ['in_file' => 'in_data_file']
+      ],
+      [
+        'name' => 'judgement',
+        'type' => 'judge-normal',
+        'portsIn' => ['in_file' => 'in_data_file'],
+        'portsOut' => ['score' => 'judge_score']
+      ]
+    ];
+
+    $request = new Nette\Application\Request('V1:Pipelines',
+      'POST',
+      ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
+      [
+        'name' => 'new pipeline name',
+        'pipeline' => $pipelineConfig
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::equal('new pipeline name', $payload->getName());
+    Assert::equal($pipelineConfig, $payload->getPipelineConfig()->getParsedPipeline());
+
+    $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();
+    Assert::equal("infile", $parsedPipeline[0]["name"]);
+    Assert::equal("judgement", $parsedPipeline[1]["name"]);
+    Assert::equal("data", $parsedPipeline[0]["type"]);
+    Assert::equal("judge-normal", $parsedPipeline[1]["type"]);
   }
 
 }

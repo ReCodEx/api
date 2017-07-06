@@ -401,12 +401,14 @@ permissions:
       resource: pipeline
       actions:
           - viewAll
+          - create
 
     - allow: true
       role: supervisor
       resource: pipeline
       actions:
           - viewDetail
+          - update
+          - remove
       conditions:
-          - pipeline.isPublic
           - pipeline.isAuthor

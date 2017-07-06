@@ -19,7 +19,4 @@ class PipelinePermissionPolicy implements IPermissionPolicy {
     return $user === $pipeline->getAuthor();
   }
 
-  public function isPublic(Identity $identity, Pipeline $pipeline) {
-    return true;// @todo: $pipeline->isPublic();
-  }
 }
