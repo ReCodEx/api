@@ -1,7 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Helpers\ExerciseConfig\PipelineConfig;
+use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
@@ -211,8 +211,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(2, $exerciseConfig->getTests());
     Assert::type(Test::class, $exerciseConfig->getTest('testA'));
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::type(PipelineConfig::class, $exerciseConfig->getTest('testA')->getPipeline('defaultTestA'));
-    Assert::type(PipelineConfig::class, $exerciseConfig->getTest('testB')->getPipeline('defaultTestB'));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline('defaultTestA'));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline('defaultTestB'));
     Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline('defaultTestA')->getVariable('defVarA')->getValue());
     Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline('defaultTestB')->getVariable('defVarB')->getValue());
   }

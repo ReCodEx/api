@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Environment;
-use App\Helpers\ExerciseConfig\PipelineConfig;
+use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\VariableFactory;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -88,10 +88,10 @@ class TestTest extends Tester\TestCase
 
   public function testPipelinesOperations() {
     $test = new Test;
-    $pipeline = new PipelineConfig;
+    $pipeline = new PipelineVars;
 
     $test->addPipeline("pipelineA", $pipeline);
-    Assert::type(PipelineConfig::class, $test->getPipeline("pipelineA"));
+    Assert::type(PipelineVars::class, $test->getPipeline("pipelineA"));
 
     $test->removePipeline("non-existant");
     Assert::count(1, $test->getPipelines());
@@ -118,8 +118,8 @@ class TestTest extends Tester\TestCase
     $test = $this->loader->loadTest(self::$config);
 
     Assert::count(2, $test->getPipelines());
-    Assert::type(PipelineConfig::class, $test->getPipeline("hello"));
-    Assert::type(PipelineConfig::class, $test->getPipeline("world"));
+    Assert::type(PipelineVars::class, $test->getPipeline("hello"));
+    Assert::type(PipelineVars::class, $test->getPipeline("world"));
 
     Assert::count(2, $test->getEnvironments());
     Assert::type(Environment::class, $test->getEnvironment("envA"));

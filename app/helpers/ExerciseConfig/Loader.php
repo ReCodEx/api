@@ -80,20 +80,20 @@ class Loader {
   }
 
   /**
-   * Builds and checks pipeline configuration from given structured data.
+   * Builds and checks pipeline variables configuration from given structured data.
    * @param $data
-   * @return PipelineConfig
+   * @return PipelineVars
    * @throws ExerciseConfigException
    */
-  public function loadPipelineConfig($data): PipelineConfig {
+  public function loadPipelineVars($data): PipelineVars {
     if (!is_array($data)) {
       throw new ExerciseConfigException("Exercise pipeline is not array");
     }
 
-    $pipeline = new PipelineConfig();
+    $pipeline = new PipelineVars();
 
-    if (isset($data[PipelineConfig::VARIABLES_KEY]) && is_array($data[PipelineConfig::VARIABLES_KEY])) {
-      foreach ($data[PipelineConfig::VARIABLES_KEY] as $name => $value) {
+    if (isset($data[PipelineVars::VARIABLES_KEY]) && is_array($data[PipelineVars::VARIABLES_KEY])) {
+      foreach ($data[PipelineVars::VARIABLES_KEY] as $name => $value) {
         $pipeline->addVariable($name, $this->loadVariable($value));
       }
     }
@@ -116,7 +116,7 @@ class Loader {
 
     if (isset($data[Environment::PIPELINES_KEY]) && is_array($data[Environment::PIPELINES_KEY])) {
       foreach ($data[Environment::PIPELINES_KEY] as $key => $pipeline) {
-        $environment->addPipeline($key, $this->loadPipelineConfig($pipeline));
+        $environment->addPipeline($key, $this->loadPipelineVars($pipeline));
       }
     }
 
@@ -140,7 +140,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
     }
     foreach ($data[Test::PIPELINES_KEY] as $key => $pipeline) {
-      $test->addPipeline($key, $this->loadPipelineConfig($pipeline));
+      $test->addPipeline($key, $this->loadPipelineVars($pipeline));
     }
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {

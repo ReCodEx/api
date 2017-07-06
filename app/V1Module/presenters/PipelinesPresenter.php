@@ -35,6 +35,25 @@ class PipelinesPresenter extends BasePresenter {
    */
   public $exerciseConfigLoader;
 
+
+  /**
+   * Get a list of pipelines with an optional filter
+   * @GET
+   * @param string $search text which will be searched in pipeline names
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetPipelines(string $search = null) {
+    if (!$this->pipelineAcl->canViewAll()) {
+      throw new ForbiddenRequestException("You cannot list all pipelines.");
+    }
+
+    $pipelines = $this->pipelines->searchByName($search);
+    $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
+      return $this->pipelineAcl->canViewDetail($pipeline);
+    });
+    $this->sendSuccessResponse($pipelines);
+  }
+
   /**
    * Create pipeline.
    * @POST

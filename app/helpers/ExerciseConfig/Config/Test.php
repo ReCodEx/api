@@ -39,9 +39,9 @@ class Test implements JsonSerializable {
   /**
    * Get pipeline for the given name.
    * @param string $name
-   * @return PipelineConfig|null
+   * @return PipelineVars|null
    */
-  public function getPipeline(string $name): ?PipelineConfig {
+  public function getPipeline(string $name): ?PipelineVars {
     if (!array_key_exists($name, $this->pipelines)) {
       return null;
     }
@@ -52,10 +52,10 @@ class Test implements JsonSerializable {
   /**
    * Add default pipeline to this test.
    * @param string $id
-   * @param PipelineConfig $pipeline
+   * @param PipelineVars $pipeline
    * @return $this
    */
-  public function addPipeline(string $id, PipelineConfig $pipeline): Test {
+  public function addPipeline(string $id, PipelineVars $pipeline): Test {
     $this->pipelines[$id] = $pipeline;
     return $this;
   }
