@@ -4,7 +4,7 @@ namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
-use App\Helpers\ExerciseConfig\Pipeline\Box\BoxFactory;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
 
@@ -21,7 +21,7 @@ class Loader {
   private $variableFactory;
 
   /**
-   * @var BoxFactory
+   * @var BoxService
    */
   private $boxFactory;
 
@@ -30,7 +30,7 @@ class Loader {
    */
   public function __construct() {
     $this->variableFactory = new VariableFactory();
-    $this->boxFactory = new BoxFactory();
+    $this->boxFactory = new BoxService();
   }
 
   /**

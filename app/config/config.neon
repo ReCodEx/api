@@ -217,6 +217,7 @@ services:
   - App\Helpers\ExerciseConfig\Compiler
   - App\Helpers\ExerciseConfig\Validator
   - App\Helpers\ExerciseConfig\VariableFactory
+  - App\Helpers\ExerciseConfig\Pipeline\Box\BoxService
 
   # models - repositories
   - App\Model\Repository\Comments

@@ -41,6 +41,23 @@ class TestPipelinesPresenter extends Tester\TestCase
     }
   }
 
+  public function testListAllExercises()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $request = new Nette\Application\Request('V1:Pipelines',
+      'GET',
+      ['action' => 'getPipelines']
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::same($this->presenter->pipelines->findAll(), $result['payload']);
+    Assert::count(count($this->presenter->pipelines->findAll()), $result['payload']);
+  }
+
   public function testGetPipeline()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
