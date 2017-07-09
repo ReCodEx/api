@@ -290,4 +290,5 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($newLimits->getParsedLimits());
   }
+
 }
