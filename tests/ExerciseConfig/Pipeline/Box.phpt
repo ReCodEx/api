@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
@@ -17,7 +18,14 @@ class TestBox extends Tester\TestCase
     "name" => "file",
     "type" => "data",
     "portsIn" => [],
-    "portsOut" => [ "out_file" => "out_data_file" ]
+    "portsOut" => [ "data_file" => "out_data_file" ]
+  ];
+
+  static $configJudge = [
+    "name" => "eval",
+    "type" => "judge-normal",
+    "portsIn" => [ "expected_output" => "exp", "actual_output" => "act" ],
+    "portsOut" => [ "score" => "out_data_file" ]
   ];
 
 
@@ -25,7 +33,7 @@ class TestBox extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
   public function testIncorrectData() {
@@ -69,7 +77,7 @@ class TestBox extends Tester\TestCase
     $dataBox["type"] = "DaTa";
     Assert::type(DataBox::class, $this->loader->loadBox($dataBox));
 
-    $judgeNormalBox = self::$config;
+    $judgeNormalBox = self::$configJudge;
     $judgeNormalBox["type"] = "judge-normal";
     Assert::type(JudgeNormalBox::class, $this->loader->loadBox($judgeNormalBox));
     $judgeNormalBox["type"] = "JuDgE-nOrMaL";
@@ -139,12 +147,12 @@ class TestBox extends Tester\TestCase
     Assert::equal("file", $box->getName());
     Assert::count(0, $box->getInputPorts());
     Assert::count(1, $box->getOutputPorts());
-    Assert::true(array_key_exists("out_file", $box->getOutputPorts()));
+    Assert::true(array_key_exists("data_file", $box->getOutputPorts()));
 
     /** @var Port $port */
-    $port = $box->getOutputPorts()["out_file"];
+    $port = $box->getOutputPorts()["data_file"];
     Assert::type(Port::class, $port);
-    Assert::equal("out_file", $port->getName());
+    Assert::equal("data_file", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
   }
 

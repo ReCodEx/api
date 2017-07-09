@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Model\Entity\PipelineConfig;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
@@ -35,6 +36,26 @@ class PipelinesPresenter extends BasePresenter {
    */
   public $exerciseConfigLoader;
 
+  /**
+   * @var BoxService
+   * @inject
+   */
+  public $boxService;
+
+
+  /**
+   * Get a list of default boxes which might be used in pipeline.
+   * @GET
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetDefaultBoxes() {
+    if (!$this->pipelineAcl->canViewAll()) {
+      throw new ForbiddenRequestException("You cannot list default boxes.");
+    }
+
+    $boxes = $this->boxService->getAllBoxes();
+    $this->sendSuccessResponse($boxes);
+  }
 
   /**
    * Get a list of pipelines with an optional filter

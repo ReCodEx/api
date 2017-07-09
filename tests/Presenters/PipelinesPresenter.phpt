@@ -41,6 +41,25 @@ class TestPipelinesPresenter extends Tester\TestCase
     }
   }
 
+
+  public function testGetDefaultBoxes()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $allBoxes = $this->presenter->boxService->getAllBoxes();
+
+    $request = new Nette\Application\Request('V1:Pipelines',
+      'GET',
+      ['action' => 'getDefaultBoxes']
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal($allBoxes, $result['payload']);
+    Assert::count(count($allBoxes), $result['payload']);
+  }
+
   public function testGetAllPipelines()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -109,12 +128,12 @@ class TestPipelinesPresenter extends Tester\TestCase
         'name' => 'infile',
         'type' => 'data',
         'portsIn' => [],
-        'portsOut' => ['in_file' => 'in_data_file']
+        'portsOut' => ['data_file' => 'in_data_file']
       ],
       [
         'name' => 'judgement',
         'type' => 'judge-normal',
-        'portsIn' => ['in_file' => 'in_data_file'],
+        'portsIn' => ['expected_output' => 'in_data_file', 'actual_output' => 'in_data_file'],
         'portsOut' => ['score' => 'judge_score']
       ]
     ];

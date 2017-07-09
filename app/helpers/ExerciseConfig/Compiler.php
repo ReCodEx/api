@@ -7,7 +7,9 @@ use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\RuntimeEnvironment;
 
 /**
- * @todo
+ * Compiler used for generating JobConfig structure from ExerciseConfig,
+ * meaning, high-level format is compiled into low-level format which can be
+ * executed on backend workers.
  */
 class Compiler {
 

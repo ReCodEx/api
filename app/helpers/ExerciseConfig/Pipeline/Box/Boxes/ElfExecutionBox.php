@@ -4,9 +4,9 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 
 /**
- * Box which represents data source, mainly files.
+ * Box which represents execution of custom compiled program in ELF format.
  */
-class DataBox extends Box
+class ElfExecutionBox extends Box
 {
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
@@ -16,15 +16,17 @@ class DataBox extends Box
    */
   public static function init() {
     if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
-      self::$defaultInputPorts = array();
+      self::$defaultInputPorts = array(
+        (new Port)->setName("binary_file")->setVariable("")
+      );
       self::$defaultOutputPorts = array(
-        (new Port)->setName("data_file")->setVariable("")
+        (new Port)->setName("output_file")->setVariable("")
       );
     }
   }
 
   /**
-   * DataBox constructor.
+   * JudgeNormalBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
