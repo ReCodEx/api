@@ -138,6 +138,7 @@ acl:
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
     submission: App\Security\ACL\ISubmissionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
+    pipeline: App\Security\ACL\IPipelinePermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -147,6 +148,7 @@ acl:
     exercise: App\Security\Policies\ExercisePermissionPolicy
     submission: App\Security\Policies\SubmissionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
+    pipeline: App\Security\Policies\PipelinePermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -215,6 +217,7 @@ services:
   - App\Helpers\ExerciseConfig\Compiler
   - App\Helpers\ExerciseConfig\Validator
   - App\Helpers\ExerciseConfig\VariableFactory
+  - App\Helpers\ExerciseConfig\Pipeline\Box\BoxService
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -239,6 +242,7 @@ services:
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\ExerciseFiles
   - App\Model\Repository\AdditionalExerciseFiles
+  - App\Model\Repository\Pipelines
 
 doctrine:
   user: 'root'

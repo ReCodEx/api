@@ -1,0 +1,44 @@
+App\Model\Entity\PipelineConfig:
+    demoPipelineConfig:
+        __construct:
+            - '''
+              - name: source
+                portsIn: []
+                portsOut:
+                - source_file: source_file
+                type: data
+              - name: test
+                portsIn: []
+                portsOut:
+                - test_file: test_file
+                  expected_output: expected_output
+                type: data
+              - name: compilation
+                portsIn:
+                - input_file: source_file
+                portsOut:
+                - output_file: binary_file
+                type: compilation
+              - name: run
+                portsIn:
+                - binary_file: binary_file
+                portsOut:
+                - output_file: actual_output
+                type: execution
+              - name: judge
+                portsIn:
+                - actual_output: actual_output
+                - expected_output: expected_output
+                portsOut:
+                - score: score
+                type: evaluation
+              '''
+            - @demoAdmin
+
+App\Model\Entity\Pipeline:
+    demoPipeline:
+        __construct:
+            create:
+                - @demoAdmin
+        name: "Admins pipeline"
+        pipelineConfig: @demoPipelineConfig

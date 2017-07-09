@@ -8,12 +8,6 @@ use Symfony\Component\Yaml\Yaml;
 
 abstract class Variable implements JsonSerializable
 {
-  public static $FILE_TYPE = "file";
-  public static $FILE_ARRAY_TYPE = "file[]";
-  public static $STRING_TYPE = "string";
-  public static $STRING_ARRAY_TYPE = "string[]";
-
-
   /**
    * Meta information about variable.
    * @var VariableMeta

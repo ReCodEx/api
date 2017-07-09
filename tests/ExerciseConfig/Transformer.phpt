@@ -45,7 +45,7 @@ class TestExerciseConfigTransformer extends Tester\TestCase
   private $transformer;
 
   public function __construct() {
-    $this->loader = new Loader(new VariableFactory());
+    $this->loader = new Loader;
     $this->transformer = new Transformer($this->loader);
   }
 

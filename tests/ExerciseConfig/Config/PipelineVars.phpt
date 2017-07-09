@@ -3,7 +3,7 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\StringVariable;
 use App\Helpers\ExerciseConfig\VariableFactory;
 use App\Helpers\ExerciseConfig\VariableMeta;
@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 
-class TestPipeline extends Tester\TestCase
+class TestPipelineVars extends Tester\TestCase
 {
   static $config = [
     "variables" => [
@@ -24,26 +24,26 @@ class TestPipeline extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader(new VariableFactory());
+    $this->loader = new Loader;
   }
 
   public function testIncorrectData() {
     Assert::exception(function () {
-      $this->loader->loadPipeline(null);
+      $this->loader->loadPipelineVars(null);
     }, ExerciseConfigException::class);
 
     Assert::exception(function () {
-      $this->loader->loadPipeline("hello");
+      $this->loader->loadPipelineVars("hello");
     }, ExerciseConfigException::class);
   }
 
   public function testSerialization() {
-    $deserialized = Yaml::parse((string)$this->loader->loadPipeline(self::$config));
+    $deserialized = Yaml::parse((string)$this->loader->loadPipelineVars(self::$config));
     Assert::equal(self::$config, $deserialized);
   }
 
   public function testVariablesOperations() {
-    $pipeline = new Pipeline;
+    $pipeline = new PipelineVars;
 
     $variable = new StringVariable(new VariableMeta);
     $pipeline->addVariable("variableA", $variable);
@@ -57,7 +57,7 @@ class TestPipeline extends Tester\TestCase
   }
 
   public function testCorrect() {
-    $pipeline = $this->loader->loadPipeline(self::$config);
+    $pipeline = $this->loader->loadPipelineVars(self::$config);
     Assert::count(2, $pipeline->getVariables());
 
     Assert::equal("string", $pipeline->getVariable("varA")->getType());
@@ -69,5 +69,5 @@ class TestPipeline extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestPipeline;
+$testCase = new TestPipelineVars;
 $testCase->run();

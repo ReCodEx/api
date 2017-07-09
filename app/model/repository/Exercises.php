@@ -98,5 +98,4 @@ class Exercises extends BaseSoftDeleteRepository {
     return $foundExercises;
   }
 
-
 }
