@@ -19,12 +19,12 @@ class TestPipeline extends Tester\TestCase
       "name" => "file",
       "type" => "data",
       "portsIn" => [],
-      "portsOut" => [ "out_file" => "out_data_file" ]
+      "portsOut" => [ "data_file" => "out_data_file" ]
     ],
     [
       "name" => "evaluation",
       "type" => "judge-normal",
-      "portsIn" => [ "test_file" => "test_in_file", "out_file" => "out_exec_file" ],
+      "portsIn" => [ "expected_output" => "test_in_file", "actual_output" => "out_exec_file" ],
       "portsOut" => [ "score" => "judge_score" ]
     ]
   ];

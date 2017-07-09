@@ -91,6 +91,31 @@ class BoxMeta implements JsonSerializable {
   }
 
   /**
+   * Set input ports.
+   * @param array $ports
+   * @return BoxMeta
+   */
+  public function setInputPorts(array $ports): BoxMeta {
+    $this->portsIn = array();
+    foreach ($ports as $port) {
+      $this->portsIn[$port->getName()] = $port;
+    }
+    return $this;
+  }
+
+  /**
+   * Get input port by given index.
+   * @param string $key
+   * @return Port|null
+   */
+  public function getInputPort(string $key): ?Port {
+    if (array_key_exists($key, $this->portsIn)) {
+      return $this->portsIn[$key];
+    }
+    return null;
+  }
+
+  /**
    * Add input port.
    * @param Port $port
    * @return BoxMeta
@@ -116,6 +141,31 @@ class BoxMeta implements JsonSerializable {
    */
   public function getOutputPorts(): array {
     return $this->portsOut;
+  }
+
+  /**
+   * Set output ports.
+   * @param array $ports
+   * @return BoxMeta
+   */
+  public function setOutputPorts(array $ports): BoxMeta {
+    $this->portsOut = array();
+    foreach ($ports as $port) {
+      $this->portsOut[$port->getName()] = $port;
+    }
+    return $this;
+  }
+
+  /**
+   * Get output port by given index.
+   * @param string $key
+   * @return Port|null
+   */
+  public function getOutputPort(string $key): ?Port {
+    if (array_key_exists($key, $this->portsOut)) {
+      return $this->portsOut[$key];
+    }
+    return null;
   }
 
   /**

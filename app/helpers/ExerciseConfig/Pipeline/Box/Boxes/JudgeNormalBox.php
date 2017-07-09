@@ -8,6 +8,24 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
  */
 class JudgeNormalBox extends Box
 {
+  private static $defaultInputPorts;
+  private static $defaultOutputPorts;
+
+  /**
+   * Static initializer.
+   */
+  public static function init() {
+    if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
+      self::$defaultInputPorts = array(
+        (new Port)->setName("actual_output")->setVariable(""),
+        (new Port)->setName("expected_output")->setVariable("")
+      );
+      self::$defaultOutputPorts = array(
+        (new Port)->setName("score")->setVariable("")
+      );
+    }
+  }
+
   /**
    * JudgeNormalBox constructor.
    * @param BoxMeta $meta
@@ -17,12 +35,22 @@ class JudgeNormalBox extends Box
   }
 
 
-  public function validateMetadata() {
-    // TODO: Implement validateMetadata() method.
+  /**
+   * Get default input ports for this box.
+   * @return array
+   */
+  public function getDefaultInputPorts(): array {
+    self::init();
+    return self::$defaultInputPorts;
   }
 
-  public function fillDefaults() {
-    // TODO: Implement fillDefaults() method.
+  /**
+   * Get default output ports for this box.
+   * @return array
+   */
+  public function getDefaultOutputPorts(): array {
+    self::init();
+    return self::$defaultOutputPorts;
   }
 
 }
