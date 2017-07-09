@@ -23,14 +23,15 @@ class Loader {
   /**
    * @var BoxService
    */
-  private $boxFactory;
+  private $boxService;
 
   /**
    * Loader constructor.
+   * @param BoxService $boxService
    */
-  public function __construct() {
+  public function __construct(BoxService $boxService) {
     $this->variableFactory = new VariableFactory();
-    $this->boxFactory = new BoxService();
+    $this->boxService = $boxService;
   }
 
   /**
@@ -275,7 +276,7 @@ class Loader {
       $boxMeta->addOutputPort($port);
     }
 
-    return $this->boxFactory->create($boxMeta);
+    return $this->boxService->create($boxMeta);
   }
 
   /**

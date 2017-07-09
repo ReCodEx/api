@@ -2,13 +2,13 @@
 
 include '../bootstrap.php';
 
-use App\Helpers\ExerciseConfig\VariableFactory;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 
 /**
- * Exercise configuration builder is mostly tested in components which are constructed/built by it.
- * This is only general test which tests only simple cases.
+ * Exercise configuration builder is only tested in components which are
+ * constructed/built by it.
  */
 class TestExerciseConfigLoader extends Tester\TestCase
 {
@@ -16,11 +16,10 @@ class TestExerciseConfigLoader extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
-  public function testCorrect() {
-    // @TODO: later when loader is finished
+  public function testTrue() {
     Assert::true(TRUE);
   }
 

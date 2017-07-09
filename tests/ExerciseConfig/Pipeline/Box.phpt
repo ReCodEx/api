@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
@@ -25,7 +26,7 @@ class TestBox extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
   public function testIncorrectData() {

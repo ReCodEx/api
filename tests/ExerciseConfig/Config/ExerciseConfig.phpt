@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\VariableFactory;
@@ -57,7 +58,7 @@ class TestExerciseConfig extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
   public function testSerialization() {

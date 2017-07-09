@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -26,6 +27,25 @@ abstract class Box implements JsonSerializable
     $this->meta = $meta;
   }
 
+
+  /**
+   * Implementation should check loaded metadatas which for now should include
+   * only validation of ports. Called after construction in Box factory.
+   * @return mixed
+   * @throws ExerciseConfigException
+   */
+  public abstract function validateMetadata();
+
+  /**
+   * When listing default boxes which are available, there has to be somehow
+   * filled default values, like names of the ports and values. To enforce Box
+   * authors to make default values, fillDefaults abstract function
+   * was introduced.
+   * @return mixed
+   */
+  public abstract function fillDefaults();
+
+
   /**
    * Get name of this box.
    * @return null|string
@@ -49,6 +69,7 @@ abstract class Box implements JsonSerializable
   public function getOutputPorts(): array {
     return $this->meta->getOutputPorts();
   }
+
 
   /**
    * Creates and returns properly structured array representing this object.

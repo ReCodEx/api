@@ -26,11 +26,19 @@ class BoxService
   }
 
   /**
-   * Return array of newly created instances of all available boxes.
+   * Return array of newly created instances of all available boxes with filled
+   * default values
    * @return array
    */
   public function getAllBoxes(): array {
-    // @todo
+    $boxes = array();
+    foreach ($this->boxes as $boxClass) {
+      $box = new $boxClass(new BoxMeta);
+      $box->fillDefaults();
+      $boxes[] = $box;
+    }
+
+    return $boxes;
   }
 
   /**
@@ -43,7 +51,9 @@ class BoxService
 
     foreach ($this->boxes as $boxId => $boxClass) {
       if (strtolower($meta->getType()) === strtolower($boxId)) {
-        return new $boxClass($meta);
+        $box = new $boxClass($meta);
+        $box->validateMetadata();
+        return $box;
       }
     }
 

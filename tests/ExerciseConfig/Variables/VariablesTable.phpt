@@ -5,6 +5,7 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\FileArrayVariable;
 use App\Helpers\ExerciseConfig\FileVariable;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\StringArrayVariable;
 use App\Helpers\ExerciseConfig\StringVariable;
 use App\Helpers\ExerciseConfig\VariableFactory;
@@ -27,7 +28,7 @@ class TestVariablesTable extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
   public function testSerialization() {

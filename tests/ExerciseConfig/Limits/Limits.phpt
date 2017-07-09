@@ -2,7 +2,7 @@
 
 include '../../bootstrap.php';
 
-use App\Helpers\ExerciseConfig\VariableFactory;
+use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 use Symfony\Component\Yaml\Yaml;
@@ -27,7 +27,7 @@ class TestLimits extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader(new BoxService());
   }
 
   public function testSerialization()

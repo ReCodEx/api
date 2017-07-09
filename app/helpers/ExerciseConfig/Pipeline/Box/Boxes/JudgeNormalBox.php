@@ -16,4 +16,13 @@ class JudgeNormalBox extends Box
     parent::__construct($meta);
   }
 
+
+  public function validateMetadata() {
+    // TODO: Implement validateMetadata() method.
+  }
+
+  public function fillDefaults() {
+    // TODO: Implement fillDefaults() method.
+  }
+
 }
