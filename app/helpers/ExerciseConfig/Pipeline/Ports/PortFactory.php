@@ -1,27 +1,28 @@
 <?php
 
-namespace App\Helpers\ExerciseConfig;
+namespace App\Helpers\ExerciseConfig\Pipeline\Ports;
 
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\VariableTypes;
 
-class VariableFactory
+class PortFactory
 {
   /**
    * Based on given meta information construct proper variable type.
-   * @param VariableMeta $meta
-   * @return Variable
+   * @param PortMeta $meta
+   * @return Port
    * @throws ExerciseConfigException
    */
-  public function create(VariableMeta $meta): Variable {
+  public function create(PortMeta $meta): Port {
     if (strtolower($meta->getType()) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
-      return new FileArrayVariable($meta);
+      return new FileArrayPort($meta);
     } else if (strtolower($meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
-      return new FileVariable($meta);
+      return new FilePort($meta);
     } else if (strtolower($meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
-      return new StringArrayVariable($meta);
+      return new StringArrayPort($meta);
     } else if (strtolower($meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
-      return new StringVariable($meta);
+      return new StringPort($meta);
     } else {
       throw new ExerciseConfigException("Unknown type: {$meta->getType()}");
     }

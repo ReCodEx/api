@@ -6,7 +6,9 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortFactory;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 
 /**
  * Loader service which is able to load exercise configuration into internal
@@ -21,6 +23,11 @@ class Loader {
   private $variableFactory;
 
   /**
+   * @var PortFactory
+   */
+  private $portFactory;
+
+  /**
    * @var BoxService
    */
   private $boxService;
@@ -31,6 +38,7 @@ class Loader {
    */
   public function __construct(BoxService $boxService) {
     $this->variableFactory = new VariableFactory();
+    $this->portFactory = new PortFactory();
     $this->boxService = $boxService;
   }
 
@@ -236,6 +244,34 @@ class Loader {
   }
 
   /**
+   * Builds and checks port configuration from given structured data.
+   * @param string $name
+   * @param $data
+   * @return Port
+   * @throws ExerciseConfigException
+   */
+  public function loadPort(string $name, $data): Port {
+    if (!is_array($data)) {
+      throw new ExerciseConfigException("Pipeline port is not array");
+    }
+
+    $port = new PortMeta;
+    $port->setName($name);
+
+    if (!isset($data[PortMeta::TYPE_KEY])) {
+      throw new ExerciseConfigException("Pipeline port '$name' does not have any type");
+    }
+    $port->setType($data[PortMeta::TYPE_KEY]);
+
+    if (!isset($data[PortMeta::VARIABLE_KEY])) {
+      throw new ExerciseConfigException("Pipeline port '$name' does not have any value");
+    }
+    $port->setVariable($data[PortMeta::VARIABLE_KEY]);
+
+    return $this->portFactory->create($port);
+  }
+
+  /**
    * Builds and checks box structure from given data.
    * @param $data
    * @return Box
@@ -261,18 +297,16 @@ class Loader {
     if (!isset($data[BoxMeta::PORTS_IN_KEY]) || !is_array($data[BoxMeta::PORTS_IN_KEY])) {
       throw new ExerciseConfigException("Box metadatas do not have input ports specified");
     }
-    foreach ($data[BoxMeta::PORTS_IN_KEY] as $name => $variable) {
-      $port = new Port;
-      $port->setName($name)->setVariable($variable);
+    foreach ($data[BoxMeta::PORTS_IN_KEY] as $name => $portData) {
+      $port = $this->loadPort($name, $portData);
       $boxMeta->addInputPort($port);
     }
 
     if (!isset($data[BoxMeta::PORTS_OUT_KEY]) || !is_array($data[BoxMeta::PORTS_OUT_KEY])) {
       throw new ExerciseConfigException("Box metadatas do not have output ports specified");
     }
-    foreach ($data[BoxMeta::PORTS_OUT_KEY] as $name => $variable) {
-      $port = new Port;
-      $port->setName($name)->setVariable($variable);
+    foreach ($data[BoxMeta::PORTS_OUT_KEY] as $name => $portData) {
+      $port = $this->loadPort($name, $portData);
       $boxMeta->addOutputPort($port);
     }
 

@@ -6,7 +6,6 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\StringVariable;
-use App\Helpers\ExerciseConfig\VariableFactory;
 use App\Helpers\ExerciseConfig\VariableMeta;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;

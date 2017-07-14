@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
 
@@ -201,12 +202,12 @@ class BoxMeta implements JsonSerializable {
 
     $data[self::PORTS_IN_KEY] = array();
     foreach ($this->portsIn as $port) {
-      $data[self::PORTS_IN_KEY][$port->getName()] = $port->getVariable();
+      $data[self::PORTS_IN_KEY][$port->getName()] = $port->toArray();
     }
 
     $data[self::PORTS_OUT_KEY] = array();
     foreach ($this->portsOut as $port) {
-      $data[self::PORTS_OUT_KEY][$port->getName()] = $port->getVariable();
+      $data[self::PORTS_OUT_KEY][$port->getName()] = $port->toArray();
     }
 
     return $data;

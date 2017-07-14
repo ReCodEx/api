@@ -8,7 +8,6 @@ use App\Helpers\ExerciseConfig\FileVariable;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\StringArrayVariable;
 use App\Helpers\ExerciseConfig\StringVariable;
-use App\Helpers\ExerciseConfig\VariableFactory;
 use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use Symfony\Component\Yaml\Yaml;

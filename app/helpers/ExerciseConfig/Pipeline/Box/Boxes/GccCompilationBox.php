@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 
 
 /**
@@ -17,10 +19,10 @@ class GccCompilationBox extends Box
   public static function init() {
     if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
       self::$defaultInputPorts = array(
-        (new Port)->setName("source_file")->setVariable("")
+        new FilePort((new PortMeta)->setName("source_file")->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        (new Port)->setName("binary_file")->setVariable("")
+        new FilePort((new PortMeta)->setName("binary_file")->setVariable(""))
       );
     }
   }

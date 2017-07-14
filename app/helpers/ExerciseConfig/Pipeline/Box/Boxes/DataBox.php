@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 
 
 /**
@@ -18,7 +20,7 @@ class DataBox extends Box
     if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        (new Port)->setName("data_file")->setVariable("")
+        new FilePort((new PortMeta)->setName("data_file")->setVariable(""))
       );
     }
   }

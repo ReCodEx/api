@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
 
 
 /**
@@ -17,11 +20,11 @@ class JudgeNormalBox extends Box
   public static function init() {
     if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
       self::$defaultInputPorts = array(
-        (new Port)->setName("actual_output")->setVariable(""),
-        (new Port)->setName("expected_output")->setVariable("")
+        new FilePort((new PortMeta)->setName("actual_output")->setVariable("")),
+        new FilePort((new PortMeta)->setName("expected_output")->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        (new Port)->setName("score")->setVariable("")
+        new StringPort((new PortMeta)->setName("score")->setVariable(""))
       );
     }
   }

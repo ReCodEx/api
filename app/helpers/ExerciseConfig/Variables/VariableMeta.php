@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
+
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
 

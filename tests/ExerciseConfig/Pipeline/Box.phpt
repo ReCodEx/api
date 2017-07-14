@@ -7,7 +7,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Port;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -18,14 +20,17 @@ class TestBox extends Tester\TestCase
     "name" => "file",
     "type" => "data",
     "portsIn" => [],
-    "portsOut" => [ "data_file" => "out_data_file" ]
+    "portsOut" => [ "data_file" => ['type' => 'file', 'value' => "out_data_file"] ]
   ];
 
   static $configJudge = [
     "name" => "eval",
     "type" => "judge-normal",
-    "portsIn" => [ "expected_output" => "exp", "actual_output" => "act" ],
-    "portsOut" => [ "score" => "out_data_file" ]
+    "portsIn" => [
+      "expected_output" => ['type' => 'file', 'value' => "exp"],
+      "actual_output" => ['type' => 'file', 'value' => "act"]
+    ],
+    "portsOut" => [ "score" => ['type' => 'string', 'value' => "out_data_file"] ]
   ];
 
 
@@ -100,12 +105,25 @@ class TestBox extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
+  public function testWrongPortType() {
+    Assert::exception(function () {
+      $this->loader->loadBox(
+        [
+          "name" => "file",
+          "type" => "data",
+          "portsIn" => [],
+          "portsOut" => ["data_file" => ['type' => 'string', 'value' => "out_data_file"]]
+        ]
+      );
+    }, ExerciseConfigException::class);
+  }
+
   public function testSerialization() {
     $deserialized = Yaml::parse((string)$this->loader->loadBox(self::$config));
     Assert::equal(self::$config, $deserialized);
   }
 
-  public function testVariablesOperations() {
+  public function testBoxMetaOperations() {
     $boxMeta = new BoxMeta;
 
     Assert::equal(null, $boxMeta->getName());
@@ -122,8 +140,9 @@ class TestBox extends Tester\TestCase
 
   public function testPortsOperations() {
     $boxMeta = new BoxMeta;
-    $port = new Port;
-    $port->setName("newlyAddedPort");
+    $portMeta = new PortMeta;
+    $portMeta->setName("newlyAddedPort");
+    $port = new StringPort($portMeta);
 
     $boxMeta->addInputPort($port);
     $boxMeta->addOutputPort($port);
@@ -149,9 +168,9 @@ class TestBox extends Tester\TestCase
     Assert::count(1, $box->getOutputPorts());
     Assert::true(array_key_exists("data_file", $box->getOutputPorts()));
 
-    /** @var Port $port */
+    /** @var PortMeta $port */
     $port = $box->getOutputPorts()["data_file"];
-    Assert::type(Port::class, $port);
+    Assert::type(FilePort::class, $port);
     Assert::equal("data_file", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
   }

@@ -5,32 +5,52 @@ App\Model\Entity\PipelineConfig:
               - name: source
                 portsIn: []
                 portsOut:
-                - source_file: source_file
+                - source_file:
+                   - type: file
+                     value: source_file
                 type: data
               - name: test
                 portsIn: []
                 portsOut:
-                - test_file: test_file
-                  expected_output: expected_output
+                - test_file:
+                  - type: file
+                    value: test_file
+                  expected_output:
+                    - type: file
+                      value: expected_output
                 type: data
               - name: compilation
                 portsIn:
-                - input_file: source_file
+                - input_file:
+                  - type: file
+                    value: source_file
                 portsOut:
-                - output_file: binary_file
+                - output_file:
+                  - type: file
+                    value: binary_file
                 type: compilation
               - name: run
                 portsIn:
-                - binary_file: binary_file
+                - binary_file:
+                  - type: file
+                    value: binary_file
                 portsOut:
-                - output_file: actual_output
+                - output_file:
+                  - type: file
+                    value: actual_output
                 type: execution
               - name: judge
                 portsIn:
-                - actual_output: actual_output
-                - expected_output: expected_output
+                - actual_output:
+                  - type: file
+                    value: actual_output
+                - expected_output:
+                  - type: file
+                    value: expected_output
                 portsOut:
-                - score: score
+                - score:
+                  - type: file
+                    value: score
                 type: evaluation
               '''
             - @demoAdmin

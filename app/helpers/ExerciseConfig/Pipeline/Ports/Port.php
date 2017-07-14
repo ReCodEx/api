@@ -1,43 +1,52 @@
 <?php
 
-namespace App\Helpers\ExerciseConfig;
+namespace App\Helpers\ExerciseConfig\Pipeline\Ports;
 
 
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Base class for variables.
+ * Base class for ports.
  */
-abstract class Variable implements JsonSerializable
+abstract class Port implements JsonSerializable
 {
   /**
-   * Meta information about variable.
-   * @var VariableMeta
+   * Meta information about port.
+   * @var PortMeta
    */
   protected $meta;
 
   /**
-   * Variable constructor.
-   * @param VariableMeta $meta
+   * Port constructor.
+   * @param PortMeta $meta
    */
-  public function __construct(VariableMeta $meta) {
+  public function __construct(PortMeta $meta) {
     $this->meta = $meta;
   }
 
   /**
-   * Get type of this variable.
+   * Get name of this port.
+   * @return null|string
+   */
+  public function getName(): ?string {
+    return $this->meta->getName();
+  }
+
+  /**
+   * Get type of this port.
    * @return null|string
    */
   public abstract function getType(): ?string;
 
   /**
-   * Get value of the variable.
+   * Get variable value of the port.
    * @return null|string
    */
-  public function getValue(): ?string {
-    return $this->meta->getValue();
+  public function getVariable(): ?string {
+    return $this->meta->getVariable();
   }
+
 
   /**
    * Creates and returns properly structured array representing this object.
