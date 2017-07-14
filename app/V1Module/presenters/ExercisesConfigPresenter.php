@@ -8,6 +8,7 @@ use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
+use App\Helpers\ExerciseConfig\Validator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
@@ -37,6 +38,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseConfigLoader;
+
+  /**
+   * @var Validator
+   * @inject
+   */
+  public $configValidator;
 
   /**
    * @var Transformer
@@ -131,7 +138,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
       // check for duplicate environments
       if (array_key_exists($environmentId, $configs)) {
-        throw new InvalidArgumentException("Duplicate entry for configuration $environmentId");
+        throw new InvalidArgumentException("Duplicate entry for configuration '$environmentId''");
       }
 
       // load variables table for this runtime configuration
@@ -207,6 +214,9 @@ class ExercisesConfigPresenter extends BasePresenter {
     $config = $req->getPost("config");
     $exerciseConfig = $this->exerciseConfigTransformer->toExerciseConfig($config);
 
+    // validate new exercise config
+    $this->configValidator->validateExerciseConfig($exercise, $exerciseConfig);
+
     // new config was provided, so construct new database entity
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $oldConfig);
 
@@ -280,6 +290,9 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
+    // validate new limits
+    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
+
     // new limits were provided, so construct new database entity
     $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $oldLimits);
 
