@@ -335,7 +335,7 @@ class Exercise implements JsonSerializable
 
   /**
    * Get IDs of all available runtime environments
-   * @return ArrayCollection
+   * @return array
    */
   public function getRuntimeEnvironmentsIds() {
     return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();

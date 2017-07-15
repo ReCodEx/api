@@ -5,60 +5,64 @@ App\Model\Entity\PipelineConfig:
               - name: source
                 portsIn: []
                 portsOut:
-                - source_file:
-                   - type: file
+                  data_file:
+                     type: file
                      value: source_file
                 type: data
               - name: test
                 portsIn: []
                 portsOut:
-                - test_file:
-                  - type: file
+                  data_file:
+                    type: file
                     value: test_file
-                  expected_output:
-                    - type: file
-                      value: expected_output
                 type: data
               - name: compilation
                 portsIn:
-                - input_file:
-                  - type: file
+                  source_file:
+                    type: file
                     value: source_file
                 portsOut:
-                - output_file:
-                  - type: file
+                  binary_file:
+                    type: file
                     value: binary_file
-                type: compilation
+                type: gcc
               - name: run
                 portsIn:
-                - binary_file:
-                  - type: file
+                  binary_file:
+                    type: file
                     value: binary_file
                 portsOut:
-                - output_file:
-                  - type: file
+                  output_file:
+                    type: file
                     value: actual_output
-                type: execution
+                type: elf-exec
               - name: judge
                 portsIn:
-                - actual_output:
-                  - type: file
+                  actual_output:
+                    type: file
                     value: actual_output
-                - expected_output:
-                  - type: file
+                  expected_output:
+                    type: file
                     value: expected_output
                 portsOut:
-                - score:
-                  - type: file
+                  score:
+                    type: string
                     value: score
-                type: evaluation
+                type: judge-normal
               '''
             - @demoAdmin
 
 App\Model\Entity\Pipeline:
-    demoPipeline:
+    demoPipelineA:
         __construct:
             create:
                 - @demoAdmin
-        name: "Admins pipeline"
+        name: "compilationPipeline"
+        pipelineConfig: @demoPipelineConfig
+
+    demoPipelineB:
+        __construct:
+            create:
+                - @demoAdmin
+        name: "testPipeline"
         pipelineConfig: @demoPipelineConfig
