@@ -3,8 +3,10 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
+use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
+use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
 use App\Model\Entity\Exercise;
-use App\Model\Repository\Pipelines;
 
 
 /**
@@ -18,16 +20,38 @@ use App\Model\Repository\Pipelines;
 class Validator {
 
   /**
-   * @var Pipelines
+   * @var Loader
    */
-  private $pipelines;
+  private $loader;
+
+  /**
+   * @var ExerciseConfigValidator
+   */
+  private $exerciseConfigValidator;
+
+  /**
+   * @var PipelineValidator
+   */
+  private $pipelineValidator;
+
+  /**
+   * @var ExerciseLimitsValidator
+   */
+  private $exerciseLimitsValidator;
 
   /**
    * Validator constructor.
-   * @param Pipelines $pipelines
+   * @param Loader $loader
+   * @param ExerciseConfigValidator $exerciseConfigValidator
+   * @param PipelineValidator $pipelineValidator
+   * @param ExerciseLimitsValidator $exerciseLimitsValidator
    */
-  public function __construct(Pipelines $pipelines) {
-    $this->pipelines = $pipelines;
+  public function __construct(Loader $loader, ExerciseConfigValidator $exerciseConfigValidator,
+      PipelineValidator $pipelineValidator, ExerciseLimitsValidator $exerciseLimitsValidator) {
+    $this->loader = $loader;
+    $this->exerciseConfigValidator = $exerciseConfigValidator;
+    $this->pipelineValidator = $pipelineValidator;
+    $this->exerciseLimitsValidator = $exerciseLimitsValidator;
   }
 
 
@@ -41,7 +65,7 @@ class Validator {
    * @throws ExerciseConfigException
    */
   public function validatePipeline(Pipeline $pipeline) {
-    // @todo
+    $this->pipelineValidator->validate($pipeline);
   }
 
   /**
@@ -54,7 +78,13 @@ class Validator {
    * @throws ExerciseConfigException
    */
   public function validateExerciseConfig(Exercise $exercise, ExerciseConfig $config) {
-    // @todo
+    $variablesTables = array();
+    foreach ($exercise->getExerciseEnvironmentConfigs() as $environmentConfig) {
+      $varTable = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
+      $variablesTables[$environmentConfig->getRuntimeEnvironment()->getId()] = $varTable;
+    }
+
+    $this->exerciseConfigValidator->validate($config, $variablesTables);
   }
 
   /**
@@ -64,10 +94,12 @@ class Validator {
    * existing.
    * @param Exercise $exercise
    * @param ExerciseLimits $limits
+   * @param string $environmentId
    * @throws ExerciseConfigException
    */
-  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {
-    // @todo
+  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits, string $environmentId) {
+    $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig, $environmentId);
   }
 
 }

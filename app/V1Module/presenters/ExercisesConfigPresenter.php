@@ -291,7 +291,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
     // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
+    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits, $runtimeEnvironmentId);
 
     // new limits were provided, so construct new database entity
     $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $oldLimits);
