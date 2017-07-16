@@ -190,9 +190,12 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::type(\App\Model\Entity\Exercise::class, $result['payload']);
-    Assert::equal($this->adminLogin, $result['payload']->getAuthor()->email);
-    Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $result['payload']->getName());
+    $payload = $result['payload'];
+
+    Assert::type(\App\Model\Entity\Exercise::class, $payload);
+    Assert::equal($this->adminLogin, $payload->getAuthor()->email);
+    Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+    Assert::notEqual(null, $payload->getExerciseConfig());
   }
 
   public function testSupplementaryFilesUpload() {

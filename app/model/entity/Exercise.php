@@ -35,6 +35,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setDescription(string $description)
+ * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  */
 class Exercise implements JsonSerializable
 {
@@ -192,9 +193,9 @@ class Exercise implements JsonSerializable
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
-      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
-      ?ExerciseConfig $exerciseConfig = NULL) {
+      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise,
+      ?ExerciseConfig $exerciseConfig = NULL, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -228,6 +229,7 @@ class Exercise implements JsonSerializable
       new ArrayCollection,
       new ArrayCollection,
       NULL,
+      NULL,
       $user,
       $group
     );
@@ -246,11 +248,11 @@ class Exercise implements JsonSerializable
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
       $exercise,
+      $exercise->exerciseConfig,
       $user,
       $exercise->group,
       $exercise->isPublic,
-      $exercise->description,
-      $exercise->exerciseConfig
+      $exercise->description
     );
   }
 

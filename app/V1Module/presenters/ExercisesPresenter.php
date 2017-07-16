@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
@@ -324,9 +325,15 @@ class ExercisesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
+    // create exercise and fill some predefined details
     $exercise = Exercise::create($user, $group);
     $exercise->setName("Exercise by " . $user->getName());
 
+    // create and store basic exercise configuration
+    $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig());
+    $exercise->setExerciseConfig($exerciseConfig);
+
+    // and finally make changes to database
     $this->exercises->persist($exercise);
     $this->sendSuccessResponse($exercise);
   }

@@ -179,6 +179,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $exerciseConfig = $exercise->getExerciseConfig();
     if ($exerciseConfig === NULL) {
+      // should not be reached...
       throw new NotFoundException("Configuration for the exercise not exists");
     }
 
