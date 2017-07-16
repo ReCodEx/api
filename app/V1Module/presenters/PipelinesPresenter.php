@@ -10,6 +10,8 @@ use App\Model\Entity\PipelineConfig;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\Pipeline;
+use App\Helpers\ExerciseConfig\Validator as ConfigValidator;
+
 
 /**
  * Endpoints for pipelines manipulation
@@ -41,6 +43,12 @@ class PipelinesPresenter extends BasePresenter {
    * @inject
    */
   public $boxService;
+
+  /**
+   * @var ConfigValidator
+   * @inject
+   */
+  public $configValidator;
 
 
   /**
@@ -135,6 +143,9 @@ class PipelinesPresenter extends BasePresenter {
     $pipelinePost = $this->getRequest()->getPost("pipeline");
     $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelinePost);
     $oldConfig = $pipeline->getPipelineConfig();
+
+    // validate new pipeline configuration
+    $this->configValidator->validatePipeline($pipelineConfig);
 
     // create new pipeline configuration based on given data and store it in pipeline entity
     $newConfig = new PipelineConfig((string) $pipelineConfig, $this->getCurrentUser(), $oldConfig);

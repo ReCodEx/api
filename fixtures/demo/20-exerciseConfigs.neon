@@ -10,6 +10,17 @@ App\Model\Entity\ExerciseEnvironmentConfig:
                 type: "string"
                 value: "valB"
               '''
+    demoJavaEnvironmentConfig:
+        __construct:
+            - @Java8Runtime
+            - '''
+              "varA":
+                type: "file"
+                value: "valA"
+              "varB":
+                type: "string"
+                value: "valB"
+              '''
 
 
 App\Model\Entity\ExerciseConfig:
@@ -18,7 +29,7 @@ App\Model\Entity\ExerciseConfig:
             - '''
               environments:
                 - java8
-                - cpp11
+                - c-gcc-linux
               tests:
                 "Test 1":
                   pipelines:
@@ -35,7 +46,7 @@ App\Model\Entity\ExerciseConfig:
                             varJava:
                               type: string
                               value: valJava
-                    cpp11: []
+                    c-gcc-linux: []
                 "Test 2":
                   pipelines:
                     "pipeline2":
@@ -44,7 +55,7 @@ App\Model\Entity\ExerciseConfig:
                           type: file
                           value: valB
                   environments:
-                    cpp11:
+                    c-gcc-linux:
                       pipelines:
                         "pipeline2":
                           variables:

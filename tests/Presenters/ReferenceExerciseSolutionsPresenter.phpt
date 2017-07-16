@@ -97,7 +97,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::equal(1, count($payload));
+    Assert::equal(2, count($payload));
     Assert::count(1, $payload[$environmentId]);
     Assert::type(ReferenceSolutionEvaluation::class, $payload[$environmentId][0]);
   }

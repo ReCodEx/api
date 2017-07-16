@@ -53,7 +53,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->presenter->exercises->findAll());
-    $environment = $exercise->getRuntimeEnvironments()->first();
+    $environments = $exercise->getRuntimeEnvironmentsIds();
 
     $request = new Nette\Application\Request('V1:ExercisesConfig',
       'GET',
@@ -66,24 +66,25 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     $payload = $result['payload'];
 
-    // there is only one runtime configuration in fixtures
-    Assert::count(1, $payload);
+    // there are two runtime configurations in fixtures
+    Assert::count(2, $payload);
 
     // check runtime environment
-    $config = current($payload);
-    Assert::equal($config["runtimeEnvironmentId"], $environment->getId());
+    foreach ($payload as $config) {
+      Assert::contains($config["runtimeEnvironmentId"], $environments);
 
-    // check variables, again defined in fixtures
-    $variablesTable = $config["variablesTable"];
-    Assert::count(2, $variablesTable);
-    Assert::true(array_key_exists("varA", $variablesTable));
-    Assert::true(array_key_exists("varB", $variablesTable));
+      // check variables, again defined in fixtures
+      $variablesTable = $config["variablesTable"];
+      Assert::count(2, $variablesTable);
+      Assert::true(array_key_exists("varA", $variablesTable));
+      Assert::true(array_key_exists("varB", $variablesTable));
 
-    // check types of variables and values
-    Assert::equal("file", $variablesTable["varA"]["type"]);
-    Assert::equal("string", $variablesTable["varB"]["type"]);
-    Assert::equal("valA", $variablesTable["varA"]["value"]);
-    Assert::equal("valB", $variablesTable["varB"]["value"]);
+      // check types of variables and values
+      Assert::equal("file", $variablesTable["varA"]["type"]);
+      Assert::equal("string", $variablesTable["varB"]["type"]);
+      Assert::equal("valA", $variablesTable["varA"]["value"]);
+      Assert::equal("valB", $variablesTable["varB"]["value"]);
+    }
   }
 
   public function testUpdateEnvironmentConfigs()
@@ -153,7 +154,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // check all environments
     foreach ($payload as $environment) {
-      Assert::contains($environment['name'], [ "default", "java8", "cpp11" ]);
+      Assert::contains($environment['name'], [ "default", "java8", "c-gcc-linux" ]);
       Assert::count(count($exerciseConfig->getTests()), $environment['tests']);
 
       foreach ($environment['tests'] as $test) {
@@ -174,22 +175,22 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "default",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => "defaultTestA", "variables" => [["name" => "defVarA", "type" => "string", "value" => "defValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => "defaultTestB", "variables" => [["name" => "defVarB", "type" => "file", "value" => "defValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => "compilationPipeline", "variables" => [["name" => "defVarA", "type" => "string", "value" => "defValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "testPipeline", "variables" => [["name" => "defVarB", "type" => "file", "value" => "defValB"]]]]]
         ]
       ],
       [
-        "name" => "environmentA",
+        "name" => "c-gcc-linux",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => "ATestA", "variables" => [["name" => "AVarA", "type" => "string", "value" => "AValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => "ATestB", "variables" => [["name" => "AVarB", "type" => "string", "value" => "AValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => "compilationPipeline", "variables" => [["name" => "AVarA", "type" => "string", "value" => "AValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "testPipeline", "variables" => [["name" => "AVarB", "type" => "string", "value" => "AValB"]]]]]
         ]
       ],
       [
-        "name" => "environmentB",
+        "name" => "java8",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => "BTestA", "variables" => [["name" => "BVarA", "type" => "string", "value" => "BValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => "BTestB", "variables" => [["name" => "BVarB", "type" => "string", "value" => "BValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => "compilationPipeline", "variables" => [["name" => "BVarA", "type" => "string", "value" => "BValA"]]]]],
+          ["name" => "testB", "pipelines" => [["name" => "testPipeline", "variables" => [["name" => "BVarB", "type" => "string", "value" => "BValB"]]]]]
         ]
       ]
     ];
@@ -211,10 +212,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(2, $exerciseConfig->getTests());
     Assert::type(Test::class, $exerciseConfig->getTest('testA'));
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline('defaultTestA'));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline('defaultTestB'));
-    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline('defaultTestA')->getVariable('defVarA')->getValue());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline('defaultTestB')->getVariable('defVarB')->getValue());
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline('compilationPipeline'));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline('testPipeline'));
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline('compilationPipeline')->getVariable('defVarA')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline('testPipeline')->getVariable('defVarB')->getValue());
   }
 
   public function testGetLimits()

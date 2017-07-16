@@ -7,15 +7,17 @@ App\Model\Entity\Exercise:
         name: "Convex hull"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeEnvironment:
+        runtimeEnvironments:
             - @CRuntime
+            - @Java8Runtime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addExerciseEnvironmentConfig:
+        exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
+            - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
@@ -25,15 +27,17 @@ App\Model\Entity\Exercise:
         name: "<current()> exercise"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeEnvironment:
+        runtimeEnvironments:
             - @CRuntime
+            - @Java8Runtime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addExerciseEnvironmentConfig:
+        exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
+            - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     privateAdminExercise:
         __construct:
@@ -44,15 +48,17 @@ App\Model\Entity\Exercise:
         isPublic: FALSE
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeEnvironment:
+        runtimeEnvironments:
             - @CRuntime
+            - @Java8Runtime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addExerciseEnvironmentConfig:
+        exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
+            - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
     publicSupervisor2Exercise:
         __construct:
@@ -63,15 +69,17 @@ App\Model\Entity\Exercise:
         name: "group supervisor alalal"
         addLocalizedText:
             - @demoLocalizedText
-        addRuntimeEnvironment:
+        runtimeEnvironments:
             - @CRuntime
+            - @Java8Runtime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
         addExerciseLimits:
             - @demoExerciseLimits
-        addExerciseEnvironmentConfig:
+        exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
+            - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
 
 App\Model\Entity\ReferenceExerciseSolution:
