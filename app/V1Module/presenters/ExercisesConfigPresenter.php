@@ -148,6 +148,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       $config = new ExerciseEnvironmentConfig(
         $environment,
         (string) $variablesTable,
+        $this->getCurrentUser(),
         $exercise->getExerciseEnvironmentConfigByEnvironment($environment)
       );
 
@@ -219,7 +220,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $this->configValidator->validateExerciseConfig($exercise, $exerciseConfig);
 
     // new config was provided, so construct new database entity
-    $newConfig = new ExerciseConfig((string) $exerciseConfig, $oldConfig);
+    $newConfig = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $oldConfig);
 
     // set new exercise configuration into exercise and flush changes
     $exercise->setExerciseConfig($newConfig);
@@ -299,7 +300,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // new limits were provided, so construct new database entity
     $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
-    $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $oldLimits);
+    $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $this->getCurrentUser(), $oldLimits);
 
     // remove old limits for corresponding environment and hwgroup and add new ones
     // also do not forget to set hwgroup to exercise

@@ -16,6 +16,7 @@ use DateTime;
  * @method string getLimits()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  * @method HardwareGroup getHardwareGroup()
+ * @method User getAuthor()
  */
 class ExerciseLimits implements JsonSerializable
 {
@@ -44,6 +45,11 @@ class ExerciseLimits implements JsonSerializable
   protected $createdFrom;
 
   /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $author;
+
+  /**
    * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseLimits")
    */
   protected $exercises;
@@ -63,16 +69,19 @@ class ExerciseLimits implements JsonSerializable
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param HardwareGroup $hardwareGroup
    * @param string $limits
+   * @param User $author
    * @param ExerciseLimits|null $createdFrom
    */
   public function __construct(RuntimeEnvironment $runtimeEnvironment,
-      HardwareGroup $hardwareGroup, string $limits, ?ExerciseLimits $createdFrom = NULL) {
+      HardwareGroup $hardwareGroup, string $limits, User $author,
+      ExerciseLimits $createdFrom = NULL) {
     $this->exercises = new ArrayCollection();
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->hardwareGroup = $hardwareGroup;
     $this->limits = $limits;
     $this->createdAt = new DateTime;
     $this->createdFrom = $createdFrom;
+    $this->author = $author;
   }
 
   /**

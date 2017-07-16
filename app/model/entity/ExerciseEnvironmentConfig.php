@@ -13,6 +13,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @method string getId()
  * @method RuntimeEnvironment getRuntimeEnvironment()
+ * @method getAuthor()
  */
 class ExerciseEnvironmentConfig
 {
@@ -53,14 +54,21 @@ class ExerciseEnvironmentConfig
   protected $createdFrom;
 
   /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $author;
+
+  /**
    * RuntimeConfig constructor.
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param string $variablesTable
+   * @param User $author
    * @param ExerciseEnvironmentConfig|null $createdFrom
    */
   public function __construct(
     RuntimeEnvironment $runtimeEnvironment,
     string $variablesTable,
+    User $author,
     ExerciseEnvironmentConfig $createdFrom = null
   ) {
     $this->runtimeEnvironment = $runtimeEnvironment;
@@ -68,6 +76,7 @@ class ExerciseEnvironmentConfig
     $this->createdFrom = $createdFrom;
     $this->createdAt = new \DateTime;
     $this->exercises = new ArrayCollection;
+    $this->author = $author;
   }
 
   /**

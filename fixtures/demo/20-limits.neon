@@ -9,3 +9,4 @@ App\Model\Entity\ExerciseLimits:
                   memory: 50
                   parallel: 500
               '''
+            - @demoAdmin

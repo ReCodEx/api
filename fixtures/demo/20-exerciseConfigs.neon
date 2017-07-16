@@ -10,6 +10,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
                 type: "string"
                 value: "valB"
               '''
+            - @demoAdmin
     demoJavaEnvironmentConfig:
         __construct:
             - @Java8Runtime
@@ -21,6 +22,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
                 type: "string"
                 value: "valB"
               '''
+            - @demoAdmin
 
 
 App\Model\Entity\ExerciseConfig:
@@ -63,3 +65,4 @@ App\Model\Entity\ExerciseConfig:
                               type: file
                               value: valCpp
               '''
+            - @demoAdmin

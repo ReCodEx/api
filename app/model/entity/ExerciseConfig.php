@@ -12,6 +12,7 @@ use DateTime;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method User getAuthor()
  */
 class ExerciseConfig
 {
@@ -40,6 +41,11 @@ class ExerciseConfig
   protected $createdFrom;
 
   /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $author;
+
+  /**
    * @ORM\OneToMany(targetEntity="Exercise", mappedBy="exerciseConfig")
    */
   protected $exercises;
@@ -47,14 +53,17 @@ class ExerciseConfig
   /**
    * Constructor
    * @param string $config
+   * @param User $author
    * @param ExerciseConfig|null $createdFrom
    */
-  public function __construct(string $config, ExerciseConfig $createdFrom = NULL) {
+  public function __construct(string $config, User $author,
+      ExerciseConfig $createdFrom = NULL) {
     $this->exercises = new ArrayCollection();
     $this->createdAt = new DateTime;
 
     $this->config = $config;
     $this->createdFrom = $createdFrom;
+    $this->author = $author;
   }
 
   /**

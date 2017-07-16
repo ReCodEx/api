@@ -330,7 +330,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setName("Exercise by " . $user->getName());
 
     // create and store basic exercise configuration
-    $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig());
+    $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);
     $exercise->setExerciseConfig($exerciseConfig);
 
     // and finally make changes to database
