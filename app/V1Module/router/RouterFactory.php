@@ -116,6 +116,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/config", "ExercisesConfig:setConfiguration");
     $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getLimits");
     $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setLimits");
+    $router[] = new DeleteRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:removeLimits");
 
     return $router;
   }

@@ -264,9 +264,13 @@ class Exercise implements JsonSerializable
     $this->runtimeEnvironments->add($runtimeEnvironment);
   }
 
-    public function addHardwareGroup(HardwareGroup $hardwareGroup) {
-        $this->hardwareGroups->add($hardwareGroup);
-    }
+  public function addHardwareGroup(HardwareGroup $hardwareGroup) {
+    $this->hardwareGroups->add($hardwareGroup);
+  }
+
+  public function removeHardwareGroup(?HardwareGroup $hardwareGroup) {
+    $this->hardwareGroups->removeElement($hardwareGroup);
+  }
 
   public function addLocalizedText(LocalizedText $localizedText) {
     $this->localizedTexts->add($localizedText);
@@ -284,7 +288,7 @@ class Exercise implements JsonSerializable
     $this->exerciseLimits->add($exerciseLimits);
   }
 
-  public function removeExerciseLimits(ExerciseLimits $exerciseLimits) {
+  public function removeExerciseLimits(?ExerciseLimits $exerciseLimits) {
     $this->exerciseLimits->removeElement($exerciseLimits);
   }
 
@@ -292,7 +296,7 @@ class Exercise implements JsonSerializable
     $this->exerciseEnvironmentConfigs->add($exerciseEnvironmentConfig);
   }
 
-  public function removeExerciseEnvironmentConfig(ExerciseEnvironmentConfig $runtimeConfig) {
+  public function removeExerciseEnvironmentConfig(?ExerciseEnvironmentConfig $runtimeConfig) {
     $this->exerciseEnvironmentConfigs->removeElement($runtimeConfig);
   }
 

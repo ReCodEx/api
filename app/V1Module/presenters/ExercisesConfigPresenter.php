@@ -248,12 +248,21 @@ class ExercisesConfigPresenter extends BasePresenter {
     $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
     $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
 
-    $limits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
-    if ($limits === NULL) {
-      throw new NotFoundException("Limits for exercise cannot be found");
+    // check if exercise defines requested environment
+    if (!$exercise->getRuntimeEnvironments()->contains($environment)) {
+      throw new NotFoundException("Specified environment '$runtimeEnvironmentId' not defined for this exercise");
     }
 
-    $this->sendSuccessResponse($limits->getParsedLimits());
+    $limits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
+    if ($limits === NULL) {
+      // there are no specified limits for this combination of environments
+      // and hwgroup yet, so return empty array
+      $limits = array();
+    } else {
+      $limits = $limits->getParsedLimits();
+    }
+
+    $this->sendSuccessResponse($limits);
   }
 
   /**
@@ -274,19 +283,13 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to set limits for this exercise.");
     }
 
+    $limits = $this->getRequest()->getPost("limits");
     $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
     $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
 
-    $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
-    if ($oldLimits === NULL) {
-      throw new NotFoundException("Limits for exercise cannot be found");
-    }
-
-    $req = $this->getRequest();
-    $limits = $req->getPost("limits");
-
-    if (count($limits) === 0) {
-      throw new NotFoundException("No limits specified");
+    // check if exercise defines requested environment
+    if (!$exercise->getRuntimeEnvironments()->contains($environment)) {
+      throw new NotFoundException("Specified environment '$runtimeEnvironmentId' not defined for this exercise");
     }
 
     // using loader load limits into internal structure which should detect formatting errors
@@ -295,14 +298,51 @@ class ExercisesConfigPresenter extends BasePresenter {
     $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits, $runtimeEnvironmentId);
 
     // new limits were provided, so construct new database entity
+    $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
     $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $oldLimits);
 
     // remove old limits for corresponding environment and hwgroup and add new ones
+    // also do not forget to set hwgroup to exercise
     $exercise->removeExerciseLimits($oldLimits);
     $exercise->addExerciseLimits($newLimits);
+    $exercise->removeHardwareGroup($hwGroup); // if there was one before
+    $exercise->addHardwareGroup($hwGroup);
     $this->exercises->flush();
 
     $this->sendSuccessResponse($newLimits->getParsedLimits());
+  }
+
+  /**
+   * Remove resource limits for an exercise
+   * @DELETE
+   * @param string $id Identifier of the exercise
+   * @param string $runtimeEnvironmentId
+   * @param string $hwGroupId
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionRemoveLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canSetLimits($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to set limits for this exercise.");
+    }
+
+    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+    $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
+
+    // find requested limits
+    $limits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
+    if (!$limits) {
+      throw new NotFoundException("Specified limits not found");
+    }
+
+    // make changes persistent
+    $exercise->removeExerciseLimits($limits);
+    $exercise->removeHardwareGroup($hwGroup);
+    $this->exercises->flush();
+
+    $this->sendSuccessResponse("OK");
   }
 
 }

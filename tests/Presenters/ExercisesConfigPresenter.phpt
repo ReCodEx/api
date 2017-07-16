@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
+use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
 
@@ -248,6 +249,10 @@ class TestExercisesConfigPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
+    // create new hardware group
+    $hwGroup = new HardwareGroup("new limits hwgroup", "desc");
+    $this->presenter->hardwareGroups->persist($hwGroup);
+
     $exercise = current($this->exercises->findAll());
     $exerciseLimits = $exercise->getExerciseLimits()->first();
 
@@ -262,7 +267,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           'action' => 'setLimits',
           'id' => $exercise->getId(),
           'runtimeEnvironmentId' => $exerciseLimits->getRuntimeEnvironment()->getId(),
-          'hwGroupId' => $exerciseLimits->getHardwareGroup()->getId()
+          'hwGroupId' => $hwGroup->getId()
       ],
       ['limits' => $limits]
     );
@@ -275,7 +280,40 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $updatedLimits = $result['payload'];
     Assert::same($updatedLimits, $limits);
+
+    // check also if hwgroup was properly set
+    Assert::true($exercise->getHardwareGroups()->contains($hwGroup));
   }
+
+  public function testRemoveLimits()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
+    $environment = $exerciseLimits->getRuntimeEnvironment();
+    $hwGroup = $exerciseLimits->getHardwareGroup();
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'DELETE',
+      [
+        'action' => 'removeLimits',
+        'id' => $exercise->getId(),
+        'runtimeEnvironmentId' => $environment->getId(),
+        'hwGroupId' => $hwGroup->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    // check if limits and hwgroup was properly unset
+    Assert::equal(null, $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
+    Assert::false($exercise->getHardwareGroups()->contains($hwGroup));
+  }
+
 }
 
 $testCase = new TestExercisesConfigPresenter();
