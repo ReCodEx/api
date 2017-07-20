@@ -99,7 +99,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       'POST',
       ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->id],
       [
-        'runtimeConfigs' => [ [
+        'environmentConfigs' => [ [
             'runtimeEnvironmentId' => $environment->getId(),
             'variablesTable' => [
               'varA' => [
@@ -126,11 +126,11 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(1, $result['payload']->getRuntimeEnvironments());
     Assert::equal($environment->getId(), $result['payload']->getRuntimeEnvironments()->first()->getId());
 
-    $updatedRuntimeConfigs = $result["payload"]->getExerciseEnvironmentConfigs();
-    Assert::count(1, $updatedRuntimeConfigs);
+    $updatedEnvironmentConfigs = $result["payload"]->getExerciseEnvironmentConfigs();
+    Assert::count(1, $updatedEnvironmentConfigs);
 
-    $runtimeConfig = $updatedRuntimeConfigs->first();
-    Assert::equal($environment->getId(), $runtimeConfig->getRuntimeEnvironment()->getId());
+    $environmentConfig = $updatedEnvironmentConfigs->first();
+    Assert::equal($environment->getId(), $environmentConfig->getRuntimeEnvironment()->getId());
   }
 
   public function testGetConfiguration()

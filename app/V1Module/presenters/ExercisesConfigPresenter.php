@@ -105,7 +105,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * Configurations can be added or deleted here, based on what is provided in arguments.
    * @POST
    * @param string $id identification of exercise
-   * @Param(type="post", name="runtimeConfigs", validation="array", description="Runtime configurations for the exercise")
+   * @Param(type="post", name="environmentConfigs", validation="array", description="Environment configurations for the exercise")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws JobConfigStorageException
@@ -119,18 +119,18 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     // retrieve configuration and prepare some temp variables
-    $runtimeConfigs = $req->getPost("runtimeConfigs");
+    $environmentConfigs = $req->getPost("environmentConfigs");
     $configs = [];
 
     // configurations cannot be empty
-    if (count($runtimeConfigs) == 0) {
+    if (count($environmentConfigs) == 0) {
       throw new InvalidArgumentException("No entry for runtime configurations given.");
     }
 
     $runtimeEnvironments = new ArrayCollection;
     // go through given configurations and construct database entities
-    foreach ($runtimeConfigs as $runtimeConfig) {
-      $environmentId = $runtimeConfig["runtimeEnvironmentId"];
+    foreach ($environmentConfigs as $environmentConfig) {
+      $environmentId = $environmentConfig["runtimeEnvironmentId"];
       $environment = $this->runtimeEnvironments->findOrThrow($environmentId);
 
       // add runtime environment into resulting environments
@@ -142,7 +142,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       }
 
       // load variables table for this runtime configuration
-      $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($runtimeConfig["variablesTable"]);
+      $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig["variablesTable"]);
 
       // create all new runtime configuration
       $config = new ExerciseEnvironmentConfig(
