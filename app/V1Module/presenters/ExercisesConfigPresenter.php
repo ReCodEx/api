@@ -142,7 +142,8 @@ class ExercisesConfigPresenter extends BasePresenter {
       }
 
       // load variables table for this runtime configuration
-      $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig["variablesTable"]);
+      $varTableArray = array_key_exists("variablesTable", $environmentConfig) ? $environmentConfig["variablesTable"] : array();
+      $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($varTableArray);
 
       // create all new runtime configuration
       $config = new ExerciseEnvironmentConfig(
