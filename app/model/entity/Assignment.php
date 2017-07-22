@@ -33,6 +33,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Exercise getExercise()
  * @method string getScoreConfig()
  * @method ExerciseConfig getExerciseConfig()
+ * @method void setScoreConfig(string $scoreConfig)
  */
 class Assignment implements JsonSerializable
 {
