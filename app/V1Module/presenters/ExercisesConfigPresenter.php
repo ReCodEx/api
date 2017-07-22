@@ -75,6 +75,15 @@ class ExercisesConfigPresenter extends BasePresenter {
    */
   public $exerciseAcl;
 
+
+  /**
+   * Needed change of ExerciseConfig after update of environment configurations.
+   * @param Exercise $exercise
+   */
+  private function updateEnvironmentsInExerciseConfig(Exercise $exercise) {
+    ; // @todo
+  }
+
   /**
    * Get runtime configurations for exercise.
    * @GET
@@ -159,10 +168,13 @@ class ExercisesConfigPresenter extends BasePresenter {
     // replace all environments in exercise by the new ones
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
 
-    // make changes to database
+    // make changes and updates to database entity
     $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
+    $this->updateEnvironmentsInExerciseConfig($exercise);
+
+    // flush database changes and return successful response
     $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse("OK");
   }
 
   /**

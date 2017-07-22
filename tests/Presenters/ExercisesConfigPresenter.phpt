@@ -120,13 +120,14 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
+    Assert::equal("OK", $result['payload']);
 
+    $exercise = $this->exercises->findOrThrow($exercise->getId());
     // check runtime environments directly on exercise
-    Assert::count(1, $result['payload']->getRuntimeEnvironments());
-    Assert::equal($environment->getId(), $result['payload']->getRuntimeEnvironments()->first()->getId());
+    Assert::count(1, $exercise->getRuntimeEnvironments());
+    Assert::equal($environment->getId(), $exercise->getRuntimeEnvironments()->first()->getId());
 
-    $updatedEnvironmentConfigs = $result["payload"]->getExerciseEnvironmentConfigs();
+    $updatedEnvironmentConfigs = $exercise->getExerciseEnvironmentConfigs();
     Assert::count(1, $updatedEnvironmentConfigs);
 
     $environmentConfig = $updatedEnvironmentConfigs->first();
