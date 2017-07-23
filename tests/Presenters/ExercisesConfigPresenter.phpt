@@ -99,7 +99,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       'POST',
       ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->id],
       [
-        'environmentConfigs' => [ [
+        'environmentConfigs' => [
+          [
             'runtimeEnvironmentId' => $environment->getId(),
             'variablesTable' => [
               'varA' => [
@@ -120,17 +121,23 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::type(App\Model\Entity\Exercise::class, $result['payload']);
+    Assert::equal("OK", $result['payload']);
 
     // check runtime environments directly on exercise
-    Assert::count(1, $result['payload']->getRuntimeEnvironments());
-    Assert::equal($environment->getId(), $result['payload']->getRuntimeEnvironments()->first()->getId());
+    $exercise = $this->exercises->findOrThrow($exercise->getId());
+    Assert::count(1, $exercise->getRuntimeEnvironments());
+    Assert::equal($environment->getId(), $exercise->getRuntimeEnvironments()->first()->getId());
 
-    $updatedEnvironmentConfigs = $result["payload"]->getExerciseEnvironmentConfigs();
+    $updatedEnvironmentConfigs = $exercise->getExerciseEnvironmentConfigs();
     Assert::count(1, $updatedEnvironmentConfigs);
 
     $environmentConfig = $updatedEnvironmentConfigs->first();
     Assert::equal($environment->getId(), $environmentConfig->getRuntimeEnvironment()->getId());
+
+    // check if environment was added to exercise config
+    $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    Assert::contains($environment->getId(), $exerciseConfig->getEnvironments());
+    Assert::count(1, $exerciseConfig->getEnvironments());
   }
 
   public function testGetConfiguration()

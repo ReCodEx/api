@@ -23,7 +23,7 @@ class ExerciseConfig implements JsonSerializable {
 
   /**
    * Get environments list.
-   * @return array
+   * @return string[]
    */
   public function getEnvironments(): array {
     return $this->environments;
@@ -53,7 +53,7 @@ class ExerciseConfig implements JsonSerializable {
 
   /**
    * Get associative array of tests.
-   * @return array
+   * @return Test[]
    */
   public function getTests(): array {
     return $this->tests;
