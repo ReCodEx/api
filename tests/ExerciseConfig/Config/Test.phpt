@@ -28,8 +28,8 @@ class TestTest extends Tester\TestCase
       "pipelines" => [
         "hello" => [
           "variables" => [
-            "hello" => [ "type" => "string", "value" => "world" ],
-            "world" => [ "type" => "file", "value" => "hello" ]
+            [ "name" => "hello", "type" => "string", "value" => "world" ],
+            [ "name" => "world", "type" => "file", "value" => "hello" ]
           ],
         ],
         "world" => [
@@ -42,7 +42,7 @@ class TestTest extends Tester\TestCase
           "pipelines" => [
             "newEnvAPipeline" => [
               "variables" => [
-                "varA" => [ "type" => "string", "value" => "valA" ]
+                [ "name" => "varA", "type" => "string", "value" => "valA" ]
               ]
             ]
           ]

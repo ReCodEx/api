@@ -15,8 +15,8 @@ class TestPipelineVars extends Tester\TestCase
 {
   static $config = [
     "variables" => [
-      "varA" => [ "type" => "string", "value" => "valA" ],
-      "varB" => [ "type" => "file", "value" => "valB" ]
+      [ "name" => "varA", "type" => "string", "value" => "valA" ],
+      [ "name" => "varB", "type" => "file", "value" => "valB" ]
     ]
   ];
 
@@ -44,9 +44,10 @@ class TestPipelineVars extends Tester\TestCase
 
   public function testVariablesOperations() {
     $pipeline = new PipelineVars;
+    $variableMeta = (new VariableMeta)->setName("variableA");
+    $variable = new StringVariable($variableMeta);
 
-    $variable = new StringVariable(new VariableMeta);
-    $pipeline->addVariable("variableA", $variable);
+    $pipeline->addVariable($variable);
     Assert::type(StringVariable::class, $pipeline->getVariable("variableA"));
 
     $pipeline->removeVariable("non-existant");

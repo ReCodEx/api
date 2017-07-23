@@ -32,6 +32,14 @@ abstract class Variable implements JsonSerializable
   public abstract function getType(): ?string;
 
   /**
+   * Get name of the variable.
+   * @return null|string
+   */
+  public function getName(): ?string {
+    return $this->meta->getName();
+  }
+
+  /**
    * Get value of the variable.
    * @return null|string
    */

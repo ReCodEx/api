@@ -17,10 +17,10 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestVariablesTable extends Tester\TestCase
 {
   static $config = [
-    "environment" => [ "type" => "file", "value" => "envVar" ],
-    "tnemnorivne" => [ "type" => "string", "value" => "vneVar" ],
-    "varFileArr" => [ "type" => "file[]", "value" => "envFileArrVar" ],
-    "varStringArr" => [ "type" => "string[]", "value" => "envStringArrVar" ]
+    [ "name" => "environment", "type" => "file", "value" => "envVar" ],
+    [ "name" => "tnemnorivne", "type" => "string", "value" => "vneVar" ],
+    [ "name" => "varFileArr", "type" => "file[]", "value" => "envFileArrVar" ],
+    [ "name" => "varStringArr", "type" => "string[]", "value" => "envStringArrVar" ]
   ];
 
   /** @var Loader */
@@ -52,9 +52,10 @@ class TestVariablesTable extends Tester\TestCase
 
   public function testVariablesOperations() {
     $table = new VariablesTable;
-    $variable = new StringVariable(new VariableMeta);
+    $variableMeta = (new VariableMeta)->setName("varA");
+    $variable = new StringVariable($variableMeta);
 
-    $table->set("varA", $variable);
+    $table->set($variable);
     Assert::equal(1, $table->size());
 
     $table->remove("non-existant");

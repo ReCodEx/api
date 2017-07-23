@@ -39,12 +39,11 @@ class VariablesTable implements JsonSerializable
   /**
    * If table contains variable with the same key as the given one.
    * Original variable is replaced by the new one.
-   * @param string $key
-   * @param Variable $value
+   * @param Variable $variable
    * @return VariablesTable
    */
-  public function set(string $key, Variable $value): VariablesTable {
-    $this->table[$key] = $value;
+  public function set(Variable $variable): VariablesTable {
+    $this->table[$variable->getName()] = $variable;
     return $this;
   }
 
@@ -72,8 +71,8 @@ class VariablesTable implements JsonSerializable
    */
   public function toArray(): array {
     $data = [];
-    foreach ($this->table as $key => $value) {
-      $data[$key] = $value->toArray();
+    foreach ($this->table as $variable) {
+      $data[] = $variable->toArray();
     }
     return $data;
   }

@@ -77,14 +77,16 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       // check variables, again defined in fixtures
       $variablesTable = $config["variablesTable"];
       Assert::count(2, $variablesTable);
-      Assert::true(array_key_exists("varA", $variablesTable));
-      Assert::true(array_key_exists("varB", $variablesTable));
-
-      // check types of variables and values
-      Assert::equal("file", $variablesTable["varA"]["type"]);
-      Assert::equal("string", $variablesTable["varB"]["type"]);
-      Assert::equal("valA", $variablesTable["varA"]["value"]);
-      Assert::equal("valB", $variablesTable["varB"]["value"]);
+      Assert::contains([
+        "name" => "varA",
+        "type" => "file",
+        "value" => "valA"
+      ], $variablesTable);
+      Assert::contains([
+        "name" => "varB",
+        "type" => "string",
+        "value" => "valB"
+      ], $variablesTable);
     }
   }
 
@@ -103,11 +105,13 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           [
             'runtimeEnvironmentId' => $environment->getId(),
             'variablesTable' => [
-              'varA' => [
+              [
+                'name' => 'varA',
                 'type' => 'string',
                 'value' => 'valA'
               ],
-              'varB' => [
+              [
+                'name' => 'varB',
                 'type' => 'file',
                 'value' => 'valB'
               ]

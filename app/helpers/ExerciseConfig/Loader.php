@@ -55,6 +55,11 @@ class Loader {
 
     $variable = new VariableMeta;
 
+    if (!isset($data[VariableMeta::NAME_KEY])) {
+      throw new ExerciseConfigException("Exercise variable does not have a name");
+    }
+    $variable->setName($data[VariableMeta::NAME_KEY]);
+
     if (!isset($data[VariableMeta::TYPE_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have any type");
     }
@@ -81,8 +86,8 @@ class Loader {
 
     $table = new VariablesTable;
 
-    foreach ($data as $key => $value) {
-      $table->set($key, $this->loadVariable($value));
+    foreach ($data as $value) {
+      $table->set($this->loadVariable($value));
     }
 
     return $table;
@@ -102,8 +107,8 @@ class Loader {
     $pipeline = new PipelineVars();
 
     if (isset($data[PipelineVars::VARIABLES_KEY]) && is_array($data[PipelineVars::VARIABLES_KEY])) {
-      foreach ($data[PipelineVars::VARIABLES_KEY] as $name => $value) {
-        $pipeline->addVariable($name, $this->loadVariable($value));
+      foreach ($data[PipelineVars::VARIABLES_KEY] as $value) {
+        $pipeline->addVariable($this->loadVariable($value));
       }
     }
 

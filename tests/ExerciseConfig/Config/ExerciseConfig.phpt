@@ -21,7 +21,7 @@ class TestExerciseConfig extends Tester\TestCase
           "pipelines" => [
             "hello" => [
               "variables" => [
-                "world" => [ "type" => "string", "value" => "hello" ]
+                [ "name" => "world", "type" => "string", "value" => "hello" ]
               ]
             ]
           ],
@@ -38,7 +38,7 @@ class TestExerciseConfig extends Tester\TestCase
         "pipelines" => [
           "world" => [
             "variables" => [
-              "hello" => [ "type" => "string", "value" => "world" ]
+              [ "name" => "hello", "type" => "string", "value" => "world" ]
             ]
           ]
         ],

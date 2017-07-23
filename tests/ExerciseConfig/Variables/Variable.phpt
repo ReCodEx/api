@@ -16,6 +16,7 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestVariable extends Tester\TestCase
 {
   static $config = [
+    "name" => "varName",
     "type" => "string",
     "value" => "varValue"
   ];
@@ -60,22 +61,32 @@ class TestVariable extends Tester\TestCase
   }
 
   public function testCorrectTypes() {
-    Assert::type(StringVariable::class, $this->loader->loadVariable(["type" => "string", "value" => "val"]));
-    Assert::type(StringVariable::class, $this->loader->loadVariable(["type" => "StRiNg", "value" => "val"]));
+    Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string", "value" => "val"]));
+    Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg", "value" => "val"]));
 
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["type" => "string[]", "value" => "val"]));
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["type" => "StRiNg[]", "value" => "val"]));
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string[]", "value" => "val"]));
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg[]", "value" => "val"]));
 
-    Assert::type(FileVariable::class, $this->loader->loadVariable(["type" => "file", "value" => "val"]));
-    Assert::type(FileVariable::class, $this->loader->loadVariable(["type" => "FiLe", "value" => "val"]));
+    Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file", "value" => "val"]));
+    Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe", "value" => "val"]));
 
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["type" => "file[]", "value" => "val"]));
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["type" => "FiLe[]", "value" => "val"]));
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file[]", "value" => "val"]));
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe[]", "value" => "val"]));
+  }
+
+  public function testMissingName() {
+    Assert::exception(function () {
+      $this->loader->loadVariable([
+        "value" => "hello",
+        "type" => "string"
+      ]);
+    }, ExerciseConfigException::class);
   }
 
   public function testMissingType() {
     Assert::exception(function () {
       $this->loader->loadVariable([
+        "name" => "varName",
         "value" => "hello"
       ]);
     }, ExerciseConfigException::class);
@@ -84,6 +95,7 @@ class TestVariable extends Tester\TestCase
   public function testMissingValue() {
     Assert::exception(function () {
       $this->loader->loadVariable([
+        "name" => "varName",
         "type" => "string"
       ]);
     }, ExerciseConfigException::class);

@@ -3,10 +3,10 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @CRuntime
             - '''
-              "varA":
+              - name: "varA"
                 type: "file"
                 value: "valA"
-              "varB":
+              - name: "varB"
                 type: "string"
                 value: "valB"
               '''
@@ -15,10 +15,10 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @Java8Runtime
             - '''
-              "varA":
+              - name: "varA"
                 type: "file"
                 value: "valA"
-              "varB":
+              - name: "varB"
                 type: "string"
                 value: "valB"
               '''
@@ -37,7 +37,7 @@ App\Model\Entity\ExerciseConfig:
                   pipelines:
                     "pipeline1":
                       variables:
-                        varA:
+                        - name: varA
                           type: string
                           value: valA
                   environments:
@@ -45,7 +45,7 @@ App\Model\Entity\ExerciseConfig:
                       pipelines:
                         "pipelineJava":
                           variables:
-                            varJava:
+                            - name: varJava
                               type: string
                               value: valJava
                     c-gcc-linux: []
@@ -53,7 +53,7 @@ App\Model\Entity\ExerciseConfig:
                   pipelines:
                     "pipeline2":
                       variables:
-                        varB:
+                        - name: varB
                           type: file
                           value: valB
                   environments:
@@ -61,7 +61,7 @@ App\Model\Entity\ExerciseConfig:
                       pipelines:
                         "pipeline2":
                           variables:
-                            varCpp:
+                            - name: varCpp
                               type: file
                               value: valCpp
               '''

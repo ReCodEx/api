@@ -11,11 +11,19 @@ use JsonSerializable;
  */
 class VariableMeta implements JsonSerializable {
 
+  /** Name of the name key */
+  const NAME_KEY = "name";
   /** Name of the type key */
   const TYPE_KEY = "type";
   /** Name of the value key */
   const VALUE_KEY = "value";
 
+
+  /**
+   * Variable name.
+   * @var string
+   */
+  protected $name = null;
 
   /**
    * Variable type.
@@ -29,6 +37,24 @@ class VariableMeta implements JsonSerializable {
    */
   protected $value = null;
 
+
+  /**
+   * Get name of this variable.
+   * @return null|string
+   */
+  public function getName(): ?string {
+    return $this->name;
+  }
+
+  /**
+   * Set name of this variable.
+   * @param string $name
+   * @return VariableMeta
+   */
+  public function setName(string $name): VariableMeta {
+    $this->name = $name;
+    return $this;
+  }
 
   /**
    * Get type of this variable.
@@ -74,6 +100,7 @@ class VariableMeta implements JsonSerializable {
   public function toArray(): array {
     $data = [];
 
+    $data[self::NAME_KEY] = $this->name;
     $data[self::TYPE_KEY] = $this->type;
     $data[self::VALUE_KEY] = $this->value;
 

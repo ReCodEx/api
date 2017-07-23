@@ -34,14 +34,9 @@ class Transformer {
     $pipelineArr["name"] = $pipelineId;
     $pipelineArr["variables"] = array();
 
-    foreach ($pipeline->getVariables() as $variableId => $variable) {
-      $variableArr = array();
-      $variableArr["name"] = $variableId;
-      $variableArr["type"] = $variable->getType();
-      $variableArr["value"] = $variable->getValue();
-
+    foreach ($pipeline->getVariables() as $variable) {
       // do not forget to add constructed variable to pipeline
-      $pipelineArr["variables"][] = $variableArr;
+      $pipelineArr["variables"][] = $variable->toArray();
     }
 
     return $pipelineArr;
@@ -112,12 +107,8 @@ class Transformer {
     $pipelineArr[PipelineVars::VARIABLES_KEY] = array();
 
     foreach ($data['variables'] as $variable) {
-      $variableArr = array();
-      $variableArr[VariableMeta::TYPE_KEY] = $variable['type'];
-      $variableArr[VariableMeta::VALUE_KEY] = $variable['value'];
-
       // do not forget to add constructed variable to pipeline
-      $pipelineArr[PipelineVars::VARIABLES_KEY][$variable['name']] = $variableArr;
+      $pipelineArr[PipelineVars::VARIABLES_KEY][] = $variable;
     }
 
     return array($data['name'], $pipelineArr);

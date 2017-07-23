@@ -16,8 +16,8 @@ class TestEnvironment extends Tester\TestCase
     "pipelines" => [
       "hello" => [
         "variables" => [
-          "hello" => [ "type" => "string", "value" => "world" ],
-          "world" => [ "type" => "string", "value" => "hello" ]
+          [ "name" => "hello", "type" => "string", "value" => "world" ],
+          [ "name" => "world", "type" => "string", "value" => "hello" ]
         ]
       ],
       "world" => [
