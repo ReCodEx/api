@@ -30,7 +30,7 @@ class Test implements JsonSerializable {
 
   /**
    * Get default pipelines for this test.
-   * @return array
+   * @return PipelineVars[]
    */
   public function getPipelines(): array {
     return $this->pipelines;
@@ -72,7 +72,7 @@ class Test implements JsonSerializable {
 
   /**
    * Get associative array of environments.
-   * @return array
+   * @return Environment[]
    */
   public function getEnvironments(): array {
     return $this->environments;

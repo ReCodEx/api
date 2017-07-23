@@ -20,6 +20,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
 use Doctrine\Common\Collections\ArrayCollection;
 
+
 /**
  * Endpoints for exercise configuration manipulation
  * @LoggedIn
@@ -78,10 +79,41 @@ class ExercisesConfigPresenter extends BasePresenter {
 
   /**
    * Needed change of ExerciseConfig after update of environment configurations.
+   * Flush of the database is not performed!
    * @param Exercise $exercise
    */
   private function updateEnvironmentsInExerciseConfig(Exercise $exercise) {
-    ; // @todo
+    $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
+    $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+
+    // go through new environments config and add potentially new environment to ExerciseConfig
+    foreach ($exerciseEnvironments as $environmentId) {
+      if (in_array($environmentId, $exerciseConfig->getEnvironments())) {
+        continue;
+      }
+
+      // environment can be added only at the top level, in the tests there
+      // should be assigned default pipeline values during transformation
+      $exerciseConfig->addEnvironment($environmentId);
+    }
+
+    // delete unused environments from ExerciseConfig
+    foreach ($exerciseConfig->getEnvironments() as $environmentId) {
+      if (in_array($environmentId, $exerciseEnvironments)) {
+        continue;
+      }
+
+      // environment needs to be deleted from top level, but also all tests
+      // have to be run through and optionally environments should be deleted
+      $exerciseConfig->removeEnvironment($environmentId);
+      foreach ($exerciseConfig->getTests() as $test) {
+        $test->removeEnvironment($environmentId);
+      }
+    }
+
+    // finally write changes into exercise entity
+    $configEntity = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $exercise->getExerciseConfig());
+    $exercise->setExerciseConfig($configEntity);
   }
 
   /**
@@ -165,10 +197,8 @@ class ExercisesConfigPresenter extends BasePresenter {
       $configs[$environmentId] = $config;
     }
 
-    // replace all environments in exercise by the new ones
-    $exercise->setRuntimeEnvironments($runtimeEnvironments);
-
     // make changes and updates to database entity
+    $exercise->setRuntimeEnvironments($runtimeEnvironments);
     $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
     $this->updateEnvironmentsInExerciseConfig($exercise);
 
