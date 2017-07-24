@@ -4,9 +4,12 @@ App\Model\Entity\ExerciseLimits:
             - @CRuntime
             - @demoHWGroup
             - '''
-              box-id-1:
-                  wall-time: 5
-                  memory: 50
-                  parallel: 500
+              test-id-1:
+                env-id-1:
+                  pipeline-id-1:
+                    box-id-1:
+                      wall-time: 5
+                      memory: 50
+                      parallel: 500
               '''
             - @demoAdmin

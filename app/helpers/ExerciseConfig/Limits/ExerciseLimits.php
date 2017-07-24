@@ -10,7 +10,10 @@ use JsonSerializable;
  */
 class ExerciseLimits implements JsonSerializable {
 
-  /** @var array limits indexed by box identification */
+  /**
+   * @var array limits indexed by (in order) test id, environment id,
+   * pipeline id and box identification
+   */
   protected $limits = array();
 
 
@@ -23,22 +26,38 @@ class ExerciseLimits implements JsonSerializable {
   }
 
   /**
-   * Get limits for the given box identification.
+   * Get limits for the given identifications.
+   * @param string $testId
+   * @param string $environmentId
+   * @param string $pipelineId
    * @param string $boxId
    * @return Limits|null
    */
-  public function getLimits(string $boxId): ?Limits {
-    return $this->limits[$boxId];
+  public function getLimits(string $testId, string $environmentId, string $pipelineId, string $boxId): ?Limits {
+    return $this->limits[$testId][$environmentId][$pipelineId][$boxId];
   }
 
   /**
    * Add limits for appropriate task into this holder.
+   * @param string $testId
+   * @param string $environmentId
+   * @param string $pipelineId
    * @param string $boxId identification of box to which limits belongs to
    * @param Limits $limits limits
-   * @return $this
+   * @return ExerciseLimits
    */
-  public function addLimits(string $boxId, Limits $limits): ExerciseLimits {
-    $this->limits[$boxId] = $limits;
+  public function addLimits(string $testId, string $environmentId, string $pipelineId, string $boxId, Limits $limits): ExerciseLimits {
+    if (!array_key_exists($testId, $this->limits)) {
+      $this->limits[$testId] = array();
+    }
+    if (!array_key_exists($environmentId, $this->limits[$testId])) {
+      $this->limits[$testId][$environmentId] = array();
+    }
+    if (!array_key_exists($pipelineId, $this->limits[$testId][$environmentId])) {
+      $this->limits[$testId][$environmentId][$pipelineId] = array();
+    }
+
+    $this->limits[$testId][$environmentId][$pipelineId][$boxId] = $limits;
     return $this;
   }
 
@@ -48,8 +67,17 @@ class ExerciseLimits implements JsonSerializable {
    */
   public function toArray(): array {
     $data = [];
-    foreach ($this->limits as $key => $value) {
-      $data[$key] = $value->toArray();
+    foreach ($this->limits as $testId => $testVal) {
+      $data[$testId] = array();
+      foreach ($testVal as $environmentId => $environmentVal) {
+        $data[$testId][$environmentId] = array();
+        foreach ($environmentVal as $pipelineId => $pipelineVal) {
+          $data[$testId][$environmentId][$pipelineId] = array();
+          foreach ($pipelineVal as $boxId => $boxVal) {
+            $data[$testId][$environmentId][$pipelineId][$boxId] = $boxVal->toArray();
+          }
+        }
+      }
     }
     return $data;
   }
