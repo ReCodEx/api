@@ -146,6 +146,7 @@ class TestPipelinesPresenter extends Tester\TestCase
       ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
       [
         'name' => 'new pipeline name',
+        'description' => 'description of pipeline',
         'pipeline' => $pipelineConfig
       ]
     );
@@ -157,6 +158,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     Assert::equal('new pipeline name', $payload->getName());
+    Assert::equal('description of pipeline', $payload->getDescription());
     Assert::equal($pipelineConfig, $payload->getPipelineConfig()->getParsedPipeline());
 
     $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();

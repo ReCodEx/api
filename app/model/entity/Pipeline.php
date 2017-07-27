@@ -14,9 +14,11 @@ use JsonSerializable;
  *
  * @method string getId()
  * @method string getName()
+ * @method string getDescription()
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
- * @method setName($name)
+ * @method setName(string $name)
+ * @method setDescription(string $description)
  * @method setPipelineConfig($config)
  */
 class Pipeline implements JsonSerializable
@@ -34,6 +36,11 @@ class Pipeline implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $name;
+
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $description;
 
   /**
    * @ORM\ManyToOne(targetEntity="PipelineConfig", inversedBy="pipelines", cascade={"persist"})
@@ -58,15 +65,18 @@ class Pipeline implements JsonSerializable
   /**
    * Constructor
    * @param string $name
+   * @param string $description
    * @param PipelineConfig $pipelineConfig
    * @param User $author
    * @param ExerciseConfig|null $createdFrom
    */
-  private function __construct(string $name, PipelineConfig $pipelineConfig,
-      User $author, ExerciseConfig $createdFrom = null) {
+  private function __construct(string $name, string $description,
+      PipelineConfig $pipelineConfig, User $author,
+      ExerciseConfig $createdFrom = null) {
     $this->createdAt = new DateTime;
 
     $this->name = $name;
+    $this->description = $description;
     $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
     $this->createdFrom = $createdFrom;
@@ -78,7 +88,7 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public static function create(User $user): Pipeline {
-    return new self("", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
+    return new self("", "", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
   }
 
   /**
@@ -90,6 +100,7 @@ class Pipeline implements JsonSerializable
   public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
     return new self(
       $pipeline->getName(),
+      $pipeline->getDescription(),
       $pipeline->getPipelineConfig(),
       $user,
       $pipeline
@@ -100,6 +111,7 @@ class Pipeline implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
+      "description" => $this->description,
       "author" => $this->author->getId(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline()
     ];

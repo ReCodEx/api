@@ -124,6 +124,7 @@ class PipelinesPresenter extends BasePresenter {
    * @POST
    * @param string $id Identifier of the pipeline
    * @Param(type="post", name="name", description="Name of the pipeline")
+   * @Param(type="post", name="description", description="Human readable description of pipeline")
    * @Param(type="post", name="pipeline", description="Pipeline configuration")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
@@ -135,9 +136,11 @@ class PipelinesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to update this pipeline.");
     }
 
-    // update name of the pipeline
+    // update fields of the pipeline
     $name = $this->getRequest()->getPost("name");
+    $description = $this->getRequest()->getPost("description");
     $pipeline->setName($name);
+    $pipeline->setDescription($description);
 
     // get new configuration from parameters, parse it and check for format errors
     $pipelinePost = $this->getRequest()->getPost("pipeline");
