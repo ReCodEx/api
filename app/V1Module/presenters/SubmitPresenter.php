@@ -177,7 +177,7 @@ class SubmitPresenter extends BasePresenter {
 
     // generate job configuration and create submission
     $note = $req->getPost("note");
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser);
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment, $runtimeEnvironment);
     $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
 
     // persist all the data in the database - this will also assign the UUID to the submission

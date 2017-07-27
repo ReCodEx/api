@@ -233,11 +233,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
-    $hwGroups = $referenceSolution->getExercise()->getHardwareGroups();
+    $exercise = $referenceSolution->getExercise();
+    $runtimeEnvironment = $referenceSolution->getRuntimeEnvironment();
+    $hwGroups = $exercise->getHardwareGroups();
     $evaluations = [];
     $errors = [];
 
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser());
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment);
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
       $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);
@@ -246,7 +248,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       try {
         $resultsUrl = $this->submissionHelper->submitReference(
           $evaluation->getId(),
-          $referenceSolution->getRuntimeEnvironment()->getId(),
+          $runtimeEnvironment->getId(),
           $hwGroup->getId(),
           $referenceSolution->getFiles()->getValues(),
           $jobConfig

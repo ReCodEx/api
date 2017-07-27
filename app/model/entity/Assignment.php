@@ -69,6 +69,8 @@ class Assignment implements JsonSerializable
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
+    $this->exerciseLimits = $exercise->getExerciseLimits();
+    $this->exerciseEnvironmentConfigs = $exercise->getExerciseEnvironmentConfigs();
     $this->exerciseConfig = $exercise->getExerciseConfig();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
@@ -174,6 +176,45 @@ class Assignment implements JsonSerializable
    * @var Collection
    */
   protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
+   */
+  protected $exerciseLimits;
+
+  /**
+   * Get exercise limits based on environment and hardware group.
+   * @param RuntimeEnvironment $environment
+   * @param HardwareGroup $hwGroup
+   * @return ExerciseLimits|NULL
+   */
+  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
+    $first = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
+          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
+      })->first();
+    return $first === FALSE ? NULL : $first;
+  }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", inversedBy="exercises", cascade={"persist"})
+   * @var Collection|Selectable
+   */
+  protected $exerciseEnvironmentConfigs;
+
+  /**
+   * Get runtime configuration based on environment identification.
+   * @param RuntimeEnvironment $environment
+   * @return ExerciseEnvironmentConfig|NULL
+   */
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+    $first = $this->exerciseEnvironmentConfigs->filter(
+      function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
+        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
+      })->first();
+    return $first === false ? null : $first;
+  }
 
   /**
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises")

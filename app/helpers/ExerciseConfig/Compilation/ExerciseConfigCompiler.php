@@ -2,6 +2,8 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\JobConfig\JobConfig;
 use App\Model\Repository\Pipelines;
 
@@ -27,9 +29,11 @@ class ExerciseConfigCompiler {
 
   /**
    * Compile ExerciseConfig to JobConfig
+   * @param ExerciseConfig $exerciseConfig
+   * @param VariablesTable $variablesTable
    * @return JobConfig
    */
-  public function compile(): JobConfig {
+  public function compile(ExerciseConfig $exerciseConfig, VariablesTable $variablesTable): JobConfig {
     return new JobConfig();
   }
 
