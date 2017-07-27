@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 
+use App\Helpers\ExerciseConfig\Compilation\ExerciseConfigCompiler;
 use App\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\RuntimeEnvironment;
@@ -14,12 +15,26 @@ use App\Model\Entity\RuntimeEnvironment;
 class Compiler {
 
   /**
+   * @var ExerciseConfigCompiler
+   */
+  private $exerciseConfigCompiler;
+
+
+  /**
+   * Compiler constructor.
+   * @param ExerciseConfigCompiler $exerciseConfigCompiler
+   */
+  public function __construct(ExerciseConfigCompiler $exerciseConfigCompiler) {
+    $this->exerciseConfigCompiler = $exerciseConfigCompiler;
+  }
+
+  /**
    * Generate job configuration from given exercise configuration.
    * @param ExerciseConfig $config
    * @param RuntimeEnvironment $runtimeEnvironment
    * @return JobConfig
    */
-  public function compileExerciseConfig(): JobConfig {
-    return new JobConfig;
+  public function compile(): JobConfig {
+    return $this->exerciseConfigCompiler->compile();
   }
 }

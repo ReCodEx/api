@@ -27,6 +27,9 @@ class BoxService
    */
   private $boxes;
 
+  /**
+   * BoxService constructor.
+   */
   public function __construct() {
     $this->boxes = [
       self::$DATA_TYPE => DataBox::class,

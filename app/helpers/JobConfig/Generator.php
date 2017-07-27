@@ -33,7 +33,7 @@ class Generator {
    * second list item is JobConfig itself
    */
   public function generateJobConfig(User $user): array {
-    $jobConfig = $this->compiler->compileExerciseConfig();
+    $jobConfig = $this->compiler->compile();
     $jobConfigPath = $this->storage->save($jobConfig, $user);
     return array($jobConfigPath, $jobConfig);
   }
