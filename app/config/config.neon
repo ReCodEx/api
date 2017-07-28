@@ -222,6 +222,10 @@ services:
   - App\Helpers\ExerciseConfig\Validation\PipelineValidator
   - App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator
   - App\Helpers\ExerciseConfig\Compilation\ExerciseConfigCompiler
+  - App\Helpers\ExerciseConfig\Compilation\PipelinesMerger
+  - App\Helpers\ExerciseConfig\Compilation\BoxesSorter
+  - App\Helpers\ExerciseConfig\Compilation\TestBoxesOptimizer
+  - App\Helpers\ExerciseConfig\Compilation\BoxesCompiler
 
   # models - repositories
   - App\Model\Repository\Comments
