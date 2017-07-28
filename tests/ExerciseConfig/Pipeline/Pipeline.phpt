@@ -6,7 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -17,9 +17,9 @@ class TestPipeline extends Tester\TestCase
   static $config = [
     [
       "name" => "file",
-      "type" => "data",
+      "type" => "data-in",
       "portsIn" => [],
-      "portsOut" => [ "data_file" => ['type' => 'file', 'value' => "out_data_file"] ]
+      "portsOut" => [ "in_data" => ['type' => 'file', 'value' => "out_data_file"] ]
     ],
     [
       "name" => "evaluation",
@@ -65,7 +65,7 @@ class TestPipeline extends Tester\TestCase
     $boxMeta->setName("boxA");
 
     $pipeline = new Pipeline;
-    $box = new DataBox($boxMeta);
+    $box = new DataInBox($boxMeta);
 
     $pipeline->set($box);
     Assert::equal(1, $pipeline->size());
@@ -81,7 +81,7 @@ class TestPipeline extends Tester\TestCase
     $pipeline = $this->loader->loadPipeline(self::$config);
     Assert::equal(2, $pipeline->size());
 
-    Assert::type(DataBox::class, $pipeline->get("file"));
+    Assert::type(DataInBox::class, $pipeline->get("file"));
     Assert::type(JudgeNormalBox::class, $pipeline->get("evaluation"));
 
     Assert::equal("file", $pipeline->get("file")->getName());

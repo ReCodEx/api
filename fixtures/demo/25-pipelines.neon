@@ -5,17 +5,17 @@ App\Model\Entity\PipelineConfig:
               - name: source
                 portsIn: []
                 portsOut:
-                  data_file:
+                  in_data:
                      type: file
                      value: source_file
-                type: data
+                type: data-in
               - name: test
                 portsIn: []
                 portsOut:
-                  data_file:
+                  in_data:
                     type: file
                     value: test_file
-                type: data
+                type: data-in
               - name: compilation
                 portsIn:
                   source_file:

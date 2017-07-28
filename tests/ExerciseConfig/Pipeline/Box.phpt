@@ -5,7 +5,7 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -18,9 +18,9 @@ class TestBox extends Tester\TestCase
 {
   static $config = [
     "name" => "file",
-    "type" => "data",
+    "type" => "data-in",
     "portsIn" => [],
-    "portsOut" => [ "data_file" => ['type' => 'file', 'value' => "out_data_file"] ]
+    "portsOut" => [ "in_data" => ['type' => 'file', 'value' => "out_data_file"] ]
   ];
 
   static $configJudge = [
@@ -77,10 +77,10 @@ class TestBox extends Tester\TestCase
 
   public function testCorrectTypes() {
     $dataBox = self::$config;
-    $dataBox["type"] = "data";
-    Assert::type(DataBox::class, $this->loader->loadBox($dataBox));
-    $dataBox["type"] = "DaTa";
-    Assert::type(DataBox::class, $this->loader->loadBox($dataBox));
+    $dataBox["type"] = "data-in";
+    Assert::type(DataInBox::class, $this->loader->loadBox($dataBox));
+    $dataBox["type"] = "DaTa-In";
+    Assert::type(DataInBox::class, $this->loader->loadBox($dataBox));
 
     $judgeNormalBox = self::$configJudge;
     $judgeNormalBox["type"] = "judge-normal";
@@ -105,14 +105,43 @@ class TestBox extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
+  public function testUndefinedPortType() {
+    $data = [
+      "name" => "file",
+      "type" => "data-in",
+      "portsIn" => [],
+      "portsOut" => ["in_data" => ['type' => 'string', 'value' => "out_data_file"]]
+    ];
+
+    Assert::noError(function () use ($data) {
+      $this->loader->loadBox($data);
+    });
+
+    Assert::noError(function () use ($data) {
+      $data["portsOut"]["in_data"]["type"] = "string[]";
+      $this->loader->loadBox($data);
+    });
+
+    Assert::noError(function () use ($data) {
+      $data["portsOut"]["in_data"]["type"] = "file";
+      $this->loader->loadBox($data);
+    });
+
+    Assert::noError(function () use ($data) {
+      $data["portsOut"]["in_data"]["type"] = "file[]";
+      $this->loader->loadBox($data);
+    });
+  }
+
   public function testWrongPortType() {
     Assert::exception(function () {
       $this->loader->loadBox(
         [
-          "name" => "file",
-          "type" => "data",
-          "portsIn" => [],
-          "portsOut" => ["data_file" => ['type' => 'string', 'value' => "out_data_file"]]
+          "name" => "judge",
+          "type" => "judge-normal",
+          "portsIn" => ["actual_output" => ['type' => 'string', 'value' => "out_data_file"],
+            "expected_output" => ['type' => 'string', 'value' => "out_data_file"]],
+          "portsOut" => ["score" => ['type' => 'string', 'value' => "out_data_file"]]
         ]
       );
     }, ExerciseConfigException::class);
@@ -162,16 +191,16 @@ class TestBox extends Tester\TestCase
 
   public function testCorrect() {
     $box = $this->loader->loadBox(self::$config);
-    Assert::type(DataBox::class, $box);
+    Assert::type(DataInBox::class, $box);
     Assert::equal("file", $box->getName());
     Assert::count(0, $box->getInputPorts());
     Assert::count(1, $box->getOutputPorts());
-    Assert::true(array_key_exists("data_file", $box->getOutputPorts()));
+    Assert::true(array_key_exists("in_data", $box->getOutputPorts()));
 
     /** @var PortMeta $port */
-    $port = $box->getOutputPorts()["data_file"];
+    $port = $box->getOutputPorts()["in_data"];
     Assert::type(FilePort::class, $port);
-    Assert::equal("data_file", $port->getName());
+    Assert::equal("in_data", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
   }
 

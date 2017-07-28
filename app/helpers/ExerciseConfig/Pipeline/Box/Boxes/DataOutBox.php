@@ -3,12 +3,13 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 
 
 /**
- * Box which represents data source, mainly files.
+ * Box which represents data source, mainly files which are output from pipeline.
  */
-class DataBox extends Box
+class DataOutBox extends Box
 {
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
@@ -18,15 +19,15 @@ class DataBox extends Box
    */
   public static function init() {
     if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
-      self::$defaultInputPorts = array();
-      self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName("data_file")->setVariable(""))
+      self::$defaultInputPorts = array(
+        new UndefinedPort((new PortMeta)->setName("out_data")->setVariable(""))
       );
+      self::$defaultOutputPorts = array();
     }
   }
 
   /**
-   * DataBox constructor.
+   * DataInBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {

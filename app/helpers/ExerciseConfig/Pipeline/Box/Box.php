@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -79,8 +80,8 @@ abstract class Box implements JsonSerializable
     foreach ($defaultInPorts as $defaultInPort) {
       $defaultPortType = get_class($defaultInPort);
       $inPort = $this->meta->getInputPort($defaultInPort->getName());
-      if (!$inPort || !($inPort instanceof $defaultPortType)) {
-        throw new ExerciseConfigException("Default input port '{$defaultInPort->getName()}' malformed");
+      if (!$inPort || (!($inPort instanceof $defaultPortType)) && !($defaultInPort instanceof UndefinedPort)) {
+        throw new ExerciseConfigException("Default input port '{$defaultInPort->getName()}' missing or malformed");
       }
     }
 
@@ -88,8 +89,8 @@ abstract class Box implements JsonSerializable
     foreach ($defaultOutPorts as $defaultOutPort) {
       $defaultPortType = get_class($defaultOutPort);
       $outPort = $this->meta->getOutputPort($defaultOutPort->getName());
-      if (!$outPort || !($outPort instanceof $defaultPortType)) {
-        throw new ExerciseConfigException("Default output port '{$defaultOutPort->getName()}' malformed");
+      if (!$outPort || (!($outPort instanceof $defaultPortType)) && !($defaultOutPort instanceof UndefinedPort)) {
+        throw new ExerciseConfigException("Default output port '{$defaultOutPort->getName()}' missing or malformed");
       }
     }
   }

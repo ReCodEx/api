@@ -14,7 +14,8 @@ use App\Exceptions\ExerciseConfigException;
  */
 class BoxService
 {
-  public static $DATA_TYPE = "data";
+  public static $DATA_IN_TYPE = "data-in";
+  public static $DATA_OUT_TYPE = "data-out";
   public static $JUDGE_NORMAL_TYPE = "judge-normal";
   public static $GCC_TYPE = "gcc";
   public static $ELF_EXEC_TYPE = "elf-exec";
@@ -32,7 +33,8 @@ class BoxService
    */
   public function __construct() {
     $this->boxes = [
-      self::$DATA_TYPE => DataBox::class,
+      self::$DATA_IN_TYPE => DataInBox::class,
+      self::$DATA_OUT_TYPE => DataOutBox::class,
       self::$JUDGE_NORMAL_TYPE => JudgeNormalBox::class,
       self::$GCC_TYPE => GccCompilationBox::class,
       self::$ELF_EXEC_TYPE => ElfExecutionBox::class
