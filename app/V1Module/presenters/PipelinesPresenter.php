@@ -104,6 +104,23 @@ class PipelinesPresenter extends BasePresenter {
   }
 
   /**
+   * Delete an pipeline
+   * @DELETE
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionRemovePipeline(string $id) {
+    /** @var Pipeline $pipeline */
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canRemove($pipeline)) {
+      throw new ForbiddenRequestException("You are not allowed to remove this pipeline.");
+    }
+
+    $this->pipelines->remove($pipeline);
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Get pipeline based on given identification.
    * @GET
    * @param string $id Identifier of the pipeline
@@ -150,6 +167,7 @@ class PipelinesPresenter extends BasePresenter {
     $description = $req->getPost("description");
     $pipeline->setName($name);
     $pipeline->setDescription($description);
+    $pipeline->setUpdatedAt(new \DateTime);
     $pipeline->incrementVersion();
 
     // get new configuration from parameters, parse it and check for format errors

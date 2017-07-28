@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Tester\Assert;
 
@@ -116,6 +117,26 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::type(\App\Model\Entity\Pipeline::class, $payload);
     Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+  }
+
+  public function testRemovePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    $request = new Nette\Application\Request('V1:Pipelines', 'DELETE',
+      ['action' => 'removePipeline', 'id' => $pipeline->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    Assert::exception(function () use ($pipeline) {
+      $this->presenter->pipelines->findOrThrow($pipeline->getId());
+    }, NotFoundException::class);
   }
 
   public function testUpdatePipeline()

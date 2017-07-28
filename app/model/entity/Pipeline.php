@@ -2,16 +2,14 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 use DateTime;
 use JsonSerializable;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
- *
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method string getName()
  * @method string getDescription()
@@ -21,6 +19,7 @@ use JsonSerializable;
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
+ * @method void setUpdatedAt(DateTime $date)
  */
 class Pipeline implements JsonSerializable
 {
@@ -71,6 +70,16 @@ class Pipeline implements JsonSerializable
   protected $createdAt;
 
   /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $updatedAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
+
+  /**
    * @ORM\ManyToOne(targetEntity="Pipeline")
    */
   protected $createdFrom;
@@ -88,6 +97,7 @@ class Pipeline implements JsonSerializable
       PipelineConfig $pipelineConfig, User $author,
       ExerciseConfig $createdFrom = null) {
     $this->createdAt = new DateTime;
+    $this->updatedAt = new DateTime;
 
     $this->name = $name;
     $this->version = $version;
@@ -128,6 +138,8 @@ class Pipeline implements JsonSerializable
       "id" => $this->id,
       "name" => $this->name,
       "version" => $this->version,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "description" => $this->description,
       "author" => $this->author->getId(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline()
