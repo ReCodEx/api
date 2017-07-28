@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
@@ -124,10 +125,12 @@ class PipelinesPresenter extends BasePresenter {
    * @POST
    * @param string $id Identifier of the pipeline
    * @Param(type="post", name="name", description="Name of the pipeline")
+   * @Param(type="post", name="version", description="Version of the edited pipeline")
    * @Param(type="post", name="description", description="Human readable description of pipeline")
    * @Param(type="post", name="pipeline", description="Pipeline configuration")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws BadRequestException
    */
   public function actionUpdatePipeline(string $id) {
     /** @var Pipeline $pipeline */
@@ -136,15 +139,23 @@ class PipelinesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to update this pipeline.");
     }
 
+    $req = $this->getRequest();
+    $version = intval($req->getPost("version"));
+    if ($version !== $pipeline->getVersion()) {
+      throw new BadRequestException("The pipeline was edited in the meantime and the version has changed. Current version is {$pipeline->getVersion()}.");
+    }
+
     // update fields of the pipeline
-    $name = $this->getRequest()->getPost("name");
-    $description = $this->getRequest()->getPost("description");
+    $name = $req->getPost("name");
+    $description = $req->getPost("description");
     $pipeline->setName($name);
     $pipeline->setDescription($description);
+    $pipeline->incrementVersion();
 
     // get new configuration from parameters, parse it and check for format errors
-    $pipelinePost = $this->getRequest()->getPost("pipeline");
-    $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelinePost);
+    $pipelinePost = $req->getPost("pipeline");
+    $pipelineArr = !empty($pipelinePost) ? $pipelinePost : array();
+    $pipelineConfig = $this->exerciseConfigLoader->loadPipeline($pipelineArr);
     $oldConfig = $pipeline->getPipelineConfig();
 
     // validate new pipeline configuration
@@ -156,6 +167,28 @@ class PipelinesPresenter extends BasePresenter {
     $this->pipelines->flush();
 
     $this->sendSuccessResponse($pipeline);
+  }
+
+  /**
+   * Check if the version of the pipeline is up-to-date.
+   * @POST
+   * @Param(type="post", name="version", validation="numericint", description="Version of the pipeline.")
+   * @param string $id Identifier of the pipeline
+   * @throws ForbiddenRequestException
+   */
+  public function actionValidatePipeline(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+
+    if (!$this->pipelineAcl->canUpdate($pipeline)) {
+      throw new ForbiddenRequestException("You cannot modify this pipeline.");
+    }
+
+    $req = $this->getRequest();
+    $version = intval($req->getPost("version"));
+
+    $this->sendSuccessResponse([
+      "versionIsUpToDate" => $pipeline->getVersion() === $version
+    ]);
   }
 
 }

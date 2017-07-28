@@ -180,6 +180,28 @@ class TestExercisesPresenter extends Tester\TestCase
     }));
   }
 
+  public function testValidatePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'validate', 'id' => $exercise->getId()],
+      ['version' => 2]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::true(is_array($payload));
+    Assert::true(array_key_exists("versionIsUpToDate", $payload));
+    Assert::false($payload["versionIsUpToDate"]);
+  }
+
   public function testCreate()
   {
     PresenterTestHelper::login($this->container, $this->adminLogin);
