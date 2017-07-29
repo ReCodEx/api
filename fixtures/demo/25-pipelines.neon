@@ -2,53 +2,58 @@ App\Model\Entity\PipelineConfig:
     demoPipelineConfig:
         __construct:
             - '''
-              - name: source
-                portsIn: []
-                portsOut:
-                  in_data:
-                     type: file
-                     value: source_file
-                type: data-in
-              - name: test
-                portsIn: []
-                portsOut:
-                  in_data:
-                    type: file
-                    value: test_file
-                type: data-in
-              - name: compilation
-                portsIn:
-                  source_file:
-                    type: file
-                    value: source_file
-                portsOut:
-                  binary_file:
-                    type: file
-                    value: binary_file
-                type: gcc
-              - name: run
-                portsIn:
-                  binary_file:
-                    type: file
-                    value: binary_file
-                portsOut:
-                  output_file:
-                    type: file
-                    value: actual_output
-                type: elf-exec
-              - name: judge
-                portsIn:
-                  actual_output:
-                    type: file
-                    value: actual_output
-                  expected_output:
-                    type: file
-                    value: expected_output
-                portsOut:
-                  score:
-                    type: string
-                    value: score
-                type: judge-normal
+              variables:
+                - name: varA
+                  type: string
+                  value: valA
+              boxes:
+                - name: source
+                  portsIn: []
+                  portsOut:
+                    in_data:
+                       type: file
+                       value: source_file
+                  type: data-in
+                - name: test
+                  portsIn: []
+                  portsOut:
+                    in_data:
+                      type: file
+                      value: test_file
+                  type: data-in
+                - name: compilation
+                  portsIn:
+                    source_file:
+                      type: file
+                      value: source_file
+                  portsOut:
+                    binary_file:
+                      type: file
+                      value: binary_file
+                  type: gcc
+                - name: run
+                  portsIn:
+                    binary_file:
+                      type: file
+                      value: binary_file
+                  portsOut:
+                    output_file:
+                      type: file
+                      value: actual_output
+                  type: elf-exec
+                - name: judge
+                  portsIn:
+                    actual_output:
+                      type: file
+                      value: actual_output
+                    expected_output:
+                      type: file
+                      value: expected_output
+                  portsOut:
+                    score:
+                      type: string
+                      value: score
+                  type: judge-normal
               '''
             - @demoAdmin
 

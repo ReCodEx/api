@@ -13,14 +13,6 @@ class Pipelines extends BaseRepository {
     parent::__construct($em, Pipeline::class);
   }
 
-  /**
-   * Find one pipeline by name.
-   * @param string $name
-   * @return mixed|null|object
-   */
-  public function findOneByName(string $name) {
-    return $this->findOneBy(["name" => $name]);
-  }
 
   /**
    * Internal simple search of pipeline names based on given string.

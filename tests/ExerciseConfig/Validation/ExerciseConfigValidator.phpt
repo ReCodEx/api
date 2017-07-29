@@ -3,6 +3,7 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
@@ -41,7 +42,10 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->validator = new ExerciseConfigValidator($this->mockPipelines, new Loader(new BoxService()));
 
     $this->mockPipelineConfigEntity = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $this->mockPipelineConfigEntity->shouldReceive("getParsedPipeline")->andReturn([]);
+    $this->mockPipelineConfigEntity->shouldReceive("getParsedPipeline")->andReturn([
+      "boxes" => [],
+      "variables" => []
+    ]);
 
     $this->mockPipelineEntity = Mockery::mock(\App\Model\Entity\Pipeline::class);
     $this->mockPipelineEntity->shouldReceive("getPipelineConfig")->andReturn($this->mockPipelineConfigEntity);
@@ -104,7 +108,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     ];
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOneByName")->withArgs(["not existing pipeline"])->andReturn(null);
+    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["not existing pipeline"])->andThrow(NotFoundException::class);
 
     // missing in defaults
     Assert::exception(function () use ($exerciseConfig, $variablesTables) {
@@ -131,8 +135,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     ];
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOneByName")->withArgs(["not existing pipeline"])->andReturn(null);
-    $this->mockPipelines->shouldReceive("findOneByName")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["not existing pipeline"])->andThrow(NotFoundException::class);
+    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
 
     // missing in environments
     Assert::exception(function () use ($exerciseConfig, $variablesTables) {
@@ -170,7 +174,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     ];
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOneByName")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
 
     Assert::noError(
       function () use ($exerciseConfig, $variablesTables) {

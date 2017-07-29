@@ -124,20 +124,29 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $pipeline = current($this->presenter->pipelines->findAll());
     $pipelineConfig = [
-      [
-        'name' => 'infile',
-        'type' => 'data-in',
-        'portsIn' => [],
-        'portsOut' => ['in_data' => ['type' => 'file', 'value' => 'in_data_file']]
+      "variables" => [
+        [
+          "name" => "varA",
+          "type" => "string",
+          "value" => "valA"
+        ]
       ],
-      [
-        'name' => 'judgement',
-        'type' => 'judge-normal',
-        'portsIn' => [
-          'expected_output' => ['type' => 'file', 'value' => 'in_data_file'],
-          'actual_output' => ['type' => 'file', 'value' => 'in_data_file']
+      "boxes" => [
+        [
+          'name' => 'infile',
+          'type' => 'data-in',
+          'portsIn' => [],
+          'portsOut' => ['in_data' => ['type' => 'file', 'value' => 'in_data_file']]
         ],
-        'portsOut' => ['score' => ['type' => 'string', 'value' => 'judge_score']]
+        [
+          'name' => 'judgement',
+          'type' => 'judge-normal',
+          'portsIn' => [
+            'expected_output' => ['type' => 'file', 'value' => 'in_data_file'],
+            'actual_output' => ['type' => 'file', 'value' => 'in_data_file']
+          ],
+          'portsOut' => ['score' => ['type' => 'string', 'value' => 'judge_score']]
+        ]
       ]
     ];
 
@@ -162,10 +171,10 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal($pipelineConfig, $payload->getPipelineConfig()->getParsedPipeline());
 
     $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();
-    Assert::equal("infile", $parsedPipeline[0]["name"]);
-    Assert::equal("judgement", $parsedPipeline[1]["name"]);
-    Assert::equal("data-in", $parsedPipeline[0]["type"]);
-    Assert::equal("judge-normal", $parsedPipeline[1]["type"]);
+    Assert::equal("infile", $parsedPipeline["boxes"][0]["name"]);
+    Assert::equal("judgement", $parsedPipeline["boxes"][1]["name"]);
+    Assert::equal("data-in", $parsedPipeline["boxes"][0]["type"]);
+    Assert::equal("judge-normal", $parsedPipeline["boxes"][1]["type"]);
   }
 
 }

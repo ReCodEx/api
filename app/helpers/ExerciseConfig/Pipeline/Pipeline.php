@@ -10,10 +10,29 @@ use Symfony\Component\Yaml\Yaml;
  */
 class Pipeline implements JsonSerializable
 {
+  /** Name of the boxes key */
+  const BOXES_KEY = "boxes";
+  /** Name of the variables key */
+  const VARIABLES_KEY = "variables";
+
+
   /**
    * @var array
    */
   protected $boxes = array();
+
+  /**
+   * @var VariablesTable
+   */
+  protected $variablesTable;
+
+
+  /**
+   * Pipeline constructor.
+   */
+  public function __construct() {
+    $this->variablesTable = new VariablesTable();
+  }
 
   /**
    * True if internal list contains box identified with given key.
@@ -67,14 +86,38 @@ class Pipeline implements JsonSerializable
   }
 
   /**
+   * Get variables table.
+   * @return VariablesTable
+   */
+  public function getVariablesTable(): VariablesTable {
+    return $this->variablesTable;
+  }
+
+  /**
+   * Set variables table.
+   * @param VariablesTable $variablesTable
+   * @return Pipeline
+   */
+  public function setVariablesTable(VariablesTable $variablesTable): Pipeline {
+    $this->variablesTable = $variablesTable;
+    return $this;
+  }
+
+
+  /**
    * Creates and returns properly structured array representing this object.
    * @return array
    */
   public function toArray(): array {
     $data = [];
+
+    $data[self::BOXES_KEY] = array();
     foreach ($this->boxes as $value) {
-      $data[] = $value->toArray();
+      $data[self::BOXES_KEY][] = $value->toArray();
     }
+
+    $data[self::VARIABLES_KEY] = $this->variablesTable->toArray();
+
     return $data;
   }
 

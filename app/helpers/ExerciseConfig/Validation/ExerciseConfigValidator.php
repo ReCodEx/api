@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\PipelineVars;
@@ -62,8 +63,9 @@ class ExerciseConfigValidator {
     // define reusable check function
     $checkFunc = function (array $pipelines) {
       foreach ($pipelines as $pipeline => $pipelineVars) {
-        $entity = $this->pipelines->findOneByName($pipeline);
-        if (!$entity) {
+        try {
+          $entity = $this->pipelines->findOrThrow($pipeline);
+        } catch (NotFoundException $e) {
           throw new ExerciseConfigException("Pipeline '$pipeline' not found");
         }
         $this->checkPipelineVariables($entity, $pipelineVars);
