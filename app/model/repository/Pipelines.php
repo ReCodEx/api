@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Criteria;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Pipeline;
 
-class Pipelines extends BaseRepository {
+class Pipelines extends BaseSoftDeleteRepository {
 
   public function __construct(EntityManager $em) {
     parent::__construct($em, Pipeline::class);

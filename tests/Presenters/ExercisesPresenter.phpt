@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AdditionalExerciseFile;
@@ -180,6 +181,28 @@ class TestExercisesPresenter extends Tester\TestCase
     }));
   }
 
+  public function testValidatePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'validate', 'id' => $exercise->getId()],
+      ['version' => 2]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::true(is_array($payload));
+    Assert::true(array_key_exists("versionIsUpToDate", $payload));
+    Assert::false($payload["versionIsUpToDate"]);
+  }
+
   public function testCreate()
   {
     PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -196,6 +219,27 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($this->adminLogin, $payload->getAuthor()->email);
     Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $payload->getName());
     Assert::notEqual(null, $payload->getExerciseConfig());
+  }
+
+  public function testRemove()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'DELETE',
+      ['action' => 'remove', 'id' => $exercise->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    Assert::exception(function () use ($exercise) {
+      $this->presenter->exercises->findOrThrow($exercise->getId());
+    }, NotFoundException::class);
   }
 
   public function testSupplementaryFilesUpload() {

@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Tester\Assert;
 
@@ -118,6 +119,26 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
   }
 
+  public function testRemovePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    $request = new Nette\Application\Request('V1:Pipelines', 'DELETE',
+      ['action' => 'removePipeline', 'id' => $pipeline->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+
+    Assert::exception(function () use ($pipeline) {
+      $this->presenter->pipelines->findOrThrow($pipeline->getId());
+    }, NotFoundException::class);
+  }
+
   public function testUpdatePipeline()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -155,6 +176,7 @@ class TestPipelinesPresenter extends Tester\TestCase
       ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
       [
         'name' => 'new pipeline name',
+        'version' => 1,
         'description' => 'description of pipeline',
         'pipeline' => $pipelineConfig
       ]
@@ -167,6 +189,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     Assert::equal('new pipeline name', $payload->getName());
+    Assert::equal(2, $payload->getVersion());
     Assert::equal('description of pipeline', $payload->getDescription());
     Assert::equal($pipelineConfig, $payload->getPipelineConfig()->getParsedPipeline());
 
@@ -175,6 +198,28 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal("judgement", $parsedPipeline["boxes"][1]["name"]);
     Assert::equal("data-in", $parsedPipeline["boxes"][0]["type"]);
     Assert::equal("judge-normal", $parsedPipeline["boxes"][1]["type"]);
+  }
+
+  public function testValidatePipeline()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    $request = new Nette\Application\Request('V1:Pipelines', 'POST',
+      ['action' => 'validatePipeline', 'id' => $pipeline->getId()],
+      ['version' => 2]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::true(is_array($payload));
+    Assert::true(array_key_exists("versionIsUpToDate", $payload));
+    Assert::false($payload["versionIsUpToDate"]);
   }
 
 }

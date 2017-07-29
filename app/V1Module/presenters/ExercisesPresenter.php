@@ -189,7 +189,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercise = $this->exercises->findOrThrow($id);
 
     if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot modify this assignment.");
+      throw new ForbiddenRequestException("You cannot modify this exercise.");
     }
 
     $req = $this->getHttpRequest();

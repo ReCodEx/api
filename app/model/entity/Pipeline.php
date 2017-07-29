@@ -2,24 +2,24 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
 use DateTime;
 use JsonSerializable;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
- *
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method string getName()
  * @method string getDescription()
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
+ * @method int getVersion()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
+ * @method void setUpdatedAt(DateTime $date)
  */
 class Pipeline implements JsonSerializable
 {
@@ -36,6 +36,18 @@ class Pipeline implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $name;
+
+  /**
+   * @ORM\Column(type="integer")
+   */
+  protected $version;
+
+  /**
+   * Increment version number.
+   */
+  public function incrementVersion() {
+    $this->version++;
+  }
 
   /**
    * @ORM\Column(type="text")
@@ -58,6 +70,16 @@ class Pipeline implements JsonSerializable
   protected $createdAt;
 
   /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $updatedAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
+
+  /**
    * @ORM\ManyToOne(targetEntity="Pipeline")
    */
   protected $createdFrom;
@@ -65,17 +87,20 @@ class Pipeline implements JsonSerializable
   /**
    * Constructor
    * @param string $name
+   * @param int $version
    * @param string $description
    * @param PipelineConfig $pipelineConfig
    * @param User $author
    * @param ExerciseConfig|null $createdFrom
    */
-  private function __construct(string $name, string $description,
+  private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, User $author,
       ExerciseConfig $createdFrom = null) {
     $this->createdAt = new DateTime;
+    $this->updatedAt = new DateTime;
 
     $this->name = $name;
+    $this->version = $version;
     $this->description = $description;
     $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
@@ -88,7 +113,7 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public static function create(User $user): Pipeline {
-    return new self("", "", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
+    return new self("", 1, "", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
   }
 
   /**
@@ -100,6 +125,7 @@ class Pipeline implements JsonSerializable
   public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
     return new self(
       $pipeline->getName(),
+      $pipeline->getVersion(),
       $pipeline->getDescription(),
       $pipeline->getPipelineConfig(),
       $user,
@@ -111,6 +137,9 @@ class Pipeline implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
+      "version" => $this->version,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "updatedAt" => $this->updatedAt->getTimestamp(),
       "description" => $this->description,
       "author" => $this->author->getId(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline()
