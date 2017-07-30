@@ -2,6 +2,8 @@
 
 namespace App\Helpers\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -17,6 +19,15 @@ class Pipeline implements JsonSerializable
 
 
   /**
+   * @var array
+   */
+  protected $dataInBoxes = array();
+  /**
+   * @var array
+   */
+  protected $dataOutBoxes = array();
+  /**
+   * Contains all boxes including DataIn and DataOut.
    * @var array
    */
   protected $boxes = array();
@@ -63,6 +74,14 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public function set(Box $box): Pipeline {
+    if ($box instanceof DataInBox) {
+      unset($this->dataOutBoxes[$box->getName()]);
+      $this->dataInBoxes[$box->getName()] = $box;
+    } else if ($box instanceof DataOutBox) {
+      unset($this->dataInBoxes[$box->getName()]);
+      $this->dataOutBoxes[$box->getName()] = $box;
+    }
+
     $this->boxes[$box->getName()] = $box;
     return $this;
   }
@@ -73,8 +92,26 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public function remove(string $key): Pipeline {
+    unset($this->dataInBoxes[$key]);
+    unset($this->dataOutBoxes[$key]);
     unset($this->boxes[$key]);
     return $this;
+  }
+
+  /**
+   * Get input data boxes for this pipeline.
+   * @return DataInBox[]
+   */
+  public function getDataInBoxes(): array {
+    return $this->dataInBoxes;
+  }
+
+  /**
+   * Get output data boxes for this pipeline.
+   * @return DataOutBox[]
+   */
+  public function getDataOutBoxes(): array {
+    return $this->dataOutBoxes;
   }
 
   /**

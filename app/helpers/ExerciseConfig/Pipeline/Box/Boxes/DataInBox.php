@@ -11,6 +11,8 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class DataInBox extends Box
 {
+  private static $initialized = false;
+  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -18,10 +20,12 @@ class DataInBox extends Box
    * Static initializer.
    */
   public static function init() {
-    if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
+    if (!self::$initialized) {
+      self::$initialized = true;
+      self::$defaultName = "Input Data";
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new UndefinedPort((new PortMeta)->setName("in_data")->setVariable(""))
+        new UndefinedPort((new PortMeta)->setName("in-data")->setVariable(""))
       );
     }
   }
@@ -51,6 +55,15 @@ class DataInBox extends Box
   public function getDefaultOutputPorts(): array {
     self::init();
     return self::$defaultOutputPorts;
+  }
+
+  /**
+   * Get default name of this box.
+   * @return string
+   */
+  public function getDefaultName(): string {
+    self::init();
+    return self::$defaultName;
   }
 
 }

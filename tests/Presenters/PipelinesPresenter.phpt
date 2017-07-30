@@ -157,14 +157,14 @@ class TestPipelinesPresenter extends Tester\TestCase
           'name' => 'infile',
           'type' => 'data-in',
           'portsIn' => [],
-          'portsOut' => ['in_data' => ['type' => 'file', 'value' => 'in_data_file']]
+          'portsOut' => ['in-data' => ['type' => 'file', 'value' => 'in_data_file']]
         ],
         [
           'name' => 'judgement',
           'type' => 'judge-normal',
           'portsIn' => [
-            'expected_output' => ['type' => 'file', 'value' => 'in_data_file'],
-            'actual_output' => ['type' => 'file', 'value' => 'in_data_file']
+            'expected-output' => ['type' => 'file', 'value' => 'in_data_file'],
+            'actual-output' => ['type' => 'file', 'value' => 'in_data_file']
           ],
           'portsOut' => ['score' => ['type' => 'string', 'value' => 'judge_score']]
         ]

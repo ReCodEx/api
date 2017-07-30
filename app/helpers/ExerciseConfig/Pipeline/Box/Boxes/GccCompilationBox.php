@@ -10,6 +10,8 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  */
 class GccCompilationBox extends Box
 {
+  private static $initialized = false;
+  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -17,12 +19,14 @@ class GccCompilationBox extends Box
    * Static initializer.
    */
   public static function init() {
-    if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
+    if (!self::$initialized) {
+      self::$initialized = true;
+      self::$defaultName = "GCC Compilation";
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName("source_file")->setVariable(""))
+        new FilePort((new PortMeta)->setName("source-file")->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName("binary_file")->setVariable(""))
+        new FilePort((new PortMeta)->setName("binary-file")->setVariable(""))
       );
     }
   }
@@ -52,6 +56,15 @@ class GccCompilationBox extends Box
   public function getDefaultOutputPorts(): array {
     self::init();
     return self::$defaultOutputPorts;
+  }
+
+  /**
+   * Get default name of this box.
+   * @return string
+   */
+  public function getDefaultName(): string {
+    self::init();
+    return self::$defaultName;
   }
 
 }

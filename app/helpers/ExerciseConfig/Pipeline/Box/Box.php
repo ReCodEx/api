@@ -47,12 +47,19 @@ abstract class Box implements JsonSerializable
    */
   public abstract function getDefaultOutputPorts(): array;
 
+  /**
+   * Get default name of some particular box.
+   * Should be static property which is present only once for instance.
+   */
+  public abstract function getDefaultName(): string;
+
 
   /**
    * When listing default boxes which are available, there has to be somehow
    * filled default values, like names of the ports and values.
    */
   public function fillDefaults() {
+    $this->meta->setName($this->getDefaultName());
     $this->meta->setInputPorts($this->getDefaultInputPorts());
     $this->meta->setOutputPorts($this->getDefaultOutputPorts());
   }

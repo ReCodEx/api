@@ -11,6 +11,8 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
  */
 class JudgeNormalBox extends Box
 {
+  private static $initialized = false;
+  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -18,10 +20,12 @@ class JudgeNormalBox extends Box
    * Static initializer.
    */
   public static function init() {
-    if (!self::$defaultInputPorts || !self::$defaultOutputPorts) {
+    if (!self::$initialized) {
+      self::$initialized = true;
+      self::$defaultName = "ReCodEx Judge Normal";
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName("actual_output")->setVariable("")),
-        new FilePort((new PortMeta)->setName("expected_output")->setVariable(""))
+        new FilePort((new PortMeta)->setName("actual-output")->setVariable("")),
+        new FilePort((new PortMeta)->setName("expected-output")->setVariable(""))
       );
       self::$defaultOutputPorts = array(
         new StringPort((new PortMeta)->setName("score")->setVariable(""))
@@ -54,6 +58,15 @@ class JudgeNormalBox extends Box
   public function getDefaultOutputPorts(): array {
     self::init();
     return self::$defaultOutputPorts;
+  }
+
+  /**
+   * Get default name of this box.
+   * @return string
+   */
+  public function getDefaultName(): string {
+    self::init();
+    return self::$defaultName;
   }
 
 }

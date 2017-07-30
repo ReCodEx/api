@@ -10,43 +10,43 @@ App\Model\Entity\PipelineConfig:
                 - name: source
                   portsIn: []
                   portsOut:
-                    in_data:
+                    in-data:
                        type: file
                        value: source_file
                   type: data-in
                 - name: test
                   portsIn: []
                   portsOut:
-                    in_data:
+                    in-data:
                       type: file
                       value: test_file
                   type: data-in
                 - name: compilation
                   portsIn:
-                    source_file:
+                    source-file:
                       type: file
                       value: source_file
                   portsOut:
-                    binary_file:
+                    binary-file:
                       type: file
                       value: binary_file
                   type: gcc
                 - name: run
                   portsIn:
-                    binary_file:
+                    binary-file:
                       type: file
                       value: binary_file
                   portsOut:
-                    output_file:
+                    output-file:
                       type: file
                       value: actual_output
                   type: elf-exec
                 - name: judge
                   portsIn:
-                    actual_output:
+                    actual-output:
                       type: file
                       value: actual_output
-                    expected_output:
+                    expected-output:
                       type: file
                       value: expected_output
                   portsOut:

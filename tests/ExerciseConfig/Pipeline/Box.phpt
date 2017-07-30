@@ -20,15 +20,15 @@ class TestBox extends Tester\TestCase
     "name" => "file",
     "type" => "data-in",
     "portsIn" => [],
-    "portsOut" => [ "in_data" => ['type' => 'file', 'value' => "out_data_file"] ]
+    "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "out_data_file"] ]
   ];
 
   static $configJudge = [
     "name" => "eval",
     "type" => "judge-normal",
     "portsIn" => [
-      "expected_output" => ['type' => 'file', 'value' => "exp"],
-      "actual_output" => ['type' => 'file', 'value' => "act"]
+      "expected-output" => ['type' => 'file', 'value' => "exp"],
+      "actual-output" => ['type' => 'file', 'value' => "act"]
     ],
     "portsOut" => [ "score" => ['type' => 'string', 'value' => "out_data_file"] ]
   ];
@@ -110,7 +110,7 @@ class TestBox extends Tester\TestCase
       "name" => "file",
       "type" => "data-in",
       "portsIn" => [],
-      "portsOut" => ["in_data" => ['type' => 'string', 'value' => "out_data_file"]]
+      "portsOut" => ["in-data" => ['type' => 'string', 'value' => "out_data_file"]]
     ];
 
     Assert::noError(function () use ($data) {
@@ -118,17 +118,17 @@ class TestBox extends Tester\TestCase
     });
 
     Assert::noError(function () use ($data) {
-      $data["portsOut"]["in_data"]["type"] = "string[]";
+      $data["portsOut"]["in-data"]["type"] = "string[]";
       $this->loader->loadBox($data);
     });
 
     Assert::noError(function () use ($data) {
-      $data["portsOut"]["in_data"]["type"] = "file";
+      $data["portsOut"]["in-data"]["type"] = "file";
       $this->loader->loadBox($data);
     });
 
     Assert::noError(function () use ($data) {
-      $data["portsOut"]["in_data"]["type"] = "file[]";
+      $data["portsOut"]["in-data"]["type"] = "file[]";
       $this->loader->loadBox($data);
     });
   }
@@ -139,8 +139,8 @@ class TestBox extends Tester\TestCase
         [
           "name" => "judge",
           "type" => "judge-normal",
-          "portsIn" => ["actual_output" => ['type' => 'string', 'value' => "out_data_file"],
-            "expected_output" => ['type' => 'string', 'value' => "out_data_file"]],
+          "portsIn" => ["actual-output" => ['type' => 'string', 'value' => "out_data_file"],
+            "expected-output" => ['type' => 'string', 'value' => "out_data_file"]],
           "portsOut" => ["score" => ['type' => 'string', 'value' => "out_data_file"]]
         ]
       );
@@ -195,12 +195,12 @@ class TestBox extends Tester\TestCase
     Assert::equal("file", $box->getName());
     Assert::count(0, $box->getInputPorts());
     Assert::count(1, $box->getOutputPorts());
-    Assert::true(array_key_exists("in_data", $box->getOutputPorts()));
+    Assert::true(array_key_exists("in-data", $box->getOutputPorts()));
 
     /** @var PortMeta $port */
-    $port = $box->getOutputPorts()["in_data"];
+    $port = $box->getOutputPorts()["in-data"];
     Assert::type(FilePort::class, $port);
-    Assert::equal("in_data", $port->getName());
+    Assert::equal("in-data", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
   }
 

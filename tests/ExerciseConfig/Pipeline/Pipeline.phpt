@@ -28,16 +28,22 @@ class TestPipeline extends Tester\TestCase
         "name" => "file",
         "type" => "data-in",
         "portsIn" => [],
-        "portsOut" => [ "in_data" => ['type' => 'file', 'value' => "out_data_file"] ]
+        "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "out_data_file"] ]
       ],
       [
         "name" => "evaluation",
         "type" => "judge-normal",
         "portsIn" => [
-          "expected_output" => ['type' => 'file', 'value' => "test_in_file"],
-          "actual_output" => ['type' => 'file', 'value' => "out_exec_file"]
+          "expected-output" => ['type' => 'file', 'value' => "test_in_file"],
+          "actual-output" => ['type' => 'file', 'value' => "out_exec_file"]
         ],
         "portsOut" => [ "score" => ['type' => 'string', 'value' => "judge_score"] ]
+      ],
+      [
+        "name" => "file-out",
+        "type" => "data-out",
+        "portsIn" => [ "out-data" => ['type' => 'file', 'value' => "out_data_file"] ],
+        "portsOut" => []
       ]
     ]
   ];
@@ -94,7 +100,7 @@ class TestPipeline extends Tester\TestCase
   public function testCorrect() {
     $pipeline = $this->loader->loadPipeline(self::$config);
     Assert::equal(1, $pipeline->getVariablesTable()->size());
-    Assert::equal(2, $pipeline->size());
+    Assert::equal(3, $pipeline->size());
 
     Assert::type(StringVariable::class, $pipeline->getVariablesTable()->get("varA"));
     Assert::equal("valA", $pipeline->getVariablesTable()->get("varA")->getValue());
@@ -110,6 +116,13 @@ class TestPipeline extends Tester\TestCase
 
     Assert::count(1, $pipeline->get("file")->getOutputPorts());
     Assert::count(1, $pipeline->get("evaluation")->getOutputPorts());
+
+    // check in and out data boxes
+    Assert::count(1, $pipeline->getDataInBoxes());
+    Assert::count(1, $pipeline->getDataOutBoxes());
+
+    Assert::true(array_key_exists("file", $pipeline->getDataInBoxes()));
+    Assert::true(array_key_exists("file-out", $pipeline->getDataOutBoxes()));
   }
 
 }
