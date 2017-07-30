@@ -66,6 +66,14 @@ class VariablesTable implements JsonSerializable
   }
 
   /**
+   * Returns all variables specified in this table.
+   * @return Variable[]
+   */
+  public function getAll(): array {
+    return $this->table;
+  }
+
+  /**
    * Creates and returns properly structured array representing this object.
    * @return array
    */

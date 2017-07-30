@@ -232,8 +232,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId()));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId()));
-    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId())->getVariable('defVarA')->getValue());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId())->getVariable('defVarB')->getValue());
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId())->getVariablesTable()->get('defVarA')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId())->getVariablesTable()->get('defVarB')->getValue());
   }
 
   public function testGetLimits()

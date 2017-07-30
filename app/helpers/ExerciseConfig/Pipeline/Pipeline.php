@@ -27,6 +27,10 @@ class Pipeline implements JsonSerializable
    */
   protected $dataOutBoxes = array();
   /**
+   * @var array
+   */
+  protected $otherBoxes = array();
+  /**
    * Contains all boxes including DataIn and DataOut.
    * @var array
    */
@@ -76,10 +80,16 @@ class Pipeline implements JsonSerializable
   public function set(Box $box): Pipeline {
     if ($box instanceof DataInBox) {
       unset($this->dataOutBoxes[$box->getName()]);
+      unset($this->otherBoxes[$box->getName()]);
       $this->dataInBoxes[$box->getName()] = $box;
     } else if ($box instanceof DataOutBox) {
       unset($this->dataInBoxes[$box->getName()]);
+      unset($this->otherBoxes[$box->getName()]);
       $this->dataOutBoxes[$box->getName()] = $box;
+    } else {
+      unset($this->dataInBoxes[$box->getName()]);
+      unset($this->dataOutBoxes[$box->getName()]);
+      $this->otherBoxes[$box->getName()] = $box;
     }
 
     $this->boxes[$box->getName()] = $box;
@@ -94,6 +104,7 @@ class Pipeline implements JsonSerializable
   public function remove(string $key): Pipeline {
     unset($this->dataInBoxes[$key]);
     unset($this->dataOutBoxes[$key]);
+    unset($this->otherBoxes[$key]);
     unset($this->boxes[$key]);
     return $this;
   }
@@ -112,6 +123,14 @@ class Pipeline implements JsonSerializable
    */
   public function getDataOutBoxes(): array {
     return $this->dataOutBoxes;
+  }
+
+  /**
+   * Get boxes list which excludes data boxes.
+   * @return Box[]
+   */
+  public function getOtherBoxes(): array {
+    return $this->otherBoxes;
   }
 
   /**

@@ -4,6 +4,8 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
+use App\Helpers\ExerciseConfig\PipelineVars;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -25,6 +27,27 @@ abstract class Box implements JsonSerializable
    * @var BoxMeta
    */
   protected $meta;
+
+  /**
+   * Pipeline variables from exercise configuration which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $exerciseConfigVariables;
+
+  /**
+   * Variables from environment configuration which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $environmentConfigVariables;
+
+  /**
+   * Variables from pipeline to which this box belong to, which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $pipelineVariables;
 
   /**
    * Box constructor.
@@ -124,6 +147,63 @@ abstract class Box implements JsonSerializable
    */
   public function getOutputPorts(): array {
     return $this->meta->getOutputPorts();
+  }
+
+  /**
+   * Get pipeline variables from exercise configuration.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getExerciseConfigVariables(): ?VariablesTable {
+    return $this->exerciseConfigVariables;
+  }
+
+  /**
+   * Set pipeline variables from exercise configuration.
+   * @param VariablesTable $variablesTable
+   * @return Box
+   */
+  public function setExerciseConfigVariables(VariablesTable $variablesTable): Box {
+    $this->exerciseConfigVariables = $variablesTable;
+    return $this;
+  }
+
+  /**
+   * Get variables from environment configuration.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getEnvironmentConfigVariables(): ?VariablesTable {
+    return $this->environmentConfigVariables;
+  }
+
+  /**
+   * Set variables from environment configuration.
+   * @param VariablesTable $variablesTable
+   * @return Box
+   */
+  public function setEnvironmentConfigVariables(VariablesTable $variablesTable): Box {
+    $this->environmentConfigVariables = $variablesTable;
+    return $this;
+  }
+
+  /**
+   * Get variables from pipeline.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getPipelineVariables(): ?VariablesTable {
+    return $this->pipelineVariables;
+  }
+
+  /**
+   * Set variables from pipeline.
+   * @param VariablesTable $variablesTable
+   * @return Box
+   */
+  public function setPipelineVariables(VariablesTable $variablesTable): Box {
+    $this->pipelineVariables = $variablesTable;
+    return $this;
   }
 
 

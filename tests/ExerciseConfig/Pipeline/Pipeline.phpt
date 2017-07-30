@@ -120,9 +120,11 @@ class TestPipeline extends Tester\TestCase
     // check in and out data boxes
     Assert::count(1, $pipeline->getDataInBoxes());
     Assert::count(1, $pipeline->getDataOutBoxes());
+    Assert::count(1, $pipeline->getOtherBoxes());
 
     Assert::true(array_key_exists("file", $pipeline->getDataInBoxes()));
     Assert::true(array_key_exists("file-out", $pipeline->getDataOutBoxes()));
+    Assert::true(array_key_exists("evaluation", $pipeline->getOtherBoxes()));
   }
 
 }

@@ -47,24 +47,24 @@ class TestPipelineVars extends Tester\TestCase
     $variableMeta = (new VariableMeta)->setName("variableA");
     $variable = new StringVariable($variableMeta);
 
-    $pipeline->addVariable($variable);
-    Assert::type(StringVariable::class, $pipeline->getVariable("variableA"));
+    $pipeline->getVariablesTable()->set($variable);
+    Assert::type(StringVariable::class, $pipeline->getVariablesTable()->get("variableA"));
 
-    $pipeline->removeVariable("non-existant");
-    Assert::count(1, $pipeline->getVariables());
+    $pipeline->getVariablesTable()->remove("non-existant");
+    Assert::count(1, $pipeline->getVariablesTable()->getAll());
 
-    $pipeline->removeVariable("variableA");
-    Assert::count(0, $pipeline->getVariables());
+    $pipeline->getVariablesTable()->remove("variableA");
+    Assert::count(0, $pipeline->getVariablesTable()->getAll());
   }
 
   public function testCorrect() {
     $pipeline = $this->loader->loadPipelineVars(self::$config);
-    Assert::count(2, $pipeline->getVariables());
+    Assert::count(2, $pipeline->getVariablesTable()->getAll());
 
-    Assert::equal("string", $pipeline->getVariable("varA")->getType());
-    Assert::equal("file", $pipeline->getVariable("varB")->getType());
-    Assert::equal("valA", $pipeline->getVariable("varA")->getValue());
-    Assert::equal("valB", $pipeline->getVariable("varB")->getValue());
+    Assert::equal("string", $pipeline->getVariablesTable()->get("varA")->getType());
+    Assert::equal("file", $pipeline->getVariablesTable()->get("varB")->getType());
+    Assert::equal("valA", $pipeline->getVariablesTable()->get("varA")->getValue());
+    Assert::equal("valB", $pipeline->getVariablesTable()->get("varB")->getValue());
   }
 
 }

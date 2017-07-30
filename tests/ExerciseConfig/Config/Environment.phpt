@@ -75,8 +75,8 @@ class TestEnvironment extends Tester\TestCase
   public function testCorrect() {
     $env = $this->loader->loadEnvironment(self::$config);
     Assert::count(2, $env->getPipelines());
-    Assert::equal("hello", $env->getPipeline("hello")->getVariable("world")->getValue());
-    Assert::equal("world", $env->getPipeline("hello")->getVariable("hello")->getValue());
+    Assert::equal("hello", $env->getPipeline("hello")->getVariablesTable()->get("world")->getValue());
+    Assert::equal("world", $env->getPipeline("hello")->getVariablesTable()->get("hello")->getValue());
     Assert::equal(self::$config, $env->toArray());
   }
 

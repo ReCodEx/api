@@ -15,50 +15,31 @@ class PipelineVars implements JsonSerializable {
 
 
   /**
-   * Variables indexed by name and containing values.
-   * @var array
+   * Variables table structure.
+   * @var VariablesTable
    */
-  protected $variables = array();
+  protected $variablesTable;
 
+
+  public function __construct() {
+    $this->variablesTable = new VariablesTable();
+  }
 
   /**
    * Get variables for this environment.
-   * @return Variable[]
+   * @return VariablesTable
    */
-  public function getVariables(): array {
-    return $this->variables;
+  public function getVariablesTable(): VariablesTable {
+    return $this->variablesTable;
   }
 
   /**
-   * Get value of the variable based on given variable name.
-   * @param string $key
-   * @return null|Variable
-   */
-  public function getVariable(string $key): ?Variable {
-    if (!array_key_exists($key, $this->variables)) {
-      return null;
-    }
-
-    return $this->variables[$key];
-  }
-
-  /**
-   * Add variable to this environment.
-   * @param Variable $variable
+   * Set variables for this environment.
+   * @param VariablesTable $variablesTable
    * @return PipelineVars
    */
-  public function addVariable(Variable $variable): PipelineVars {
-    $this->variables[$variable->getName()] = $variable;
-    return $this;
-  }
-
-  /**
-   * Remove variable based on given variable name.
-   * @param string $key
-   * @return $this
-   */
-  public function removeVariable(string $key): PipelineVars {
-    unset($this->variables[$key]);
+  public function setVariablesTable(VariablesTable $variablesTable): PipelineVars {
+    $this->variablesTable = $variablesTable;
     return $this;
   }
 
@@ -69,12 +50,7 @@ class PipelineVars implements JsonSerializable {
    */
   public function toArray(): array {
     $data = [];
-
-    $data[self::VARIABLES_KEY] = array();
-    foreach ($this->variables as $variable) {
-      $data[self::VARIABLES_KEY][] = $variable->toArray();
-    }
-
+    $data[self::VARIABLES_KEY] = $this->variablesTable->toArray();
     return $data;
   }
 

@@ -107,9 +107,7 @@ class Loader {
     $pipeline = new PipelineVars();
 
     if (isset($data[PipelineVars::VARIABLES_KEY]) && is_array($data[PipelineVars::VARIABLES_KEY])) {
-      foreach ($data[PipelineVars::VARIABLES_KEY] as $value) {
-        $pipeline->addVariable($this->loadVariable($value));
-      }
+      $pipeline->setVariablesTable($this->loadVariablesTable($data[PipelineVars::VARIABLES_KEY]));
     }
 
     return $pipeline;

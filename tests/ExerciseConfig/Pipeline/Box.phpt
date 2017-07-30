@@ -10,6 +10,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -187,6 +188,30 @@ class TestBox extends Tester\TestCase
     $boxMeta->removeOutputPort("newlyAddedPort");
     Assert::count(0, $boxMeta->getInputPorts());
     Assert::count(0, $boxMeta->getOutputPorts());
+  }
+
+  public function testVariablesTablesOperations() {
+    $box = $this->loader->loadBox(self::$config);
+
+    Assert::null($box->getEnvironmentConfigVariables());
+    Assert::null($box->getExerciseConfigVariables());
+    Assert::null($box->getPipelineVariables());
+
+    $envVariables = new VariablesTable();
+    $exeVariables = new VariablesTable();
+    $pipeVariables = new VariablesTable();
+
+    $box->setEnvironmentConfigVariables($envVariables);
+    $box->setExerciseConfigVariables($exeVariables);
+    $box->setPipelineVariables($pipeVariables);
+
+    Assert::notEqual(null, $box->getEnvironmentConfigVariables());
+    Assert::notEqual(null, $box->getExerciseConfigVariables());
+    Assert::notEqual(null, $box->getPipelineVariables());
+
+    Assert::equal(0, $box->getEnvironmentConfigVariables()->size());
+    Assert::equal(0, $box->getExerciseConfigVariables()->size());
+    Assert::equal(0, $box->getPipelineVariables()->size());
   }
 
   public function testCorrect() {
