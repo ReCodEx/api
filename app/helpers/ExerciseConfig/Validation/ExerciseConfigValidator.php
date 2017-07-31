@@ -48,7 +48,7 @@ class ExerciseConfigValidator {
 
     foreach ($config->getEnvironments() as $environment) {
       if (!array_key_exists($environment, $variablesTables)) {
-        throw new ExerciseConfigException();
+        throw new ExerciseConfigException("Environment $environment not found in environment configuration");
       }
     }
   }
