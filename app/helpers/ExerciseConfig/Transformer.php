@@ -169,8 +169,8 @@ class Transformer {
     if (!$defaultFound) {
       throw new ExerciseConfigException("Defaults was not specified");
     }
-    if (count($data) < 2) {
-      throw new ExerciseConfigException("No tests specified");
+    if (count($data) == 0) {
+      throw new ExerciseConfigException("No environments specified");
     }
 
     // iterate through all environments
