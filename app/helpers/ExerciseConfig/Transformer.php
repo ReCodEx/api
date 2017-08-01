@@ -24,22 +24,27 @@ class Transformer {
   }
 
   /**
-   * Transform Pipeline internal structure into presented array.
-   * @param string $pipelineId
-   * @param PipelineVars $pipeline
+   * Transform list of Pipeline internal structure into presented array.
+   * @param PipelineVars[] $pipelines
    * @return array
    */
-  private function fromPipeline(string $pipelineId, PipelineVars $pipeline): array {
-    $pipelineArr = array();
-    $pipelineArr["name"] = $pipelineId;
-    $pipelineArr["variables"] = array();
+  private function fromPipelines(array $pipelines): array {
+    $pipelinesArr = array();
+    foreach ($pipelines as $pipelineId => $pipeline) {
+      $pipelineArr = array();
+      $pipelineArr["name"] = $pipelineId;
+      $pipelineArr["variables"] = array();
 
-    foreach ($pipeline->getVariables() as $variable) {
-      // do not forget to add constructed variable to pipeline
-      $pipelineArr["variables"][] = $variable->toArray();
+      foreach ($pipeline->getVariables() as $variable) {
+        // do not forget to add constructed variable to pipeline
+        $pipelineArr["variables"][] = $variable->toArray();
+      }
+
+      // do not forget to add pipeline into resulting array
+      $pipelinesArr[] = $pipelineArr;
     }
 
-    return $pipelineArr;
+    return $pipelinesArr;
   }
 
   /**
@@ -51,47 +56,46 @@ class Transformer {
   public function fromExerciseConfig(ExerciseConfig $exerciseConfig): array {
     $config = array();
 
-    // prepare environments array with default
-    $environments = array_merge([ 'default' ], $exerciseConfig->getEnvironments());
+    // prepare defaults
+    $defaultEnv = array();
+    $defaultEnv["name"] = "default";
+    $defaultEnv["tests"] = array();
+    foreach ($exerciseConfig->getTests() as $testId => $test) {
+      // initialize defaults for each test
+      $testArr = array();
+      $testArr["name"] = $testId;
+      $testArr["pipelines"] = $this->fromPipelines($test->getPipelines());
+
+      // do not forget to add constructed test to the default
+      $defaultEnv["tests"][] = $testArr;
+    }
+    $config[] = $defaultEnv;
 
     // initialize all possible environments which can be present in tests
-    // with respective default values
-    foreach ($environments as $environmentId) {
-      $environment = array();
-      $environment['name'] = $environmentId;
-      $environment['tests'] = array();
+    foreach ($exerciseConfig->getEnvironments() as $environmentId) {
+      $environmentArr = array();
+      $environmentArr["name"] = $environmentId;
+      $environmentArr["tests"] = array();
       foreach ($exerciseConfig->getTests() as $testId => $test) {
-        // initialize environment for each test with defaults
+
+        // initialize all tests
         $testArr = array();
-        $testArr['name'] = $testId;
-        $testArr['pipelines'] = array();
+        $testArr["name"] = $testId;
+        $testArr["pipelines"] = array();
 
-        foreach ($test->getPipelines() as $pipelineId => $pipeline) {
-          $testArr['pipelines'][] = $this->fromPipeline($pipelineId, $pipeline);
-        }
-
-        // do not forget to add constructed test to environment
-        $environment['tests'][] = $testArr;
-      }
-      $config[] = $environment;
-    }
-
-    // go through defined tests and environments and fill values if present
-    foreach ($config as $envIndex => $environmentArr) {
-      foreach ($environmentArr['tests'] as $testIndex => $testArr) {
-        $test = $exerciseConfig->getTest($testArr['name']);
-        $environment = $test->getEnvironment($environmentArr['name']);
-
+        // find this particular environment in test
+        $environment = $test->getEnvironment($environmentId);
         if ($environment) {
           // there are specific pipelines for this environment
           if (!empty($environment->getPipelines())) {
-            $config[$envIndex]['tests'][$testIndex]['pipelines'] = array();
-            foreach ($environment->getPipelines() as $pipelineId => $pipeline) {
-              $config[$envIndex]['tests'][$testIndex]['pipelines'][] = $this->fromPipeline($pipelineId, $pipeline);
-            }
+            $testArr["pipelines"] = $this->fromPipelines($environment->getPipelines());
           }
         }
+
+        // do not forget to add constructed test to environment
+        $environmentArr["tests"][] = $testArr;
       }
+      $config[] = $environmentArr;
     }
 
     return $config;
@@ -106,12 +110,12 @@ class Transformer {
     $pipelineArr = array();
     $pipelineArr[PipelineVars::VARIABLES_KEY] = array();
 
-    foreach ($data['variables'] as $variable) {
+    foreach ($data["variables"] as $variable) {
       // do not forget to add constructed variable to pipeline
       $pipelineArr[PipelineVars::VARIABLES_KEY][] = $variable;
     }
 
-    return array($data['name'], $pipelineArr);
+    return array($data["name"], $pipelineArr);
   }
 
   /**
@@ -135,19 +139,19 @@ class Transformer {
 
     // find and retrieve defaults for tests
     foreach ($data as $envIndex => $environment) {
-      if ($environment['name'] !== 'default') {
+      if ($environment["name"] !== "default") {
         continue;
       }
 
       $defaultFound = true;
 
-      foreach ($environment['tests'] as $test) {
-        $testId = $test['name'];
+      foreach ($environment["tests"] as $test) {
+        $testId = $test["name"];
 
         $testArr = array();
         $testArr[Test::PIPELINES_KEY] = array();
 
-        foreach ($test['pipelines'] as $pipeline) {
+        foreach ($test["pipelines"] as $pipeline) {
           list($pipelineId, $pipelineArr) = $this->toPipeline($pipeline);
           $testArr[Test::PIPELINES_KEY][$pipelineId] = $pipelineArr;
         }
@@ -176,11 +180,11 @@ class Transformer {
     // iterate through all environments
     foreach ($data as $environment) {
       $envTestsCount = 0;
-      $environmentId = $environment['name'];
+      $environmentId = $environment["name"];
       $environments[] = $environmentId;
 
-      foreach ($environment['tests'] as $test) {
-        $testId = $test['name'];
+      foreach ($environment["tests"] as $test) {
+        $testId = $test["name"];
 
         if (!in_array($testId, $testIds)) {
           throw new ExerciseConfigException("Test $testId was not specified in defaults");
@@ -188,7 +192,7 @@ class Transformer {
 
         $environmentConfig = array();
         $environmentConfig[Environment::PIPELINES_KEY] = array();
-        foreach ($test['pipelines'] as $pipeline) {
+        foreach ($test["pipelines"] as $pipeline) {
           list($pipelineId, $pipelineArr) = $this->toPipeline($pipeline);
           $environmentConfig[Environment::PIPELINES_KEY][$pipelineId] = $pipelineArr;
         }
