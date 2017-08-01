@@ -72,11 +72,7 @@ class TestExerciseConfigTransformer extends Tester\TestCase
         "name" => "envA",
         "tests" => [
           [ "name" => "testA", "pipelines" => [ [ "name" => "envPipeline", "variables" => [] ] ] ],
-          [ "name" => "testB", "pipelines" => [ [
-            "name" => "world" , "variables" => [
-              [ "name" => "hello", "type" => "string", "value" => "world" ]
-            ]
-          ] ] ]
+          [ "name" => "testB", "pipelines" => [] ]
         ]
       ],
       [
@@ -87,11 +83,7 @@ class TestExerciseConfigTransformer extends Tester\TestCase
               [ "name" => "varA", "type" => "string", "value" => "valA" ]
             ]
           ] ] ],
-          [ "name" => "testB", "pipelines" => [ [
-            "name" => "world" , "variables" => [
-              [ "name" => "hello", "type" => "string", "value" => "world" ]
-            ]
-          ] ] ]
+          [ "name" => "testB", "pipelines" => [] ]
         ]
       ]
     ];
