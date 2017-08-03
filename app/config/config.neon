@@ -72,6 +72,11 @@ parameters:
         firstName: "givenName"
         lastName: "sn"
 
+  sis:
+    apiBase: https://sis.university.tld/is/
+    faculty: FACULTY
+    secret: SECRET_TOKEN
+
   emails:
     apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
     footerUrl: https://recodex.projekty.ms.mff.cuni.cz
@@ -226,6 +231,7 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\BoxesSorter
   - App\Helpers\ExerciseConfig\Compilation\TestBoxesOptimizer
   - App\Helpers\ExerciseConfig\Compilation\BoxesCompiler
+  - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
 
   # models - repositories
   - App\Model\Repository\Comments

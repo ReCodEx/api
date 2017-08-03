@@ -240,8 +240,8 @@ class TestRegistrationPresenter extends Tester\TestCase
     Assert::equal($degreesAfterName, $user->getDegreesAfterName());
 
     // check created login
-    $login = $this->externalLogins->findByExternalId($userId);
-    Assert::same($user, $login->getUser());
+    $createdUser = $this->externalLogins->getUser($serviceId, $userId);
+    Assert::same($user, $createdUser);
   }
 
   public function testValidateRegistrationData()
