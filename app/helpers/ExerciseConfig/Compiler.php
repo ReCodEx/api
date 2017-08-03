@@ -45,8 +45,8 @@ class Compiler {
   public function compile($exerciseAssignment, RuntimeEnvironment $runtimeEnvironment): JobConfig {
     $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
     $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
-    $variablesTable = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
+    $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
-    return $this->exerciseConfigCompiler->compile($exerciseConfig, $variablesTable);
+    return $this->exerciseConfigCompiler->compile($exerciseConfig, $environmentConfigVariables, $runtimeEnvironment->getId());
   }
 }

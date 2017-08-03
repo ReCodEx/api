@@ -16,10 +16,9 @@ class BoxesCompiler {
   /**
    * Go through given array find boxes and compile them into JobConfig.
    * @param array $executionPipeline
-   * @param VariablesTable $variablesTable
    * @return JobConfig
    */
-  public function compile(array $executionPipeline, VariablesTable $variablesTable): JobConfig {
+  public function compile(array $executionPipeline): JobConfig {
     return new JobConfig();
   }
 

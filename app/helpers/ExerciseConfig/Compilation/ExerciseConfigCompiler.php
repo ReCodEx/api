@@ -52,14 +52,16 @@ class ExerciseConfigCompiler {
   /**
    * Compile ExerciseConfig to JobConfig
    * @param ExerciseConfig $exerciseConfig
-   * @param VariablesTable $variablesTable
+   * @param VariablesTable $environmentConfigVariables
+   * @param string $runtimeEnvironmentId
    * @return JobConfig
    */
-  public function compile(ExerciseConfig $exerciseConfig, VariablesTable $variablesTable): JobConfig {
-    $tests = $this->pipelinesMerger->merge($exerciseConfig);
-    $tests = $this->boxesSorter->sort($tests);
-    $executionPipeline = $this->testBoxesOptimizer->optimize($tests);
-    $jobConfig = $this->boxesCompiler->compile($executionPipeline, $variablesTable);
+  public function compile(ExerciseConfig $exerciseConfig,
+      VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {
+    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
+    $sortedTests = $this->boxesSorter->sort($tests);
+    $executionPipeline = $this->testBoxesOptimizer->optimize($sortedTests);
+    $jobConfig = $this->boxesCompiler->compile($executionPipeline);
     return $jobConfig;
   }
 

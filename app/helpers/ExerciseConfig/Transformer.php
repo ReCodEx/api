@@ -35,7 +35,7 @@ class Transformer {
       $pipelineArr["name"] = $pipelineId;
       $pipelineArr["variables"] = array();
 
-      foreach ($pipeline->getVariables() as $variable) {
+      foreach ($pipeline->getVariablesTable()->getAll() as $variable) {
         // do not forget to add constructed variable to pipeline
         $pipelineArr["variables"][] = $variable->toArray();
       }
