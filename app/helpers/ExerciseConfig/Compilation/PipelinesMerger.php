@@ -2,12 +2,11 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
+use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Repository\Pipelines;
@@ -15,7 +14,7 @@ use App\Model\Repository\Pipelines;
 
 /**
  * Internal exercise configuration compilation service. Which handles merging
- * pipelines in each test, in the process arrays of boxes is created indexed by
+ * pipelines in each test, in the process tree of boxes is created indexed by
  * tests identifications.
  */
 class PipelinesMerger {
@@ -42,18 +41,6 @@ class PipelinesMerger {
 
 
   /**
-   * Merge data out boxes from previous pipeline with data in boxes from current
-   * pipeline.
-   * @note It is assumed that boxes have variables already set!
-   * @param DataOutBox[] $dataOutBoxes
-   * @param DataInBox[] $dataInBoxes
-   * @return array
-   */
-  private function mergeDataBoxes(array $dataOutBoxes, array $dataInBoxes): array {
-    ; // @todo
-  }
-
-  /**
    * To all boxes in pipeline set appropriate variables.
    * @param Pipeline $pipelineConfig
    * @param VariablesTable $exerciseConfigVariables
@@ -72,16 +59,61 @@ class PipelinesMerger {
   }
 
   /**
+   * Merge two trees consisting of boxes. Input and output boxes which matches
+   * will be deleted and connections will be established between corresponding
+   * previous/next boxes.
+   * @param Tree $tree
+   * @param Tree $pipelineTree
+   * @return Tree
+   */
+  private function mergeTrees(Tree $tree, Tree $pipelineTree): Tree {
+    // @todo
+  }
+
+  /**
+   * Build pipeline tree with all appropriate connections.
+   * @param Pipeline $pipeline
+   * @return Tree
+   */
+  private function buildPipelineTree(Pipeline $pipeline): Tree {
+    // @todo: use visited flag
+  }
+
+  /**
+   * Process pipeline, which means creating its tree and merging two trees
+   * @note New tree is returned!
+   * @param Tree $tree
+   * @param VariablesTable $environmentConfigVariables
+   * @param PipelineVars $pipelineVars
+   * @param Pipeline $pipelineConfig
+   * @return Tree
+   */
+  private function processPipeline(Tree $tree,
+      VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
+      Pipeline $pipelineConfig): Tree {
+
+    // set all variables tables to boxes in pipeline
+    $this->setVariablesTablesToPipelineBoxes($pipelineConfig,
+      $pipelineVars->getVariablesTable(), $environmentConfigVariables,
+      $pipelineConfig->getVariablesTable());
+
+    // build tree for given pipeline
+    $pipelineTree = $this->buildPipelineTree($pipelineConfig);
+    // merge given tree and currently created pipeline tree
+    $mergedTree = $this->mergeTrees($tree, $pipelineTree);
+    return $mergedTree;
+  }
+
+  /**
    * Merge all pipelines in test and return array of boxes.
    * @param Test $test
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
-   * @return Box[]
+   * @return Tree
    */
   private function processTest(Test $test,
       VariablesTable $environmentConfigVariables,
-      string $runtimeEnvironmentId): array {
-    $boxes = array();
+      string $runtimeEnvironmentId): Tree {
 
     // get pipelines either for specific environment or defaults for the test
     $testPipelines = $test->getEnvironment($runtimeEnvironmentId)->getPipelines();
@@ -91,28 +123,18 @@ class PipelinesMerger {
 
     // go through all pipelines and merge their data boxes into resulting array
     // which has all variables tables set
-    $lastDataOutBoxes = array();
-    foreach ($testPipelines as $pipelineId => $pipeline) {
+    $tree = new Tree();
+    foreach ($testPipelines as $pipelineId => $pipelineVars) {
 
       // get database entity and then structured pipeline configuration
       $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
       $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
 
-      // set all variables tables to boxes in pipeline
-      $this->setVariablesTablesToPipelineBoxes($pipelineConfig,
-        $pipeline->getVariablesTable(), $environmentConfigVariables,
-        $pipelineConfig->getVariablesTable());
-
-      // merge previous data out boxes with new input ones
-      $boxes = array_merge($boxes, $this->mergeDataBoxes($lastDataOutBoxes, $pipelineConfig->getDataInBoxes()));
-      // add non-data boxes to resulting array
-      $boxes = array_merge($boxes, $pipelineConfig->getOtherBoxes());
-      // data out boxes will be processed in next iteration
-      $lastDataOutBoxes = $pipelineConfig->getDataOutBoxes();
+      // process pipeline and merge it to already existing tree
+      $tree = $this->processPipeline($tree, $environmentConfigVariables, $pipelineVars, $pipelineConfig);
     }
-    $boxes = array_merge($boxes, $lastDataOutBoxes);
 
-    return $boxes;
+    return $tree;
   }
 
   /**
@@ -120,7 +142,7 @@ class PipelinesMerger {
    * @param ExerciseConfig $exerciseConfig
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
-   * @return array
+   * @return Tree[]
    */
   public function merge(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables,

@@ -2,6 +2,8 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
+
 
 /**
  * Internal exercise configuration compilation service. Which is supposed to
@@ -12,10 +14,11 @@ class BoxesSorter {
 
   /**
    * For each test sort its boxes to order which makes execution sense.
-   * @param array $tests
+   * @param Tree[] $tests
    * @return array
    */
   public function sort(array $tests): array {
+    // @todo: first we have to unset visited flag which might have been set before
     return array();
   }
 
