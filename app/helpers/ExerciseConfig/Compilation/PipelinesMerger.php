@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
@@ -76,7 +77,39 @@ class PipelinesMerger {
    * @return Tree
    */
   private function buildPipelineTree(Pipeline $pipeline): Tree {
-    // @todo: use visited flag
+
+    // construct all nodes from pipeline, we need to have list of boxes
+    // indexed by name for searching and second list as execution queue
+    // and also set of variables with references to input and output box
+    $queue = array();
+    $nodes = array();
+    $variables = array(); // array of pairs (first => input, second => output)
+    foreach ($pipeline->getAll() as $box) {
+      $node = new Node($box);
+      $queue[] = $node;
+      $nodes[$box->getName()] = $node;
+
+      // go through all ports of box and assign them to appropriate variables set
+      foreach ($box->getInputPorts() as $inPort) {
+        $varName = $inPort->getVariable();
+        if (!array_key_exists($varName, $variables)) {
+          $variables[$varName] = array();
+        }
+        $variables[$varName][0] = $box->getName();
+      }
+      foreach ($box->getOutputPorts() as $outPort) {
+        $varName = $outPort->getVariable();
+        if (!array_key_exists($varName, $variables)) {
+          $variables[$varName] = array();
+        }
+        $variables[$varName][1] = $box->getName();
+      }
+    }
+
+    // process queue and make connections between nodes
+    while(!empty($queue)) {
+      ;
+    }
   }
 
   /**

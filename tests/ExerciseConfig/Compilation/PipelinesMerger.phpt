@@ -1,6 +1,6 @@
 <?php
 
-include '../bootstrap.php';
+include '../../bootstrap.php';
 
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use Tester\Assert;

@@ -75,6 +75,7 @@ class ExerciseConfig
     try {
       return Yaml::parse($this->config);
     } catch (ParseException $e) {
+      var_dump($this->config);
       throw new ExerciseConfigException("Exercise configuration is not a valid YAML and it cannot be parsed.");
     }
   }

@@ -27,10 +27,21 @@ class Tree {
   }
 
   /**
-   * @param Node $node
+   * @param array $rootNodes
+   * @return Tree
    */
-  public function addRootNode(Node $node) {
+  public function setRootNodes(array $rootNodes): Tree {
+    $this->rootNodes = $rootNodes;
+    return $this;
+  }
+
+  /**
+   * @param Node $node
+   * @return Tree
+   */
+  public function addRootNode(Node $node): Tree {
     $this->rootNodes[] = $node;
+    return $this;
   }
 
   /**
@@ -41,10 +52,21 @@ class Tree {
   }
 
   /**
-   * @param Node $node
+   * @param array $outputNodes
+   * @return Tree
    */
-  public function addOutputNode(Node $node) {
+  public function setOutputNodes(array $outputNodes): Tree {
+    $this->outputNodes = $outputNodes;
+    return $this;
+  }
+
+  /**
+   * @param Node $node
+   * @return Tree
+   */
+  public function addOutputNode(Node $node): Tree {
     $this->outputNodes[] = $node;
+    return $this;
   }
 
 }

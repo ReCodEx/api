@@ -18,7 +18,6 @@ class BoxesSorter {
    * @return array
    */
   public function sort(array $tests): array {
-    // @todo: first we have to unset visited flag which might have been set before
     return array();
   }
 

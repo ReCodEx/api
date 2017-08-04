@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\VariablesTable;
@@ -135,7 +136,7 @@ abstract class Box implements JsonSerializable
 
   /**
    * Get input ports of this box.
-   * @return array
+   * @return Port[]
    */
   public function getInputPorts(): array {
     return $this->meta->getInputPorts();
@@ -143,7 +144,7 @@ abstract class Box implements JsonSerializable
 
   /**
    * Get output ports of this box.
-   * @return array
+   * @return Port[]
    */
   public function getOutputPorts(): array {
     return $this->meta->getOutputPorts();
