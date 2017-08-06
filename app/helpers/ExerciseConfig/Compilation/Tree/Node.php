@@ -54,14 +54,6 @@ class Node {
   }
 
   /**
-   * Set box associated with this node.
-   * @param Box $box
-   */
-  public function setBox(Box $box) {
-    $this->box = $box;
-  }
-
-  /**
    * @return Node[]
    */
   public function getParents(): array {

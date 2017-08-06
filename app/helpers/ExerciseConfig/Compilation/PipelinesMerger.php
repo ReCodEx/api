@@ -62,7 +62,8 @@ class PipelinesMerger {
   /**
    * Merge two trees consisting of boxes. Input and output boxes which matches
    * will be deleted and connections will be established between corresponding
-   * previous/next boxes.
+   * previous/next boxes. This also means that in previous box there has to be
+   * variables tables replaced by the ones from the next box (for consistency).
    * @param Tree $tree
    * @param Tree $pipelineTree
    * @return Tree
@@ -107,8 +108,39 @@ class PipelinesMerger {
     }
 
     // process queue and make connections between nodes
-    while(!empty($queue)) {
-      ;
+    $tree = new Tree();
+    foreach($queue as $node) {
+      $box = $node->getBox();
+      foreach ($box->getInputPorts() as $inPort) {
+        $child = $nodes[$variables[$inPort->getVariable()][1]];
+        if ($child->isInTree()) {
+          continue;
+        }
+        $node->addParent($child);
+        $child->addChild($node);
+      }
+      foreach ($box->getOutputPorts() as $outPort) {
+        $child = $nodes[$variables[$outPort->getVariable()][0]];
+        if ($child->isInTree()) {
+          continue;
+        }
+        $node->addChild($child);
+        $child->addParent($node);
+      }
+
+      // add general reference to node into tree
+      $tree->addNode($node);
+      $node->setIsInTree(true);
+
+      // add references to root nodes into tree if needed
+      if (empty($box->getInputPorts())) {
+        $tree->addRootNode($node);
+      }
+
+      // add reference to end nodes into tree if needed
+      if (empty($box->getOutputPorts())) {
+        $tree->addEndNode($node);
+      }
     }
   }
 

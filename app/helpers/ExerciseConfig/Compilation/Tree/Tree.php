@@ -9,15 +9,48 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 class Tree {
 
   /**
+   * All nodes contained in tree.
+   * @var array
+   */
+  private $nodes = array();
+
+  /**
+   * Nodes containing boxes without input ports.
    * @var Node[]
    */
   private $rootNodes = array();
 
   /**
+   * Nodes with boxes which does not have output ports.
    * @var Node[]
    */
-  private $outputNodes = array();
+  private $endNodes = array();
 
+
+  /**
+   * @return Node[]
+   */
+  public function getNodes(): array {
+    return $this->nodes;
+  }
+
+  /**
+   * @param array $nodes
+   * @return Tree
+   */
+  public function setNodes(array $nodes): Tree {
+    $this->nodes = $nodes;
+    return $this;
+  }
+
+  /**
+   * @param Node $node
+   * @return Tree
+   */
+  public function addNode(Node $node): Tree {
+    $this->nodes[] = $node;
+    return $this;
+  }
 
   /**
    * @return Node[]
@@ -47,16 +80,16 @@ class Tree {
   /**
    * @return Node[]
    */
-  public function getOutputNodes(): array {
-    return $this->outputNodes;
+  public function getEndNodes(): array {
+    return $this->endNodes;
   }
 
   /**
-   * @param array $outputNodes
+   * @param array $endNodes
    * @return Tree
    */
-  public function setOutputNodes(array $outputNodes): Tree {
-    $this->outputNodes = $outputNodes;
+  public function setEndNodes(array $endNodes): Tree {
+    $this->endNodes = $endNodes;
     return $this;
   }
 
@@ -64,8 +97,8 @@ class Tree {
    * @param Node $node
    * @return Tree
    */
-  public function addOutputNode(Node $node): Tree {
-    $this->outputNodes[] = $node;
+  public function addEndNode(Node $node): Tree {
+    $this->endNodes[] = $node;
     return $this;
   }
 
