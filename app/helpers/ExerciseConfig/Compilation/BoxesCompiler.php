@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
-use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
 use App\Helpers\JobConfig\JobConfig;
 
 
@@ -15,10 +15,10 @@ class BoxesCompiler {
 
   /**
    * Go through given array find boxes and compile them into JobConfig.
-   * @param array $executionPipeline
+   * @param Tree $executionPipeline
    * @return JobConfig
    */
-  public function compile(array $executionPipeline): JobConfig {
+  public function compile(Tree $executionPipeline): JobConfig {
     return new JobConfig();
   }
 
