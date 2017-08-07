@@ -2,7 +2,10 @@
 
 namespace App\Console;
 
+use App\Model\Entity\Pipeline;
 use Doctrine\DBAL;
+use Doctrine\ORM\Id\AssignedGenerator;
+use Kdyby\Doctrine\EntityManager;
 use Nette\Utils\Finder;
 use Nette\Utils\Strings;
 use SplFileInfo;
@@ -32,14 +35,23 @@ class DoctrineFixtures extends Command {
   private $dbConnection;
 
   /**
+   * Entity manager used for setting of db metadata
+   * @var EntityManager
+   */
+  private $em;
+
+  /**
    * Constructor, some magic with fixtures
    * @param AliceLoaderInterface $aliceLoader Fixture loader
    * @param DBAL\Connection $dbConnection Database connection
+   * @param EntityManager $entityManager
    */
-  public function __construct(AliceLoaderInterface $aliceLoader, DBAL\Connection $dbConnection) {
+  public function __construct(AliceLoaderInterface $aliceLoader,
+      DBAL\Connection $dbConnection, EntityManager $entityManager) {
     parent::__construct();
     $this->aliceLoader = $aliceLoader;
     $this->dbConnection = $dbConnection;
+    $this->em = $entityManager;
   }
 
   /**
@@ -58,6 +70,10 @@ class DoctrineFixtures extends Command {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->clearDatabase();
+
+    // Pipeline fixtures can set their own ids
+    $metadata = $this->em->getClassMetadata(Pipeline::class);
+    $metadata->setIdGenerator(new AssignedGenerator());
 
     $fixtureDir = __DIR__ . '/../../fixtures';
     $fixtureFiles = [];
