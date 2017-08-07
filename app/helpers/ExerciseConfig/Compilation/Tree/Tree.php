@@ -9,37 +9,43 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 class Tree {
 
   /**
-   * All nodes contained in tree.
-   * @var array
-   */
-  private $nodes = array();
-
-  /**
-   * Nodes containing boxes without input ports.
+   * Root nodes in tree.
    * @var Node[]
    */
   private $rootNodes = array();
 
   /**
-   * Nodes with boxes which does not have output ports.
+   * Nodes which are not input and output ones.
+   * @var array
+   */
+  private $otherNodes = array();
+
+  /**
+   * DataInBox nodes.
    * @var Node[]
    */
-  private $endNodes = array();
+  private $inputNodes = array();
+
+  /**
+   * DataOutBox nodes.
+   * @var Node[]
+   */
+  private $outputNodes = array();
 
 
   /**
    * @return Node[]
    */
-  public function getNodes(): array {
-    return $this->nodes;
+  public function getOtherNodes(): array {
+    return $this->otherNodes;
   }
 
   /**
-   * @param array $nodes
+   * @param Node[] $nodes
    * @return Tree
    */
-  public function setNodes(array $nodes): Tree {
-    $this->nodes = $nodes;
+  public function setOtherNodes(array $nodes): Tree {
+    $this->otherNodes = $nodes;
     return $this;
   }
 
@@ -47,8 +53,8 @@ class Tree {
    * @param Node $node
    * @return Tree
    */
-  public function addNode(Node $node): Tree {
-    $this->nodes[] = $node;
+  public function addOtherNode(Node $node): Tree {
+    $this->otherNodes[] = $node;
     return $this;
   }
 
@@ -60,7 +66,7 @@ class Tree {
   }
 
   /**
-   * @param array $rootNodes
+   * @param Node[] $rootNodes
    * @return Tree
    */
   public function setRootNodes(array $rootNodes): Tree {
@@ -80,16 +86,16 @@ class Tree {
   /**
    * @return Node[]
    */
-  public function getEndNodes(): array {
-    return $this->endNodes;
+  public function getInputNodes(): array {
+    return $this->inputNodes;
   }
 
   /**
-   * @param array $endNodes
+   * @param Node[] $inputNodes
    * @return Tree
    */
-  public function setEndNodes(array $endNodes): Tree {
-    $this->endNodes = $endNodes;
+  public function setInputNodes(array $inputNodes): Tree {
+    $this->inputNodes = $inputNodes;
     return $this;
   }
 
@@ -97,8 +103,33 @@ class Tree {
    * @param Node $node
    * @return Tree
    */
-  public function addEndNode(Node $node): Tree {
-    $this->endNodes[] = $node;
+  public function addInputNode(Node $node): Tree {
+    $this->inputNodes[] = $node;
+    return $this;
+  }
+
+  /**
+   * @return Node[]
+   */
+  public function getOutputNodes(): array {
+    return $this->outputNodes;
+  }
+
+  /**
+   * @param Node[] $outputNodes
+   * @return Tree
+   */
+  public function setOutputNodes(array $outputNodes): Tree {
+    $this->outputNodes = $outputNodes;
+    return $this;
+  }
+
+  /**
+   * @param Node $node
+   * @return Tree
+   */
+  public function addOutputNode(Node $node): Tree {
+    $this->outputNodes[] = $node;
     return $this;
   }
 

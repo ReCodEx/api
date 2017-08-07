@@ -17,6 +17,8 @@ use App\Model\Repository\Pipelines;
  * Internal exercise configuration compilation service. Which handles merging
  * pipelines in each test, in the process tree of boxes is created indexed by
  * tests identifications.
+ * @note No validations take place here! Configuration has to be correct and
+ * validated before.
  */
 class PipelinesMerger {
 
@@ -64,12 +66,59 @@ class PipelinesMerger {
    * will be deleted and connections will be established between corresponding
    * previous/next boxes. This also means that in previous box there has to be
    * variables tables replaced by the ones from the next box (for consistency).
-   * @param Tree $tree
-   * @param Tree $pipelineTree
-   * @return Tree
+   * @param Tree $first
+   * @param Tree $second
+   * @return Tree new instance of tree
    */
-  private function mergeTrees(Tree $tree, Tree $pipelineTree): Tree {
-    // @todo
+  private function mergeTrees(Tree $first, Tree $second): Tree {
+
+    // index output nodes from first tree with their variable names
+    $outVars = array();
+    foreach ($first->getOutputNodes() as $outNode) {
+      $inPort = current($outNode->getBox()->getInputPorts());
+      $outVars[$inPort->getVariable()] = $outNode;
+    }
+
+    // search input nodes for the ones which match variable names with the output ones
+    $newSecondInput = array();
+    foreach ($second->getInputNodes() as $inNode) {
+      $outPort = current($inNode->getBox()->getOutputPorts());
+      if (array_key_exists($outPort->getVariable(), $outVars)) {
+        // match found... merge input and output by connecting previous and next node
+        $outNode = $outVars[$outPort->getVariable()];
+        $previous = current($outNode->getParents());
+        $next = current($inNode->getChildren());
+
+        // remove input and output data nodes from tree
+        $previous->removeChild($outNode);
+        $next->removeParent($inNode);
+
+        // add new connections
+        $previous->addChild($next);
+        $next->addParent($previous);
+
+        // replace variables tables in previous node
+        $previous->getBox()->setExerciseConfigVariables($next->getBox()->getExerciseConfigVariables())
+          ->setEnvironmentConfigVariables($next->getBox()->getEenvironmentConfigVariables())
+          ->setPipelineVariables($next->getBox()->getPipelineVariables());
+
+        // delete variable from the indexed array to be able to say which nodes have to stay at the end
+        unset($outVars[$outPort->getVariable()]);
+      } else {
+        // ports not matched
+        $newSecondInput[] = $inNode;
+      }
+    }
+
+    // transform remaining output from first tree into classic array
+    $newFirstOutput = array_values($outVars);
+
+    // set all necessary things into returned tree
+    $tree = new Tree();
+    $tree->setInputNodes(array_merge($first->getInputNodes(), $newSecondInput));
+    $tree->setOutputNodes(array_merge($newFirstOutput, $second->getOutputNodes()));
+    $tree->setOtherNodes(array_merge($first->getOtherNodes(), $second->getOtherNodes()));
+    return $tree;
   }
 
   /**
@@ -128,20 +177,27 @@ class PipelinesMerger {
         $child->addParent($node);
       }
 
-      // add general reference to node into tree
-      $tree->addNode($node);
-      $node->setIsInTree(true);
-
-      // add references to root nodes into tree if needed
-      if (empty($box->getInputPorts())) {
-        $tree->addRootNode($node);
-      }
-
-      // add reference to end nodes into tree if needed
-      if (empty($box->getOutputPorts())) {
-        $tree->addEndNode($node);
-      }
+      // ... visited flag
+      $node->setInTree(true);
     }
+
+    // add input boxes into tree
+    foreach ($pipeline->getDataInBoxes() as $box) {
+      $tree->addInputNode($nodes[$box->getName()]);
+    }
+
+    // add output boxes into tree
+    foreach ($pipeline->getDataOutBoxes() as $box) {
+      $tree->addOutputNode($nodes[$box->getName()]);
+    }
+
+    // add other boxes into tree
+    foreach ($pipeline->getOtherBoxes() as $box) {
+      $tree->addOtherNode($nodes[$box->getName()]);
+    }
+
+    // ... and return resulting tree
+    return $tree;
   }
 
   /**

@@ -62,6 +62,7 @@ App\Model\Entity\Pipeline:
         __construct:
             create:
                 - @demoAdmin
+        id: pipelineA
         name: "compilationPipeline"
         pipelineConfig: @demoPipelineConfig
 
@@ -69,5 +70,6 @@ App\Model\Entity\Pipeline:
         __construct:
             create:
                 - @demoAdmin
+        id: pipelineB
         name: "testPipeline"
         pipelineConfig: @demoPipelineConfig

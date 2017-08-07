@@ -68,6 +68,13 @@ class Node {
   }
 
   /**
+   * @param Node $parent
+   */
+  public function removeParent(Node $parent) {
+    $this->parents = array_diff($this->parents, $parent);
+  }
+
+  /**
    * @return array
    */
   public function getChildren(): array {
@@ -79,6 +86,13 @@ class Node {
    */
   public function addChild(Node $child) {
     $this->children[] = $child;
+  }
+
+  /**
+   * @param Node $child
+   */
+  public function removeChild(Node $child) {
+    $this->children = array_diff($this->children, $child);
   }
 
   /**
@@ -94,7 +108,7 @@ class Node {
    * @param bool $flag
    * @return Box
    */
-  public function setIsInTree(bool $flag): Node {
+  public function setInTree(bool $flag): Node {
     $this->isInTree = $flag;
     return $this;
   }

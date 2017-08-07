@@ -35,7 +35,7 @@ App\Model\Entity\ExerciseConfig:
               tests:
                 "Test 1":
                   pipelines:
-                    "<@demoPipelineA->id>":
+                    "pipelineA":
                       variables:
                         - name: varA
                           type: string
@@ -43,7 +43,7 @@ App\Model\Entity\ExerciseConfig:
                   environments:
                     java8:
                       pipelines:
-                        "<@demoPipelineA->id>":
+                        "pipelineB":
                           variables:
                             - name: varJava
                               type: string
@@ -51,7 +51,7 @@ App\Model\Entity\ExerciseConfig:
                     c-gcc-linux: []
                 "Test 2":
                   pipelines:
-                    "<@demoPipelineB->id>":
+                    "pipelineB":
                       variables:
                         - name: varB
                           type: file
@@ -59,7 +59,7 @@ App\Model\Entity\ExerciseConfig:
                   environments:
                     c-gcc-linux:
                       pipelines:
-                        "<@demoPipelineB->id>":
+                        "pipelineA":
                           variables:
                             - name: varCpp
                               type: file
