@@ -1,6 +1,7 @@
 <?php
 namespace App\Helpers;
 
+use DateTime;
 use Exception;
 use JsonSerializable;
 
@@ -23,6 +24,14 @@ class SisCourseRecord implements JsonSerializable {
 
   private $sisUserId;
 
+  private $dayOfWeek;
+
+  private $time;
+
+  private $fortnightly;
+
+  private $oddWeeks;
+
   /**
    * @param $sisUserId
    * @param $data
@@ -37,6 +46,13 @@ class SisCourseRecord implements JsonSerializable {
     $result->affiliation = $data["affiliation"];
     $result->year = $data["year"];
     $result->term = $data["semester"];
+    $result->dayOfWeek = intval($data["day_of_week"]) - 1;
+    $minutes = intval($data["time"]);
+    $result->time = (new DateTime())
+      ->setTime(floor($minutes / 60), $minutes % 60)
+      ->format("H:i");
+    $result->fortnightly = $data["fortnight"];
+    $result->oddWeeks = $data["firstweek"] == 1;
 
     foreach (static::$languages as $language) {
       $result->captions[$language] = $data["caption_" . $language];
@@ -78,12 +94,44 @@ class SisCourseRecord implements JsonSerializable {
     return $this->courseId;
   }
 
+  /**
+   * @return mixed
+   */
+  public function getDayOfWeek() {
+    return $this->dayOfWeek;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getTime() {
+    return $this->time;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function isFortnightly() {
+    return $this->fortnightly;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getOddWeeks() {
+    return $this->oddWeeks;
+  }
+
   public function jsonSerialize() {
     return [
       'code' => $this->code,
       'courseId' => $this->courseId,
       'captions' => $this->captions,
-      'annotations' => $this->annotations
+      'annotations' => $this->annotations,
+      'dayOfWeek' => $this->dayOfWeek,
+      'time' => $this->time,
+      'fortnightly' => $this->fortnightly,
+      'oddWeeks' => $this->oddWeeks
     ];
   }
 }

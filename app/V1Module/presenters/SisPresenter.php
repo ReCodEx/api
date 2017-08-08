@@ -130,8 +130,14 @@ class SisPresenter extends BasePresenter {
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
+    $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
+    if ($remoteCourse->isFortnightly()) {
+      $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
+    }
+    $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
+
     $group = new Group(
-      $remoteCourse->getCaption($language),
+      $caption,
       $remoteCourse->getCourseId(),
       $remoteCourse->getAnnotation($language),
       $instance,
@@ -192,5 +198,23 @@ class SisPresenter extends BasePresenter {
     }
 
     throw new BadRequestException();
+  }
+
+  private function dayToString($day, $language) {
+    static $dayLabels = [
+      'en' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      'cs' => ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne']
+    ];
+
+    return $dayLabels[$language][$day];
+  }
+
+  private function oddWeeksToString($oddWeeks, $language) {
+    static $labels = [
+      'en' => ['Even weeks', 'Odd weeks'],
+      'cs' => ['Sudé týdny', 'Liché týdny']
+    ];
+
+    return $labels[$language][$oddWeeks];
   }
 }
