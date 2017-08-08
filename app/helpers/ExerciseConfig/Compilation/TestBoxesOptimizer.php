@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
-use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
+use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 
 
 /**
@@ -15,11 +15,11 @@ class TestBoxesOptimizer {
   /**
    * Optimize given array of boxes in tests and remove duplicate boxes.
    * Resulting array will be multidimensional sort-of tree.
-   * @param Tree[] $tests
-   * @return Tree
+   * @param RootedTree[] $tests
+   * @return RootedTree
    */
-  public function optimize(array $tests): Tree {
-    return new Tree();
+  public function optimize(array $tests): RootedTree {
+    return new RootedTree();
   }
 
 }

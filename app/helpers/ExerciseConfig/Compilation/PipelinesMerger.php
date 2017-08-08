@@ -3,7 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
-use App\Helpers\ExerciseConfig\Compilation\Tree\Tree;
+use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline;
@@ -63,14 +63,13 @@ class PipelinesMerger {
 
   /**
    * Merge two trees consisting of boxes. Input and output boxes which matches
-   * will be deleted and connections will be established between corresponding
-   * previous/next boxes. This also means that in previous box there has to be
-   * variables tables replaced by the ones from the next box (for consistency).
-   * @param Tree $first
-   * @param Tree $second
-   * @return Tree new instance of tree
+   * will be deleted and connection between corresponding previous/next boxes
+   * will be realised by adding intermediate node with no assigned box.
+   * @param MergeTree $first
+   * @param MergeTree $second
+   * @return MergeTree new instance of tree
    */
-  private function mergeTrees(Tree $first, Tree $second): Tree {
+  private function mergeTrees(MergeTree $first, MergeTree $second): MergeTree {
 
     // index output nodes from first tree with their variable names
     $outVars = array();
@@ -81,6 +80,7 @@ class PipelinesMerger {
 
     // search input nodes for the ones which match variable names with the output ones
     $newSecondInput = array();
+    $joinNodes = array();
     foreach ($second->getInputNodes() as $inNode) {
       $outPort = current($inNode->getBox()->getOutputPorts());
       if (array_key_exists($outPort->getVariable(), $outVars)) {
@@ -94,13 +94,11 @@ class PipelinesMerger {
         $next->removeParent($inNode);
 
         // add new connections
-        $previous->addChild($next);
-        $next->addParent($previous);
-
-        // replace variables tables in previous node
-        $previous->getBox()->setExerciseConfigVariables($next->getBox()->getExerciseConfigVariables())
-          ->setEnvironmentConfigVariables($next->getBox()->getEenvironmentConfigVariables())
-          ->setPipelineVariables($next->getBox()->getPipelineVariables());
+        $joinNodes[] = $joinNode = new Node;
+        $previous->addChild($joinNode);
+        $joinNode->addParent($previous);
+        $next->addParent($joinNode);
+        $joinNode->addChild($next);
 
         // delete variable from the indexed array to be able to say which nodes have to stay at the end
         unset($outVars[$outPort->getVariable()]);
@@ -114,19 +112,19 @@ class PipelinesMerger {
     $newFirstOutput = array_values($outVars);
 
     // set all necessary things into returned tree
-    $tree = new Tree();
+    $tree = new MergeTree();
     $tree->setInputNodes(array_merge($first->getInputNodes(), $newSecondInput));
     $tree->setOutputNodes(array_merge($newFirstOutput, $second->getOutputNodes()));
-    $tree->setOtherNodes(array_merge($first->getOtherNodes(), $second->getOtherNodes()));
+    $tree->setOtherNodes(array_merge($first->getOtherNodes(), $second->getOtherNodes(), $joinNodes));
     return $tree;
   }
 
   /**
    * Build pipeline tree with all appropriate connections.
    * @param Pipeline $pipeline
-   * @return Tree
+   * @return MergeTree
    */
-  private function buildPipelineTree(Pipeline $pipeline): Tree {
+  private function buildPipelineTree(Pipeline $pipeline): MergeTree {
 
     // construct all nodes from pipeline, we need to have list of boxes
     // indexed by name for searching and second list as execution queue
@@ -157,7 +155,7 @@ class PipelinesMerger {
     }
 
     // process queue and make connections between nodes
-    $tree = new Tree();
+    $tree = new MergeTree();
     foreach($queue as $node) {
       $box = $node->getBox();
       foreach ($box->getInputPorts() as $inPort) {
@@ -203,15 +201,15 @@ class PipelinesMerger {
   /**
    * Process pipeline, which means creating its tree and merging two trees
    * @note New tree is returned!
-   * @param Tree $tree
+   * @param MergeTree $tree
    * @param VariablesTable $environmentConfigVariables
    * @param PipelineVars $pipelineVars
    * @param Pipeline $pipelineConfig
-   * @return Tree
+   * @return MergeTree
    */
-  private function processPipeline(Tree $tree,
+  private function processPipeline(MergeTree $tree,
       VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
-      Pipeline $pipelineConfig): Tree {
+      Pipeline $pipelineConfig): MergeTree {
 
     // set all variables tables to boxes in pipeline
     $this->setVariablesTablesToPipelineBoxes($pipelineConfig,
@@ -230,11 +228,11 @@ class PipelinesMerger {
    * @param Test $test
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
-   * @return Tree
+   * @return MergeTree
    */
   private function processTest(Test $test,
       VariablesTable $environmentConfigVariables,
-      string $runtimeEnvironmentId): Tree {
+      string $runtimeEnvironmentId): MergeTree {
 
     // get pipelines either for specific environment or defaults for the test
     $testPipelines = $test->getEnvironment($runtimeEnvironmentId)->getPipelines();
@@ -244,7 +242,7 @@ class PipelinesMerger {
 
     // go through all pipelines and merge their data boxes into resulting array
     // which has all variables tables set
-    $tree = new Tree();
+    $tree = new MergeTree();
     foreach ($testPipelines as $pipelineId => $pipelineVars) {
 
       // get database entity and then structured pipeline configuration
@@ -263,7 +261,7 @@ class PipelinesMerger {
    * @param ExerciseConfig $exerciseConfig
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
-   * @return Tree[]
+   * @return MergeTree[]
    */
   public function merge(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables,

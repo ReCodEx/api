@@ -6,13 +6,7 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 /**
  * Class Tree
  */
-class Tree {
-
-  /**
-   * Root nodes in tree.
-   * @var Node[]
-   */
-  private $rootNodes = array();
+class MergeTree {
 
   /**
    * Nodes which are not input and output ones.
@@ -42,44 +36,19 @@ class Tree {
 
   /**
    * @param Node[] $nodes
-   * @return Tree
+   * @return MergeTree
    */
-  public function setOtherNodes(array $nodes): Tree {
+  public function setOtherNodes(array $nodes): MergeTree {
     $this->otherNodes = $nodes;
     return $this;
   }
 
   /**
    * @param Node $node
-   * @return Tree
+   * @return MergeTree
    */
-  public function addOtherNode(Node $node): Tree {
+  public function addOtherNode(Node $node): MergeTree {
     $this->otherNodes[] = $node;
-    return $this;
-  }
-
-  /**
-   * @return Node[]
-   */
-  public function getRootNodes(): array {
-    return $this->rootNodes;
-  }
-
-  /**
-   * @param Node[] $rootNodes
-   * @return Tree
-   */
-  public function setRootNodes(array $rootNodes): Tree {
-    $this->rootNodes = $rootNodes;
-    return $this;
-  }
-
-  /**
-   * @param Node $node
-   * @return Tree
-   */
-  public function addRootNode(Node $node): Tree {
-    $this->rootNodes[] = $node;
     return $this;
   }
 
@@ -92,18 +61,18 @@ class Tree {
 
   /**
    * @param Node[] $inputNodes
-   * @return Tree
+   * @return MergeTree
    */
-  public function setInputNodes(array $inputNodes): Tree {
+  public function setInputNodes(array $inputNodes): MergeTree {
     $this->inputNodes = $inputNodes;
     return $this;
   }
 
   /**
    * @param Node $node
-   * @return Tree
+   * @return MergeTree
    */
-  public function addInputNode(Node $node): Tree {
+  public function addInputNode(Node $node): MergeTree {
     $this->inputNodes[] = $node;
     return $this;
   }
@@ -117,18 +86,18 @@ class Tree {
 
   /**
    * @param Node[] $outputNodes
-   * @return Tree
+   * @return MergeTree
    */
-  public function setOutputNodes(array $outputNodes): Tree {
+  public function setOutputNodes(array $outputNodes): MergeTree {
     $this->outputNodes = $outputNodes;
     return $this;
   }
 
   /**
    * @param Node $node
-   * @return Tree
+   * @return MergeTree
    */
-  public function addOutputNode(Node $node): Tree {
+  public function addOutputNode(Node $node): MergeTree {
     $this->outputNodes[] = $node;
     return $this;
   }

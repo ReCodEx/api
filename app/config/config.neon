@@ -226,6 +226,7 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\BoxesSorter
   - App\Helpers\ExerciseConfig\Compilation\TestBoxesOptimizer
   - App\Helpers\ExerciseConfig\Compilation\BoxesCompiler
+  - App\Helpers\ExerciseConfig\Compilation\VariablesResolver
 
   # models - repositories
   - App\Model\Repository\Comments

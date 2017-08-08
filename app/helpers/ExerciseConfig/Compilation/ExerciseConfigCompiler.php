@@ -33,6 +33,11 @@ class ExerciseConfigCompiler {
   private $boxesCompiler;
 
   /**
+   * @var VariablesResolver
+   */
+  private $variablesResolver;
+
+  /**
    * ExerciseConfigValidator constructor.
    * @param PipelinesMerger $pipelinesMerger
    * @param BoxesSorter $boxesSorter
@@ -41,11 +46,12 @@ class ExerciseConfigCompiler {
    */
   public function __construct(PipelinesMerger $pipelinesMerger,
       BoxesSorter $boxesSorter, TestBoxesOptimizer $testBoxesOptimizer,
-      BoxesCompiler $boxesCompiler) {
+      BoxesCompiler $boxesCompiler, VariablesResolver $variablesResolver) {
     $this->pipelinesMerger = $pipelinesMerger;
     $this->boxesSorter = $boxesSorter;
     $this->testBoxesOptimizer = $testBoxesOptimizer;
     $this->boxesCompiler = $boxesCompiler;
+    $this->variablesResolver = $variablesResolver;
   }
 
 
@@ -59,6 +65,7 @@ class ExerciseConfigCompiler {
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
+    $tests = $this->variablesResolver->resolve($tests);
     $sortedTests = $this->boxesSorter->sort($tests);
     $executionPipeline = $this->testBoxesOptimizer->optimize($sortedTests);
     $jobConfig = $this->boxesCompiler->compile($executionPipeline);
