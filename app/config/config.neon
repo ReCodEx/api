@@ -257,6 +257,7 @@ services:
   - App\Model\Repository\ExerciseFiles
   - App\Model\Repository\AdditionalExerciseFiles
   - App\Model\Repository\Pipelines
+  - App\Model\Repository\SisGroupBindings
 
 doctrine:
   user: 'root'
