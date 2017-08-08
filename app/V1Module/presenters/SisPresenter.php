@@ -62,6 +62,7 @@ class SisPresenter extends BasePresenter {
    * @param $userId
    * @param $year
    * @param $term
+   * @throws InvalidArgumentException
    */
   public function actionSubscribedGroups($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
@@ -91,6 +92,7 @@ class SisPresenter extends BasePresenter {
    * @param $userId
    * @param $year
    * @param $term
+   * @throws InvalidArgumentException
    */
   public function actionSupervisedCourses($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);

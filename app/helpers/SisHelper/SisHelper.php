@@ -1,5 +1,6 @@
 <?php
 namespace App\Helpers;
+use App\Exceptions\InvalidArgumentException;
 use Generator;
 use Nette;
 use GuzzleHttp;
@@ -37,8 +38,9 @@ class SisHelper extends Nette\Object {
   /**
    * @param $sisUserId
    * @param $year
-   * @param $term
-   * @return Generator|SisCourseRecord[]
+   * @param int $term
+   * @return SisCourseRecord[]|Generator
+   * @throws InvalidArgumentException
    */
   public function getCourses($sisUserId, $year = null, $term = 1) {
     $salt = join(',', [ time(), $this->faculty, $sisUserId ]);
@@ -56,7 +58,12 @@ class SisHelper extends Nette\Object {
       $params['semesters'] = [sprintf("%s-%s", $year, $term)];
     }
 
-    $response = $this->client->get('', ['query' => $params]);
+    try {
+      $response = $this->client->get('', ['query' => $params]);
+    } catch (GuzzleHttp\Exception\ClientException $e) {
+      throw new InvalidArgumentException("Invalid year or semester number");
+    }
+
     $data = Json::decode($response->getBody()->getContents());
 
     foreach ($data["events"] as $course) {
