@@ -28,8 +28,7 @@ class BoxesSorter {
     $queue = array();
 
     // fill initial values in the stack, last element is the top of the stack
-    foreach (array_merge($mergeTree->getOutputNodes(),
-      $mergeTree->getOtherNodes(), $mergeTree->getInputNodes()) as $node) {
+    foreach ($mergeTree->getAllNodes() as $node) {
       $stack[] = array(false, $node);
     }
 
@@ -89,8 +88,8 @@ class BoxesSorter {
       $current = $sorted[$i];
 
       // remove old connections
-      $previous->setChildren(array());
-      $current->setParents(array());
+      $previous->clearChildren();
+      $current->clearParents();
 
       // ... and create new ones
       $previous->addChild($current);

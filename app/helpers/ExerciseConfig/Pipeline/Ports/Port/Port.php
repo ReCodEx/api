@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Ports;
 
 
+use App\Helpers\ExerciseConfig\Variable;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -16,6 +17,12 @@ abstract class Port implements JsonSerializable
    * @var PortMeta
    */
   protected $meta;
+
+  /**
+   * @note Used during compilation of configuration, has to be set before usage.
+   * @var Variable
+   */
+  protected $variableValue = null;
 
   /**
    * Port constructor.
@@ -45,6 +52,20 @@ abstract class Port implements JsonSerializable
    */
   public function getVariable(): ?string {
     return $this->meta->getVariable();
+  }
+
+  /**
+   * @return Variable|null
+   */
+  public function getVariableValue(): ?Variable {
+    return $this->variableValue;
+  }
+
+  /**
+   * @param Variable $variableValue
+   */
+  public function setVariableValue(Variable $variableValue) {
+    $this->variableValue = $variableValue;
   }
 
 

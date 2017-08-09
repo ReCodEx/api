@@ -45,17 +45,17 @@ class PipelinesMerger {
 
   /**
    * To all boxes in pipeline set appropriate variables.
-   * @param Pipeline $pipelineConfig
+   * @param MergeTree $pipelineTree
    * @param VariablesTable $exerciseConfigVariables
    * @param VariablesTable $environmentConfigVariables
    * @param VariablesTable $pipelineVariables
    */
-  private function setVariablesTablesToPipelineBoxes(Pipeline $pipelineConfig,
+  private function setVariablesTablesToPipelineBoxes(MergeTree $pipelineTree,
       VariablesTable $exerciseConfigVariables,
       VariablesTable $environmentConfigVariables,
       VariablesTable $pipelineVariables) {
-    foreach ($pipelineConfig->getAll() as $box) {
-      $box->setExerciseConfigVariables($exerciseConfigVariables)
+    foreach ($pipelineTree->getAllNodes() as $node) {
+      $node->setExerciseConfigVariables($exerciseConfigVariables)
         ->setEnvironmentConfigVariables($environmentConfigVariables)
         ->setPipelineVariables($pipelineVariables);
     }
@@ -95,10 +95,10 @@ class PipelinesMerger {
 
         // add new connections
         $joinNodes[] = $joinNode = new Node;
-        $previous->addChild($joinNode);
-        $joinNode->addParent($previous);
-        $next->addParent($joinNode);
-        $joinNode->addChild($next);
+        $previous->addChild($outPort->getVariable(), $joinNode);
+        $joinNode->addParent($outPort->getVariable(), $previous);
+        $next->addParent($outPort->getVariable(), $joinNode);
+        $joinNode->addChild($outPort->getVariable(), $next);
 
         // delete variable from the indexed array to be able to say which nodes have to stay at the end
         unset($outVars[$outPort->getVariable()]);
@@ -140,6 +140,9 @@ class PipelinesMerger {
       // go through all ports of box and assign them to appropriate variables set
       foreach ($box->getInputPorts() as $inPort) {
         $varName = $inPort->getVariable();
+        if (empty($varName)) {
+          continue; // variable in port is not specified... jump over
+        }
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = array();
         }
@@ -147,6 +150,9 @@ class PipelinesMerger {
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
+        if (empty($varName)) {
+          continue; // variable in port is not specified... jump over
+        }
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = array();
         }
@@ -159,20 +165,28 @@ class PipelinesMerger {
     foreach($queue as $node) {
       $box = $node->getBox();
       foreach ($box->getInputPorts() as $inPort) {
-        $child = $nodes[$variables[$inPort->getVariable()][1]];
+        $varName = $inPort->getVariable();
+        if (empty($varName)) {
+          continue; // variable in port is not specified... jump over
+        }
+        $child = $nodes[$variables[$varName][1]];
         if ($child->isInTree()) {
           continue;
         }
-        $node->addParent($child);
-        $child->addChild($node);
+        $node->addParent($varName, $child);
+        $child->addChild($varName, $node);
       }
       foreach ($box->getOutputPorts() as $outPort) {
-        $child = $nodes[$variables[$outPort->getVariable()][0]];
+        $varName = $outPort->getVariable();
+        if (empty($varName)) {
+          continue; // variable in port is not specified... jump over
+        }
+        $child = $nodes[$variables[$varName][0]];
         if ($child->isInTree()) {
           continue;
         }
-        $node->addChild($child);
-        $child->addParent($node);
+        $node->addChild($varName, $child);
+        $child->addParent($varName);
       }
 
       // ... visited flag
@@ -211,13 +225,13 @@ class PipelinesMerger {
       VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
       Pipeline $pipelineConfig): MergeTree {
 
+    // build tree for given pipeline
+    $pipelineTree = $this->buildPipelineTree($pipelineConfig);
     // set all variables tables to boxes in pipeline
-    $this->setVariablesTablesToPipelineBoxes($pipelineConfig,
+    $this->setVariablesTablesToPipelineBoxes($pipelineTree,
       $pipelineVars->getVariablesTable(), $environmentConfigVariables,
       $pipelineConfig->getVariablesTable());
 
-    // build tree for given pipeline
-    $pipelineTree = $this->buildPipelineTree($pipelineConfig);
     // merge given tree and currently created pipeline tree
     $mergedTree = $this->mergeTrees($tree, $pipelineTree);
     return $mergedTree;

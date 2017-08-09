@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\VariablesTable;
 
 
 /**
@@ -18,11 +19,35 @@ class Node {
   private $box;
 
   /**
+   * Pipeline variables from exercise configuration which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $exerciseConfigVariables;
+
+  /**
+   * Variables from environment configuration which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $environmentConfigVariables;
+
+  /**
+   * Variables from pipeline to which this box belong to, which will be used during compilation.
+   * @note Needs to be first set before usage.
+   * @var VariablesTable
+   */
+  protected $pipelineVariables;
+
+
+  /**
+   * Indexed by variable name.
    * @var Node[]
    */
   private $parents = array();
 
   /**
+   * Indexed by variable name.
    * @var Node[]
    */
   private $children = array();
@@ -63,6 +88,64 @@ class Node {
   }
 
   /**
+   * Get pipeline variables from exercise configuration.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getExerciseConfigVariables(): ?VariablesTable {
+    return $this->exerciseConfigVariables;
+  }
+
+  /**
+   * Set pipeline variables from exercise configuration.
+   * @param VariablesTable $variablesTable
+   * @return Node
+   */
+  public function setExerciseConfigVariables(VariablesTable $variablesTable): Node {
+    $this->exerciseConfigVariables = $variablesTable;
+    return $this;
+  }
+
+  /**
+   * Get variables from environment configuration.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getEnvironmentConfigVariables(): ?VariablesTable {
+    return $this->environmentConfigVariables;
+  }
+
+  /**
+   * Set variables from environment configuration.
+   * @param VariablesTable $variablesTable
+   * @return Node
+   */
+  public function setEnvironmentConfigVariables(VariablesTable $variablesTable): Node {
+    $this->environmentConfigVariables = $variablesTable;
+    return $this;
+  }
+
+  /**
+   * Get variables from pipeline.
+   * @note Needs to be first set before usage.
+   * @return VariablesTable|null
+   */
+  public function getPipelineVariables(): ?VariablesTable {
+    return $this->pipelineVariables;
+  }
+
+  /**
+   * Set variables from pipeline.
+   * @param VariablesTable $variablesTable
+   * @return Node
+   */
+  public function setPipelineVariables(VariablesTable $variablesTable): Node {
+    $this->pipelineVariables = $variablesTable;
+    return $this;
+  }
+
+
+  /**
    * @return Node[]
    */
   public function getParents(): array {
@@ -70,17 +153,18 @@ class Node {
   }
 
   /**
-   * @param array $parents
+   *
    */
-  public function setParents(array $parents) {
-    $this->parents = $parents;
+  public function clearParents() {
+    $this->parents = array();
   }
 
   /**
+   * @param string $variable
    * @param Node $parent
    */
-  public function addParent(Node $parent) {
-    $this->parents[] = $parent;
+  public function addParent(string $variable, Node $parent) {
+    $this->parents[$variable] = $parent;
   }
 
   /**
@@ -98,17 +182,18 @@ class Node {
   }
 
   /**
-   * @param array $children
+   *
    */
-  public function setChildren(array $children) {
-    $this->children = $children;
+  public function clearChildren() {
+    $this->children = array();
   }
 
   /**
+   * @param string $variable
    * @param Node $child
    */
-  public function addChild(Node $child) {
-    $this->children[] = $child;
+  public function addChild(string $variable, Node $child) {
+    $this->children[$variable] = $child;
   }
 
   /**

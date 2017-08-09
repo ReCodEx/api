@@ -30,6 +30,13 @@ class MergeTree {
   /**
    * @return Node[]
    */
+  public function getAllNodes(): array {
+    return array_merge($this->inputNodes, $this->otherNodes, $this->outputNodes);
+  }
+
+  /**
+   * @return Node[]
+   */
   public function getOtherNodes(): array {
     return $this->otherNodes;
   }
