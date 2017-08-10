@@ -122,11 +122,29 @@ abstract class Box implements JsonSerializable
   }
 
   /**
+   * Get input port of given name from this box.
+   * @param string $port
+   * @return Port
+   */
+  public function getInputPort(string $port): Port {
+    return $this->meta->getInputPort($port);
+  }
+
+  /**
    * Get output ports of this box.
    * @return Port[]
    */
   public function getOutputPorts(): array {
     return $this->meta->getOutputPorts();
+  }
+
+  /**
+   * Get output port of given name from this box.
+   * @param string $port
+   * @return Port
+   */
+  public function getOutputPort(string $port): Port {
+    return $this->meta->getOutputPort($port);
   }
 
 

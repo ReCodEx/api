@@ -14,6 +14,37 @@ use App\Model\Repository\Pipelines;
 
 
 /**
+ * Helper pair class.
+ */
+class NodePortPair {
+  /** @var Node */
+  public $node;
+  /** @var string */
+  public $port;
+
+  /**
+   * NodePortPair constructor.
+   * @param Node $node
+   * @param string $port
+   */
+  public function __construct(Node $node, string $port) {
+    $this->node = $node;
+    $this->port = $port;
+  }
+}
+
+/**
+ * Helper pair class.
+ */
+class VariablePair {
+  /** @var NodePortPair */
+  public $input;
+  /** @var NodePortPair */
+  public $output;
+}
+
+
+/**
  * Internal exercise configuration compilation service. Which handles merging
  * pipelines in each test, in the process tree of boxes is created indexed by
  * tests identifications.
@@ -75,7 +106,7 @@ class PipelinesMerger {
     $outVars = array();
     foreach ($first->getOutputNodes() as $outNode) {
       $inPort = current($outNode->getBox()->getInputPorts());
-      $outVars[$inPort->getVariable()] = $outNode;
+      $outVars[$inPort->getVariable()] = new NodePortPair($outNode, $inPort->getName());
     }
 
     // search input nodes for the ones which match variable names with the output ones
@@ -85,7 +116,8 @@ class PipelinesMerger {
       $outPort = current($inNode->getBox()->getOutputPorts());
       if (array_key_exists($outPort->getVariable(), $outVars)) {
         // match found... merge input and output by connecting previous and next node
-        $outNode = $outVars[$outPort->getVariable()];
+        $outNode = $outVars[$outPort->getVariable()]->node;
+        $inPortName = $outVars[$outPort->getVariable()]->port;
         $previous = current($outNode->getParents());
         $next = current($inNode->getChildren());
 
@@ -95,10 +127,10 @@ class PipelinesMerger {
 
         // add new connections
         $joinNodes[] = $joinNode = new Node;
-        $previous->addChild($outPort->getVariable(), $joinNode);
-        $joinNode->addParent($outPort->getVariable(), $previous);
-        $next->addParent($outPort->getVariable(), $joinNode);
-        $joinNode->addChild($outPort->getVariable(), $next);
+        $previous->addChild($inPortName, $joinNode);
+        $joinNode->addParent($inPortName, $previous);
+        $next->addParent($outPort->getName(), $joinNode);
+        $joinNode->addChild($outPort->getName(), $next);
 
         // delete variable from the indexed array to be able to say which nodes have to stay at the end
         unset($outVars[$outPort->getVariable()]);
@@ -131,7 +163,7 @@ class PipelinesMerger {
     // and also set of variables with references to input and output box
     $queue = array();
     $nodes = array();
-    $variables = array(); // array of pairs (first => input, second => output)
+    $variables = array(); // array of pairs of pairs
     foreach ($pipeline->getAll() as $box) {
       $node = new Node($box);
       $queue[] = $node;
@@ -144,9 +176,9 @@ class PipelinesMerger {
           continue; // variable in port is not specified... jump over
         }
         if (!array_key_exists($varName, $variables)) {
-          $variables[$varName] = array();
+          $variables[$varName] = new VariablePair();
         }
-        $variables[$varName][0] = $box->getName();
+        $variables[$varName]->input = new NodePortPair($node, $inPort->getName());
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
@@ -156,7 +188,7 @@ class PipelinesMerger {
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = array();
         }
-        $variables[$varName][1] = $box->getName();
+        $variables[$varName]->output = new NodePortPair($node, $outPort->getName());
       }
     }
 
@@ -169,24 +201,24 @@ class PipelinesMerger {
         if (empty($varName)) {
           continue; // variable in port is not specified... jump over
         }
-        $child = $nodes[$variables[$varName][1]];
-        if ($child->isInTree()) {
+        $parent = $variables[$varName]->output->node;
+        if ($parent->isInTree()) {
           continue;
         }
-        $node->addParent($varName, $child);
-        $child->addChild($varName, $node);
+        $node->addParent($inPort->getName(), $parent);
+        $parent->addChild($variables[$varName]->output->port, $node);
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
         if (empty($varName)) {
           continue; // variable in port is not specified... jump over
         }
-        $child = $nodes[$variables[$varName][0]];
+        $child = $variables[$varName]->input->node;
         if ($child->isInTree()) {
           continue;
         }
-        $node->addChild($varName, $child);
-        $child->addParent($varName);
+        $node->addChild($outPort->getName(), $child);
+        $child->addParent($variables[$varName]->input->port, $node);
       }
 
       // ... visited flag

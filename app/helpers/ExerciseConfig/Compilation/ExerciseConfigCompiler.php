@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\JobConfig\JobConfig;
@@ -61,6 +62,7 @@ class ExerciseConfigCompiler {
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
    * @return JobConfig
+   * @throws ExerciseConfigException
    */
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {

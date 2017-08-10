@@ -41,13 +41,13 @@ class Node {
 
 
   /**
-   * Indexed by variable name.
+   * Indexed by port name.
    * @var Node[]
    */
   private $parents = array();
 
   /**
-   * Indexed by variable name.
+   * Indexed by port name.
    * @var Node[]
    */
   private $children = array();
@@ -153,6 +153,17 @@ class Node {
   }
 
   /**
+   * @param string $port
+   * @return Node|null
+   */
+  public function getParent(string $port): ?Node {
+    if (!array_key_exists($port, $this->parents)) {
+      return null;
+    }
+    return $this->parents[$port];
+  }
+
+  /**
    *
    */
   public function clearParents() {
@@ -160,11 +171,11 @@ class Node {
   }
 
   /**
-   * @param string $variable
+   * @param string $port
    * @param Node $parent
    */
-  public function addParent(string $variable, Node $parent) {
-    $this->parents[$variable] = $parent;
+  public function addParent(string $port, Node $parent) {
+    $this->parents[$port] = $parent;
   }
 
   /**
@@ -175,10 +186,21 @@ class Node {
   }
 
   /**
-   * @return array
+   * @return Node[]
    */
   public function getChildren(): array {
     return $this->children;
+  }
+
+  /**
+   * @param string $port
+   * @return Node|null
+   */
+  public function getChild(string $port): ?Node {
+    if (!array_key_exists($port, $this->children)) {
+      return null;
+    }
+    return $this->children[$port];
   }
 
   /**
@@ -189,11 +211,11 @@ class Node {
   }
 
   /**
-   * @param string $variable
+   * @param string $port
    * @param Node $child
    */
-  public function addChild(string $variable, Node $child) {
-    $this->children[$variable] = $child;
+  public function addChild(string $port, Node $child) {
+    $this->children[$port] = $child;
   }
 
   /**
