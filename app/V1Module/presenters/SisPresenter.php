@@ -85,8 +85,8 @@ class SisPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   public function actionRegisterTerm() {
-    $year = intval($this->getRequest()->getParameter("year"));
-    $term = intval($this->getRequest()->getParameter("term"));
+    $year = intval($this->getRequest()->getPost("year"));
+    $term = intval($this->getRequest()->getPost("term"));
 
     if ($this->sisValidTerms->isValid($year, $term)) {
       return $this->sendSuccessResponse("OK");
@@ -162,15 +162,15 @@ class SisPresenter extends BasePresenter {
    * @throws BadRequestException
    * @Param(name="instanceId", type="post")
    * @Param(name="parentGroupId", type="post", required=FALSE)
-   * @Param(name="language", type="post")
+   * @Param(name="language", type="post", required=FALSE)
    */
   public function actionCreateGroup($courseId) {
     $user = $this->getCurrentUser();
     $sisUserId = $this->getSisUserIdOrThrow($user);
     $request = $this->getRequest();
-    $language = $request->getParameter("language") ?: "en";
-    $instance = $this->instances->findOrThrow($request->getParameter("instance"));
-    $parentGroupId = $request->getParameter("parentGroupId");
+    $language = $request->getPost("language") ?: "en";
+    $instance = $this->instances->findOrThrow($request->getPost("instanceId"));
+    $parentGroupId = $request->getPost("parentGroupId");
     $parentGroup = $parentGroupId ? $this->groups->findOrThrow($parentGroupId) : NULL;
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);

@@ -20,8 +20,9 @@ class SisHelper extends Nette\Object {
    * @param $apiBase
    * @param $faculty
    * @param $secret
+   * @param GuzzleHttp\HandlerStack|null $handler An optional HTTP handler (mainly for unit testing purposes)
    */
-  public function __construct($apiBase, $faculty, $secret) {
+  public function __construct($apiBase, $faculty, $secret, GuzzleHttp\HandlerStack $handler = NULL) {
     $this->apiBase = $apiBase;
     $this->faculty = $faculty;
     $this->secret = $secret;
@@ -30,9 +31,15 @@ class SisHelper extends Nette\Object {
       $this->apiBase .= '/';
     }
 
-    $this->client = new GuzzleHttp\Client([
+    $options = [
       'base_uri' => $this->apiBase . 'rozvrhng/rest.php'
-    ]);
+    ];
+
+    if ($handler !== NULL) {
+      $options['handler'] = $handler;
+    }
+
+    $this->client = new GuzzleHttp\Client($options);
   }
 
   /**
@@ -42,7 +49,7 @@ class SisHelper extends Nette\Object {
    * @return SisCourseRecord[]|Generator
    * @throws InvalidArgumentException
    */
-  public function getCourses($sisUserId, $year = null, $term = 1) {
+  public function getCourses($sisUserId, $year = NULL, $term = 1) {
     $salt = join(',', [ time(), $this->faculty, $sisUserId ]);
     $hash = hash('sha256', "$salt,$this->secret");
 
@@ -54,7 +61,7 @@ class SisHelper extends Nette\Object {
       'extras' => ['annotations']
     ];
 
-    if ($year !== null) {
+    if ($year !== NULL) {
       $params['semesters'] = [sprintf("%s-%s", $year, $term)];
     }
 
@@ -64,7 +71,7 @@ class SisHelper extends Nette\Object {
       throw new InvalidArgumentException("Invalid year or semester number");
     }
 
-    $data = Json::decode($response->getBody()->getContents());
+    $data = Json::decode($response->getBody()->getContents(), Json::FORCE_ARRAY);
 
     foreach ($data["events"] as $course) {
       yield SisCourseRecord::fromArray($sisUserId, $course);
