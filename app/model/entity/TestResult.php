@@ -92,7 +92,7 @@ class TestResult implements JsonSerializable
   protected $usedTimeRatio;
 
   /**
-    * @ORM\Column(type="boolean")
+    * @ORM\Column(type="integer")
     */
   protected $exitCode;
 
@@ -134,6 +134,7 @@ class TestResult implements JsonSerializable
       "score" => $this->score,
       "memoryExceeded" => $this->memoryExceeded,
       "timeExceeded" => $this->timeExceeded,
+      "exitCode" => $this->exitCode,
       "message" => $this->message,
       "timeRatio" => $timeRatio,
       "memoryRatio" => $memoryRatio,

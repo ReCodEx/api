@@ -105,7 +105,7 @@ class SolutionEvaluation implements JsonSerializable
 
   public function getData(bool $canViewRatios) {
     $testResults = $this->testResults->map(
-      function ($res) use ($canViewRatios) { return $res->getData($canViewRatios); }
+      function (TestResult $res) use ($canViewRatios) { return $res->getData($canViewRatios); }
     )->getValues();
 
     return [
