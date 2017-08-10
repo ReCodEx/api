@@ -8,11 +8,14 @@ use App\Exceptions\InvalidArgumentException;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
+use App\Model\Entity\SisValidTerm;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Model\Repository\SisGroupBindings;
+use App\Model\Repository\SisValidTerms;
+use DateTime;
 
 class SisPresenter extends BasePresenter {
   /**
@@ -46,14 +49,54 @@ class SisPresenter extends BasePresenter {
   public $sisGroupBindings;
 
   /**
+   * @var SisValidTerms
+   * @inject
+   */
+  public $sisValidTerms;
+
+  /**
    * @GET
    */
-  public function actionCurrentTerm() {
-    $this->sendSuccessResponse([ // TODO
-      "year" => 2017,
-      "term" => 1,
-      "starting" => TRUE
+  public function actionStatus() {
+    $login = $this->externalLogins->findByUser($this->getCurrentUser(), "cas-uk");
+    $now = new DateTime();
+    $terms = [];
+
+    /** @var SisValidTerm $term */
+    foreach ($this->sisValidTerms->findAll() as $term) {
+      $month = intval($now->format('w'));
+      $terms[] = [
+        'year' => $term->getYear(),
+        'term' => $term->getTerm(),
+        'starting' => $term->getTerm() == 1 ? $month === 9 : $month === 2 // TODO make the start of term configurable
+      ];
+    }
+
+    $this->sendSuccessResponse([
+      "accessible" => $login !== NULL,
+      "terms" => $terms
     ]);
+  }
+
+  /**
+   * @POST
+   * @Param(name="year", type="post")
+   * @Param(name="term", type="post")
+   * @throws InvalidArgumentException
+   */
+  public function actionRegisterTerm() {
+    $year = intval($this->getRequest()->getParameter("year"));
+    $term = intval($this->getRequest()->getParameter("term"));
+
+    if ($this->sisValidTerms->isValid($year, $term)) {
+      return $this->sendSuccessResponse("OK");
+    }
+
+    // Throws InvalidArgumentException when given term is invalid
+    $this->sisHelper->getCourses($this->getSisUserIdOrThrow($this->getCurrentUser()), $year, $term);
+
+    $this->sisValidTerms->persist(new SisValidTerm($year, $term));
+    $this->sendSuccessResponse("OK");
   }
 
   /**

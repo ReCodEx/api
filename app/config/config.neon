@@ -258,6 +258,7 @@ services:
   - App\Model\Repository\AdditionalExerciseFiles
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
+  - App\Model\Repository\SisValidTerms
 
 doctrine:
   user: 'root'
