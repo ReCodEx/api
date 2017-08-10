@@ -7,7 +7,14 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class SisGroupBinding {
   /**
-   * @ORM\ManyToOne(targetEntity=Group)
+   * @ORM\Id
+   * @ORM\Column(type="guid")
+   * @ORM\GeneratedValue(strategy="UUID")
+   */
+  protected $id;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="Group")
    */
   protected $group;
 
