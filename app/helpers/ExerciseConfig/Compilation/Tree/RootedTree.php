@@ -4,7 +4,9 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 
 /**
- * Class RootedTree
+ * Structure which is logically tree which contains reference to its root nodes.
+ * There can be multiple root nodes which does not have any parents.
+ * @note Structure used in exercise compilation.
  */
 class RootedTree {
 
@@ -16,6 +18,7 @@ class RootedTree {
 
 
   /**
+   * Get root nodes of tree.
    * @return Node[]
    */
   public function getRootNodes(): array {
@@ -23,15 +26,7 @@ class RootedTree {
   }
 
   /**
-   * @param Node[] $rootNodes
-   * @return RootedTree
-   */
-  public function setRootNodes(array $rootNodes): RootedTree {
-    $this->rootNodes = $rootNodes;
-    return $this;
-  }
-
-  /**
+   * Add root node to the tree.
    * @param Node $node
    * @return RootedTree
    */

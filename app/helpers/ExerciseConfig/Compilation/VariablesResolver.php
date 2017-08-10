@@ -50,6 +50,8 @@ class VariablesResolver {
   }
 
   /**
+   * Resolve variables from other nodes, that means nodes which are not input
+   * ones. This is general method for handling parent -> children pairs.
    * @param Node $parent
    * @param Node $child
    * @param string $inPortName
@@ -101,6 +103,7 @@ class VariablesResolver {
       foreach ($node->getParents() as $inPortName => $parent) {
         $outPortName = array_search($node, $parent->getChildren());
         if ($outPortName === FALSE) {
+          // I do not like what you got!
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
         }
 
@@ -110,6 +113,7 @@ class VariablesResolver {
       foreach ($node->getChildren() as $outPortName => $child) {
         $inPortName = array_search($node, $child->getParents());
         if ($outPortName === FALSE) {
+          // Oh boy, here we go throwing exceptions again!
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
         }
 

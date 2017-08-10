@@ -4,7 +4,10 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 
 /**
- * Class Tree
+ * Tree like structure used in compilation of exercise configuration for
+ * constructing pipeline trees and especially merging them. Therefore this tree
+ * contains mainly references to input and output nodes.
+ * @note Structure used in exercise compilation.
  */
 class MergeTree {
 
@@ -28,6 +31,7 @@ class MergeTree {
 
 
   /**
+   * Merge all nodes from this tree and return them.
    * @return Node[]
    */
   public function getAllNodes(): array {
@@ -35,6 +39,7 @@ class MergeTree {
   }
 
   /**
+   * Get nodes which are not input or output ones.
    * @return Node[]
    */
   public function getOtherNodes(): array {
@@ -42,6 +47,7 @@ class MergeTree {
   }
 
   /**
+   * Set other nodes.
    * @param Node[] $nodes
    * @return MergeTree
    */
@@ -51,6 +57,7 @@ class MergeTree {
   }
 
   /**
+   * Add non-data node to this tree.
    * @param Node $node
    * @return MergeTree
    */
@@ -60,6 +67,7 @@ class MergeTree {
   }
 
   /**
+   * Get input nodes from this tree.
    * @return Node[]
    */
   public function getInputNodes(): array {
@@ -67,6 +75,7 @@ class MergeTree {
   }
 
   /**
+   * Set input nodes of this tree.
    * @param Node[] $inputNodes
    * @return MergeTree
    */
@@ -76,6 +85,7 @@ class MergeTree {
   }
 
   /**
+   * Add one input node to this tree.
    * @param Node $node
    * @return MergeTree
    */
@@ -85,6 +95,7 @@ class MergeTree {
   }
 
   /**
+   * Get all output nodes contained in tree.
    * @return Node[]
    */
   public function getOutputNodes(): array {
@@ -92,6 +103,7 @@ class MergeTree {
   }
 
   /**
+   * Set output nodes to this tree.
    * @param Node[] $outputNodes
    * @return MergeTree
    */
@@ -101,6 +113,7 @@ class MergeTree {
   }
 
   /**
+   * Add one output node to this tree.
    * @param Node $node
    * @return MergeTree
    */

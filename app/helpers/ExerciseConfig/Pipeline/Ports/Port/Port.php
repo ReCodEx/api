@@ -19,6 +19,7 @@ abstract class Port implements JsonSerializable
   protected $meta;
 
   /**
+   * Actual reference to the variable value.
    * @note Used during compilation of configuration, has to be set before usage.
    * @var Variable
    */
@@ -55,6 +56,7 @@ abstract class Port implements JsonSerializable
   }
 
   /**
+   * Get variable value.
    * @return Variable|null
    */
   public function getVariableValue(): ?Variable {
@@ -62,6 +64,7 @@ abstract class Port implements JsonSerializable
   }
 
   /**
+   * Set variable value.
    * @param Variable $variableValue
    */
   public function setVariableValue(Variable $variableValue) {

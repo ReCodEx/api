@@ -7,13 +7,17 @@ use App\Helpers\ExerciseConfig\VariablesTable;
 
 
 /**
- * Class Node
+ * Node representing Box in the compilation of exercise. It can hold additional
+ * information regarding box which does not have to be stored there, this can
+ * save memory during loading of pipelines and not compiling them.
  * @note Box does not have to be assigned. If there is none node is only meant
  * to be some kind of bridge between two pipelines.
+ * @note Structure used in exercise compilation.
  */
 class Node {
 
   /**
+   * Box connected to this node.
    * @var Box
    */
   private $box;
@@ -41,30 +45,34 @@ class Node {
 
 
   /**
-   * Indexed by port name.
+   * Nodes which identify themselves as parent of this node, ndexed by port
+   * name.
    * @var Node[]
    */
   private $parents = array();
 
   /**
-   * Indexed by port name.
+   * Children nodes of this one, indexed by port name.
    * @var Node[]
    */
   private $children = array();
 
   /**
+   * Is this node contained in created tree.
    * Flag regarding tree construction.
    * @var bool
    */
   private $isInTree = false;
 
   /**
+   * Tree was visited during topological sorting.
    * Flag regarding topological sorting of tree.
    * @var bool
    */
   private $visited = false;
 
   /**
+   * Tree was finished and does not have to be processed again.
    * Flag regarding topological sorting of tree.
    * @var bool
    */
@@ -146,6 +154,7 @@ class Node {
 
 
   /**
+   * Get parents of this node.
    * @return Node[]
    */
   public function getParents(): array {
@@ -153,6 +162,7 @@ class Node {
   }
 
   /**
+   * Get parent of this node which resides on given port.
    * @param string $port
    * @return Node|null
    */
@@ -164,13 +174,14 @@ class Node {
   }
 
   /**
-   *
+   * Clear parents of this node.
    */
   public function clearParents() {
     $this->parents = array();
   }
 
   /**
+   * Add parent of this node.
    * @param string $port
    * @param Node $parent
    */
@@ -179,13 +190,15 @@ class Node {
   }
 
   /**
+   * Remove given parent from this node.
    * @param Node $parent
    */
   public function removeParent(Node $parent) {
-    $this->parents = array_diff($this->parents, $parent);
+    $this->parents = array_diff($this->parents, array($parent));
   }
 
   /**
+   * Get children of this node.
    * @return Node[]
    */
   public function getChildren(): array {
@@ -193,6 +206,7 @@ class Node {
   }
 
   /**
+   * Get child of this node with given associated port.
    * @param string $port
    * @return Node|null
    */
@@ -204,13 +218,14 @@ class Node {
   }
 
   /**
-   *
+   * Clear children array.
    */
   public function clearChildren() {
     $this->children = array();
   }
 
   /**
+   * Add child to this node with specified node.
    * @param string $port
    * @param Node $child
    */
@@ -219,10 +234,11 @@ class Node {
   }
 
   /**
+   * Remove given child from children array.
    * @param Node $child
    */
   public function removeChild(Node $child) {
-    $this->children = array_diff($this->children, $child);
+    $this->children = array_diff($this->children, array($child));
   }
 
   /**
