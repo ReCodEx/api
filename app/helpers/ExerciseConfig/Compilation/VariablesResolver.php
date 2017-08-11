@@ -27,8 +27,13 @@ class VariablesResolver {
       // input data box should have only one output port, that is why current is sufficient
       $outputPort = current($node->getBox()->getOutputPorts());
       $variableName = $outputPort->getVariable();
-      $nextNode = current($node->getChildren());
-      $inputPort = key($node->getChildren());
+      $child = current($node->getChildren());
+      $inputPortName = array_search($node, $child->getParents());
+
+      if ($inputPortName === FALSE) {
+        // input node not found in parents of the next one
+        throw new ExerciseConfigException("Malformed tree - input node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
+      }
 
       // try to look for variable in environment config table
       $variable = $node->getEnvironmentConfigVariables()->get($variableName);
@@ -45,7 +50,7 @@ class VariablesResolver {
 
       // assign variable to both nodes
       $outputPort->setVariableValue($variable);
-      $nextNode->getBox()->getInputPort($inputPort)->setVariableValue($variable);
+      $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
     }
   }
 
@@ -79,7 +84,7 @@ class VariablesResolver {
     }
 
     // get the variable from the correct table
-    $variable = $child->getPipelineVariables()->get($variableName);
+    $variable = $parent->getPipelineVariables()->get($variableName);
 
     // something's fishy here... better leave now
     if (!$variable) {
@@ -112,7 +117,7 @@ class VariablesResolver {
 
       foreach ($node->getChildren() as $outPortName => $child) {
         $inPortName = array_search($node, $child->getParents());
-        if ($outPortName === FALSE) {
+        if ($inPortName === FALSE) {
           // Oh boy, here we go throwing exceptions again!
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
         }

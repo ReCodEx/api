@@ -8,7 +8,8 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 
 
 /**
- * Customizable box whose ports can be modified.
+ * Customizable box whose ports can be modified. Default values for ports and
+ * name are not implemented.
  * @note Should be used only for internal purposes.
  */
 class CustomBox extends Box
@@ -22,6 +23,16 @@ class CustomBox extends Box
 
 
   /**
+   * Set name of box.
+   * @param string $name
+   * @return CustomBox
+   */
+  public function setName(string $name): CustomBox {
+    $this->meta->setName($name);
+    return $this;
+  }
+
+  /**
    * Add input port of this box.
    * @param Port $port
    * @return CustomBox
@@ -32,12 +43,30 @@ class CustomBox extends Box
   }
 
   /**
+   * Clear input ports of this box.
+   * @return CustomBox
+   */
+  public function clearInputPorts(): CustomBox {
+    $this->meta->setInputPorts(array());
+    return $this;
+  }
+
+  /**
    * Add output port of this box.
    * @param Port $port
    * @return CustomBox
    */
   public function addOutputPort(Port $port): CustomBox {
     $this->meta->addOutputPort($port);
+    return $this;
+  }
+
+  /**
+   * Clear output ports of this box.
+   * @return CustomBox
+   */
+  public function clearOutputPorts(): CustomBox {
+    $this->meta->setOutputPorts(array());
     return $this;
   }
 
