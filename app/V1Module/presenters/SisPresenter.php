@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
@@ -15,6 +16,9 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
+use App\Security\ACL\IGroupPermissions;
+use App\Security\ACL\ISisPermissions;
+use App\Security\ACL\SisIdWrapper;
 use DateTime;
 
 class SisPresenter extends BasePresenter {
@@ -55,6 +59,18 @@ class SisPresenter extends BasePresenter {
   public $sisValidTerms;
 
   /**
+   * @var ISisPermissions
+   * @inject
+   */
+  public $sisAcl;
+
+  /**
+   * @var IGroupPermissions
+   * @inject
+   */
+  public $groupAcl;
+
+  /**
    * @GET
    */
   public function actionStatus() {
@@ -83,13 +99,18 @@ class SisPresenter extends BasePresenter {
    * @Param(name="year", type="post")
    * @Param(name="term", type="post")
    * @throws InvalidArgumentException
+   * @throws ForbiddenRequestException
    */
   public function actionRegisterTerm() {
+    if (!$this->sisAcl->canCreateTerm()) {
+      throw new ForbiddenRequestException();
+    }
+
     $year = intval($this->getRequest()->getPost("year"));
     $term = intval($this->getRequest()->getPost("term"));
 
     if ($this->sisValidTerms->isValid($year, $term)) {
-      return $this->sendSuccessResponse("OK");
+      $this->sendSuccessResponse("OK");
     }
 
     // Throws InvalidArgumentException when given term is invalid
@@ -106,10 +127,15 @@ class SisPresenter extends BasePresenter {
    * @param $year
    * @param $term
    * @throws InvalidArgumentException
+   * @throws ForbiddenRequestException
    */
   public function actionSubscribedGroups($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
     $sisUserId = $this->getSisUserIdOrThrow($user);
+
+    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
+      throw new ForbiddenRequestException();
+    }
 
     $groups = [];
 
@@ -136,10 +162,15 @@ class SisPresenter extends BasePresenter {
    * @param $year
    * @param $term
    * @throws InvalidArgumentException
+   * @throws ForbiddenRequestException
    */
   public function actionSupervisedCourses($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
     $sisUserId = $this->getSisUserIdOrThrow($user);
+
+    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
+      throw new ForbiddenRequestException();
+    }
 
     $result = [];
 
@@ -161,8 +192,10 @@ class SisPresenter extends BasePresenter {
    * @param $courseId
    * @throws BadRequestException
    * @Param(name="instanceId", type="post")
-   * @Param(name="parentGroupId", type="post", required=FALSE)
+   * @Param(name="parentGroupId", type="post")
    * @Param(name="language", type="post", required=FALSE)
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionCreateGroup($courseId) {
     $user = $this->getCurrentUser();
@@ -174,6 +207,10 @@ class SisPresenter extends BasePresenter {
     $parentGroup = $parentGroupId ? $this->groups->findOrThrow($parentGroupId) : NULL;
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
+
+    if (!$this->sisAcl->canCreateGroup($parentGroup, $remoteCourse) || !$this->groupAcl->canAddSubgroup($parentGroup)) {
+      throw new ForbiddenRequestException();
+    }
 
     $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
     if ($remoteCourse->isFortnightly()) {
@@ -202,6 +239,7 @@ class SisPresenter extends BasePresenter {
    * @POST
    * @param $courseId
    * @throws ApiException
+   * @throws ForbiddenRequestException
    * @Param(name="groupId", type="post")
    */
   public function actionBindGroup($courseId) {
@@ -209,6 +247,10 @@ class SisPresenter extends BasePresenter {
     $sisUserId = $this->getSisUserIdOrThrow($user);
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
     $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+
+    if (!$this->sisAcl->canBindGroup($group, $remoteCourse)) {
+      throw new ForbiddenRequestException();
+    }
 
     if ($this->sisGroupBindings->findByGroupAndCode($group, $remoteCourse->getCode())) {
       throw new ApiException("The group is already bound to the course");

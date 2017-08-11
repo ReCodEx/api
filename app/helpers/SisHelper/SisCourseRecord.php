@@ -62,6 +62,10 @@ class SisCourseRecord implements JsonSerializable {
     return $result;
   }
 
+  public function getSisUserId() {
+    return $this->sisUserId;
+  }
+
   public function getCaption($lang) {
     if (!array_key_exists($lang, $this->captions)) {
       throw new Exception();

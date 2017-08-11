@@ -119,6 +119,7 @@ class TestSisPresenter extends TestCase {
       'courseId' => $courseId
     ], [
       'instanceId' => $user->getInstance()->getId(),
+      'parentGroupId' => $this->groups->findAll()[0]->getId(),
       'language' => 'en'
     ]));
     Assert::type(JsonResponse::class, $response);

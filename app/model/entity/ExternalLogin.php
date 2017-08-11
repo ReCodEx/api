@@ -11,6 +11,7 @@ use Nette\Utils\Validators;
 /**
  * @ORM\Entity
  * @method string getExternalId()
+ * @method User getUser()
  */
 class ExternalLogin
 {

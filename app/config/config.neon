@@ -144,6 +144,7 @@ acl:
     submission: App\Security\ACL\ISubmissionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
     pipeline: App\Security\ACL\IPipelinePermissions
+    sis: App\Security\ACL\ISisPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -154,6 +155,7 @@ acl:
     submission: App\Security\Policies\SubmissionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
+    sis: App\Security\Policies\SisPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
