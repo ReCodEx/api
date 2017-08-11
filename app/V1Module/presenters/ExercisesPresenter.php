@@ -110,9 +110,9 @@ class ExercisesPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @Param(type="post", name="name", description="Name of exercise")
-   * @Param(type="post", name="version", description="Version of the edited exercise")
-   * @Param(type="post", name="description", description="Some brief description of this exercise for supervisors")
+   * @Param(type="post", name="name", validation="string:2..", description="Name of exercise")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
+   * @Param(type="post", name="description", validation="string:1..", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)

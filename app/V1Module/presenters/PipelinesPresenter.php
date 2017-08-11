@@ -141,8 +141,8 @@ class PipelinesPresenter extends BasePresenter {
    * Update pipeline with given data.
    * @POST
    * @param string $id Identifier of the pipeline
-   * @Param(type="post", name="name", description="Name of the pipeline")
-   * @Param(type="post", name="version", description="Version of the edited pipeline")
+   * @Param(type="post", name="name", validation="string:2..", description="Name of the pipeline")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the edited pipeline")
    * @Param(type="post", name="description", description="Human readable description of pipeline")
    * @Param(type="post", name="pipeline", description="Pipeline configuration")
    * @throws ForbiddenRequestException
