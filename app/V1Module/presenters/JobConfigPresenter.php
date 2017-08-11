@@ -14,7 +14,8 @@ use App\Helpers\JobConfig\Tasks\Task;
 class JobConfigPresenter extends BasePresenter {
 
   /**
-   * @var Storage @inject
+   * @var Storage
+   * @inject
    */
   public $jobConfigStorage;
 

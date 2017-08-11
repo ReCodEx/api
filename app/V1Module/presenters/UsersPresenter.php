@@ -98,7 +98,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
-   * @Param(type="post", name="email", description="New email address", required=FALSE)
+   * @Param(type="post", name="email", validation="email", description="New email address", required=FALSE)
    * @throws BadRequestException
    * @throws ForbiddenRequestException
    */
