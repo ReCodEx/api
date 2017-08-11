@@ -67,7 +67,7 @@ class ExerciseConfigCompiler {
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
-    $tests = $this->variablesResolver->resolve($tests);
+    $this->variablesResolver->resolve($tests);
     $sortedTests = $this->boxesSorter->sort($tests);
     $executionPipeline = $this->testBoxesOptimizer->optimize($sortedTests);
     $jobConfig = $this->boxesCompiler->compile($executionPipeline);

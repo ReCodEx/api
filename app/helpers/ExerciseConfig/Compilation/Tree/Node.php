@@ -83,7 +83,7 @@ class Node {
    * Node constructor.
    * @param Box $box
    */
-  public function __construct(Box $box = null) {
+  public function __construct(Box $box) {
     $this->box = $box;
   }
 

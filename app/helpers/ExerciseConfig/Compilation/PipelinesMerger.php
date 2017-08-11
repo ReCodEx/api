@@ -7,6 +7,8 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline;
+use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\VariablesTable;
@@ -19,15 +21,15 @@ use App\Model\Repository\Pipelines;
 class NodePortPair {
   /** @var Node */
   public $node;
-  /** @var string */
+  /** @var Port */
   public $port;
 
   /**
    * NodePortPair constructor.
    * @param Node $node
-   * @param string $port
+   * @param Port $port
    */
-  public function __construct(Node $node, string $port) {
+  public function __construct(Node $node, Port $port) {
     $this->node = $node;
     $this->port = $port;
   }
@@ -106,7 +108,7 @@ class PipelinesMerger {
     $outVars = array();
     foreach ($first->getOutputNodes() as $outNode) {
       $inPort = current($outNode->getBox()->getInputPorts());
-      $outVars[$inPort->getVariable()] = new NodePortPair($outNode, $inPort->getName());
+      $outVars[$inPort->getVariable()] = new NodePortPair($outNode, $inPort);
     }
 
     // search input nodes for the ones which match variable names with the output ones
@@ -117,7 +119,7 @@ class PipelinesMerger {
       if (array_key_exists($outPort->getVariable(), $outVars)) {
         // match found... merge input and output by connecting previous and next node
         $outNode = $outVars[$outPort->getVariable()]->node;
-        $inPortName = $outVars[$outPort->getVariable()]->port;
+        $inPort = $outVars[$outPort->getVariable()]->port;
         $previous = current($outNode->getParents());
         $next = current($inNode->getChildren());
 
@@ -125,10 +127,15 @@ class PipelinesMerger {
         $previous->removeChild($outNode);
         $next->removeParent($inNode);
 
+        // create new custom join box
+        $customBox = new CustomBox();
+        $customBox->addInputPort($inPort);
+        $customBox->addOutputPort($outPort);
+
         // add new connections
-        $joinNodes[] = $joinNode = new Node;
-        $previous->addChild($inPortName, $joinNode);
-        $joinNode->addParent($inPortName, $previous);
+        $joinNodes[] = $joinNode = new Node($customBox);
+        $previous->addChild($inPort->getName(), $joinNode);
+        $joinNode->addParent($inPort->getName(), $previous);
         $next->addParent($outPort->getName(), $joinNode);
         $joinNode->addChild($outPort->getName(), $next);
 
@@ -178,7 +185,7 @@ class PipelinesMerger {
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = new VariablePair();
         }
-        $variables[$varName]->input = new NodePortPair($node, $inPort->getName());
+        $variables[$varName]->input = new NodePortPair($node, $inPort);
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
@@ -188,7 +195,7 @@ class PipelinesMerger {
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = array();
         }
-        $variables[$varName]->output = new NodePortPair($node, $outPort->getName());
+        $variables[$varName]->output = new NodePortPair($node, $outPort);
       }
     }
 
@@ -206,7 +213,7 @@ class PipelinesMerger {
           continue;
         }
         $node->addParent($inPort->getName(), $parent);
-        $parent->addChild($variables[$varName]->output->port, $node);
+        $parent->addChild($variables[$varName]->output->port->getName(), $node);
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
@@ -218,7 +225,7 @@ class PipelinesMerger {
           continue;
         }
         $node->addChild($outPort->getName(), $child);
-        $child->addParent($variables[$varName]->input->port, $node);
+        $child->addParent($variables[$varName]->input->port->getName(), $node);
       }
 
       // ... visited flag

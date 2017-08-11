@@ -125,10 +125,9 @@ class VariablesResolver {
   /**
    * Go through given array and resolve variables in boxes.
    * @param MergeTree[] $tests
-   * @return MergeTree[]
    * @throws ExerciseConfigException
    */
-  public function resolve(array $tests): array {
+  public function resolve(array $tests) {
     foreach ($tests as $mergeTree) {
       $this->resolveForInputNodes($mergeTree);
       $this->resolveForOtherNodes($mergeTree);
