@@ -191,7 +191,6 @@ class SisPresenter extends BasePresenter {
    * @POST
    * @param $courseId
    * @throws BadRequestException
-   * @Param(name="instanceId", type="post")
    * @Param(name="parentGroupId", type="post")
    * @Param(name="language", type="post", required=FALSE)
    * @throws ForbiddenRequestException
@@ -202,9 +201,8 @@ class SisPresenter extends BasePresenter {
     $sisUserId = $this->getSisUserIdOrThrow($user);
     $request = $this->getRequest();
     $language = $request->getPost("language") ?: "en";
-    $instance = $this->instances->findOrThrow($request->getPost("instanceId"));
     $parentGroupId = $request->getPost("parentGroupId");
-    $parentGroup = $parentGroupId ? $this->groups->findOrThrow($parentGroupId) : NULL;
+    $parentGroup = $this->groups->findOrThrow($parentGroupId);
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
@@ -222,7 +220,7 @@ class SisPresenter extends BasePresenter {
       $caption,
       $remoteCourse->getCourseId(),
       $remoteCourse->getAnnotation($language),
-      $instance,
+      $parentGroup->getInstance(),
       $user,
       $parentGroup
     );

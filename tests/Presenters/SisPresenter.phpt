@@ -118,7 +118,6 @@ class TestSisPresenter extends TestCase {
       'action' => 'createGroup',
       'courseId' => $courseId
     ], [
-      'instanceId' => $user->getInstance()->getId(),
       'parentGroupId' => $this->groups->findAll()[0]->getId(),
       'language' => 'en'
     ]));
