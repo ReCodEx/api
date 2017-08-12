@@ -40,12 +40,15 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -65,12 +68,17 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -92,12 +100,17 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -119,12 +132,17 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -151,12 +169,19 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -186,12 +211,21 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($E->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -221,12 +255,21 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($E->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -255,12 +298,19 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**
@@ -292,12 +342,65 @@ class TestBoxesSorter extends Tester\TestCase
     $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
     $treeArr = array($tree);
 
-    Assert::noError(function () use ($treeArr) {
-      $this->sorter->sort($treeArr);
-    });
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    // @todo
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($E->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
+  }
+
+  /**
+   *    A
+   *   / \
+   *  B   C
+   *  |   |
+   *  D   E
+   */
+  public function testSimpleJ() {
+    $A = new PortNode(new CustomBox("A"));
+    $B = new PortNode(new CustomBox("B"));
+    $C = new PortNode(new CustomBox("C"));
+    $D = new PortNode(new CustomBox("D"));
+    $E = new PortNode(new CustomBox("E"));
+
+    $A->addChild("AB", $B);
+    $A->addChild("AC", $C);
+    $B->addParent("BA", $A);
+    $B->addChild("BD", $D);
+    $C->addParent("CA", $A);
+    $C->addChild("CE", $E);
+    $D->addParent("DB", $B);
+    $E->addParent("EC", $C);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
+    $treeArr = array($tree);
+
+    // sort
+    $result = $this->sorter->sort($treeArr)[0];
+
+    // *** check order of nodes
+    $current = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($B->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($D->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($C->getBox(), $current->getBox());
+    $current = $current->getChildren()[0];
+    Assert::same($E->getBox(), $current->getBox());
+    Assert::count(0, $current->getChildren());
   }
 
   /**

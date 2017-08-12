@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
  * Internal exercise configuration compilation service. Which is supposed to
  * sort boxes in each test to correspond to proper execution order without
  * conflicts.
+ * @note State of nodes in given trees can and will be changed!
  */
 class BoxesSorter {
 
@@ -30,7 +31,8 @@ class BoxesSorter {
     $queue = array();
 
     // fill initial values in the stack, last element is the top of the stack
-    foreach ($mergeTree->getAllNodes() as $node) {
+    // reverse is here for the purpose of preferred order in initial stack
+    foreach (array_reverse($mergeTree->getAllNodes()) as $node) {
       $stack[] = array(false, $node);
     }
 
@@ -99,6 +101,9 @@ class BoxesSorter {
       // ... create connections
       $previous->addChild($current);
       $current->addParent($previous);
+
+      // do not forget to set previous
+      $previous = $current;
     }
 
     return $tree;

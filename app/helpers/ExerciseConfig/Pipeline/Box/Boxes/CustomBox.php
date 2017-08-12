@@ -16,9 +16,10 @@ class CustomBox extends Box
 {
   /**
    * CustomBox constructor.
+   * @param string $name
    */
-  public function __construct() {
-    parent::__construct(new BoxMeta());
+  public function __construct(string $name = "") {
+    parent::__construct((new BoxMeta)->setName($name));
   }
 
 
