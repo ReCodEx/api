@@ -11,6 +11,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
  */
 class JudgeNormalBox extends Box
 {
+  /** Type key */
+  public static $JUDGE_NORMAL_TYPE = "judge-normal";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -41,6 +44,14 @@ class JudgeNormalBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$JUDGE_NORMAL_TYPE;
+  }
 
   /**
    * Get default input ports for this box.

@@ -10,6 +10,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  */
 class GccCompilationBox extends Box
 {
+  /** Type key */
+  public static $GCC_TYPE = "gcc";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -39,6 +42,14 @@ class GccCompilationBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$GCC_TYPE;
+  }
 
   /**
    * Get default input ports for this box.

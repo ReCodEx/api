@@ -3,14 +3,15 @@
 include '../../../bootstrap.php';
 
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
+use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use Tester\Assert;
 
 
-class TestNode extends Tester\TestCase
+class TestPortNode extends Tester\TestCase
 {
   public function testVariablesTablesOperations() {
-    $node = new PortNode();
+    $node = new PortNode(new CustomBox());
 
     Assert::null($node->getEnvironmentConfigVariables());
     Assert::null($node->getExerciseConfigVariables());
@@ -40,5 +41,5 @@ class TestNode extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestNode();
+$testCase = new TestPortNode();
 $testCase->run();

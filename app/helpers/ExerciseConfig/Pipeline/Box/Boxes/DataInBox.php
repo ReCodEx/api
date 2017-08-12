@@ -11,6 +11,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class DataInBox extends Box
 {
+  /** Type key */
+  public static $DATA_IN_TYPE = "data-in";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -38,6 +41,14 @@ class DataInBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$DATA_IN_TYPE;
+  }
 
   /**
    * Get default input ports for this box.

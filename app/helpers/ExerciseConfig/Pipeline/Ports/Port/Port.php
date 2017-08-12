@@ -31,6 +31,7 @@ abstract class Port implements JsonSerializable
    */
   public function __construct(PortMeta $meta) {
     $this->meta = $meta;
+    $this->meta->setType($this->getType());
   }
 
   /**

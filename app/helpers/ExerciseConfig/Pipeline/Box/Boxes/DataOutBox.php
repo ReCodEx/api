@@ -11,6 +11,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class DataOutBox extends Box
 {
+  /** Type key */
+  public static $DATA_OUT_TYPE = "data-out";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -38,6 +41,14 @@ class DataOutBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$DATA_OUT_TYPE;
+  }
 
   /**
    * Get default input ports for this box.

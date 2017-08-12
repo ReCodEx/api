@@ -35,6 +35,7 @@ abstract class Box implements JsonSerializable
    */
   public function __construct(BoxMeta $meta) {
     $this->meta = $meta;
+    $this->meta->setType($this->getType());
   }
 
 
@@ -55,6 +56,12 @@ abstract class Box implements JsonSerializable
    * Should be static property which is present only once for instance.
    */
   public abstract function getDefaultName(): string;
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public abstract function getType(): string;
 
 
   /**

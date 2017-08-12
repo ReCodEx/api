@@ -10,6 +10,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  */
 class ElfExecutionBox extends Box
 {
+  /** Type key */
+  public static $ELF_EXEC_TYPE = "elf-exec";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -39,6 +42,14 @@ class ElfExecutionBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$ELF_EXEC_TYPE;
+  }
 
   /**
    * Get default input ports for this box.

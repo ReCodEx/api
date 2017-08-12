@@ -14,6 +14,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class CustomBox extends Box
 {
+  /** Type key */
+  public static $CUSTOM_BOX_TYPE = "custom";
+
   /**
    * CustomBox constructor.
    * @param string $name
@@ -71,6 +74,14 @@ class CustomBox extends Box
     return $this;
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$CUSTOM_BOX_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
