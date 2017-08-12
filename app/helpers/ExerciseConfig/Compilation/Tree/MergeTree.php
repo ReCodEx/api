@@ -19,20 +19,20 @@ class MergeTree {
 
   /**
    * DataInBox nodes.
-   * @var Node[]
+   * @var PortNode[]
    */
   private $inputNodes = array();
 
   /**
    * DataOutBox nodes.
-   * @var Node[]
+   * @var PortNode[]
    */
   private $outputNodes = array();
 
 
   /**
    * Merge all nodes from this tree and return them.
-   * @return Node[]
+   * @return PortNode[]
    */
   public function getAllNodes(): array {
     return array_merge($this->inputNodes, $this->otherNodes, $this->outputNodes);
@@ -40,7 +40,7 @@ class MergeTree {
 
   /**
    * Get nodes which are not input or output ones.
-   * @return Node[]
+   * @return PortNode[]
    */
   public function getOtherNodes(): array {
     return $this->otherNodes;
@@ -48,7 +48,7 @@ class MergeTree {
 
   /**
    * Set other nodes.
-   * @param Node[] $nodes
+   * @param PortNode[] $nodes
    * @return MergeTree
    */
   public function setOtherNodes(array $nodes): MergeTree {
@@ -58,17 +58,17 @@ class MergeTree {
 
   /**
    * Add non-data node to this tree.
-   * @param Node $node
+   * @param PortNode $node
    * @return MergeTree
    */
-  public function addOtherNode(Node $node): MergeTree {
+  public function addOtherNode(PortNode $node): MergeTree {
     $this->otherNodes[] = $node;
     return $this;
   }
 
   /**
    * Get input nodes from this tree.
-   * @return Node[]
+   * @return PortNode[]
    */
   public function getInputNodes(): array {
     return $this->inputNodes;
@@ -76,7 +76,7 @@ class MergeTree {
 
   /**
    * Set input nodes of this tree.
-   * @param Node[] $inputNodes
+   * @param PortNode[] $inputNodes
    * @return MergeTree
    */
   public function setInputNodes(array $inputNodes): MergeTree {
@@ -86,17 +86,17 @@ class MergeTree {
 
   /**
    * Add one input node to this tree.
-   * @param Node $node
+   * @param PortNode $node
    * @return MergeTree
    */
-  public function addInputNode(Node $node): MergeTree {
+  public function addInputNode(PortNode $node): MergeTree {
     $this->inputNodes[] = $node;
     return $this;
   }
 
   /**
    * Get all output nodes contained in tree.
-   * @return Node[]
+   * @return PortNode[]
    */
   public function getOutputNodes(): array {
     return $this->outputNodes;
@@ -104,7 +104,7 @@ class MergeTree {
 
   /**
    * Set output nodes to this tree.
-   * @param Node[] $outputNodes
+   * @param PortNode[] $outputNodes
    * @return MergeTree
    */
   public function setOutputNodes(array $outputNodes): MergeTree {
@@ -114,10 +114,10 @@ class MergeTree {
 
   /**
    * Add one output node to this tree.
-   * @param Node $node
+   * @param PortNode $node
    * @return MergeTree
    */
-  public function addOutputNode(Node $node): MergeTree {
+  public function addOutputNode(PortNode $node): MergeTree {
     $this->outputNodes[] = $node;
     return $this;
   }

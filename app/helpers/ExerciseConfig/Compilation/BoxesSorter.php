@@ -4,6 +4,8 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
+use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
+use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 
 
@@ -17,7 +19,7 @@ class BoxesSorter {
   /**
    * Topological sort of given tree, stack oriented.
    * @param MergeTree $mergeTree
-   * @return array
+   * @return PortNode[]
    * @throws ExerciseConfigException
    */
   private function topologicalSort(MergeTree $mergeTree): array {
@@ -48,7 +50,7 @@ class BoxesSorter {
       // node was visited, but it is not finished and not in processing
       // --> cycle detected
       if ($node->isVisited()) {
-        if ($node->isFinised()) {
+        if ($node->isFinished()) {
           continue;
         }
 
@@ -87,18 +89,14 @@ class BoxesSorter {
 
     // initialize rooted tree and its root
     $tree = new RootedTree();
-    $tree->addRootNode($sorted[0]);
+    $previous = new Node($sorted[0]->getBox());
+    $tree->addRootNode($previous);
 
     // make de-facto linked list of nodes
-    $previous = $sorted[0];
     for ($i = 1; $i < count($sorted); $i++) {
-      $current = $sorted[$i];
+      $current = new Node($sorted[$i]->getBox());
 
-      // remove old connections
-      $previous->clearChildren();
-      $current->clearParents();
-
-      // ... and create new ones
+      // ... create connections
       $previous->addChild($current);
       $current->addParent($previous);
     }

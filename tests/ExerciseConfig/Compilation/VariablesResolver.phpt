@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
-use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
+use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\FileVariable;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
@@ -42,25 +42,25 @@ class TestVariablesResolver extends Tester\TestCase
     $pipeVarTableA = (new VariablesTable)->set($testOutputVarA)->set($preExecVarA);
 
     $outPortA = new FilePort((new PortMeta)->setName("data-in")->setVariable($testInputVarA->getName()));
-    $dataInNodeA = new Node((new CustomBox)->setName("in")->addOutputPort($outPortA));
+    $dataInNodeA = new PortNode((new CustomBox)->setName("in")->addOutputPort($outPortA));
     $dataInNodeA->setEnvironmentConfigVariables($envVarTableA)
       ->setExerciseConfigVariables($exerVarTableA)
       ->setPipelineVariables($pipeVarTableA);
 
     $preExecPortA = new FilePort((new PortMeta)->setName("pre-data")->setVariable($preExecVarA->getName()));
-    $preExecNodeA = new Node((new CustomBox)->setName("pre-exec")->addOutputPort($preExecPortA));
+    $preExecNodeA = new PortNode((new CustomBox)->setName("pre-exec")->addOutputPort($preExecPortA));
     $preExecNodeA->setEnvironmentConfigVariables($envVarTableA)
       ->setExerciseConfigVariables($exerVarTableA)
       ->setPipelineVariables($pipeVarTableA);
 
     $inPortA = new FilePort((new PortMeta)->setName("data-out")->setVariable($testOutputVarA->getName()));
-    $execNodeA = new Node((new CustomBox)->setName("exec")
+    $execNodeA = new PortNode((new CustomBox)->setName("exec")
       ->addInputPort($preExecPortA)->addInputPort($outPortA)->addOutputPort($inPortA));
     $execNodeA->setEnvironmentConfigVariables($envVarTableA)
       ->setExerciseConfigVariables($exerVarTableA)
       ->setPipelineVariables($pipeVarTableA);
 
-    $dataOutNodeA = new Node((new CustomBox)->setName("out")->addInputPort($inPortA));
+    $dataOutNodeA = new PortNode((new CustomBox)->setName("out")->addInputPort($inPortA));
     $dataOutNodeA->setEnvironmentConfigVariables($envVarTableA)
       ->setExerciseConfigVariables($exerVarTableA)
       ->setPipelineVariables($pipeVarTableA);
@@ -93,31 +93,31 @@ class TestVariablesResolver extends Tester\TestCase
     $pipeVarTableB = (new VariablesTable)->set($testOutputVarBA)->set($testOutputVarBB);
 
     $outPortBA = new FilePort((new PortMeta)->setName("data-in-a")->setVariable($testInputVarBA->getName()));
-    $dataInNodeBA = new Node((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
+    $dataInNodeBA = new PortNode((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
     $dataInNodeBA->setEnvironmentConfigVariables($envVarTableB)
       ->setExerciseConfigVariables($exerVarTableB)
       ->setPipelineVariables($pipeVarTableB);
 
     $outPortBB = new FilePort((new PortMeta)->setName("data-in-b")->setVariable($testInputVarBB->getName()));
-    $dataInNodeBB = new Node((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
+    $dataInNodeBB = new PortNode((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
     $dataInNodeBB->setEnvironmentConfigVariables($envVarTableB)
       ->setExerciseConfigVariables($exerVarTableB)
       ->setPipelineVariables($pipeVarTableB);
 
     $inPortBA = new FilePort((new PortMeta)->setName("data-out-a")->setVariable($testOutputVarBA->getName()));
     $inPortBB = new FilePort((new PortMeta)->setName("data-out-b")->setVariable($testOutputVarBB->getName()));
-    $execNodeB = new Node((new CustomBox)->setName("execB")->addInputPort($outPortBA)
+    $execNodeB = new PortNode((new CustomBox)->setName("execB")->addInputPort($outPortBA)
       ->addInputPort($outPortBB)->addOutputPort($inPortBA)->addOutputPort($inPortBB));
     $execNodeB->setEnvironmentConfigVariables($envVarTableB)
       ->setExerciseConfigVariables($exerVarTableB)
       ->setPipelineVariables($pipeVarTableB);
 
-    $dataOutNodeBA = new Node((new CustomBox)->setName("outBA")->addInputPort($inPortBA));
+    $dataOutNodeBA = new PortNode((new CustomBox)->setName("outBA")->addInputPort($inPortBA));
     $dataOutNodeBA->setEnvironmentConfigVariables($envVarTableB)
       ->setExerciseConfigVariables($exerVarTableB)
       ->setPipelineVariables($pipeVarTableB);
 
-    $dataOutNodeBB = new Node((new CustomBox)->setName("outBB")->addInputPort($inPortBB));
+    $dataOutNodeBB = new PortNode((new CustomBox)->setName("outBB")->addInputPort($inPortBB));
     $dataOutNodeBB->setEnvironmentConfigVariables($envVarTableB)
       ->setExerciseConfigVariables($exerVarTableB)
       ->setPipelineVariables($pipeVarTableB);

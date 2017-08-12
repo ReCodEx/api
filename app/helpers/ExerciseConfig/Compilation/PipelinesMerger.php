@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
-use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
+use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
@@ -19,17 +19,17 @@ use App\Model\Repository\Pipelines;
  * Helper pair class.
  */
 class NodePortPair {
-  /** @var Node */
+  /** @var PortNode */
   public $node;
   /** @var Port */
   public $port;
 
   /**
    * NodePortPair constructor.
-   * @param Node $node
+   * @param PortNode $node
    * @param Port $port
    */
-  public function __construct(Node $node, Port $port) {
+  public function __construct(PortNode $node, Port $port) {
     $this->node = $node;
     $this->port = $port;
   }
@@ -133,7 +133,7 @@ class PipelinesMerger {
         $customBox->addOutputPort($outPort);
 
         // add new connections
-        $joinNodes[] = $joinNode = new Node($customBox);
+        $joinNodes[] = $joinNode = new PortNode($customBox);
         $previous->addChild($inPort->getName(), $joinNode);
         $joinNode->addParent($inPort->getName(), $previous);
         $next->addParent($outPort->getName(), $joinNode);
@@ -172,7 +172,7 @@ class PipelinesMerger {
     $nodes = array();
     $variables = array(); // array of pairs of pairs
     foreach ($pipeline->getAll() as $box) {
-      $node = new Node($box);
+      $node = new PortNode($box);
       $queue[] = $node;
       $nodes[$box->getName()] = $node;
 

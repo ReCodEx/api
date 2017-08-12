@@ -2,7 +2,7 @@
 
 include '../../../bootstrap.php';
 
-use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
+use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use Tester\Assert;
 
@@ -10,7 +10,7 @@ use Tester\Assert;
 class TestNode extends Tester\TestCase
 {
   public function testVariablesTablesOperations() {
-    $node = new Node();
+    $node = new PortNode();
 
     Assert::null($node->getEnvironmentConfigVariables());
     Assert::null($node->getExerciseConfigVariables());

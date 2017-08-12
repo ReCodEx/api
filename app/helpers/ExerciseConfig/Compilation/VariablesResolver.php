@@ -4,7 +4,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
-use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
+use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 
 
 /**
@@ -57,13 +57,13 @@ class VariablesResolver {
   /**
    * Resolve variables from other nodes, that means nodes which are not input
    * ones. This is general method for handling parent -> children pairs.
-   * @param Node $parent
-   * @param Node $child
+   * @param PortNode $parent
+   * @param PortNode $child
    * @param string $inPortName
    * @param string $outPortName
    * @throws ExerciseConfigException
    */
-  private function resolveForVariable(Node $parent, Node $child,
+  private function resolveForVariable(PortNode $parent, PortNode $child,
       string $inPortName, string $outPortName) {
 
     // init
