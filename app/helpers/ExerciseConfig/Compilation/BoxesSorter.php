@@ -76,6 +76,13 @@ class BoxesSorter {
    * @throws ExerciseConfigException
    */
   private function sortTree(MergeTree $mergeTree): RootedTree {
+
+    // empty tree does not have to be processed
+    if (count($mergeTree->getAllNodes()) === 0) {
+      return new RootedTree();
+    }
+
+    // make topological sort
     $sorted = $this->topologicalSort($mergeTree);
 
     // initialize rooted tree and its root
