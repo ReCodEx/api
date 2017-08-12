@@ -30,6 +30,21 @@ class TestBoxesSorter extends Tester\TestCase
    *  A -> B
    */
   public function testSimpleA() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $B->addParent("BA", $A);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -37,6 +52,24 @@ class TestBoxesSorter extends Tester\TestCase
    *  A -> B -> C
    */
   public function testSimpleB() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $B->addChild("BC", $C);
+    $B->addParent("BA", $A);
+    $C->addParent("CB", $B);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -46,6 +79,24 @@ class TestBoxesSorter extends Tester\TestCase
    *    C
    */
   public function testSimpleI() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+
+    $A->addChild("AC", $C);
+    $B->addChild("BC", $C);
+    $C->addParent("CA", $A);
+    $C->addParent("CB", $B);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -55,6 +106,24 @@ class TestBoxesSorter extends Tester\TestCase
    *  B   C
    */
   public function testSimpleC() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $A->addChild("AC", $C);
+    $B->addParent("BA", $A);
+    $C->addParent("CA", $A);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -66,6 +135,27 @@ class TestBoxesSorter extends Tester\TestCase
    *        D
    */
   public function testSimpleD() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+    $D = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $A->addChild("AC", $C);
+    $B->addParent("BA", $A);
+    $C->addChild("CD", $D);
+    $C->addParent("CA", $A);
+    $D->addParent("DC", $C);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -77,6 +167,30 @@ class TestBoxesSorter extends Tester\TestCase
    *    D   E
    */
   public function testSimpleE() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+    $D = new PortNode(new CustomBox());
+    $E = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $A->addChild("AC", $C);
+    $B->addParent("BA", $A);
+    $C->addChild("CD", $D);
+    $C->addChild("CE", $E);
+    $C->addParent("CA", $A);
+    $D->addParent("DC", $C);
+    $E->addParent("EC", $C);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -88,6 +202,30 @@ class TestBoxesSorter extends Tester\TestCase
    *  C D E
    */
   public function testSimpleF() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+    $D = new PortNode(new CustomBox());
+    $E = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $B->addChild("BC", $C);
+    $B->addChild("BD", $D);
+    $B->addChild("BE", $E);
+    $B->addParent("BA", $A);
+    $C->addParent("CB", $B);
+    $D->addParent("DB", $B);
+    $E->addParent("EB", $B);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D)->addOtherNode($E);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -99,6 +237,29 @@ class TestBoxesSorter extends Tester\TestCase
    *    D
    */
   public function testSimpleG() {
+    $A = new PortNode(new CustomBox());
+    $B = new PortNode(new CustomBox());
+    $C = new PortNode(new CustomBox());
+    $D = new PortNode(new CustomBox());
+
+    $A->addChild("AB", $B);
+    $A->addChild("AC", $C);
+    $B->addChild("BD", $D);
+    $B->addParent("BA", $A);
+    $C->addChild("CD", $D);
+    $C->addParent("CA", $A);
+    $D->addParent("DB", $B);
+    $D->addParent("DC", $C);
+
+    $tree = new MergeTree();
+    $tree->addOtherNode($A)->addOtherNode($B)->addOtherNode($C)->addOtherNode($D);
+    $treeArr = array($tree);
+
+    Assert::noError(function () use ($treeArr) {
+      $this->sorter->sort($treeArr);
+    });
+
+    // *** check order of nodes
     // @todo
   }
 
@@ -136,7 +297,7 @@ class TestBoxesSorter extends Tester\TestCase
     });
 
     // *** check order of nodes
-
+    // @todo
   }
 
   /**

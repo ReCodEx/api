@@ -76,7 +76,7 @@ class Node {
 
   /**
    * Get children of this node.
-   * @return PortNode[]
+   * @return Node[]
    */
   public function getChildren(): array {
     return $this->children;
