@@ -72,6 +72,11 @@ parameters:
         firstName: "givenName"
         lastName: "sn"
 
+  sis:
+    apiBase: https://sis.university.tld/is/
+    faculty: FACULTY
+    secret: SECRET_TOKEN
+
   emails:
     apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
     footerUrl: https://recodex.projekty.ms.mff.cuni.cz
@@ -139,6 +144,7 @@ acl:
     submission: App\Security\ACL\ISubmissionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
     pipeline: App\Security\ACL\IPipelinePermissions
+    sis: App\Security\ACL\ISisPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -149,6 +155,7 @@ acl:
     submission: App\Security\Policies\SubmissionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
+    sis: App\Security\Policies\SisPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -227,6 +234,7 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\TestBoxesOptimizer
   - App\Helpers\ExerciseConfig\Compilation\BoxesCompiler
   - App\Helpers\ExerciseConfig\Compilation\VariablesResolver
+  - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -252,6 +260,8 @@ services:
   - App\Model\Repository\ExerciseFiles
   - App\Model\Repository\AdditionalExerciseFiles
   - App\Model\Repository\Pipelines
+  - App\Model\Repository\SisGroupBindings
+  - App\Model\Repository\SisValidTerms
 
 doctrine:
   user: 'root'

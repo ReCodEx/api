@@ -21,6 +21,8 @@ use JsonSerializable;
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
  * @method Group getParentGroup()
+ * @method string getExternalId()
+ * @method string getDescription()
  */
 class Group implements JsonSerializable
 {
