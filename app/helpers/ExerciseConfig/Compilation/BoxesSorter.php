@@ -91,12 +91,12 @@ class BoxesSorter {
 
     // initialize rooted tree and its root
     $tree = new RootedTree();
-    $previous = new Node($sorted[0]->getBox());
+    $previous = new Node($sorted[0]);
     $tree->addRootNode($previous);
 
     // make de-facto linked list of nodes
     for ($i = 1; $i < count($sorted); $i++) {
-      $current = new Node($sorted[$i]->getBox());
+      $current = new Node($sorted[$i]);
 
       // ... create connections
       $previous->addChild($current);

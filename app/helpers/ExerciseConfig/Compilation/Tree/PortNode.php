@@ -77,13 +77,21 @@ class PortNode {
    */
   private $finished = false;
 
+  /**
+   * Identification of test to which this box belongs to.
+   * @var string
+   */
+  private $testId = null;
+
 
   /**
    * Node constructor.
    * @param Box $box
+   * @param string|null $testId
    */
-  public function __construct(Box $box) {
+  public function __construct(Box $box, string $testId = null) {
     $this->box = $box;
+    $this->testId = $testId;
   }
 
   /**
@@ -286,6 +294,22 @@ class PortNode {
    */
   public function setFinished(bool $flag) {
     $this->finished = $flag;
+  }
+
+  /**
+   * Test identification for corresponding box.
+   * @return string|null
+   */
+  public function getTestId(): ?string {
+    return $this->testId;
+  }
+
+  /**
+   * Set test identification of box.
+   * @param string $testId
+   */
+  public function setTestId(string $testId) {
+    $this->testId = $testId;
   }
 
 }

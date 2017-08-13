@@ -37,6 +37,7 @@ class VariablesResolver {
 
       // try to look for variable in environment config table
       $variable = $node->getEnvironmentConfigVariables()->get($variableName);
+      // @todo: resolve regexps which matches files given by students
 
       // if variable still not present look in the exercise config table
       if (!$variable) {

@@ -19,7 +19,8 @@ class BoxesCompiler {
    * @return JobConfig
    */
   public function compile(RootedTree $executionPipeline): JobConfig {
-    return new JobConfig();
+    $jobConfig = new JobConfig();
+    return $jobConfig;
   }
 
 }

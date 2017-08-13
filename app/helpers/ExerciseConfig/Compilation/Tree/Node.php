@@ -21,6 +21,12 @@ class Node {
   private $box;
 
   /**
+   * Identification of test to which this box belongs to.
+   * @var string
+   */
+  private $testId = null;
+
+  /**
    * Nodes which identify themselves as parent of this node, ndexed by port
    * name.
    * @var Node[]
@@ -36,10 +42,11 @@ class Node {
 
   /**
    * Node constructor.
-   * @param Box $box
+   * @param PortNode $node
    */
-  public function __construct(Box $box) {
-    $this->box = $box;
+  public function __construct(PortNode $node) {
+    $this->box = $node->getBox();
+    $this->testId = $node->getTestId();
   }
 
   /**
@@ -48,6 +55,22 @@ class Node {
    */
   public function getBox(): Box {
     return $this->box;
+  }
+
+  /**
+   * Test identification for corresponding box.
+   * @return string|null
+   */
+  public function getTestId(): ?string {
+    return $this->testId;
+  }
+
+  /**
+   * Set test identification of box.
+   * @param string|null $testId
+   */
+  public function setTestId(?string $testId) {
+    $this->testId = $testId;
   }
 
   /**

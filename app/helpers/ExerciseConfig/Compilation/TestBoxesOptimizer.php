@@ -7,8 +7,10 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 
 /**
  * Internal exercise configuration compilation service. Handles optimisation
- * of boxes which are duplicate in multiple tests. Resulting array of boxes
- * might be rearranged and reindexed into multidimensional.
+ * of boxes which are duplicate in multiple tests. Result of this process is
+ * rooted tree which might have multiple roots. All nodes should have set
+ * test identification from the past, if some node is merged and optimised
+ * identification of test should be cleared.
  */
 class TestBoxesOptimizer {
 
@@ -19,7 +21,13 @@ class TestBoxesOptimizer {
    * @return RootedTree
    */
   public function optimize(array $tests): RootedTree {
-    return new RootedTree();
+    $tree = new RootedTree();
+    foreach ($tests as $testId => $test) {
+      foreach ($test->getRootNodes() as $rootNode) {
+        $tree->addRootNode($rootNode);
+      }
+    }
+    return $tree;
   }
 
 }
