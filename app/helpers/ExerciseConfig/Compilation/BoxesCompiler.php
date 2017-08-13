@@ -20,6 +20,16 @@ class BoxesCompiler {
    */
   public function compile(RootedTree $executionPipeline): JobConfig {
     $jobConfig = new JobConfig();
+
+    // stack for DFS, better stay in order by reversing original root nodes
+    $stack = array_reverse($executionPipeline->getRootNodes());
+
+    // main processing loop
+    while (!empty($stack)) {
+      $current = array_pop($stack);
+      // @todo: do magic
+    }
+
     return $jobConfig;
   }
 
