@@ -9,6 +9,7 @@ use App\Helpers\ExternalLogin\UserData;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestRegistrationPresenter extends Tester\TestCase
 {
@@ -36,6 +37,9 @@ class TestRegistrationPresenter extends Tester\TestCase
   /** @var  Nette\DI\Container */
   protected $container;
 
+  /** @var Users */
+  private $users;
+
   public function __construct()
   {
     global $container;
@@ -44,6 +48,7 @@ class TestRegistrationPresenter extends Tester\TestCase
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
+    $this->users = $container->getByType(\App\Model\Repository\Users::class);
     $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
   }
 
@@ -64,8 +69,6 @@ class TestRegistrationPresenter extends Tester\TestCase
 
   public function testCreateAccount()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
     $email = "email@email.email";
     $firstName = "firstName";
     $lastName = "lastName";
@@ -114,7 +117,6 @@ class TestRegistrationPresenter extends Tester\TestCase
 
   public function testCreateAccountIcorrectInstance()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     $email = "email@email.email";
     $firstName = "firstName";
     $lastName = "lastName";
@@ -141,10 +143,9 @@ class TestRegistrationPresenter extends Tester\TestCase
     }, BadRequestException::class, "Bad Request - Instance '$instanceId' does not exist.");
   }
 
-  public function testCreateAccountMissingFields()
+  public function testCreateAccountExistingUser()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-    $email = "email@email.email";
+    $email = PresenterTestHelper::ADMIN_LOGIN;
     $firstName = "firstName";
     $lastName = "lastName";
     $password = "password";
@@ -165,15 +166,6 @@ class TestRegistrationPresenter extends Tester\TestCase
       ]
     );
 
-    // mock users model
-    $mockUsers = Mockery::mock(Users::class);
-    $mockUsers->shouldReceive("getByEmail")
-        ->with($email)
-        ->once()
-        ->andReturn(TRUE);
-
-    $this->presenter->users = $mockUsers;
-
     Assert::throws(function () use ($request) {
         $this->presenter->run($request);
     }, BadRequestException::class, "Bad Request - This email address is already taken.");
@@ -181,8 +173,6 @@ class TestRegistrationPresenter extends Tester\TestCase
 
   public function testCreateAccountExt()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
     $userId = "userIdExt";
     $username = "user@domain.tld";
     $firstname = "firstnameExt";
@@ -244,10 +234,70 @@ class TestRegistrationPresenter extends Tester\TestCase
     Assert::same($user, $createdUser);
   }
 
+  public function testLinkExternalAccount()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $existingUser = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $userId = "userIdExt";
+    $username = "user@domain.tld";
+    $firstname = "firstnameExt";
+    $lastname = "lastnameExt";
+    $password = "passwordExt";
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+    $instances = $this->instances->findAll();
+    $instanceId = array_pop($instances)->getId();
+    $serviceId = "serviceId";
+
+    // setup mocking authService
+    $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
+    $mockExternalLoginService->shouldReceive("getServiceId")->withAnyArgs()->andReturn($serviceId);
+
+    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
+    $mockAuthService->shouldReceive("findService")
+      ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
+
+    $mockExternalLoginService->shouldReceive("getUser")->withAnyArgs()
+      ->andReturn(new UserData(
+        $userId, $username, $firstname, $lastname, $degreesBeforeName, $degreesAfterName, $mockExternalLoginService
+      ));
+
+    // set mocks to presenter
+    $this->presenter->externalServiceAuthenticator = $mockAuthService;
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccountExt'],
+      [
+        'username' => $username,
+        'password' => $password,
+        'instanceId' => $instanceId,
+        'serviceId' => $serviceId,
+        'userId' => $existingUser->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(201, $result['code']);
+    Assert::equal(2, count($result['payload']));
+    Assert::true(array_key_exists("accessToken", $result["payload"]));
+    Assert::true(array_key_exists("user", $result["payload"]));
+
+    // check created user
+    $user = $result["payload"]["user"];
+    Assert::type(\App\Model\Entity\User::class, $user);
+    Assert::same($existingUser, $user);
+    Assert::equal($existingUser->getEmail(), $user->getEmail());
+
+    // check created login
+    $createdUser = $this->externalLogins->getUser($serviceId, $userId);
+    Assert::same($user, $createdUser);
+  }
+
   public function testValidateRegistrationData()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'validateRegistrationData'],
       [

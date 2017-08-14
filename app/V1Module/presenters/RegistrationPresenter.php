@@ -125,7 +125,7 @@ class RegistrationPresenter extends BasePresenter {
   }
 
   /**
-   * Create an account authenticated with an external service
+   * Create an account authenticated with an external service (and link it with either a new user account or an existing one)
    * @POST
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
@@ -146,14 +146,22 @@ class RegistrationPresenter extends BasePresenter {
       throw new BadRequestException("User is already registered.");
     }
 
-    $user = $externalData->createEntity($instance, self::DEFAULT_ROLE);
-    $this->users->persist($user);
+    $creatingNewUser = !$this->user->isLoggedIn();
+
+    if ($creatingNewUser) {
+      $user = $externalData->createEntity($instance, self::DEFAULT_ROLE);
+      $this->users->persist($user);
+    } else {
+      $user = $this->getCurrentUser();
+    }
 
     // connect the account to the login method
-    $this->externalLogins->connect($authService, $user, $externalData->getId());
+      $this->externalLogins->connect($authService, $user, $externalData->getId());
 
     // email verification
-    $this->emailVerificationHelper->process($user);
+    if ($creatingNewUser) {
+      $this->emailVerificationHelper->process($user);
+    }
 
     // successful!
     $this->sendSuccessResponse([
