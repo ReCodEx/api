@@ -7,6 +7,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\JobConfig\Tasks\Task;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -62,6 +63,12 @@ abstract class Box implements JsonSerializable
    * @return string
    */
   public abstract function getType(): string;
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public abstract function compile(): array;
 
 
   /**

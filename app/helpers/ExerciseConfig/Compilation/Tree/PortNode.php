@@ -83,14 +83,22 @@ class PortNode {
    */
   private $testId = null;
 
+  /**
+   * Identification of pipeline to which this box belongs to.
+   * @var string
+   */
+  private $pipelineId = null;
+
 
   /**
    * Node constructor.
    * @param Box $box
+   * @param string $pipelineId
    * @param string|null $testId
    */
-  public function __construct(Box $box, string $testId = null) {
+  public function __construct(Box $box, string $pipelineId = null, string $testId = null) {
     $this->box = $box;
+    $this->pipelineId = $pipelineId;
     $this->testId = $testId;
   }
 
@@ -305,11 +313,11 @@ class PortNode {
   }
 
   /**
-   * Set test identification of box.
-   * @param string $testId
+   * Pipeline identification for corresponding box.
+   * @return string|null
    */
-  public function setTestId(string $testId) {
-    $this->testId = $testId;
+  public function getPipelineId(): ?string {
+    return $this->pipelineId;
   }
 
 }

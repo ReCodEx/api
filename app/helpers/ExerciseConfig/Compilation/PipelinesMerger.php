@@ -160,11 +160,12 @@ class PipelinesMerger {
 
   /**
    * Build pipeline tree with all appropriate connections.
+   * @param string $pipelineId
    * @param string $testId
    * @param Pipeline $pipeline
    * @return MergeTree
    */
-  private function buildPipelineTree(string $testId, Pipeline $pipeline): MergeTree {
+  private function buildPipelineTree(string $pipelineId, string $testId, Pipeline $pipeline): MergeTree {
 
     // construct all nodes from pipeline, we need to have list of boxes
     // indexed by name for searching and second list as execution queue
@@ -173,7 +174,7 @@ class PipelinesMerger {
     $nodes = array();
     $variables = array(); // array of pairs of pairs
     foreach ($pipeline->getAll() as $box) {
-      $node = new PortNode($box, $testId);
+      $node = new PortNode($box, $pipelineId, $testId);
       $queue[] = $node;
       $nodes[$box->getName()] = $node;
 
@@ -255,6 +256,7 @@ class PipelinesMerger {
   /**
    * Process pipeline, which means creating its tree and merging two trees
    * @note New tree is returned!
+   * @param string $pipelineId
    * @param string $testId
    * @param MergeTree $tree
    * @param VariablesTable $environmentConfigVariables
@@ -262,12 +264,12 @@ class PipelinesMerger {
    * @param Pipeline $pipelineConfig
    * @return MergeTree
    */
-  private function processPipeline(string $testId, MergeTree $tree,
-      VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
-      Pipeline $pipelineConfig): MergeTree {
+  private function processPipeline(string $pipelineId, string $testId,
+      MergeTree $tree, VariablesTable $environmentConfigVariables,
+      PipelineVars $pipelineVars, Pipeline $pipelineConfig): MergeTree {
 
     // build tree for given pipeline
-    $pipelineTree = $this->buildPipelineTree($testId, $pipelineConfig);
+    $pipelineTree = $this->buildPipelineTree($pipelineId, $testId, $pipelineConfig);
     // set all variables tables to boxes in pipeline
     $this->setVariablesTablesToPipelineBoxes($pipelineTree,
       $pipelineVars->getVariablesTable(), $environmentConfigVariables,
@@ -306,7 +308,7 @@ class PipelinesMerger {
       $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
 
       // process pipeline and merge it to already existing tree
-      $tree = $this->processPipeline($testId, $tree, $environmentConfigVariables, $pipelineVars, $pipelineConfig);
+      $tree = $this->processPipeline($pipelineId, $testId, $tree, $environmentConfigVariables, $pipelineVars, $pipelineConfig);
     }
 
     return $tree;

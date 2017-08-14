@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -76,6 +78,15 @@ class GccCompilationBox extends Box
   public function getDefaultName(): string {
     self::init();
     return self::$defaultName;
+  }
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    $task = new Task();
+    return [$task];
   }
 
 }

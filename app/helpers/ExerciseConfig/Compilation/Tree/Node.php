@@ -27,14 +27,25 @@ class Node {
   private $testId = null;
 
   /**
-   * Nodes which identify themselves as parent of this node, ndexed by port
-   * name.
+   * Identification of pipeline to which this box belongs to.
+   * @var string
+   */
+  private $pipelineId = null;
+
+  /**
+   * Identification of tasks which was compiled from corresponding box.
+   * @var string[]
+   */
+  private $taskIds = [];
+
+  /**
+   * Nodes which identify themselves as parent of this node.
    * @var Node[]
    */
   private $parents = array();
 
   /**
-   * Children nodes of this one, indexed by port name.
+   * Children nodes of this one.
    * @var Node[]
    */
   private $children = array();
@@ -46,6 +57,7 @@ class Node {
    */
   public function __construct(PortNode $node) {
     $this->box = $node->getBox();
+    $this->pipelineId = $node->getPipelineId();
     $this->testId = $node->getTestId();
   }
 
@@ -72,6 +84,39 @@ class Node {
   public function setTestId(?string $testId) {
     $this->testId = $testId;
   }
+
+  /**
+   * Pipeline identification for corresponding box.
+   * @return string|null
+   */
+  public function getPipelineId(): ?string {
+    return $this->pipelineId;
+  }
+
+  /**
+   * Set pipeline identification of box.
+   * @param string|null $pipelineId
+   */
+  public function setPipelineId(?string $pipelineId) {
+    $this->pipelineId = $pipelineId;
+  }
+
+  /**
+   * Return task identifications associated with this node.
+   * @return string[]
+   */
+  public function getTaskIds(): array {
+    return $this->taskIds;
+  }
+
+  /**
+   * Add task identification to internal array.
+   * @param string $taskId
+   */
+  public function addTaskId(string $taskId) {
+    $this->taskIds[] = $taskId;
+  }
+
 
   /**
    * Get parents of this node.
