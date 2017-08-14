@@ -40,7 +40,8 @@
 		"mrdm-nl/ldap": "^1.1",
 		"bjeavons/zxcvbn-php": "^0.3.0",
 		"zenify/doctrine-fixtures": "^4.0",
-		"rixxi/gedmo": "^1.0"
+		"rixxi/gedmo": "^1.0",
+		"doctrine/orm": "2.5.6"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
