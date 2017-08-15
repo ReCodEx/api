@@ -51,10 +51,16 @@ class PortNode {
   private $parents = array();
 
   /**
-   * Children nodes of this one, indexed by port name.
+   * Children nodes of this one.
    * @var PortNode[]
    */
   private $children = array();
+
+  /**
+   * Children nodes of this one, indexed by port name.
+   * @var array
+   */
+  private $childrenByPort = array();
 
   /**
    * Is this node contained in created tree.
@@ -177,15 +183,13 @@ class PortNode {
   }
 
   /**
-   * Get parent of this node which resides on given port.
-   * @param string $port
-   * @return PortNode|null
+   * Find port of given parent.
+   * @param PortNode $node
+   * @return null|string
    */
-  public function getParent(string $port): ?PortNode {
-    if (!array_key_exists($port, $this->parents)) {
-      return null;
-    }
-    return $this->parents[$port];
+  public function findParentPort(PortNode $node): ?string {
+    $portName = array_search($node, $this->parents);
+    return $portName ? $portName : null;
   }
 
   /**
@@ -221,15 +225,25 @@ class PortNode {
   }
 
   /**
-   * Get child of this node with given associated port.
-   * @param string $port
-   * @return PortNode|null
+   * Get children of this node indexed by port.
+   * @return array
    */
-  public function getChild(string $port): ?PortNode {
-    if (!array_key_exists($port, $this->children)) {
-      return null;
+  public function getChildrenByPort(): array {
+    return $this->childrenByPort;
+  }
+
+  /**
+   * Find port of given child.
+   * @param PortNode $node
+   * @return null|string
+   */
+  public function findChildPort(PortNode $node): ?string {
+    foreach ($this->childrenByPort as $portName => $children) {
+      if (array_search($node, $children) !== FALSE) {
+        return $portName;
+      }
     }
-    return $this->children[$port];
+    return null;
   }
 
   /**
@@ -237,6 +251,7 @@ class PortNode {
    */
   public function clearChildren() {
     $this->children = array();
+    $this->childrenByPort = array();
   }
 
   /**
@@ -245,7 +260,11 @@ class PortNode {
    * @param PortNode $child
    */
   public function addChild(string $port, PortNode $child) {
-    $this->children[$port] = $child;
+    $this->children[] = $child;
+    if (!array_key_exists($port, $this->childrenByPort)) {
+      $this->childrenByPort[$port] = [];
+    }
+    $this->childrenByPort[$port][] = $child;
   }
 
   /**
@@ -253,7 +272,10 @@ class PortNode {
    * @param PortNode $child
    */
   public function removeChild(PortNode $child) {
-    $this->children = array_diff($this->children, array($child));
+    $this->children = array_diff($this->children, [$child]);
+    foreach ($this->childrenByPort as $port => $children) {
+      $this->childrenByPort[$port] = array_diff($children, [$child]);
+    }
   }
 
   /**

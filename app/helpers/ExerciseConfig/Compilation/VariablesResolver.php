@@ -107,8 +107,8 @@ class VariablesResolver {
   private function resolveForOtherNodes(MergeTree $mergeTree) {
     foreach ($mergeTree->getOtherNodes() as $node) {
       foreach ($node->getParents() as $inPortName => $parent) {
-        $outPortName = array_search($node, $parent->getChildren());
-        if ($outPortName === FALSE) {
+        $outPortName = $parent->findChildPort($node);
+        if (!$outPortName) {
           // I do not like what you got!
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
         }
@@ -116,14 +116,16 @@ class VariablesResolver {
         $this->resolveForVariable($parent, $node, $inPortName, $outPortName);
       }
 
-      foreach ($node->getChildren() as $outPortName => $child) {
-        $inPortName = array_search($node, $child->getParents());
-        if ($inPortName === FALSE) {
-          // Oh boy, here we go throwing exceptions again!
-          throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
-        }
+      foreach ($node->getChildrenByPort() as $outPortName => $children) {
+        foreach ($children as $child) {
+          $inPortName = $child->findParentPort($node);
+          if (!$inPortName) {
+            // Oh boy, here we go throwing exceptions again!
+            throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
+          }
 
-        $this->resolveForVariable($node, $child, $inPortName, $outPortName);
+          $this->resolveForVariable($node, $child, $inPortName, $outPortName);
+        }
       }
     }
   }

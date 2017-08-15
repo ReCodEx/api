@@ -39,10 +39,10 @@ class NodePortPair {
  * Helper pair class.
  */
 class VariablePair {
+  /** @var NodePortPair[]*/
+  public $input = [];
   /** @var NodePortPair */
-  public $input;
-  /** @var NodePortPair */
-  public $output;
+  public $output = null;
 }
 
 
@@ -187,7 +187,7 @@ class PipelinesMerger {
         if (!array_key_exists($varName, $variables)) {
           $variables[$varName] = new VariablePair();
         }
-        $variables[$varName]->input = new NodePortPair($node, $inPort);
+        $variables[$varName]->input[] = new NodePortPair($node, $inPort);
       }
       foreach ($box->getOutputPorts() as $outPort) {
         $varName = $outPort->getVariable();
@@ -222,12 +222,17 @@ class PipelinesMerger {
         if (empty($varName)) {
           continue; // variable in port is not specified... jump over
         }
-        $child = $variables[$varName]->input->node;
-        if ($child->isInTree()) {
-          continue;
+
+        // go through all children for this port
+        foreach ($variables[$varName]->input as $childPair) {
+          $child = $childPair->node;
+          $port = $childPair->port;
+          if ($child->isInTree()) {
+            continue;
+          }
+          $node->addChild($outPort->getName(), $child);
+          $child->addParent($port->getName(), $node);
         }
-        $node->addChild($outPort->getName(), $child);
-        $child->addParent($variables[$varName]->input->port->getName(), $node);
       }
 
       // ... visited flag
@@ -255,14 +260,13 @@ class PipelinesMerger {
 
   /**
    * Process pipeline, which means creating its tree and merging two trees
-   * @note New tree is returned!
    * @param string $pipelineId
    * @param string $testId
    * @param MergeTree $tree
    * @param VariablesTable $environmentConfigVariables
    * @param PipelineVars $pipelineVars
    * @param Pipeline $pipelineConfig
-   * @return MergeTree
+   * @return MergeTree new instance of merge tree
    */
   private function processPipeline(string $pipelineId, string $testId,
       MergeTree $tree, VariablesTable $environmentConfigVariables,
