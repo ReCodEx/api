@@ -14,6 +14,7 @@ class DataOutBox extends Box
 {
   /** Type key */
   public static $DATA_OUT_TYPE = "data-out";
+  public static $DATA_OUT_PORT_KEY = "out-data";
 
   private static $initialized = false;
   private static $defaultName;
@@ -28,7 +29,7 @@ class DataOutBox extends Box
       self::$initialized = true;
       self::$defaultName = "Output Data";
       self::$defaultInputPorts = array(
-        new UndefinedPort((new PortMeta)->setName("out-data")->setVariable(""))
+        new UndefinedPort((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array();
     }
@@ -78,13 +79,13 @@ class DataOutBox extends Box
     return self::$defaultName;
   }
 
+
   /**
    * Compile box into set of low-level tasks.
    * @return Task[]
    */
   public function compile(): array {
-    $task = new Task();
-    return [$task];
+    return [];
   }
 
 }

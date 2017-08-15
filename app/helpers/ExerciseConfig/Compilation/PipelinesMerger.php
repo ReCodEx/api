@@ -39,7 +39,7 @@ class NodePortPair {
  * Helper pair class.
  */
 class VariablePair {
-  /** @var NodePortPair[]*/
+  /** @var NodePortPair[] */
   public $input = [];
   /** @var NodePortPair */
   public $output = null;

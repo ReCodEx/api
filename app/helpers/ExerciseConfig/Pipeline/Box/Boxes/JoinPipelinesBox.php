@@ -95,8 +95,7 @@ class JoinPipelinesBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    $task = new Task();
-    return [$task];
+    return []; // @todo: might be no-op or mv task ... to be decided
   }
 
 }

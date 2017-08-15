@@ -111,8 +111,7 @@ class CustomBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    $task = new Task();
-    return [$task];
+    return [];
   }
 
 }

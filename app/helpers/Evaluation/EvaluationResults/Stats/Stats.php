@@ -7,7 +7,7 @@ use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
 /**
- * Stats implementation for Isolate sandbox
+ * Stats implementation for LinuxSandbox sandbox
  */
 class Stats implements IStats {
   const EXITCODE_KEY = "exitcode";
