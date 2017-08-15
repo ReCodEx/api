@@ -7,7 +7,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline;
-use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JoinPipelinesBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
@@ -128,12 +128,12 @@ class PipelinesMerger {
         $next->removeParent($inNode);
 
         // create new custom join box
-        $customBox = new CustomBox();
-        $customBox->addInputPort($inPort);
-        $customBox->addOutputPort($outPort);
+        $joinBox = new JoinPipelinesBox();
+        $joinBox->setInputPort($inPort);
+        $joinBox->setOutputPort($outPort);
 
         // add new connections
-        $joinNodes[] = $joinNode = new PortNode($customBox);
+        $joinNodes[] = $joinNode = new PortNode($joinBox);
         $previous->addChild($inPort->getName(), $joinNode);
         $joinNode->addParent($inPort->getName(), $previous);
         $next->addParent($outPort->getName(), $joinNode);
