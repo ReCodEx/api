@@ -188,7 +188,7 @@ class PortNode {
    * @return null|string
    */
   public function findParentPort(PortNode $node): ?string {
-    $portName = array_search($node, $this->parents);
+    $portName = array_search($node, $this->parents, true);
     return $portName ? $portName : null;
   }
 
@@ -213,7 +213,9 @@ class PortNode {
    * @param PortNode $parent
    */
   public function removeParent(PortNode $parent) {
-    $this->parents = array_diff($this->parents, array($parent));
+    if(($key = array_search($parent, $this->parents)) !== false){
+      unset($this->parents[$key]);
+    }
   }
 
   /**
@@ -239,7 +241,7 @@ class PortNode {
    */
   public function findChildPort(PortNode $node): ?string {
     foreach ($this->childrenByPort as $portName => $children) {
-      if (array_search($node, $children) !== FALSE) {
+      if (array_search($node, $children, true) !== FALSE) {
         return $portName;
       }
     }
@@ -272,9 +274,14 @@ class PortNode {
    * @param PortNode $child
    */
   public function removeChild(PortNode $child) {
-    $this->children = array_diff($this->children, [$child]);
+    if(($key = array_search($child, $this->children)) !== false){
+      unset($this->children[$key]);
+    }
+
     foreach ($this->childrenByPort as $port => $children) {
-      $this->childrenByPort[$port] = array_diff($children, [$child]);
+      if(($key = array_search($child, $children)) !== false){
+        unset($this->childrenByPort[$port][$key]);
+      }
     }
   }
 

@@ -12,7 +12,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
  * test identification from the past, if some node is merged and optimised
  * identification of test should be cleared.
  */
-class TestBoxesOptimizer {
+class BoxesOptimizer {
 
   /**
    * Optimize given array of boxes in tests and remove duplicate boxes.

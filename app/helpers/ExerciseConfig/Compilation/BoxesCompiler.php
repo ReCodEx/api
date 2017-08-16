@@ -41,7 +41,6 @@ class BoxesCompiler {
 
     // main processing loop
     while (!empty($stack)) {
-      $localOrder = 1;
       $current = array_pop($stack);
 
       // compile box into set of tasks
@@ -49,7 +48,7 @@ class BoxesCompiler {
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
-        $taskId = $this->createTaskIdentification($current, $localOrder);
+        $taskId = $this->createTaskIdentification($current, $order);
         $current->addTaskId($taskId);
 
         // set global order/priority
@@ -66,11 +65,8 @@ class BoxesCompiler {
         }
 
         // update helper vars
-        $localOrder++;
+        $order++;
       }
-
-      // update helper vars
-      $order++;
     }
 
     return $jobConfig;

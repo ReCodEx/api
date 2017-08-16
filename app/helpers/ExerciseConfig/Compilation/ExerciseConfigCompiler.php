@@ -24,9 +24,9 @@ class ExerciseConfigCompiler {
   private $boxesSorter;
 
   /**
-   * @var TestBoxesOptimizer
+   * @var BoxesOptimizer
    */
-  private $testBoxesOptimizer;
+  private $boxesOptimizer;
 
   /**
    * @var BoxesCompiler
@@ -39,20 +39,29 @@ class ExerciseConfigCompiler {
   private $variablesResolver;
 
   /**
+   * @var TestDirectoriesResolver
+   */
+  private $testDirectoriesResolver;
+
+  /**
    * ExerciseConfigValidator constructor.
    * @param PipelinesMerger $pipelinesMerger
    * @param BoxesSorter $boxesSorter
-   * @param TestBoxesOptimizer $testBoxesOptimizer
+   * @param BoxesOptimizer $boxesOptimizer
    * @param BoxesCompiler $boxesCompiler
+   * @param VariablesResolver $variablesResolver
+   * @param TestDirectoriesResolver $testDirectoriesResolver
    */
   public function __construct(PipelinesMerger $pipelinesMerger,
-      BoxesSorter $boxesSorter, TestBoxesOptimizer $testBoxesOptimizer,
-      BoxesCompiler $boxesCompiler, VariablesResolver $variablesResolver) {
+      BoxesSorter $boxesSorter, BoxesOptimizer $boxesOptimizer,
+      BoxesCompiler $boxesCompiler, VariablesResolver $variablesResolver,
+      TestDirectoriesResolver $testDirectoriesResolver) {
     $this->pipelinesMerger = $pipelinesMerger;
     $this->boxesSorter = $boxesSorter;
-    $this->testBoxesOptimizer = $testBoxesOptimizer;
+    $this->boxesOptimizer = $boxesOptimizer;
     $this->boxesCompiler = $boxesCompiler;
     $this->variablesResolver = $variablesResolver;
+    $this->testDirectoriesResolver = $testDirectoriesResolver;
   }
 
 
@@ -69,8 +78,9 @@ class ExerciseConfigCompiler {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
     $this->variablesResolver->resolve($tests);
     $sortedTests = $this->boxesSorter->sort($tests);
-    $executionPipeline = $this->testBoxesOptimizer->optimize($sortedTests);
-    $jobConfig = $this->boxesCompiler->compile($executionPipeline);
+    $optimized = $this->boxesOptimizer->optimize($sortedTests);
+    $testDirectories = $this->testDirectoriesResolver->resolve($optimized);
+    $jobConfig = $this->boxesCompiler->compile($testDirectories);
     return $jobConfig;
   }
 

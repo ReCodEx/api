@@ -2,13 +2,13 @@
 
 include '../../bootstrap.php';
 
-use App\Helpers\ExerciseConfig\Compilation\TestBoxesOptimizer;
+use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use Tester\Assert;
 
 
-class TestTestBoxesOptimizer extends Tester\TestCase
+class TestBoxesOptimizer extends Tester\TestCase
 {
-  /** @var TestBoxesOptimizer */
+  /** @var BoxesOptimizer */
   private $optimizer;
 
   public function __construct() {
@@ -22,5 +22,5 @@ class TestTestBoxesOptimizer extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTestBoxesOptimizer();
+$testCase = new TestBoxesOptimizer();
 $testCase->run();
