@@ -7,7 +7,7 @@ use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
 /**
- * Stats implementation for LinuxSandbox sandbox
+ * Stats implementation for Isolate sandbox
  */
 class Stats implements IStats {
   const EXITCODE_KEY = "exitcode";
@@ -23,7 +23,7 @@ class Stats implements IStats {
   /** @var float Time used to complete the task */
   private $time;
 
-  /** @var int Memory used by the exacutable */
+  /** @var int Memory used by the executable */
   private $memory;
 
   /** @var int Exit code returned by the executed solution */
@@ -38,6 +38,7 @@ class Stats implements IStats {
   /**
    * Constructor
    * @param array $data Raw data from basic parsing of sandbox output
+   * @throws ResultsLoadingException
    */
   public function __construct(array $data) {
     $this->data = $data;
