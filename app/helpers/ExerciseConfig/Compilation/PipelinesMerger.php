@@ -105,7 +105,7 @@ class PipelinesMerger {
   private function mergeTrees(MergeTree $first, MergeTree $second): MergeTree {
 
     // index output nodes from first tree with their variable names
-    $outVars = array();
+    $outVars = array(); /** @var NodePortPair[] $outVars */
     foreach ($first->getOutputNodes() as $outNode) {
       $inPort = current($outNode->getBox()->getInputPorts());
       $outVars[$inPort->getVariable()] = new NodePortPair($outNode, $inPort);
@@ -170,9 +170,9 @@ class PipelinesMerger {
     // construct all nodes from pipeline, we need to have list of boxes
     // indexed by name for searching and second list as execution queue
     // and also set of variables with references to input and output box
-    $queue = array();
-    $nodes = array();
-    $variables = array(); // array of pairs of pairs
+    $queue = array(); /** @var PortNode[] $queue */
+    $nodes = array(); /** @var PortNode[] $nodes */
+    $variables = array(); /** @var VariablePair[] $variables */
     foreach ($pipeline->getAll() as $box) {
       $node = new PortNode($box, $pipelineId, $testId);
       $queue[] = $node;
