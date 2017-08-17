@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
+use App\Helpers\JobConfig\SandboxConfig;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -11,6 +14,13 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
  */
 class JudgeNormalBox extends Box
 {
+  /** Type key */
+  public static $JUDGE_NORMAL_TYPE = "judge-normal";
+  public static $JUDGE_NORMAL_BINARY = "\${JUDGES_DIR}/recodex-judge-normal";
+  public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
+  public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
+  public static $SCORE_PORT_KEY = "score";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -24,11 +34,11 @@ class JudgeNormalBox extends Box
       self::$initialized = true;
       self::$defaultName = "ReCodEx Judge Normal";
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName("actual-output")->setVariable("")),
-        new FilePort((new PortMeta)->setName("expected-output")->setVariable(""))
+        new FilePort((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setVariable("")),
+        new FilePort((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new StringPort((new PortMeta)->setName("score")->setVariable(""))
+        new StringPort((new PortMeta)->setName(self::$SCORE_PORT_KEY)->setVariable(""))
       );
     }
   }
@@ -41,6 +51,14 @@ class JudgeNormalBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$JUDGE_NORMAL_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
@@ -67,6 +85,21 @@ class JudgeNormalBox extends Box
   public function getDefaultName(): string {
     self::init();
     return self::$defaultName;
+  }
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    $task = new Task();
+    $task->setCommandBinary(self::$JUDGE_NORMAL_BINARY);
+    $task->setCommandArguments([
+      $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getValue(),
+      $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getValue()
+    ]);
+    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+    return [$task];
   }
 
 }

@@ -93,7 +93,7 @@ class BoxMeta implements JsonSerializable {
 
   /**
    * Set input ports.
-   * @param array $ports
+   * @param Port[] $ports
    * @return BoxMeta
    */
   public function setInputPorts(array $ports): BoxMeta {
@@ -146,7 +146,7 @@ class BoxMeta implements JsonSerializable {
 
   /**
    * Set output ports.
-   * @param array $ports
+   * @param Port[] $ports
    * @return BoxMeta
    */
   public function setOutputPorts(array $ports): BoxMeta {

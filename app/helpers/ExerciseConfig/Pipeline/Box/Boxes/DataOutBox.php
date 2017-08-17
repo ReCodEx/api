@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -11,6 +12,10 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class DataOutBox extends Box
 {
+  /** Type key */
+  public static $DATA_OUT_TYPE = "data-out";
+  public static $DATA_OUT_PORT_KEY = "out-data";
+
   private static $initialized = false;
   private static $defaultName;
   private static $defaultInputPorts;
@@ -24,7 +29,7 @@ class DataOutBox extends Box
       self::$initialized = true;
       self::$defaultName = "Output Data";
       self::$defaultInputPorts = array(
-        new UndefinedPort((new PortMeta)->setName("out-data")->setVariable(""))
+        new UndefinedPort((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array();
     }
@@ -38,6 +43,14 @@ class DataOutBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$DATA_OUT_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
@@ -64,6 +77,15 @@ class DataOutBox extends Box
   public function getDefaultName(): string {
     self::init();
     return self::$defaultName;
+  }
+
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    return [];
   }
 
 }

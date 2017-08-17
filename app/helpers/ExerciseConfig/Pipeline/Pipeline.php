@@ -110,6 +110,14 @@ class Pipeline implements JsonSerializable
   }
 
   /**
+   * Get all boxes in pipeline.
+   * @return Box[]
+   */
+  public function getAll(): array {
+    return $this->boxes;
+  }
+
+  /**
    * Get input data boxes for this pipeline.
    * @return DataInBox[]
    */

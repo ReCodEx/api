@@ -80,17 +80,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
       // check variables, again defined in fixtures
       $variablesTable = $config["variablesTable"];
-      Assert::count(2, $variablesTable);
-      Assert::contains([
-        "name" => "varA",
-        "type" => "file",
-        "value" => "valA"
-      ], $variablesTable);
-      Assert::contains([
-        "name" => "varB",
-        "type" => "string",
-        "value" => "valB"
-      ], $variablesTable);
+      Assert::count(1, $variablesTable);
+      Assert::equal("source_file", current($variablesTable)["name"]);
     }
   }
 
