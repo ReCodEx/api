@@ -25,22 +25,23 @@ class TestTest extends Tester\TestCase
 
   protected function setUp() {
     self::$config = [
-      "pipelines" => [
-        "hello" => [
+      "pipelines" => [ [
+          "name" => "hello",
           "variables" => [
             [ "name" => "hello", "type" => "string", "value" => "world" ],
             [ "name" => "world", "type" => "file", "value" => "hello" ]
           ],
         ],
-        "world" => [
+        [
+          "name" => "world",
           "variables" => []
         ]
       ],
 
       "environments" => [
         "envA" => [
-          "pipelines" => [
-            "newEnvAPipeline" => [
+          "pipelines" => [ [
+              "name" => "newEnvAPipeline",
               "variables" => [
                 [ "name" => "varA", "type" => "string", "value" => "valA" ]
               ]
@@ -90,8 +91,9 @@ class TestTest extends Tester\TestCase
   public function testPipelinesOperations() {
     $test = new Test;
     $pipeline = new PipelineVars;
+    $pipeline->setName("pipelineA");
 
-    $test->addPipeline("pipelineA", $pipeline);
+    $test->addPipeline($pipeline);
     Assert::type(PipelineVars::class, $test->getPipeline("pipelineA"));
 
     $test->removePipeline("non-existant");

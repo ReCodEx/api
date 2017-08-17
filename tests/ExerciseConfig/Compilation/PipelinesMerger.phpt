@@ -67,8 +67,8 @@ class TestPipelinesMerger extends Tester\TestCase
       "environments" => [ "envA", "envB" ],
       "tests" => [
         "testA" => [
-          "pipelines" => [
-            "hello" => [
+          "pipelines" => [ [
+              "name" => "hello",
               "variables" => [
                 [ "name" => "world", "type" => "string", "value" => "hello" ]
               ]
@@ -84,8 +84,8 @@ class TestPipelinesMerger extends Tester\TestCase
           ]
         ],
         "testB" => [
-          "pipelines" => [
-            "world" => [
+          "pipelines" => [ [
+              "name" => "world",
               "variables" => [
                 [ "name" => "hello", "type" => "string", "value" => "world" ]
               ]

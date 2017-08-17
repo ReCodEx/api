@@ -10,9 +10,17 @@ use JsonSerializable;
  */
 class PipelineVars implements JsonSerializable {
 
+  /** Name of the name key */
+  const NAME_KEY = "name";
   /** Name of the variables key */
   const VARIABLES_KEY = "variables";
 
+
+  /**
+   * Identifier of pipeline
+   * @var string
+   */
+  protected $name;
 
   /**
    * Variables table structure.
@@ -23,6 +31,25 @@ class PipelineVars implements JsonSerializable {
 
   public function __construct() {
     $this->variablesTable = new VariablesTable();
+  }
+
+
+  /**
+   * Get identification of pipeline.
+   * @return string
+   */
+  public function getName(): ?string {
+    return $this->name;
+  }
+
+  /**
+   * Set identification of pipeline.
+   * @param string $name
+   * @return PipelineVars
+   */
+  public function setName(string $name): PipelineVars {
+    $this->name = $name;
+    return $this;
   }
 
   /**
@@ -50,6 +77,7 @@ class PipelineVars implements JsonSerializable {
    */
   public function toArray(): array {
     $data = [];
+    $data[self::NAME_KEY] = $this->name;
     $data[self::VARIABLES_KEY] = $this->variablesTable->toArray();
     return $data;
   }
