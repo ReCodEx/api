@@ -21,10 +21,10 @@ class TestPipelinesMerger extends Tester\TestCase
   private $loader;
 
   /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockHelloPipelineConfig;
+  private $mockCompilationPipelineConfig;
 
   /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockWorldPipelineConfig;
+  private $mockTestPipelineConfig;
 
   /** @var PipelinesMerger */
   private $merger;
@@ -33,8 +33,8 @@ class TestPipelinesMerger extends Tester\TestCase
   private static $config;
   private static $envVariablesTable;
   private static $environment;
-  private static $pipelineHello;
-  private static $pipelineWorld;
+  private static $compilationPipeline;
+  private static $testPipeline;
 
 
   public function __construct() {
@@ -47,16 +47,16 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->merger = new PipelinesMerger($mockPipelines, $this->loader);
 
     // mock entities and stuff
-    $this->mockHelloPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $mockHelloPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $mockHelloPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockHelloPipelineConfig);
-    $this->mockWorldPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $mockWorldPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $mockWorldPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockWorldPipelineConfig);
+    $this->mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
+    $mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockCompilationPipelineConfig);
+    $this->mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
+    $mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockTestPipelineConfig);
 
     // set up mocked pipelines repository
-    $mockPipelines->shouldReceive("findOrThrow")->with("hello")->andReturn($mockHelloPipeline);
-    $mockPipelines->shouldReceive("findOrThrow")->with("world")->andReturn($mockWorldPipeline);
+    $mockPipelines->shouldReceive("findOrThrow")->with("hello")->andReturn($mockCompilationPipeline);
+    $mockPipelines->shouldReceive("findOrThrow")->with("world")->andReturn($mockTestPipeline);
   }
 
 
@@ -66,9 +66,8 @@ class TestPipelinesMerger extends Tester\TestCase
       "tests" => [
         "testA" => [
           "pipelines" => [
-            "hello" => [
-              "variables" => [ [ "name" => "world", "type" => "string", "value" => "hello" ] ]
-            ]
+            "compilationPipeline" => [ "variables" => [] ],
+            "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
           ],
           "environments" => [
             "envA" => [ "pipelines" => [] ],
@@ -77,51 +76,114 @@ class TestPipelinesMerger extends Tester\TestCase
         ],
         "testB" => [
           "pipelines" => [
-            "world" => [
-              "variables" => [ [ "name" => "hello", "type" => "string", "value" => "world" ] ]
-            ]
+            "compilationPipeline" => [ "variables" => [] ],
+            "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
           ],
           "environments" => [
             "envA" => [
               "pipelines" => [
-                "world" => [
-                  "variables" => [ [ "name" => "hello", "type" => "string", "value" => "world envA" ] ]
-                ]
+                "compilationPipeline" => [ "variables" => [] ],
+                "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.envA.out" ] ] ]
               ]
             ],
             "envB" => [
-              "pipelines" => [
-                "world" => [
-                  "variables" => [ [ "name" => "hello", "type" => "string", "value" => "world envB" ] ]
-                ]
-              ]
+              "pipelines" => []
             ]
           ]
         ]
       ]
     ];
     self::$envVariablesTable = [
-      [ "name" => "environment", "type" => "file", "value" => "envVar" ],
-      [ "name" => "tnemnorivne", "type" => "string", "value" => "vneVar" ],
-      [ "name" => "varFileArr", "type" => "file[]", "value" => "envFileArrVar" ],
-      [ "name" => "varStringArr", "type" => "string[]", "value" => "envStringArrVar" ]
+      [ "name" => "source_file", "type" => "file", "value" => "source" ]
     ];
     self::$environment = "envA";
 
-    self::$pipelineHello = [
-      "boxes" => [],
-      "variables" => []
+    self::$compilationPipeline = [
+      "variables" => [
+        [ "name" => "source_file", "type" => "file", "value" => "source" ],
+        [ "name" => "binary_file", "type" => "file", "value" => "a.out" ]
+      ],
+      "boxes" => [
+        [
+          "name" => "source",
+          "type" => "data-in",
+          "portsIn" => [],
+          "portsOut" => [
+            "in-data" => [ "type" => "file", "value" => "source_file" ]
+          ]
+        ],
+        [
+          "name" => "compilation",
+          "type" => "gcc",
+          "portsIn" => [
+            "source-file" => [ "type" => "file", "value" => "source_file" ]
+          ],
+          "portsOut" => [
+            "binary-file" => [ "type" => "file", "value" => "binary_file" ]
+          ]
+        ],
+        [
+          "name" => "output",
+          "type" => "data-out",
+          "portsIn" => [
+            "out-data" => [ "type" => "file", "value" => "binary_file" ]
+          ],
+          "portsOut" => []
+        ]
+      ]
     ];
-    self::$pipelineWorld = [
-      "boxes" => [],
-      "variables" => []
+    self::$testPipeline = [
+      "variables" => [
+        [ "name" => "binary_file", "type" => "file", "value" => "a.out" ],
+        [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ],
+        [ "name" => "actual_output", "type" => "file", "value" => "actual.out" ]
+      ],
+      "boxes" => [
+        [
+          "name" => "binary",
+          "type" => "data-in",
+          "portsIn" => [],
+          "portsOut" => [
+            "in-data" => [ "type" => "file", "value" => "binary_file" ]
+          ]
+        ],
+        [
+          "name" => "test",
+          "type" => "data-in",
+          "portsIn" => [],
+          "portsOut" => [
+            "in-data" => [ "type" => "file", "value" => "expected_output" ]
+          ]
+        ],
+        [
+          "name" => "run",
+          "type" => "elf-exec",
+          "portsIn" => [
+            "binary-file" => [ "type" => "file", "value" => "binary_file" ]
+          ],
+          "portsOut" => [
+            "output-file" => [ "type" => "file", "value" => "actual_output" ]
+          ]
+        ],
+        [
+          "name" => "judge",
+          "type" => "judge-normal",
+          "portsIn" => [
+            "actual-output" => [ "type" => "file", "value" => "actual_output" ],
+            "expected-output" => [ "type" => "file", "value" => "expected_output" ]
+          ],
+          "portsOut" => [
+            "score" => [ "type" => "string", "value" => "" ]
+          ]
+        ]
+      ]
     ];
   }
 
 
   public function testEmptyTests() {
-    $this->mockHelloPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$pipelineHello);
-    $this->mockWorldPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$pipelineWorld);
+    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
+    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
 
     $tests = $this->merger->merge(new ExerciseConfig(), new VariablesTable(), self::$environment);
     Assert::true(is_array($tests));
@@ -139,8 +201,8 @@ class TestPipelinesMerger extends Tester\TestCase
   public function testCorrect() {
     $config = $this->loader->loadExerciseConfig(self::$config);
     $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-    $this->mockHelloPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$pipelineHello);
-    $this->mockWorldPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$pipelineWorld);
+    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
+    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
     $tests = $this->merger->merge($config, $envVariablesTable, self::$environment);
     Assert::count(2, $tests);
 

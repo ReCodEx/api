@@ -85,7 +85,7 @@ App\Model\Entity\PipelineConfig:
                   portsOut:
                     score:
                       type: string
-                      value: score
+                      value: ""
                   type: judge-normal
               '''
             - @demoAdmin
