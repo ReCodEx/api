@@ -44,12 +44,11 @@ class Environment implements JsonSerializable {
 
   /**
    * Add pipeline to this environment.
-   * @param string $id
    * @param PipelineVars $pipeline
    * @return $this
    */
-  public function addPipeline(string $id, PipelineVars $pipeline): Environment {
-    $this->pipelines[$id] = $pipeline;
+  public function addPipeline(PipelineVars $pipeline): Environment {
+    $this->pipelines[$pipeline->getName()] = $pipeline;
     return $this;
   }
 
@@ -72,8 +71,8 @@ class Environment implements JsonSerializable {
     $data = [];
 
     $data[self::PIPELINES_KEY] = array();
-    foreach ($this->pipelines as $key => $pipeline) {
-      $data[self::PIPELINES_KEY][$key] = $pipeline->toArray();
+    foreach ($this->pipelines as $pipeline) {
+      $data[self::PIPELINES_KEY][] = $pipeline->toArray();
     }
 
     return $data;

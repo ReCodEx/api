@@ -66,8 +66,8 @@ class TestPipelinesMerger extends Tester\TestCase
       "tests" => [
         "testA" => [
           "pipelines" => [
-            "compilationPipeline" => [ "variables" => [] ],
-            "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
           ],
           "environments" => [
             "envA" => [ "pipelines" => [] ],
@@ -76,14 +76,14 @@ class TestPipelinesMerger extends Tester\TestCase
         ],
         "testB" => [
           "pipelines" => [
-            "compilationPipeline" => [ "variables" => [] ],
-            "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
           ],
           "environments" => [
             "envA" => [
               "pipelines" => [
-                "compilationPipeline" => [ "variables" => [] ],
-                "testPipeline" => [ "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.envA.out" ] ] ]
+                [ "name" => "compilationPipeline", "variables" => [] ],
+                [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.envA.out" ] ] ]
               ]
             ],
             "envB" => [

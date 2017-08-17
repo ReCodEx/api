@@ -13,14 +13,15 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestEnvironment extends Tester\TestCase
 {
   static $config = [
-    "pipelines" => [
-      "hello" => [
+    "pipelines" => [ [
+        "name" => "hello",
         "variables" => [
           [ "name" => "hello", "type" => "string", "value" => "world" ],
           [ "name" => "world", "type" => "string", "value" => "hello" ]
         ]
       ],
-      "world" => [
+      [
+        "name" => "world",
         "variables" => []
       ]
     ],
@@ -29,10 +30,12 @@ class TestEnvironment extends Tester\TestCase
 
   static $pipelines = [
     "pipelines" => [
-      "pipelineA" => [
+      [
+        "name" => "pipelineA",
         "variables" => []
       ],
-      "pipelineB" => [
+      [
+        "name" => "pipelineB",
         "variables" => []
       ]
     ]
@@ -61,8 +64,9 @@ class TestEnvironment extends Tester\TestCase
   public function testPipelinesOperations() {
     $environment = new Environment();
     $pipeline = new PipelineVars;
+    $pipeline->setName("pipelineA");
 
-    $environment->addPipeline("pipelineA", $pipeline);
+    $environment->addPipeline($pipeline);
     Assert::type(PipelineVars::class, $environment->getPipeline("pipelineA"));
 
     $environment->removePipeline("non-existant");
