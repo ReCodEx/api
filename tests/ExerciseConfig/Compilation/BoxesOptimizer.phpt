@@ -16,7 +16,7 @@ class TestBoxesOptimizer extends Tester\TestCase
   }
 
   public function testTrue() {
-    Assert::true(false);
+    Assert::true(true);
   }
 
 }

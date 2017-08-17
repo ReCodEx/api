@@ -56,11 +56,16 @@ class Validator {
 
 
   /**
-   * Validate pipeline, all input ports have to have specified either variable
-   * reference or textual value. Variable reference has to be used only
-   * two times, one should point to input port and second one to output port.
-   * Exception is if variable reference is specified only in output port, then
-   * this variable does not have to be used in any input port.
+   * Validate pipeline, all ports either have to have value specified and
+   * pointing to variables table or it has to be blank. Value in port is always
+   * reference to variables table, actual textual values are not supported here.
+   * Types of port and variable in table has to be checked against each other.
+   * The relations between ports can be one-to-many from the perspective of
+   * output ports. That means one output port can be directed to multiple input
+   * ones. There is possibility to have variable which is only aimed to input
+   * port, in that case this variables has to be present in variables table of
+   * pipeline. Variables which only reference is in output port are not
+   * supported.
    * @param Pipeline $pipeline
    * @throws ExerciseConfigException
    */
