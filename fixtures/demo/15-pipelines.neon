@@ -1,11 +1,14 @@
 App\Model\Entity\PipelineConfig:
-    demoPipelineConfig:
+    demoCompilationPipelineConfig:
         __construct:
             - '''
               variables:
-                - name: varA
-                  type: string
-                  value: valA
+                - name: source_file
+                  type: file
+                  value: source.cpp
+                - name: binary_file
+                  type: file
+                  value: a.out
               boxes:
                 - name: source
                   portsIn: []
@@ -13,13 +16,6 @@ App\Model\Entity\PipelineConfig:
                     in-data:
                        type: file
                        value: source_file
-                  type: data-in
-                - name: test
-                  portsIn: []
-                  portsOut:
-                    in-data:
-                      type: file
-                      value: test_file
                   type: data-in
                 - name: compilation
                   portsIn:
@@ -31,6 +27,43 @@ App\Model\Entity\PipelineConfig:
                       type: file
                       value: binary_file
                   type: gcc
+                - name: output
+                  portsOut: []
+                  portsIn:
+                    out-data:
+                       type: file
+                       value: binary_file
+                  type: data-out
+              '''
+            - @demoAdmin
+    demoTestPipelineConfig:
+        __construct:
+            - '''
+              variables:
+                - name: binary_file
+                  type: file
+                  value: a.out
+                - name: expected_output
+                  type: file
+                  value: expected.out
+                - name: actual_output
+                  type: file
+                  value: actual.out
+              boxes:
+                - name: binary
+                  portsIn: []
+                  portsOut:
+                    in-data:
+                       type: file
+                       value: binary_file
+                  type: data-in
+                - name: test
+                  portsIn: []
+                  portsOut:
+                    in-data:
+                      type: file
+                      value: expected_output
+                  type: data-in
                 - name: run
                   portsIn:
                     binary-file:
@@ -56,63 +89,6 @@ App\Model\Entity\PipelineConfig:
                   type: judge-normal
               '''
             - @demoAdmin
-    demoTestPipelineConfig:
-            __construct:
-                - '''
-                  variables:
-                    - name: varA
-                      type: string
-                      value: valA
-                  boxes:
-                    - name: source
-                      portsIn: []
-                      portsOut:
-                        in-data:
-                           type: file
-                           value: source_file
-                      type: data-in
-                    - name: test
-                      portsIn: []
-                      portsOut:
-                        in-data:
-                          type: file
-                          value: test_file
-                      type: data-in
-                    - name: compilation
-                      portsIn:
-                        source-file:
-                          type: file
-                          value: source_file
-                      portsOut:
-                        binary-file:
-                          type: file
-                          value: binary_file
-                      type: gcc
-                    - name: run
-                      portsIn:
-                        binary-file:
-                          type: file
-                          value: binary_file
-                      portsOut:
-                        output-file:
-                          type: file
-                          value: actual_output
-                      type: elf-exec
-                    - name: judge
-                      portsIn:
-                        actual-output:
-                          type: file
-                          value: actual_output
-                        expected-output:
-                          type: file
-                          value: expected_output
-                      portsOut:
-                        score:
-                          type: string
-                          value: score
-                      type: judge-normal
-                  '''
-                - @demoAdmin
 
 App\Model\Entity\Pipeline:
     demoPipelineA:
@@ -121,7 +97,7 @@ App\Model\Entity\Pipeline:
                 - @demoAdmin
         id: compilationPipeline
         name: "compilationPipeline"
-        pipelineConfig: @demoPipelineConfig
+        pipelineConfig: @demoCompilationPipelineConfig
 
     demoPipelineB:
         __construct:

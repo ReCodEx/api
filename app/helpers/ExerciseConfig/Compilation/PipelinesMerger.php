@@ -195,7 +195,7 @@ class PipelinesMerger {
           continue; // variable in port is not specified... jump over
         }
         if (!array_key_exists($varName, $variables)) {
-          $variables[$varName] = array();
+          $variables[$varName] = new VariablePair();
         }
         $variables[$varName]->output = new NodePortPair($node, $outPort);
       }

@@ -3,24 +3,18 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @CRuntime
             - '''
-              - name: "varA"
+              - name: "source_file"
                 type: "file"
-                value: "valA"
-              - name: "varB"
-                type: "string"
-                value: "valB"
+                value: "source.cpp"
               '''
             - @demoAdmin
     demoJavaEnvironmentConfig:
         __construct:
             - @Java8Runtime
             - '''
-              - name: "varA"
+              - name: "source_file"
                 type: "file"
-                value: "valA"
-              - name: "varB"
-                type: "string"
-                value: "valB"
+                value: "source.java"
               '''
             - @demoAdmin
 
@@ -37,32 +31,32 @@ App\Model\Entity\ExerciseConfig:
                   pipelines:
                     "compilationPipeline":
                       variables:
-                        - name: varA
-                          type: string
-                          value: valA
+                        - name: expected_output
+                          type: file
+                          value: expected.1.out
                   environments:
                     java8:
                       pipelines:
                         "compilationPipeline":
                           variables:
-                            - name: varJava
-                              type: string
-                              value: valJava
+                            - name: expected_output
+                              type: file
+                              value: expected.1.java.out
                     c-gcc-linux: []
                 "Test 2":
                   pipelines:
                     "compilationPipeline":
                       variables:
-                        - name: varB
+                        - name: expected_output
                           type: file
-                          value: valB
+                          value: expected.2.out
                   environments:
                     c-gcc-linux:
                       pipelines:
                         "compilationPipeline":
                           variables:
-                            - name: varCpp
+                            - name: expected_output
                               type: file
-                              value: valCpp
+                              value: expected.2.cpp.out
               '''
             - @demoAdmin
