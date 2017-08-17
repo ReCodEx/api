@@ -139,7 +139,9 @@ class Node {
    * @param Node $parent
    */
   public function removeParent(Node $parent) {
-    $this->parents = array_diff($this->parents, array($parent));
+    if(($key = array_search($parent, $this->parents)) !== false){
+      unset($this->parents[$key]);
+    }
   }
 
   /**
@@ -163,7 +165,9 @@ class Node {
    * @param Node $child
    */
   public function removeChild(Node $child) {
-    $this->children = array_diff($this->children, array($child));
+    if(($key = array_search($child, $this->children)) !== false){
+      unset($this->children[$key]);
+    }
   }
 
 }
