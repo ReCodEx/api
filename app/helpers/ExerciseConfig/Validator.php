@@ -83,13 +83,7 @@ class Validator {
    * @throws ExerciseConfigException
    */
   public function validateExerciseConfig(Exercise $exercise, ExerciseConfig $config) {
-    $variablesTables = array();
-    foreach ($exercise->getExerciseEnvironmentConfigs() as $environmentConfig) {
-      $varTable = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
-      $variablesTables[$environmentConfig->getRuntimeEnvironment()->getId()] = $varTable;
-    }
-
-    $this->exerciseConfigValidator->validate($config, $variablesTables);
+    $this->exerciseConfigValidator->validate($config, $exercise);
   }
 
   /**

@@ -1,6 +1,6 @@
 <?php
 
-include '../../bootstrap.php';
+$container = include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
@@ -11,10 +11,19 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\Instance;
+use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Entity\User;
 use App\Model\Repository\Pipelines;
+use Nette\DI\Container;
 use Tester\Assert;
 
 
+/**
+ * @testCase
+ */
 class TestExerciseConfigValidator extends Tester\TestCase
 {
   /**
@@ -37,9 +46,12 @@ class TestExerciseConfigValidator extends Tester\TestCase
    */
   private $validator;
 
-  public function __construct() {
+  private $container;
+
+  public function __construct(Container $container) {
     $this->mockPipelines = Mockery::mock(Pipelines::class);
     $this->validator = new ExerciseConfigValidator($this->mockPipelines, new Loader(new BoxService()));
+    $this->container = $container;
 
     $this->mockPipelineConfigEntity = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
     $this->mockPipelineConfigEntity->shouldReceive("getParsedPipeline")->andReturn([
@@ -54,42 +66,37 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testMissingEnvironment() {
     $exerciseConfig = new ExerciseConfig();
-    $variablesTables = [
-      "envA" => null,
-      "envB" => null
-    ];
+    $exercise = $this->createExerciseWithTwoEnvironments();
 
-    Assert::exception(function () use ($exerciseConfig, $variablesTables) {
-      $this->validator->validate($exerciseConfig, $variablesTables);
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
   }
 
   public function testDifferentEnvironments() {
     $exerciseConfig = new ExerciseConfig();
+    $user = $this->getDummyUser();
     $exerciseConfig->addEnvironment("envA");
     $exerciseConfig->addEnvironment("envB");
 
-    $variablesTables = [
-      "envC" => null,
-      "envD" => null
-    ];
+    $exercise = Exercise::create($user);
+    $envC = new RuntimeEnvironment("envC", "Env C", "C", ".c", "", "");
+    $envD = new RuntimeEnvironment("envD", "Env D", "D", ".d", "", "");
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envC, "",  $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envD, "",  $user, NULL));
 
-    Assert::exception(function () use ($exerciseConfig, $variablesTables) {
-      $this->validator->validate($exerciseConfig, $variablesTables);
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
   }
 
   public function testDifferentNumberOfEnvironments() {
     $exerciseConfig = new ExerciseConfig();
+    $exercise = $this->createExerciseWithTwoEnvironments();
     $exerciseConfig->addEnvironment("envA");
 
-    $variablesTables = [
-      "envA" => null,
-      "envB" => null
-    ];
-
-    Assert::exception(function () use ($exerciseConfig, $variablesTables) {
-      $this->validator->validate($exerciseConfig, $variablesTables);
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
   }
 
@@ -101,19 +108,16 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $test->addPipeline($pipelineVars);
 
     $exerciseConfig = new ExerciseConfig();
+    $exercise = $this->createExerciseWithSingleEnvironment();
     $exerciseConfig->addEnvironment("envA");
     $exerciseConfig->addTest("testA", $test);
 
-    $variablesTables = [
-      "envA" => null
-    ];
-
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["not existing pipeline"])->andThrow(NotFoundException::class);
+    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(NULL);
 
     // missing in defaults
-    Assert::exception(function () use ($exerciseConfig, $variablesTables) {
-      $this->validator->validate($exerciseConfig, $variablesTables);
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
   }
 
@@ -133,28 +137,26 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
     $exerciseConfig->addTest("testA", $test);
-
-    $variablesTables = [
-      "envA" => null
-    ];
+    $exercise = $this->createExerciseWithSingleEnvironment();
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["not existing pipeline"])->andThrow(NotFoundException::class);
-    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(NULL);
+    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
 
     // missing in environments
-    Assert::exception(function () use ($exerciseConfig, $variablesTables) {
-      $this->validator->validate($exerciseConfig, $variablesTables);
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
   }
 
   public function testEmpty() {
     $exerciseConfig = new ExerciseConfig();
-    $variablesTables = [];
+    $user = $this->getDummyUser();
+    $exercise = Exercise::create($user);
 
     Assert::noError(
-      function () use ($exerciseConfig, $variablesTables) {
-        $this->validator->validate($exerciseConfig, $variablesTables);
+      function () use ($exerciseConfig, $exercise) {
+        $this->validator->validate($exerciseConfig, $exercise);
       }
     );
   }
@@ -174,22 +176,54 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $exerciseConfig->addEnvironment("envA");
     $exerciseConfig->addTest("testA", $test);
 
-    $variablesTables = [
-      "envA" => null
-    ];
+    $exercise = $this->createExerciseWithSingleEnvironment();
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("findOrThrow")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
 
     Assert::noError(
-      function () use ($exerciseConfig, $variablesTables) {
-        $this->validator->validate($exerciseConfig, $variablesTables);
+      function () use ($exerciseConfig, $exercise) {
+        $this->validator->validate($exerciseConfig, $exercise);
       }
     );
   }
 
+  /**
+   * @return Exercise
+   */
+  private function createExerciseWithTwoEnvironments(): Exercise
+  {
+    $user = $this->getDummyUser();
+    $exercise = Exercise::create($user);
+    $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
+    $envB = new RuntimeEnvironment("envB", "Env B", "B", ".b", "", "");
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envB, "", $user, NULL));
+    return $exercise;
+  }
+
+  /**
+   * @return Exercise
+   */
+  private function createExerciseWithSingleEnvironment(): Exercise
+  {
+    $user = $this->getDummyUser();
+    $exercise = Exercise::create($user);
+    $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "", $user, NULL));
+    return $exercise;
+  }
+
+  /**
+   * @return User
+   */
+  private function getDummyUser(): User
+  {
+    $user = new User("", "", "", "", "", "", new Instance());
+    return $user;
+  }
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfigValidator;
+$testCase = new TestExerciseConfigValidator($container);
 $testCase->run();
