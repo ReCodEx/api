@@ -2,6 +2,8 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
@@ -128,12 +130,18 @@ class PipelinesMerger {
         $next->removeParent($inNode);
 
         // create new custom join box
-        $joinBox = new JoinPipelinesBox();
+        $joinBox = new JoinPipelinesBox($outNode->getBox()->getName() . "__" . $inNode->getBox()->getName() . "__join-box");
         $joinBox->setInputPort($inPort);
         $joinBox->setOutputPort($outPort);
 
-        // add new connections
-        $joinNodes[] = $joinNode = new PortNode($joinBox);
+        // for join box create new node in tree
+        // note: setting all values as the next node is intended and VariablesResolver is counting on this
+        $joinNodes[] = $joinNode = new PortNode($joinBox, $next->getPipelineId(), $next->getTestId());
+        $joinNode->setEnvironmentConfigVariables($next->getEnvironmentConfigVariables());
+        $joinNode->setExerciseConfigVariables($next->getExerciseConfigVariables());
+        $joinNode->setPipelineVariables($next->getPipelineVariables());
+
+        // engage join node into tree
         $previous->addChild($inPort->getName(), $joinNode);
         $joinNode->addParent($inPort->getName(), $previous);
         $next->addParent($outPort->getName(), $joinNode);
@@ -291,6 +299,7 @@ class PipelinesMerger {
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
    * @return MergeTree
+   * @throws ExerciseConfigException
    */
   private function processTest(string $testId, Test $test,
       VariablesTable $environmentConfigVariables,
@@ -308,8 +317,12 @@ class PipelinesMerger {
     foreach ($testPipelines as $pipelineId => $pipelineVars) {
 
       // get database entity and then structured pipeline configuration
-      $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
-      $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+      try {
+        $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
+        $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+      } catch (NotFoundException $e) {
+        throw new ExerciseConfigException("Pipeline '$pipelineId' not found in environment '$runtimeEnvironmentId'");
+      }
 
       // process pipeline and merge it to already existing tree
       $tree = $this->processPipeline($pipelineId, $testId, $tree, $environmentConfigVariables, $pipelineVars, $pipelineConfig);

@@ -58,6 +58,8 @@ class VariablesResolver {
   /**
    * Resolve variables from other nodes, that means nodes which are not input
    * ones. This is general method for handling parent -> children pairs.
+   * @note Assigning variable value from parent and not from child is quite
+   * important. Join nodes which joins two pipelines heavily count on this.
    * @param PortNode $parent
    * @param PortNode $child
    * @param string $inPortName
