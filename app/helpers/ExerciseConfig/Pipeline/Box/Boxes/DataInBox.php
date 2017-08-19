@@ -16,9 +16,9 @@ class DataInBox extends Box
   /** Type key */
   public static $DATA_IN_TYPE = "data-in";
   public static $DATA_IN_PORT_KEY = "in-data";
+  public static $DEFAULT_NAME = "Input Data";
 
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -28,7 +28,6 @@ class DataInBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "Input Data";
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
         new UndefinedPort((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setVariable(""))
@@ -84,8 +83,7 @@ class DataInBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
   }
 
 

@@ -18,9 +18,9 @@ class GccCompilationBox extends Box
   public static $GCC_BINARY = "/usr/bin/gcc";
   public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $DEFAULT_NAME = "GCC Compilation";
 
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -30,7 +30,6 @@ class GccCompilationBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "GCC Compilation";
       self::$defaultInputPorts = array(
         new FilePort((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setVariable(""))
       );
@@ -80,8 +79,7 @@ class GccCompilationBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
   }
 
 
@@ -91,6 +89,7 @@ class GccCompilationBox extends Box
    */
   public function compile(): array {
     $task = new Task();
+    $task->setType(TaskType::$INITIATION);
     $task->setCommandBinary(self::$GCC_BINARY);
     $task->setCommandArguments([
       $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()->getValue(),

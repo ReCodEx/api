@@ -17,9 +17,9 @@ class ElfExecutionBox extends Box
   public static $ELF_EXEC_TYPE = "elf-exec";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
+  public static $DEFAULT_NAME = "ELF Execution";
 
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -29,7 +29,6 @@ class ElfExecutionBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "ELF Execution";
       self::$defaultInputPorts = array(
         new FilePort((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setVariable(""))
       );
@@ -79,8 +78,7 @@ class ElfExecutionBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
   }
 
   /**
@@ -89,6 +87,7 @@ class ElfExecutionBox extends Box
    */
   public function compile(): array {
     $task = new Task();
+    $task->setType(TaskType::$EXECUTION);
     $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY));
     $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
     return [$task];

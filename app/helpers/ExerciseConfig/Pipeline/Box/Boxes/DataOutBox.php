@@ -15,9 +15,9 @@ class DataOutBox extends Box
   /** Type key */
   public static $DATA_OUT_TYPE = "data-out";
   public static $DATA_OUT_PORT_KEY = "out-data";
+  public static $DEFAULT_NAME = "Output Data";
 
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -27,7 +27,6 @@ class DataOutBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "Output Data";
       self::$defaultInputPorts = array(
         new UndefinedPort((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setVariable(""))
       );
@@ -75,8 +74,7 @@ class DataOutBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
   }
 
 
