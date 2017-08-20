@@ -88,11 +88,12 @@ class VariablesResolver {
 
     // get the variable from the correct table
     $variable = $parent->getPipelineVariables()->get($variableName);
-
     // something's fishy here... better leave now
     if (!$variable) {
       throw new ExerciseConfigException("Variable $variableName could not be resolved");
     }
+
+    // @todo: if variable is reference... find it
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
