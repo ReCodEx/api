@@ -7,6 +7,7 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
+use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
@@ -56,7 +57,7 @@ class TestPipelinesMerger extends Tester\TestCase
     // construct all services
     $this->boxService = new BoxService();
     $this->loader = new Loader($this->boxService);
-    $this->merger = new PipelinesMerger($this->mockPipelines, $this->loader);
+    $this->merger = new PipelinesMerger($this->mockPipelines, $this->loader, new VariablesResolver());
 
     // mock entities and stuff
     $this->mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
@@ -237,10 +238,8 @@ class TestPipelinesMerger extends Tester\TestCase
   /**
    * Internal checking function for testA tree.
    * @param MergeTree $testA
-   * @param ExerciseConfig $config
-   * @param VariablesTable $envVariablesTable
    */
-  private function checkTreeA(MergeTree $testA, ExerciseConfig $config, VariablesTable $envVariablesTable) {
+  private function checkTreeA(MergeTree $testA) {
     Assert::count(6, $testA->getAllNodes());
     Assert::count(2, $testA->getInputNodes());
     Assert::count(0, $testA->getOutputNodes());
@@ -320,37 +319,13 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::same($runNode, $judgeNode->getParents()["actual-output"]);
     Assert::same($testNode, $judgeNode->getParents()["expected-output"]);
     Assert::count(0, $judgeNode->getChildren());
-
-    // check variables
-    $compilationPipeline = $config->getTest("testA")->getPipeline("compilationPipeline");
-    $testPipeline = $config->getTest("testA")->getPipeline("testPipeline");
-
-    Assert::same($envVariablesTable, $sourceNode->getEnvironmentConfigVariables());
-    Assert::same($compilationPipeline->getVariablesTable(), $sourceNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $testNode->getEnvironmentConfigVariables());
-    Assert::same($testPipeline->getVariablesTable(), $testNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $compilationNode->getEnvironmentConfigVariables());
-    Assert::same($compilationPipeline->getVariablesTable(), $compilationNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $joinNode->getEnvironmentConfigVariables());
-    Assert::same($testPipeline->getVariablesTable(), $joinNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $runNode->getEnvironmentConfigVariables());
-    Assert::same($testPipeline->getVariablesTable(), $runNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $judgeNode->getEnvironmentConfigVariables());
-    Assert::same($testPipeline->getVariablesTable(), $judgeNode->getExerciseConfigVariables());
   }
 
   /**
    * Internal checking function for testA tree.
    * @param MergeTree $testB
-   * @param ExerciseConfig $config
-   * @param VariablesTable $envVariablesTable
    */
-  private function checkTreeB(MergeTree $testB, ExerciseConfig $config, VariablesTable $envVariablesTable) {
+  private function checkTreeB(MergeTree $testB) {
     Assert::count(3, $testB->getAllNodes());
     Assert::count(1, $testB->getInputNodes());
     Assert::count(1, $testB->getOutputNodes());
@@ -404,18 +379,6 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::count(1, $outputNode->getParents());
     Assert::same($compilationNode, current($outputNode->getParents()));
     Assert::count(0, $outputNode->getChildren());
-
-    // check variables
-    $compilationPipeline = $config->getTest("testB")->getEnvironment("envA")->getPipeline("compilationPipeline");
-
-    Assert::same($envVariablesTable, $sourceNode->getEnvironmentConfigVariables());
-    Assert::same($compilationPipeline->getVariablesTable(), $sourceNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $compilationNode->getEnvironmentConfigVariables());
-    Assert::same($compilationPipeline->getVariablesTable(), $compilationNode->getExerciseConfigVariables());
-
-    Assert::same($envVariablesTable, $outputNode->getEnvironmentConfigVariables());
-    Assert::same($compilationPipeline->getVariablesTable(), $outputNode->getExerciseConfigVariables());
   }
 
   public function testCorrect() {
@@ -435,10 +398,10 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::type(MergeTree::class, $testB);
 
     // check test A
-    $this->checkTreeA($testA, $config, $envVariablesTable);
+    $this->checkTreeA($testA);
 
     // check test B
-    $this->checkTreeB($testB, $config, $envVariablesTable);
+    $this->checkTreeB($testB);
   }
 
 }

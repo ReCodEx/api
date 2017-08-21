@@ -12,8 +12,8 @@ use Nette\Utils\Strings;
  */
 abstract class Variable implements JsonSerializable
 {
-  public static $REFERENCE_KEY = "$";
-  public static $ESCAPE_CHAR = "\\";
+  public static $REFERENCE_KEY = '$';
+  public static $ESCAPE_CHAR = '\\';
 
   /**
    * Meta information about variable.
@@ -51,8 +51,8 @@ abstract class Variable implements JsonSerializable
    */
   public function getValue(): ?string {
     $val = $this->meta->getValue();
-    if (Strings::startsWith(self::$ESCAPE_CHAR . self::$REFERENCE_KEY, $val)) {
-      return Strings::substring($val, 2);
+    if (Strings::startsWith($val, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
+      return Strings::substring($val, 1);
     }
 
     return $val;
@@ -65,7 +65,7 @@ abstract class Variable implements JsonSerializable
    */
   public function getReference(): ?string {
     $val = $this->meta->getValue();
-    if (Strings::startsWith(self::$REFERENCE_KEY, $val)) {
+    if (Strings::startsWith($val, self::$REFERENCE_KEY)) {
       return Strings::substring($val, 1);
     }
 
@@ -77,7 +77,7 @@ abstract class Variable implements JsonSerializable
    * @return bool
    */
   public function isReference(): bool {
-    return Strings::startsWith(self::$REFERENCE_KEY, $this->meta->getValue());
+    return Strings::startsWith($this->meta->getValue(), self::$REFERENCE_KEY);
   }
 
 

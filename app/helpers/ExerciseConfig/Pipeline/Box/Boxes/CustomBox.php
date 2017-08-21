@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 
 
@@ -15,6 +16,12 @@ class CustomBox extends Box
 {
   /** Type key */
   public static $CUSTOM_BOX_TYPE = "custom";
+
+  /**
+   * For testing purposes.
+   * @var Variable
+   */
+  private $remoteVariable = null;
 
   /**
    * CustomBox constructor.
@@ -71,6 +78,23 @@ class CustomBox extends Box
   public function clearOutputPorts(): CustomBox {
     $this->meta->setOutputPorts(array());
     return $this;
+  }
+
+
+  /**
+   * Get remote variable.
+   * @return Variable|null
+   */
+  public function getRemoteVariable(): ?Variable {
+    return $this->remoteVariable;
+  }
+
+  /**
+   * Set remote variable corresponding to this box.
+   * @param Variable|null $variable
+   */
+  public function setRemoteVariable(?Variable $variable) {
+    $this->remoteVariable = $variable;
   }
 
 

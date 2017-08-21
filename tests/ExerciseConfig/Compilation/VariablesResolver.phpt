@@ -23,6 +23,21 @@ class TestVariablesResolver extends Tester\TestCase
   /** @var MergeTree[] */
   private $treeArray = array();
 
+  /** @var VariablesTable */
+  private $envVarTableA;
+  /** @var VariablesTable */
+  private $exerVarTableA;
+  /** @var VariablesTable */
+  private $pipeVarTableA;
+
+  /** @var VariablesTable */
+  private $envVarTableB;
+  /** @var VariablesTable */
+  private $exerVarTableB;
+  /** @var VariablesTable */
+  private $pipeVarTableB;
+
+
   public function __construct() {
     $this->resolver = new VariablesResolver();
   }
@@ -37,33 +52,21 @@ class TestVariablesResolver extends Tester\TestCase
     $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec"));
     $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output"));
 
-    $envVarTableA = (new VariablesTable)->set($testInputVarA);
-    $exerVarTableA = (new VariablesTable);
-    $pipeVarTableA = (new VariablesTable)->set($testOutputVarA)->set($preExecVarA);
+    $this->envVarTableA = (new VariablesTable)->set($testInputVarA);
+    $this->exerVarTableA = (new VariablesTable);
+    $this->pipeVarTableA = (new VariablesTable)->set($testInputVarA)->set($testOutputVarA)->set($preExecVarA);
 
     $outPortA = new FilePort((new PortMeta)->setName("data-in")->setVariable($testInputVarA->getName()));
     $dataInNodeA = new PortNode((new CustomBox)->setName("in")->addOutputPort($outPortA));
-    $dataInNodeA->setEnvironmentConfigVariables($envVarTableA)
-      ->setExerciseConfigVariables($exerVarTableA)
-      ->setPipelineVariables($pipeVarTableA);
 
     $preExecPortA = new FilePort((new PortMeta)->setName("pre-data")->setVariable($preExecVarA->getName()));
     $preExecNodeA = new PortNode((new CustomBox)->setName("pre-exec")->addOutputPort($preExecPortA));
-    $preExecNodeA->setEnvironmentConfigVariables($envVarTableA)
-      ->setExerciseConfigVariables($exerVarTableA)
-      ->setPipelineVariables($pipeVarTableA);
 
     $inPortA = new FilePort((new PortMeta)->setName("data-out")->setVariable($testOutputVarA->getName()));
     $execNodeA = new PortNode((new CustomBox)->setName("exec")
       ->addInputPort($preExecPortA)->addInputPort($outPortA)->addOutputPort($inPortA));
-    $execNodeA->setEnvironmentConfigVariables($envVarTableA)
-      ->setExerciseConfigVariables($exerVarTableA)
-      ->setPipelineVariables($pipeVarTableA);
 
     $dataOutNodeA = new PortNode((new CustomBox)->setName("out")->addInputPort($inPortA));
-    $dataOutNodeA->setEnvironmentConfigVariables($envVarTableA)
-      ->setExerciseConfigVariables($exerVarTableA)
-      ->setPipelineVariables($pipeVarTableA);
 
     // make connections in A tree
     $dataInNodeA->addChild($outPortA->getName(), $execNodeA);
@@ -88,39 +91,23 @@ class TestVariablesResolver extends Tester\TestCase
     $testOutputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-output"));
     $testOutputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-output"));
 
-    $envVarTableB = (new VariablesTable)->set($testInputVarBA);
-    $exerVarTableB = (new VariablesTable)->set($testInputVarBB);
-    $pipeVarTableB = (new VariablesTable)->set($testOutputVarBA)->set($testOutputVarBB);
+    $this->envVarTableB = (new VariablesTable)->set($testInputVarBA);
+    $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
+    $this->pipeVarTableB = (new VariablesTable)->set($testInputVarBA)->set($testInputVarBB)->set($testOutputVarBA)->set($testOutputVarBB);
 
     $outPortBA = new FilePort((new PortMeta)->setName("data-in-a")->setVariable($testInputVarBA->getName()));
     $dataInNodeBA = new PortNode((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
-    $dataInNodeBA->setEnvironmentConfigVariables($envVarTableB)
-      ->setExerciseConfigVariables($exerVarTableB)
-      ->setPipelineVariables($pipeVarTableB);
 
     $outPortBB = new FilePort((new PortMeta)->setName("data-in-b")->setVariable($testInputVarBB->getName()));
     $dataInNodeBB = new PortNode((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
-    $dataInNodeBB->setEnvironmentConfigVariables($envVarTableB)
-      ->setExerciseConfigVariables($exerVarTableB)
-      ->setPipelineVariables($pipeVarTableB);
 
     $inPortBA = new FilePort((new PortMeta)->setName("data-out-a")->setVariable($testOutputVarBA->getName()));
     $inPortBB = new FilePort((new PortMeta)->setName("data-out-b")->setVariable($testOutputVarBB->getName()));
     $execNodeB = new PortNode((new CustomBox)->setName("execB")->addInputPort($outPortBA)
       ->addInputPort($outPortBB)->addOutputPort($inPortBA)->addOutputPort($inPortBB));
-    $execNodeB->setEnvironmentConfigVariables($envVarTableB)
-      ->setExerciseConfigVariables($exerVarTableB)
-      ->setPipelineVariables($pipeVarTableB);
 
     $dataOutNodeBA = new PortNode((new CustomBox)->setName("outBA")->addInputPort($inPortBA));
-    $dataOutNodeBA->setEnvironmentConfigVariables($envVarTableB)
-      ->setExerciseConfigVariables($exerVarTableB)
-      ->setPipelineVariables($pipeVarTableB);
-
     $dataOutNodeBB = new PortNode((new CustomBox)->setName("outBB")->addInputPort($inPortBB));
-    $dataOutNodeBB->setEnvironmentConfigVariables($envVarTableB)
-      ->setExerciseConfigVariables($exerVarTableB)
-      ->setPipelineVariables($pipeVarTableB);
 
     // make connections in B tree
     $dataInNodeBA->addChild($outPortBA->getName(), $execNodeB);
@@ -148,9 +135,8 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testMissingVariableInInputBoxTables() {
     Assert::exception(function () {
-      current($this->treeArray[0]->getInputNodes())->setEnvironmentConfigVariables(new VariablesTable());
-      current($this->treeArray[0]->getInputNodes())->setExerciseConfigVariables(new VariablesTable());
-      $this->resolver->resolve($this->treeArray);
+      $this->pipeVarTableA->remove("test-a-input");
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
@@ -159,7 +145,7 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new FilePort((new PortMeta)->setName("data-in")->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getInputNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
@@ -168,45 +154,47 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new FilePort((new PortMeta)->setName("data-out")->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getOtherNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
   public function testMissingVariableInPipelinesTable() {
     Assert::exception(function () {
-      current($this->treeArray[0]->getOtherNodes())->setPipelineVariables(new VariablesTable());
-      current($this->treeArray[0]->getOutputNodes())->setPipelineVariables(new VariablesTable());
-      $this->resolver->resolve($this->treeArray);
+      $this->pipeVarTableA->remove("test-a-pre-exec");
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenInputNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOutputNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesChildNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[1]->clearChildren();
-      $this->resolver->resolve($this->treeArray);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }
 
   public function testCorrect() {
     $trees = $this->treeArray;
-    $this->resolver->resolve($trees);
-
     $treeA = $trees[0];
     $treeB = $trees[1];
+
+    $this->resolver->resolve($treeA, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+    $this->resolver->resolve($treeB, $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
+
+    // @todo: test references
 
     // Tree A
     Assert::equal("test-a-input", $treeA->getInputNodes()[0]->getBox()->getOutputPorts()["data-in"]->getVariableValue()->getName());

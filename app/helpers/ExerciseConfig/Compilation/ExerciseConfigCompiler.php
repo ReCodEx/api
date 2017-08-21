@@ -34,11 +34,6 @@ class ExerciseConfigCompiler {
   private $boxesCompiler;
 
   /**
-   * @var VariablesResolver
-   */
-  private $variablesResolver;
-
-  /**
    * @var TestDirectoriesResolver
    */
   private $testDirectoriesResolver;
@@ -49,18 +44,15 @@ class ExerciseConfigCompiler {
    * @param BoxesSorter $boxesSorter
    * @param BoxesOptimizer $boxesOptimizer
    * @param BoxesCompiler $boxesCompiler
-   * @param VariablesResolver $variablesResolver
    * @param TestDirectoriesResolver $testDirectoriesResolver
    */
   public function __construct(PipelinesMerger $pipelinesMerger,
       BoxesSorter $boxesSorter, BoxesOptimizer $boxesOptimizer,
-      BoxesCompiler $boxesCompiler, VariablesResolver $variablesResolver,
-      TestDirectoriesResolver $testDirectoriesResolver) {
+      BoxesCompiler $boxesCompiler, TestDirectoriesResolver $testDirectoriesResolver) {
     $this->pipelinesMerger = $pipelinesMerger;
     $this->boxesSorter = $boxesSorter;
     $this->boxesOptimizer = $boxesOptimizer;
     $this->boxesCompiler = $boxesCompiler;
-    $this->variablesResolver = $variablesResolver;
     $this->testDirectoriesResolver = $testDirectoriesResolver;
   }
 
@@ -76,7 +68,6 @@ class ExerciseConfigCompiler {
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
-    $this->variablesResolver->resolve($tests);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
     $testDirectories = $this->testDirectoriesResolver->resolve($optimized);

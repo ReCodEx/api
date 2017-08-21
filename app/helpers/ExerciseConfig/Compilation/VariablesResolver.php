@@ -5,6 +5,8 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
+use App\Helpers\ExerciseConfig\VariablesTable;
 
 
 /**
@@ -20,36 +22,48 @@ class VariablesResolver {
    * external configuration - environment config or exercise config.
    * @note Has to be called before @ref resolveForOtherNodes()
    * @param MergeTree $mergeTree
+   * @param VariablesTable $environmentVariables
+   * @param VariablesTable $exerciseVariables
+   * @param VariablesTable $pipelineVariables
    * @throws ExerciseConfigException
    */
-  private function resolveForInputNodes(MergeTree $mergeTree) {
+  public function resolveForInputNodes(MergeTree $mergeTree,
+      VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
+      VariablesTable $pipelineVariables) {
     foreach ($mergeTree->getInputNodes() as $node) {
+
+      /** @var DataInBox $inputBox */
+      $inputBox = $node->getBox();
+
       // input data box should have only one output port, that is why current is sufficient
-      $outputPort = current($node->getBox()->getOutputPorts());
+      $outputPort = current($inputBox->getOutputPorts());
       $variableName = $outputPort->getVariable();
       $child = current($node->getChildren());
       $inputPortName = array_search($node, $child->getParents());
 
       if ($inputPortName === FALSE) {
         // input node not found in parents of the next one
-        throw new ExerciseConfigException("Malformed tree - input node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
+        throw new ExerciseConfigException("Malformed tree - input node {$inputBox->getName()} not found in child {$child->getBox()->getName()}");
       }
 
       // try to look for variable in environment config table
-      $variable = $node->getEnvironmentConfigVariables()->get($variableName);
+      $remoteVariable = $environmentVariables->get($variableName);
       // @todo: resolve regexps which matches files given by students
 
       // if variable still not present look in the exercise config table
-      if (!$variable) {
-        $variable = $node->getExerciseConfigVariables()->get($variableName);
+      if (!$remoteVariable) {
+        $remoteVariable = $exerciseVariables->get($variableName);
       }
 
+      // variable value in local pipeline config
+      $variable = $pipelineVariables->get($variableName);
       // something is really wrong there... just leave and do not look back
       if (!$variable) {
-        throw new ExerciseConfigException("Variable $variableName could not be resolved");
+        throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
       }
 
       // assign variable to both nodes
+      $inputBox->setRemoteVariable($remoteVariable);
       $outputPort->setVariableValue($variable);
       $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
     }
@@ -58,16 +72,19 @@ class VariablesResolver {
   /**
    * Resolve variables from other nodes, that means nodes which are not input
    * ones. This is general method for handling parent -> children pairs.
-   * @note Assigning variable value from parent and not from child is quite
-   * important. Join nodes which joins two pipelines heavily count on this.
    * @param PortNode $parent
    * @param PortNode $child
    * @param string $inPortName
    * @param string $outPortName
+   * @param VariablesTable $environmentVariables
+   * @param VariablesTable $exerciseVariables
+   * @param VariablesTable $pipelineVariables
    * @throws ExerciseConfigException
    */
   private function resolveForVariable(PortNode $parent, PortNode $child,
-      string $inPortName, string $outPortName) {
+      string $inPortName, string $outPortName,
+      VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
+      VariablesTable $pipelineVariables) {
 
     // init
     $inPort = $child->getBox()->getInputPort($inPortName);
@@ -87,13 +104,25 @@ class VariablesResolver {
     }
 
     // get the variable from the correct table
-    $variable = $parent->getPipelineVariables()->get($variableName);
+    $variable = $pipelineVariables->get($variableName);
     // something's fishy here... better leave now
     if (!$variable) {
-      throw new ExerciseConfigException("Variable $variableName could not be resolved");
+      throw new ExerciseConfigException("Variable '$variableName' could not be resolved");
     }
 
-    // @todo: if variable is reference... find it
+    // variable is reference, try to find its value in external variables tables
+    if ($variable->isReference()) {
+      $referenceName = $variable->getReference();
+      $variable = $environmentVariables->get($referenceName);
+      if (!$variable) {
+        $variable = $exerciseVariables->get($referenceName);
+      }
+
+      // reference could not be found
+      if (!$variable) {
+        throw new ExerciseConfigException("Variable '$variableName' is reference which could not be resolved");
+      }
+    }
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
@@ -105,9 +134,14 @@ class VariablesResolver {
    * This procedure should also process all output boxes.
    * @note Has to be called after @ref resolveForInputNodes()
    * @param MergeTree $mergeTree
+   * @param VariablesTable $environmentVariables
+   * @param VariablesTable $exerciseVariables
+   * @param VariablesTable $pipelineVariables
    * @throws ExerciseConfigException
    */
-  private function resolveForOtherNodes(MergeTree $mergeTree) {
+  public function resolveForOtherNodes(MergeTree $mergeTree,
+      VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
+      VariablesTable $pipelineVariables) {
     foreach ($mergeTree->getOtherNodes() as $node) {
       foreach ($node->getParents() as $inPortName => $parent) {
         $outPortName = $parent->findChildPort($node);
@@ -116,7 +150,7 @@ class VariablesResolver {
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
         }
 
-        $this->resolveForVariable($parent, $node, $inPortName, $outPortName);
+        $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables);
       }
 
       foreach ($node->getChildrenByPort() as $outPortName => $children) {
@@ -127,22 +161,24 @@ class VariablesResolver {
             throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
           }
 
-          $this->resolveForVariable($node, $child, $inPortName, $outPortName);
+          $this->resolveForVariable($node, $child, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables);
         }
       }
     }
   }
 
   /**
-   * Go through given array and resolve variables in boxes.
-   * @param MergeTree[] $tests
-   * @throws ExerciseConfigException
+   * Resolve variables for the whole given tree.
+   * @param MergeTree $mergeTree
+   * @param VariablesTable $environmentVariables
+   * @param VariablesTable $exerciseVariables
+   * @param VariablesTable $pipelineVariables
    */
-  public function resolve(array $tests) {
-    foreach ($tests as $mergeTree) {
-      $this->resolveForInputNodes($mergeTree);
-      $this->resolveForOtherNodes($mergeTree);
-    }
+  public function resolve(MergeTree $mergeTree,
+      VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
+      VariablesTable $pipelineVariables) {
+    $this->resolveForInputNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables);
+    $this->resolveForOtherNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables);
   }
 
 }

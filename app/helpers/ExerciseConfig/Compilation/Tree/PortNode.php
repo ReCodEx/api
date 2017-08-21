@@ -22,28 +22,6 @@ class PortNode {
   private $box;
 
   /**
-   * Pipeline variables from exercise configuration which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $exerciseConfigVariables;
-
-  /**
-   * Variables from environment configuration which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $environmentConfigVariables;
-
-  /**
-   * Variables from pipeline to which this box belong to, which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $pipelineVariables;
-
-
-  /**
    * Nodes which identify themselves as parent of this node, ndexed by port
    * name.
    * @var PortNode[]
@@ -114,63 +92,6 @@ class PortNode {
    */
   public function getBox(): Box {
     return $this->box;
-  }
-
-  /**
-   * Get pipeline variables from exercise configuration.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
-   */
-  public function getExerciseConfigVariables(): ?VariablesTable {
-    return $this->exerciseConfigVariables;
-  }
-
-  /**
-   * Set pipeline variables from exercise configuration.
-   * @param VariablesTable $variablesTable
-   * @return PortNode
-   */
-  public function setExerciseConfigVariables(VariablesTable $variablesTable): PortNode {
-    $this->exerciseConfigVariables = $variablesTable;
-    return $this;
-  }
-
-  /**
-   * Get variables from environment configuration.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
-   */
-  public function getEnvironmentConfigVariables(): ?VariablesTable {
-    return $this->environmentConfigVariables;
-  }
-
-  /**
-   * Set variables from environment configuration.
-   * @param VariablesTable $variablesTable
-   * @return PortNode
-   */
-  public function setEnvironmentConfigVariables(VariablesTable $variablesTable): PortNode {
-    $this->environmentConfigVariables = $variablesTable;
-    return $this;
-  }
-
-  /**
-   * Get variables from pipeline.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
-   */
-  public function getPipelineVariables(): ?VariablesTable {
-    return $this->pipelineVariables;
-  }
-
-  /**
-   * Set variables from pipeline.
-   * @param VariablesTable $variablesTable
-   * @return PortNode
-   */
-  public function setPipelineVariables(VariablesTable $variablesTable): PortNode {
-    $this->pipelineVariables = $variablesTable;
-    return $this;
   }
 
 

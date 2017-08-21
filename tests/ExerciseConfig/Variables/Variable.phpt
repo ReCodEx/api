@@ -101,6 +101,30 @@ class TestVariable extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
+  public function testEscaping() {
+    $variable = $this->loader->loadVariable([
+      "name" => "varName",
+      "type" => "string",
+      "value" => '\$reference'
+    ]);
+
+    Assert::false($variable->isReference());
+    Assert::equal('\$reference', $variable->getReference());
+    Assert::equal('$reference', $variable->getValue());
+  }
+
+  public function testReferences() {
+    $variable = $this->loader->loadVariable([
+      "name" => "varName",
+      "type" => "string",
+      "value" => '$reference'
+    ]);
+
+    Assert::true($variable->isReference());
+    Assert::equal('reference', $variable->getReference());
+    Assert::equal('$reference', $variable->getValue());
+  }
+
   public function testSerialization() {
     $deserialized = Yaml::parse((string)$this->loader->loadVariable(self::$config));
     Assert::equal(self::$config, $deserialized);

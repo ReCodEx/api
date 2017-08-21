@@ -68,33 +68,23 @@ class PipelinesMerger {
   private $loader;
 
   /**
+   * @var VariablesResolver
+   */
+  private $variablesResolver;
+
+  /**
    * PipelinesMerger constructor.
    * @param Pipelines $pipelines
    * @param Loader $loader
+   * @param VariablesResolver $variablesResolver
    */
-  public function __construct(Pipelines $pipelines, Loader $loader) {
+  public function __construct(Pipelines $pipelines, Loader $loader,
+      VariablesResolver $variablesResolver) {
     $this->pipelines = $pipelines;
     $this->loader = $loader;
+    $this->variablesResolver = $variablesResolver;
   }
 
-
-  /**
-   * To all boxes in pipeline set appropriate variables.
-   * @param MergeTree $pipelineTree
-   * @param VariablesTable $exerciseConfigVariables
-   * @param VariablesTable $environmentConfigVariables
-   * @param VariablesTable $pipelineVariables
-   */
-  private function setVariablesTablesToPipelineBoxes(MergeTree $pipelineTree,
-      VariablesTable $exerciseConfigVariables,
-      VariablesTable $environmentConfigVariables,
-      VariablesTable $pipelineVariables) {
-    foreach ($pipelineTree->getAllNodes() as $node) {
-      $node->setExerciseConfigVariables($exerciseConfigVariables)
-        ->setEnvironmentConfigVariables($environmentConfigVariables)
-        ->setPipelineVariables($pipelineVariables);
-    }
-  }
 
   /**
    * Merge two trees consisting of boxes. Input and output boxes which matches
@@ -131,15 +121,11 @@ class PipelinesMerger {
 
         // create new custom join box
         $joinBox = new JoinPipelinesBox($outNode->getBox()->getName() . "__" . $inNode->getBox()->getName() . "__join-box");
+        // note: setting input and output ports from parent/child should solve resolving variables value
         $joinBox->setInputPort($inPort);
         $joinBox->setOutputPort($outPort);
-
         // for join box create new node in tree
-        // note: setting all values as the next node is intended and VariablesResolver is counting on this
         $joinNodes[] = $joinNode = new PortNode($joinBox, $next->getPipelineId(), $next->getTestId());
-        $joinNode->setEnvironmentConfigVariables($next->getEnvironmentConfigVariables());
-        $joinNode->setExerciseConfigVariables($next->getExerciseConfigVariables());
-        $joinNode->setPipelineVariables($next->getPipelineVariables());
 
         // engage join node into tree
         $previous->addChild($inPort->getName(), $joinNode);
@@ -282,9 +268,9 @@ class PipelinesMerger {
 
     // build tree for given pipeline
     $pipelineTree = $this->buildPipelineTree($pipelineId, $testId, $pipelineConfig);
-    // set all variables tables to boxes in pipeline
-    $this->setVariablesTablesToPipelineBoxes($pipelineTree,
-      $pipelineVars->getVariablesTable(), $environmentConfigVariables,
+    // resolve all variables in pipeline tree
+    $this->variablesResolver->resolve($pipelineTree,
+      $environmentConfigVariables, $pipelineVars->getVariablesTable(),
       $pipelineConfig->getVariablesTable());
 
     // merge given tree and currently created pipeline tree

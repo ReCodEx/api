@@ -89,17 +89,17 @@ class DataInBox extends Box
 
   /**
    * Get remote variable.
-   * @return Variable
+   * @return Variable|null
    */
-  public function getRemoteVariable(): Variable {
+  public function getRemoteVariable(): ?Variable {
     return $this->remoteVariable;
   }
 
   /**
    * Set remote variable corresponding to this box.
-   * @param Variable $variable
+   * @param Variable|null $variable
    */
-  public function setRemoteVariable(Variable $variable) {
+  public function setRemoteVariable(?Variable $variable) {
     $this->remoteVariable = $variable;
   }
 
