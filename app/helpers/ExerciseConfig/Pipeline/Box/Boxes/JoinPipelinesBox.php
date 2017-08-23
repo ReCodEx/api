@@ -95,7 +95,19 @@ class JoinPipelinesBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    return []; // @todo: might be no-op or mv task ... to be decided
+    if (current($this->getInputPorts())->getVariableValue()->getValue() ==
+        current($this->getOutputPorts())->getVariableValue()->getValue()) {
+      return [];
+    }
+
+    // if values in ports are different then we should engage rename task
+    $task = new Task();
+    $task->setCommandBinary("rename");
+    $task->setCommandArguments([
+      current($this->getInputPorts())->getVariableValue()->getValue(),
+      current($this->getOutputPorts())->getVariableValue()->getValue()
+    ]);
+    return [$task];
   }
 
 }

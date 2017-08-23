@@ -48,12 +48,14 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree A -> pipeline: in -> exec -> out; pre-exec -> exec
     //
 
+    $referencedVarA = new FileVariable((new VariableMeta)->setName("test-a-reference-variable")->setValue("booya"));
     $testInputVarA = new FileVariable((new VariableMeta)->setName("test-a-input")->setValue(""));
-    $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec")->setValue(""));
-    $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output")->setValue(""));
+    $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec")->setValue('$test-a-reference-variable'));
+    $outputReferencedVarA = new FileVariable((new VariableMeta)->setName("test-a-output-reference")->setValue("yaboo"));
+    $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output")->setValue('$test-a-output-reference'));
 
-    $this->envVarTableA = (new VariablesTable)->set($testInputVarA);
-    $this->exerVarTableA = (new VariablesTable);
+    $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testInputVarA);
+    $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
     $this->pipeVarTableA = (new VariablesTable)->set($testInputVarA)->set($testOutputVarA)->set($preExecVarA);
 
     $outPortA = new FilePort((new PortMeta)->setName("data-in")->setVariable($testInputVarA->getName()));
@@ -194,15 +196,13 @@ class TestVariablesResolver extends Tester\TestCase
     $this->resolver->resolve($treeA, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     $this->resolver->resolve($treeB, $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
 
-    // @todo: test references
-
     // Tree A
     Assert::equal("test-a-input", $treeA->getInputNodes()[0]->getBox()->getOutputPorts()["data-in"]->getVariableValue()->getName());
     Assert::equal("test-a-input", $treeA->getOtherNodes()[0]->getBox()->getInputPorts()["data-in"]->getVariableValue()->getName());
-    Assert::equal("test-a-pre-exec", $treeA->getOtherNodes()[0]->getBox()->getInputPorts()["pre-data"]->getVariableValue()->getName());
-    Assert::equal("test-a-pre-exec", $treeA->getOtherNodes()[1]->getBox()->getOutputPorts()["pre-data"]->getVariableValue()->getName());
-    Assert::equal("test-a-output", $treeA->getOtherNodes()[0]->getBox()->getOutputPorts()["data-out"]->getVariableValue()->getName());
-    Assert::equal("test-a-output", $treeA->getOutputNodes()[0]->getBox()->getInputPorts()["data-out"]->getVariableValue()->getName());
+    Assert::equal("test-a-reference-variable", $treeA->getOtherNodes()[0]->getBox()->getInputPorts()["pre-data"]->getVariableValue()->getName());
+    Assert::equal("test-a-reference-variable", $treeA->getOtherNodes()[1]->getBox()->getOutputPorts()["pre-data"]->getVariableValue()->getName());
+    Assert::equal("test-a-output-reference", $treeA->getOtherNodes()[0]->getBox()->getOutputPorts()["data-out"]->getVariableValue()->getName());
+    Assert::equal("test-a-output-reference", $treeA->getOutputNodes()[0]->getBox()->getInputPorts()["data-out"]->getVariableValue()->getName());
 
     // Tree B
     Assert::equal("test-ba-input", $treeB->getInputNodes()[0]->getBox()->getOutputPorts()["data-in-a"]->getVariableValue()->getName());
