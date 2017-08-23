@@ -12,4 +12,9 @@ class StringArrayVariable extends Variable
   public function getType(): ?string {
     return VariableTypes::$STRING_ARRAY_TYPE;
   }
+
+  public function isArray(): bool {
+    return true;
+  }
+
 }

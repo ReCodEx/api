@@ -12,4 +12,9 @@ class FileVariable extends Variable
   public function getType(): ?string {
     return VariableTypes::$FILE_TYPE;
   }
+
+  public function isArray(): bool {
+    return false;
+  }
+
 }

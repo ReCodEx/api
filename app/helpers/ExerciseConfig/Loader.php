@@ -55,12 +55,12 @@ class Loader {
 
     $variable = new VariableMeta;
 
-    if (!isset($data[VariableMeta::NAME_KEY])) {
+    if (!isset($data[VariableMeta::NAME_KEY]) || !is_scalar($data[VariableMeta::NAME_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have a name");
     }
     $variable->setName($data[VariableMeta::NAME_KEY]);
 
-    if (!isset($data[VariableMeta::TYPE_KEY])) {
+    if (!isset($data[VariableMeta::TYPE_KEY]) || !is_scalar($data[VariableMeta::TYPE_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have any type");
     }
     $variable->setType($data[VariableMeta::TYPE_KEY]);

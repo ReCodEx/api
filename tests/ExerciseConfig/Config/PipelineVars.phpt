@@ -45,7 +45,7 @@ class TestPipelineVars extends Tester\TestCase
 
   public function testVariablesOperations() {
     $pipeline = new PipelineVars;
-    $variableMeta = (new VariableMeta)->setName("variableA");
+    $variableMeta = (new VariableMeta)->setName("variableA")->setValue("valA");
     $variable = new StringVariable($variableMeta);
 
     $pipeline->getVariablesTable()->set($variable);

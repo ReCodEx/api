@@ -19,8 +19,8 @@ class TestVariablesTable extends Tester\TestCase
   static $config = [
     [ "name" => "environment", "type" => "file", "value" => "envVar" ],
     [ "name" => "tnemnorivne", "type" => "string", "value" => "vneVar" ],
-    [ "name" => "varFileArr", "type" => "file[]", "value" => "envFileArrVar" ],
-    [ "name" => "varStringArr", "type" => "string[]", "value" => "envStringArrVar" ]
+    [ "name" => "varFileArr", "type" => "file[]", "value" => ["envFileArrVar"] ],
+    [ "name" => "varStringArr", "type" => "string[]", "value" => ["envStringArrVar"] ]
   ];
 
   /** @var Loader */
@@ -52,7 +52,7 @@ class TestVariablesTable extends Tester\TestCase
 
   public function testVariablesOperations() {
     $table = new VariablesTable;
-    $variableMeta = (new VariableMeta)->setName("varA");
+    $variableMeta = (new VariableMeta)->setName("varA")->setValue("valA");
     $variable = new StringVariable($variableMeta);
 
     $table->set($variable);

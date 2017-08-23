@@ -48,9 +48,9 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree A -> pipeline: in -> exec -> out; pre-exec -> exec
     //
 
-    $testInputVarA = new FileVariable((new VariableMeta)->setName("test-a-input"));
-    $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec"));
-    $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output"));
+    $testInputVarA = new FileVariable((new VariableMeta)->setName("test-a-input")->setValue(""));
+    $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec")->setValue(""));
+    $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output")->setValue(""));
 
     $this->envVarTableA = (new VariablesTable)->set($testInputVarA);
     $this->exerVarTableA = (new VariablesTable);
@@ -86,10 +86,10 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree B - pipeline: inA -> exec -> outA; inB -> exec -> outB
     //
 
-    $testInputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-input"));
-    $testInputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-input"));
-    $testOutputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-output"));
-    $testOutputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-output"));
+    $testInputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-input")->setValue(""));
+    $testInputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-input")->setValue(""));
+    $testOutputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-output")->setValue(""));
+    $testOutputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-output")->setValue(""));
 
     $this->envVarTableB = (new VariablesTable)->set($testInputVarBA);
     $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);

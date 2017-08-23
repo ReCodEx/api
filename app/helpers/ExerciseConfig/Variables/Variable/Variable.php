@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 
+use App\Exceptions\ExerciseConfigException;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 use Nette\Utils\Strings;
@@ -28,6 +29,7 @@ abstract class Variable implements JsonSerializable
    */
   public function __construct(VariableMeta $meta) {
     $this->meta = $meta;
+    $this->validate();
   }
 
 
@@ -36,6 +38,33 @@ abstract class Variable implements JsonSerializable
    * @return null|string
    */
   public abstract function getType(): ?string;
+
+  /**
+   * Return true if variable can be interpreted as array.
+   * @return bool
+   */
+  public abstract function isArray(): bool;
+
+
+  /**
+   * Validate variable value against variable type.
+   * @throws ExerciseConfigException
+   */
+  private function validate() {
+    if ($this->isReference()) {
+      // if variable is reference, then it always contains string and
+      // does not have to be validated
+      return;
+    } else if ($this->isArray()) {
+      if (!is_array($this->meta->getValue())) {
+        throw new ExerciseConfigException("Variable '{$this->meta->getName()}' should be array");
+      }
+    } else {
+      if (!is_scalar($this->meta->getValue())) {
+        throw new ExerciseConfigException("Variable '{$this->meta->getName()}' should be scalar");
+      }
+    }
+  }
 
   /**
    * Get name of the variable.
@@ -47,11 +76,11 @@ abstract class Variable implements JsonSerializable
 
   /**
    * Get value of the variable.
-   * @return null|string
+   * @return array|string
    */
-  public function getValue(): ?string {
+  public function getValue() {
     $val = $this->meta->getValue();
-    if (Strings::startsWith($val, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
+    if (is_scalar($val) && Strings::startsWith($val, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
       return Strings::substring($val, 1);
     }
 
@@ -65,7 +94,7 @@ abstract class Variable implements JsonSerializable
    */
   public function getReference(): ?string {
     $val = $this->meta->getValue();
-    if (Strings::startsWith($val, self::$REFERENCE_KEY)) {
+    if (is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY)) {
       return Strings::substring($val, 1);
     }
 
@@ -77,7 +106,8 @@ abstract class Variable implements JsonSerializable
    * @return bool
    */
   public function isReference(): bool {
-    return Strings::startsWith($this->meta->getValue(), self::$REFERENCE_KEY);
+    $val = $this->meta->getValue();
+    return is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY);
   }
 
 

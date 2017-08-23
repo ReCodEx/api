@@ -12,4 +12,9 @@ class StringVariable extends Variable
   public function getType(): ?string {
     return VariableTypes::$STRING_TYPE;
   }
+
+  public function isArray(): bool {
+    return false;
+  }
+
 }
