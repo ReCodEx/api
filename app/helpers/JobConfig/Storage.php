@@ -72,6 +72,20 @@ class Storage {
   }
 
   /**
+   * Update stored job config with the given one.
+   * @param JobConfig $config
+   * @param string $filePath
+   * @throws JobConfigStorageException
+   */
+  public function update(JobConfig $config, string $filePath) {
+    if (!file_put_contents($filePath, (string) $config)) {
+      throw new JobConfigStorageException("Cannot write the new job config to the storage.");
+    }
+
+    $this->getCache()->save($filePath, $config);
+  }
+
+  /**
    * Store given content into job config file.
    * @param JobConfig $config
    * @param User $user
