@@ -140,11 +140,13 @@ class SandboxConfig {
 
   /**
    * Set limits for a specific hardware group
-   * @param string $hardwareGroupId   Hardware group ID
-   * @param Limits $limits            The limits
+   * @param Limits|null $limits            The limits
    * @return void
    */
-  public function setLimits(Limits $limits) {
+  public function setLimits(?Limits $limits) {
+    if (!$limits) {
+      return;
+    }
     $this->limits[$limits->getId()] = $limits;
   }
 

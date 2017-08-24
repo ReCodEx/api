@@ -5,7 +5,9 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\JobConfig\JobConfig;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -29,9 +31,30 @@ class BoxesCompiler {
   }
 
   /**
+   * Set limits for all given hwgroups in given task.
+   * @param Node $node
+   * @param Task $task
+   * @param ExerciseLimits[] $limits indexed by hwgroup
+   */
+  private function setLimits(Node $node, Task $task, array $limits) {
+    if (!$task->getSandboxConfig()) {
+      return;
+    }
+
+    $pipeline = $node->getPipelineId();
+    $test = $node->getTestId();
+    $box = $node->getBox()->getName();
+
+    foreach ($limits as $hwGroup => $groupLimits) {
+      $jobLimits = $groupLimits->getLimits($test, $pipeline, $box)->compile($hwGroup);
+      $task->getSandboxConfig()->setLimits($jobLimits);
+    }
+  }
+
+  /**
    * Go through given array find boxes and compile them into JobConfig.
    * @param RootedTree $executionPipeline
-   * @param ExerciseLimits[] $limits
+   * @param ExerciseLimits[] $limits indexed by hwgroup
    * @return JobConfig
    */
   public function compile(RootedTree $executionPipeline, array $limits): JobConfig {
@@ -47,8 +70,6 @@ class BoxesCompiler {
 
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
-
-      // @todo: engage limits
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
@@ -67,6 +88,9 @@ class BoxesCompiler {
         if (!empty($current->getTestId())) {
           $task->setTestId($current->getTestId());
         }
+
+        // if the task is external then set limits to it
+        $this->setLimits($current, $task, $limits);
 
         // update helper vars
         $order++;
