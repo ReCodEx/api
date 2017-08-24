@@ -325,7 +325,7 @@ class Loader {
     $boxMeta->setType($data[BoxMeta::TYPE_KEY]);
 
     if (!isset($data[BoxMeta::PORTS_IN_KEY]) || !is_array($data[BoxMeta::PORTS_IN_KEY])) {
-      throw new ExerciseConfigException("Box metadatas do not have input ports specified");
+      $data[BoxMeta::PORTS_IN_KEY] = [];
     }
     foreach ($data[BoxMeta::PORTS_IN_KEY] as $name => $portData) {
       $port = $this->loadPort($name, $portData);
@@ -333,7 +333,7 @@ class Loader {
     }
 
     if (!isset($data[BoxMeta::PORTS_OUT_KEY]) || !is_array($data[BoxMeta::PORTS_OUT_KEY])) {
-      throw new ExerciseConfigException("Box metadatas do not have output ports specified");
+      $data[BoxMeta::PORTS_OUT_KEY] = [];
     }
     foreach ($data[BoxMeta::PORTS_OUT_KEY] as $name => $portData) {
       $port = $this->loadPort($name, $portData);
