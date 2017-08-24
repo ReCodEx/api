@@ -72,12 +72,12 @@ class TestExerciseConfigCompiler extends Tester\TestCase
     ]
   ];
   private static $envVariablesTable = [
-    [ "name" => "source_file", "type" => "file", "value" => "source" ]
+    [ "name" => "source_files", "type" => "file[]", "value" => ["source"] ]
   ];
   private static $environment = "envA";
   private static $compilationPipeline = [
     "variables" => [
-      ["name" => "source_file", "type" => "file", "value" => "source"],
+      ["name" => "source_files", "type" => "file[]", "value" => ["source"]],
       ["name" => "binary_file", "type" => "file", "value" => "a.out"]
     ],
     "boxes" => [
@@ -86,14 +86,14 @@ class TestExerciseConfigCompiler extends Tester\TestCase
         "type" => "data-in",
         "portsIn" => [],
         "portsOut" => [
-          "in-data" => ["type" => "file", "value" => "source_file"]
+          "in-data" => ["type" => "file[]", "value" => "source_files"]
         ]
       ],
       [
         "name" => "compilation",
         "type" => "gcc",
         "portsIn" => [
-          "source-file" => ["type" => "file", "value" => "source_file"]
+          "source-files" => ["type" => "file[]", "value" => "source_files"]
         ],
         "portsOut" => [
           "binary-file" => ["type" => "file", "value" => "binary_file"]
@@ -149,9 +149,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
           "actual-output" => [ "type" => "file", "value" => "actual_output" ],
           "expected-output" => [ "type" => "file", "value" => "expected_output" ]
         ],
-        "portsOut" => [
-          "score" => [ "type" => "string", "value" => "" ]
-        ]
+        "portsOut" => []
       ]
     ]
   ];

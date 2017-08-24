@@ -290,7 +290,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function getVariablesForExerciseConfig(string $id,
+  public function actionGetVariablesForExerciseConfig(string $id,
     string $runtimeEnvironmentId, array $pipelinesIds) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);

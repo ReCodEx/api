@@ -3,9 +3,10 @@ App\Model\Entity\PipelineConfig:
         __construct:
             - '''
               variables:
-                - name: source_file
-                  type: file
-                  value: source.cpp
+                - name: source_files
+                  type: file[]
+                  value:
+                    - source.cpp
                 - name: binary_file
                   type: file
                   value: a.out
@@ -19,9 +20,9 @@ App\Model\Entity\PipelineConfig:
                   type: data-in
                 - name: compilation
                   portsIn:
-                    source-file:
-                      type: file
-                      value: source_file
+                    source-files:
+                      type: file[]
+                      value: source_files
                   portsOut:
                     binary-file:
                       type: file
@@ -82,10 +83,7 @@ App\Model\Entity\PipelineConfig:
                     expected-output:
                       type: file
                       value: expected_output
-                  portsOut:
-                    score:
-                      type: string
-                      value: ""
+                  portsOut: []
                   type: judge-normal
               '''
             - @demoAdmin
