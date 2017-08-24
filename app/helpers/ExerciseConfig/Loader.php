@@ -249,23 +249,17 @@ class Loader {
         throw new ExerciseConfigException("Exercise limits (test) are not array");
       }
 
-      foreach ($testVal as $environmentId => $environmentVal) {
-        if (!is_array($environmentVal)) {
-          throw new ExerciseConfigException("Exercise limits (environment) are not array");
+      foreach ($testVal as $pipelineId => $pipelineVal) {
+        if (!is_array($pipelineVal)) {
+          throw new ExerciseConfigException("Exercise limits (pipeline) are not array");
         }
 
-        foreach ($environmentVal as $pipelineId => $pipelineVal) {
-          if (!is_array($pipelineVal)) {
-            throw new ExerciseConfigException("Exercise limits (pipeline) are not array");
+        foreach ($pipelineVal as $boxId => $boxVal) {
+          if (!is_array($boxVal)) {
+            throw new ExerciseConfigException("Exercise limits (box) are not array");
           }
 
-          foreach ($pipelineVal as $boxId => $boxVal) {
-            if (!is_array($boxVal)) {
-              throw new ExerciseConfigException("Exercise limits (box) are not array");
-            }
-
-            $limits->addLimits($testId, $environmentId, $pipelineId, $boxId, $this->loadLimits($boxVal, $boxId));
-          }
+          $limits->addLimits($testId, $pipelineId, $boxId, $this->loadLimits($boxVal, $boxId));
         }
       }
     }

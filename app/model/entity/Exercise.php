@@ -347,6 +347,14 @@ class Exercise implements JsonSerializable
     return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
   }
 
+  /**
+   * Get IDs of all defined hardware groups.
+   * @return string[]
+   */
+  public function getHardwareGroupsIds() {
+    return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
+  }
+
   public function getSupplementaryFilesIds() {
     return $this->supplementaryEvaluationFiles->map(
       function(ExerciseFile $file) {

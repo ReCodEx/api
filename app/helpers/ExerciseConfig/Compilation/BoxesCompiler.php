@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
+use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\JobConfig\JobConfig;
 
 
@@ -30,9 +31,10 @@ class BoxesCompiler {
   /**
    * Go through given array find boxes and compile them into JobConfig.
    * @param RootedTree $executionPipeline
+   * @param ExerciseLimits[] $limits
    * @return JobConfig
    */
-  public function compile(RootedTree $executionPipeline): JobConfig {
+  public function compile(RootedTree $executionPipeline, array $limits): JobConfig {
     $jobConfig = new JobConfig();
 
     // stack for DFS, better stay in order by reversing original root nodes
@@ -45,6 +47,8 @@ class BoxesCompiler {
 
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
+
+      // @todo: engage limits
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {

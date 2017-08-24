@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\JobConfig\JobConfig;
 
@@ -61,17 +62,18 @@ class ExerciseConfigCompiler {
    * Compile ExerciseConfig to JobConfig
    * @param ExerciseConfig $exerciseConfig
    * @param VariablesTable $environmentConfigVariables
+   * @param ExerciseLimits[] $limits
    * @param string $runtimeEnvironmentId
    * @return JobConfig
-   * @throws ExerciseConfigException
    */
   public function compile(ExerciseConfig $exerciseConfig,
-      VariablesTable $environmentConfigVariables, string $runtimeEnvironmentId): JobConfig {
+      VariablesTable $environmentConfigVariables, array $limits,
+      string $runtimeEnvironmentId): JobConfig {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
     $testDirectories = $this->testDirectoriesResolver->resolve($optimized);
-    $jobConfig = $this->boxesCompiler->compile($testDirectories);
+    $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits);
     return $jobConfig;
   }
 
