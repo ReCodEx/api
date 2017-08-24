@@ -15,6 +15,7 @@ use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
+use App\Model\Repository\Pipelines;
 use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
@@ -33,6 +34,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exercises;
+
+  /**
+   * @var Pipelines
+   * @inject
+   */
+  public $pipelines;
 
   /**
    * @var Loader
@@ -271,6 +278,38 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $config = $this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig);
     $this->sendSuccessResponse($config);
+  }
+
+  /**
+   * Get variables for exercise configuration which are derived from given
+   * pipelines and runtime environment.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @param string $runtimeEnvironmentId
+   * @param array $pipelinesIds
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function getVariablesForExerciseConfig(string $id,
+    string $runtimeEnvironmentId, array $pipelinesIds) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to get variables for this exercise configuration.");
+    }
+
+    // prepare environment and pipelines
+    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+    $pipelines = array();
+    foreach ($pipelinesIds as $pipelineId) {
+      $pipelines[$pipelineId] = $this->pipelines->findOrThrow($pipelineId);
+    }
+
+    // prepare configurations
+    // @todo
+
+    $variables = array();
+    $this->sendSuccessResponse($variables);
   }
 
   /**

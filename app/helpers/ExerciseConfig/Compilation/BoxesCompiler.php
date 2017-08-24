@@ -27,7 +27,8 @@ class BoxesCompiler {
    * @return string
    */
   private function createTaskIdentification(Node $node, string $postfix): string {
-    return $node->getPipelineId() . self::$ID_DELIM . $node->getTestId() . self::$ID_DELIM . $postfix;
+    return $node->getTestId() . self::$ID_DELIM . $node->getPipelineId() .
+      self::$ID_DELIM . $node->getBox()->getName() . self::$ID_DELIM . $postfix;
   }
 
   /**
@@ -52,36 +53,36 @@ class BoxesCompiler {
   }
 
   /**
-   * Go through given array find boxes and compile them into JobConfig.
-   * @param RootedTree $executionPipeline
-   * @param ExerciseLimits[] $limits indexed by hwgroup
-   * @return JobConfig
+   * Perform DFS on the given tree and compile all appropriate boxes.
+   * @param JobConfig $jobConfig
+   * @param RootedTree $rootedTree
+   * @param array $limits
    */
-  public function compile(RootedTree $executionPipeline, array $limits): JobConfig {
-    $jobConfig = new JobConfig();
-
+  private function processTree(JobConfig $jobConfig,
+      RootedTree $rootedTree, array $limits) {
     // stack for DFS, better stay in order by reversing original root nodes
-    $stack = array_reverse($executionPipeline->getRootNodes());
+    $stack = array_reverse($rootedTree->getRootNodes());
     $order = 1;
 
     // main processing loop
     while (!empty($stack)) {
       $current = array_pop($stack);
-
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
+        // create and set task identification
         $taskId = $this->createTaskIdentification($current, $order);
         $current->addTaskId($taskId);
+        $task->setId($taskId);
 
         // set global order/priority
         $task->setPriority($order);
         // construct and set dependencies
         $dependencies = array();
         foreach ($current->getParents() as $parent) {
-          array_merge($dependencies, $parent->getTaskIds());
+          $dependencies = array_merge($dependencies, $parent->getTaskIds());
         }
         $task->setDependencies($dependencies);
         // set identification of test, if any
@@ -92,10 +93,33 @@ class BoxesCompiler {
         // if the task is external then set limits to it
         $this->setLimits($current, $task, $limits);
 
+        // do not forget to add tasks into job configuration
+        $jobConfig->addTask($task);
+
         // update helper vars
         $order++;
       }
+
+      // add children of current node into stack
+      foreach (array_reverse($current->getChildren()) as $child) {
+        $stack[] = $child;
+      }
     }
+  }
+
+  /**
+   * Go through given array find boxes and compile them into JobConfig.
+   * @param RootedTree $rootedTree
+   * @param ExerciseLimits[] $limits indexed by hwgroup
+   * @return JobConfig
+   */
+  public function compile(RootedTree $rootedTree, array $limits): JobConfig {
+    $jobConfig = new JobConfig();
+
+    // add hwgroups identifications into job configuration
+    $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
+    // perform DFS
+    $this->processTree($jobConfig, $rootedTree, $limits);
 
     return $jobConfig;
   }
