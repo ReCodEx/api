@@ -17,16 +17,16 @@ class TestExerciseConfigTransformer extends Tester\TestCase
     "tests" => [
       "testA" => [
         "pipelines" => [
-          "hello" => [ "variables" => [ [ "name" => "world", "type" => "string", "value" => "hello" ] ] ]
+          [ "name" => "hello", "variables" => [ [ "name" => "world", "type" => "string", "value" => "hello" ] ] ]
         ],
         "environments" => [
-          "envA" => [ "pipelines" => [ "envPipeline" => [ "variables" => [] ] ] ],
-          "envB" => [ "pipelines" => [ "hello" => [ "variables" => [ [ "name" => "varA", "type" => "string", "value" => "valA" ] ] ] ] ]
+          "envA" => [ "pipelines" => [ [ "name" => "envPipeline", "variables" => [] ] ] ],
+          "envB" => [ "pipelines" => [ [ "name" => "hello", "variables" => [ [ "name" => "varA", "type" => "string", "value" => "valA" ] ] ] ] ]
         ]
       ],
       "testB" => [
         "pipelines" => [
-          "world" => [ "variables" => [ [ "name" => "hello", "type" => "string", "value" => "world" ] ] ]
+          [ "name" => "world", "variables" => [ [ "name" => "hello", "type" => "string", "value" => "world" ] ] ]
         ],
         "environments" => [
           "envA" => [ "pipelines" => [] ],

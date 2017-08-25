@@ -22,6 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
  * @method Collection getRuntimeEnvironments()
+ * @method Collection getHardwareGroups()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getSubmissions()
@@ -69,6 +70,7 @@ class Assignment implements JsonSerializable
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
+    $this->hardwareGroups = $exercise->getHardwareGroups();
     $this->exerciseLimits = $exercise->getExerciseLimits();
     $this->exerciseEnvironmentConfigs = $exercise->getExerciseEnvironmentConfigs();
     $this->exerciseConfig = $exercise->getExerciseConfig();
@@ -176,6 +178,20 @@ class Assignment implements JsonSerializable
    * @var Collection
    */
   protected $runtimeEnvironments;
+
+  /**
+   * @ORM\ManyToMany(targetEntity="HardwareGroup")
+   * @var Collection
+   */
+  protected $hardwareGroups;
+
+  /**
+   * Get IDs of all defined hardware groups.
+   * @return string[]
+   */
+  public function getHardwareGroupsIds() {
+    return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
+  }
 
   /**
    * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})

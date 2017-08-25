@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\JobConfig\SandboxConfig;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -10,8 +13,13 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  */
 class ElfExecutionBox extends Box
 {
+  /** Type key */
+  public static $ELF_EXEC_TYPE = "elf-exec";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $OUTPUT_FILE_PORT_KEY = "output-file";
+  public static $DEFAULT_NAME = "ELF Execution";
+
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -21,12 +29,11 @@ class ElfExecutionBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "ELF Execution";
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName("binary-file")->setVariable(""))
+        new FilePort((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName("output-file")->setVariable(""))
+        new FilePort((new PortMeta)->setName(self::$OUTPUT_FILE_PORT_KEY)->setVariable(""))
       );
     }
   }
@@ -39,6 +46,14 @@ class ElfExecutionBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$ELF_EXEC_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
@@ -63,8 +78,19 @@ class ElfExecutionBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
+  }
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    $task = new Task();
+    $task->setType(TaskType::$EXECUTION);
+    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY));
+    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+    return [$task];
   }
 
 }

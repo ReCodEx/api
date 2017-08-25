@@ -55,12 +55,12 @@ class Loader {
 
     $variable = new VariableMeta;
 
-    if (!isset($data[VariableMeta::NAME_KEY])) {
+    if (!isset($data[VariableMeta::NAME_KEY]) || !is_scalar($data[VariableMeta::NAME_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have a name");
     }
     $variable->setName($data[VariableMeta::NAME_KEY]);
 
-    if (!isset($data[VariableMeta::TYPE_KEY])) {
+    if (!isset($data[VariableMeta::TYPE_KEY]) || !is_scalar($data[VariableMeta::TYPE_KEY])) {
       throw new ExerciseConfigException("Exercise variable does not have any type");
     }
     $variable->setType($data[VariableMeta::TYPE_KEY]);
@@ -106,6 +106,11 @@ class Loader {
 
     $pipeline = new PipelineVars();
 
+    if (!isset($data[PipelineVars::NAME_KEY])) {
+      throw new ExerciseConfigException("Exercise pipeline does not have name specified");
+    }
+    $pipeline->setName($data[PipelineVars::NAME_KEY]);
+
     if (isset($data[PipelineVars::VARIABLES_KEY]) && is_array($data[PipelineVars::VARIABLES_KEY])) {
       $pipeline->setVariablesTable($this->loadVariablesTable($data[PipelineVars::VARIABLES_KEY]));
     }
@@ -127,8 +132,8 @@ class Loader {
     $environment = new Environment();
 
     if (isset($data[Environment::PIPELINES_KEY]) && is_array($data[Environment::PIPELINES_KEY])) {
-      foreach ($data[Environment::PIPELINES_KEY] as $key => $pipeline) {
-        $environment->addPipeline($key, $this->loadPipelineVars($pipeline));
+      foreach ($data[Environment::PIPELINES_KEY] as $pipeline) {
+        $environment->addPipeline($this->loadPipelineVars($pipeline));
       }
     }
 
@@ -151,8 +156,8 @@ class Loader {
     if (!isset($data[Test::PIPELINES_KEY]) || !is_array($data[Test::PIPELINES_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
     }
-    foreach ($data[Test::PIPELINES_KEY] as $key => $pipeline) {
-      $test->addPipeline($key, $this->loadPipelineVars($pipeline));
+    foreach ($data[Test::PIPELINES_KEY] as $pipeline) {
+      $test->addPipeline($this->loadPipelineVars($pipeline));
     }
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
@@ -244,23 +249,17 @@ class Loader {
         throw new ExerciseConfigException("Exercise limits (test) are not array");
       }
 
-      foreach ($testVal as $environmentId => $environmentVal) {
-        if (!is_array($environmentVal)) {
-          throw new ExerciseConfigException("Exercise limits (environment) are not array");
+      foreach ($testVal as $pipelineId => $pipelineVal) {
+        if (!is_array($pipelineVal)) {
+          throw new ExerciseConfigException("Exercise limits (pipeline) are not array");
         }
 
-        foreach ($environmentVal as $pipelineId => $pipelineVal) {
-          if (!is_array($pipelineVal)) {
-            throw new ExerciseConfigException("Exercise limits (pipeline) are not array");
+        foreach ($pipelineVal as $boxId => $boxVal) {
+          if (!is_array($boxVal)) {
+            throw new ExerciseConfigException("Exercise limits (box) are not array");
           }
 
-          foreach ($pipelineVal as $boxId => $boxVal) {
-            if (!is_array($boxVal)) {
-              throw new ExerciseConfigException("Exercise limits (box) are not array");
-            }
-
-            $limits->addLimits($testId, $environmentId, $pipelineId, $boxId, $this->loadLimits($boxVal, $boxId));
-          }
+          $limits->addLimits($testId, $pipelineId, $boxId, $this->loadLimits($boxVal, $boxId));
         }
       }
     }
@@ -320,7 +319,7 @@ class Loader {
     $boxMeta->setType($data[BoxMeta::TYPE_KEY]);
 
     if (!isset($data[BoxMeta::PORTS_IN_KEY]) || !is_array($data[BoxMeta::PORTS_IN_KEY])) {
-      throw new ExerciseConfigException("Box metadatas do not have input ports specified");
+      $data[BoxMeta::PORTS_IN_KEY] = [];
     }
     foreach ($data[BoxMeta::PORTS_IN_KEY] as $name => $portData) {
       $port = $this->loadPort($name, $portData);
@@ -328,7 +327,7 @@ class Loader {
     }
 
     if (!isset($data[BoxMeta::PORTS_OUT_KEY]) || !is_array($data[BoxMeta::PORTS_OUT_KEY])) {
-      throw new ExerciseConfigException("Box metadatas do not have output ports specified");
+      $data[BoxMeta::PORTS_OUT_KEY] = [];
     }
     foreach ($data[BoxMeta::PORTS_OUT_KEY] as $name => $portData) {
       $port = $this->loadPort($name, $portData);

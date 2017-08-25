@@ -104,10 +104,11 @@ class Transformer {
   /**
    * Transform data to pipeline internal structured array.
    * @param array $data
-   * @return array($pipelineId, $pipeline)
+   * @return array
    */
   private function toPipeline(array $data): array {
     $pipelineArr = array();
+    $pipelineArr[PipelineVars::NAME_KEY] = $data["name"];
     $pipelineArr[PipelineVars::VARIABLES_KEY] = array();
 
     foreach ($data["variables"] as $variable) {
@@ -115,7 +116,7 @@ class Transformer {
       $pipelineArr[PipelineVars::VARIABLES_KEY][] = $variable;
     }
 
-    return array($data["name"], $pipelineArr);
+    return $pipelineArr;
   }
 
   /**
@@ -152,8 +153,7 @@ class Transformer {
         $testArr[Test::PIPELINES_KEY] = array();
 
         foreach ($test["pipelines"] as $pipeline) {
-          list($pipelineId, $pipelineArr) = $this->toPipeline($pipeline);
-          $testArr[Test::PIPELINES_KEY][$pipelineId] = $pipelineArr;
+          $testArr[Test::PIPELINES_KEY][] = $this->toPipeline($pipeline);
         }
 
         $testArr[Test::ENVIRONMENTS_KEY] = array();
@@ -193,8 +193,7 @@ class Transformer {
         $environmentConfig = array();
         $environmentConfig[Environment::PIPELINES_KEY] = array();
         foreach ($test["pipelines"] as $pipeline) {
-          list($pipelineId, $pipelineArr) = $this->toPipeline($pipeline);
-          $environmentConfig[Environment::PIPELINES_KEY][$pipelineId] = $pipelineArr;
+          $environmentConfig[Environment::PIPELINES_KEY][] = $this->toPipeline($pipeline);
         }
 
         // pipelines are the same as the defaults

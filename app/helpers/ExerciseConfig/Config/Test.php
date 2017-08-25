@@ -51,12 +51,11 @@ class Test implements JsonSerializable {
 
   /**
    * Add default pipeline to this test.
-   * @param string $id
    * @param PipelineVars $pipeline
-   * @return $this
+   * @return Test
    */
-  public function addPipeline(string $id, PipelineVars $pipeline): Test {
-    $this->pipelines[$id] = $pipeline;
+  public function addPipeline(PipelineVars $pipeline): Test {
+    $this->pipelines[$pipeline->getName()] = $pipeline;
     return $this;
   }
 
@@ -121,8 +120,8 @@ class Test implements JsonSerializable {
     $data = [];
 
     $data[self::PIPELINES_KEY] = array();
-    foreach ($this->pipelines as $key => $pipeline) {
-      $data[self::PIPELINES_KEY][$key] = $pipeline->toArray();
+    foreach ($this->pipelines as $pipeline) {
+      $data[self::PIPELINES_KEY][] = $pipeline->toArray();
     }
     $data[self::ENVIRONMENTS_KEY] = array();
     foreach ($this->environments as $key => $environment) {

@@ -183,7 +183,7 @@ class SubmitPresenter extends BasePresenter {
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
 
-    $this->sendSuccessResponse($this->finishSubmission($submission));
+    $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
   }
 
   private function submissionFailed(Submission $submission, string $message) {
@@ -195,16 +195,19 @@ class SubmitPresenter extends BasePresenter {
   /**
    * Take a complete submission entity and submit it to the backend
    * @param Submission $submission a persisted submission entity
+   * @param JobConfig\JobConfig|null $jobConfig
    * @return array The response that can be sent to the client
    * @throws InvalidArgumentException
    */
-  private function finishSubmission(Submission $submission) {
+  private function finishSubmission(Submission $submission, JobConfig\JobConfig $jobConfig = null) {
     if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
     // load job configuration
-    $jobConfig = $this->jobConfigs->get($submission->getJobConfigPath());
+    if (!$jobConfig) {
+      $jobConfig = $this->jobConfigs->get($submission->getJobConfigPath());
+    }
 
     // initiate submission
     $resultsUrl = null;

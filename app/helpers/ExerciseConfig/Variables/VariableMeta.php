@@ -33,7 +33,7 @@ class VariableMeta implements JsonSerializable {
 
   /**
    * Variable value.
-   * @var string
+   * @var string|array
    */
   protected $value = null;
 
@@ -76,18 +76,18 @@ class VariableMeta implements JsonSerializable {
 
   /**
    * Get value of this variable.
-   * @return null|string
+   * @return array|string
    */
-  public function getValue(): ?string {
+  public function getValue() {
     return $this->value;
   }
 
   /**
    * Set value of this variable.
-   * @param string $value
+   * @param array|string $value
    * @return VariableMeta
    */
-  public function setValue(string $value): VariableMeta {
+  public function setValue($value): VariableMeta {
     $this->value = $value;
     return $this;
   }

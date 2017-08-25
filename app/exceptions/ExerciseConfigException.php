@@ -11,7 +11,7 @@ class ExerciseConfigException extends ApiException {
    * Create instance with further description.
    * @param string $msg description
    */
-  public function __construct(string $msg = 'Please contact your supervisor') {
+  public function __construct(string $msg = 'Please contact system administrator') {
     parent::__construct("Exercise configuration error - $msg");
   }
 }

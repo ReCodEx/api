@@ -2,7 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\JobConfig\JobConfig;
 
@@ -23,9 +25,9 @@ class ExerciseConfigCompiler {
   private $boxesSorter;
 
   /**
-   * @var TestBoxesOptimizer
+   * @var BoxesOptimizer
    */
-  private $testBoxesOptimizer;
+  private $boxesOptimizer;
 
   /**
    * @var BoxesCompiler
@@ -33,33 +35,45 @@ class ExerciseConfigCompiler {
   private $boxesCompiler;
 
   /**
+   * @var TestDirectoriesResolver
+   */
+  private $testDirectoriesResolver;
+
+  /**
    * ExerciseConfigValidator constructor.
    * @param PipelinesMerger $pipelinesMerger
    * @param BoxesSorter $boxesSorter
-   * @param TestBoxesOptimizer $testBoxesOptimizer
+   * @param BoxesOptimizer $boxesOptimizer
    * @param BoxesCompiler $boxesCompiler
+   * @param TestDirectoriesResolver $testDirectoriesResolver
    */
   public function __construct(PipelinesMerger $pipelinesMerger,
-      BoxesSorter $boxesSorter, TestBoxesOptimizer $testBoxesOptimizer,
-      BoxesCompiler $boxesCompiler) {
+      BoxesSorter $boxesSorter, BoxesOptimizer $boxesOptimizer,
+      BoxesCompiler $boxesCompiler, TestDirectoriesResolver $testDirectoriesResolver) {
     $this->pipelinesMerger = $pipelinesMerger;
     $this->boxesSorter = $boxesSorter;
-    $this->testBoxesOptimizer = $testBoxesOptimizer;
+    $this->boxesOptimizer = $boxesOptimizer;
     $this->boxesCompiler = $boxesCompiler;
+    $this->testDirectoriesResolver = $testDirectoriesResolver;
   }
 
 
   /**
    * Compile ExerciseConfig to JobConfig
    * @param ExerciseConfig $exerciseConfig
-   * @param VariablesTable $variablesTable
+   * @param VariablesTable $environmentConfigVariables
+   * @param ExerciseLimits[] $limits
+   * @param string $runtimeEnvironmentId
    * @return JobConfig
    */
-  public function compile(ExerciseConfig $exerciseConfig, VariablesTable $variablesTable): JobConfig {
-    $tests = $this->pipelinesMerger->merge($exerciseConfig);
-    $tests = $this->boxesSorter->sort($tests);
-    $executionPipeline = $this->testBoxesOptimizer->optimize($tests);
-    $jobConfig = $this->boxesCompiler->compile($executionPipeline, $variablesTable);
+  public function compile(ExerciseConfig $exerciseConfig,
+      VariablesTable $environmentConfigVariables, array $limits,
+      string $runtimeEnvironmentId): JobConfig {
+    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
+    $sortedTests = $this->boxesSorter->sort($tests);
+    $optimized = $this->boxesOptimizer->optimize($sortedTests);
+    $testDirectories = $this->testDirectoriesResolver->resolve($optimized);
+    $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits);
     return $jobConfig;
   }
 

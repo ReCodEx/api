@@ -65,8 +65,6 @@ class EvaluationLoader {
    * @param Submission $submission The submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
-   *
-   * @todo: REWRITE, runtime config is not present anymore
    */
   private function getResults(Submission $submission) {
     if (!$submission->getResultsUrl()) {
@@ -108,8 +106,6 @@ class EvaluationLoader {
    * @param ReferenceSolutionEvaluation $evaluation The reference solution submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
-   *
-   * @todo: REWRITE, runtime config is not present anymore
    */
   private function getReferenceResults(ReferenceSolutionEvaluation $evaluation) {
     if (!$evaluation->getResultsUrl()) {

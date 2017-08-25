@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
+use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -11,8 +13,12 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
  */
 class DataInBox extends Box
 {
+  /** Type key */
+  public static $DATA_IN_TYPE = "data-in";
+  public static $DATA_IN_PORT_KEY = "in-data";
+  public static $DEFAULT_NAME = "Input Data";
+
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -22,13 +28,20 @@ class DataInBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "Input Data";
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new UndefinedPort((new PortMeta)->setName("in-data")->setVariable(""))
+        new UndefinedPort((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setVariable(""))
       );
     }
   }
+
+
+  /**
+   * If data for this box is remote, fill this with the right variable reference.
+   * @var Variable
+   */
+  private $remoteVariable = null;
+
 
   /**
    * DataInBox constructor.
@@ -38,6 +51,14 @@ class DataInBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$DATA_IN_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
@@ -62,8 +83,45 @@ class DataInBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
+  }
+
+
+  /**
+   * Get remote variable.
+   * @return Variable|null
+   */
+  public function getRemoteVariable(): ?Variable {
+    return $this->remoteVariable;
+  }
+
+  /**
+   * Set remote variable corresponding to this box.
+   * @param Variable|null $variable
+   */
+  public function setRemoteVariable(?Variable $variable) {
+    $this->remoteVariable = $variable;
+  }
+
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    if (!$this->remoteVariable) {
+      // variable is local one, this means that it was either created during
+      // job execution or it was brought here with solution archive
+      return [];
+    }
+
+    $task = new Task();
+    $task->setCommandBinary("fetch");
+    $task->setCommandArguments([
+      $this->remoteVariable->getValue(),
+      $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue()->getValue()
+    ]);
+    return [$task];
   }
 
 }

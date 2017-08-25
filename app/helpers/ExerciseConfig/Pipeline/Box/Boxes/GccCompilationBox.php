@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\JobConfig\SandboxConfig;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -10,8 +13,14 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  */
 class GccCompilationBox extends Box
 {
+  /** Type key */
+  public static $GCC_TYPE = "gcc";
+  public static $GCC_BINARY = "/usr/bin/gcc";
+  public static $SOURCE_FILE_PORT_KEY = "source-file";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $DEFAULT_NAME = "GCC Compilation";
+
   private static $initialized = false;
-  private static $defaultName;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
 
@@ -21,12 +30,11 @@ class GccCompilationBox extends Box
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
-      self::$defaultName = "GCC Compilation";
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName("source-file")->setVariable(""))
+        new FilePort((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName("binary-file")->setVariable(""))
+        new FilePort((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setVariable(""))
       );
     }
   }
@@ -39,6 +47,14 @@ class GccCompilationBox extends Box
     parent::__construct($meta);
   }
 
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public function getType(): string {
+    return self::$GCC_TYPE;
+  }
 
   /**
    * Get default input ports for this box.
@@ -63,8 +79,25 @@ class GccCompilationBox extends Box
    * @return string
    */
   public function getDefaultName(): string {
-    self::init();
-    return self::$defaultName;
+    return self::$DEFAULT_NAME;
+  }
+
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public function compile(): array {
+    $task = new Task();
+    $task->setType(TaskType::$INITIATION);
+    $task->setCommandBinary(self::$GCC_BINARY);
+    $task->setCommandArguments([
+      $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()->getValue(),
+      "-o",
+      $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getValue()
+    ]);
+    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+    return [$task];
   }
 
 }

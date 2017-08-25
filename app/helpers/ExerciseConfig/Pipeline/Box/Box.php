@@ -3,9 +3,11 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\JobConfig\Tasks\Task;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
@@ -29,32 +31,12 @@ abstract class Box implements JsonSerializable
   protected $meta;
 
   /**
-   * Pipeline variables from exercise configuration which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $exerciseConfigVariables;
-
-  /**
-   * Variables from environment configuration which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $environmentConfigVariables;
-
-  /**
-   * Variables from pipeline to which this box belong to, which will be used during compilation.
-   * @note Needs to be first set before usage.
-   * @var VariablesTable
-   */
-  protected $pipelineVariables;
-
-  /**
    * Box constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
     $this->meta = $meta;
+    $this->meta->setType($this->getType());
   }
 
 
@@ -75,6 +57,18 @@ abstract class Box implements JsonSerializable
    * Should be static property which is present only once for instance.
    */
   public abstract function getDefaultName(): string;
+
+  /**
+   * Get type of this box.
+   * @return string
+   */
+  public abstract function getType(): string;
+
+  /**
+   * Compile box into set of low-level tasks.
+   * @return Task[]
+   */
+  public abstract function compile(): array;
 
 
   /**
@@ -135,75 +129,36 @@ abstract class Box implements JsonSerializable
 
   /**
    * Get input ports of this box.
-   * @return array
+   * @return Port[]
    */
   public function getInputPorts(): array {
     return $this->meta->getInputPorts();
   }
 
   /**
+   * Get input port of given name from this box.
+   * @param string $port
+   * @return Port|null
+   */
+  public function getInputPort(string $port): ?Port {
+    return $this->meta->getInputPort($port);
+  }
+
+  /**
    * Get output ports of this box.
-   * @return array
+   * @return Port[]
    */
   public function getOutputPorts(): array {
     return $this->meta->getOutputPorts();
   }
 
   /**
-   * Get pipeline variables from exercise configuration.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
+   * Get output port of given name from this box.
+   * @param string $port
+   * @return Port|null
    */
-  public function getExerciseConfigVariables(): ?VariablesTable {
-    return $this->exerciseConfigVariables;
-  }
-
-  /**
-   * Set pipeline variables from exercise configuration.
-   * @param VariablesTable $variablesTable
-   * @return Box
-   */
-  public function setExerciseConfigVariables(VariablesTable $variablesTable): Box {
-    $this->exerciseConfigVariables = $variablesTable;
-    return $this;
-  }
-
-  /**
-   * Get variables from environment configuration.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
-   */
-  public function getEnvironmentConfigVariables(): ?VariablesTable {
-    return $this->environmentConfigVariables;
-  }
-
-  /**
-   * Set variables from environment configuration.
-   * @param VariablesTable $variablesTable
-   * @return Box
-   */
-  public function setEnvironmentConfigVariables(VariablesTable $variablesTable): Box {
-    $this->environmentConfigVariables = $variablesTable;
-    return $this;
-  }
-
-  /**
-   * Get variables from pipeline.
-   * @note Needs to be first set before usage.
-   * @return VariablesTable|null
-   */
-  public function getPipelineVariables(): ?VariablesTable {
-    return $this->pipelineVariables;
-  }
-
-  /**
-   * Set variables from pipeline.
-   * @param VariablesTable $variablesTable
-   * @return Box
-   */
-  public function setPipelineVariables(VariablesTable $variablesTable): Box {
-    $this->pipelineVariables = $variablesTable;
-    return $this;
+  public function getOutputPort(string $port): ?Port {
+    return $this->meta->getOutputPort($port);
   }
 
 

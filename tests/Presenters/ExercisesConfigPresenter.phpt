@@ -80,17 +80,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
       // check variables, again defined in fixtures
       $variablesTable = $config["variablesTable"];
-      Assert::count(2, $variablesTable);
-      Assert::contains([
-        "name" => "varA",
-        "type" => "file",
-        "value" => "valA"
-      ], $variablesTable);
-      Assert::contains([
-        "name" => "varB",
-        "type" => "string",
-        "value" => "valB"
-      ], $variablesTable);
+      Assert::count(1, $variablesTable);
+      Assert::equal("source_file", current($variablesTable)["name"]);
     }
   }
 
@@ -275,8 +266,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      'test-id-1' => ['env-id-1' => ['pipeline-id-1' => ['box-id-1' => ['wall-time' => 1.0]]]],
-      'test-id-2' => ['env-id-2' => ['pipeline-id-2' => ['box-id-2' => ['wall-time' => 2.0]]]]
+      'test-id-1' => ['pipeline-id-1' => ['box-id-1' => ['wall-time' => 1.0]]],
+      'test-id-2' => ['pipeline-id-2' => ['box-id-2' => ['wall-time' => 2.0]]]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',

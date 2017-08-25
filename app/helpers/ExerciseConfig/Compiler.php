@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\ExerciseConfigCompiler;
 use App\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\RuntimeEnvironment;
 
 /**
@@ -40,13 +41,21 @@ class Compiler {
    * Generate job configuration from given exercise configuration.
    * @param Exercise|Assignment $exerciseAssignment
    * @param RuntimeEnvironment $runtimeEnvironment
+   * @param HardwareGroup[] $hwGroups
    * @return JobConfig
    */
   public function compile($exerciseAssignment, RuntimeEnvironment $runtimeEnvironment): JobConfig {
     $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
-    $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
-    $variablesTable = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
-    return $this->exerciseConfigCompiler->compile($exerciseConfig, $variablesTable);
+    $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
+    $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
+
+    $limits = array();
+    foreach ($exerciseAssignment->getHardwareGroups()->getValues() as $hwGroup) {
+      $limitsConfig = $exerciseAssignment->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
+      $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($limitsConfig->getParsedLimits());
+    }
+
+    return $this->exerciseConfigCompiler->compile($exerciseConfig, $environmentConfigVariables, $limits, $runtimeEnvironment->getId());
   }
 }

@@ -95,9 +95,10 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testMissingDefaultPipeline() {
     $pipelineVars = new PipelineVars();
+    $pipelineVars->setName("not existing pipeline");
 
     $test = new Test();
-    $test->addPipeline("not existing pipeline", $pipelineVars);
+    $test->addPipeline($pipelineVars);
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
@@ -117,13 +118,16 @@ class TestExerciseConfigValidator extends Tester\TestCase
   }
 
   public function testMissingEnvironmentPipeline() {
-    $pipelineVars = new PipelineVars();
+    $existing = new PipelineVars();
+    $notExisting = new PipelineVars();
+    $existing->setName("existing pipeline");
+    $notExisting->setName("not existing pipeline");
 
     $environment = new Environment();
-    $environment->addPipeline("not existing pipeline", $pipelineVars);
+    $environment->addPipeline($notExisting);
 
     $test = new Test();
-    $test->addPipeline("existing pipeline", $pipelineVars);
+    $test->addPipeline($existing);
     $test->addEnvironment("envA", $environment);
 
     $exerciseConfig = new ExerciseConfig();
@@ -156,13 +160,14 @@ class TestExerciseConfigValidator extends Tester\TestCase
   }
 
   public function testCorrect() {
-    $pipelineVars = new PipelineVars();
+    $existing = new PipelineVars();
+    $existing->setName("existing pipeline");
 
     $environment = new Environment();
-    $environment->addPipeline("existing pipeline", $pipelineVars);
+    $environment->addPipeline($existing);
 
     $test = new Test();
-    $test->addPipeline("existing pipeline", $pipelineVars);
+    $test->addPipeline($existing);
     $test->addEnvironment("envA", $environment);
 
     $exerciseConfig = new ExerciseConfig();

@@ -21,6 +21,15 @@ class TestVariable extends Tester\TestCase
     "value" => "varValue"
   ];
 
+  static $configArray = [
+    "name" => "varName",
+    "type" => "string[]",
+    "value" => [
+      "hehe",
+      "haha"
+    ]
+  ];
+
   /** @var Loader */
   private $loader;
 
@@ -64,14 +73,14 @@ class TestVariable extends Tester\TestCase
     Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string", "value" => "val"]));
     Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg", "value" => "val"]));
 
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string[]", "value" => "val"]));
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg[]", "value" => "val"]));
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string[]", "value" => ["val"]]));
+    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg[]", "value" => ["val"]]));
 
     Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file", "value" => "val"]));
     Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe", "value" => "val"]));
 
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file[]", "value" => "val"]));
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe[]", "value" => "val"]));
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file[]", "value" => ["val"]]));
+    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe[]", "value" => ["val"]]));
   }
 
   public function testMissingName() {
@@ -101,6 +110,30 @@ class TestVariable extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
+  public function testEscaping() {
+    $variable = $this->loader->loadVariable([
+      "name" => "varName",
+      "type" => "string",
+      "value" => '\$reference'
+    ]);
+
+    Assert::false($variable->isReference());
+    Assert::equal('\$reference', $variable->getReference());
+    Assert::equal('$reference', $variable->getValue());
+  }
+
+  public function testReferences() {
+    $variable = $this->loader->loadVariable([
+      "name" => "varName",
+      "type" => "string",
+      "value" => '$reference'
+    ]);
+
+    Assert::true($variable->isReference());
+    Assert::equal('reference', $variable->getReference());
+    Assert::equal('$reference', $variable->getValue());
+  }
+
   public function testSerialization() {
     $deserialized = Yaml::parse((string)$this->loader->loadVariable(self::$config));
     Assert::equal(self::$config, $deserialized);
@@ -117,6 +150,37 @@ class TestVariable extends Tester\TestCase
 
     Assert::equal("file", $variable->getType());
     Assert::equal("value", $variable->getValue());
+  }
+
+  public function testBadArrayType() {
+    Assert::exception(function () {
+      $this->loader->loadVariable([
+        "name" => "varName",
+        "type" => "string[]",
+        "value" => "text"
+      ]);
+    }, ExerciseConfigException::class);
+  }
+
+  public function testBadScalarType() {
+    Assert::exception(function () {
+      $this->loader->loadVariable([
+        "name" => "varName",
+        "type" => "string",
+        "value" => [
+          "haha",
+          "hehe"
+        ]
+      ]);
+    }, ExerciseConfigException::class);
+  }
+
+  public function testCorrectArray() {
+    $variable = $this->loader->loadVariable(self::$configArray);
+    Assert::equal("string[]", $variable->getType());
+    Assert::true(is_array($variable->getValue()));
+    Assert::equal("hehe", $variable->getValue()[0]);
+    Assert::equal("haha", $variable->getValue()[1]);
   }
 
   public function testCorrect() {

@@ -5,6 +5,7 @@ namespace App\Helpers\JobConfig;
 use App\Helpers\ExerciseConfig\Compiler;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
 

@@ -14,6 +14,7 @@ use App\Helpers\ExerciseConfig\Loader;
 class TestPipelineVars extends Tester\TestCase
 {
   static $config = [
+    "name" => "pipeline",
     "variables" => [
       [ "name" => "varA", "type" => "string", "value" => "valA" ],
       [ "name" => "varB", "type" => "file", "value" => "valB" ]
@@ -44,7 +45,7 @@ class TestPipelineVars extends Tester\TestCase
 
   public function testVariablesOperations() {
     $pipeline = new PipelineVars;
-    $variableMeta = (new VariableMeta)->setName("variableA");
+    $variableMeta = (new VariableMeta)->setName("variableA")->setValue("valA");
     $variable = new StringVariable($variableMeta);
 
     $pipeline->getVariablesTable()->set($variable);
@@ -61,6 +62,7 @@ class TestPipelineVars extends Tester\TestCase
     $pipeline = $this->loader->loadPipelineVars(self::$config);
     Assert::count(2, $pipeline->getVariablesTable()->getAll());
 
+    Assert::equal("pipeline", $pipeline->getName());
     Assert::equal("string", $pipeline->getVariablesTable()->get("varA")->getType());
     Assert::equal("file", $pipeline->getVariablesTable()->get("varB")->getType());
     Assert::equal("valA", $pipeline->getVariablesTable()->get("varA")->getValue());

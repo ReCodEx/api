@@ -190,30 +190,6 @@ class TestBox extends Tester\TestCase
     Assert::count(0, $boxMeta->getOutputPorts());
   }
 
-  public function testVariablesTablesOperations() {
-    $box = $this->loader->loadBox(self::$config);
-
-    Assert::null($box->getEnvironmentConfigVariables());
-    Assert::null($box->getExerciseConfigVariables());
-    Assert::null($box->getPipelineVariables());
-
-    $envVariables = new VariablesTable();
-    $exeVariables = new VariablesTable();
-    $pipeVariables = new VariablesTable();
-
-    $box->setEnvironmentConfigVariables($envVariables);
-    $box->setExerciseConfigVariables($exeVariables);
-    $box->setPipelineVariables($pipeVariables);
-
-    Assert::notEqual(null, $box->getEnvironmentConfigVariables());
-    Assert::notEqual(null, $box->getExerciseConfigVariables());
-    Assert::notEqual(null, $box->getPipelineVariables());
-
-    Assert::equal(0, $box->getEnvironmentConfigVariables()->size());
-    Assert::equal(0, $box->getExerciseConfigVariables()->size());
-    Assert::equal(0, $box->getPipelineVariables()->size());
-  }
-
   public function testCorrect() {
     $box = $this->loader->loadBox(self::$config);
     Assert::type(DataInBox::class, $box);
