@@ -6,10 +6,10 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
-use App\Helpers\ExerciseConfig\FileVariable;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use Tester\Assert;
@@ -48,11 +48,11 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree A -> pipeline: in -> exec -> out; pre-exec -> exec
     //
 
-    $referencedVarA = new FileVariable((new VariableMeta)->setName("test-a-reference-variable")->setValue("booya"));
-    $testInputVarA = new FileVariable((new VariableMeta)->setName("test-a-input")->setValue(""));
-    $preExecVarA = new FileVariable((new VariableMeta)->setName("test-a-pre-exec")->setValue('$test-a-reference-variable'));
-    $outputReferencedVarA = new FileVariable((new VariableMeta)->setName("test-a-output-reference")->setValue("yaboo"));
-    $testOutputVarA = new FileVariable((new VariableMeta)->setName("test-a-output")->setValue('$test-a-output-reference'));
+    $referencedVarA = new Variable((new VariableMeta)->setName("test-a-reference-variable")->setType("file")->setValue("booya"));
+    $testInputVarA = new Variable((new VariableMeta)->setName("test-a-input")->setType("file")->setValue(""));
+    $preExecVarA = new Variable((new VariableMeta)->setName("test-a-pre-exec")->setType("file")->setValue('$test-a-reference-variable'));
+    $outputReferencedVarA = new Variable((new VariableMeta)->setName("test-a-output-reference")->setType("file")->setValue("yaboo"));
+    $testOutputVarA = new Variable((new VariableMeta)->setName("test-a-output")->setType("file")->setValue('$test-a-output-reference'));
 
     $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testInputVarA);
     $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
@@ -88,10 +88,10 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree B - pipeline: inA -> exec -> outA; inB -> exec -> outB
     //
 
-    $testInputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-input")->setValue(""));
-    $testInputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-input")->setValue(""));
-    $testOutputVarBA = new FileVariable((new VariableMeta)->setName("test-ba-output")->setValue(""));
-    $testOutputVarBB = new FileVariable((new VariableMeta)->setName("test-bb-output")->setValue(""));
+    $testInputVarBA = new Variable((new VariableMeta)->setName("test-ba-input")->setType("file")->setValue(""));
+    $testInputVarBB = new Variable((new VariableMeta)->setName("test-bb-input")->setType("file")->setValue(""));
+    $testOutputVarBA = new Variable((new VariableMeta)->setName("test-ba-output")->setType("file")->setValue(""));
+    $testOutputVarBB = new Variable((new VariableMeta)->setName("test-bb-output")->setType("file")->setValue(""));
 
     $this->envVarTableB = (new VariablesTable)->set($testInputVarBA);
     $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
@@ -137,7 +137,14 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testMissingVariableInInputBoxTables() {
     Assert::exception(function () {
-      $this->pipeVarTableA->remove("test-a-input");
+      $this->pipeVarTableB->remove("test-bb-input");
+      $this->resolver->resolve($this->treeArray[1], $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
+    }, ExerciseConfigException::class);
+  }
+
+  public function testMissingReferencedVariable() {
+    Assert::exception(function () {
+      $this->exerVarTableA->remove("test-a-reference-variable");
       $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }

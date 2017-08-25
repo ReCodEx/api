@@ -103,9 +103,18 @@ class Node {
 
   /**
    * Return task identifications associated with this node.
+   * If there is none, ask parents for their task identifications.
    * @return string[]
    */
   public function getTaskIds(): array {
+    if (empty($this->taskIds)) {
+      $taskIds = array();
+      foreach ($this->parents as $parent) {
+        $taskIds = array_merge($taskIds, $parent->getTaskIds());
+      }
+      return $taskIds;
+    }
+
     return $this->taskIds;
   }
 

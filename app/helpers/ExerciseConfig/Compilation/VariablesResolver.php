@@ -47,21 +47,21 @@ class VariablesResolver {
       }
 
       // try to look for variable in environment config table
-      $remoteVariable = $environmentVariables->get($variableName);
+      $variable = $environmentVariables->get($variableName);
+
       // @todo: resolve regexps which matches files given by students
 
-      // if variable still not present look in the exercise config table
-      if (!$remoteVariable) {
-        $remoteVariable = $exerciseVariables->get($variableName);
-      }
-
       // variable value in local pipeline config
-      $variable = $pipelineVariables->get($variableName);
+      if (!$variable) {
+        $variable = $pipelineVariables->get($variableName);
+      }
       // something is really wrong there... just leave and do not look back
       if (!$variable) {
         throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
       }
 
+      // if variable is present in exercise configuration then it is remote one
+      $remoteVariable = $exerciseVariables->get($variableName);
       // assign variable to both nodes
       $inputBox->setRemoteVariable($remoteVariable);
       $outputPort->setVariableValue($variable);

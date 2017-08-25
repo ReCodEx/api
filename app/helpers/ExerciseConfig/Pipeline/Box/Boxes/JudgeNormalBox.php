@@ -19,7 +19,6 @@ class JudgeNormalBox extends Box
   public static $JUDGE_NORMAL_BINARY = "\${JUDGES_DIR}/recodex-judge-normal";
   public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
   public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
-  public static $SCORE_PORT_KEY = "score";
   public static $DEFAULT_NAME = "ReCodEx Judge Normal";
 
   private static $initialized = false;
@@ -36,9 +35,7 @@ class JudgeNormalBox extends Box
         new FilePort((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setVariable("")),
         new FilePort((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setVariable(""))
       );
-      self::$defaultOutputPorts = array(
-        new StringPort((new PortMeta)->setName(self::$SCORE_PORT_KEY)->setVariable(""))
-      );
+      self::$defaultOutputPorts = array();
     }
   }
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
+use App\Helpers\JobConfig\Limits as JobLimits;
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
 
@@ -78,6 +79,20 @@ class Limits implements JsonSerializable {
     $this->parallel = $parallel;
     return $this;
   }
+
+
+  /**
+   * Compile exercise limits into job limits.
+   * @param string $hwGroupId
+   * @return JobLimits
+   */
+  public function compile(string $hwGroupId): JobLimits {
+    return (new JobLimits)->setId($hwGroupId)
+      ->setWallTime($this->wallTime)
+      ->setMemoryLimit($this->memory)
+      ->setParallel($this->parallel);
+  }
+
 
   /**
    * Creates and returns properly structured array representing this object.

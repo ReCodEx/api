@@ -172,7 +172,7 @@ class TestPipelinesPresenter extends Tester\TestCase
             'expected-output' => ['type' => 'file', 'value' => 'in_data_file'],
             'actual-output' => ['type' => 'file', 'value' => 'in_data_file']
           ],
-          'portsOut' => ['score' => ['type' => 'string', 'value' => 'judge_score']]
+          'portsOut' => []
         ]
       ]
     ];

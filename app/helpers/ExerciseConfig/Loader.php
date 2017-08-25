@@ -18,11 +18,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 class Loader {
 
   /**
-   * @var VariableFactory
-   */
-  private $variableFactory;
-
-  /**
    * @var PortFactory
    */
   private $portFactory;
@@ -37,7 +32,6 @@ class Loader {
    * @param BoxService $boxService
    */
   public function __construct(BoxService $boxService) {
-    $this->variableFactory = new VariableFactory();
     $this->portFactory = new PortFactory();
     $this->boxService = $boxService;
   }
@@ -70,7 +64,7 @@ class Loader {
     }
     $variable->setValue($data[VariableMeta::VALUE_KEY]);
 
-    return $this->variableFactory->create($variable);
+    return new Variable($variable);
   }
 
   /**

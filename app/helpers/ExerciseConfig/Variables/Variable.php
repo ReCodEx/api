@@ -9,9 +9,10 @@ use Symfony\Component\Yaml\Yaml;
 use Nette\Utils\Strings;
 
 /**
- * Base class for variables.
+ * Variable class which holds identifier of variable, type information and
+ * actual value.
  */
-abstract class Variable implements JsonSerializable
+class Variable implements JsonSerializable
 {
   public static $REFERENCE_KEY = '$';
   public static $ESCAPE_CHAR = '\\';
@@ -22,35 +23,51 @@ abstract class Variable implements JsonSerializable
    */
   protected $meta;
 
+  /**
+   * Determines if variable is array or not.
+   * @var bool
+   */
+  protected $isArray;
+
 
   /**
    * Variable constructor.
    * @param VariableMeta $meta
+   * @throws ExerciseConfigException
    */
   public function __construct(VariableMeta $meta) {
     $this->meta = $meta;
-    $this->validate();
+    $this->validateType();
+    $this->validateValue();
   }
 
-
   /**
-   * Get type of this variable.
-   * @return null|string
+   * Validate type given during construction and set appropriate attributes.
+   * @throws ExerciseConfigException
    */
-  public abstract function getType(): ?string;
-
-  /**
-   * Return true if variable can be interpreted as array.
-   * @return bool
-   */
-  public abstract function isArray(): bool;
-
+  private function validateType() {
+    if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$FILE_ARRAY_TYPE);
+      $this->isArray = true;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
+      $this->meta->setType(VariableTypes::$FILE_TYPE);
+      $this->isArray = false;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
+      $this->isArray = true;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
+      $this->meta->setType(VariableTypes::$STRING_TYPE);
+      $this->isArray = false;
+    } else {
+      throw new ExerciseConfigException("Unknown type: {$this->meta->getType()}");
+    }
+  }
 
   /**
    * Validate variable value against variable type.
    * @throws ExerciseConfigException
    */
-  private function validate() {
+  private function validateValue() {
     if ($this->isReference()) {
       // if variable is reference, then it always contains string and
       // does not have to be validated
@@ -66,12 +83,29 @@ abstract class Variable implements JsonSerializable
     }
   }
 
+
   /**
    * Get name of the variable.
    * @return null|string
    */
   public function getName(): ?string {
     return $this->meta->getName();
+  }
+
+  /**
+   * Get type of this variable.
+   * @return null|string
+   */
+  public function getType(): ?string {
+    return $this->meta->getType();
+  }
+
+  /**
+   * Return true if variable can be interpreted as array.
+   * @return bool
+   */
+  public function isArray(): bool {
+    return $this->isArray;
   }
 
   /**

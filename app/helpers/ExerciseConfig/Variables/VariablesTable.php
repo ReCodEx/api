@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 use JsonSerializable;
+use Nette\Utils\Arrays;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -29,11 +30,7 @@ class VariablesTable implements JsonSerializable
    * @return Variable|null
    */
   public function get(string $key): ?Variable {
-    if (array_key_exists($key, $this->table)) {
-      return $this->table[$key];
-    }
-
-    return null;
+    return Arrays::get($this->table, $key, null);
   }
 
   /**

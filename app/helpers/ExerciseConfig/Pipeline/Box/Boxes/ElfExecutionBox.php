@@ -88,7 +88,7 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY));
+    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getValue());
     $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
     return [$task];
   }

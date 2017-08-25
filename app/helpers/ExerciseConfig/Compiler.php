@@ -41,7 +41,6 @@ class Compiler {
    * Generate job configuration from given exercise configuration.
    * @param Exercise|Assignment $exerciseAssignment
    * @param RuntimeEnvironment $runtimeEnvironment
-   * @param HardwareGroup[] $hwGroups
    * @return JobConfig
    */
   public function compile($exerciseAssignment, RuntimeEnvironment $runtimeEnvironment): JobConfig {

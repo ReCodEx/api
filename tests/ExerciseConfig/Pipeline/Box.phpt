@@ -31,7 +31,7 @@ class TestBox extends Tester\TestCase
       "expected-output" => ['type' => 'file', 'value' => "exp"],
       "actual-output" => ['type' => 'file', 'value' => "act"]
     ],
-    "portsOut" => [ "score" => ['type' => 'string', 'value' => "out_data_file"] ]
+    "portsOut" => []
   ];
 
 

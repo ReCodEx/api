@@ -3,13 +3,11 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\FileArrayVariable;
-use App\Helpers\ExerciseConfig\FileVariable;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\StringArrayVariable;
-use App\Helpers\ExerciseConfig\StringVariable;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -52,8 +50,8 @@ class TestVariablesTable extends Tester\TestCase
 
   public function testVariablesOperations() {
     $table = new VariablesTable;
-    $variableMeta = (new VariableMeta)->setName("varA")->setValue("valA");
-    $variable = new StringVariable($variableMeta);
+    $variableMeta = (new VariableMeta)->setName("varA")->setType("string")->setValue("valA");
+    $variable = new Variable($variableMeta);
 
     $table->set($variable);
     Assert::equal(1, $table->size());
@@ -69,10 +67,10 @@ class TestVariablesTable extends Tester\TestCase
     $table = $this->loader->loadVariablesTable(self::$config);
     Assert::equal(4, $table->size());
 
-    Assert::type(FileVariable::class, $table->get("environment"));
-    Assert::type(StringVariable::class, $table->get("tnemnorivne"));
-    Assert::type(FileArrayVariable::class, $table->get("varFileArr"));
-    Assert::type(StringArrayVariable::class, $table->get("varStringArr"));
+    Assert::equal(VariableTypes::$FILE_TYPE, $table->get("environment")->getType());
+    Assert::equal(VariableTypes::$STRING_TYPE, $table->get("tnemnorivne")->getType());
+    Assert::equal(VariableTypes::$FILE_ARRAY_TYPE, $table->get("varFileArr")->getType());
+    Assert::equal(VariableTypes::$STRING_ARRAY_TYPE, $table->get("varStringArr")->getType());
 
     Assert::equal("file", $table->get("environment")->getType());
     Assert::equal("string", $table->get("tnemnorivne")->getType());
