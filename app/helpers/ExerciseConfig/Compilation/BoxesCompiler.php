@@ -35,9 +35,9 @@ class BoxesCompiler {
    * Set limits for all given hwgroups in given task.
    * @param Node $node
    * @param Task $task
-   * @param ExerciseLimits[] $limits indexed by hwgroup
+   * @param ExerciseLimits[] $exerciseLimits indexed by hwgroup
    */
-  private function setLimits(Node $node, Task $task, array $limits) {
+  private function setLimits(Node $node, Task $task, array $exerciseLimits) {
     if (!$task->getSandboxConfig()) {
       return;
     }
@@ -46,8 +46,13 @@ class BoxesCompiler {
     $test = $node->getTestId();
     $box = $node->getBox()->getName();
 
-    foreach ($limits as $hwGroup => $groupLimits) {
-      $jobLimits = $groupLimits->getLimits($test, $pipeline, $box)->compile($hwGroup);
+    foreach ($exerciseLimits as $hwGroup => $hwGroupLimits) {
+      $limits = $hwGroupLimits->getLimits($test, $pipeline, $box);
+      if (!$limits) {
+        continue;
+      }
+
+      $jobLimits = $limits->compile($hwGroup);
       $task->getSandboxConfig()->setLimits($jobLimits);
     }
   }

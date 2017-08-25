@@ -11,6 +11,10 @@ use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
+use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\TaskType;
 use App\Model\Repository\Pipelines;
 use Tester\Assert;
 
@@ -46,7 +50,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       "testA" => [
         "pipelines" => [
           [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.A.out" ] ] ]
         ],
         "environments" => [
           "envA" => [ "pipelines" => [] ],
@@ -56,7 +60,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       "testB" => [
         "pipelines" => [
           [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.B.out" ] ] ]
         ],
         "environments" => [
           "envA" => [
@@ -153,6 +157,48 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       ]
     ]
   ];
+  private static $limits = [
+    [ // groupA
+      "testA" => [
+        "compilationPipeline" => [
+          "compilation" => [
+            "memory" => 123,
+            "wall-time" => 456.0
+          ]
+        ],
+        "testPipeline" => [
+          "run" => [
+            "memory" => 654,
+            "wall-time" => 321.0
+          ]
+        ]
+      ],
+      "testB" => [
+        "compilationPipeline" => [
+          "compilation" => [
+            "memory" => 789,
+            "wall-time" => 987.0
+          ]
+        ]
+      ]
+    ],
+    [ // groupB
+      "testA" => [
+        "compilationPipeline" => [
+          "compilation" => [
+            "memory" => 123,
+            "wall-time" => 456.0
+          ]
+        ],
+        "testPipeline" => [
+          "run" => [
+            "memory" => 654,
+            "wall-time" => 321.0
+          ]
+        ]
+      ]
+    ]
+  ];
 
 
   /**
@@ -190,13 +236,90 @@ class TestExerciseConfigCompiler extends Tester\TestCase
   public function testCorrect() {
     $exerciseConfig = $this->loader->loadExerciseConfig(self::$exerciseConfig);
     $environmentConfigVariables = $this->loader->loadVariablesTable(self::$envVariablesTable);
-    $limits = array(); // @todo
-
+    $limits = [
+      "groupA" => $this->loader->loadExerciseLimits(self::$limits[0]),
+      "groupB" => $this->loader->loadExerciseLimits(self::$limits[1])
+    ];
     $jobConfig = $this->compiler->compile($exerciseConfig, $environmentConfigVariables, $limits, self::$environment);
 
-    // @todo
+    // check general properties
+    Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
+    Assert::equal(5, $jobConfig->getTasksCount());
 
-    Assert::true(false);
+    ////////////////////////////////////////////////////////////////////////////
+    // check order of all tasks and right attributes
+    //
+
+    $testATestTask = $jobConfig->getTasks()[0];
+    Assert::equal("testA.testPipeline.test.1", $testATestTask->getId());
+    Assert::equal(1, $testATestTask->getPriority());
+    Assert::count(0, $testATestTask->getDependencies());
+    Assert::equal("fetch", $testATestTask->getCommandBinary());
+    Assert::equal(["expected.A.out", "expected.out"], $testATestTask->getCommandArguments());
+    Assert::null($testATestTask->getType());
+    Assert::equal("testA", $testATestTask->getTestId());
+    Assert::null($testATestTask->getSandboxConfig());
+
+    $testACompilationTask = $jobConfig->getTasks()[1];
+    Assert::equal("testA.compilationPipeline.compilation.2", $testACompilationTask->getId());
+    Assert::equal(2, $testACompilationTask->getPriority());
+    Assert::count(1, $testACompilationTask->getDependencies());
+    Assert::equal([$testATestTask->getId()], $testACompilationTask->getDependencies());
+    Assert::equal(GccCompilationBox::$GCC_BINARY, $testACompilationTask->getCommandBinary());
+    Assert::equal(["source", "-o", "a.out"], $testACompilationTask->getCommandArguments());
+    Assert::equal(TaskType::$INITIATION, $testACompilationTask->getType());
+    Assert::equal("testA", $testACompilationTask->getTestId());
+    Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
+    Assert::count(2, $testACompilationTask->getSandboxConfig()->getLimitsArray());
+    Assert::equal(123, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
+    Assert::equal(456.0, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
+    Assert::equal(123, $testACompilationTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
+    Assert::equal(456.0, $testACompilationTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
+
+    $testARunTask = $jobConfig->getTasks()[2];
+    Assert::equal("testA.testPipeline.run.3", $testARunTask->getId());
+    Assert::equal(3, $testARunTask->getPriority());
+    Assert::count(1, $testARunTask->getDependencies());
+    Assert::equal([$testACompilationTask->getId()], $testARunTask->getDependencies());
+    Assert::equal("a.out", $testARunTask->getCommandBinary());
+    Assert::equal([], $testARunTask->getCommandArguments());
+    Assert::equal(TaskType::$EXECUTION, $testARunTask->getType());
+    Assert::equal("testA", $testARunTask->getTestId());
+    Assert::notEqual(null, $testARunTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
+    Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
+    Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
+    Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
+    Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
+    Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
+
+    $testAJudgeTask = $jobConfig->getTasks()[3];
+    Assert::equal("testA.testPipeline.judge.4", $testAJudgeTask->getId());
+    Assert::equal(4, $testAJudgeTask->getPriority());
+    Assert::count(1, $testAJudgeTask->getDependencies());
+    Assert::equal([$testARunTask->getId()], $testAJudgeTask->getDependencies());
+    Assert::equal(JudgeNormalBox::$JUDGE_NORMAL_BINARY, $testAJudgeTask->getCommandBinary());
+    Assert::equal(["expected.out", "actual.out"], $testAJudgeTask->getCommandArguments());
+    Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
+    Assert::equal("testA", $testAJudgeTask->getTestId());
+    Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testAJudgeTask->getSandboxConfig()->getName());
+    Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
+
+    $testBCompilationTask = $jobConfig->getTasks()[4];
+    Assert::equal("testB.compilationPipeline.compilation.5", $testBCompilationTask->getId());
+    Assert::equal(5, $testBCompilationTask->getPriority());
+    Assert::count(0, $testBCompilationTask->getDependencies());
+    Assert::equal(GccCompilationBox::$GCC_BINARY, $testBCompilationTask->getCommandBinary());
+    Assert::equal(["source", "-o", "a.out"], $testBCompilationTask->getCommandArguments());
+    Assert::equal(TaskType::$INITIATION, $testBCompilationTask->getType());
+    Assert::equal("testB", $testBCompilationTask->getTestId());
+    Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
+    Assert::count(1, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
+    Assert::equal(789, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
+    Assert::equal(987.0, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
   }
 
 }

@@ -106,6 +106,14 @@ class Node {
    * @return string[]
    */
   public function getTaskIds(): array {
+    if (empty($this->taskIds)) {
+      $taskIds = array();
+      foreach ($this->parents as $parent) {
+        $taskIds = array_merge($taskIds, $parent->getTaskIds());
+      }
+      return $taskIds;
+    }
+
     return $this->taskIds;
   }
 
