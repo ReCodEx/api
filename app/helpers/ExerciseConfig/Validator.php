@@ -64,7 +64,7 @@ class Validator {
    * output ports. That means one output port can be directed to multiple input
    * ones. There is possibility to have variable which is only aimed to input
    * port, in that case this variables has to be present in variables table of
-   * pipeline. Variables which only reference is in output port are not
+   * pipeline. Variables whose only reference is in output port are not
    * supported.
    * @param Pipeline $pipeline
    * @throws ExerciseConfigException
