@@ -137,7 +137,14 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testMissingVariableInInputBoxTables() {
     Assert::exception(function () {
-      $this->pipeVarTableA->remove("test-a-input");
+      $this->pipeVarTableB->remove("test-bb-input");
+      $this->resolver->resolve($this->treeArray[1], $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
+    }, ExerciseConfigException::class);
+  }
+
+  public function testMissingReferencedVariable() {
+    Assert::exception(function () {
+      $this->exerVarTableA->remove("test-a-reference-variable");
       $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
     }, ExerciseConfigException::class);
   }

@@ -103,6 +103,7 @@ class Node {
 
   /**
    * Return task identifications associated with this node.
+   * If there is none, ask parents for their task identifications.
    * @return string[]
    */
   public function getTaskIds(): array {
