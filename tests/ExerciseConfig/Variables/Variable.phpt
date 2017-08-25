@@ -3,12 +3,9 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\FileArrayVariable;
-use App\Helpers\ExerciseConfig\FileVariable;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\StringArrayVariable;
-use App\Helpers\ExerciseConfig\StringVariable;
 use App\Helpers\ExerciseConfig\VariableMeta;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -70,17 +67,17 @@ class TestVariable extends Tester\TestCase
   }
 
   public function testCorrectTypes() {
-    Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string", "value" => "val"]));
-    Assert::type(StringVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg", "value" => "val"]));
+    Assert::equal(VariableTypes::$STRING_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "string", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$STRING_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg", "value" => "val"])->getType());
 
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "string[]", "value" => ["val"]]));
-    Assert::type(StringArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg[]", "value" => ["val"]]));
+    Assert::equal(VariableTypes::$STRING_ARRAY_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "string[]", "value" => ["val"]])->getType());
+    Assert::equal(VariableTypes::$STRING_ARRAY_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "StRiNg[]", "value" => ["val"]])->getType());
 
-    Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file", "value" => "val"]));
-    Assert::type(FileVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe", "value" => "val"]));
+    Assert::equal(VariableTypes::$FILE_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "file", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$FILE_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe", "value" => "val"])->getType());
 
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "file[]", "value" => ["val"]]));
-    Assert::type(FileArrayVariable::class, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe[]", "value" => ["val"]]));
+    Assert::equal(VariableTypes::$FILE_ARRAY_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "file[]", "value" => ["val"]])->getType());
+    Assert::equal(VariableTypes::$FILE_ARRAY_TYPE, $this->loader->loadVariable(["name" => "varName", "type" => "FiLe[]", "value" => ["val"]])->getType());
   }
 
   public function testMissingName() {

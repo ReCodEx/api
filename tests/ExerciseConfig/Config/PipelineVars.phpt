@@ -5,8 +5,9 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
-use App\Helpers\ExerciseConfig\StringVariable;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableMeta;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -45,11 +46,11 @@ class TestPipelineVars extends Tester\TestCase
 
   public function testVariablesOperations() {
     $pipeline = new PipelineVars;
-    $variableMeta = (new VariableMeta)->setName("variableA")->setValue("valA");
-    $variable = new StringVariable($variableMeta);
+    $variableMeta = (new VariableMeta)->setName("variableA")->setType("string")->setValue("valA");
+    $variable = new Variable($variableMeta);
 
     $pipeline->getVariablesTable()->set($variable);
-    Assert::type(StringVariable::class, $pipeline->getVariablesTable()->get("variableA"));
+    Assert::equal(VariableTypes::$STRING_TYPE, $pipeline->getVariablesTable()->get("variableA")->getType());
 
     $pipeline->getVariablesTable()->remove("non-existant");
     Assert::count(1, $pipeline->getVariablesTable()->getAll());

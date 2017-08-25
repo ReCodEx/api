@@ -223,7 +223,6 @@ services:
   - App\Helpers\ExerciseConfig\Transformer
   - App\Helpers\ExerciseConfig\Compiler
   - App\Helpers\ExerciseConfig\Validator
-  - App\Helpers\ExerciseConfig\VariableFactory
   - App\Helpers\ExerciseConfig\Pipeline\Box\BoxService
   - App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator
   - App\Helpers\ExerciseConfig\Validation\PipelineValidator
