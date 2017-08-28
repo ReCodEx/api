@@ -2,8 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -30,10 +31,10 @@ class ElfExecutionBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName(self::$OUTPUT_FILE_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$OUTPUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
     }
   }

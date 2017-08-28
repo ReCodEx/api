@@ -7,11 +7,12 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
 
@@ -58,13 +59,13 @@ class TestVariablesResolver extends Tester\TestCase
     $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
     $this->pipeVarTableA = (new VariablesTable)->set($testInputVarA)->set($testOutputVarA)->set($preExecVarA);
 
-    $outPortA = new FilePort((new PortMeta)->setName("data-in")->setVariable($testInputVarA->getName()));
+    $outPortA = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarA->getName()));
     $dataInNodeA = new PortNode((new CustomBox)->setName("in")->addOutputPort($outPortA));
 
-    $preExecPortA = new FilePort((new PortMeta)->setName("pre-data")->setVariable($preExecVarA->getName()));
+    $preExecPortA = new Port((new PortMeta)->setName("pre-data")->setType(VariableTypes::$FILE_TYPE)->setVariable($preExecVarA->getName()));
     $preExecNodeA = new PortNode((new CustomBox)->setName("pre-exec")->addOutputPort($preExecPortA));
 
-    $inPortA = new FilePort((new PortMeta)->setName("data-out")->setVariable($testOutputVarA->getName()));
+    $inPortA = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarA->getName()));
     $execNodeA = new PortNode((new CustomBox)->setName("exec")
       ->addInputPort($preExecPortA)->addInputPort($outPortA)->addOutputPort($inPortA));
 
@@ -97,14 +98,14 @@ class TestVariablesResolver extends Tester\TestCase
     $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
     $this->pipeVarTableB = (new VariablesTable)->set($testInputVarBA)->set($testInputVarBB)->set($testOutputVarBA)->set($testOutputVarBB);
 
-    $outPortBA = new FilePort((new PortMeta)->setName("data-in-a")->setVariable($testInputVarBA->getName()));
+    $outPortBA = new Port((new PortMeta)->setName("data-in-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBA->getName()));
     $dataInNodeBA = new PortNode((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
 
-    $outPortBB = new FilePort((new PortMeta)->setName("data-in-b")->setVariable($testInputVarBB->getName()));
+    $outPortBB = new Port((new PortMeta)->setName("data-in-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBB->getName()));
     $dataInNodeBB = new PortNode((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
 
-    $inPortBA = new FilePort((new PortMeta)->setName("data-out-a")->setVariable($testOutputVarBA->getName()));
-    $inPortBB = new FilePort((new PortMeta)->setName("data-out-b")->setVariable($testOutputVarBB->getName()));
+    $inPortBA = new Port((new PortMeta)->setName("data-out-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBA->getName()));
+    $inPortBB = new Port((new PortMeta)->setName("data-out-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBB->getName()));
     $execNodeB = new PortNode((new CustomBox)->setName("execB")->addInputPort($outPortBA)
       ->addInputPort($outPortBB)->addOutputPort($inPortBA)->addOutputPort($inPortBB));
 
@@ -151,7 +152,7 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testVariableNamesNotMatchesInInputBox() {
     Assert::exception(function () {
-      $newPort = new FilePort((new PortMeta)->setName("data-in")->setVariable("something which does not exist"));
+      $newPort = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getInputNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
       $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
@@ -160,7 +161,7 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testVariableNamesNotMatchesInOtherBox() {
     Assert::exception(function () {
-      $newPort = new FilePort((new PortMeta)->setName("data-out")->setVariable("something which does not exist"));
+      $newPort = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getOtherNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
       $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);

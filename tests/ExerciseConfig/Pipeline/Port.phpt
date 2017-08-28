@@ -4,11 +4,8 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FileArrayPort;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\StringArrayPort;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -60,17 +57,17 @@ class TestPort extends Tester\TestCase
   }
 
   public function testCorrectTypes() {
-    Assert::type(StringPort::class, $this->loader->loadPort("name", ["type" => "string", "value" => "val"]));
-    Assert::type(StringPort::class, $this->loader->loadPort("name", ["type" => "StRiNg", "value" => "val"]));
+    Assert::equal(VariableTypes::$STRING_TYPE, $this->loader->loadPort("name", ["type" => "string", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$STRING_TYPE, $this->loader->loadPort("name", ["type" => "StRiNg", "value" => "val"])->getType());
 
-    Assert::type(StringArrayPort::class, $this->loader->loadPort("name", ["type" => "string[]", "value" => "val"]));
-    Assert::type(StringArrayPort::class, $this->loader->loadPort("name", ["type" => "StRiNg[]", "value" => "val"]));
+    Assert::equal(VariableTypes::$STRING_ARRAY_TYPE, $this->loader->loadPort("name", ["type" => "string[]", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$STRING_ARRAY_TYPE, $this->loader->loadPort("name", ["type" => "StRiNg[]", "value" => "val"])->getType());
 
-    Assert::type(FilePort::class, $this->loader->loadPort("name", ["type" => "file", "value" => "val"]));
-    Assert::type(FilePort::class, $this->loader->loadPort("name", ["type" => "FiLe", "value" => "val"]));
+    Assert::equal(VariableTypes::$FILE_TYPE, $this->loader->loadPort("name", ["type" => "file", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$FILE_TYPE, $this->loader->loadPort("name", ["type" => "FiLe", "value" => "val"])->getType());
 
-    Assert::type(FileArrayPort::class, $this->loader->loadPort("name", ["type" => "file[]", "value" => "val"]));
-    Assert::type(FileArrayPort::class, $this->loader->loadPort("name", ["type" => "FiLe[]", "value" => "val"]));
+    Assert::equal(VariableTypes::$FILE_ARRAY_TYPE, $this->loader->loadPort("name", ["type" => "file[]", "value" => "val"])->getType());
+    Assert::equal(VariableTypes::$FILE_ARRAY_TYPE, $this->loader->loadPort("name", ["type" => "FiLe[]", "value" => "val"])->getType());
   }
 
   public function testMissingType() {

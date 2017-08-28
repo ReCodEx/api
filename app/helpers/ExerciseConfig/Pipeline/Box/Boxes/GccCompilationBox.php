@@ -2,9 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FileArrayPort;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -32,10 +32,10 @@ class GccCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new FileArrayPort((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setName(self::$SOURCE_FILE_PORT_KEY)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new FilePort((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
     }
   }

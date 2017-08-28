@@ -59,7 +59,7 @@ class Variable implements JsonSerializable
       $this->meta->setType(VariableTypes::$STRING_TYPE);
       $this->isArray = false;
     } else {
-      throw new ExerciseConfigException("Unknown type: {$this->meta->getType()}");
+      throw new ExerciseConfigException("Unknown variable type: {$this->meta->getType()}");
     }
   }
 

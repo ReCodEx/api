@@ -7,10 +7,9 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
-use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
@@ -171,8 +170,8 @@ class TestBox extends Tester\TestCase
   public function testPortsOperations() {
     $boxMeta = new BoxMeta;
     $portMeta = new PortMeta;
-    $portMeta->setName("newlyAddedPort");
-    $port = new StringPort($portMeta);
+    $portMeta->setName("newlyAddedPort")->setType(VariableTypes::$STRING_TYPE);
+    $port = new Port($portMeta);
 
     $boxMeta->addInputPort($port);
     $boxMeta->addOutputPort($port);
@@ -200,7 +199,7 @@ class TestBox extends Tester\TestCase
 
     /** @var PortMeta $port */
     $port = $box->getOutputPorts()["in-data"];
-    Assert::type(FilePort::class, $port);
+    Assert::equal(VariableTypes::$FILE_TYPE, $port->getType());
     Assert::equal("in-data", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
   }

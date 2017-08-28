@@ -3,14 +3,17 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Ports;
 
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Base class for ports.
+ * Port structure which contains type information and possibly reference to
+ * variable.
  */
-abstract class Port implements JsonSerializable
+class Port implements JsonSerializable
 {
   /**
    * Meta information about port.
@@ -31,8 +34,29 @@ abstract class Port implements JsonSerializable
    */
   public function __construct(PortMeta $meta) {
     $this->meta = $meta;
-    $this->meta->setType($this->getType());
+    $this->validateType();
   }
+
+  /**
+   * Validate type given during construction and set appropriate attributes.
+   * @throws ExerciseConfigException
+   */
+  private function validateType() {
+    if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$FILE_ARRAY_TYPE);
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
+      $this->meta->setType(VariableTypes::$FILE_TYPE);
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
+      $this->meta->setType(VariableTypes::$STRING_TYPE);
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$UNDEFINED_TYPE)) {
+      $this->meta->setType(VariableTypes::$UNDEFINED_TYPE);
+    } else {
+      throw new ExerciseConfigException("Unknown port type: {$this->meta->getType()}");
+    }
+  }
+
 
   /**
    * Get name of this port.
@@ -46,7 +70,9 @@ abstract class Port implements JsonSerializable
    * Get type of this port.
    * @return null|string
    */
-  public abstract function getType(): ?string;
+  public function getType(): ?string {
+    return $this->meta->getType();
+  }
 
   /**
    * Get variable value of the port.

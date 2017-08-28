@@ -2,9 +2,10 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
 
 
@@ -30,7 +31,7 @@ class DataInBox extends Box
       self::$initialized = true;
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new UndefinedPort((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE)->setVariable(""))
       );
     }
   }

@@ -2,9 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\StringPort;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -32,8 +32,8 @@ class JudgeNormalBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new FilePort((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setVariable("")),
-        new FilePort((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
+        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array();
     }
