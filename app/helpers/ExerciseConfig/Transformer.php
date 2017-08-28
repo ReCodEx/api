@@ -5,7 +5,7 @@ namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 
 /**
- * Transformer which is able to transfrom configuration from internal
+ * Transformer which is able to transform configuration from internal
  * representation to the one which is presented to users.
  */
 class Transformer {

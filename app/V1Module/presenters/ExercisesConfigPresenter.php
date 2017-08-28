@@ -6,6 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
 use App\Helpers\ExerciseConfig\Validator;
@@ -46,6 +47,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseConfigLoader;
+
+  /**
+   * @var Helper
+   * @inject
+   */
+  public $exerciseConfigHelper;
 
   /**
    * @var Validator
@@ -298,18 +305,21 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to get variables for this exercise configuration.");
     }
 
-    // prepare environment and pipelines
-    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
-    $pipelines = array();
+    // prepare pipeline configurations
+    $pipelines = [];
     foreach ($pipelinesIds as $pipelineId) {
-      $pipelines[$pipelineId] = $this->pipelines->findOrThrow($pipelineId);
+      $pipelineConfig = $this->pipelines->findOrThrow($pipelineId)->getPipelineConfig();
+      $pipelines[$pipelineId] = $this->exerciseConfigLoader->loadPipeline($pipelineConfig->getParsedPipeline());
     }
 
-    // prepare configurations
-    // @todo
+    // prepare environment configuration
+    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+    $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+    $environmentVariables = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
-    $variables = array();
-    $this->sendSuccessResponse($variables);
+    // compute result and send it back
+    $result = $this->exerciseConfigHelper->getVariablesForExercise($pipelines, $environmentVariables);
+    $this->sendSuccessResponse($result);
   }
 
   /**

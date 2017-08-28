@@ -32,7 +32,7 @@ class GccCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setName(self::$SOURCE_FILE_PORT_KEY)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
