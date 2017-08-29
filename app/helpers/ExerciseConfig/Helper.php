@@ -15,25 +15,60 @@ class Helper {
    * against environment configuration. Only inputs are returned as result.
    * @param Pipeline[] $pipelines
    * @param VariablesTable $environmentVariables
-   * @return Variable[]
+   * @return array
    */
   public function getVariablesForExercise(array $pipelines, VariablesTable $environmentVariables): array {
     $result = [];
 
     // process input variables from pipelines
-    $inputs = []; // pairs of pipeline identifier and variable indexed by variable name
-    $outputs = []; // pairs of pipeline identifier and variable indexed by variable name
+    $inputs = []; // pairs of pipeline identifier and port indexed by variable name
+    $outputs = []; // pairs of pipeline identifier and port indexed by variable name
     foreach ($pipelines as $pipelineId => $pipeline) {
       $result[$pipelineId] = [];
 
-      // @todo
-      //$pipeline->getDataInBoxes();
-      //$pipeline->getDataOutBoxes();
+      // load pipeline input variables
+      $localInputs = [];
+      foreach ($pipeline->getDataInBoxes() as $dataInBox) {
+        foreach ($dataInBox->getOutputPorts() as $outputPort) {
+          if ($environmentVariables->get($outputPort->getVariable())) {
+            // variable is defined in environment variables
+            continue;
+          }
+          $localInputs[$outputPort->getVariable()] = [$pipelineId, $outputPort];
+        }
+      }
+
+      // load pipeline output variables
+      $localOutputs = [];
+      foreach ($pipeline->getDataOutBoxes() as $dataOutBox) {
+        foreach ($dataOutBox->getInputPorts() as $inputPort) {
+          $localOutputs[$inputPort->getVariable()] = [$pipelineId, $inputPort];
+        }
+      }
+
+      // remove variables which join pipelines
+      foreach (array_keys($outputs) as $variableName) {
+        if (!array_key_exists($variableName, $localInputs)) {
+          // output variable cannot be found in local input variables, this
+          // means that output variable is not joining with any input variable,
+          // at least for now
+          continue;
+        }
+
+        unset($outputs[$variableName]);
+        unset($localInputs[$variableName]);
+      }
+
+      // merge variables
+      $inputs = array_merge($inputs, $localInputs);
+      $outputs = array_merge($outputs, $localOutputs);
     }
 
     // go through inputs and assign them to result
-    foreach ($inputs as $pair) {
-      $result[$pair[0]][] = $pair[1];
+    foreach ($inputs as $variableName => $pair) {
+      $variable = new Variable((new VariableMeta)->setName($variableName)
+        ->setType($pair[1]->getType()));
+      $result[$pair[0]][] = $variable;
     }
     return $result;
   }

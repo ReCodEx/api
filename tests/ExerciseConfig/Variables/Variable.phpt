@@ -149,16 +149,6 @@ class TestVariable extends Tester\TestCase
     Assert::equal("value", $variable->getValue());
   }
 
-  public function testBadArrayType() {
-    Assert::exception(function () {
-      $this->loader->loadVariable([
-        "name" => "varName",
-        "type" => "string[]",
-        "value" => "text"
-      ]);
-    }, ExerciseConfigException::class);
-  }
-
   public function testBadScalarType() {
     Assert::exception(function () {
       $this->loader->loadVariable([

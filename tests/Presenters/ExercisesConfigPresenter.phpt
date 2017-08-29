@@ -227,6 +227,37 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId())->getVariablesTable()->get('defVarB')->getValue());
   }
 
+  public function testGetVariablesForExerciseConfig()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+    $environment = $exercise->getRuntimeEnvironments()->first();
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+      [
+        'action' => 'getVariablesForExerciseConfig',
+        'id' => $exercise->getId(),
+        'runtimeEnvironmentId' => $environment->getId(),
+        'pipelinesIds' => ['compilationPipeline', 'testPipeline']
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+
+    $payload = $result['payload'];
+    Assert::true(array_key_exists("compilationPipeline", $payload));
+    Assert::true(array_key_exists("testPipeline", $payload));
+    Assert::count(0, $payload["compilationPipeline"]);
+
+    $testPipeline = $payload["testPipeline"];
+    Assert::count(1, $testPipeline);
+    Assert::equal("expected_output", $testPipeline[0]->getName());
+  }
+
   public function testGetLimits()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

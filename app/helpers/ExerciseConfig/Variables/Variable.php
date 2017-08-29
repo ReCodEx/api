@@ -68,14 +68,21 @@ class Variable implements JsonSerializable
    * @throws ExerciseConfigException
    */
   private function validateValue() {
+    if ($this->meta->getValue() === null) {
+      // value is null this means that default value should be assigned
+      if ($this->isArray()) {
+        $this->meta->setValue([]);
+      } else {
+        $this->meta->setValue("");
+      }
+    }
+
     if ($this->isReference()) {
       // if variable is reference, then it always contains string and
       // does not have to be validated
       return;
     } else if ($this->isArray()) {
-      if (!is_array($this->meta->getValue())) {
-        throw new ExerciseConfigException("Variable '{$this->meta->getName()}' should be array");
-      }
+      // noop, array can be defined with regexp
     } else {
       if (!is_scalar($this->meta->getValue())) {
         throw new ExerciseConfigException("Variable '{$this->meta->getName()}' should be scalar");
