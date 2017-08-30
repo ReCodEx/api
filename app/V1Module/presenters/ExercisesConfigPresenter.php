@@ -10,6 +10,7 @@ use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
 use App\Helpers\ExerciseConfig\Validator;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
@@ -292,7 +293,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * pipelines and runtime environment.
    * @POST
    * @param string $id Identifier of the exercise
-   * @Param(type="post", name="runtimeEnvironmentId", validation="string", description="Environment identifier")
+   * @Param(type="post", name="runtimeEnvironmentId", validation="string:1..", description="Environment identifier", required=FALSE)
    * @Param(type="post", name="pipelinesIds", validation="array", description="Identifiers of selected pipelines for one test")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
@@ -316,10 +317,14 @@ class ExercisesConfigPresenter extends BasePresenter {
       $pipelines[$pipelineId] = $this->exerciseConfigLoader->loadPipeline($pipelineConfig->getParsedPipeline());
     }
 
-    // prepare environment configuration
-    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
-    $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
-    $environmentVariables = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
+    // prepare environment configuration if needed
+    if ($runtimeEnvironmentId !== NULL) {
+        $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
+        $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+        $environmentVariables = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
+    } else {
+        $environmentVariables = new VariablesTable();
+    }
 
     // compute result and send it back
     $result = $this->exerciseConfigHelper->getVariablesForExercise($pipelines, $environmentVariables);
