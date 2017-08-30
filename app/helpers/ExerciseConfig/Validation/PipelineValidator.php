@@ -79,7 +79,7 @@ class PipelineValidator {
         }
       }
 
-      if (!$variableUsedAsOutput) {
+      if (!$variableUsedAsOutput && $variable->getValue() === "") {
         throw new ExerciseConfigException(sprintf("No port outputs variable %s", $variableName));
       }
 
