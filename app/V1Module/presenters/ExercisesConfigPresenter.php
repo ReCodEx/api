@@ -290,15 +290,19 @@ class ExercisesConfigPresenter extends BasePresenter {
   /**
    * Get variables for exercise configuration which are derived from given
    * pipelines and runtime environment.
-   * @GET
+   * @POST
    * @param string $id Identifier of the exercise
-   * @param string $runtimeEnvironmentId
-   * @param array $pipelinesIds
+   * @Param(type="post", name="runtimeEnvironmentId", validation="string", description="Environment identifier")
+   * @Param(type="post", name="pipelinesIds", validation="array", description="Identifiers of selected pipelines for one test")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function actionGetVariablesForExerciseConfig(string $id,
-    string $runtimeEnvironmentId, array $pipelinesIds) {
+  public function actionGetVariablesForExerciseConfig(string $id) {
+    // get request data
+    $req = $this->getRequest();
+    $runtimeEnvironmentId = $req->getPost("runtimeEnvironmentId");
+    $pipelinesIds = $req->getPost("pipelinesIds");
+
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {

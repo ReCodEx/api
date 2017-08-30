@@ -233,10 +233,12 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $exercise = current($this->exercises->findAll());
     $environment = $exercise->getRuntimeEnvironments()->first();
-    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
       [
         'action' => 'getVariablesForExerciseConfig',
-        'id' => $exercise->getId(),
+        'id' => $exercise->getId()
+      ],
+      [
         'runtimeEnvironmentId' => $environment->getId(),
         'pipelinesIds' => ['compilationPipeline', 'testPipeline']
       ]
