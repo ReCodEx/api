@@ -151,6 +151,21 @@ class TestPipelineValidator extends Tester\TestCase
       $this->validator->validate($pipeline);
     });
   }
+
+  public function testTypeMismatch() {
+    $pipeline = new Pipeline();
+    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("input", "string", "a.txt")));
+
+    $compileBoxMeta = new BoxMeta();
+    $compileBoxMeta->setName("compile");
+    $compileBoxMeta->addInputPort(new FilePort(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
+      "input")));
+    $pipeline->set(new GccCompilationBox($compileBoxMeta));
+
+    Assert::exception(function () use ($pipeline) {
+      $this->validator->validate($pipeline);
+    }, ExerciseConfigException::class, '#type#i');
+  }
 }
 
 # Testing methods run
