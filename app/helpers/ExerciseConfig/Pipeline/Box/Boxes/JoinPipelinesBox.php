@@ -95,7 +95,7 @@ class JoinPipelinesBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    if (current($this->getInputPorts())->getVariableValue()->getValue() ==
+    if (current($this->getInputPorts())->getVariableValue()->getValue() ===
         current($this->getOutputPorts())->getVariableValue()->getValue()) {
       return [];
     }
