@@ -93,6 +93,67 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::count(0, $result[$pipelineBid]);
   }
 
+  public function testVariablesForExerciseReferences() {
+    $pipelineAid = "pipelineA";
+    $pipelineA = $this->loader->loadPipeline([
+      "variables" => [
+        [
+          "name" => "actual",
+          "type" => "file",
+          "value" => '$actualFile'
+        ],
+        [
+          "name" => "expected",
+          "type" => "file",
+          "value" => '$expectedFile'
+        ]
+      ],
+      "boxes" => [
+        [
+          "name" => "file",
+          "type" => "data-out",
+          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "portsOut" => []
+        ],
+        [
+          "name" => "judge",
+          "type" => "judge-normal",
+          "portsIn" => ["actual-output" => ['type' => 'file', 'value' => "actual"],
+            "expected-output" => ['type' => 'file', 'value' => "expected"]],
+          "portsOut" => []
+        ]
+      ]
+    ]);
+    $pipelineBid = "pipelineB";
+    $pipelineB = $this->loader->loadPipeline([
+      "variables" => [],
+      "boxes" => [
+        [
+          "name" => "file",
+          "type" => "data-in",
+          "portsIn" => [],
+          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+        ]
+      ]
+    ]);
+
+    $result = $this->helper->getVariablesForExercise(
+      [
+        $pipelineAid => $pipelineA,
+        $pipelineBid => $pipelineB
+      ],
+      new VariablesTable());
+    Assert::count(2, $result);
+    Assert::true(array_key_exists($pipelineAid, $result));
+    Assert::true(array_key_exists($pipelineBid, $result));
+
+    Assert::count(2, $result[$pipelineAid]);
+    Assert::count(0, $result[$pipelineBid]);
+
+    Assert::equal("actualFile", $result[$pipelineAid][0]->getName());
+    Assert::equal("expectedFile", $result[$pipelineAid][1]->getName());
+  }
+
   public function testVariablesForExerciseNonEmptyJoin() {
     $pipelineAid = "pipelineA";
     $pipelineA = $this->loader->loadPipeline([

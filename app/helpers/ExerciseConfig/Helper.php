@@ -22,6 +22,7 @@ class Helper {
 
     // process input variables from pipelines
     $inputs = []; // pairs of pipeline identifier and port indexed by variable name
+    $references = []; // pairs of pipeline identifier and variable indexed by variable name
     $outputs = []; // pairs of pipeline identifier and port indexed by variable name
     foreach ($pipelines as $pipelineId => $pipeline) {
       $result[$pipelineId] = [];
@@ -35,6 +36,14 @@ class Helper {
             continue;
           }
           $localInputs[$outputPort->getVariable()] = [$pipelineId, $outputPort];
+        }
+      }
+
+      // find reference variables and add them to inputs
+      foreach ($pipeline->getVariablesTable()->getAll() as $variable) {
+        if ($variable->isReference() &&
+            !$environmentVariables->get($variable->getName())) {
+          $references[$variable->getName()] = [$pipelineId, $variable];
         }
       }
 
@@ -66,6 +75,18 @@ class Helper {
 
     // go through inputs and assign them to result
     foreach ($inputs as $variableName => $pair) {
+      $port = $pair[1];
+      if ($port) { // @todo: remote file
+        $variable = new Variable((new VariableMeta)->setName($variableName)
+          ->setType($port->getType()));
+      } else {
+        $variable = new Variable((new VariableMeta)->setName($variableName)
+          ->setType($port->getType()));
+      }
+      $result[$pair[0]][] = $variable;
+    }
+    foreach ($references as $pair) {
+      $variableName = $pair[1]->getReference();
       $variable = new Variable((new VariableMeta)->setName($variableName)
         ->setType($pair[1]->getType()));
       $result[$pair[0]][] = $variable;
