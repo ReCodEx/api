@@ -18,6 +18,8 @@ class Limits implements JsonSerializable {
   /** Parallel executions key */
   const PARALLEL_KEY = "parallel";
 
+  const VALID_LIMITS = [self::WALL_TIME_KEY, self::MEMORY_KEY, self::PARALLEL_KEY];
+
   /** @var float Wall time limit */
   protected $wallTime = 0;
   /** @var int Memory limit */
@@ -25,6 +27,14 @@ class Limits implements JsonSerializable {
   /** @var int Parallel processes/threads count limit */
   protected $parallel = 0;
 
+  public static function create(float $wallTime, int $memory, int $parallel): Limits
+  {
+    $result = new static;
+    $result->setWallTime($wallTime);
+    $result->setMemoryLimit($memory);
+    $result->setParallel($parallel);
+    return $result;
+  }
 
   /**
    * Returns wall time limit.

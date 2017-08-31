@@ -68,7 +68,8 @@ class PresenterTestHelper
     return self::login($container, self::ADMIN_LOGIN);
   }
 
-  public static function getUser(Container $container, $login): User {
+  public static function getUser(Container $container, $login = NULL): User {
+    $login = $login ?? self::ADMIN_LOGIN;
     return $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
   }
 }

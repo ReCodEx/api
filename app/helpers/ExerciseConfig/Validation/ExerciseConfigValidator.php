@@ -3,7 +3,6 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
@@ -11,7 +10,6 @@ use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
-use App\Model\Entity\Pipeline;
 use App\Model\Repository\Pipelines;
 
 
@@ -79,16 +77,17 @@ class ExerciseConfigValidator {
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {
         // check pipelines in environment
-        $this->checkPipelinesSection($environment->getPipelines());
+        $this->checkPipelinesSection($environment->getPipelines(), $envId);
       }
     }
   }
 
   /**
    * @param array $pipelines
+   * @param string $environment
    * @throws ExerciseConfigException
    */
-  private function checkPipelinesSection(array $pipelines) {
+  private function checkPipelinesSection(array $pipelines, ?string $environment = NULL) {
     /**
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
@@ -114,7 +113,12 @@ class ExerciseConfigValidator {
       /** @var Variable $variable */
       foreach ($variableNames as $variable) {
         if (!in_array($variable, $inBoxNames)) {
-          throw new ExerciseConfigException("Variable '$variable' is redundant");
+          throw new ExerciseConfigException(sprintf(
+            "Variable '%s' is redundant in pipeline %s, environment %s",
+            $variable,
+            $pipelineId,
+            $environment ?? "default"
+          ));
         }
 
         $inBoxNames = array_filter($inBoxNames, function (string $name) use ($variable) {
