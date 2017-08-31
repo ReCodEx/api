@@ -49,7 +49,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::count(1, $result[$pipelineId]);
 
     Assert::equal("data-in", $result[$pipelineId][0]->getName());
-    Assert::equal(VariableTypes::$FILE_TYPE, $result[$pipelineId][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineId][0]->getType());
     Assert::equal("", $result[$pipelineId][0]->getValue());
   }
 
@@ -152,6 +152,8 @@ class TestExerciseConfigHelper extends Tester\TestCase
 
     Assert::equal("actualFile", $result[$pipelineAid][0]->getName());
     Assert::equal("expectedFile", $result[$pipelineAid][1]->getName());
+    Assert::equal(VariableTypes::$FILE_TYPE, $result[$pipelineAid][0]->getType());
+    Assert::equal(VariableTypes::$FILE_TYPE, $result[$pipelineAid][1]->getType());
   }
 
   public function testVariablesForExerciseNonEmptyJoin() {
@@ -207,6 +209,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
 
     Assert::equal("input", $result[$pipelineAid][0]->getName());
     Assert::equal("test", $result[$pipelineBid][0]->getName());
+
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineBid][0]->getType());
   }
 
   public function testVariablesForExerciseVariableFromVariablesTable() {
@@ -264,6 +269,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::count(0, $result[$pipelineBid]);
 
     Assert::equal("input", $result[$pipelineAid][0]->getName());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
   }
 
   public function testVariablesForExerciseComplexJoin() {
@@ -363,6 +369,10 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::equal("input", $result[$pipelineAid][0]->getName());
     Assert::equal("non-environment-a", $result[$pipelineCid][0]->getName());
     Assert::equal("non-environment-b", $result[$pipelineCid][1]->getName());
+
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
+    Assert::equal(VariableTypes::$STRING_TYPE, $result[$pipelineCid][0]->getType());
+    Assert::equal(VariableTypes::$STRING_TYPE, $result[$pipelineCid][1]->getType());
   }
 
 }

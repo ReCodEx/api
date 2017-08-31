@@ -76,9 +76,18 @@ class Helper {
     // go through inputs and assign them to result
     foreach ($inputs as $variableName => $pair) {
       $port = $pair[1];
-      if ($port) { // @todo: remote file
+      if ($port->isFile() && $port->isArray()) {
+        // port is file and also array, in exercise config if there should be
+        // defined file as variable it is expected to be remote file, so the
+        // remote file type is offered back to web-app
         $variable = new Variable((new VariableMeta)->setName($variableName)
-          ->setType($port->getType()));
+          ->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE));
+      } else if ($port->isFile() && !$port->isArray()) {
+        // port is file and not an array, in exercise config if there should be
+        // defined file as variable it is expected to be remote file, so the
+        // remote file type is offered back to web-app
+        $variable = new Variable((new VariableMeta)->setName($variableName)
+          ->setType(VariableTypes::$REMOTE_FILE_TYPE));
       } else {
         $variable = new Variable((new VariableMeta)->setName($variableName)
           ->setType($port->getType()));

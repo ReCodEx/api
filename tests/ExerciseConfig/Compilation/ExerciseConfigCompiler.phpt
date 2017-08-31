@@ -50,7 +50,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       "testA" => [
         "pipelines" => [
           [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.A.out" ] ] ]
+          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ] ] ]
         ],
         "environments" => [
           "envA" => [ "pipelines" => [] ],
@@ -60,7 +60,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       "testB" => [
         "pipelines" => [
           [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.B.out" ] ] ]
+          [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ] ]
         ],
         "environments" => [
           "envA" => [

@@ -32,7 +32,7 @@ App\Model\Entity\ExerciseConfig:
                     - name: "compilationPipeline"
                       variables:
                         - name: expected_output
-                          type: file
+                          type: remote-file
                           value: expected.1.out
                   environments:
                     java8:
@@ -40,7 +40,7 @@ App\Model\Entity\ExerciseConfig:
                         - name: "compilationPipeline"
                           variables:
                             - name: expected_output
-                              type: file
+                              type: remote-file
                               value: expected.1.java.out
                     c-gcc-linux: []
                 "Test 2":
@@ -48,7 +48,7 @@ App\Model\Entity\ExerciseConfig:
                     - name: "compilationPipeline"
                       variables:
                         - name: expected_output
-                          type: file
+                          type: remote-file
                           value: expected.2.out
                   environments:
                     c-gcc-linux:
@@ -56,7 +56,7 @@ App\Model\Entity\ExerciseConfig:
                         - name: "compilationPipeline"
                           variables:
                             - name: expected_output
-                              type: file
+                              type: remote-file
                               value: expected.2.cpp.out
               '''
             - @demoAdmin

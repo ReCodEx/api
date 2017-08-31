@@ -22,6 +22,12 @@ class Port implements JsonSerializable
   protected $meta;
 
   /**
+   * Determines if variable is array or not.
+   * @var bool
+   */
+  protected $isArray = false;
+
+  /**
    * Actual reference to the variable value.
    * @note Used during compilation of configuration, has to be set before usage.
    * @var Variable
@@ -44,10 +50,12 @@ class Port implements JsonSerializable
   private function validateType() {
     if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
       $this->meta->setType(VariableTypes::$FILE_ARRAY_TYPE);
+      $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
       $this->meta->setType(VariableTypes::$FILE_TYPE);
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
+      $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_TYPE);
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$UNDEFINED_TYPE)) {
@@ -80,6 +88,23 @@ class Port implements JsonSerializable
    */
   public function getVariable(): ?string {
     return $this->meta->getVariable();
+  }
+
+  /**
+   * True if port can hold an array.
+   * @return bool
+   */
+  public function isArray(): bool {
+    return $this->isArray;
+  }
+
+  /**
+   * True if port is of file type.
+   * @return bool
+   */
+  public function isFile(): bool {
+    return $this->meta->getType() === VariableTypes::$FILE_TYPE ||
+      $this->meta->getType() === VariableTypes::$FILE_ARRAY_TYPE;
   }
 
   /**

@@ -46,9 +46,7 @@ class VariablesResolver {
         throw new ExerciseConfigException("Malformed tree - input node {$inputBox->getName()} not found in child {$child->getBox()->getName()}");
       }
 
-      // try to look for variable in environment config table
       $variable = $environmentVariables->get($variableName);
-
       // @todo: resolve regexps which matches files given by students
 
       // variable value in local pipeline config
@@ -60,8 +58,17 @@ class VariablesResolver {
         throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
       }
 
-      // if variable is present in exercise configuration then it is remote one
-      $remoteVariable = $exerciseVariables->get($variableName);
+      // try to look for remote variable in configurations tables
+      $remoteVariable = null;
+      $environmentVariable = $environmentVariables->get($variableName);
+      if ($environmentVariable && $environmentVariable->isRemoteFile()) {
+        $remoteVariable = $environmentVariable;
+      }
+      $exerciseVariable = $exerciseVariables->get($variableName);
+      if (!$remoteVariable && $exerciseVariable && $exerciseVariable->isRemoteFile()) {
+        $remoteVariable = $exerciseVariable;
+      }
+
       // assign variable to both nodes
       $inputBox->setRemoteVariable($remoteVariable);
       $outputPort->setVariableValue($variable);

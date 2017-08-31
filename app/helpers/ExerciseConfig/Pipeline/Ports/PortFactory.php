@@ -18,10 +18,12 @@ class PortFactory
    * @throws ExerciseConfigException
    */
   public function create(PortMeta $meta): Port {
-    if ($meta->getType() === VariableTypes::$UNDEFINED_TYPE) {
+    $port = new Port($meta);
+    if ($port->getType() === VariableTypes::$UNDEFINED_TYPE) {
       throw new ExerciseConfigException("Undefined port not allowed in user input");
     }
-    return new Port($meta);
+
+    return $port;
   }
 
 }

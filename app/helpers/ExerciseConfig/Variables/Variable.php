@@ -27,7 +27,7 @@ class Variable implements JsonSerializable
    * Determines if variable is array or not.
    * @var bool
    */
-  protected $isArray;
+  protected $isArray = false;
 
 
   /**
@@ -51,15 +51,18 @@ class Variable implements JsonSerializable
       $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
       $this->meta->setType(VariableTypes::$FILE_TYPE);
-      $this->isArray = false;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE);
+      $this->isArray = true;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_TYPE)) {
+      $this->meta->setType(VariableTypes::$REMOTE_FILE_TYPE);
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
       $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_TYPE);
-      $this->isArray = false;
     } else {
-      throw new ExerciseConfigException("Unknown variable type: {$this->meta->getType()}");
+      throw new ExerciseConfigException("Unknown type: {$this->meta->getType()}");
     }
   }
 
@@ -113,6 +116,15 @@ class Variable implements JsonSerializable
    */
   public function isArray(): bool {
     return $this->isArray;
+  }
+
+  /**
+   * Return true if variable is of remote file type.
+   * @return bool
+   */
+  public function isRemoteFile(): bool {
+    return $this->meta->getType() === VariableTypes::$REMOTE_FILE_TYPE ||
+      $this->meta->getType() === VariableTypes::$REMOTE_FILE_ARRAY_TYPE;
   }
 
   /**
