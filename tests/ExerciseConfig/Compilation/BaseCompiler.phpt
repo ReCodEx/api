@@ -5,7 +5,7 @@ include '../../bootstrap.php';
 use App\Helpers\ExerciseConfig\Compilation\BoxesCompiler;
 use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use App\Helpers\ExerciseConfig\Compilation\BoxesSorter;
-use App\Helpers\ExerciseConfig\Compilation\ExerciseConfigCompiler;
+use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
@@ -23,9 +23,9 @@ use Tester\Assert;
  * All special cases should be resolved in appropriate tests. This test is only
  * integration test of all compiler components and if it is working as expected.
  */
-class TestExerciseConfigCompiler extends Tester\TestCase
+class TestBaseCompiler extends Tester\TestCase
 {
-  /** @var ExerciseConfigCompiler */
+  /** @var BaseCompiler */
   private $compiler;
   /** @var Loader */
   private $loader;
@@ -229,7 +229,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
     $boxesOptimizer = new BoxesOptimizer();
     $boxesCompiler = new BoxesCompiler();
     $testDirectoriesResolver = new TestDirectoriesResolver();
-    $this->compiler = new ExerciseConfigCompiler($pipelinesMerger, $boxesSorter,
+    $this->compiler = new BaseCompiler($pipelinesMerger, $boxesSorter,
       $boxesOptimizer, $boxesCompiler, $testDirectoriesResolver);
   }
 
@@ -240,7 +240,7 @@ class TestExerciseConfigCompiler extends Tester\TestCase
       "groupA" => $this->loader->loadExerciseLimits(self::$limits[0]),
       "groupB" => $this->loader->loadExerciseLimits(self::$limits[1])
     ];
-    $jobConfig = $this->compiler->compile($exerciseConfig, $environmentConfigVariables, $limits, self::$environment);
+    $jobConfig = $this->compiler->compile($exerciseConfig, $environmentConfigVariables, $limits, self::$environment, []);
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
@@ -325,5 +325,5 @@ class TestExerciseConfigCompiler extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfigCompiler();
+$testCase = new TestBaseCompiler();
 $testCase->run();

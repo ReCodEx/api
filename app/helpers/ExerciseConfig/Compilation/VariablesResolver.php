@@ -25,11 +25,12 @@ class VariablesResolver {
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
+   * @param string[] $submittedFiles
    * @throws ExerciseConfigException
    */
   public function resolveForInputNodes(MergeTree $mergeTree,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables) {
+      VariablesTable $pipelineVariables, array $submittedFiles) {
     foreach ($mergeTree->getInputNodes() as $node) {
 
       /** @var DataInBox $inputBox */
@@ -53,8 +54,8 @@ class VariablesResolver {
       if (!$variable) {
         $variable = $pipelineVariables->get($variableName);
       }
-      // something is really wrong there... just leave and do not look back
       if (!$variable) {
+        // something is really wrong there... just leave and do not look back
         throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
       }
 
@@ -180,11 +181,12 @@ class VariablesResolver {
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
+   * @param string[] $submittedFiles
    */
   public function resolve(MergeTree $mergeTree,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables) {
-    $this->resolveForInputNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables);
+      VariablesTable $pipelineVariables, array $submittedFiles) {
+    $this->resolveForInputNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables, $submittedFiles);
     $this->resolveForOtherNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables);
   }
 

@@ -253,29 +253,35 @@ class PipelinesMerger {
   }
 
   /**
-   * Process pipeline, which means creating its tree and merging two trees
+   * Process pipeline, which means creating its tree.
    * @param string $pipelineId
    * @param string $testId
-   * @param MergeTree $tree
    * @param VariablesTable $environmentConfigVariables
    * @param PipelineVars $pipelineVars
-   * @param Pipeline $pipelineConfig
+   * @param string[] $submittedFiles
    * @return MergeTree new instance of merge tree
+   * @throws ExerciseConfigException
    */
   private function processPipeline(string $pipelineId, string $testId,
-      MergeTree $tree, VariablesTable $environmentConfigVariables,
-      PipelineVars $pipelineVars, Pipeline $pipelineConfig): MergeTree {
+      VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
+    array $submittedFiles): MergeTree {
+
+    // get database entity and then structured pipeline configuration
+    try {
+      $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
+      $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+    } catch (NotFoundException $e) {
+      throw new ExerciseConfigException("Pipeline '$pipelineId' not found in environment");
+    }
 
     // build tree for given pipeline
     $pipelineTree = $this->buildPipelineTree($pipelineId, $testId, $pipelineConfig);
     // resolve all variables in pipeline tree
     $this->variablesResolver->resolve($pipelineTree,
       $environmentConfigVariables, $pipelineVars->getVariablesTable(),
-      $pipelineConfig->getVariablesTable());
+      $pipelineConfig->getVariablesTable(), $submittedFiles);
 
-    // merge given tree and currently created pipeline tree
-    $mergedTree = $this->mergeTrees($tree, $pipelineTree);
-    return $mergedTree;
+    return $pipelineTree;
   }
 
   /**
@@ -284,12 +290,13 @@ class PipelinesMerger {
    * @param Test $test
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
+   * @param string[] $submittedFiles
    * @return MergeTree
    * @throws ExerciseConfigException
    */
   private function processTest(string $testId, Test $test,
       VariablesTable $environmentConfigVariables,
-      string $runtimeEnvironmentId): MergeTree {
+      string $runtimeEnvironmentId, array $submittedFiles): MergeTree {
 
     // get pipelines either for specific environment or defaults for the test
     $testPipelines = $test->getEnvironment($runtimeEnvironmentId)->getPipelines();
@@ -302,16 +309,11 @@ class PipelinesMerger {
     $tree = new MergeTree();
     foreach ($testPipelines as $pipelineId => $pipelineVars) {
 
-      // get database entity and then structured pipeline configuration
-      try {
-        $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
-        $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-      } catch (NotFoundException $e) {
-        throw new ExerciseConfigException("Pipeline '$pipelineId' not found in environment '$runtimeEnvironmentId'");
-      }
-
       // process pipeline and merge it to already existing tree
-      $tree = $this->processPipeline($pipelineId, $testId, $tree, $environmentConfigVariables, $pipelineVars, $pipelineConfig);
+      $pipelineTree = $this->processPipeline($pipelineId, $testId,
+        $environmentConfigVariables, $pipelineVars, $submittedFiles);
+      // merge given tree and currently created pipeline tree
+      $tree = $this->mergeTrees($tree, $pipelineTree);
     }
 
     return $tree;
@@ -322,14 +324,16 @@ class PipelinesMerger {
    * @param ExerciseConfig $exerciseConfig
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
-   * @return MergeTree[]
+   * @param string[] $submittedFiles
+   * @return array
    */
   public function merge(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables,
-      string $runtimeEnvironmentId): array {
+      string $runtimeEnvironmentId, array $submittedFiles): array {
     $tests = array();
     foreach ($exerciseConfig->getTests() as $testId => $test) {
-      $tests[$testId] = $this->processTest($testId, $test, $environmentConfigVariables, $runtimeEnvironmentId);
+      $tests[$testId] = $this->processTest($testId, $test,
+        $environmentConfigVariables, $runtimeEnvironmentId, $submittedFiles);
     }
 
     return $tests;

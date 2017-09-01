@@ -42,12 +42,13 @@ class Generator {
    * @param User $user
    * @param Exercise|Assignment $exerciseAssignment
    * @param RuntimeEnvironment $runtimeEnvironment
+   * @param string[] $submittedFiles
    * @return array first item is path where job configuration is stored,
    * second list item is JobConfig itself
    */
   public function generateJobConfig(User $user, $exerciseAssignment,
-      RuntimeEnvironment $runtimeEnvironment): array {
-    $jobConfig = $this->compiler->compile($exerciseAssignment, $runtimeEnvironment);
+      RuntimeEnvironment $runtimeEnvironment, array $submittedFiles): array {
+    $jobConfig = $this->compiler->compile($exerciseAssignment, $runtimeEnvironment, $submittedFiles);
     $jobConfigPath = $this->storage->save($jobConfig, $user);
     return array($jobConfigPath, $jobConfig);
   }

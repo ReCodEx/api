@@ -12,7 +12,7 @@ use App\Helpers\JobConfig\JobConfig;
 /**
  * Internal exercise configuration compilation service.
  */
-class ExerciseConfigCompiler {
+class BaseCompiler {
 
   /**
    * @var PipelinesMerger
@@ -64,12 +64,13 @@ class ExerciseConfigCompiler {
    * @param VariablesTable $environmentConfigVariables
    * @param ExerciseLimits[] $limits
    * @param string $runtimeEnvironmentId
+   * @param string[] $submittedFiles
    * @return JobConfig
    */
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, array $limits,
-      string $runtimeEnvironmentId): JobConfig {
-    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId);
+      string $runtimeEnvironmentId, array $submittedFiles): JobConfig {
+    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId, $submittedFiles);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
     $testDirectories = $this->testDirectoriesResolver->resolve($optimized);

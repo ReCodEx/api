@@ -238,8 +238,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $hwGroups = $exercise->getHardwareGroups();
     $evaluations = [];
     $errors = [];
+    $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment);
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator
+      ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $submittedFiles);
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
       $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);

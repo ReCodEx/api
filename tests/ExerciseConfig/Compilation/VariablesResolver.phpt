@@ -139,14 +139,14 @@ class TestVariablesResolver extends Tester\TestCase
   public function testMissingVariableInInputBoxTables() {
     Assert::exception(function () {
       $this->pipeVarTableB->remove("test-bb-input");
-      $this->resolver->resolve($this->treeArray[1], $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
+      $this->resolver->resolve($this->treeArray[1], $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB, []);
     }, ExerciseConfigException::class);
   }
 
   public function testMissingReferencedVariable() {
     Assert::exception(function () {
       $this->exerVarTableA->remove("test-a-reference-variable");
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
@@ -155,7 +155,7 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getInputNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
@@ -164,35 +164,35 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getOtherNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
   public function testMissingVariableInPipelinesTable() {
     Assert::exception(function () {
       $this->pipeVarTableA->remove("test-a-pre-exec");
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenInputNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOutputNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesChildNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[1]->clearChildren();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
+      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
     }, ExerciseConfigException::class);
   }
 
@@ -201,8 +201,8 @@ class TestVariablesResolver extends Tester\TestCase
     $treeA = $trees[0];
     $treeB = $trees[1];
 
-    $this->resolver->resolve($treeA, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA);
-    $this->resolver->resolve($treeB, $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB);
+    $this->resolver->resolve($treeA, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, []);
+    $this->resolver->resolve($treeB, $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB, []);
 
     // Tree A
     Assert::equal("test-a-input", $treeA->getInputNodes()[0]->getBox()->getOutputPorts()["data-in"]->getVariableValue()->getName());

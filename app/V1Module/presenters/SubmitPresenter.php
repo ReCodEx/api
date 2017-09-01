@@ -162,11 +162,13 @@ class SubmitPresenter extends BasePresenter {
     // create Solution object
     $solution = new Solution($user, $runtimeEnvironment);
 
+    $submittedFiles = [];
     foreach ($uploadedFiles as $file) {
       if ($file instanceof SolutionFile) {
         throw new ForbiddenRequestException("File {$file->getId()} was already used in a different submission.");
       }
 
+      $submittedFiles[] = $file->getName();
       $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
       $this->files->persist($solutionFile, FALSE);
       $this->files->remove($file, FALSE);
@@ -175,12 +177,12 @@ class SubmitPresenter extends BasePresenter {
     // persist the new solution and flush all the changes to the files
     $this->solutions->persist($solution);
 
-    // generate job configuration and create submission
-    $note = $req->getPost("note");
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment, $runtimeEnvironment);
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
+    // generate job configuration
+    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment, $runtimeEnvironment, $submittedFiles);
 
-    // persist all the data in the database - this will also assign the UUID to the submission
+    // create and persist submission in the database
+    $note = $req->getPost("note");
+    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
     $this->submissions->persist($submission);
 
     $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));

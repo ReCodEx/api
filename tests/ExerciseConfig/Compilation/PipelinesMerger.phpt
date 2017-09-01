@@ -194,7 +194,7 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge(new ExerciseConfig(), new VariablesTable(), self::$environment);
+    $tests = $this->merger->merge(new ExerciseConfig(), new VariablesTable(), self::$environment, []);
     Assert::true(is_array($tests));
     Assert::count(0, $tests);
   }
@@ -214,7 +214,7 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge($config, $envVariablesTable, self::$environment);
+    $tests = $this->merger->merge($config, $envVariablesTable, self::$environment, []);
     Assert::true(is_array($tests));
     Assert::count(2, $tests);
 
@@ -228,7 +228,7 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->withAnyArgs()->andThrow(NotFoundException::class);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
-      $this->merger->merge($config, $envVariablesTable, self::$environment);
+      $this->merger->merge($config, $envVariablesTable, self::$environment, []);
     }, ExerciseConfigException::class);
   }
 
@@ -387,7 +387,7 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge($config, $envVariablesTable, self::$environment);
+    $tests = $this->merger->merge($config, $envVariablesTable, self::$environment, []);
     Assert::count(2, $tests);
 
     $testA = $tests["testA"];
