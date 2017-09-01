@@ -6,6 +6,8 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
+use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 
 
@@ -16,6 +18,45 @@ use App\Helpers\ExerciseConfig\VariablesTable;
  * variable values during boxes compilation.
  */
 class VariablesResolver {
+
+  /**
+   * Regular expressions are allowed only in file inputs and should be resolved
+   * against files given during submission.
+   * @param Variable|null $variable
+   * @param string[] $submittedFiles
+   * @return Variable|null
+   * @throws ExerciseConfigException
+   */
+  private function resolveFileInputsRegexp(?Variable $variable,
+      array $submittedFiles): ?Variable {
+    if (!$variable || !$variable->isFile() || $variable->isValueArray()) {
+      // variable is null or variable is not file or value is already array,
+      // then no regexp matching is needed
+      return $variable;
+    }
+
+    // regexp matching of all files against variable value
+    $value = $variable->getValue();
+    $matches = array_filter($submittedFiles, function (string $file) use($value) {
+      return fnmatch($value, $file);
+    });
+
+    if (empty($matches)) {
+      // there were no matches, but variable value cannot be empty!
+      throw new ExerciseConfigException("Regular expression in variable '{$variable->getName()}' could not be resolved against submitted files");
+    }
+
+    // construct resulting variable meta information from given variable info
+    $meta = (new VariableMeta)->setName($variable->getName())->setType($variable->getType());
+    if ($variable->isArray()) {
+      $meta->setValue($matches);
+    } else {
+      // variable is not an array, so take only first element from all matches
+      $meta->setValue(current($matches));
+    }
+
+    return new Variable($meta);
+  }
 
   /**
    * Input boxes has to be treated differently. Variables can be loaded from
@@ -44,11 +85,12 @@ class VariablesResolver {
 
       if ($inputPortName === FALSE) {
         // input node not found in parents of the next one
-        throw new ExerciseConfigException("Malformed tree - input node {$inputBox->getName()} not found in child {$child->getBox()->getName()}");
+        throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
       }
 
+      // get variable from environment config and resolve possible regexps
       $variable = $environmentVariables->get($variableName);
-      // @todo: resolve regexps which matches files given by students
+      $variable = $this->resolveFileInputsRegexp($variable, $submittedFiles);
 
       // variable value in local pipeline config
       if (!$variable) {

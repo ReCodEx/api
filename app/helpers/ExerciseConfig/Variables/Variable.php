@@ -111,11 +111,29 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Return true if variable can be interpreted as array.
+   * Return true if variable type is an array.
    * @return bool
    */
   public function isArray(): bool {
     return $this->isArray;
+  }
+
+  /**
+   * Return true if variable value is array.
+   * @return bool
+   */
+  public function isValueArray(): bool {
+    return is_array($this->meta->getValue());
+  }
+
+  /**
+   * Return true if variable is of file type. Remote file type is not involved
+   * here and returns false.
+   * @return bool
+   */
+  public function isFile(): bool {
+    return $this->meta->getType() === VariableTypes::$FILE_TYPE ||
+      $this->meta->getType() === VariableTypes::$FILE_ARRAY_TYPE;
   }
 
   /**
