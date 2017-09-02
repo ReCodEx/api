@@ -191,9 +191,11 @@ class SandboxConfig {
     if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
     if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
 
-    $data[self::LIMITS_KEY] = [];
-    foreach ($this->limits as $limit) {
-      $data[self::LIMITS_KEY][] = $limit->toArray();
+    if (!empty($this->limits)) {
+      $data[self::LIMITS_KEY] = [];
+      foreach ($this->limits as $limit) {
+        $data[self::LIMITS_KEY][] = $limit->toArray();
+      }
     }
 
     return $data;
