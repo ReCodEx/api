@@ -55,10 +55,12 @@ class Compiler {
     $limits = array();
     foreach ($exerciseAssignment->getHardwareGroups()->getValues() as $hwGroup) {
       $limitsConfig = $exerciseAssignment->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
-      if (!$limitsConfig) {
-        continue;
+      if ($limitsConfig) {
+        $parsedLimits = $limitsConfig->getParsedLimits();
+      } else {
+        $parsedLimits = [];
       }
-      $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($limitsConfig->getParsedLimits());
+      $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($parsedLimits);
     }
 
     return $this->exerciseConfigCompiler->compile($exerciseConfig,
