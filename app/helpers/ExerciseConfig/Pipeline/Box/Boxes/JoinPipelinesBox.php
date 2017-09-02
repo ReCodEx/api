@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -104,8 +105,8 @@ class JoinPipelinesBox extends Box
     $task = new Task();
     $task->setCommandBinary("rename");
     $task->setCommandArguments([
-      current($this->getInputPorts())->getVariableValue()->getValue(),
-      current($this->getOutputPorts())->getVariableValue()->getValue()
+      ConfigParams::$SOURCE_DIR . current($this->getInputPorts())->getVariableValue()->getValue(),
+      ConfigParams::$SOURCE_DIR . current($this->getOutputPorts())->getVariableValue()->getValue()
     ]);
     return [$task];
   }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\ExerciseConfig\Pipeline\Box;
+namespace App\Helpers\ExerciseConfig\Pipeline\Box\Params;
 
 
 /**

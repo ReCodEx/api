@@ -2,6 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -16,7 +19,7 @@ class JudgeNormalBox extends Box
 {
   /** Type key */
   public static $JUDGE_NORMAL_TYPE = "judge-normal";
-  public static $JUDGE_NORMAL_BINARY = "\${JUDGES_DIR}/recodex-judge-normal";
+  public static $JUDGE_NORMAL_BINARY = "recodex-judge-normal";
   public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
   public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
   public static $DEFAULT_NAME = "ReCodEx Judge Normal";
@@ -89,7 +92,7 @@ class JudgeNormalBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EVALUATION);
-    $task->setCommandBinary(self::$JUDGE_NORMAL_BINARY);
+    $task->setCommandBinary(ConfigParams::$JUDGES_DIR . self::$JUDGE_NORMAL_BINARY);
     $task->setCommandArguments([
       $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getValue(),
       $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getValue()

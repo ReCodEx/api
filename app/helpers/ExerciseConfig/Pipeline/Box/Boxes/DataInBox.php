@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
@@ -120,7 +121,7 @@ class DataInBox extends Box
     $task->setCommandBinary("fetch");
     $task->setCommandArguments([
       $this->remoteVariable->getValue(),
-      $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue()->getValue()
+      ConfigParams::$SOURCE_DIR . $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue()->getValue()
     ]);
     return [$task];
   }

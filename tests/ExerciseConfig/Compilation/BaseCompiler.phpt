@@ -13,8 +13,9 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\TaskType;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Model\Repository\Pipelines;
 use Tester\Assert;
 
@@ -255,7 +256,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(1, $testATestTask->getPriority());
     Assert::count(0, $testATestTask->getDependencies());
     Assert::equal("fetch", $testATestTask->getCommandBinary());
-    Assert::equal(["expected.A.out", "expected.out"], $testATestTask->getCommandArguments());
+    Assert::equal(["expected.A.out", ConfigParams::$SOURCE_DIR . "expected.out"], $testATestTask->getCommandArguments());
     Assert::null($testATestTask->getType());
     Assert::equal("testA", $testATestTask->getTestId());
     Assert::null($testATestTask->getSandboxConfig());
@@ -299,7 +300,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(4, $testAJudgeTask->getPriority());
     Assert::count(1, $testAJudgeTask->getDependencies());
     Assert::equal([$testARunTask->getId()], $testAJudgeTask->getDependencies());
-    Assert::equal(JudgeNormalBox::$JUDGE_NORMAL_BINARY, $testAJudgeTask->getCommandBinary());
+    Assert::equal(ConfigParams::$JUDGES_DIR . JudgeNormalBox::$JUDGE_NORMAL_BINARY, $testAJudgeTask->getCommandBinary());
     Assert::equal(["expected.out", "actual.out"], $testAJudgeTask->getCommandArguments());
     Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
     Assert::equal("testA", $testAJudgeTask->getTestId());
