@@ -55,6 +55,9 @@ class Compiler {
     $limits = array();
     foreach ($exerciseAssignment->getHardwareGroups()->getValues() as $hwGroup) {
       $limitsConfig = $exerciseAssignment->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
+      if (!$limitsConfig) {
+        continue;
+      }
       $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($limitsConfig->getParsedLimits());
     }
 

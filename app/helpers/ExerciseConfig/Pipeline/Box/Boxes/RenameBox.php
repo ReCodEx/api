@@ -95,7 +95,7 @@ class RenameBox extends Box
     }
 
     $task = new Task();
-    $task->setCommandBinary("mv");
+    $task->setCommandBinary("rename");
     $task->setCommandArguments([
       $this->getInputPort(self::$RENAME_PORT_IN_KEY)->getVariableValue()->getValue(),
       $this->getOutputPort(self::$RENAME_PORT_OUT_KEY)->getVariableValue()->getValue()
