@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 use App\Exceptions\MalformedJobConfigException;
+use Nette\Utils\Arrays;
 use Symfony\Component\Yaml\Yaml;
 
 
@@ -127,15 +128,10 @@ class SandboxConfig {
   /**
    * Get the configured limits for a specific hardware group.
    * @param string $hardwareGroupId Hardware group ID
-   * @return Limits Limits for the specified hardware group
-   * @throws MalformedJobConfigException
+   * @return Limits|null Limits for the specified hardware group
    */
-  public function getLimits(string $hardwareGroupId): Limits {
-    if (!isset($this->limits[$hardwareGroupId])) {
-      throw new MalformedJobConfigException("Sandbox config does not define limits for hardware group '$hardwareGroupId'");
-    }
-
-    return $this->limits[$hardwareGroupId];
+  public function getLimits(string $hardwareGroupId): ?Limits {
+    return Arrays::get($this->limits, $hardwareGroupId, null);
   }
 
   /**

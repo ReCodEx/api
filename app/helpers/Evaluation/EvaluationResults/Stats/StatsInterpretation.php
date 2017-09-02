@@ -9,7 +9,7 @@ use App\Helpers\JobConfig\Limits;
  */
 class StatsInterpretation {
 
-  /** @var Stats Execution statistics */
+  /** @var IStats Execution statistics */
   private $stats;
 
   /** @var Limits Configured limits */
@@ -17,10 +17,10 @@ class StatsInterpretation {
 
   /**
    * Constructor
-   * @param Stats $stats    Output data from sandbox evaluation
-   * @param Limits $limits  Restrictions for current task evaluation
+   * @param IStats $stats Output data from sandbox evaluation
+   * @param Limits|null $limits Restrictions for current task evaluation
    */
-  public function __construct(IStats $stats, Limits $limits) {
+  public function __construct(IStats $stats, ?Limits $limits) {
     $this->stats = $stats;
     $this->limits = $limits;
   }
@@ -30,7 +30,7 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function doesMeetAllCriteria() {
-    return $this->stats->doesMeetAllCriteria($this->limits);
+    return $this->limits === null || $this->stats->doesMeetAllCriteria($this->limits);
   }
 
   /**
@@ -38,7 +38,7 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function isTimeOK(): bool {
-    return $this->stats->isTimeOK($this->limits->getTimeLimit());
+    return $this->limits === null || $this->stats->isTimeOK($this->limits->getTimeLimit());
   }
 
   /**
@@ -46,7 +46,7 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function isMemoryOK(): bool {
-    return $this->stats->isMemoryOK($this->limits->getMemoryLimit());
+    return $this->limits === null || $this->stats->isMemoryOK($this->limits->getMemoryLimit());
   }
 
   /**
@@ -54,6 +54,9 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedMemoryRatio(): float {
+    if ($this->limits === null) {
+      return 0;
+    }
     return floatval($this->stats->getUsedMemory()) / floatval($this->limits->getMemoryLimit());
   }
 
@@ -62,6 +65,9 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedTimeRatio(): float {
+    if ($this->limits === null) {
+      return 0;
+    }
     return floatval($this->stats->getUsedTime()) / floatval($this->limits->getTimeLimit());
   }
 

@@ -92,9 +92,7 @@ class TestSandboxConfig extends Tester\TestCase
     Assert::type(Limits::class, $sandbox->getLimits("idB"));
     Assert::equal("idB", $sandbox->getLimits("idB")->getId());
 
-    Assert::exception(function () use ($sandbox) {
-      $sandbox->getLimits("nonExistingGroup");
-    }, \App\Exceptions\MalformedJobConfigException::class);
+    Assert::null($sandbox->getLimits("nonExistingGroup"));
   }
 
   public function testSetLimits() {

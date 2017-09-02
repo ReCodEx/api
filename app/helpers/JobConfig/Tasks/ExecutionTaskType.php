@@ -43,9 +43,9 @@ class ExecutionTaskType {
   /**
    * Get limits with given hardware group from internal task.
    * @param string $hwGroup hardware group identification
-   * @return Limits limits structure
+   * @return Limits|null limits structure
    */
-  public function getLimits(string $hwGroup): Limits {
+  public function getLimits(string $hwGroup): ?Limits {
     return $this->task->getSandboxConfig()->getLimits($hwGroup);
   }
 
