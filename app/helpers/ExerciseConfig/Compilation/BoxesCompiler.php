@@ -121,6 +121,8 @@ class BoxesCompiler {
   public function compile(RootedTree $rootedTree, array $limits): JobConfig {
     $jobConfig = new JobConfig();
 
+    // @todo: logging will be for now turn on by default
+    $jobConfig->getSubmissionHeader()->setLog(true);
     // add hwgroups identifications into job configuration
     $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
     // perform DFS
