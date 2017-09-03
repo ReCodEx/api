@@ -143,7 +143,7 @@ class DataInBox extends Box
       $task->setCommandBinary("fetch");
       $task->setCommandArguments([
         $remoteFiles[$i],
-        $files[$i]
+        ConfigParams::$SOURCE_DIR . $files[$i]
       ]);
       return [$task];
     }

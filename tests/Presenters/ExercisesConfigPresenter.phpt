@@ -256,8 +256,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(0, $payload["compilationPipeline"]);
 
     $testPipeline = $payload["testPipeline"];
-    Assert::count(1, $testPipeline);
-    Assert::equal("expected_output", $testPipeline[0]->getName());
+    Assert::count(2, $testPipeline);
+    Assert::equal("input_file", $testPipeline[0]->getName());
+    Assert::equal("expected_output", $testPipeline[1]->getName());
   }
 
   public function testGetLimits()

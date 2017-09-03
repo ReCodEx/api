@@ -44,6 +44,9 @@ App\Model\Entity\PipelineConfig:
                 - name: binary_file
                   type: file
                   value: a.out
+                - name: input_file
+                  type: file
+                  value: input.in
                 - name: expected_output
                   type: file
                   value: expected.out
@@ -58,6 +61,13 @@ App\Model\Entity\PipelineConfig:
                        type: file
                        value: binary_file
                   type: data-in
+                - name: input
+                  portsIn: []
+                  portsOut:
+                    in-data:
+                       type: file
+                       value: input_file
+                  type: data-in
                 - name: test
                   portsIn: []
                   portsOut:
@@ -66,15 +76,18 @@ App\Model\Entity\PipelineConfig:
                       value: expected_output
                   type: data-in
                 - name: run
+                  type: elf-exec
                   portsIn:
                     binary-file:
                       type: file
                       value: binary_file
+                    input-file:
+                      type: file
+                      value: input_file
                   portsOut:
                     output-file:
                       type: file
                       value: actual_output
-                  type: elf-exec
                 - name: judge
                   portsIn:
                     actual-output:
