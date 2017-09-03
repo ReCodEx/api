@@ -83,11 +83,12 @@ class ExerciseConfigValidator {
   }
 
   /**
+   * @param ExerciseConfig $config
    * @param array $pipelines
    * @param string $environment
    * @throws ExerciseConfigException
    */
-  private function checkPipelinesSection(array $pipelines, ?string $environment = NULL) {
+  private function checkPipelinesSection(ExerciseConfig $config, array $pipelines, ?string $environment = NULL) {
     /**
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
@@ -102,13 +103,9 @@ class ExerciseConfigValidator {
       $dataInBoxes = $pipeline->getDataInBoxes();
       $inBoxNames = array_map(function (Box $box) { return $box->getName(); }, $dataInBoxes);
       $variables = $pipelineVars->getVariablesTable();
-      $variableNames = array_map(function (Variable $box) { return $box->getName(); }, $variables->getAll());
-
-      if ($variableNames !== array_unique($variableNames)) {
-        throw new ExerciseConfigException(
-          "Duplicate values in variable table for pipeline '{$pipelineEntity->getId()}'"
-        );
-      }
+      $variableNames = $variables !== NULL
+        ? array_map(function (Variable $variable) { return $variable->getName(); }, $variables->getAll())
+        : [];
 
       /** @var Variable $variable */
       foreach ($variableNames as $variable) {

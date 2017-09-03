@@ -99,7 +99,8 @@ class ExerciseLimitsValidator {
             ));
           }
 
-          foreach ($limits as $limit => $value) {
+          // Make sure that no invalid limit identifiers (types) are used
+          foreach (array_keys($limits) as $limit) {
             if (!in_array($limit, Limits::VALID_LIMITS)) {
               throw new ExerciseConfigException(sprintf(
                 "Unknown limit identifier %s (allowed limits are %s)",
