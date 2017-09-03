@@ -379,6 +379,7 @@ class Exercise implements JsonSerializable
       "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
       "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
+      "hardwareGroups" => $this->hardwareGroups->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
       "groupId" => $this->group ? $this->group->getId() : NULL,
