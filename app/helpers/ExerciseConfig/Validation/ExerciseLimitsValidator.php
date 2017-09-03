@@ -88,6 +88,7 @@ class ExerciseLimitsValidator {
           ));
         }
 
+        /** @var Limits $limits */
         foreach ($secondLevel as $boxId => $limits) {
           $box = $environmentPipelines[$pipelineId]->get($boxId);
 
@@ -97,17 +98,6 @@ class ExerciseLimitsValidator {
               $boxId,
               $pipelineId
             ));
-          }
-
-          // Make sure that no invalid limit identifiers (types) are used
-          foreach (array_keys($limits) as $limit) {
-            if (!in_array($limit, Limits::VALID_LIMITS)) {
-              throw new ExerciseConfigException(sprintf(
-                "Unknown limit identifier %s (allowed limits are %s)",
-                $limit,
-                implode(", ", Limits::VALID_LIMITS)
-              ));
-            }
           }
         }
       }

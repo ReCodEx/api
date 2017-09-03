@@ -83,12 +83,11 @@ class ExerciseConfigValidator {
   }
 
   /**
-   * @param ExerciseConfig $config
    * @param array $pipelines
    * @param string $environment
    * @throws ExerciseConfigException
    */
-  private function checkPipelinesSection(ExerciseConfig $config, array $pipelines, ?string $environment = NULL) {
+  private function checkPipelinesSection(array $pipelines, ?string $environment = NULL) {
     /**
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
