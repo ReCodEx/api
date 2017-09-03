@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
+use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
@@ -84,6 +85,12 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $exerciseConfigLoader;
 
+  /**
+   * @var AssignmentEmailsSender
+   * @inject
+   */
+  public $assignmentEmailsSender;
+
 
   /**
    * Get a list of all assignments
@@ -149,10 +156,16 @@ class AssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."); // @todo better exception
     }
 
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    if ($assignment->isPublic() === false && $isPublic === true) {
+      // assignment is moving from non-public to public, send notification to students
+      $this->assignmentEmailsSender->assignmentCreated($assignment);
+    }
+
     $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
     $assignment->setUpdatedAt(new \DateTime);
-    $assignment->setIsPublic(filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setIsPublic($isPublic);
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));
     $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));

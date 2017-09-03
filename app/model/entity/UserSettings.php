@@ -12,10 +12,16 @@ use JsonSerializable;
  * @method bool getVimMode()
  * @method bool getOpenedSidebar()
  * @method bool getDefaultLanguage()
+ * @method bool getNewAssignmentEmails()
+ * @method bool getAssignmentDeadlineEmails()
+ * @method bool getSubmissionEvaluatedEmails()
  * @method setDarkTheme(bool $darkTheme)
  * @method setVimMode(bool $vimMode)
  * @method setOpenedSidebar(bool $opened)
  * @method setDefaultLanguage(bool $language)
+ * @method setNewAssignmentEmails(bool $opened)
+ * @method setAssignmentDeadlineEmails(bool $opened)
+ * @method setSubmissionEvaluatedEmails(bool $opened)
  */
 class UserSettings implements JsonSerializable
 {
@@ -31,6 +37,10 @@ class UserSettings implements JsonSerializable
     $this->vimMode = $vimMode;
     $this->defaultLanguage = $defaultLanguage;
     $this->openedSidebar = $openedSidebar;
+
+    $this->newAssignmentEmails = true;
+    $this->assignmentDeadlineEmails = true;
+    $this->submissionEvaluatedEmails = true;
   }
 
   /**
@@ -60,12 +70,36 @@ class UserSettings implements JsonSerializable
    */
   protected $openedSidebar;
 
+
+  /*******************
+   * Emails settings *
+   *******************/
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $newAssignmentEmails;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $assignmentDeadlineEmails;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $submissionEvaluatedEmails;
+
+
   public function jsonSerialize() {
     return [
       "darkTheme" => $this->darkTheme,
       "vimMode" => $this->vimMode,
       "defaultLanguage" => $this->defaultLanguage,
-      "openedSidebar" => $this->openedSidebar
+      "openedSidebar" => $this->openedSidebar,
+      "newAssignmentEmails" => $this->newAssignmentEmails,
+      "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
+      "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails
     ];
   }
 }
