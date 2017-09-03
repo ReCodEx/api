@@ -90,6 +90,17 @@ parameters:
       from: %emails.from%
       subjectPrefix: "ReCodEx Failure Report - "
 
+  assignmentNotifications:
+    emails:
+      from: %emails.from%
+      newAssignmentPrefix: "ReCodEx New Assignment Notification - "
+      assignmentDeadlinePrefix: "ReCodEx Assignment Deadline Is Behind the Corner - "
+
+  submissionNotifications:
+    emails:
+      from: %emails.from%
+      submissionEvaluatedPrefix: "ReCodEx Submission Evaluated Notification - "
+
   forgottenPassword:
     redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/forgotten-password/change"
     tokenExpiration: 600 # 10 minues
@@ -216,8 +227,8 @@ services:
     simple: @App\Helpers\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
-  - App\Helpers\Notifications\AssignmentEmailsSender
-  - App\Helpers\Notifications\SubmissionEmailsSender
+  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, %assignmentNotifications%)
+  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer

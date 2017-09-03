@@ -2,9 +2,10 @@
 
 namespace App\Helpers\Notifications;
 
-use App\Helpers\EmailsConfig;
+use Latte;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Submission;
+use Nette\Utils\Arrays;
 
 /**
  * Sending emails on submission evaluation.
@@ -13,18 +14,20 @@ class SubmissionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
-
-  /** @var EmailsConfig */
-  private $emailsConfig;
+  /** @var string */
+  private $sender;
+  /** @var string */
+  private $submissionEvaluatedPrefix;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
-   * @param EmailsConfig $emailsConfig
+   * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, EmailsConfig $emailsConfig) {
+  public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->emailsConfig = $emailsConfig;
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "ReCodEx Submission Evaluated Notification - ");
   }
 
   /**
@@ -32,39 +35,32 @@ class SubmissionEmailsSender {
    * @param Submission $submission
    * @return boolean
    */
-  public function assignmentCreated(Submission $submission) {
-    $subject = $this->formatSubject($submission->getAssignment()->getName());
-    $message = ""; // TODO
+  public function submissionEvaluated(Submission $submission) {
+    $subject = $this->submissionEvaluatedPrefix . " " . $submission->getAssignment()->getName();
 
     $recipients = array();
     $recipients[] = $submission->getUser()->getEmail();
 
     // Send the mail
     return $this->emailHelper->send(
-      $this->emailsConfig->getFrom(),
+      $this->sender,
       $recipients,
       $subject,
-      $this->formatBody($message)
+      $this->createSubmissionEvaluatedBody($submission)
     );
   }
 
   /**
-   * Prepare mail subject for submission and evaluation
-   * @param string $name Name of the assignment
-   * @return string Mail subject
-   */
-  private function formatSubject(string $name): string {
-    // TODO
-    //return $this->subjectPrefix . $name;
-  }
-
-  /**
    * Prepare and format body of the mail
-   * @param string $message Message of the email notification
+   * @param Submission $submission
    * @return string Formatted mail body to be sent
    */
-  private function formatBody(string $message): string {
-    return $message; // @todo
+  private function createSubmissionEvaluatedBody(Submission $submission): string {
+    // render the HTML to string using Latte engine
+    $latte = new Latte\Engine;
+    return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
+      "assignment" => $submission->getAssignment()->getName()
+    ]);
   }
 
 }

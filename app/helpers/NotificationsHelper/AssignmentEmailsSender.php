@@ -2,29 +2,35 @@
 
 namespace App\Helpers\Notifications;
 
-use App\Helpers\EmailsConfig;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
+use Latte;
+use Nette\Utils\Arrays;
 
 /**
- * Sending emails on assignment creation or change.
+ * Sending emails on assignment creation.
  */
 class AssignmentEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
-
-  /** @var EmailsConfig */
-  private $emailsConfig;
+  /** @var string */
+  private $sender;
+  /** @var string */
+  private $newAssignmentPrefix;
+  /** @var string */
+  private $assignmentDeadlinePrefix;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
-   * @param EmailsConfig $emailsConfig
+   * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, EmailsConfig $emailsConfig) {
+  public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->emailsConfig = $emailsConfig;
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "ReCodEx New Assignment Notification - ");
+    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline Is Behind the Corner - ");
   }
 
   /**
@@ -33,9 +39,8 @@ class AssignmentEmailsSender {
    * @param Assignment $assignment
    * @return boolean
    */
-  public function assignmentCreated(Assignment $assignment) {
-    $subject = $this->formatSubject($assignment->getName());
-    $message = ""; // TODO
+  public function assignmentCreated(Assignment $assignment): bool {
+    $subject = $this->newAssignmentPrefix . " " . $assignment->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
@@ -44,30 +49,60 @@ class AssignmentEmailsSender {
 
     // Send the mail
     return $this->emailHelper->send(
-      $this->emailsConfig->getFrom(),
+      $this->sender,
       $recipients,
       $subject,
-      $this->formatBody($message)
+      $this->createNewAssignmentBody($assignment)
     );
   }
 
   /**
-   * Prepare mail subject for assignment
-   * @param string $name Name of the assignment
-   * @return string Mail subject
+   * Deadline of assignment is nearby co users which do not submit any solution
+   * should be alerted.
+   * @param Assignment $assignment
+   * @return bool
    */
-  private function formatSubject(string $name): string {
-    // TODO
-    //return $this->subjectPrefix . $name;
+  public function assignmentDeadline(Assignment $assignment): bool {
+    $subject = $this->newAssignmentPrefix . " " . $assignment->getName();
+
+    $recipients = array();
+    foreach ($assignment->getGroup()->getStudents() as $student) {
+      $recipients[] = $student->getEmail(); // TODO: make sure user want to receive email notifications
+    }
+
+    // Send the mail
+    return $this->emailHelper->send(
+      $this->sender,
+      $recipients,
+      $subject,
+      $this->createAssignmentDeadlineBody($assignment)
+    );
   }
 
   /**
-   * Prepare and format body of the mail
-   * @param string $message Message of the email notification
+   * Prepare and format body of the new assignment mail
+   * @param Assignment $assignment
    * @return string Formatted mail body to be sent
    */
-  private function formatBody(string $message): string {
-    return $message; // @todo
+  private function createNewAssignmentBody(Assignment $assignment): string {
+    // render the HTML to string using Latte engine
+    $latte = new Latte\Engine;
+    return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
+      "assignment" => $assignment->getName()
+    ]);
+  }
+
+  /**
+   * Prepare and format body of the assignment deadline mail
+   * @param Assignment $assignment
+   * @return string Formatted mail body to be sent
+   */
+  private function createAssignmentDeadlineBody(Assignment $assignment): string {
+    // render the HTML to string using Latte engine
+    $latte = new Latte\Engine;
+    return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
+      "assignment" => $assignment->getName()
+    ]);
   }
 
 }
