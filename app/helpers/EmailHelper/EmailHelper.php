@@ -44,13 +44,14 @@ class EmailHelper {
 
   /**
    * Send an email with a nice template.
-   * @param string $from    Sender of the email
-   * @param array  $to      Receivers of the email
+   * @param string $from Sender of the email
+   * @param array $to Receivers of the email
    * @param string $subject Subject of the email
-   * @param string $text    Text of the message
-   * @return bool  If sending was successful or not
+   * @param string $text Text of the message
+   * @param array $bcc Blind copy receivers
+   * @return bool If sending was successful or not
    */
-  public function send(string $from, array $to, string $subject, string $text) {
+  public function send(string $from, array $to, string $subject, string $text, array $bcc = []) {
     $latte = new Latte\Engine;
     $latte->setTempDirectory(__DIR__ . "/../../../temp");
     $params = [
@@ -70,6 +71,10 @@ class EmailHelper {
 
     foreach ($to as $receiver) {
       $message->addTo($receiver);
+    }
+
+    foreach ($bcc as $receiver) {
+      $message->addBcc($receiver);
     }
 
     try {

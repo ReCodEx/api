@@ -31,22 +31,29 @@ class SubmissionEmailsSender {
   }
 
   /**
+   * @todo: not used
    * Submission was evaluated and we have to let the user know it.
    * @param Submission $submission
-   * @return boolean
+   * @return bool
    */
-  public function submissionEvaluated(Submission $submission) {
-    $subject = $this->submissionEvaluatedPrefix . " " . $submission->getAssignment()->getName();
+  public function submissionEvaluated(Submission $submission): bool {
+    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getName();
+
+    $user = $submission->getUser();
+    if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
+      return true;
+    }
 
     $recipients = array();
-    $recipients[] = $submission->getUser()->getEmail();
+    $recipients[] = $user->getEmail();
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
-      $recipients,
+      [],
       $subject,
-      $this->createSubmissionEvaluatedBody($submission)
+      $this->createSubmissionEvaluatedBody($submission),
+      $recipients
     );
   }
 

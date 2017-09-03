@@ -158,6 +158,9 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
    * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=FALSE)
    * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=FALSE)
+   * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=FALSE)
+   * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=FALSE)
+   * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=FALSE)
    * @throws ForbiddenRequestException
    */
   public function actionUpdateSettings(string $id) {
@@ -179,11 +182,23 @@ class UsersPresenter extends BasePresenter {
       ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getOpenedSidebar();
     $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage();
+    $newAssignmentEmails = $req->getPost("newAssignmentEmails") !== NULL
+      ? filter_var($req->getPost("newAssignmentEmails"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getNewAssignmentEmails();
+    $assignmentDeadlineEmails = $req->getPost("assignmentDeadlineEmails") !== NULL
+      ? filter_var($req->getPost("assignmentDeadlineEmails"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getAssignmentDeadlineEmails();
+    $submissionEvaluatedEmails = $req->getPost("submissionEvaluatedEmails") !== NULL
+      ? filter_var($req->getPost("submissionEvaluatedEmails"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getSubmissionEvaluatedEmails();
 
     $settings->setDarkTheme($darkTheme);
     $settings->setVimMode($vimMode);
     $settings->setOpenedSidebar($openedSidebar);
     $settings->setDefaultLanguage($defaultLanguage);
+    $settings->setNewAssignmentEmails($newAssignmentEmails);
+    $settings->setAssignmentDeadlineEmails($assignmentDeadlineEmails);
+    $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
 
     $this->users->persist($user);
     $this->sendSuccessResponse($user);

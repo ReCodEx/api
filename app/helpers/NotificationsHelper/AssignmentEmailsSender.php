@@ -4,6 +4,7 @@ namespace App\Helpers\Notifications;
 
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\User;
 use Latte;
 use Nette\Utils\Arrays;
 
@@ -40,42 +41,52 @@ class AssignmentEmailsSender {
    * @return boolean
    */
   public function assignmentCreated(Assignment $assignment): bool {
-    $subject = $this->newAssignmentPrefix . " " . $assignment->getName();
+    $subject = $this->newAssignmentPrefix . $assignment->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
-      $recipients[] = $student->getEmail(); // TODO: make sure user want to receive email notifications
+      if (!$student->getSettings()->getNewAssignmentEmails()) {
+        continue;
+      }
+      $recipients[] = $student->getEmail();
     }
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
-      $recipients,
+      [],
       $subject,
-      $this->createNewAssignmentBody($assignment)
+      $this->createNewAssignmentBody($assignment),
+      $recipients
     );
   }
 
   /**
+   * @todo: not used
    * Deadline of assignment is nearby co users which do not submit any solution
    * should be alerted.
    * @param Assignment $assignment
+   * @param User[] $students
    * @return bool
    */
-  public function assignmentDeadline(Assignment $assignment): bool {
-    $subject = $this->newAssignmentPrefix . " " . $assignment->getName();
+  public function assignmentDeadline(Assignment $assignment, array $students): bool {
+    $subject = $this->newAssignmentPrefix . $assignment->getName();
 
     $recipients = array();
-    foreach ($assignment->getGroup()->getStudents() as $student) {
-      $recipients[] = $student->getEmail(); // TODO: make sure user want to receive email notifications
+    foreach ($students as $student) {
+      if (!$student->getSettings()->getAssignmentDeadlineEmails()) {
+        continue;
+      }
+      $recipients[] = $student->getEmail();
     }
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
-      $recipients,
+      [],
       $subject,
-      $this->createAssignmentDeadlineBody($assignment)
+      $this->createAssignmentDeadlineBody($assignment),
+      $recipients
     );
   }
 
