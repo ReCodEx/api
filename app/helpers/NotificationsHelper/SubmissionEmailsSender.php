@@ -31,7 +31,6 @@ class SubmissionEmailsSender {
   }
 
   /**
-   * @todo: not used
    * Submission was evaluated and we have to let the user know it.
    * @param Submission $submission
    * @return bool
@@ -44,16 +43,12 @@ class SubmissionEmailsSender {
       return true;
     }
 
-    $recipients = array();
-    $recipients[] = $user->getEmail();
-
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
-      [],
+      [$user->getEmail()],
       $subject,
-      $this->createSubmissionEvaluatedBody($submission),
-      $recipients
+      $this->createSubmissionEvaluatedBody($submission)
     );
   }
 
@@ -66,7 +61,12 @@ class SubmissionEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
-      "assignment" => $submission->getAssignment()->getName()
+      "assignment" => $submission->getAssignment()->getName(),
+      "group" => $submission->getAssignment()->getGroup()->getName(),
+      "date" => $submission->getEvaluation()->getEvaluatedAt(),
+      "status" => $submission->isCorrect() === true ? "was successful" : "failed",
+      "points" => $submission->getEvaluation()->getTotalPoints(),
+      "maxPoints" => $submission->getAssignment()->getMaxPoints($submission->getEvaluation()->getEvaluatedAt())
     ]);
   }
 

@@ -8,10 +8,10 @@ use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
 use App\Helpers\EmailsConfig;
 use App\Helpers\FailureHelper;
-use App\Helpers\EmailHelper;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
+use App\Helpers\Notifications\SubmissionEmailsSender;
 use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Entity\SubmissionFailure;
@@ -35,10 +35,10 @@ class BrokerReportsPresenter extends BasePresenter {
   public $failureHelper;
 
   /**
-   * @var EmailHelper
+   * @var SubmissionEmailsSender
    * @inject
    */
-  public $emailHelper;
+  public $submissionEmailsSender;
 
   /**
    * @var EvaluationLoader
@@ -127,7 +127,7 @@ class BrokerReportsPresenter extends BasePresenter {
 
               if ($result === TRUE) {
                 // the solution is always asynchronous here, so send notification to the user
-                $this->notifyEvaluationFinished($submission);
+                $this->submissionEmailsSender->submissionEvaluated($submission);
               }
             }
             break;
@@ -186,22 +186,6 @@ class BrokerReportsPresenter extends BasePresenter {
     $referenceSolutionEvaluation->setEvaluation($solutionEvaluation);
     $this->evaluations->persist($solutionEvaluation);
     $this->referenceSolutionEvaluations->persist($referenceSolutionEvaluation);
-  }
-
-  /**
-   * Notify student that his evaluation finished with following status.
-   * @param Submission $submission  Evaluated submission
-   * @return void
-   */
-  private function notifyEvaluationFinished(Submission $submission) {
-    $successful = $submission->isCorrect();
-    $exerciseName = $submission->getAssignment()->getName();
-    $date = $submission->getEvaluation()->getEvaluatedAt()->format('j. n. H:i'); // @todo: Localizable
-    $status = $successful === TRUE ? "Evaluation of exercise was successful" : "Evaluation of exercise failed";  // @todo: Translatable
-    $subject = "$exerciseName - $status [$date]";
-    $text = "Solution of your assignment '$exerciseName' was evaluated. $status. Further description can be found in <a href='http://recodex.projekty.ms.mff.cuni.cz'>ReCodEx</a>."; // @todo: Translatable
-    $email = $submission->getUser()->getEmail();
-    $this->emailHelper->send($this->emailsConfig->getFrom(), [ $email ], $subject, $text);
   }
 
   /**
