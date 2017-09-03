@@ -95,14 +95,15 @@ class GccCompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setCommandBinary(self::$GCC_BINARY);
     $task->setCommandArguments(
-      array_merge($this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()->getValue(),
+      array_merge(
+        $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()->getValue(),
         [
           "-o",
           $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getValue()
         ]
       )
     );
-    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];
   }
 

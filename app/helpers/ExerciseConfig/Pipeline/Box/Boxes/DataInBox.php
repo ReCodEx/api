@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -108,7 +109,8 @@ class DataInBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @return array
+   * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(): array {
     if (!$this->remoteVariable) {
@@ -117,13 +119,34 @@ class DataInBox extends Box
       return [];
     }
 
-    $task = new Task();
-    $task->setCommandBinary("fetch");
-    $task->setCommandArguments([
-      $this->remoteVariable->getValue(),
-      ConfigParams::$SOURCE_DIR . $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue()->getValue()
-    ]);
-    return [$task];
+    $remoteVariable = $this->remoteVariable;
+    $variable = $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue();
+
+    // validate variable value and prepare arrays which will be processed
+    if ($remoteVariable->isValueArray() && $variable->isValueArray()) {
+      if (count($remoteVariable->getValue()) !== count($variable->getValue())) {
+        throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$DATA_IN_TYPE));
+      }
+
+      $remoteFiles = $remoteVariable->getValue();
+      $files = $variable->getValue();
+    } else if (!$remoteVariable->isValueArray() && !$variable->isValueArray()) {
+      $remoteFiles = [$remoteVariable->getValue()];
+      $files = [$variable->getValue()];
+    } else {
+      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$DATA_IN_TYPE));
+    }
+
+    // each remote file has to have its own fetch task
+    for ($i = 0; $i < count($files); ++$i) {
+      $task = new Task();
+      $task->setCommandBinary("fetch");
+      $task->setCommandArguments([
+        $remoteFiles[$i],
+        $files[$i]
+      ]);
+      return [$task];
+    }
   }
 
 }
