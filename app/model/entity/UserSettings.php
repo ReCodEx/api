@@ -96,7 +96,10 @@ class UserSettings implements JsonSerializable
       "darkTheme" => $this->darkTheme,
       "vimMode" => $this->vimMode,
       "defaultLanguage" => $this->defaultLanguage,
-      "openedSidebar" => $this->openedSidebar
+      "openedSidebar" => $this->openedSidebar,
+      "newAssignmentEmails" => $this->newAssignmentEmails,
+      "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
+      "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails
     ];
   }
 }
