@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\VariableMeta;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -137,15 +137,12 @@ class TestVariable extends Tester\TestCase
   }
 
   public function testVariablesOperations() {
-    $variable = new VariableMeta;
-
-    Assert::equal(null, $variable->getType());
-    Assert::equal(null, $variable->getValue());
-
-    $variable->setType("file");
-    $variable->setValue("value");
+    $variable = new Variable("file");
 
     Assert::equal("file", $variable->getType());
+    Assert::equal("", $variable->getValue());
+
+    $variable->setValue("value");
     Assert::equal("value", $variable->getValue());
   }
 

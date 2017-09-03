@@ -80,24 +80,20 @@ class Helper {
         // port is file and also array, in exercise config if there should be
         // defined file as variable it is expected to be remote file, so the
         // remote file type is offered back to web-app
-        $variable = new Variable((new VariableMeta)->setName($variableName)
-          ->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE));
+        $variable = (new Variable(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))->setName($variableName);
       } else if ($port->isFile() && !$port->isArray()) {
         // port is file and not an array, in exercise config if there should be
         // defined file as variable it is expected to be remote file, so the
         // remote file type is offered back to web-app
-        $variable = new Variable((new VariableMeta)->setName($variableName)
-          ->setType(VariableTypes::$REMOTE_FILE_TYPE));
+        $variable = (new Variable(VariableTypes::$REMOTE_FILE_TYPE))->setName($variableName);
       } else {
-        $variable = new Variable((new VariableMeta)->setName($variableName)
-          ->setType($port->getType()));
+        $variable = (new Variable($port->getType()))->setName($variableName);
       }
       $result[$pair[0]][] = $variable;
     }
     foreach ($references as $pair) {
       $variableName = $pair[1]->getReference();
-      $variable = new Variable((new VariableMeta)->setName($variableName)
-        ->setType($pair[1]->getType()));
+      $variable = (new Variable($pair[1]->getType()))->setName($variableName);
       $result[$pair[0]][] = $variable;
     }
     return $result;

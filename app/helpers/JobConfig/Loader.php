@@ -200,6 +200,11 @@ class Loader {
       unset($data[SandboxConfig::STDERR_KEY]);
     }
 
+    if (isset($data[SandboxConfig::OUTPUT_KEY])) {
+      $sandboxConfig->setOutput($data[SandboxConfig::OUTPUT_KEY]);
+      unset($data[SandboxConfig::OUTPUT_KEY]);
+    }
+
     // *** CONSTRUCT ALL LIMITS
 
     if (isset($data[SandboxConfig::LIMITS_KEY]) && is_array($data[SandboxConfig::LIMITS_KEY])) {

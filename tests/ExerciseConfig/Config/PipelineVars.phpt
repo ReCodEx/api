@@ -6,7 +6,6 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -46,8 +45,7 @@ class TestPipelineVars extends Tester\TestCase
 
   public function testVariablesOperations() {
     $pipeline = new PipelineVars;
-    $variableMeta = (new VariableMeta)->setName("variableA")->setType("string")->setValue("valA");
-    $variable = new Variable($variableMeta);
+    $variable = (new Variable("string"))->setName("variableA")->setValue("valA");
 
     $pipeline->getVariablesTable()->set($variable);
     Assert::equal(VariableTypes::$STRING_TYPE, $pipeline->getVariablesTable()->get("variableA")->getType());

@@ -17,11 +17,30 @@ class Variable implements JsonSerializable
   public static $REFERENCE_KEY = '$';
   public static $ESCAPE_CHAR = '\\';
 
+  /** Name of the name key */
+  const NAME_KEY = "name";
+  /** Name of the type key */
+  const TYPE_KEY = "type";
+  /** Name of the value key */
+  const VALUE_KEY = "value";
+
   /**
-   * Meta information about variable.
-   * @var VariableMeta
+   * Variable name.
+   * @var string
    */
-  protected $meta;
+  protected $name = null;
+
+  /**
+   * Variable type.
+   * @var string
+   */
+  protected $type = null;
+
+  /**
+   * Variable value.
+   * @var string|array
+   */
+  protected $value = null;
 
   /**
    * Determines if variable is array or not.
@@ -32,11 +51,11 @@ class Variable implements JsonSerializable
 
   /**
    * Variable constructor.
-   * @param VariableMeta $meta
+   * @param string $type
    * @throws ExerciseConfigException
    */
-  public function __construct(VariableMeta $meta) {
-    $this->meta = $meta;
+  public function __construct(string $type) {
+    $this->type = $type;
     $this->validateType();
     $this->validateValue();
   }
@@ -46,23 +65,23 @@ class Variable implements JsonSerializable
    * @throws ExerciseConfigException
    */
   private function validateType() {
-    if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
-      $this->meta->setType(VariableTypes::$FILE_ARRAY_TYPE);
+    if (strtolower($this->type) === strtolower(VariableTypes::$FILE_ARRAY_TYPE)) {
+      $this->type = VariableTypes::$FILE_ARRAY_TYPE;
       $this->isArray = true;
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
-      $this->meta->setType(VariableTypes::$FILE_TYPE);
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)) {
-      $this->meta->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE);
+    } else if (strtolower($this->type) === strtolower(VariableTypes::$FILE_TYPE)) {
+      $this->type = VariableTypes::$FILE_TYPE;
+    } else if (strtolower($this->type) === strtolower(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)) {
+      $this->type = VariableTypes::$REMOTE_FILE_ARRAY_TYPE;
       $this->isArray = true;
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_TYPE)) {
-      $this->meta->setType(VariableTypes::$REMOTE_FILE_TYPE);
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
-      $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
+    } else if (strtolower($this->type) === strtolower(VariableTypes::$REMOTE_FILE_TYPE)) {
+      $this->type = VariableTypes::$REMOTE_FILE_TYPE;
+    } else if (strtolower($this->type) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
+      $this->type = VariableTypes::$STRING_ARRAY_TYPE;
       $this->isArray = true;
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
-      $this->meta->setType(VariableTypes::$STRING_TYPE);
+    } else if (strtolower($this->type) === strtolower(VariableTypes::$STRING_TYPE)) {
+      $this->type = VariableTypes::$STRING_TYPE;
     } else {
-      throw new ExerciseConfigException("Unknown type: {$this->meta->getType()}");
+      throw new ExerciseConfigException("Unknown type: {$this->type}");
     }
   }
 
@@ -71,12 +90,12 @@ class Variable implements JsonSerializable
    * @throws ExerciseConfigException
    */
   private function validateValue() {
-    if ($this->meta->getValue() === null) {
+    if ($this->value === null) {
       // value is null this means that default value should be assigned
       if ($this->isArray()) {
-        $this->meta->setValue([]);
+        $this->value = [];
       } else {
-        $this->meta->setValue("");
+        $this->value = "";
       }
     }
 
@@ -87,19 +106,29 @@ class Variable implements JsonSerializable
     } else if ($this->isArray()) {
       // noop, array can be defined with regexp
     } else {
-      if (!is_scalar($this->meta->getValue())) {
-        throw new ExerciseConfigException("Variable '{$this->meta->getName()}' should be scalar");
+      if (!is_scalar($this->value)) {
+        throw new ExerciseConfigException("Variable '{$this->name}' should be scalar");
       }
     }
   }
 
 
   /**
-   * Get name of the variable.
+   * Get name of this variable.
    * @return null|string
    */
   public function getName(): ?string {
-    return $this->meta->getName();
+    return $this->name;
+  }
+
+  /**
+   * Set name of this variable.
+   * @param string $name
+   * @return Variable
+   */
+  public function setName(string $name): Variable {
+    $this->name = $name;
+    return $this;
   }
 
   /**
@@ -107,7 +136,7 @@ class Variable implements JsonSerializable
    * @return null|string
    */
   public function getType(): ?string {
-    return $this->meta->getType();
+    return $this->type;
   }
 
   /**
@@ -123,7 +152,7 @@ class Variable implements JsonSerializable
    * @return bool
    */
   public function isValueArray(): bool {
-    return is_array($this->meta->getValue());
+    return is_array($this->value);
   }
 
   /**
@@ -132,8 +161,8 @@ class Variable implements JsonSerializable
    * @return bool
    */
   public function isFile(): bool {
-    return $this->meta->getType() === VariableTypes::$FILE_TYPE ||
-      $this->meta->getType() === VariableTypes::$FILE_ARRAY_TYPE;
+    return $this->type === VariableTypes::$FILE_TYPE ||
+      $this->type === VariableTypes::$FILE_ARRAY_TYPE;
   }
 
   /**
@@ -141,8 +170,8 @@ class Variable implements JsonSerializable
    * @return bool
    */
   public function isRemoteFile(): bool {
-    return $this->meta->getType() === VariableTypes::$REMOTE_FILE_TYPE ||
-      $this->meta->getType() === VariableTypes::$REMOTE_FILE_ARRAY_TYPE;
+    return $this->type === VariableTypes::$REMOTE_FILE_TYPE ||
+      $this->type === VariableTypes::$REMOTE_FILE_ARRAY_TYPE;
   }
 
   /**
@@ -150,7 +179,7 @@ class Variable implements JsonSerializable
    * @return array|string
    */
   public function getValue() {
-    $val = $this->meta->getValue();
+    $val = $this->value;
     if (is_scalar($val) && Strings::startsWith($val, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
       return Strings::substring($val, 1);
     }
@@ -159,12 +188,23 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Set value of this variable.
+   * @param array|string $value
+   * @return Variable
+   */
+  public function setValue($value): Variable {
+    $this->value = $value;
+    $this->validateValue();
+    return $this;
+  }
+
+  /**
    * Get name of the referenced variable if any.
    * @note Check if variable is reference has to precede this call.
    * @return null|string
    */
   public function getReference(): ?string {
-    $val = $this->meta->getValue();
+    $val = $this->value;
     if (is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY)) {
       return Strings::substring($val, 1);
     }
@@ -177,7 +217,7 @@ class Variable implements JsonSerializable
    * @return bool
    */
   public function isReference(): bool {
-    $val = $this->meta->getValue();
+    $val = $this->value;
     return is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY);
   }
 
@@ -187,7 +227,13 @@ class Variable implements JsonSerializable
    * @return array
    */
   public function toArray(): array {
-    return $this->meta->toArray();
+    $data = [];
+
+    $data[self::NAME_KEY] = $this->name;
+    $data[self::TYPE_KEY] = $this->type;
+    $data[self::VALUE_KEY] = $this->value;
+
+    return $data;
   }
 
   /**

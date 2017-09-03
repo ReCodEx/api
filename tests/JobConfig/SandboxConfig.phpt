@@ -23,6 +23,7 @@ class TestSandboxConfig extends Tester\TestCase
     "stdin" => "optStdin",
     "stdout" => "optStdout",
     "stderr" => "optStderr",
+    "output" => true,
     "limits" => [
       [ "hw-group-id" => "optionalGroup"]
     ]
@@ -70,6 +71,7 @@ class TestSandboxConfig extends Tester\TestCase
     Assert::equal("optStdin", $sandbox->getStdin());
     Assert::equal("optStdout", $sandbox->getStdout());
     Assert::equal("optStderr", $sandbox->getStderr());
+    Assert::equal(true, $sandbox->getOutput());
     Assert::equal(1, count($sandbox->getLimitsArray()));
     Assert::true($sandbox->hasLimits("optionalGroup"));
     Assert::isEqual(self::$optional, $sandbox->toArray());

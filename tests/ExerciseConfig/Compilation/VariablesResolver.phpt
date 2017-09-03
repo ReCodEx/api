@@ -10,7 +10,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
@@ -49,12 +48,12 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree A -> pipeline: in -> exec -> out; pre-exec -> exec
     //
 
-    $referencedVarA = new Variable((new VariableMeta)->setName("test-a-reference-variable")->setType("file")->setValue("booya"));
-    $testInputVarA = new Variable((new VariableMeta)->setName("test-a-input")->setType("file")->setValue("infile"));
-    $testInputArrayVarA = new Variable((new VariableMeta)->setName("test-a-input-array")->setType("file[]")->setValue("in*"));
-    $preExecVarA = new Variable((new VariableMeta)->setName("test-a-pre-exec")->setType("file")->setValue('$test-a-reference-variable'));
-    $outputReferencedVarA = new Variable((new VariableMeta)->setName("test-a-output-reference")->setType("file")->setValue("yaboo"));
-    $testOutputVarA = new Variable((new VariableMeta)->setName("test-a-output")->setType("file")->setValue('$test-a-output-reference'));
+    $referencedVarA = (new Variable("file"))->setName("test-a-reference-variable")->setValue("booya");
+    $testInputVarA = (new Variable("file"))->setName("test-a-input")->setValue("infile");
+    $testInputArrayVarA = (new Variable("file[]"))->setName("test-a-input-array")->setValue("in*");
+    $preExecVarA = (new Variable("file"))->setName("test-a-pre-exec")->setValue('$test-a-reference-variable');
+    $outputReferencedVarA = (new Variable("file"))->setName("test-a-output-reference")->setValue("yaboo");
+    $testOutputVarA = (new Variable("file"))->setName("test-a-output")->setValue('$test-a-output-reference');
 
     $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testInputVarA)->set($testInputArrayVarA);
     $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
@@ -96,10 +95,10 @@ class TestVariablesResolver extends Tester\TestCase
     // Tree B - pipeline: inA -> exec -> outA; inB -> exec -> outB
     //
 
-    $testInputVarBA = new Variable((new VariableMeta)->setName("test-ba-input")->setType("file")->setValue("infile"));
-    $testInputVarBB = new Variable((new VariableMeta)->setName("test-bb-input")->setType("file")->setValue(""));
-    $testOutputVarBA = new Variable((new VariableMeta)->setName("test-ba-output")->setType("file")->setValue(""));
-    $testOutputVarBB = new Variable((new VariableMeta)->setName("test-bb-output")->setType("file")->setValue(""));
+    $testInputVarBA = (new Variable("file"))->setName("test-ba-input")->setValue("infile");
+    $testInputVarBB = (new Variable("file"))->setName("test-bb-input")->setValue("");
+    $testOutputVarBA = (new Variable("file"))->setName("test-ba-output")->setValue("");
+    $testOutputVarBB = (new Variable("file"))->setName("test-bb-output")->setValue("");
 
     $this->envVarTableB = (new VariablesTable)->set($testInputVarBA);
     $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
@@ -206,7 +205,7 @@ class TestVariablesResolver extends Tester\TestCase
   public function testNotMatchingRegexp() {
     Assert::throws(function () {
       $files = ["infile"];
-      $this->envVarTableA->set(new Variable((new VariableMeta)->setName("test-a-input")->setType("file")->setValue("out*")));
+      $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("out*"));
       $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
     }, ExerciseConfigException::class);
   }
@@ -217,22 +216,22 @@ class TestVariablesResolver extends Tester\TestCase
     $portArray = $tree->getInputNodes()[1]->getBox()->getOutputPorts()["data-in-arr"];
 
     $files = ["infile"];
-    $this->envVarTableA->set(new Variable((new VariableMeta)->setName("test-a-input")->setType("file")->setValue("in*")));
+    $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
     Assert::equal("infile", $port->getVariableValue()->getValue());
 
     $files = ["infile", "invar"];
-    $this->envVarTableA->set(new Variable((new VariableMeta)->setName("test-a-input")->setType("file")->setValue("in*")));
+    $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
     Assert::equal("infile", $port->getVariableValue()->getValue());
 
     $files = ["infile", "invar"];
-    $this->envVarTableA->set(new Variable((new VariableMeta)->setName("test-a-input-array")->setType("file[]")->setValue("in*")));
+    $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
     Assert::equal($files, $portArray->getVariableValue()->getValue());
 
     $files = ["infile", "outvar"];
-    $this->envVarTableA->set(new Variable((new VariableMeta)->setName("test-a-input-array")->setType("file[]")->setValue("in*")));
+    $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
     Assert::equal(["infile"], $portArray->getVariableValue()->getValue());
   }

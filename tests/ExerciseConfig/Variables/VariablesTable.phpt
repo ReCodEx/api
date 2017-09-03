@@ -5,7 +5,6 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
@@ -50,8 +49,7 @@ class TestVariablesTable extends Tester\TestCase
 
   public function testVariablesOperations() {
     $table = new VariablesTable;
-    $variableMeta = (new VariableMeta)->setName("varA")->setType("string")->setValue("valA");
-    $variable = new Variable($variableMeta);
+    $variable = (new Variable("string"))->setName("varA")->setValue("valA");
 
     $table->set($variable);
     Assert::equal(1, $table->size());

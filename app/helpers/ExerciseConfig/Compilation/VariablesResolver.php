@@ -7,7 +7,6 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariableMeta;
 use App\Helpers\ExerciseConfig\VariablesTable;
 
 
@@ -46,16 +45,16 @@ class VariablesResolver {
       throw new ExerciseConfigException("Regular expression in variable '{$variable->getName()}' could not be resolved against submitted files");
     }
 
-    // construct resulting variable meta information from given variable info
-    $meta = (new VariableMeta)->setName($variable->getName())->setType($variable->getType());
+    // construct resulting variable from given variable info
+    $result = (new Variable($variable->getType()))->setName($variable->getName());
     if ($variable->isArray()) {
-      $meta->setValue($matches);
+      $result->setValue($matches);
     } else {
       // variable is not an array, so take only first element from all matches
-      $meta->setValue(current($matches));
+      $result->setValue(current($matches));
     }
 
-    return new Variable($meta);
+    return $result;
   }
 
   /**
