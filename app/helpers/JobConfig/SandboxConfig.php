@@ -22,6 +22,8 @@ class SandboxConfig {
   const STDERR_KEY = "stderr";
   /** Limits collection key */
   const LIMITS_KEY = "limits";
+  /** Output config key */
+  const OUTPUT_KEY = "output";
 
   /** @var string Sandbox name */
   private $name = "";
@@ -31,6 +33,8 @@ class SandboxConfig {
   private $stdout = NULL;
   /** @var string|NULL Standard error redirection file */
   private $stderr = NULL;
+  /** @var bool Output from stdout and stderr will be written to result yaml */
+  private $output = false;
   /** @var array List of limits */
   private $limits = [];
   /** @var array Additional data */
@@ -105,6 +109,24 @@ class SandboxConfig {
    */
   public function setStderr($stderr) {
     $this->stderr = $stderr;
+    return $this;
+  }
+
+  /**
+   * Get output to stdout and stderr.
+   * @return bool
+   */
+  public function getOutput(): bool {
+    return $this->output;
+  }
+
+  /**
+   * Set output to stdout and stderr.
+   * @param bool $output
+   * @return $this
+   */
+  public function setOutput(bool $output) {
+    $this->output = $output;
     return $this;
   }
 
@@ -186,6 +208,7 @@ class SandboxConfig {
     if (!empty($this->stdin)) { $data[self::STDIN_KEY] = $this->stdin; }
     if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
     if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
+    if ($this->output) { $data[self::OUTPUT_KEY] = $this->output; }
 
     if (!empty($this->limits)) {
       $data[self::LIMITS_KEY] = [];
