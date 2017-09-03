@@ -9,11 +9,10 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\FilePort;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariableMeta;
 use Tester\Assert;
 
 
@@ -31,25 +30,25 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testCorrect() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("input", "file", "")));
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("output", "file", "")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "input", ""));
+    $pipeline->getVariablesTable()->set(new Variable("file", "output", ""));
 
     $dataInBoxMeta = new BoxMeta();
     $dataInBoxMeta->setName("input");
-    $dataInBoxMeta->addOutputPort(new FilePort(PortMeta::create(DataInBox::$DATA_IN_PORT_KEY, "file", "input")));
+    $dataInBoxMeta->addOutputPort(new Port(PortMeta::create(DataInBox::$DATA_IN_PORT_KEY, "file", "input")));
     $pipeline->set(new DataInBox($dataInBoxMeta));
 
     $compileBoxMeta = new BoxMeta();
     $compileBoxMeta->setName("compile");
-    $compileBoxMeta->addInputPort(new FilePort(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
+    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
       "input")));
-    $compileBoxMeta->addOutputPort(new FilePort(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file",
+    $compileBoxMeta->addOutputPort(new Port(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file",
       "output")));
     $pipeline->set(new GccCompilationBox($compileBoxMeta));
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new FilePort(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "output")));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "output")));
     $pipeline->set(new DataOutBox($dataOutBoxMeta));
 
     Assert::noError(function () use ($pipeline) {
@@ -67,24 +66,24 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testUnusedVariable() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varA", "file", "a.txt")));
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varB", "file", "b.txt")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varA", "a.txt"));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varB", "b.txt"));
 
     $varAInMeta = new BoxMeta();
     $varAInMeta->setName("varA_in");
-    $varAInMeta->addOutputPort(new FilePort(PortMeta::create("varA_in", "file", "varA")));
+    $varAInMeta->addOutputPort(new Port(PortMeta::create("varA_in", "file", "varA")));
     $pipeline->set(new DataInBox($varAInMeta));
 
     $varBInMeta = new BoxMeta();
     $varBInMeta->setName("varB_in");
-    $varBInMeta->addOutputPort(new FilePort(PortMeta::create("varB_in", "file", "varB")));
+    $varBInMeta->addOutputPort(new Port(PortMeta::create("varB_in", "file", "varB")));
     $pipeline->set(new DataInBox($varBInMeta));
 
     $judgeBoxMeta = new BoxMeta();
     $pipeline->set(new JudgeNormalBox($judgeBoxMeta));
     $judgeBoxMeta->setName("judge");
-    $judgeBoxMeta->addInputPort(new FilePort(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
-    $judgeBoxMeta->addInputPort(new FilePort(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varA")));
 
     Assert::exception(function () use ($pipeline) {
       $this->validator->validate($pipeline);
@@ -93,12 +92,12 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testUndefinedVariable() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varA", "file", "a.txt")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varA", "a.txt"));
     $judgeBoxMeta = new BoxMeta();
     $pipeline->set(new JudgeNormalBox($judgeBoxMeta));
     $judgeBoxMeta->setName("judge");
-    $judgeBoxMeta->addInputPort(new FilePort(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
-    $judgeBoxMeta->addInputPort(new FilePort(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varB")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varB")));
 
     Assert::exception(function () use ($pipeline) {
       $this->validator->validate($pipeline);
@@ -107,16 +106,16 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testMultipleOutputsOfVariable() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varA", "file", "a.txt")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varA", "a.txt"));
 
     $boxAMeta = new BoxMeta();
     $boxAMeta->setName("gcc_a");
-    $boxAMeta->addOutputPort(new FilePort(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file", "varA")));
+    $boxAMeta->addOutputPort(new Port(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file", "varA")));
     $pipeline->set(new GccCompilationBox($boxAMeta));
 
     $boxBMeta = new BoxMeta();
     $boxBMeta->setName("gcc_b");
-    $boxBMeta->addOutputPort(new FilePort(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file", "varA")));
+    $boxBMeta->addOutputPort(new Port(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file", "varA")));
     $pipeline->set(new GccCompilationBox($boxBMeta));
 
     Assert::exception(function () use ($pipeline) {
@@ -126,11 +125,11 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testNoOutputOfVariable() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varA", "file", "")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varA", ""));
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new FilePort(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
     $pipeline->set(new DataOutBox($dataOutBoxMeta));
 
     Assert::exception(function () use ($pipeline) {
@@ -140,11 +139,11 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testNoOutputOfVariableWithDefault() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("varA", "file", "a.txt")));
+    $pipeline->getVariablesTable()->set(new Variable("file", "varA", "a.txt"));
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new FilePort(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
     $pipeline->set(new DataOutBox($dataOutBoxMeta));
 
     Assert::noError(function () use ($pipeline) {
@@ -154,11 +153,11 @@ class TestPipelineValidator extends Tester\TestCase
 
   public function testTypeMismatch() {
     $pipeline = new Pipeline();
-    $pipeline->getVariablesTable()->set(new Variable(VariableMeta::create("input", "string", "a.txt")));
+    $pipeline->getVariablesTable()->set(new Variable("string", "input", "a.txt"));
 
     $compileBoxMeta = new BoxMeta();
     $compileBoxMeta->setName("compile");
-    $compileBoxMeta->addInputPort(new FilePort(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
+    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
       "input")));
     $pipeline->set(new GccCompilationBox($compileBoxMeta));
 

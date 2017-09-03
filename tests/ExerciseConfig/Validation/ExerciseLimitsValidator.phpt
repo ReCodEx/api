@@ -2,14 +2,10 @@
 
 $container = include '../../bootstrap.php';
 
-use App\Helpers\ExerciseConfig\Environment;
-use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Limits;
 use App\Helpers\ExerciseConfig\Loader;
-use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
-use App\Model\Entity\Pipeline;
 use App\Model\Repository\Pipelines;
 use Kdyby\Doctrine\EntityManager;
 use Nette\DI\Container;

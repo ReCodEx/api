@@ -176,7 +176,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
   public function testSetConfiguration()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
     $pipelineA = $this->pipelines->findAll()[0];
@@ -191,6 +191,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             ["name" => "source", "type" => "file", "value" => "defValA"]
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
             ["name" => "binary", "type" => "file", "value" => "defValB"],
             ["name" => "test", "type" => "file", "value" => "defValB"]
           ]]]]
@@ -203,6 +204,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             ["name" => "source", "type" => "string", "value" => "AValA"]
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
             ["name" => "binary", "type" => "file", "value" => "BValB"],
             ["name" => "test", "type" => "file", "value" => "BValB"]
           ]]]]
@@ -215,6 +217,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
             ["name" => "source", "type" => "string", "value" => "BValA"]
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
             ["name" => "binary", "type" => "file", "value" => "BValC"],
             ["name" => "test", "type" => "file", "value" => "BValC"]
           ]]]]

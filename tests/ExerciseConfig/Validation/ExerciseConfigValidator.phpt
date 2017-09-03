@@ -3,7 +3,6 @@
 $container = include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;

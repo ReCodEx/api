@@ -128,8 +128,9 @@ class ExerciseConfigValidator {
 
       if (count($inBoxNames) > 0) {
         throw new ExerciseConfigException(sprintf(
-          "Missing values for variables: %s",
-          implode(", ", $inBoxNames)
+          "Missing values for variables: %s (pipeline %s)",
+          implode(", ", $inBoxNames),
+          $pipelineId
         ));
       }
     }
