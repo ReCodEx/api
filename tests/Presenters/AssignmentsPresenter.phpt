@@ -6,6 +6,7 @@ use App\Helpers\BrokerProxy;
 use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
 use App\Helpers\BackendSubmitHelper;
+use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
@@ -92,10 +93,16 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testUpdateDetail()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignments = $this->assignments->findAll();
     $assignment = array_pop($assignments);
+    $assignment->setIsPublic(false); // for testing of notification emails
+
+    /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+    $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+    $mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
+    $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
 
     $name = "newAssignmentName";
     $isPublic = true;
@@ -165,16 +172,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testCreateAssignment()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    /** @var Mockery\Mock | JobConfig\TestConfig $mockJobConfig */
-    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-
-    $mockJobConfig->shouldReceive("getTests")->withAnyArgs()->andReturn([
-      new JobConfig\TestConfig("test1", [
-        (new JobConfig\Tasks\Task)->setType('execution')->setSandboxConfig((new JobConfig\SandboxConfig)->setName('isolate')),
-        (new JobConfig\Tasks\Task)->setType('evaluation')
-      ])
-    ]);
 
     $exercise = $this->presenter->exercises->findAll()[0];
     $group = $this->presenter->groups->findAll()[0];

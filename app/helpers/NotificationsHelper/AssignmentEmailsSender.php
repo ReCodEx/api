@@ -4,7 +4,6 @@ namespace App\Helpers\Notifications;
 
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\User;
 use Latte;
 use Nette\Utils\Arrays;
 
@@ -81,20 +80,22 @@ class AssignmentEmailsSender {
   /**
    * @todo: not used
    * Deadline of assignment is nearby so users which did not submit any solution
-   * should be alerted. List of users is given by parameter and to all of them
-   * email will be sent.
+   * should be alerted.
    * @param Assignment $assignment
-   * @param User[] $students
    * @return bool
    */
-  public function assignmentDeadline(Assignment $assignment, array $students): bool {
+  public function assignmentDeadline(Assignment $assignment): bool {
     $subject = $this->newAssignmentPrefix . $assignment->getName();
 
     $recipients = array();
-    foreach ($students as $student) {
-      if (!$student->getSettings()->getAssignmentDeadlineEmails()) {
+    foreach ($assignment->getGroup()->getStudents() as $student) {
+      if ($assignment->getLastSolution($student) ||
+          !$student->getSettings()->getAssignmentDeadlineEmails()) {
+        // student already submitted solution to this assignment or
+        // disabled sending emails
         continue;
       }
+
       $recipients[] = $student->getEmail();
     }
 
