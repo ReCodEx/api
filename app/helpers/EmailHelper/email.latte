@@ -3,50 +3,60 @@
 <head>
   <meta charset="utf-8">
   <title>{$subject}</title>
-  {if !isset($noCss) || $noCss === FALSE}
   <style>
-    {include 'style.css'|noescape}
+    a {
+      font-weight: bold;
+      color: #595959;
+      border-bottom: 1px solid #cfcfcf;
+      text-decoration: none;
+    }
+
+    hr {
+      width: 500px;
+      text-align: center;
+      margin: 0 auto;
+      border: 0;
+      height: 1px;
+      background-color: #c2c2c2;
+    }
+
+    p {
+      margin: 0;
+      color: #000;
+    }
   </style>
-  {/if}
 </head>
-<body>
-  <div id="wrapper">
-    <table align="center">
+<body style="margin: 0;">
+  <div style="padding: 30px 0; font-family: Arial, sans-serif; font-size: 10pt;">
+    <table style="margin: 0 auto;" align="center">
       <tr>
-        <td class="nopadding">
-          <h1>
-            <img src="{$apiUrl|trim:"/"}/emails/img/logo.png" alt="ReCodEx">
-          </h1>
-          <table width="600" algin="center" border="0" cellspacing="0" cellpadding="0" class="container">
+        <td style="padding: 0 !important;">
+          <table style="width: 600px; margin: 0 auto; background: #fff; border: 1px solid #cbd9dc;" align="center" cellspacing="0" cellpadding="0">
             <tr>
-              <td class="header" colspan="2">
-                <h2>{$subject}</h2>
+              <td style="background: #222D32; color: #ecf0f5; font-weight: bold; padding: 20px;">
+                <h2 style="margin: 0;">{$subject}</h2>
+              </td>
+              <td style="background: #222D32; margin: 0; padding: 10px 20px 10px 0;text-align: right;">
+                <img style="width: 50px; border: none;" src="{$apiUrl|trim:"/"}/emails/img/logo_only.png" alt="ReCodEx">
               </td>
             </tr>
           
             <tr>
-              <td class="body" colspan="2">
+              <td style="padding: 20px;" colspan="2">
                   {$message|noescape}
               </td>
             </tr>
-            <tr class="container-footer">
-              <td class="signature">
-                <p>
+            <tr style="background: #f8f8f8; margin: 0; padding: 0; text-align: left; overflow: hidden;">
+              <td style="margin: 0; padding: 20px;">
+                <p style="margin: 0; padding: 0;">
                   S přáním pěkného dne,<br>Roboti z ReCodExu<br>
                   <a href="{$footerUrl}">{$footerUrl}</a>
                 </p>
               </td>
-              <td class="social-icons">
-                <a href="{$githubUrl}" class="social-icon" target=_blank>
-                  <img src="{$apiUrl|trim:"/"}/emails/img/github.png" width="32" height="31" alt="Github">
+              <td style="margin: 0; padding: 20px; text-align: right;">
+                <a href="{$githubUrl}" style="width: 30px; height: 30px; padding-left: 10px; border: none;" target=_blank>
+                  <img style="border: none;" src="{$apiUrl|trim:"/"}/emails/img/github.png" width="30" height="30" alt="Github">
                 </a>
-              </td>
-            </tr>
-          </table>
-          <table class="shadow" cellpadding="0" cellspacing="0" align="center">
-            <tr>
-              <td class="nopadding">
-                <img src="{$apiUrl|trim:"/"}/emails/img/shadow.png" alt="" width="600" height="14">
               </td>
             </tr>
           </table>
