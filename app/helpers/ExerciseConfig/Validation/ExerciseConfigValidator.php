@@ -3,11 +3,13 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\PipelineVars;
-use App\Model\Entity\Pipeline;
+use App\Helpers\ExerciseConfig\Variable;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Repository\Pipelines;
 
 
@@ -39,17 +41,26 @@ class ExerciseConfigValidator {
 
   /**
    * @param ExerciseConfig $config
-   * @param array $variablesTables
+   * @param Exercise $exercise
    * @throws ExerciseConfigException
    */
-  private function checkEnvironments(ExerciseConfig $config, array $variablesTables) {
-    if (count($config->getEnvironments()) !== count($variablesTables)) {
-      throw new ExerciseConfigException("Environments in exercise configuration does not match the ones defined in exercise");
+  private function checkEnvironments(ExerciseConfig $config, Exercise $exercise) {
+    $envSpecificConfigs = $exercise->getExerciseEnvironmentConfigs();
+
+    if (count($config->getEnvironments()) !== count($envSpecificConfigs)) {
+      throw new ExerciseConfigException("The number of entries in environment-specific configuration differs from the number of allowed environments");
     }
 
+    /** @var string $environment */
     foreach ($config->getEnvironments() as $environment) {
-      if (!array_key_exists($environment, $variablesTables)) {
-        throw new ExerciseConfigException("Environment $environment not found in environment configuration");
+      $matchingConfigExists = $envSpecificConfigs->exists(
+        function ($key, ExerciseEnvironmentConfig $envConfig) use ($environment) {
+          return $envConfig->getRuntimeEnvironment()->getId() === $environment;
+        }
+      );
+
+      if (!$matchingConfigExists) {
+        throw new ExerciseConfigException("Environment $environment not found in environment-specific configuration");
       }
     }
   }
@@ -59,49 +70,75 @@ class ExerciseConfigValidator {
    * @throws ExerciseConfigException
    */
   private function checkPipelines(ExerciseConfig $config) {
-
-    // define reusable check function
-    $checkFunc = function (array $pipelines) {
-      foreach ($pipelines as $pipeline => $pipelineVars) {
-        try {
-          $entity = $this->pipelines->findOrThrow($pipeline);
-        } catch (NotFoundException $e) {
-          throw new ExerciseConfigException("Pipeline '$pipeline' not found");
-        }
-        $this->checkPipelineVariables($entity, $pipelineVars);
-      }
-    };
-
     foreach ($config->getTests() as $test) {
       // check default pipelines
-      $checkFunc($test->getPipelines());
+      $this->checkPipelinesSection($test->getPipelines());
 
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {
         // check pipelines in environment
-        $checkFunc($environment->getPipelines());
+        $this->checkPipelinesSection($environment->getPipelines(), $envId);
       }
     }
   }
 
   /**
-   * @param Pipeline $pipelineEntity
-   * @param PipelineVars $pipelineVars
+   * @param array $pipelines
+   * @param string $environment
+   * @throws ExerciseConfigException
    */
-  private function checkPipelineVariables(Pipeline $pipelineEntity, PipelineVars $pipelineVars) {
-    $pipeline = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-    // @todo
+  private function checkPipelinesSection(array $pipelines, ?string $environment = NULL) {
+    /**
+     * @var string $pipelineId
+     * @var PipelineVars $pipelineVars
+     */
+    foreach ($pipelines as $pipelineId => $pipelineVars) {
+      $pipelineEntity = $this->pipelines->get($pipelineId);
+      if ($pipelineEntity === NULL) {
+        throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
+      }
+
+      $pipeline = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+      $dataInBoxes = $pipeline->getDataInBoxes();
+      $inBoxNames = array_map(function (Box $box) { return $box->getName(); }, $dataInBoxes);
+      $variables = $pipelineVars->getVariablesTable();
+      $variableNames = $variables !== NULL
+        ? array_map(function (Variable $variable) { return $variable->getName(); }, $variables->getAll())
+        : [];
+
+      /** @var Variable $variable */
+      foreach ($variableNames as $variable) {
+        if (!in_array($variable, $inBoxNames)) {
+          throw new ExerciseConfigException(sprintf(
+            "Variable '%s' is redundant in pipeline %s, environment %s",
+            $variable,
+            $pipelineId,
+            $environment ?? "default"
+          ));
+        }
+
+        $inBoxNames = array_filter($inBoxNames, function (string $name) use ($variable) {
+          return $name !== $variable;
+        });
+      }
+
+      if (count($inBoxNames) > 0) {
+        throw new ExerciseConfigException(sprintf(
+          "Missing values for variables: %s (pipeline %s)",
+          implode(", ", $inBoxNames),
+          $pipelineId
+        ));
+      }
+    }
   }
 
   /**
    * Validate exercise configuration.
    * @param ExerciseConfig $config
-   * @param array $variablesTables indexed with runtime environment
-   * identification and containing variables table
-   * @throws ExerciseConfigException
+   * @param Exercise $exercise
    */
-  public function validate(ExerciseConfig $config, array $variablesTables) {
-    $this->checkEnvironments($config, $variablesTables);
+  public function validate(ExerciseConfig $config, Exercise $exercise) {
+    $this->checkEnvironments($config, $exercise);
     $this->checkPipelines($config);
   }
 

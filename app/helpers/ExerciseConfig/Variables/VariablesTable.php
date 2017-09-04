@@ -1,14 +1,17 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
+use ArrayIterator;
+use IteratorAggregate;
 use JsonSerializable;
 use Nette\Utils\Arrays;
 use Symfony\Component\Yaml\Yaml;
+use Traversable;
 
 /**
  * Represents variables table which is in fact key value map of variables.
  */
-class VariablesTable implements JsonSerializable
+class VariablesTable implements JsonSerializable, IteratorAggregate
 {
   /**
    * @var array
@@ -96,5 +99,9 @@ class VariablesTable implements JsonSerializable
    */
   public function jsonSerialize() {
     return $this->toArray();
+  }
+
+  public function getIterator() {
+    return new ArrayIterator($this->table);
   }
 }

@@ -7,6 +7,9 @@ use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
 
+/**
+ * @testCase
+ */
 class TestExercisesConfigPresenter extends Tester\TestCase
 {
   /** @var ExercisesConfigPresenter */
@@ -173,7 +176,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
   public function testSetConfiguration()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
     $pipelineA = $this->pipelines->findAll()[0];
@@ -184,22 +187,40 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "default",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [["name" => "defVarA", "type" => "string", "value" => "defValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [["name" => "defVarB", "type" => "file", "value" => "defValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [
+            ["name" => "source", "type" => "file", "value" => "defValA"]
+          ]]]],
+          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
+            ["name" => "binary", "type" => "file", "value" => "defValB"],
+            ["name" => "test", "type" => "file", "value" => "defValB"]
+          ]]]]
         ]
       ],
       [
         "name" => "c-gcc-linux",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [["name" => "AVarA", "type" => "string", "value" => "AValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [["name" => "AVarB", "type" => "string", "value" => "AValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [
+            ["name" => "source", "type" => "string", "value" => "AValA"]
+          ]]]],
+          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
+            ["name" => "binary", "type" => "file", "value" => "BValB"],
+            ["name" => "test", "type" => "file", "value" => "BValB"]
+          ]]]]
         ]
       ],
       [
         "name" => "java8",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [["name" => "BVarA", "type" => "string", "value" => "BValA"]]]]],
-          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [["name" => "BVarB", "type" => "string", "value" => "BValB"]]]]]
+          ["name" => "testA", "pipelines" => [["name" => $pipelineA->getId(), "variables" => [
+            ["name" => "source", "type" => "string", "value" => "BValA"]
+          ]]]],
+          ["name" => "testB", "pipelines" => [["name" => $pipelineB->getId(), "variables" => [
+            ["name" => "input", "type" => "file", "value" => "defValB"],
+            ["name" => "binary", "type" => "file", "value" => "BValC"],
+            ["name" => "test", "type" => "file", "value" => "BValC"]
+          ]]]]
         ]
       ]
     ];
@@ -223,8 +244,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId()));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId()));
-    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId())->getVariablesTable()->get('defVarA')->getValue());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId())->getVariablesTable()->get('defVarB')->getValue());
+    Assert::equal("defValA", $exerciseConfig->getTest('testA')->getPipeline($pipelineA->getId())->getVariablesTable()->get('source')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($pipelineB->getId())->getVariablesTable()->get('binary')->getValue());
   }
 
   public function testGetVariablesForExerciseConfig()
@@ -300,8 +321,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      'test-id-1' => ['pipeline-id-1' => ['box-id-1' => ['wall-time' => 1.0]]],
-      'test-id-2' => ['pipeline-id-2' => ['box-id-2' => ['wall-time' => 2.0]]]
+      'Test 1' => ['compilationPipeline' => ['compilation' => ['wall-time' => 1.0]]],
+      'Test 2' => ['compilationPipeline' => ['compilation' => ['wall-time' => 2.0]]]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',

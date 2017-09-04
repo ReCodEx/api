@@ -7,6 +7,9 @@ use Doctrine\Common\Collections\Criteria;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Pipeline;
 
+/**
+ * @method Pipeline get($id)
+ */
 class Pipelines extends BaseSoftDeleteRepository {
 
   public function __construct(EntityManager $em) {

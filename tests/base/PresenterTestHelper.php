@@ -1,5 +1,8 @@
 <?php
 
+use App\Model\Entity\User;
+use Nette\DI\Container;
+
 class PresenterTestHelper
 {
   const ADMIN_LOGIN = "admin@admin.com";
@@ -8,7 +11,7 @@ class PresenterTestHelper
   const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
   const STUDENT_GROUP_MEMBER_PASSWORD = "";
 
-  public static function prepareDatabase(\Nette\DI\Container $container): Kdyby\Doctrine\EntityManager
+  public static function prepareDatabase(Container $container): Kdyby\Doctrine\EntityManager
   {
     $em = $container->getByType(Kdyby\Doctrine\EntityManager::class);
 
@@ -19,7 +22,7 @@ class PresenterTestHelper
     return $em;
   }
 
-  public static function fillDatabase(\Nette\DI\Container $container, string $group = "demo")
+  public static function fillDatabase(Container $container, string $group = "demo")
   {
     $command = $container->getByType(App\Console\DoctrineFixtures::class);
 
@@ -46,7 +49,7 @@ class PresenterTestHelper
     return $presenter;
   }
 
-  public static function login(\Nette\DI\Container $container, string $login): string
+  public static function login(Container $container, string $login): string
   {
     /** @var \Nette\Security\User $userSession */
     $userSession = $container->getByType(\Nette\Security\User::class);
@@ -61,7 +64,12 @@ class PresenterTestHelper
     return $tokenText;
   }
 
-  public static function loginDefaultAdmin(\Nette\DI\Container $container): string {
+  public static function loginDefaultAdmin(Container $container): string {
     return self::login($container, self::ADMIN_LOGIN);
+  }
+
+  public static function getUser(Container $container, $login = NULL): User {
+    $login = $login ?? self::ADMIN_LOGIN;
+    return $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
   }
 }

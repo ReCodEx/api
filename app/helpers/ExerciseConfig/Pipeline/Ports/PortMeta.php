@@ -35,6 +35,13 @@ class PortMeta implements JsonSerializable {
    */
   protected $variable = null;
 
+  public static function create(string $name, ?string $type = NULL, ?string $variable = NULL): PortMeta {
+    $result = new static();
+    $result->setName($name);
+    $result->setType($type);
+    $result->setVariable($variable);
+    return $result;
+  }
 
   /**
  * Get name of this port.

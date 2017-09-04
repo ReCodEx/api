@@ -64,7 +64,7 @@ class Validator {
    * output ports. That means one output port can be directed to multiple input
    * ones. There is possibility to have variable which is only aimed to input
    * port, in that case this variables has to be present in variables table of
-   * pipeline. Variables which only reference is in output port are not
+   * pipeline. Variables whose only reference is in output port are not
    * supported.
    * @param Pipeline $pipeline
    * @throws ExerciseConfigException
@@ -83,13 +83,7 @@ class Validator {
    * @throws ExerciseConfigException
    */
   public function validateExerciseConfig(Exercise $exercise, ExerciseConfig $config) {
-    $variablesTables = array();
-    foreach ($exercise->getExerciseEnvironmentConfigs() as $environmentConfig) {
-      $varTable = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
-      $variablesTables[$environmentConfig->getRuntimeEnvironment()->getId()] = $varTable;
-    }
-
-    $this->exerciseConfigValidator->validate($config, $variablesTables);
+    $this->exerciseConfigValidator->validate($config, $exercise);
   }
 
   /**

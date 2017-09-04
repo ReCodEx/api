@@ -7,6 +7,9 @@ use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\Id\UuidGenerator;
 use Tester\Assert;
 
+/**
+ * @testCase
+ */
 class TestPipelinesPresenter extends Tester\TestCase
 {
   /** @var PipelinesPresenter */
@@ -153,9 +156,9 @@ class TestPipelinesPresenter extends Tester\TestCase
     $pipelineConfig = [
       "variables" => [
         [
-          "name" => "varA",
-          "type" => "string",
-          "value" => "valA"
+          "name" => "in_data_file",
+          "type" => "file",
+          "value" => "/etc/passwd"
         ]
       ],
       "boxes" => [
