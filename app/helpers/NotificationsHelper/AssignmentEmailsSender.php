@@ -2,29 +2,35 @@
 
 namespace App\Helpers\Notifications;
 
-use App\Helpers\EmailsConfig;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
+use Latte;
+use Nette\Utils\Arrays;
 
 /**
- * Sending emails on assignment creation or change.
+ * Sending emails on assignment creation.
  */
 class AssignmentEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
-
-  /** @var EmailsConfig */
-  private $emailsConfig;
+  /** @var string */
+  private $sender;
+  /** @var string */
+  private $newAssignmentPrefix;
+  /** @var string */
+  private $assignmentDeadlinePrefix;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
-   * @param EmailsConfig $emailsConfig
+   * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, EmailsConfig $emailsConfig) {
+  public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->emailsConfig = $emailsConfig;
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "ReCodEx New Assignment Notification - ");
+    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline Is Behind the Corner - ");
   }
 
   /**
@@ -33,41 +39,90 @@ class AssignmentEmailsSender {
    * @param Assignment $assignment
    * @return boolean
    */
-  public function assignmentCreated(Assignment $assignment) {
-    $subject = $this->formatSubject($assignment->getName());
-    $message = ""; // TODO
+  public function assignmentCreated(Assignment $assignment): bool {
+    $subject = $this->newAssignmentPrefix . $assignment->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
-      $recipients[] = $student->getEmail(); // TODO: make sure user want to receive email notifications
+      if (!$student->getSettings()->getNewAssignmentEmails()) {
+        continue;
+      }
+      $recipients[] = $student->getEmail();
     }
 
     // Send the mail
     return $this->emailHelper->send(
-      $this->emailsConfig->getFrom(),
-      $recipients,
+      $this->sender,
+      [],
       $subject,
-      $this->formatBody($message)
+      $this->createNewAssignmentBody($assignment),
+      $recipients
     );
   }
 
   /**
-   * Prepare mail subject for assignment
-   * @param string $name Name of the assignment
-   * @return string Mail subject
+   * Prepare and format body of the new assignment mail
+   * @param Assignment $assignment
+   * @return string Formatted mail body to be sent
    */
-  private function formatSubject(string $name): string {
-    // TODO
-    //return $this->subjectPrefix . $name;
+  private function createNewAssignmentBody(Assignment $assignment): string {
+    // render the HTML to string using Latte engine
+    $latte = new Latte\Engine;
+    return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
+      "assignment" => $assignment->getName(),
+      "group" => $assignment->getGroup()->getName(),
+      "dueDate" => $assignment->getFirstDeadline(),
+      "attempts" => $assignment->getSubmissionsCountLimit(),
+      "points" => $assignment->getMaxPointsBeforeFirstDeadline()
+    ]);
   }
 
   /**
-   * Prepare and format body of the mail
-   * @param string $message Message of the email notification
+   * @todo: not used
+   * Deadline of assignment is nearby so users which did not submit any solution
+   * should be alerted.
+   * @param Assignment $assignment
+   * @return bool
+   */
+  public function assignmentDeadline(Assignment $assignment): bool {
+    $subject = $this->newAssignmentPrefix . $assignment->getName();
+
+    $recipients = array();
+    foreach ($assignment->getGroup()->getStudents() as $student) {
+      if ($assignment->getLastSolution($student) ||
+          !$student->getSettings()->getAssignmentDeadlineEmails()) {
+        // student already submitted solution to this assignment or
+        // disabled sending emails
+        continue;
+      }
+
+      $recipients[] = $student->getEmail();
+    }
+
+    // Send the mail
+    return $this->emailHelper->send(
+      $this->sender,
+      [],
+      $subject,
+      $this->createAssignmentDeadlineBody($assignment),
+      $recipients
+    );
+  }
+
+  /**
+   * Prepare and format body of the assignment deadline mail
+   * @param Assignment $assignment
    * @return string Formatted mail body to be sent
    */
-  private function formatBody(string $message): string {
-    return $message; // @todo
+  private function createAssignmentDeadlineBody(Assignment $assignment): string {
+    // render the HTML to string using Latte engine
+    $latte = new Latte\Engine;
+    return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
+      "assignment" => $assignment->getName(),
+      "group" => $assignment->getGroup()->getName(),
+      "firstDeadline" => $assignment->getFirstDeadline(),
+      "secondDeadline" => $assignment->getSecondDeadline()
+    ]);
   }
 
 }

@@ -134,13 +134,19 @@ class TestUsersPresenter extends Tester\TestCase
     $darkTheme = FALSE;
     $vimMode = FALSE;
     $defaultLanguage = "de";
+    $newAssignmentEmails = false;
+    $assignmentDeadlineEmails = false;
+    $submissionEvaluatedEmails = false;
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'updateSettings', 'id' => $user->getId()],
       [
         'darkTheme' => $darkTheme,
         'vimMode' => $vimMode,
-        'defaultLanguage' => $defaultLanguage
+        'defaultLanguage' => $defaultLanguage,
+        'newAssignmentEmails' => $newAssignmentEmails,
+        'assignmentDeadlineEmails' => $assignmentDeadlineEmails,
+        'submissionEvaluatedEmails' => $submissionEvaluatedEmails
       ]
     );
     $response = $this->presenter->run($request);
@@ -154,6 +160,9 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal($darkTheme, $user->getSettings()->getDarkTheme());
     Assert::equal($vimMode, $user->getSettings()->getVimMode());
     Assert::equal($defaultLanguage, $user->getSettings()->getDefaultLanguage());
+    Assert::equal($newAssignmentEmails, $user->getSettings()->getNewAssignmentEmails());
+    Assert::equal($assignmentDeadlineEmails, $user->getSettings()->getAssignmentDeadlineEmails());
+    Assert::equal($submissionEvaluatedEmails, $user->getSettings()->getSubmissionEvaluatedEmails());
   }
 
   public function testSupervisorGroups()

@@ -35,6 +35,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getScoreConfig()
  * @method ExerciseConfig getExerciseConfig()
  * @method void setScoreConfig(string $scoreConfig)
+ * @method DateTime getFirstDeadline()
+ * @method DateTime getSecondDeadline()
+ * @method int getMaxPointsBeforeFirstDeadline()
  */
 class Assignment implements JsonSerializable
 {
