@@ -37,13 +37,17 @@ should be ready to go.
 It is CRITICAL that whole `app/`, `log/` and `temp/` directories are not accessible directly
 via a web browser. See [security warning](https://nette.org/security-warning).
 
+Cron setup
+----------
 
-Requirements
-------------
+The ReCodEx API requires some commands to be run periodically to allow sending 
+notifications of assignment deadlines and cleaning up uploaded files. The 
+recommended way of ensuring this is using a crontab like this:
 
-PHP 7.0 or higher. To check whether server configuration meets the minimum requirements for
-Nette Framework browse to the directory `/checker` in your project root (i.e. `http://localhost:4000/checker`).
-
+```
+04	00	*	*	*	php www/index.php notifications:assignment-deadlines "1 day"
+02	00	*	*	*	php www/index.php uploads:cleanup
+```
 
 Adminer
 -------
