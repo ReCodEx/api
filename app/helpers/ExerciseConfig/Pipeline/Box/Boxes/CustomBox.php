@@ -21,7 +21,7 @@ class CustomBox extends Box
    * For testing purposes.
    * @var Variable
    */
-  private $remoteVariable = null;
+  private $inputVariable = null;
 
   /**
    * CustomBox constructor.
@@ -85,16 +85,16 @@ class CustomBox extends Box
    * Get remote variable.
    * @return Variable|null
    */
-  public function getRemoteVariable(): ?Variable {
-    return $this->remoteVariable;
+  public function getInputVariable(): ?Variable {
+    return $this->inputVariable;
   }
 
   /**
    * Set remote variable corresponding to this box.
    * @param Variable|null $variable
    */
-  public function setRemoteVariable(?Variable $variable) {
-    $this->remoteVariable = $variable;
+  public function setInputVariable(?Variable $variable) {
+    $this->inputVariable = $variable;
   }
 
 

@@ -43,7 +43,7 @@ class DataInBox extends Box
    * If data for this box is remote, fill this with the right variable reference.
    * @var Variable
    */
-  private $remoteVariable = null;
+  private $inputVariable = null;
 
 
   /**
@@ -94,16 +94,16 @@ class DataInBox extends Box
    * Get remote variable.
    * @return Variable|null
    */
-  public function getRemoteVariable(): ?Variable {
-    return $this->remoteVariable;
+  public function getInputVariable(): ?Variable {
+    return $this->inputVariable;
   }
 
   /**
    * Set remote variable corresponding to this box.
    * @param Variable|null $variable
    */
-  public function setRemoteVariable(?Variable $variable) {
-    $this->remoteVariable = $variable;
+  public function setInputVariable(?Variable $variable) {
+    $this->inputVariable = $variable;
   }
 
 
@@ -113,40 +113,59 @@ class DataInBox extends Box
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(): array {
-    if (!$this->remoteVariable) {
-      // variable is local one, this means that it was either created during
-      // job execution or it was brought here with solution archive
+    if (!$this->inputVariable) {
+      // should not happen
       return [];
     }
 
-    $remoteVariable = $this->remoteVariable;
+    // remote file which should be downloaded from file-server
+    $inputVariable = $this->inputVariable;
     $variable = $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue();
 
     // validate variable value and prepare arrays which will be processed
-    if ($remoteVariable->isValueArray() && $variable->isValueArray()) {
-      if (count($remoteVariable->getValue()) !== count($variable->getValue())) {
+    if ($inputVariable->isValueArray() && $variable->isValueArray()) {
+      if (count($inputVariable->getValue()) !== count($variable->getValue())) {
         throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$DATA_IN_TYPE));
       }
 
-      $remoteFiles = $remoteVariable->getValue();
+      $inputFiles = $inputVariable->getValue();
       $files = $variable->getValue();
-    } else if (!$remoteVariable->isValueArray() && !$variable->isValueArray()) {
-      $remoteFiles = [$remoteVariable->getValue()];
+    } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
+      $inputFiles = [$inputVariable->getValue()];
       $files = [$variable->getValue()];
     } else {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$DATA_IN_TYPE));
     }
 
-    // each remote file has to have its own fetch task
+    // general foreach for both local and remote files
+    $tasks = [];
     for ($i = 0; $i < count($files); ++$i) {
       $task = new Task();
-      $task->setCommandBinary("fetch");
-      $task->setCommandArguments([
-        $remoteFiles[$i],
-        ConfigParams::$SOURCE_DIR . $files[$i]
-      ]);
-      return [$task];
+
+      if ($inputVariable->isRemoteFile()) {
+        // remote file has to have fetch task
+        $task->setCommandBinary("fetch");
+        $task->setCommandArguments([
+          $inputFiles[$i],
+          ConfigParams::$SOURCE_DIR . $files[$i]
+        ]);
+      } else {
+        if ($inputFiles[$i] === $files[$i]) {
+          // files have exactly same names, we can skip renaming
+          continue;
+        }
+
+        $task->setCommandBinary("rename");
+        $task->setCommandArguments([
+          ConfigParams::$SOURCE_DIR . $inputFiles[$i],
+          ConfigParams::$SOURCE_DIR . $files[$i]
+        ]);
+      }
+
+      // add task to result
+      $tasks[] = $task;
     }
+    return $tasks;
   }
 
 }

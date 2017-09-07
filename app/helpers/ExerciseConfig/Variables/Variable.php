@@ -143,6 +143,14 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Check if variable is empty.
+   * @return bool
+   */
+  public function isEmpty(): bool {
+    return empty($this->value);
+  }
+
+  /**
    * Return true if variable type is an array.
    * @return bool
    */

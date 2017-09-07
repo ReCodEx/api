@@ -212,28 +212,28 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testRegexp() {
     $tree = $this->treeArray[0];
-    $port = $tree->getInputNodes()[0]->getBox()->getOutputPorts()["data-in"];
-    $portArray = $tree->getInputNodes()[1]->getBox()->getOutputPorts()["data-in-arr"];
+    $box = $tree->getInputNodes()[0]->getBox();
+    $boxArray = $tree->getInputNodes()[1]->getBox();
 
     $files = ["infile"];
     $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
-    Assert::equal("infile", $port->getVariableValue()->getValue());
+    Assert::equal("infile", $box->getInputVariable()->getValue());
 
     $files = ["infile", "invar"];
     $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
-    Assert::equal("infile", $port->getVariableValue()->getValue());
+    Assert::equal("infile", $box->getInputVariable()->getValue());
 
     $files = ["infile", "invar"];
     $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
-    Assert::equal($files, $portArray->getVariableValue()->getValue());
+    Assert::equal($files, $boxArray->getInputVariable()->getValue());
 
     $files = ["infile", "outvar"];
     $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
     $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files);
-    Assert::equal(["infile"], $portArray->getVariableValue()->getValue());
+    Assert::equal(["infile"], $boxArray->getInputVariable()->getValue());
   }
 
   public function testCorrect() {
