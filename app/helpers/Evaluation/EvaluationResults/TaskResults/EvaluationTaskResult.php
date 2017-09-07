@@ -22,13 +22,9 @@ class EvaluationTaskResult extends TaskResult {
     // judge output is optional and only the first token is interpreted as float value between 0 and 1
     if (!empty($this->output)) {
       $token = strtok($this->output, " ");
-      if (Validators::isNumeric($token) === FALSE) {
-        throw new ResultsLoadingException("First token of the judge's output for task '{$this->getId()}' cannot be interpreted as number.");
+      if (Validators::isNumeric($token) === TRUE) {
+        $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($token)));
       }
-
-      $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($token)));
-    } else {
-      $this->score = TaskResult::MAX_SCORE;
     }
   }
 
