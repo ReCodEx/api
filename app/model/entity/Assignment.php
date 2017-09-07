@@ -39,6 +39,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
+ * @method setFirstDeadline(DateTime $deadline)
+ * @method setSecondDeadline(DateTime $deadline)
  */
 class Assignment implements JsonSerializable
 {
