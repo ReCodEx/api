@@ -51,6 +51,10 @@ class AssignmentEmailsSender {
       $recipients[] = $student->getEmail();
     }
 
+    if (count($recipients) === 0) {
+      return TRUE;
+    }
+
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
@@ -99,6 +103,10 @@ class AssignmentEmailsSender {
       }
 
       $recipients[] = $student->getEmail();
+    }
+
+    if (count($recipients) === 0) {
+      return TRUE;
     }
 
     // Send the mail
