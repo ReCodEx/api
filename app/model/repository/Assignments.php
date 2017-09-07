@@ -55,14 +55,16 @@ class Assignments extends BaseSoftDeleteRepository {
     $qb = $this->repository->createQueryBuilder("a");
 
     $qb->where(
-      $qb->expr()->andX(
-        $qb->expr()->gt("a.firstDeadline", ":from"),
-        $qb->expr()->lte("a.firstDeadline", ":to")
-      ),
-      $qb->expr()->andX(
-        $qb->expr()->eq("a.allowSecondDeadline", ":true"),
-        $qb->expr()->gt("a.secondDeadline", ":from"),
-        $qb->expr()->lte("a.secondDeadline", ":to")
+      $qb->expr()->orX(
+        $qb->expr()->andX(
+          $qb->expr()->gt("a.firstDeadline", ":from"),
+          $qb->expr()->lte("a.firstDeadline", ":to")
+        ),
+        $qb->expr()->andX(
+          $qb->expr()->eq("a.allowSecondDeadline", ":true"),
+          $qb->expr()->gt("a.secondDeadline", ":from"),
+          $qb->expr()->lte("a.secondDeadline", ":to")
+        )
       )
     );
 
