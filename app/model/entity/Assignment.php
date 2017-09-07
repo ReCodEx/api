@@ -15,6 +15,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(name="first_deadline_idx", columns={"first_deadline"}), @ORM\Index(name="second_deadline_idx", columns={"second_deadline"})})
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()

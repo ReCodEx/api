@@ -186,6 +186,8 @@ services:
     tags: [kdyby.console.command]
   - class: App\Console\CleanupUploads()
     tags: [kdyby.console.command]
+  - class: App\Console\SendAssignmentDeadlineNotification()
+    tags: [kdyby.console.command]
 
   # security
   - App\Security\AccessManager(%accessManager%)
