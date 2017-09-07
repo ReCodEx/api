@@ -95,6 +95,7 @@ parameters:
       from: %emails.from%
       newAssignmentPrefix: "ReCodEx New Assignment Notification - "
       assignmentDeadlinePrefix: "ReCodEx Assignment Deadline Is Behind the Corner - "
+      assignmentDeadlineThreshold: 1 day
 
   submissionNotifications:
     emails:
@@ -185,6 +186,8 @@ services:
   - class: App\Console\GenerateSwagger(@router)
     tags: [kdyby.console.command]
   - class: App\Console\CleanupUploads()
+    tags: [kdyby.console.command]
+  - class: App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
     tags: [kdyby.console.command]
 
   # security
