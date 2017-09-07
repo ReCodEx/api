@@ -19,20 +19,6 @@ class TestEvaluationTask extends Tester\TestCase
     Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "123" ]); });
   }
 
-  public function testWrongJudgeOutputDetection() {
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "abc" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "a1" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1a" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1e" ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1,0" ]); }, ResultsLoadingException::CLASS);
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1.0" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "10" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "1" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "0123" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "0123" ]); });
-    Assert::noError(function() { new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "-123" ]); });
-  }
-
   public function testParsingParams() {
     $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "123" ]);
     Assert::same("ABC", $result->getId());
@@ -42,6 +28,9 @@ class TestEvaluationTask extends Tester\TestCase
 
   public function testScoreCalculation() {
     $judgeToScore = [
+      "abc" => 0.0,
+      "a" => 0.0,
+      "abc 1.0" => 0.0,
       "0.123" => 0.123,
       "0.456000" => 0.456,
       "0.123 ahoj" => 0.123,

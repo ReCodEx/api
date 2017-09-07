@@ -100,6 +100,9 @@ class VariablesResolver {
         throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
       }
 
+      // find references
+      $variable = $this->findReferenceIfAny($variable, $environmentVariables, $exerciseVariables);
+
       // try to look for remote variable in configurations tables
       $remoteVariable = null;
       $environmentVariable = $environmentVariables->get($variableName);
@@ -116,6 +119,33 @@ class VariablesResolver {
       $outputPort->setVariableValue($variable);
       $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
     }
+  }
+
+  /**
+   * If variable is reference, try to find it in given variables tables.
+   * @param Variable $variable
+   * @param VariablesTable $environmentVariables
+   * @param VariablesTable $exerciseVariables
+   * @return Variable
+   * @throws ExerciseConfigException
+   */
+  private function findReferenceIfAny(Variable $variable,
+      VariablesTable $environmentVariables,
+      VariablesTable $exerciseVariables): Variable {
+    if ($variable->isReference()) {
+      $referenceName = $variable->getReference();
+      $variable = $environmentVariables->get($referenceName);
+      if (!$variable) {
+        $variable = $exerciseVariables->get($referenceName);
+      }
+
+      // reference could not be found
+      if (!$variable) {
+        throw new ExerciseConfigException("Variable reference '{$referenceName}' could not be resolved");
+      }
+    }
+
+    return $variable;
   }
 
   /**
@@ -160,18 +190,7 @@ class VariablesResolver {
     }
 
     // variable is reference, try to find its value in external variables tables
-    if ($variable->isReference()) {
-      $referenceName = $variable->getReference();
-      $variable = $environmentVariables->get($referenceName);
-      if (!$variable) {
-        $variable = $exerciseVariables->get($referenceName);
-      }
-
-      // reference could not be found
-      if (!$variable) {
-        throw new ExerciseConfigException("Variable '$variableName' is reference which could not be resolved");
-      }
-    }
+    $variable = $this->findReferenceIfAny($variable, $environmentVariables, $exerciseVariables);
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
