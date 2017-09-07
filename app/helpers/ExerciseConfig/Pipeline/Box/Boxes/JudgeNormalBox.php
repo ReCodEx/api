@@ -97,7 +97,11 @@ class JudgeNormalBox extends Box
       $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getValue(),
       $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getValue()
     ]);
-    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+
+    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
+    $sandbox->setOutput(true);
+    $task->setSandboxConfig($sandbox);
+
     return [$task];
   }
 
