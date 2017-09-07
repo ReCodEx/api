@@ -16,10 +16,14 @@ class SendAssignmentDeadlineNotification extends Command {
   /** @var Assignments */
   private $assignments;
 
-  public function __construct(Assignments $assignments, AssignmentEmailsSender $sender) {
+  /** @var string */
+  private $threshold;
+
+  public function __construct(string $threshold, Assignments $assignments, AssignmentEmailsSender $sender) {
     parent::__construct();
     $this->sender = $sender;
     $this->assignments = $assignments;
+    $this->threshold = $threshold;
   }
 
   protected function configure() {
@@ -31,6 +35,7 @@ class SendAssignmentDeadlineNotification extends Command {
     $period = $input->getArgument("period");
 
     $from = new DateTime();
+    $from->modify("+" . $this->threshold);
     $to = clone $from;
     $to->modify("+" . $period);
 

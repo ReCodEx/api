@@ -68,6 +68,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     $this->sender = new AssignmentEmailsSender($this->emailHelperMock, []);
     $this->assignments = $this->container->getByType(Assignments::class);
     $this->command = new SendAssignmentDeadlineNotification(
+      "1 day",
       $this->assignments,
       $this->sender
     );
@@ -81,7 +82,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, TRUE);
 
     $deadline = new DateTime();
-    $deadline->modify("+2 days");
+    $deadline->modify("+3 days");
     $assignment->setFirstDeadline($deadline);
     $this->assignments->persist($assignment);
 
@@ -96,7 +97,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, TRUE);
 
     $deadline = new DateTime();
-    $deadline->modify("+12 hours");
+    $deadline->modify("+36 hours");
     $assignment->setFirstDeadline($deadline);
     $this->assignments->persist($assignment);
 
