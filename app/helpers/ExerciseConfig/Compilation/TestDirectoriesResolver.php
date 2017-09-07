@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 
 
@@ -15,12 +16,47 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 class TestDirectoriesResolver {
 
   /**
+   * Resolve test directory for a single node. Only output ports are processed
+   * in all nodes, because output ports should be files which ones are
+   * @param Node $node
+   */
+  private function processNode(Node $node) {
+    // @todo
+  }
+
+  /**
+   * @param RootedTree $tree
+   * @param array $testIds
+   * @return RootedTree
+   */
+  private function addDirectories(RootedTree $tree, array $testIds): RootedTree {
+    return $tree; // @todo
+  }
+
+  /**
    * Resolve and assign proper directories to particular tests.
    * @param RootedTree $tree
    * @return RootedTree
    */
   public function resolve(RootedTree $tree): RootedTree {
-    return $tree; // @todo
+    $testIds = [];
+    $stack = array_reverse($tree->getRootNodes());
+    while (!empty($stack)) {
+      $current = array_pop($stack);
+      if ($current->getTestId()) {
+        $testIds[] = $current->getTestId();
+      }
+
+      // process current node
+      $this->processNode($current);
+
+      // add children of current node into stack
+      foreach (array_reverse($current->getChildren()) as $child) {
+        $stack[] = $child;
+      }
+    }
+
+    return $this->addDirectories($tree, $testIds);
   }
 
 }
