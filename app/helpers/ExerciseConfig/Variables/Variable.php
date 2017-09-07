@@ -43,6 +43,12 @@ class Variable implements JsonSerializable
   protected $value = null;
 
   /**
+   * Prefix of variable.
+   * @var string
+   */
+  protected $prefix = "";
+
+  /**
    * Determines if variable is array or not.
    * @var bool
    */
@@ -186,6 +192,23 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Get prefixed value or values.
+   * @param string $prefix another prefix which can be added to values
+   * @return array|string
+   */
+  public function getPrefixedValue(string $prefix = "") {
+    $value = $this->getValue();
+    $prefix = $prefix . $this->prefix;
+    if (is_scalar($value)) {
+      return $prefix . $value;
+    } else {
+      return array_map(function ($val) use ($prefix) {
+        return $prefix . $val;
+      }, $value);
+    }
+  }
+
+  /**
    * Get value of the variable.
    * @return array|string
    */
@@ -210,19 +233,12 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Set given prefix to all values.
+   * Set given prefix to variable.
    * @param string $prefix
    * @return Variable
    */
   public function setValuePrefix(string $prefix): Variable {
-    if (is_scalar($this->value)) {
-      $this->value = $prefix . $this->value;
-    } else {
-      $this->value = array_map(function ($val) use ($prefix) {
-        return $prefix . $val;
-      }, $this->value);
-    }
-    $this->validateValue();
+    $this->prefix = $prefix;
     return $this;
   }
 

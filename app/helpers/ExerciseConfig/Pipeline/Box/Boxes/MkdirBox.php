@@ -100,7 +100,7 @@ class MkdirBox extends Box
     $task = new Task();
     $task->setCommandBinary(self::$MKDIR_BINARY);
     $task->setCommandArguments([
-      ConfigParams::$SOURCE_DIR . current($this->getInputPorts())->getVariableValue()->getValue()
+      current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

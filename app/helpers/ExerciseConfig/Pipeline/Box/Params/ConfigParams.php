@@ -15,4 +15,6 @@ class ConfigParams
   public static $RESULT_DIR = '${RESULT_DIR}/';
   public static $TEMP_DIR = '${TEMP_DIR}/';
   public static $JUDGES_DIR = '${JUDGES_DIR}/';
+
+  public static $PATH_DELIM = '/';
 }

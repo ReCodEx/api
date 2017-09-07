@@ -94,8 +94,8 @@ class JudgeNormalBox extends Box
     $task->setType(TaskType::$EVALUATION);
     $task->setCommandBinary(ConfigParams::$JUDGES_DIR . self::$JUDGE_NORMAL_BINARY);
     $task->setCommandArguments([
-      $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getValue(),
-      $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getValue()
+      $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR),
+      $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR)
     ]);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);

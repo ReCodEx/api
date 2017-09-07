@@ -105,8 +105,8 @@ class JoinPipelinesBox extends Box
     $task = new Task();
     $task->setCommandBinary("rename");
     $task->setCommandArguments([
-      ConfigParams::$SOURCE_DIR . current($this->getInputPorts())->getVariableValue()->getValue(),
-      ConfigParams::$SOURCE_DIR . current($this->getOutputPorts())->getVariableValue()->getValue()
+      current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
+      current($this->getOutputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -97,7 +98,8 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getValue());
+    $task->setCommandBinary(ConfigParams::$EVAL_DIR .
+      $this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue());
     $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
     return [$task];
   }

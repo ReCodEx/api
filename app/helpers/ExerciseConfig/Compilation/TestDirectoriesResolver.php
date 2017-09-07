@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
@@ -33,7 +34,7 @@ class TestDirectoriesResolver {
 
     foreach ($node->getBox()->getOutputPorts() as $outputPort) {
       if ($outputPort->getVariableValue()->isFile()) {
-        $outputPort->getVariableValue()->setValuePrefix($node->getTestId());
+        $outputPort->getVariableValue()->setValuePrefix($node->getTestId() . ConfigParams::$PATH_DELIM);
       }
     }
   }

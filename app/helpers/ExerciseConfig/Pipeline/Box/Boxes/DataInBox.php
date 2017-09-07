@@ -129,10 +129,12 @@ class DataInBox extends Box
       }
 
       $inputFiles = $inputVariable->getValue();
-      $files = $variable->getValue();
+      $files = $variable->getPrefixedValue();
+      $filesWithoutPrefix = $variable->getValue();
     } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
       $inputFiles = [$inputVariable->getValue()];
-      $files = [$variable->getValue()];
+      $files = [$variable->getPrefixedValue()];
+      $filesWithoutPrefix = [$inputVariable->getValue()];
     } else {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$DATA_IN_TYPE));
     }
@@ -150,7 +152,7 @@ class DataInBox extends Box
           ConfigParams::$SOURCE_DIR . $files[$i]
         ]);
       } else {
-        if ($inputFiles[$i] === $files[$i]) {
+        if ($inputFiles[$i] === $filesWithoutPrefix[$i]) {
           // files have exactly same names, we can skip renaming
           continue;
         }
