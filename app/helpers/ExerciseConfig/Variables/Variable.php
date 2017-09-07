@@ -202,6 +202,23 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Set given prefix to all values.
+   * @param string $prefix
+   * @return Variable
+   */
+  public function setValuePrefix(string $prefix): Variable {
+    if (is_scalar($this->value)) {
+      $this->value = $prefix . $this->value;
+    } else {
+      $this->value = array_map(function ($val) use ($prefix) {
+        return $prefix . $val;
+      }, $this->value);
+    }
+    $this->validateValue();
+    return $this;
+  }
+
+  /**
    * Get name of the referenced variable if any.
    * @note Check if variable is reference has to precede this call.
    * @return null|string

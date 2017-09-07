@@ -118,9 +118,11 @@ class Port implements JsonSerializable
   /**
    * Set variable value.
    * @param Variable $variableValue
+   * @return Port
    */
-  public function setVariableValue(Variable $variableValue) {
+  public function setVariableValue(Variable $variableValue): Port {
     $this->variableValue = $variableValue;
+    return $this;
   }
 
 

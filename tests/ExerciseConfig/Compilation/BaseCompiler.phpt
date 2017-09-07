@@ -246,7 +246,7 @@ class TestBaseCompiler extends Tester\TestCase
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
-    Assert::equal(5, $jobConfig->getTasksCount());
+    Assert::equal(7, $jobConfig->getTasksCount());
 
     ////////////////////////////////////////////////////////////////////////////
     // check order of all tasks and right attributes

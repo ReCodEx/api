@@ -165,12 +165,19 @@ class TestVariable extends Tester\TestCase
     Assert::true(is_array($variable->getValue()));
     Assert::equal("hehe", $variable->getValue()[0]);
     Assert::equal("haha", $variable->getValue()[1]);
+
+    $variable->setValuePrefix("nice_prefix/");
+    Assert::equal("nice_prefix/hehe", $variable->getValue()[0]);
+    Assert::equal("nice_prefix/haha", $variable->getValue()[1]);
   }
 
   public function testCorrect() {
     $variable = $this->loader->loadVariable(self::$config);
     Assert::equal("string", $variable->getType());
     Assert::equal("varValue", $variable->getValue());
+
+    $variable->setValuePrefix("nice_prefix/");
+    Assert::equal("nice_prefix/varValue", $variable->getValue());
   }
 
 }
