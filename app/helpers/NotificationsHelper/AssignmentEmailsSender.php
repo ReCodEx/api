@@ -85,7 +85,7 @@ class AssignmentEmailsSender {
    * @return bool
    */
   public function assignmentDeadline(Assignment $assignment): bool {
-    $subject = $this->newAssignmentPrefix . $assignment->getName();
+    $subject = $this->assignmentDeadlinePrefix . $assignment->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
