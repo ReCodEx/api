@@ -149,11 +149,6 @@ class Loader {
       unset($data[Limits::ENVIRON_KEY]);
     }
 
-    if (isset($data[Limits::CHDIR_KEY])) {
-      $limits->setChdir(strval($data[Limits::CHDIR_KEY]));
-      unset($data[Limits::CHDIR_KEY]);
-    }
-
     if (isset($data[Limits::BOUND_DIRECTORIES_KEY]) && is_array($data[Limits::BOUND_DIRECTORIES_KEY])) {
       foreach ($data[Limits::BOUND_DIRECTORIES_KEY] as $dir) {
         $limits->addBoundDirectory($this->loadBoundDirectoryConfig($dir, $taskId));
@@ -203,6 +198,11 @@ class Loader {
     if (isset($data[SandboxConfig::OUTPUT_KEY])) {
       $sandboxConfig->setOutput($data[SandboxConfig::OUTPUT_KEY]);
       unset($data[SandboxConfig::OUTPUT_KEY]);
+    }
+
+    if (isset($data[SandboxConfig::CHDIR_KEY])) {
+      $sandboxConfig->setChdir(strval($data[SandboxConfig::CHDIR_KEY]));
+      unset($data[SandboxConfig::CHDIR_KEY]);
     }
 
     // *** CONSTRUCT ALL LIMITS

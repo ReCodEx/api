@@ -306,6 +306,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
+    Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testACompilationTask->getSandboxConfig()->getChdir());
     Assert::count(2, $testACompilationTask->getSandboxConfig()->getLimitsArray());
     Assert::equal(123, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
@@ -323,6 +324,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testARunTask->getTestId());
     Assert::notEqual(null, $testARunTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
+    Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testARunTask->getSandboxConfig()->getChdir());
     Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
@@ -340,6 +342,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testAJudgeTask->getTestId());
     Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testAJudgeTask->getSandboxConfig()->getName());
+    Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testAJudgeTask->getSandboxConfig()->getChdir());
     Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
     $testBSourceTask = $jobConfig->getTasks()[7];
@@ -364,6 +367,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
+    Assert::equal(ConfigParams::$EVAL_DIR . "testB", $testBCompilationTask->getSandboxConfig()->getChdir());
     Assert::count(1, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
     Assert::equal(789, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(987.0, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());

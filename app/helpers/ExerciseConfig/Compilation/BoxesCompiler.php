@@ -99,9 +99,7 @@ class BoxesCompiler {
           // change evaluation directory to the one which belongs to test
           $sandbox = $task->getSandboxConfig();
           if ($sandbox) {
-            foreach ($sandbox->getLimitsArray() as $limits) {
-              $limits->setChdir(ConfigParams::$EVAL_DIR . $testId);
-            }
+            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $testId);
           }
         }
 

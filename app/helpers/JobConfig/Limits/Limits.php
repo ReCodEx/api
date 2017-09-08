@@ -30,8 +30,6 @@ class Limits implements JsonSerializable {
   const DISK_FILES_KEY = "disk-files";
   /** Environmental variables key */
   const ENVIRON_KEY = "environ-variable";
-  /** Change directory key */
-  const CHDIR_KEY = "chdir";
   /** Bound directories key */
   const BOUND_DIRECTORIES_KEY = "bound-directories";
 
@@ -55,8 +53,6 @@ class Limits implements JsonSerializable {
   protected $diskFiles = 0;
   /** @var string[] Environmental variables array */
   protected $environVariables = [];
-  /** @var string|NULL Change directory */
-  protected $chdir = NULL;
   /** @var BoundDirectoryConfig[] Bound directories array */
   protected $boundDirectories = [];
   /** @var array Additional data */
@@ -243,24 +239,6 @@ class Limits implements JsonSerializable {
   }
 
   /**
-   * Get directory in which sandboxed program will be executed.
-   * @return string|NULL
-   */
-  public function getChdir() {
-    return $this->chdir;
-  }
-
-  /**
-   * Set directory to which sandbox will change working directory.
-   * @param string $chdir working directory
-   * @return $this
-   */
-  public function setChdir($chdir) {
-    $this->chdir = $chdir;
-    return $this;
-  }
-
-  /**
    * Gets array of BoundDirectory structures representing bound directories
    * inside sandbox.
    * @return array
@@ -315,7 +293,6 @@ class Limits implements JsonSerializable {
     if ($this->diskSize > 0) { $data[self::DISK_SIZE_KEY] = $this->diskSize; }
     if ($this->diskFiles > 0) { $data[self::DISK_FILES_KEY] = $this->diskFiles; }
     if (!empty($this->environVariables)) { $data[self::ENVIRON_KEY] = $this->environVariables; }
-    if (!empty($this->chdir)) { $data[self::CHDIR_KEY] = $this->chdir; }
 
     $data[self::BOUND_DIRECTORIES_KEY] = [];
     foreach ($this->boundDirectories as $dir) {
