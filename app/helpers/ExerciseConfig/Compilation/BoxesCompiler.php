@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -71,7 +72,7 @@ class BoxesCompiler {
 
     // main processing loop
     while (!empty($stack)) {
-      $current = array_pop($stack);
+      $current = array_pop($stack); /** @var Node $current */
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
 
@@ -90,9 +91,18 @@ class BoxesCompiler {
           $dependencies = array_merge($dependencies, $parent->getTaskIds());
         }
         $task->setDependencies($dependencies);
-        // set identification of test, if any
+        // identification of test is present in node
         if (!empty($current->getTestId())) {
-          $task->setTestId($current->getTestId());
+          $testId = $current->getTestId();
+          // set identification of test to task
+          $task->setTestId($testId);
+          // change evaluation directory to the one which belongs to test
+          $sandbox = $task->getSandboxConfig();
+          if ($sandbox) {
+            foreach ($sandbox->getLimitsArray() as $limits) {
+              $limits->setChdir(ConfigParams::$EVAL_DIR . $testId);
+            }
+          }
         }
 
         // if the task is external then set limits to it
