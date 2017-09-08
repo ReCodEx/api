@@ -114,17 +114,22 @@ class DataInBox extends Box
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(): array {
-    if (!$this->inputVariable) {
-      // should not happen
-      return [];
-    }
 
     // remote file which should be downloaded from file-server
     $inputVariable = $this->inputVariable;
     $variable = $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue();
+    $isRemote = $inputVariable && $inputVariable->isRemoteFile();
+
+    if (!$inputVariable) {
+      // input variable was not given, which is fine, treatment in validation
+      // which takes place next can be applied even in this situation,
+      // getValue and getPrefixedValue are sufficient and correct here
+      $inputVariable = $variable;
+    }
 
     // validate variable value and prepare arrays which will be processed
     if ($inputVariable->isValueArray() && $variable->isValueArray()) {
+      // both variable and input variable are arrays
       if (count($inputVariable->getValue()) !== count($variable->getValue())) {
         throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$DATA_IN_TYPE));
       }
@@ -132,6 +137,7 @@ class DataInBox extends Box
       $inputFiles = $inputVariable->getValue();
       $files = $variable->getPrefixedValue();
     } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
+      // both variable and input variable are scalars
       $inputFiles = [$inputVariable->getValue()];
       $files = [$variable->getPrefixedValue()];
     } else {
@@ -143,7 +149,7 @@ class DataInBox extends Box
     for ($i = 0; $i < count($files); ++$i) {
       $task = new Task();
 
-      if ($inputVariable->isRemoteFile()) {
+      if ($isRemote) {
         // remote file has to have fetch task
         $task->setCommandBinary(TaskCommands::$FETCH);
         $task->setCommandArguments([
