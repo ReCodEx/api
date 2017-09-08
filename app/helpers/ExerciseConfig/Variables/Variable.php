@@ -193,6 +193,7 @@ class Variable implements JsonSerializable
 
   /**
    * Get prefixed value or values.
+   * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
    * @return array|string
    */

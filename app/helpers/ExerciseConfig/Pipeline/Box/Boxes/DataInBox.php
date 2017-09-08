@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
@@ -130,11 +131,9 @@ class DataInBox extends Box
 
       $inputFiles = $inputVariable->getValue();
       $files = $variable->getPrefixedValue();
-      $filesWithoutPrefix = $variable->getValue();
     } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
       $inputFiles = [$inputVariable->getValue()];
       $files = [$variable->getPrefixedValue()];
-      $filesWithoutPrefix = [$inputVariable->getValue()];
     } else {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$DATA_IN_TYPE));
     }
@@ -146,18 +145,18 @@ class DataInBox extends Box
 
       if ($inputVariable->isRemoteFile()) {
         // remote file has to have fetch task
-        $task->setCommandBinary("fetch");
+        $task->setCommandBinary(TaskCommands::$FETCH);
         $task->setCommandArguments([
           $inputFiles[$i],
           ConfigParams::$SOURCE_DIR . $files[$i]
         ]);
       } else {
-        if ($inputFiles[$i] === $filesWithoutPrefix[$i]) {
+        if ($inputFiles[$i] === $files[$i]) {
           // files have exactly same names, we can skip renaming
           continue;
         }
 
-        $task->setCommandBinary("rename");
+        $task->setCommandBinary(TaskCommands::$COPY);
         $task->setCommandArguments([
           ConfigParams::$SOURCE_DIR . $inputFiles[$i],
           ConfigParams::$SOURCE_DIR . $files[$i]

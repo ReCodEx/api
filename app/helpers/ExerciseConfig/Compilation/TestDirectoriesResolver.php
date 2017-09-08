@@ -64,7 +64,7 @@ class TestDirectoriesResolver {
    * @return RootedTree
    */
   private function addDirectories(RootedTree $tree, array $testIds): RootedTree {
-    $testIds = array_values($testIds);
+    $testIds = array_values(array_unique($testIds));
     if (count($testIds) === 0) {
       return $tree;
     }
@@ -104,7 +104,7 @@ class TestDirectoriesResolver {
     while (!empty($stack)) {
       $current = array_pop($stack);
       if ($current->getTestId()) {
-        $testIds[$current->getTestId()] = $current->getTestId();
+        $testIds[] = $current->getTestId();
       }
 
       // process current node

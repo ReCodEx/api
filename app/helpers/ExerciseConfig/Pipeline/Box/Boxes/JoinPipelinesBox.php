@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -103,7 +104,7 @@ class JoinPipelinesBox extends Box
 
     // if values in ports are different then we should engage rename task
     $task = new Task();
-    $task->setCommandBinary("rename");
+    $task->setCommandBinary(TaskCommands::$RENAME);
     $task->setCommandArguments([
       current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
       current($this->getOutputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)

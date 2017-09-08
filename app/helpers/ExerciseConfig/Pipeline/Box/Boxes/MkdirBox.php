@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -16,7 +17,6 @@ class MkdirBox extends Box
 {
   /** Type key */
   public static $MKDIR_TYPE = "mkdir";
-  public static $MKDIR_BINARY = "mkdir";
   public static $MKDIR_PORT_IN_KEY = "in";
   public static $DEFAULT_NAME = "Make directory";
 
@@ -98,7 +98,7 @@ class MkdirBox extends Box
    */
   public function compile(): array {
     $task = new Task();
-    $task->setCommandBinary(self::$MKDIR_BINARY);
+    $task->setCommandBinary(TaskCommands::$MKDIR);
     $task->setCommandArguments([
       current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
