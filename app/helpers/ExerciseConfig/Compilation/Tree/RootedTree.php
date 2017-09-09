@@ -16,12 +16,6 @@ class RootedTree {
    */
   private $rootNodes = array();
 
-  /**
-   * Test identifications used in tree.
-   * @var string[]
-   */
-  private $testIds = [];
-
 
   /**
    * Get root nodes of tree.
@@ -38,24 +32,6 @@ class RootedTree {
    */
   public function addRootNode(Node $node): RootedTree {
     $this->rootNodes[] = $node;
-    return $this;
-  }
-
-  /**
-   * Get tests identifications of all tests used in tree.
-   * @return string[]
-   */
-  public function getTestIds(): array {
-    return $this->testIds;
-  }
-
-  /**
-   * Set identification of all tests used in tree.
-   * @param string[] $testIds
-   * @return RootedTree
-   */
-  public function setTestIds(array $testIds): RootedTree {
-    $this->testIds = $testIds;
     return $this;
   }
 

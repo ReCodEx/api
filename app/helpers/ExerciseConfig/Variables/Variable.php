@@ -61,7 +61,7 @@ class Variable implements JsonSerializable
    * @param string|null $name
    * @param string|array $value
    */
-  public function __construct(string $type, string $name = NULL, $value = NULL) {
+  public function __construct(string $type, string $name = null, $value = null) {
     $this->type = $type;
     $this->name = $name;
     $this->value = $value;
