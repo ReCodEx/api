@@ -94,6 +94,7 @@ class GccCompilationBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$INITIATION);
+    $task->setFatalFailure(true);
     $task->setCommandBinary(self::$GCC_BINARY);
     $task->setCommandArguments(
       array_merge(

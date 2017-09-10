@@ -88,10 +88,12 @@ class BoxesSorter {
 
     // make topological sort
     $sorted = $this->topologicalSort($mergeTree);
+    $nodes = [];
 
     // initialize rooted tree and its root
     $tree = new RootedTree();
     $previous = new Node($sorted[0]);
+    $nodes[] = $previous;
     $tree->addRootNode($previous);
 
     // make de-facto linked list of nodes
@@ -102,7 +104,17 @@ class BoxesSorter {
       $previous->addChild($current);
       $current->addParent($previous);
 
+      // find and assign dependencies
+      foreach ($sorted[$i]->getParents() as $parent) {
+        $index = array_search($parent, $sorted);
+        if ($index === false) {
+          throw new ExerciseConfigException("Malformed internal compilation structure. PortNode not found.");
+        }
+        $current->addDependency($nodes[$index]);
+      }
+
       // do not forget to set previous
+      $nodes[] = $current;
       $previous = $current;
     }
 

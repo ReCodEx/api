@@ -87,8 +87,8 @@ class BoxesCompiler {
         $task->setPriority($order);
         // construct and set dependencies
         $dependencies = array();
-        foreach ($current->getParents() as $parent) {
-          $dependencies = array_merge($dependencies, $parent->getTaskIds());
+        foreach ($current->getDependencies() as $dependency) {
+          $dependencies = array_merge($dependencies, $dependency->getTaskIds());
         }
         $task->setDependencies($dependencies);
         // identification of test is present in node

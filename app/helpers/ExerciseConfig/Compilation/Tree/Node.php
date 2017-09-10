@@ -50,6 +50,12 @@ class Node {
    */
   private $children = array();
 
+  /**
+   * Dependencies of this node.
+   * @var Node[]
+   */
+  private $dependencies = array();
+
 
   /**
    * Node constructor.
@@ -193,6 +199,22 @@ class Node {
     if(($key = array_search($child, $this->children)) !== false){
       unset($this->children[$key]);
     }
+  }
+
+  /**
+   * Get dependencies of this node.
+   * @return Node[]
+   */
+  public function getDependencies(): array {
+    return $this->dependencies;
+  }
+
+  /**
+   * Add dependency of this node.
+   * @param Node $dependency
+   */
+  public function addDependency(Node $dependency) {
+    $this->dependencies[] = $dependency;
   }
 
 }
