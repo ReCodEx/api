@@ -14,6 +14,6 @@ class ResultsLoadingException extends SubmissionEvaluationFailedException {
    * @param string $msg description
    */
   public function __construct(string $msg = 'Unexpected parsing error') {
-    parent::__construct("Results loading or parsing failed - $msg", IResponse::S400_BAD_REQUEST);
+    parent::__construct("Results loading or parsing failed - $msg");
   }
 }
