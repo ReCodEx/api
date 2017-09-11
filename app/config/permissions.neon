@@ -282,6 +282,8 @@ permissions:
           - fork
           - addReferenceSolution
           - evaluateReferenceSolution
+          - createPipeline
+          - viewPipelines
       conditions:
           - exercise.isAuthor
 
@@ -400,16 +402,17 @@ permissions:
       role: supervisor
       resource: pipeline
       actions:
+          - viewDetail
           - viewAll
-          - create
 
     - allow: true
       role: supervisor
       resource: pipeline
       actions:
-          - viewDetail
           - update
           - remove
+          - fork
+          - viewDetail
       conditions:
           - pipeline.isAuthor
 

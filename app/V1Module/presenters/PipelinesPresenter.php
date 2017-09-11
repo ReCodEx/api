@@ -8,6 +8,8 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Model\Entity\PipelineConfig;
+use App\Model\Repository\Exercises;
+use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\Pipeline;
@@ -28,10 +30,22 @@ class PipelinesPresenter extends BasePresenter {
   public $pipelineAcl;
 
   /**
+   * @var IExercisePermissions
+   * @inject
+   */
+  public $exerciseAcl;
+
+  /**
    * @var Pipelines
    * @inject
    */
   public $pipelines;
+
+  /**
+   * @var Exercises
+   * @inject
+   */
+  public $exercises;
 
   /**
    * @var Loader
@@ -100,6 +114,31 @@ class PipelinesPresenter extends BasePresenter {
     $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
     $this->pipelines->persist($pipeline);
 
+    $this->sendSuccessResponse($pipeline);
+  }
+
+  /**
+   * Fork pipeline, if exercise identification is given pipeline is forked
+   * to specified exercise.
+   * @POST
+   * @param string $id identification of pipeline
+   * @Param(type="post", name="exerciseId", description="Exercise identification")
+   * @throws ForbiddenRequestException
+   */
+  public function actionForkPipeline(string $id) {
+    $req = $this->getRequest();
+    $exerciseId = $req->getPost("exerciseId");
+    $exercise = $exerciseId ? $this->exercises->findOrThrow($exerciseId) : null;
+    $pipeline = $this->pipelines->findOrThrow($id);
+
+    if (!$this->pipelineAcl->canFork($pipeline) ||
+        ($exercise && !$this->exerciseAcl->canCreatePipeline($exercise))) {
+      throw new ForbiddenRequestException("You are not allowed to fork pipeline.");
+    }
+
+    // fork pipeline entity, persist it and return it
+    $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline, $exercise);
+    $this->pipelines->persist($pipeline);
     $this->sendSuccessResponse($pipeline);
   }
 

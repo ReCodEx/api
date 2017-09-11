@@ -16,6 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
  * @method int getVersion()
+ * @method Exercise getExercise()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
@@ -85,6 +86,11 @@ class Pipeline implements JsonSerializable
   protected $createdFrom;
 
   /**
+   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="pipelines")
+   */
+  protected $exercise;
+
+  /**
    * Constructor
    * @param string $name
    * @param int $version
@@ -92,10 +98,11 @@ class Pipeline implements JsonSerializable
    * @param PipelineConfig $pipelineConfig
    * @param User $author
    * @param ExerciseConfig|null $createdFrom
+   * @param Exercise|null $exercise
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, User $author,
-      ExerciseConfig $createdFrom = null) {
+      ExerciseConfig $createdFrom = null, Exercise $exercise = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -105,6 +112,7 @@ class Pipeline implements JsonSerializable
     $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
     $this->createdFrom = $createdFrom;
+    $this->exercise = $exercise;
   }
 
   /**
@@ -113,23 +121,32 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public static function create(User $user): Pipeline {
-    return new self("", 1, "", new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user), $user);
+    return new self(
+      "",
+      1,
+      "",
+      new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
+      $user
+    );
   }
 
   /**
-   * Fork pipeline entity into new one.
+   * Fork pipeline entity into new one which belongs to given exercise.
    * @param User $user
    * @param Pipeline $pipeline
+   * @param Exercise $exercise
    * @return Pipeline
    */
-  public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
+  public static function forkFrom(User $user, Pipeline $pipeline,
+      Exercise $exercise): Pipeline {
     return new self(
       $pipeline->getName(),
       $pipeline->getVersion(),
       $pipeline->getDescription(),
       $pipeline->getPipelineConfig(),
       $user,
-      $pipeline
+      $pipeline,
+      $exercise
     );
   }
 
@@ -142,6 +159,7 @@ class Pipeline implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "description" => $this->description,
       "author" => $this->author->getId(),
+      "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
       "pipeline" => $this->pipelineConfig->getParsedPipeline()
     ];
   }

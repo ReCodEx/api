@@ -128,6 +128,10 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
   }
 
+  public function testForkPipeline() {
+    // @todo
+  }
+
   public function testRemovePipeline()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);

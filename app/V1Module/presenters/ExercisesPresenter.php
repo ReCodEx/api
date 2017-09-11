@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\ExerciseConfig;
+use App\Model\Entity\Pipeline;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
@@ -18,6 +19,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use App\Security\ACL\IPipelinePermissions;
 use Exception;
 
 /**
@@ -68,6 +70,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $groupAcl;
+
+  /**
+   * @var IPipelinePermissions
+   * @inject
+   */
+  public $pipelineAcl;
 
   /**
    * Get a list of exercises with an optional filter
@@ -305,6 +313,25 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
+  }
+
+  /**
+   * Get all pipelines for an exercise.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionPipelines(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+
+    if (!$this->exerciseAcl->canViewPipelines($exercise)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $pipelines = $exercise->getPipelines()->filter(function (Pipeline $pipeline) {
+      return $this->pipelineAcl->canViewDetail($pipeline);
+    });
+    $this->sendSuccessResponse($pipelines);
   }
 
   /**

@@ -356,6 +356,10 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($expectedFiles, $result['payload']);
   }
 
+  public function testGetPipelines() {
+    // @todo
+  }
+
   public function testForkFrom()
   {
     PresenterTestHelper::login($this->container, $this->adminLogin);
