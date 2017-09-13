@@ -5,6 +5,7 @@ $container = include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
@@ -49,7 +50,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function __construct(Container $container) {
     $this->mockPipelines = Mockery::mock(Pipelines::class);
-    $this->validator = new ExerciseConfigValidator($this->mockPipelines, new Loader(new BoxService()));
+    $this->validator = new ExerciseConfigValidator($this->mockPipelines, new Loader(new BoxService()), new Helper());
     $this->container = $container;
 
     $this->mockPipelineConfigEntity = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
@@ -196,8 +197,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $exercise = Exercise::create($user);
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
     $envB = new RuntimeEnvironment("envB", "Env B", "B", ".b", "", "");
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "", $user, NULL));
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envB, "", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envB, "[]", $user, NULL));
     return $exercise;
   }
 
@@ -209,7 +210,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $user = $this->getDummyUser();
     $exercise = Exercise::create($user);
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
     return $exercise;
   }
 

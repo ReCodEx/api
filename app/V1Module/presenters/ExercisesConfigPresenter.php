@@ -331,6 +331,14 @@ class ExercisesConfigPresenter extends BasePresenter {
     $this->sendSuccessResponse($result);
   }
 
+  public function actionGetLimits() {
+    // @todo
+  }
+
+  public function actionSetLimits() {
+    // @todo
+  }
+
   /**
    * Get a description of resource limits for an exercise
    * @GET
@@ -340,7 +348,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function actionGetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
+  public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canViewLimits($exercise)) {
@@ -378,7 +386,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    * @throws NotFoundException
    */
-  public function actionSetLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
+  public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canSetLimits($exercise)) {
@@ -423,7 +431,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
-  public function actionRemoveLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
+  public function actionRemoveHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canSetLimits($exercise)) {

@@ -57,71 +57,64 @@ class ExerciseLimitsValidator {
         ));
       }
 
-      $environment = $test->getEnvironment($environmentId);
-
-      $pipelineNames = array_keys(
-        count($environment->getPipelines()) === 0
-        ? $test->getPipelines()
-        : $environment->getPipelines()
-      );
-
-      $environmentPipelines = [];
-
-      foreach ($pipelineNames as $name) {
-        $this->loadPipeline($name, $loadedPipelines);
-        $environmentPipelines[$name] = $loadedPipelines[$name];
-      }
-
-      if ($test === NULL) {
-        throw new ExerciseConfigException(sprintf(
-          "Test with id %s does not exist in the exercise configuration",
-          $testId
-        ));
-      }
-
-      foreach ($firstLevel as $pipelineId => $secondLevel) {
-        if (!array_key_exists($pipelineId, $environmentPipelines)) {
-          throw new ExerciseConfigException(sprintf(
-            "Pipeline %s is not used in test %s, but it is present in limit configuration",
-            $pipelineId,
-            $testId
-          ));
-        }
-
-        /** @var Limits $limits */
-        foreach ($secondLevel as $boxId => $limits) {
-          $box = $environmentPipelines[$pipelineId]->get($boxId);
-
-          if ($box === NULL) {
-            throw new ExerciseConfigException(sprintf(
-              "Box with id %s does not exist in pipeline %s",
-              $boxId,
-              $pipelineId
-            ));
-          }
-        }
-      }
+//      $environment = $test->getEnvironment($environmentId);
+//
+//      $pipelineNames = array_keys(
+//        count($environment->getPipelines()) === 0
+//        ? $test->getPipelines()
+//        : $environment->getPipelines()
+//      );
+//
+//      $environmentPipelines = [];
+//
+//      foreach ($pipelineNames as $name) {
+//        $this->loadPipeline($name, $loadedPipelines);
+//        $environmentPipelines[$name] = $loadedPipelines[$name];
+//      }
+//
+//      foreach ($firstLevel as $pipelineId => $secondLevel) {
+//        if (!array_key_exists($pipelineId, $environmentPipelines)) {
+//          throw new ExerciseConfigException(sprintf(
+//            "Pipeline %s is not used in test %s, but it is present in limit configuration",
+//            $pipelineId,
+//            $testId
+//          ));
+//        }
+//
+//        /** @var Limits $limits */
+//        foreach ($secondLevel as $boxId => $limits) {
+//          $box = $environmentPipelines[$pipelineId]->get($boxId);
+//
+//          if ($box === NULL) {
+//            throw new ExerciseConfigException(sprintf(
+//              "Box with id %s does not exist in pipeline %s",
+//              $boxId,
+//              $pipelineId
+//            ));
+//          }
+//        }
+//      }
     }
   }
 
-  /**
-   * @param $name
-   * @param $loadedPipelines
-   * @throws ExerciseConfigException
-   */
-  private function loadPipeline($name, &$loadedPipelines): void
-  {
-    if (!array_key_exists($name, $loadedPipelines)) {
-      $pipelineEntity = $this->pipelines->get($name);
-
-      if ($pipelineEntity === NULL) {
-        throw new ExerciseConfigException(sprintf(
-          "Pipeline with id %s does not exist",
-          $name
-        ));
-      }
-
-      $loadedPipelines[$name] = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-    }
-  }
+//  /**
+//   * @param $name
+//   * @param $loadedPipelines
+//   * @throws ExerciseConfigException
+//   */
+//  private function loadPipeline($name, &$loadedPipelines): void
+//  {
+//    if (!array_key_exists($name, $loadedPipelines)) {
+//      $pipelineEntity = $this->pipelines->get($name);
+//
+//      if ($pipelineEntity === NULL) {
+//        throw new ExerciseConfigException(sprintf(
+//          "Pipeline with id %s does not exist",
+//          $name
+//        ));
+//      }
+//
+//      $loadedPipelines[$name] = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+//    }
+//  }
 }

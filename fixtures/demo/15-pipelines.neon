@@ -16,7 +16,7 @@ App\Model\Entity\PipelineConfig:
                   portsOut:
                     in-data:
                        type: file
-                       value: source_file
+                       value: source_files
                   type: data-in
                 - name: compilation
                   portsIn:
