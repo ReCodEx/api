@@ -173,7 +173,6 @@ extensions:
   console: Kdyby\Console\DI\ConsoleExtension
   events: Kdyby\Events\DI\EventsExtension
   annotations: Kdyby\Annotations\DI\AnnotationsExtension
-  gedmo: Rixxi\Gedmo\DI\OrmExtension
   doctrine: Kdyby\Doctrine\DI\OrmExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
   acl: App\Security\SecurityExtension(%tempDir%)
@@ -189,6 +188,9 @@ services:
     tags: [kdyby.console.command]
   - class: App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
     tags: [kdyby.console.command]
+
+  - class: Gedmo\SoftDeleteable\SoftDeleteableListener()
+    tags: [kdyby.subscriber]
 
   # security
   - App\Security\AccessManager(%accessManager%)
@@ -287,9 +289,6 @@ doctrine:
     App\Model\Entity: %appDir%/model/entity
   types:
     bit: Doctrine\DBAL\Types\BooleanType
-
-gedmo:
-  softDeleteable: on
 
 fixtures:
   locale: "en_US"

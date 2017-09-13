@@ -89,6 +89,7 @@ parameters:
   mail:
     smtp: true
     host: "smtp.ps.stdin.cz"
+    clientHost: recodex.projekty.ms.mff.cuni.cz
     port: 587
     username: "user"
     password: "pass"
