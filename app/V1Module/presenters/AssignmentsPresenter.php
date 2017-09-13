@@ -8,6 +8,8 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\Group;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedText;
@@ -245,6 +247,10 @@ class AssignmentsPresenter extends BasePresenter {
 
     $group = $this->groups->findOrThrow($groupId);
     $exercise = $this->exercises->findOrThrow($exerciseId);
+
+    if ($exercise->isLocked()) {
+      throw new InvalidArgumentException("Exercise '$exerciseId' is locked");
+    }
 
     if (!$this->groupAcl->canAssignExercise($group, $exercise)) {
       throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");

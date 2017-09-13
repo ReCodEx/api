@@ -8,6 +8,9 @@ use Doctrine\Common\Collections\Collection;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\User;
 
+/**
+ * @method Exercise findOrThrow($exerciseId)
+ */
 class Exercises extends BaseSoftDeleteRepository {
 
   public function __construct(EntityManager $em) {
