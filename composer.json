@@ -24,7 +24,7 @@
 		"nette/finder": "^2.4",
 		"nette/forms": "^2.4",
 		"nette/http": "^2.4",
-		"nette/mail": "^2.4",
+		"nette/mail": "master@dev",
 		"nette/robot-loader": "^2.4.1",
 		"nette/safe-stream": "^2.3",
 		"nette/security": "^2.4",
@@ -40,8 +40,8 @@
 		"mrdm-nl/ldap": "^1.1",
 		"bjeavons/zxcvbn-php": "^0.3.0",
 		"zenify/doctrine-fixtures": "^4.0",
-		"rixxi/gedmo": "^1.0",
-		"doctrine/orm": "2.5.6"
+		"doctrine/orm": "2.5.6",
+		"gedmo/doctrine-extensions": "@stable"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
