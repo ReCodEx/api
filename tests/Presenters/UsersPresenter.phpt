@@ -8,6 +8,7 @@ use Tester\Assert;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestUsersPresenter extends Tester\TestCase
 {

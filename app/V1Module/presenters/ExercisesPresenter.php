@@ -321,7 +321,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @throws ForbiddenRequestException
    */
-  public function actionPipelines(string $id) {
+  public function actionGetPipelines(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
 
     if (!$this->exerciseAcl->canViewPipelines($exercise)) {
@@ -330,7 +330,7 @@ class ExercisesPresenter extends BasePresenter {
 
     $pipelines = $exercise->getPipelines()->filter(function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
-    });
+    })->getValues();
     $this->sendSuccessResponse($pipelines);
   }
 

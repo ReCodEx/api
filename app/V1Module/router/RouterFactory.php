@@ -110,7 +110,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
     $router[] = new GetRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
     $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
-    $router[] = new GetRoute("$prefix/<id>/pipelines", "Exercises:pipelines");
+    $router[] = new GetRoute("$prefix/<id>/pipelines", "Exercises:getPipelines");
 
     $router[] = new GetRoute("$prefix/<id>/environment-configs", "ExercisesConfig:getEnvironmentConfigs");
     $router[] = new PostRoute("$prefix/<id>/environment-configs", "ExercisesConfig:updateEnvironmentConfigs");

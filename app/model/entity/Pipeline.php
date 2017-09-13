@@ -17,6 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method PipelineConfig getPipelineConfig()
  * @method int getVersion()
  * @method Exercise getExercise()
+ * @method DateTime getDeletedAt()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
@@ -97,12 +98,12 @@ class Pipeline implements JsonSerializable
    * @param string $description
    * @param PipelineConfig $pipelineConfig
    * @param User $author
-   * @param ExerciseConfig|null $createdFrom
+   * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, User $author,
-      ExerciseConfig $createdFrom = null, Exercise $exercise = null) {
+      Pipeline $createdFrom = null, Exercise $exercise = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -134,11 +135,11 @@ class Pipeline implements JsonSerializable
    * Fork pipeline entity into new one which belongs to given exercise.
    * @param User $user
    * @param Pipeline $pipeline
-   * @param Exercise $exercise
+   * @param Exercise|null $exercise
    * @return Pipeline
    */
   public static function forkFrom(User $user, Pipeline $pipeline,
-      Exercise $exercise): Pipeline {
+      ?Exercise $exercise): Pipeline {
     return new self(
       $pipeline->getName(),
       $pipeline->getVersion(),

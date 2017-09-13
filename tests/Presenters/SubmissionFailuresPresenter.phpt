@@ -7,6 +7,10 @@ use Tester\Assert;
 
 $container = require_once "../bootstrap.php";
 
+
+/**
+ * @testCase
+ */
 class TestSubmissionFailures extends Tester\TestCase
 {
   /** @var SubmissionFailuresPresenter */

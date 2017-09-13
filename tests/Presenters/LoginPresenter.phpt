@@ -11,6 +11,10 @@ use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+
+/**
+ * @testCase
+ */
 class TestLoginPresenter extends Tester\TestCase
 {
   private $userLogin = "user2@example.com";

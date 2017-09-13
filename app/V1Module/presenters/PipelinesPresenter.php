@@ -122,7 +122,7 @@ class PipelinesPresenter extends BasePresenter {
    * to specified exercise.
    * @POST
    * @param string $id identification of pipeline
-   * @Param(type="post", name="exerciseId", description="Exercise identification")
+   * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
    * @throws ForbiddenRequestException
    */
   public function actionForkPipeline(string $id) {

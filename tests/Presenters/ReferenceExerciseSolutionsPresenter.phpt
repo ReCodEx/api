@@ -13,6 +13,10 @@ use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 
+
+/**
+ * @testCase
+ */
 class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 {
   /** @var ReferenceExerciseSolutionsPresenter */
@@ -203,6 +207,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   public function testEvaluateMultiple()
   {
     // @todo
+    Assert::true(true);
   }
 
   public function testDownloadResultArchive()

@@ -5,11 +5,16 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AdditionalExerciseFile;
+use App\Model\Entity\Pipeline;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExercisesPresenter;
 use App\Model\Entity\ExerciseFile;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestExercisesPresenter extends Tester\TestCase
 {
   private $adminLogin = "admin@admin.com";
@@ -42,6 +47,9 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Exercises */
   protected $exercises;
 
+  /** @var App\Model\Repository\Pipelines */
+  protected $pipelines;
+
   /** @var App\Model\Repository\AdditionalExerciseFiles */
   protected $additionalFiles;
 
@@ -57,6 +65,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
     $this->additionalFiles = $container->getByType(\App\Model\Repository\AdditionalExerciseFiles::class);
+    $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
   }
 
   protected function setUp()
@@ -357,7 +366,33 @@ class TestExercisesPresenter extends Tester\TestCase
   }
 
   public function testGetPipelines() {
-    // @todo
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // prepare pipelines into exercise
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = current($this->exercises->findAll());
+    $pipeline = current($this->pipelines->findAll());
+    $pipeline1 = Pipeline::forkFrom($user, $pipeline, $exercise);
+    $pipeline2 = Pipeline::forkFrom($user, $pipeline, $exercise);
+    $pipeline1->setId("testGetPipelines1");
+    $pipeline2->setId("testGetPipelines2");
+    $this->pipelines->persist($pipeline1, FALSE);
+    $this->pipelines->persist($pipeline2, FALSE);
+    $this->pipelines->flush();
+
+    $request = new Nette\Application\Request("V1:Exercises", 'GET',
+      ['action' => 'getPipelines', 'id' => $exercise->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count(2, $payload);
+
+    Assert::contains($pipeline1, $payload);
+    Assert::contains($pipeline2, $payload);
   }
 
   public function testForkFrom()

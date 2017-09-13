@@ -5,6 +5,10 @@ use App\Security\Identity;
 use App\V1Module\Presenters\ForgottenPasswordPresenter;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestForgottenPasswordPresenter extends Tester\TestCase
 {
   private $userLogin = "user2@example.com";
@@ -97,7 +101,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'validatePasswordStrength'], ['password' => $this->userPassword]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-    
+
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::type("int", $result['payload']['passwordScore']);
@@ -117,7 +121,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:ForgottenPassword', 'POST', ['action' => 'change'], ['password' => "newPassword"]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-    
+
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);

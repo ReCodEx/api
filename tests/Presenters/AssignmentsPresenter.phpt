@@ -18,6 +18,10 @@ use App\Model\Entity\UploadedFile;
 use App\Model\Entity\Submission;
 use App\Exceptions\NotFoundException;
 
+
+/**
+ * @testCase
+ */
 class TestAssignmentsPresenter extends Tester\TestCase
 {
   /** @var AssignmentsPresenter */
