@@ -36,7 +36,7 @@ class VariablesResolver {
 
     // regexp matching of all files against variable value
     $value = $variable->getValue();
-    $matches = array_filter($submittedFiles, function (string $file) use($value) {
+    $matches = array_filter($submittedFiles, function (string $file) use ($value) {
       return fnmatch($value, $file);
     });
 

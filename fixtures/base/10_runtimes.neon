@@ -7,6 +7,11 @@ App\Model\Entity\RuntimeEnvironment:
             - "[c, h]"
             - "GNU/Linux"
             - "C compiled with GCC"
+            - '''
+              - name: "source_files"
+                type: "file[]"
+                value: "*.c"
+              '''
     PascalRuntime:
         __construct:
             - freepascal-linux
@@ -15,6 +20,11 @@ App\Model\Entity\RuntimeEnvironment:
             - "[pas]"
             - "GNU/Linux"
             - "Pascal compiled with FreePascal"
+            - '''
+              - name: "source_files"
+                type: "file[]"
+                value: "*.pas"
+              '''
     CPP11Runtime:
         __construct:
             - cxx11-gcc-linux
@@ -23,6 +33,11 @@ App\Model\Entity\RuntimeEnvironment:
             - "[cpp, h, hpp]"
             - "GNU/Linux"
             - C++11 compiled with G++
+            - '''
+              - name: "source_files"
+                type: "file[]"
+                value: "*.cpp"
+              '''
     MonoRuntime:
         __construct:
             - mono46
@@ -31,6 +46,11 @@ App\Model\Entity\RuntimeEnvironment:
             - "[cs]"
             - "GNU/Linux"
             - "C# run in Mono"
+            - '''
+              - name: "source_files"
+                type: "file[]"
+                value: "*.cs"
+              '''
     Java8Runtime:
         __construct:
             - java8
@@ -39,3 +59,8 @@ App\Model\Entity\RuntimeEnvironment:
             - "[java]"
             - "GNU/Linux"
             - "Java 8"
+            - '''
+              - name: "source_files"
+                type: "file[]"
+                value: "*.java"
+              '''
