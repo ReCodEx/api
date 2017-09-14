@@ -66,13 +66,19 @@ class BoxesCompiler {
       RootedTree $rootedTree, array $limits) {
     // stack for DFS, better stay in order by reversing original root nodes
     $stack = array_reverse($rootedTree->getRootNodes());
-    $order = 1;
+    $order = 65536; // if there is more tasks this will fail spectacularly
 
     // main processing loop
     while (!empty($stack)) {
       $current = array_pop($stack); /** @var Node $current */
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
+
+      // construct dependencies
+      $dependencies = array();
+      foreach ($current->getDependencies() as $dependency) {
+        $dependencies = array_merge($dependencies, $dependency->getTaskIds());
+      }
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
@@ -84,11 +90,8 @@ class BoxesCompiler {
         // set global order/priority
         $task->setPriority($order);
         // construct and set dependencies
-        $dependencies = array();
-        foreach ($current->getDependencies() as $dependency) {
-          $dependencies = array_merge($dependencies, $dependency->getTaskIds());
-        }
         $task->setDependencies($dependencies);
+
         // identification of test is present in node
         if (!empty($current->getTestId())) {
           $testId = $current->getTestId();
@@ -108,7 +111,7 @@ class BoxesCompiler {
         $jobConfig->addTask($task);
 
         // update helper vars
-        $order++;
+        $order--;
       }
 
       // add children of current node into stack
