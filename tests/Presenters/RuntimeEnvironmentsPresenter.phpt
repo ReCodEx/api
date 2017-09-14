@@ -26,7 +26,7 @@ class TestRuntimeEnvironmentsPresenter extends Tester\TestCase
   private $presenterPath = "V1:RuntimeEnvironments";
 
   /** @var RuntimeEnvironments */
-  protected $hardwareGroups;
+  protected $runtimeEnvironments;
 
   /** @var  Nette\DI\Container */
   protected $container;

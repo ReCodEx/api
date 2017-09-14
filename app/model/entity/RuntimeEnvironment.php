@@ -65,6 +65,24 @@ class RuntimeEnvironment implements JsonSerializable
    */
   protected $description;
 
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $defaultVariables;
+
+  /**
+   * Parse variables into yaml structure and return it.
+   * @return array decoded YAML
+   * @throws ApiException
+   */
+  public function getParsedVariables(): array {
+    try {
+      return Yaml::parse($this->extensions);
+    } catch (ParseException $e) {
+      throw new ApiException("Yaml cannot be parsed: " . $e->getMessage());
+    }
+  }
+
 
   public function __construct(
     $id,
@@ -72,7 +90,8 @@ class RuntimeEnvironment implements JsonSerializable
     $language,
     $extensions,
     $platform,
-    $description
+    $description,
+    $defaultVariables = "[]"
   ) {
     $this->id = $id;
     $this->name = $name;
@@ -80,6 +99,7 @@ class RuntimeEnvironment implements JsonSerializable
     $this->extensions = $extensions;
     $this->platform = $platform;
     $this->description = $description;
+    $this->defaultVariables = $defaultVariables;
   }
 
   public function jsonSerialize() {
@@ -89,7 +109,8 @@ class RuntimeEnvironment implements JsonSerializable
       "language" => $this->language,
       "extensions" => $this->extensions,
       "platform" => $this->platform,
-      "description" => $this->description
+      "description" => $this->description,
+      "defaultVariables" => $this->getParsedVariables()
     ];
   }
 
