@@ -110,6 +110,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "Exercises:uploadSupplementaryFiles");
     $router[] = new GetRoute("$prefix/<id>/additional-files", "Exercises:getAdditionalFiles");
     $router[] = new PostRoute("$prefix/<id>/additional-files", "Exercises:uploadAdditionalFiles");
+    $router[] = new GetRoute("$prefix/<id>/pipelines", "Exercises:getPipelines");
 
     $router[] = new GetRoute("$prefix/<id>/environment-configs", "ExercisesConfig:getEnvironmentConfigs");
     $router[] = new PostRoute("$prefix/<id>/environment-configs", "ExercisesConfig:updateEnvironmentConfigs");
@@ -357,6 +358,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/boxes", "Pipelines:getDefaultBoxes");
     $router[] = new GetRoute("$prefix", "Pipelines:getPipelines");
     $router[] = new PostRoute("$prefix", "Pipelines:createPipeline");
+    $router[] = new PostRoute("$prefix/<id>/fork", "Pipelines:forkPipeline");
     $router[] = new GetRoute("$prefix/<id>", "Pipelines:getPipeline");
     $router[] = new PostRoute("$prefix/<id>", "Pipelines:updatePipeline");
     $router[] = new DeleteRoute("$prefix/<id>", "Pipelines:removePipeline");

@@ -7,6 +7,9 @@ use App\V1Module\Presenters\SubmissionsPresenter;
 use Tester\Assert;
 
 
+/**
+ * @testCase
+ */
 class TestSubmissionsPresenter extends Tester\TestCase
 {
   private $adminLogin = "admin@admin.com";

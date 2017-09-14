@@ -7,6 +7,7 @@ use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\Id\UuidGenerator;
 use Tester\Assert;
 
+
 /**
  * @testCase
  */
@@ -126,6 +127,32 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::type(\App\Model\Entity\Pipeline::class, $payload);
     Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+  }
+
+  public function testForkPipeline() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $pipelines = $this->presenter->pipelines->findAll();
+    $pipeline = current($pipelines);
+    $pipelinesCount = count($pipelines);
+
+    $request = new Nette\Application\Request('V1:Pipelines', 'POST',
+      ['action' => 'forkPipeline', 'id' => $pipeline->getId()],
+      ['exerciseId' => $exercise->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::count($pipelinesCount + 1, $this->presenter->pipelines->findAll());
+
+    Assert::type(\App\Model\Entity\Pipeline::class, $payload);
+    Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
+    Assert::equal($pipeline->getName(), $payload->getName());
+    Assert::equal($exercise, $payload->getExercise());
   }
 
   public function testRemovePipeline()

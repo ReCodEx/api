@@ -2,12 +2,14 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\RuntimeEnvironmentsPresenter;
+use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Entity\RuntimeEnvironment;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestRuntimeEnvironmentsPresenter extends Tester\TestCase
 {

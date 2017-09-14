@@ -13,6 +13,7 @@ use org\bovigo\vfs\vfsStream;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestUploadedFilesPresenter extends Tester\TestCase
 {

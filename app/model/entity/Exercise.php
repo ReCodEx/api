@@ -180,6 +180,17 @@ class Exercise implements JsonSerializable
   protected $exerciseConfig;
 
   /**
+   * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
+   */
+  protected $pipelines;
+
+  public function getPipelines() {
+    return $this->pipelines->filter(function (Pipeline $pipeline) {
+      return $pipeline->getDeletedAt() === NULL;
+    });
+  }
+
+  /**
    * Constructor
    * @param string $name
    * @param $version
@@ -191,6 +202,7 @@ class Exercise implements JsonSerializable
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
    * @param Collection $exerciseEnvironmentConfigs
+   * @param Collection $pipelines
    * @param Exercise|null $exercise
    * @param ExerciseConfig|null $exerciseConfig
    * @param User $user
@@ -203,9 +215,10 @@ class Exercise implements JsonSerializable
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
-      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise,
-      ?ExerciseConfig $exerciseConfig = NULL, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "", bool $isLocked = FALSE) {
+      Collection $exerciseEnvironmentConfigs, Collection $pipelines,
+      ?Exercise $exercise, ?ExerciseConfig $exerciseConfig = NULL, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      bool $isLocked = FALSE) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -225,6 +238,7 @@ class Exercise implements JsonSerializable
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
     $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
+    $this->pipelines = $pipelines;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -232,6 +246,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -258,6 +273,7 @@ class Exercise implements JsonSerializable
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
+      $exercise->pipelines,
       $exercise,
       $exercise->exerciseConfig,
       $user,

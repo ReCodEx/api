@@ -4,6 +4,10 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\V1Module\Presenters\CommentsPresenter;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestCommentsPresenter extends Tester\TestCase
 {
   private $userLogin = "user1@example.com";
