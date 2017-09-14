@@ -20,7 +20,7 @@ class FpcCompilationBox extends Box
   /** Type key */
   public static $FPC_TYPE = "fpc";
   public static $FPC_BINARY = "/usr/bin/fpc";
-  public static $SOURCE_FILES_PORT_KEY = "source-files";
+  public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "FreePascal Compilation";
 
@@ -35,7 +35,7 @@ class FpcCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
@@ -97,14 +97,12 @@ class FpcCompilationBox extends Box
     $task->setFatalFailure(true);
     $task->setCommandBinary(self::$FPC_BINARY);
     $task->setCommandArguments(
-      array_merge(
-        $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
+      [
+        $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
-        [
-          "-o" . $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
-            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
-        ]
-      )
+        "-o" . $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+      ]
     );
     $task->setSandboxConfig((new SandboxConfig)
       ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
