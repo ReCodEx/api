@@ -6,7 +6,7 @@ use Nette\IOException;
 use Nette\Reflection\ClassType;
 use Nette\SmartObject;
 use Nette\Utils\Arrays;
-use Nette\Utils\Neon;
+use Nette\Neon\Neon;
 
 class Loader {
   use SmartObject;

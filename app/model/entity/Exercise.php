@@ -140,8 +140,17 @@ class Exercise implements JsonSerializable
    */
   protected $isPublic;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isLocked;
+
   public function isPublic() {
     return $this->isPublic;
+  }
+
+  public function isLocked() {
+    return $this->isLocked;
   }
 
   /**
@@ -200,6 +209,7 @@ class Exercise implements JsonSerializable
    * @param Group|null $group
    * @param bool $isPublic
    * @param string $description
+   * @param bool $isLocked
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
@@ -207,7 +217,8 @@ class Exercise implements JsonSerializable
       Collection $additionalFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
       ?Exercise $exercise, ?ExerciseConfig $exerciseConfig = NULL, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      bool $isLocked = FALSE) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -219,6 +230,7 @@ class Exercise implements JsonSerializable
     $this->author = $user;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
+    $this->isLocked = $isLocked;
     $this->description = $description;
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
@@ -340,6 +352,19 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * Get exercise limits based on environment.
+   * @param RuntimeEnvironment $environment
+   * @return ExerciseLimits[]
+   */
+  public function getLimitsByEnvironment(RuntimeEnvironment $environment): array {
+    $result = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId();
+      });
+    return $result->getValues();
+  }
+
+  /**
    * Get exercise limits based on environment and hardware group.
    * @param RuntimeEnvironment $environment
    * @param HardwareGroup $hwGroup
@@ -399,10 +424,14 @@ class Exercise implements JsonSerializable
       "authorId" => $this->author->getId(),
       "groupId" => $this->group ? $this->group->getId() : NULL,
       "isPublic" => $this->isPublic,
+      "isLocked" => $this->isLocked,
       "description" => $this->description,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];
   }
 
+  public function setLocked($value = TRUE) {
+    $this->isLocked = $value;
+  }
 }

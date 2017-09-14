@@ -106,6 +106,14 @@ class DataInBox extends Box
     $this->remoteVariable = $variable;
   }
 
+  /**
+   * Get variable name of the output port.
+   * @return null|string
+   */
+  public function getVariableName(): ?string {
+    return $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariable();
+  }
+
 
   /**
    * Compile box into set of low-level tasks.

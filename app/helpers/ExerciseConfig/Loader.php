@@ -195,13 +195,13 @@ class Loader {
   /**
    * Builds and checks limits from given structured data.
    * @param array $data
-   * @param string $boxId Box identifier (name) for better error messages
+   * @param string $testId Test identifier (name) for better error messages
    * @return Limits
    * @throws ExerciseConfigException
    */
-  public function loadLimits($data, $boxId = ""): Limits {
+  public function loadLimits($data, $testId = ""): Limits {
     if (!is_array($data)) {
-      throw new ExerciseConfigException("Box '" . $boxId . "': limits are not array");
+      throw new ExerciseConfigException("Test '" . $testId . "': limits are not array");
     }
 
     $limits = new Limits;
@@ -237,23 +237,7 @@ class Loader {
     $limits = new ExerciseLimits;
 
     foreach ($data as $testId => $testVal) {
-      if (!is_array($testVal)) {
-        throw new ExerciseConfigException("Exercise limits (test) are not array");
-      }
-
-      foreach ($testVal as $pipelineId => $pipelineVal) {
-        if (!is_array($pipelineVal)) {
-          throw new ExerciseConfigException("Exercise limits (pipeline) are not array");
-        }
-
-        foreach ($pipelineVal as $boxId => $boxVal) {
-          if (!is_array($boxVal)) {
-            throw new ExerciseConfigException("Exercise limits (box) are not array");
-          }
-
-          $limits->addLimits($testId, $pipelineId, $boxId, $this->loadLimits($boxVal, $boxId));
-        }
-      }
+      $limits->addLimits($testId, $this->loadLimits($testVal, $testId));
     }
 
     return $limits;

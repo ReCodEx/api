@@ -124,6 +124,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
+   * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=FALSE)
    * @throws BadRequestException
    * @throws InvalidArgumentException
    */
@@ -132,6 +133,7 @@ class ExercisesPresenter extends BasePresenter {
     $name = $req->getPost("name");
     $difficulty = $req->getPost("difficulty");
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
     $description = $req->getPost("description");
 
     /** @var Exercise $exercise */
@@ -152,6 +154,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setUpdatedAt(new \DateTime);
     $exercise->incrementVersion();
     $exercise->setDescription($description);
+    $exercise->setLocked($isLocked);
 
     // retrieve localizations and prepare some temp variables
     $localizedTexts = $req->getPost("localizedTexts");

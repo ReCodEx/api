@@ -117,9 +117,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/config", "ExercisesConfig:getConfiguration");
     $router[] = new PostRoute("$prefix/<id>/config", "ExercisesConfig:setConfiguration");
     $router[] = new PostRoute("$prefix/<id>/config/variables", "ExercisesConfig:getVariablesForExerciseConfig");
-    $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setLimits");
-    $router[] = new DeleteRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:removeLimits");
+    $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/limits", "ExercisesConfig:getLimits");
+    $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/limits", "ExercisesConfig:setLimits");
+    $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getHardwareGroupLimits");
+    $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setHardwareGroupLimits");
+    $router[] = new DeleteRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:removeHardwareGroupLimits");
 
     return $router;
   }

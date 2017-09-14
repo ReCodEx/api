@@ -1,21 +1,11 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Exceptions\SubmissionFailedException;
-use App\Helpers\BrokerProxy;
-use App\Helpers\FileServerProxy;
-use App\Helpers\MonitorConfig;
-use App\Helpers\BackendSubmitHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
-use App\Helpers\SubmissionHelper;
-use App\Model\Entity\Assignment;
-use App\Model\Repository\Assignments;
-use App\Model\Repository\Submissions;
+use App\Model\Entity\Exercise;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
-use App\Model\Entity\UploadedFile;
-use App\Model\Entity\Submission;
 use App\Exceptions\NotFoundException;
 
 
@@ -195,6 +185,29 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     // Make sure the assignment was persisted
     Assert::same($this->presenter->assignments->findOneBy(['id' => $result['payload']->id]), $result['payload']);
+  }
+
+  public function testCreateAssignmentFromLockedExercise()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Exercise $exercise */
+    $exercise = $this->presenter->exercises->findAll()[0];
+    $group = $this->presenter->groups->findAll()[0];
+
+    $exercise->setLocked(TRUE);
+    $this->presenter->exercises->flush();
+
+    $request = new Nette\Application\Request(
+      'V1:Assignments',
+      'POST',
+      ['action' => 'create'],
+      ['exerciseId' => $exercise->id, 'groupId' => $group->id]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\InvalidArgumentException::class);
   }
 
   public function testRemove()

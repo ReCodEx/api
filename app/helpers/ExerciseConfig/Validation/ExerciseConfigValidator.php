@@ -4,10 +4,13 @@ namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
+use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Repository\Pipelines;
@@ -29,13 +32,20 @@ class ExerciseConfigValidator {
   private $pipelines;
 
   /**
+   * @var Helper
+   */
+  private $helper;
+
+  /**
    * ExerciseConfigValidator constructor.
    * @param Pipelines $pipelines
    * @param Loader $loader
+   * @param Helper $helper
    */
-  public function __construct(Pipelines $pipelines, Loader $loader) {
+  public function __construct(Pipelines $pipelines, Loader $loader, Helper $helper) {
     $this->pipelines = $pipelines;
     $this->loader = $loader;
+    $this->helper = $helper;
   }
 
 
@@ -67,40 +77,57 @@ class ExerciseConfigValidator {
 
   /**
    * @param ExerciseConfig $config
-   * @throws ExerciseConfigException
+   * @param Exercise $exercise
    */
-  private function checkPipelines(ExerciseConfig $config) {
+  private function checkPipelines(ExerciseConfig $config, Exercise $exercise) {
     foreach ($config->getTests() as $test) {
       // check default pipelines
-      $this->checkPipelinesSection($test->getPipelines());
+      $this->checkPipelinesSection($test->getPipelines(), new VariablesTable());
 
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {
         // check pipelines in environment
-        $this->checkPipelinesSection($environment->getPipelines(), $envId);
+        $environmentEntity = $exercise->getExerciseEnvironmentConfigs()->filter(
+          function (ExerciseEnvironmentConfig $envConfig) use ($envId) {
+            return $envConfig->getRuntimeEnvironment()->getId() === $envId;
+          })->first();
+        $environmentVariables = $this->loader->loadVariablesTable($environmentEntity->getParsedVariablesTable());
+        $this->checkPipelinesSection($environment->getPipelines(), $environmentVariables, $envId);
       }
     }
   }
 
   /**
    * @param array $pipelines
+   * @param VariablesTable $environmentVariables
    * @param string $environment
    * @throws ExerciseConfigException
    */
-  private function checkPipelinesSection(array $pipelines, ?string $environment = NULL) {
+  private function checkPipelinesSection(array $pipelines,
+      VariablesTable $environmentVariables, ?string $environment = NULL) {
+
+    // load pipeline configurations from database
+    $pipelineConfigs = [];
+    foreach (array_keys($pipelines) as $pipelineId) {
+      $pipelineEntity = $this->pipelines->get($pipelineId);
+      if ($pipelineEntity === NULL) {
+        throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
+      }
+      $pipelineConfig = $pipelineEntity->getPipelineConfig();
+      $pipelineConfigs[$pipelineId] = $this->loader->loadPipeline($pipelineConfig->getParsedPipeline());
+    }
+
+    // find expected variables for each pipeline
+    $expectedVariables = $this->helper->getVariablesForExercise($pipelineConfigs, $environmentVariables);
+
     /**
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
      */
     foreach ($pipelines as $pipelineId => $pipelineVars) {
-      $pipelineEntity = $this->pipelines->get($pipelineId);
-      if ($pipelineEntity === NULL) {
-        throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
-      }
-
-      $pipeline = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-      $dataInBoxes = $pipeline->getDataInBoxes();
-      $inBoxNames = array_map(function (Box $box) { return $box->getName(); }, $dataInBoxes);
+      $expectedVariablesNames = array_map(function (Variable $variable) {
+        return $variable->getName();
+      }, $expectedVariables[$pipelineId]);
       $variables = $pipelineVars->getVariablesTable();
       $variableNames = $variables !== NULL
         ? array_map(function (Variable $variable) { return $variable->getName(); }, $variables->getAll())
@@ -108,7 +135,7 @@ class ExerciseConfigValidator {
 
       /** @var Variable $variable */
       foreach ($variableNames as $variable) {
-        if (!in_array($variable, $inBoxNames)) {
+        if (!in_array($variable, $expectedVariablesNames)) {
           throw new ExerciseConfigException(sprintf(
             "Variable '%s' is redundant in pipeline %s, environment %s",
             $variable,
@@ -117,16 +144,17 @@ class ExerciseConfigValidator {
           ));
         }
 
-        $inBoxNames = array_filter($inBoxNames, function (string $name) use ($variable) {
+        $expectedVariablesNames = array_filter($expectedVariablesNames, function (string $name) use ($variable) {
           return $name !== $variable;
         });
       }
 
-      if (count($inBoxNames) > 0) {
+      if (count($expectedVariablesNames) > 0) {
         throw new ExerciseConfigException(sprintf(
-          "Missing values for variables: %s (pipeline %s)",
-          implode(", ", $inBoxNames),
-          $pipelineId
+          "Missing values for variables: %s (pipeline %s, environment %s)",
+          implode(", ", $expectedVariablesNames),
+          $pipelineId,
+          $environment ?? "default"
         ));
       }
     }
@@ -139,7 +167,7 @@ class ExerciseConfigValidator {
    */
   public function validate(ExerciseConfig $config, Exercise $exercise) {
     $this->checkEnvironments($config, $exercise);
-    $this->checkPipelines($config);
+    $this->checkPipelines($config, $exercise);
   }
 
 }
