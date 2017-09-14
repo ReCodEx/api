@@ -141,10 +141,13 @@ class TestBaseCompiler extends Tester\TestCase
         "name" => "run",
         "type" => "elf-exec",
         "portsIn" => [
+          "args" => [ "type" => "string[]", "value" => "" ],
+          "stdin" => [ "type" => "file", "value" => "" ],
           "binary-file" => [ "type" => "file", "value" => "binary_file" ],
-          "input-file" => [ "type" => "file", "value" => "" ]
+          "input-files" => [ "type" => "file[]", "value" => "" ]
         ],
         "portsOut" => [
+          "stdout" => [ "type" => "file", "value" => "" ],
           "output-file" => [ "type" => "file", "value" => "actual_output" ]
         ]
       ],

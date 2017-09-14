@@ -44,9 +44,10 @@ App\Model\Entity\PipelineConfig:
                 - name: binary_file
                   type: file
                   value: a.out
-                - name: input_file
-                  type: file
-                  value: input.in
+                - name: input_files
+                  type: file[]
+                  value:
+                    - input.in
                 - name: expected_output
                   type: file
                   value: expected.out
@@ -78,13 +79,22 @@ App\Model\Entity\PipelineConfig:
                 - name: run
                   type: elf-exec
                   portsIn:
+                    args:
+                      type: string[]
+                      value: ""
+                    stdin:
+                      type: file
+                      value: ""
                     binary-file:
                       type: file
                       value: binary_file
-                    input-file:
-                      type: file
-                      value: input_file
+                    input-files:
+                      type: file[]
+                      value: input_files
                   portsOut:
+                    stdout:
+                      type: file
+                      value: ""
                     output-file:
                       type: file
                       value: actual_output

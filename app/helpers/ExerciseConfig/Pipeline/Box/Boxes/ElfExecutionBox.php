@@ -20,10 +20,11 @@ class ElfExecutionBox extends Box
   /** Type key */
   public static $ELF_EXEC_TYPE = "elf-exec";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
-  public static $INPUT_FILE_PORT_KEY = "input-file";
+  public static $BINARY_ARGS_PORT_KEY = "args";
+  public static $INPUT_FILES_PORT_KEY = "input-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
-  public static $STDOUT_FILE_PORT_KEY = "stdin";
+  public static $STDOUT_FILE_PORT_KEY = "stdout";
   public static $DEFAULT_NAME = "ELF Execution";
 
   private static $initialized = false;
@@ -37,12 +38,13 @@ class ElfExecutionBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        //new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
-        new Port((new PortMeta)->setName(self::$INPUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
+        new Port((new PortMeta)->setName(self::$BINARY_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)->setVariable("")),
+        new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
+        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable("")),
         new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        //new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
+        new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
         new Port((new PortMeta)->setName(self::$OUTPUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
     }
@@ -98,9 +100,20 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary(ConfigParams::$EVAL_DIR .
-      $this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue());
-    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE));
+    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    if ($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue() !== null) {
+      $task->setCommandArguments($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue()->getValue());
+    }
+
+    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
+    if ($this->getInputPort(self::$STDIN_FILE_PORT_KEY)->getVariableValue() !== null) {
+      $sandbox->setStdin($this->getInputPort(self::$STDIN_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    }
+    if ($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue() !== null) {
+      $sandbox->setStdout($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    }
+    $task->setSandboxConfig($sandbox);
+
     return [$task];
   }
 
