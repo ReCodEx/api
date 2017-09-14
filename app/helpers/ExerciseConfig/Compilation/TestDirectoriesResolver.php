@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Nette\Utils\Arrays;
 
 
 /**
@@ -61,26 +62,31 @@ class TestDirectoriesResolver {
   /**
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
-   * @param array $testIds
+   * @param Node[] $firstNodesOfTests indexed with testId
    * @return RootedTree
    */
-  private function addDirectories(RootedTree $tree, array $testIds): RootedTree {
-    $testIds = array_values(array_unique($testIds));
-    if (count($testIds) === 0) {
+  private function addDirectories(RootedTree $tree, array $firstNodesOfTests): RootedTree {
+    if (count($firstNodesOfTests) === 0) {
       return $tree;
     }
 
-    $lastMkdirNode = $this->createMkdirNode($testIds[0]);
-    $result = new RootedTree();
-    $result->addRootNode($lastMkdirNode);
-
     // go through all tests
-    for ($i = 1; $i < count($testIds); $i++) {
-      $testId =  $testIds[$i];
+    $lastMkdirNode = null;
+    $result = new RootedTree();
+    foreach ($firstNodesOfTests as $testId => $firstTestNode) {
+      if ($lastMkdirNode === null) {
+        $lastMkdirNode = $this->createMkdirNode($testId);
+        $result->addRootNode($lastMkdirNode);
+        $firstTestNode->addDependency($lastMkdirNode);
+        continue;
+      }
 
       $mkdirNode = $this->createMkdirNode($testId);
       $mkdirNode->addParent($lastMkdirNode);
       $lastMkdirNode->addChild($mkdirNode);
+
+      // set dependency for the first proper task of test
+      $firstTestNode->addDependency($mkdirNode);
 
       $lastMkdirNode = $mkdirNode;
     }
@@ -100,12 +106,17 @@ class TestDirectoriesResolver {
    * @return RootedTree
    */
   public function resolve(RootedTree $tree): RootedTree {
-    $testIds = [];
+    $firstNodesOfTests = [];
     $stack = array_reverse($tree->getRootNodes());
     while (!empty($stack)) {
       $current = array_pop($stack);
-      if ($current->getTestId()) {
-        $testIds[] = $current->getTestId();
+      $testId = $current->getTestId();
+      if ($testId !== null) {
+        // first nodes of each tests are saved and further dependencies
+        // on mkdir tasks are set on them
+        if (!array_key_exists($testId, $firstNodesOfTests)) {
+          $firstNodesOfTests[$testId] = $current;
+        }
       }
 
       // process current node
@@ -117,7 +128,7 @@ class TestDirectoriesResolver {
       }
     }
 
-    return $this->addDirectories($tree, $testIds);
+    return $this->addDirectories($tree, $firstNodesOfTests);
   }
 
 }

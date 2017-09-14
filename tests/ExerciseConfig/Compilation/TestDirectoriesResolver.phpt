@@ -90,6 +90,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     $mkdirA = $result->getRootNodes()[0];
     Assert::count(0, $mkdirA->getParents());
     Assert::count(1, $mkdirA->getChildren());
+    Assert::count(0, $mkdirA->getDependencies());
     Assert::equal("testA", $mkdirA->getTestId());
     Assert::equal("mkdir", $mkdirA->getBox()->getType());
     Assert::count(1, $mkdirA->getBox()->getInputPorts());
@@ -100,6 +101,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$mkdirA], $mkdirB->getParents());
     Assert::count(1, $mkdirB->getChildren());
     Assert::equal([$A], $mkdirB->getChildren());
+    Assert::count(0, $mkdirB->getDependencies());
     Assert::equal("testB", $mkdirB->getTestId());
     Assert::equal("mkdir", $mkdirB->getBox()->getType());
     Assert::count(1, $mkdirB->getBox()->getInputPorts());
@@ -109,6 +111,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$mkdirB], $A->getParents());
     Assert::count(2, $A->getChildren());
     Assert::equal([$B, $F], $A->getChildren());
+    Assert::count(0, $A->getDependencies());
     Assert::equal(null, $A->getTestId());
     Assert::equal("A", $A->getBox()->getName());
     Assert::count(1, $A->getBox()->getOutputPorts());
@@ -118,6 +121,8 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$A], $B->getParents());
     Assert::count(1, $B->getChildren());
     Assert::equal([$C], $B->getChildren());
+    Assert::count(1, $B->getDependencies());
+    Assert::equal([$mkdirA], $B->getDependencies());
     Assert::equal("testA", $B->getTestId());
     Assert::equal("B", $B->getBox()->getName());
     Assert::count(1, $B->getBox()->getOutputPorts());
@@ -127,6 +132,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$B], $C->getParents());
     Assert::count(2, $C->getChildren());
     Assert::equal([$D, $E], $C->getChildren());
+    Assert::count(0, $C->getDependencies());
     Assert::equal("testA", $C->getTestId());
     Assert::equal("C", $C->getBox()->getName());
     Assert::count(1, $C->getBox()->getOutputPorts());
@@ -135,6 +141,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(1, $D->getParents());
     Assert::equal([$C], $D->getParents());
     Assert::count(0, $D->getChildren());
+    Assert::count(0, $D->getDependencies());
     Assert::equal("testA", $D->getTestId());
     Assert::equal("D", $D->getBox()->getName());
     Assert::count(1, $D->getBox()->getOutputPorts());
@@ -143,6 +150,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(1, $E->getParents());
     Assert::equal([$C], $E->getParents());
     Assert::count(0, $E->getChildren());
+    Assert::count(0, $E->getDependencies());
     Assert::equal(null, $E->getTestId());
     Assert::equal("E", $E->getBox()->getName());
     Assert::count(1, $E->getBox()->getOutputPorts());
@@ -152,6 +160,8 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$A], $F->getParents());
     Assert::count(1, $F->getChildren());
     Assert::equal([$G], $F->getChildren());
+    Assert::count(1, $F->getDependencies());
+    Assert::equal([$mkdirB], $F->getDependencies());
     Assert::equal("testB", $F->getTestId());
     Assert::equal("F", $F->getBox()->getName());
     Assert::count(2, $F->getBox()->getOutputPorts());
@@ -161,6 +171,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(1, $G->getParents());
     Assert::equal([$F], $G->getParents());
     Assert::count(0, $G->getChildren());
+    Assert::count(0, $G->getDependencies());
     Assert::equal("testB", $G->getTestId());
     Assert::equal("G", $G->getBox()->getName());
     Assert::count(1, $G->getBox()->getOutputPorts());
