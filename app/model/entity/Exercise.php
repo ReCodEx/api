@@ -336,6 +336,19 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * Get exercise limits based on environment.
+   * @param RuntimeEnvironment $environment
+   * @return ExerciseLimits[]
+   */
+  public function getLimitsByEnvironment(RuntimeEnvironment $environment): array {
+    $result = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId();
+      });
+    return $result->getValues();
+  }
+
+  /**
    * Get exercise limits based on environment and hardware group.
    * @param RuntimeEnvironment $environment
    * @param HardwareGroup $hwGroup

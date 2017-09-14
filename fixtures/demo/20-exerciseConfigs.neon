@@ -3,18 +3,18 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @CRuntime
             - '''
-              - name: "source_file"
-                type: "file"
-                value: "source.cpp"
+              - name: "source_files"
+                type: "file[]"
+                value: "*.cpp"
               '''
             - @demoAdmin
     demoJavaEnvironmentConfig:
         __construct:
             - @Java8Runtime
             - '''
-              - name: "source_file"
-                type: "file"
-                value: "source.java"
+              - name: "source_files"
+                type: "file[]"
+                value: "*.java"
               '''
             - @demoAdmin
 

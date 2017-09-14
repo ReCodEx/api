@@ -162,42 +162,14 @@ class TestBaseCompiler extends Tester\TestCase
   private static $limits = [
     [ // groupA
       "testA" => [
-        "compilationPipeline" => [
-          "compilation" => [
-            "memory" => 123,
-            "wall-time" => 456.0
-          ]
-        ],
-        "testPipeline" => [
-          "run" => [
-            "memory" => 654,
-            "wall-time" => 321.0
-          ]
-        ]
-      ],
-      "testB" => [
-        "compilationPipeline" => [
-          "compilation" => [
-            "memory" => 789,
-            "wall-time" => 987.0
-          ]
-        ]
+        "memory" => 123,
+        "wall-time" => 456.0
       ]
     ],
     [ // groupB
       "testA" => [
-        "compilationPipeline" => [
-          "compilation" => [
-            "memory" => 123,
-            "wall-time" => 456.0
-          ]
-        ],
-        "testPipeline" => [
-          "run" => [
-            "memory" => 654,
-            "wall-time" => 321.0
-          ]
-        ]
+        "memory" => 654,
+        "wall-time" => 321.0
       ]
     ]
   ];
@@ -273,11 +245,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
-    Assert::count(2, $testACompilationTask->getSandboxConfig()->getLimitsArray());
-    Assert::equal(123, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
-    Assert::equal(456.0, $testACompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
-    Assert::equal(123, $testACompilationTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
-    Assert::equal(456.0, $testACompilationTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
+    Assert::count(0, $testACompilationTask->getSandboxConfig()->getLimitsArray());
 
     $testARunTask = $jobConfig->getTasks()[2];
     Assert::equal("testA.testPipeline.run.3", $testARunTask->getId());
@@ -291,8 +259,8 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::notEqual(null, $testARunTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
     Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
-    Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
-    Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
+    Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
+    Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
     Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
 
@@ -319,9 +287,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
-    Assert::count(1, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
-    Assert::equal(789, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
-    Assert::equal(987.0, $testBCompilationTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
+    Assert::count(0, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
   }
 
 }
