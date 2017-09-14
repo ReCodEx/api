@@ -16,6 +16,10 @@ use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\Submission;
 
+
+/**
+ * @testCase
+ */
 class TestSubmitPresenter extends Tester\TestCase
 {
   /** @var SubmitPresenter */

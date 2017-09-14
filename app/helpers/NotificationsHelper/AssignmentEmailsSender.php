@@ -4,6 +4,7 @@ namespace App\Helpers\Notifications;
 
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\User;
 use Latte;
 use Nette\Utils\Arrays;
 
@@ -30,7 +31,7 @@ class AssignmentEmailsSender {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "ReCodEx New Assignment Notification - ");
-    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline Is Behind the Corner - ");
+    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline is Near - ");
   }
 
   /**
@@ -48,6 +49,10 @@ class AssignmentEmailsSender {
         continue;
       }
       $recipients[] = $student->getEmail();
+    }
+
+    if (count($recipients) === 0) {
+      return TRUE;
     }
 
     // Send the mail
@@ -78,8 +83,7 @@ class AssignmentEmailsSender {
   }
 
   /**
-   * @todo: not used
-   * Deadline of assignment is nearby so users which did not submit any solution
+   * Deadline of assignment is nearby so users who did not submit any solution
    * should be alerted.
    * @param Assignment $assignment
    * @return bool
@@ -88,6 +92,8 @@ class AssignmentEmailsSender {
     $subject = $this->assignmentDeadlinePrefix . $assignment->getName();
 
     $recipients = array();
+
+    /** @var User $student */
     foreach ($assignment->getGroup()->getStudents() as $student) {
       if ($assignment->getLastSolution($student) ||
           !$student->getSettings()->getAssignmentDeadlineEmails()) {
@@ -97,6 +103,10 @@ class AssignmentEmailsSender {
       }
 
       $recipients[] = $student->getEmail();
+    }
+
+    if (count($recipients) === 0) {
+      return TRUE;
     }
 
     // Send the mail

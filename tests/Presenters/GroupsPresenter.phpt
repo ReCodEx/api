@@ -5,6 +5,10 @@ use App\Model\Entity\Group;
 use App\V1Module\Presenters\GroupsPresenter;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestGroupsPresenter extends Tester\TestCase
 {
   private $userLogin = "user2@example.com";

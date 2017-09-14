@@ -5,8 +5,13 @@ use App\Security\Identity;
 use App\Security\AccessToken;
 use App\Helpers\EmailVerificationHelper;
 use App\V1Module\Presenters\EmailVerificationPresenter;
+use App\V1Module\Presenters\GroupsPresenter;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestEmailVerificationPresenter extends Tester\TestCase
 {
   /** @var GroupsPresenter */

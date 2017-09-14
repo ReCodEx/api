@@ -86,8 +86,8 @@ class TestExerciseLimitsValidator extends Tester\TestCase
 
   public function testCorrect() {
     $limits = new ExerciseLimits();
-    $limits->addLimits("testA", "compilationPipeline", "compilation", Limits::create(2.0, 10, 1));
-    $limits->addLimits("testA", "compilationPipeline", "output", Limits::create(2.0, 10, 1));
+    $limits->addLimits("testA", Limits::create(2.0, 10, 1));
+    $limits->addLimits("testA", Limits::create(2.0, 10, 1));
 
     $environmentId = "envA";
 

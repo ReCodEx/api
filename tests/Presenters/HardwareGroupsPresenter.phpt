@@ -2,12 +2,14 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\V1Module\Presenters\HardwareGroupsPresenter;
+use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Entity\HardwareGroup;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestHardwareGroupsPresenter extends Tester\TestCase
 {

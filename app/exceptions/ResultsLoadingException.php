@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use Nette\Http\IResponse;
+
 /**
  * Thrown if results cannot be properly loaded/parsed from worker's
  * uploaded files.

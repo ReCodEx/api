@@ -5,7 +5,7 @@ namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 /**
- * Nice and easy purpose this exception trully has, sending wrong credentials
+ * Nice and easy purpose this exception truly has, sending wrong credentials
  * alerts to misguided users it must.
  */
 class WrongCredentialsException extends ApiException {

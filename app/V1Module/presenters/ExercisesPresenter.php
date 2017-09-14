@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\ExerciseConfig;
+use App\Model\Entity\Pipeline;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\Exercises;
@@ -18,6 +19,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use App\Security\ACL\IPipelinePermissions;
 use Exception;
 
 /**
@@ -70,6 +72,12 @@ class ExercisesPresenter extends BasePresenter {
   public $groupAcl;
 
   /**
+   * @var IPipelinePermissions
+   * @inject
+   */
+  public $pipelineAcl;
+
+  /**
    * Get a list of exercises with an optional filter
    * @GET
    * @param string $search text which will be searched in exercises names
@@ -116,6 +124,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
+   * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=FALSE)
    * @throws BadRequestException
    * @throws InvalidArgumentException
    */
@@ -124,6 +133,7 @@ class ExercisesPresenter extends BasePresenter {
     $name = $req->getPost("name");
     $difficulty = $req->getPost("difficulty");
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
     $description = $req->getPost("description");
 
     /** @var Exercise $exercise */
@@ -144,6 +154,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setUpdatedAt(new \DateTime);
     $exercise->incrementVersion();
     $exercise->setDescription($description);
+    $exercise->setLocked($isLocked);
 
     // retrieve localizations and prepare some temp variables
     $localizedTexts = $req->getPost("localizedTexts");
@@ -305,6 +316,25 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
+  }
+
+  /**
+   * Get all pipelines for an exercise.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetPipelines(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+
+    if (!$this->exerciseAcl->canViewPipelines($exercise)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $pipelines = $exercise->getPipelines()->filter(function (Pipeline $pipeline) {
+      return $this->pipelineAcl->canViewDetail($pipeline);
+    })->getValues();
+    $this->sendSuccessResponse($pipelines);
   }
 
   /**

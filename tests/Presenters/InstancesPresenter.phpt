@@ -11,6 +11,7 @@ use App\Model\Entity\Licence;
 
 /**
  * @httpCode any
+ * @testCase
  */
 class TestInstancesPresenter extends Tester\TestCase
 {

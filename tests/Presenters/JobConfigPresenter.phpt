@@ -6,6 +6,10 @@ use Tester\Assert;
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+
+/**
+ * @testCase
+ */
 class TestJobConfigPresenter extends Tester\TestCase
 {
   /** @var JobConfigPresenter */

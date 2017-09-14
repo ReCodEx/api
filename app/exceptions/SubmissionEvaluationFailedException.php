@@ -4,7 +4,7 @@ namespace App\Exceptions;
 use Nette\Http\IResponse;
 
 /**
- * Retrieving or evaluation of results of a submission failed misserably.
+ * Retrieving or evaluation of results of a submission failed miserably.
  */
 class SubmissionEvaluationFailedException extends ApiException {
   /**

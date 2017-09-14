@@ -140,8 +140,17 @@ class Exercise implements JsonSerializable
    */
   protected $isPublic;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isLocked;
+
   public function isPublic() {
     return $this->isPublic;
+  }
+
+  public function isLocked() {
+    return $this->isLocked;
   }
 
   /**
@@ -171,6 +180,17 @@ class Exercise implements JsonSerializable
   protected $exerciseConfig;
 
   /**
+   * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
+   */
+  protected $pipelines;
+
+  public function getPipelines() {
+    return $this->pipelines->filter(function (Pipeline $pipeline) {
+      return $pipeline->getDeletedAt() === NULL;
+    });
+  }
+
+  /**
    * Constructor
    * @param string $name
    * @param $version
@@ -182,20 +202,23 @@ class Exercise implements JsonSerializable
    * @param Collection $additionalFiles
    * @param Collection $exerciseLimits
    * @param Collection $exerciseEnvironmentConfigs
+   * @param Collection $pipelines
    * @param Exercise|null $exercise
+   * @param ExerciseConfig|null $exerciseConfig
    * @param User $user
    * @param Group|null $group
    * @param bool $isPublic
    * @param string $description
-   * @param ExerciseConfig|null $exerciseConfig
+   * @param bool $isLocked
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
-      Collection $exerciseEnvironmentConfigs, ?Exercise $exercise,
-      ?ExerciseConfig $exerciseConfig = NULL, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "") {
+      Collection $exerciseEnvironmentConfigs, Collection $pipelines,
+      ?Exercise $exercise, ?ExerciseConfig $exerciseConfig = NULL, User $user,
+      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
+      bool $isLocked = FALSE) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -207,6 +230,7 @@ class Exercise implements JsonSerializable
     $this->author = $user;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
+    $this->isLocked = $isLocked;
     $this->description = $description;
     $this->group = $group;
     $this->additionalFiles = $additionalFiles;
@@ -214,6 +238,7 @@ class Exercise implements JsonSerializable
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
     $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
+    $this->pipelines = $pipelines;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -221,6 +246,7 @@ class Exercise implements JsonSerializable
       "",
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -247,6 +273,7 @@ class Exercise implements JsonSerializable
       $exercise->additionalFiles,
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
+      $exercise->pipelines,
       $exercise,
       $exercise->exerciseConfig,
       $user,
@@ -325,6 +352,19 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * Get exercise limits based on environment.
+   * @param RuntimeEnvironment $environment
+   * @return ExerciseLimits[]
+   */
+  public function getLimitsByEnvironment(RuntimeEnvironment $environment): array {
+    $result = $this->exerciseLimits->filter(
+      function (ExerciseLimits $exerciseLimits) use ($environment) {
+        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId();
+      });
+    return $result->getValues();
+  }
+
+  /**
    * Get exercise limits based on environment and hardware group.
    * @param RuntimeEnvironment $environment
    * @param HardwareGroup $hwGroup
@@ -384,10 +424,14 @@ class Exercise implements JsonSerializable
       "authorId" => $this->author->getId(),
       "groupId" => $this->group ? $this->group->getId() : NULL,
       "isPublic" => $this->isPublic,
+      "isLocked" => $this->isLocked,
       "description" => $this->description,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];
   }
 
+  public function setLocked($value = TRUE) {
+    $this->isLocked = $value;
+  }
 }

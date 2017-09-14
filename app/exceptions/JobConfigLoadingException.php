@@ -2,9 +2,11 @@
 
 namespace App\Exceptions;
 
+use Nette\Http\IResponse;
+
 /**
  * General exception used in all job configuration helpers in case
- * of loading error. Ussually concerning bad structure or bad value type.
+ * of loading error. Usually concerning bad structure or bad value type.
  */
 class JobConfigLoadingException extends ApiException {
   /**
@@ -12,6 +14,6 @@ class JobConfigLoadingException extends ApiException {
    * @param string $msg description
    */
   public function __construct(string $msg = 'Please contact your supervisor') {
-    parent::__construct("Job configuration file cannot be opened or parsed - $msg");
+    parent::__construct("Job configuration file cannot be opened or parsed - $msg", IResponse::S400_BAD_REQUEST);
   }
 }

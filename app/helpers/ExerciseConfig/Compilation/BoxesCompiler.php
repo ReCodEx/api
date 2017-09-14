@@ -5,8 +5,8 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -39,16 +39,14 @@ class BoxesCompiler {
    * @param ExerciseLimits[] $exerciseLimits indexed by hwgroup
    */
   private function setLimits(Node $node, Task $task, array $exerciseLimits) {
-    if (!$task->getSandboxConfig()) {
+    if (!$task->getSandboxConfig() ||
+        $task->getType() !== TaskType::$EXECUTION) {
       return;
     }
 
-    $pipeline = $node->getPipelineId();
     $test = $node->getTestId();
-    $box = $node->getBox()->getName();
-
     foreach ($exerciseLimits as $hwGroup => $hwGroupLimits) {
-      $limits = $hwGroupLimits->getLimits($test, $pipeline, $box);
+      $limits = $hwGroupLimits->getLimits($test);
       if (!$limits) {
         continue;
       }
