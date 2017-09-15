@@ -33,16 +33,16 @@ class TestStatsInterpretation extends Tester\TestCase
 
   public function testTimeUnused() {
     $stats = new Stats(self::$statsSample);
-    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.1 ]));
+    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(TRUE, $interpretation->isTimeOK());
-    Assert::equal(0.037 / 0.1, $interpretation->getUsedTimeRatio());
+    Assert::equal(0.092 / 0.1, $interpretation->getUsedTimeRatio());
   }
 
   public function testTimeSame() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 0.1 ]));
-    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.1 ]));
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 0.1 ]));
+    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(TRUE, $interpretation->isTimeOK());
@@ -50,8 +50,8 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testTimeExceeded() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 0.1 ]));
-    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.037 ]));
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 0.1 ]));
+    $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.037 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(FALSE, $interpretation->isTimeOK());
@@ -86,32 +86,32 @@ class TestStatsInterpretation extends Tester\TestCase
   }
 
   public function testBothOK() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 1, "memory" => 64 ]));
-    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 1, "memory" => 64 ]));
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(TRUE, $interpretation->doesMeetAllCriteria());
   }
 
   public function testBothExceeded() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 3, "memory" => 2560 ]));
-    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 3, "memory" => 2560 ]));
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
   }
 
   public function testOnlyTimeExceeded() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 3, "memory" => 1 ]));
-    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 3, "memory" => 1 ]));
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
   }
 
   public function testOnlyMemoryExceeded() {
-    $stats = new Stats(array_merge(self::$statsSample, [ "time" => 1, "memory" => 2560 ]));
-    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
+    $stats = new Stats(array_merge(self::$statsSample, [ "wall-time" => 1, "memory" => 2560 ]));
+    $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
     Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());

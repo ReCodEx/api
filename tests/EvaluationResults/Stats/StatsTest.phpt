@@ -23,12 +23,12 @@ class TestStats extends Tester\TestCase
     $stats = new Stats(self::$sample);
     Assert::equal(0, $stats->getExitCode());
     Assert::equal(6032, $stats->getUsedMemory());
-    Assert::equal(0.037, $stats->getUsedTime());
+    Assert::equal(0.092, $stats->getUsedTime());
     Assert::equal("This is a random message", $stats->getMessage());
   }
 
   public function testTimeLimit() {
-    $stats = new Stats(array_merge(self::$sample, [ "time" => 0.5 ]));
+    $stats = new Stats(array_merge(self::$sample, [ "wall-time" => 0.5 ]));
     Assert::equal(0.5, $stats->getUsedTime());
     Assert::equal(TRUE, $stats->isTimeOK(1));
     Assert::equal(FALSE, $stats->isTimeOK(0.4));
@@ -40,31 +40,31 @@ class TestStats extends Tester\TestCase
     Assert::equal(TRUE, $stats->isMemoryOK(200));
     Assert::equal(FALSE, $stats->isMemoryOK(50));
   }
-  
+
   public function testSerialization() {
     $stats = new Stats(self::$sample);
     $json = json_encode(self::$sample);
     Assert::equal($json, (string) $stats);
   }
-  
+
   public function testMissingExitcode() {
     $data = self::$sample;
     unset($data["exitcode"]);
     Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'exitcode' field.");
   }
-  
+
   public function testMissingMemory() {
     $data = self::$sample;
     unset($data["memory"]);
     Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'memory' field.");
   }
-  
+
   public function testMissingTime() {
     $data = self::$sample;
-    unset($data["time"]);
-    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'time' field.");
+    unset($data["wall-time"]);
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'wall-time' field.");
   }
-  
+
   public function testMissingMessage() {
     $data = self::$sample;
     unset($data["message"]);
