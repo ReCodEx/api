@@ -12,7 +12,7 @@ use Nette\Utils\Json;
 class Stats implements IStats {
   const EXITCODE_KEY = "exitcode";
   const MEMORY_KEY = "memory";
-  const TIME_WALL_KEY = "time-wall";
+  const TIME_WALL_KEY = "wall-time";
   const MESSAGE_KEY = "message";
   const KILLED_KEY = "killed";
   const OUTPUT_KEY = "output";
