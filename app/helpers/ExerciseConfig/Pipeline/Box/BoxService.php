@@ -33,7 +33,8 @@ class BoxService
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
-      McsCompilationBox::$MCS_TYPE => McsCompilationBox::class
+      McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
+      MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class
     ];
   }
 

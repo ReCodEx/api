@@ -36,7 +36,7 @@ class TestAccessManager extends Tester\TestCase
     $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
     $payload = [ "sub" => "123", "exp" => time() + 123 ];
     $token = JWT::encode($payload, $verificationKey . "!!!", "HS256");
-    
+
     Assert::exception(function() use ($manager, $token) {
       $manager->decodeToken($token);
     }, InvalidAccessTokenException::CLASS, "Access token '$token' is not valid.");
@@ -48,7 +48,7 @@ class TestAccessManager extends Tester\TestCase
     $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
     $payload = [ "sub" => "123", "exp" => time() - 123, "leeway" => 0 ];
     $token = JWT::encode($payload, $verificationKey, "HS256");
-    
+
     Assert::exception(function() use ($manager, $token) {
       $manager->decodeToken($token);
     }, InvalidAccessTokenException::CLASS, "Access token '$token' is not valid.");
@@ -88,7 +88,7 @@ class TestAccessManager extends Tester\TestCase
       "audience" => "Y",
       "expiration" => 123
     ], $users);
-    
+
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
     $token = $manager->issueToken($user);
@@ -107,7 +107,7 @@ class TestAccessManager extends Tester\TestCase
     $users = Mockery::mock(App\Model\Repository\Users::class);
     $verificationKey = "abc";
     $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
-    
+
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
     $token = $manager->issueToken($user, [ "x", "y" ]);
@@ -120,7 +120,7 @@ class TestAccessManager extends Tester\TestCase
     $users = Mockery::mock(App\Model\Repository\Users::class);
     $verificationKey = "abc";
     $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
-    
+
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
     $token = $manager->issueToken($user, NULL, 30);

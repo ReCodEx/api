@@ -8,6 +8,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Model\Entity\TestResult;
 
+/**
+ * @testCase
+ */
 class TestSimpleScoreCalculator extends Tester\TestCase
 {
   private $scoreConfig = "testWeights:
@@ -32,7 +35,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     }
 
     return $scores;
-  } 
+  }
 
   private function isScoreConfigValid($scoreConfig) {
     return SimpleScoreCalculator::isScoreConfigValid($scoreConfig);

@@ -28,6 +28,10 @@ use App\Exceptions\UploadedFileException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\WrongHttpMethodException;
 
+
+/**
+ * @testCase
+ */
 class TestExceptions extends Tester\TestCase
 {
   public function testBadRequestException() {

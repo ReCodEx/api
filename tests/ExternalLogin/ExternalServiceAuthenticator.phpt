@@ -14,6 +14,10 @@ use Tester\Assert;
 
 include "../bootstrap.php";
 
+
+/**
+ * @testCase
+ */
 class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     /** @var  Nette\DI\Container */
