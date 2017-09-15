@@ -38,7 +38,7 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function isTimeOK(): bool {
-    return $this->limits === null || $this->stats->isTimeOK($this->limits->getTimeLimit());
+    return $this->limits === null || $this->stats->isTimeOK($this->limits->getWallTime());
   }
 
   /**
@@ -54,7 +54,7 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedMemoryRatio(): float {
-    if ($this->limits === null) {
+    if ($this->limits === null || $this->limits->getMemoryLimit() === 0) {
       return 0;
     }
     return floatval($this->stats->getUsedMemory()) / floatval($this->limits->getMemoryLimit());
@@ -65,10 +65,10 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedTimeRatio(): float {
-    if ($this->limits === null) {
+    if ($this->limits === null || $this->limits->getWallTime() === 0.0) {
       return 0;
     }
-    return floatval($this->stats->getUsedTime()) / floatval($this->limits->getTimeLimit());
+    return floatval($this->stats->getUsedTime()) / floatval($this->limits->getWallTime());
   }
 
 }

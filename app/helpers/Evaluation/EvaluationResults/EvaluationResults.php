@@ -35,8 +35,9 @@ class EvaluationResults {
 
   /**
    * Constructor
-   * @param array      $rawResults  Raw results of evaluation from backend (just parsed YAML)
-   * @param JobConfig  $config      Configuration of this job
+   * @param array $rawResults Raw results of evaluation from backend (just parsed YAML)
+   * @param JobConfig $config Configuration of this job
+   * @throws ResultsLoadingException
    */
   public function __construct(array $rawResults, JobConfig $config) {
     if (!isset($rawResults[self::JOB_ID_KEY])) {
