@@ -21,7 +21,7 @@ class McsCompilationBox extends Box
   public static $MCS_TYPE = "mcs";
   public static $MCS_BINARY = "/usr/bin/mcs";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
   public static $DEFAULT_NAME = "Mono Compilation";
 
   private static $initialized = false;
@@ -38,7 +38,7 @@ class McsCompilationBox extends Box
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
     }
   }
@@ -101,7 +101,7 @@ class McsCompilationBox extends Box
         $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         [
-          "-out:" . $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+          "-out:" . $this->getOutputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )
