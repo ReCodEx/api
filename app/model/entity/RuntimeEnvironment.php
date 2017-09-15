@@ -77,7 +77,7 @@ class RuntimeEnvironment implements JsonSerializable
    */
   public function getParsedVariables(): array {
     try {
-      return Yaml::parse($this->extensions);
+      return Yaml::parse($this->defaultVariables);
     } catch (ParseException $e) {
       throw new ApiException("Yaml cannot be parsed: " . $e->getMessage());
     }
