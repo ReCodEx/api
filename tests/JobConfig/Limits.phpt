@@ -7,7 +7,6 @@ use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\UndefinedLimits;
 use Symfony\Component\Yaml\Yaml;
 
-// TODO: finish tests
 class TestLimits extends Tester\TestCase
 {
   static $sample = [
@@ -33,7 +32,6 @@ class TestLimits extends Tester\TestCase
     "disk-size" => 7,
     "disk-files" => 8,
     "environ-variable" => [ "varA", "varB", "varC" ],
-    "chdir" => "/change/dir",
     "bound-directories" => [
       [ "src" => "/sourceA", "dst" => "/destinationA", "mode" => "RO" ],
       [ "src" => "/sourceB", "dst" => "/destinationB", "mode" => "MAYBE" ],
@@ -101,7 +99,6 @@ class TestLimits extends Tester\TestCase
     Assert::equal(7, $limits->getDiskSize());
     Assert::equal(8, $limits->getDiskFiles());
     Assert::isEqual([ "varA", "varB", "varC" ], $limits->getEnvironVariables());
-    Assert::equal("/change/dir", $limits->getChdir());
     Assert::count(2, $limits->getBoundDirectories());
     Assert::isEqual(self::$optional, $limits->toArray());
   }

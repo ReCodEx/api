@@ -5,7 +5,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -66,13 +66,19 @@ class BoxesCompiler {
       RootedTree $rootedTree, array $limits) {
     // stack for DFS, better stay in order by reversing original root nodes
     $stack = array_reverse($rootedTree->getRootNodes());
-    $order = 1;
+    $order = 65536; // if there is more tasks this will fail spectacularly
 
     // main processing loop
     while (!empty($stack)) {
-      $current = array_pop($stack);
+      $current = array_pop($stack); /** @var Node $current */
       // compile box into set of tasks
       $tasks = $current->getBox()->compile();
+
+      // construct dependencies
+      $dependencies = array();
+      foreach ($current->getDependencies() as $dependency) {
+        $dependencies = array_merge($dependencies, $dependency->getTaskIds());
+      }
 
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
@@ -84,14 +90,18 @@ class BoxesCompiler {
         // set global order/priority
         $task->setPriority($order);
         // construct and set dependencies
-        $dependencies = array();
-        foreach ($current->getParents() as $parent) {
-          $dependencies = array_merge($dependencies, $parent->getTaskIds());
-        }
         $task->setDependencies($dependencies);
-        // set identification of test, if any
+
+        // identification of test is present in node
         if (!empty($current->getTestId())) {
-          $task->setTestId($current->getTestId());
+          $testId = $current->getTestId();
+          // set identification of test to task
+          $task->setTestId($testId);
+          // change evaluation directory to the one which belongs to test
+          $sandbox = $task->getSandboxConfig();
+          if ($sandbox) {
+            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $testId);
+          }
         }
 
         // if the task is external then set limits to it
@@ -101,7 +111,7 @@ class BoxesCompiler {
         $jobConfig->addTask($task);
 
         // update helper vars
-        $order++;
+        $order--;
       }
 
       // add children of current node into stack

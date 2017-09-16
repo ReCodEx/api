@@ -158,11 +158,8 @@ class AssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."); // @todo better exception
     }
 
+    $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
-    if ($assignment->isPublic() === false && $isPublic === true) {
-      // assignment is moving from non-public to public, send notification to students
-      $this->assignmentEmailsSender->assignmentCreated($assignment);
-    }
 
     $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
@@ -179,6 +176,11 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
     $threshold = $req->getPost("pointsPercentualThreshold") !== NULL ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
     $assignment->setPointsPercentualThreshold($threshold);
+
+    if ($wasPublic === false && $isPublic === true) {
+      // assignment is moving from non-public to public, send notification to students
+      $this->assignmentEmailsSender->assignmentCreated($assignment);
+    }
 
     // retrieve localizations and prepare some temp variables
     $localizedTexts = $req->getPost("localizedTexts");

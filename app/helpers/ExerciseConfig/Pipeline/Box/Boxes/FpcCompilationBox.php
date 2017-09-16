@@ -13,16 +13,16 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents recodex-judge-normal executable.
+ * Box which represents fpc compilation unit.
  */
-class JudgeNormalBox extends Box
+class FpcCompilationBox extends Box
 {
   /** Type key */
-  public static $JUDGE_NORMAL_TYPE = "judge-normal";
-  public static $JUDGE_NORMAL_BINARY = "recodex-judge-normal";
-  public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
-  public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
-  public static $DEFAULT_NAME = "ReCodEx Judge Normal";
+  public static $FPC_TYPE = "fpc";
+  public static $FPC_BINARY = "/usr/bin/fpc";
+  public static $SOURCE_FILE_PORT_KEY = "source-file";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $DEFAULT_NAME = "FreePascal Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -35,10 +35,11 @@ class JudgeNormalBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
-        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
-      self::$defaultOutputPorts = array();
+      self::$defaultOutputPorts = array(
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+      );
     }
   }
 
@@ -56,7 +57,7 @@ class JudgeNormalBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$JUDGE_NORMAL_TYPE;
+    return self::$FPC_TYPE;
   }
 
   /**
@@ -85,23 +86,26 @@ class JudgeNormalBox extends Box
     return self::$DEFAULT_NAME;
   }
 
+
   /**
    * Compile box into set of low-level tasks.
    * @return Task[]
    */
   public function compile(): array {
     $task = new Task();
-    $task->setType(TaskType::$EVALUATION);
-    $task->setCommandBinary(ConfigParams::$JUDGES_DIR . self::$JUDGE_NORMAL_BINARY);
-    $task->setCommandArguments([
-      $this->getInputPort(self::$EXPECTED_OUTPUT_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR),
-      $this->getInputPort(self::$ACTUAL_OUTPUT_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR)
-    ]);
-
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
-    $sandbox->setOutput(true);
-    $task->setSandboxConfig($sandbox);
-
+    $task->setType(TaskType::$INITIATION);
+    $task->setFatalFailure(true);
+    $task->setCommandBinary(self::$FPC_BINARY);
+    $task->setCommandArguments(
+      [
+        $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+        "-o" . $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+      ]
+    );
+    $task->setSandboxConfig((new SandboxConfig)
+      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];
   }
 

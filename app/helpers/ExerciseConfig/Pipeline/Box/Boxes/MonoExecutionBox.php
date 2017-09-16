@@ -13,19 +13,21 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents execution of custom compiled program in ELF format.
+ * Box which represents execution of assembly in C# which will be executed with
+ * mono.
  */
-class ElfExecutionBox extends Box
+class MonoExecutionBox extends Box
 {
   /** Type key */
-  public static $ELF_EXEC_TYPE = "elf-exec";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $MONO_EXEC_TYPE = "mono-exec";
+  public static $MONO_BINARY = "/usr/bin/mono";
+  public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
   public static $BINARY_ARGS_PORT_KEY = "args";
   public static $INPUT_FILES_PORT_KEY = "input-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
-  public static $DEFAULT_NAME = "ELF Execution";
+  public static $DEFAULT_NAME = "Mono Execution";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -41,7 +43,7 @@ class ElfExecutionBox extends Box
         new Port((new PortMeta)->setName(self::$BINARY_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)->setVariable("")),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
         new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable("")),
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable("")),
@@ -64,7 +66,7 @@ class ElfExecutionBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$ELF_EXEC_TYPE;
+    return self::$MONO_EXEC_TYPE;
   }
 
   /**
@@ -100,10 +102,13 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    $task->setCommandBinary(self::$MONO_BINARY);
+
+    $args = [$this->getInputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR)];
     if ($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $task->setCommandArguments($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue()->getValue());
+      $args = array_merge($args, $this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue()->getValue());
     }
+    $task->setCommandArguments($args);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
     if ($this->getInputPort(self::$STDIN_FILE_PORT_KEY)->getVariableValue() !== null) {

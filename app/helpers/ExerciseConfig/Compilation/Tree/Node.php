@@ -50,15 +50,23 @@ class Node {
    */
   private $children = array();
 
+  /**
+   * Dependencies of this node.
+   * @var Node[]
+   */
+  private $dependencies = array();
+
 
   /**
    * Node constructor.
    * @param PortNode $node
    */
-  public function __construct(PortNode $node) {
-    $this->box = $node->getBox();
-    $this->pipelineId = $node->getPipelineId();
-    $this->testId = $node->getTestId();
+  public function __construct(PortNode $node = null) {
+    if ($node) {
+      $this->box = $node->getBox();
+      $this->pipelineId = $node->getPipelineId();
+      $this->testId = $node->getTestId();
+    }
   }
 
   /**
@@ -67,6 +75,16 @@ class Node {
    */
   public function getBox(): Box {
     return $this->box;
+  }
+
+  /**
+   * Set box associated with this node.
+   * @param Box $box
+   * @return Node
+   */
+  public function setBox(Box $box): Node {
+    $this->box = $box;
+    return $this;
   }
 
   /**
@@ -80,9 +98,11 @@ class Node {
   /**
    * Set test identification of box.
    * @param string|null $testId
+   * @return Node
    */
-  public function setTestId(?string $testId) {
+  public function setTestId(?string $testId): Node {
     $this->testId = $testId;
+    return $this;
   }
 
   /**
@@ -96,9 +116,11 @@ class Node {
   /**
    * Set pipeline identification of box.
    * @param string|null $pipelineId
+   * @return Node
    */
-  public function setPipelineId(?string $pipelineId) {
+  public function setPipelineId(?string $pipelineId): Node {
     $this->pipelineId = $pipelineId;
+    return $this;
   }
 
   /**
@@ -177,6 +199,22 @@ class Node {
     if(($key = array_search($child, $this->children)) !== false){
       unset($this->children[$key]);
     }
+  }
+
+  /**
+   * Get dependencies of this node.
+   * @return Node[]
+   */
+  public function getDependencies(): array {
+    return $this->dependencies;
+  }
+
+  /**
+   * Add dependency of this node.
+   * @param Node $dependency
+   */
+  public function addDependency(Node $dependency) {
+    $this->dependencies[] = $dependency;
   }
 
 }

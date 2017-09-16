@@ -44,11 +44,13 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    Assert::count(0, $BNode->getChildren());
   }
 
   /**
@@ -72,13 +74,16 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$BNode], $CNode->getDependencies());
+    Assert::count(0, $CNode->getChildren());
   }
 
   /**
@@ -104,13 +109,16 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $BNode = $result->getRootNodes()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([], $BNode->getDependencies());
+    $ANode = $BNode->getChildren()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $CNode = $ANode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode, $BNode], $CNode->getDependencies());
+    Assert::count(0, $CNode->getChildren());
   }
 
   /**
@@ -136,13 +144,16 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    Assert::count(0, $CNode->getChildren());
   }
 
   /**
@@ -173,15 +184,19 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    $DNode = $CNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$CNode], $DNode->getDependencies());
+    Assert::count(0, $DNode->getChildren());
   }
 
   /**
@@ -215,17 +230,22 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($E->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    $DNode = $CNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$CNode], $DNode->getDependencies());
+    $ENode = $DNode->getChildren()[0];
+    Assert::same($E->getBox(), $ENode->getBox());
+    Assert::equal([$CNode], $ENode->getDependencies());
+    Assert::count(0, $ENode->getChildren());
   }
 
   /**
@@ -259,17 +279,22 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($E->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$BNode], $CNode->getDependencies());
+    $DNode = $CNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$BNode], $DNode->getDependencies());
+    $ENode = $DNode->getChildren()[0];
+    Assert::same($E->getBox(), $ENode->getBox());
+    Assert::equal([$BNode], $ENode->getDependencies());
+    Assert::count(0, $ENode->getChildren());
   }
 
   /**
@@ -302,15 +327,19 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    $DNode = $CNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$BNode, $CNode], $DNode->getDependencies());
+    Assert::count(0, $DNode->getChildren());
   }
 
   /**
@@ -346,17 +375,22 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($E->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $CNode = $BNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    $DNode = $CNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$BNode, $CNode], $DNode->getDependencies());
+    $ENode = $DNode->getChildren()[0];
+    Assert::same($E->getBox(), $ENode->getBox());
+    Assert::equal([$CNode], $ENode->getDependencies());
+    Assert::count(0, $ENode->getChildren());
   }
 
   /**
@@ -390,17 +424,22 @@ class TestBoxesSorter extends Tester\TestCase
     $result = $this->sorter->sort($treeArr)[0];
 
     // *** check order of nodes
-    $current = $result->getRootNodes()[0];
-    Assert::same($A->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($B->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($D->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($C->getBox(), $current->getBox());
-    $current = $current->getChildren()[0];
-    Assert::same($E->getBox(), $current->getBox());
-    Assert::count(0, $current->getChildren());
+    $ANode = $result->getRootNodes()[0];
+    Assert::same($A->getBox(), $ANode->getBox());
+    Assert::equal([], $ANode->getDependencies());
+    $BNode = $ANode->getChildren()[0];
+    Assert::same($B->getBox(), $BNode->getBox());
+    Assert::equal([$ANode], $BNode->getDependencies());
+    $DNode = $BNode->getChildren()[0];
+    Assert::same($D->getBox(), $DNode->getBox());
+    Assert::equal([$BNode], $DNode->getDependencies());
+    $CNode = $DNode->getChildren()[0];
+    Assert::same($C->getBox(), $CNode->getBox());
+    Assert::equal([$ANode], $CNode->getDependencies());
+    $ENode = $CNode->getChildren()[0];
+    Assert::same($E->getBox(), $ENode->getBox());
+    Assert::equal([$CNode], $ENode->getDependencies());
+    Assert::count(0, $ENode->getChildren());
   }
 
   /**

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -19,7 +20,7 @@ class GccCompilationBox extends Box
   /** Type key */
   public static $GCC_TYPE = "gcc";
   public static $GCC_BINARY = "/usr/bin/gcc";
-  public static $SOURCE_FILE_PORT_KEY = "source-files";
+  public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "GCC Compilation";
 
@@ -34,7 +35,7 @@ class GccCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
@@ -93,17 +94,21 @@ class GccCompilationBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$INITIATION);
+    $task->setFatalFailure(true);
     $task->setCommandBinary(self::$GCC_BINARY);
     $task->setCommandArguments(
       array_merge(
-        $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()->getValue(),
+        $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         [
           "-o",
-          $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getValue()
+          $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );
-    $task->setSandboxConfig((new SandboxConfig)->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
+    $task->setSandboxConfig((new SandboxConfig)
+      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];
   }
 

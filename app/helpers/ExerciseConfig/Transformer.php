@@ -187,7 +187,7 @@ class Transformer {
         $testId = $test["name"];
 
         if (!in_array($testId, $testIds)) {
-          throw new ExerciseConfigException("Test $testId was not specified in defaults");
+          throw new ExerciseConfigException("Test '$testId' was not specified in defaults");
         }
 
         $environmentConfig = array();
@@ -207,7 +207,7 @@ class Transformer {
       }
 
       if ($testsCount !== $envTestsCount) {
-        throw new ExerciseConfigException("Tests differs from defaults in environment $environmentId");
+        throw new ExerciseConfigException("Tests differs from defaults in environment '$environmentId'");
       }
     }
 

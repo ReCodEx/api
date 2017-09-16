@@ -15,6 +15,7 @@ class ExecutionTaskResult extends TaskResult {
   /**
    * Constructor
    * @param array $data Raw result data
+   * @throws ResultsLoadingException
    */
   public function __construct(array $data) {
     parent::__construct($data);

@@ -20,10 +20,12 @@ class SandboxConfig {
   const STDOUT_KEY = "stdout";
   /** Stderr config key */
   const STDERR_KEY = "stderr";
-  /** Limits collection key */
-  const LIMITS_KEY = "limits";
   /** Output config key */
   const OUTPUT_KEY = "output";
+  /** Change directory key */
+  const CHDIR_KEY = "chdir";
+  /** Limits collection key */
+  const LIMITS_KEY = "limits";
 
   /** @var string Sandbox name */
   private $name = "";
@@ -35,6 +37,8 @@ class SandboxConfig {
   private $stderr = NULL;
   /** @var bool Output from stdout and stderr will be written to result yaml */
   private $output = false;
+  /** @var string|NULL Change directory */
+  protected $chdir = NULL;
   /** @var array List of limits */
   private $limits = [];
   /** @var array Additional data */
@@ -131,6 +135,24 @@ class SandboxConfig {
   }
 
   /**
+   * Get directory in which sandboxed program will be executed.
+   * @return string|NULL
+   */
+  public function getChdir() {
+    return $this->chdir;
+  }
+
+  /**
+   * Set directory to which sandbox will change working directory.
+   * @param string $chdir working directory
+   * @return $this
+   */
+  public function setChdir($chdir) {
+    $this->chdir = $chdir;
+    return $this;
+  }
+
+  /**
    * Gets limits as array.
    * @return Limits[]
    */
@@ -209,6 +231,7 @@ class SandboxConfig {
     if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
     if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
     if ($this->output) { $data[self::OUTPUT_KEY] = $this->output; }
+    if (!empty($this->chdir)) { $data[self::CHDIR_KEY] = $this->chdir; }
 
     if (!empty($this->limits)) {
       $data[self::LIMITS_KEY] = [];

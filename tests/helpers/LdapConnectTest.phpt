@@ -10,7 +10,7 @@ use App\Exceptions\LdapConnectException;
 
 class LdapConnectTest extends Tester\TestCase
 {
-  
+
   static $config = [
     'hostname' => "ldap.cuni.cz",
     'base_dn' => "ou=people,dc=cuni,dc=cz",

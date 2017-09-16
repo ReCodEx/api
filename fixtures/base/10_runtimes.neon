@@ -21,8 +21,8 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "Pascal compiled with FreePascal"
             - '''
-              - name: "source_files"
-                type: "file[]"
+              - name: "source_file"
+                type: "file"
                 value: "*.pas"
               '''
     CPP11Runtime:

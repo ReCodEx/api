@@ -12,7 +12,7 @@ use Nette\Utils\Json;
 class Stats implements IStats {
   const EXITCODE_KEY = "exitcode";
   const MEMORY_KEY = "memory";
-  const TIME_KEY = "time";
+  const TIME_WALL_KEY = "wall-time";
   const MESSAGE_KEY = "message";
   const KILLED_KEY = "killed";
   const OUTPUT_KEY = "output";
@@ -53,10 +53,10 @@ class Stats implements IStats {
     }
     $this->memory = $data[self::MEMORY_KEY];
 
-    if (!isset($data[self::TIME_KEY])) {
-      throw new ResultsLoadingException("Sandbox results do not include the '" . self::TIME_KEY . "' field.");
+    if (!isset($data[self::TIME_WALL_KEY])) {
+      throw new ResultsLoadingException("Sandbox results do not include the '" . self::TIME_WALL_KEY . "' field.");
     }
-    $this->time = $data[self::TIME_KEY];
+    $this->time = $data[self::TIME_WALL_KEY];
 
     if (!isset($data[self::MESSAGE_KEY])) {
       throw new ResultsLoadingException("Sandbox results do not include the '" . self::MESSAGE_KEY ."' field.");
@@ -75,7 +75,7 @@ class Stats implements IStats {
    * @return boolean The result
    */
   public function doesMeetAllCriteria(Limits $limits): bool {
-    return $this->isTimeOK($limits->getTimeLimit()) && $this->isMemoryOK($limits->getMemoryLimit());
+    return $this->isTimeOK($limits->getWallTime()) && $this->isMemoryOK($limits->getMemoryLimit());
   }
 
   /**
@@ -88,16 +88,19 @@ class Stats implements IStats {
 
   /**
    * Compares the stats to the time limit.
-   * @param  int     $secondsLimit Limiting amout of milliseconds
-   * @return boolean The result
+   * @param float|int $secondsLimit Limiting amount of milliseconds
+   * @return bool The result
    */
   public function isTimeOK(float $secondsLimit): bool {
+    if ($secondsLimit === 0.0) {
+      return true;
+    }
     return $this->getUsedTime() <= $secondsLimit;
   }
 
   /**
    * Get memory used by the program
-   * @return int The ammout of memory the process allocated
+   * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return $this->memory;
@@ -105,10 +108,13 @@ class Stats implements IStats {
 
   /**
    * Compares the stats to the memory limit.
-   * @param  int     $bytesLimit Limiting amout of bytes
+   * @param  int     $bytesLimit Limiting amount of bytes
    * @return boolean The result
    */
   public function isMemoryOK(int $bytesLimit): bool {
+    if ($bytesLimit === 0) {
+      return true;
+    }
     return $this->getUsedMemory() <= $bytesLimit;
   }
 

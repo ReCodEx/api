@@ -24,6 +24,7 @@ class TestSandboxConfig extends Tester\TestCase
     "stdout" => "optStdout",
     "stderr" => "optStderr",
     "output" => true,
+    "chdir" => "/change/dir",
     "limits" => [
       [ "hw-group-id" => "optionalGroup"]
     ]
@@ -72,6 +73,7 @@ class TestSandboxConfig extends Tester\TestCase
     Assert::equal("optStdout", $sandbox->getStdout());
     Assert::equal("optStderr", $sandbox->getStderr());
     Assert::equal(true, $sandbox->getOutput());
+    Assert::equal("/change/dir", $sandbox->getChdir());
     Assert::equal(1, count($sandbox->getLimitsArray()));
     Assert::true($sandbox->hasLimits("optionalGroup"));
     Assert::isEqual(self::$optional, $sandbox->toArray());

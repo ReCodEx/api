@@ -93,12 +93,12 @@ abstract class Box implements JsonSerializable
 
     // different number of input ports
     if (count($defaultInPorts) !== count($this->getInputPorts())) {
-      throw new ExerciseConfigException("Number of input ports is not the same");
+      throw new ExerciseConfigException("Number of input ports is not the same in box '{$this->getName()}'");
     }
 
     // different number of output ports
     if (count($defaultOutPorts) !== count($this->getOutputPorts())) {
-      throw new ExerciseConfigException("Number of output ports is not the same");
+      throw new ExerciseConfigException("Number of output ports is not the same in box '{$this->getName()}'");
     }
 
     // check if all default input ports are present and have same type
@@ -109,7 +109,7 @@ abstract class Box implements JsonSerializable
         // input port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the input port
-        throw new ExerciseConfigException("Default input port '{$defaultInPort->getName()}' missing or malformed");
+        throw new ExerciseConfigException("Default input port '{$defaultInPort->getName()}' missing or malformed in box '{$this->getName()}'");
       }
     }
 
@@ -121,7 +121,7 @@ abstract class Box implements JsonSerializable
         // output port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the output port
-        throw new ExerciseConfigException("Default output port '{$defaultOutPort->getName()}' missing or malformed");
+        throw new ExerciseConfigException("Default output port '{$defaultOutPort->getName()}' missing or malformed in box '{$this->getName()}'");
       }
     }
   }

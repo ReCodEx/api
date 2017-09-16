@@ -12,7 +12,6 @@ use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
 use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
-use App\Exceptions\ResultsLoadingException;
 
 
 class TestTestResult extends Tester\TestCase
@@ -40,7 +39,7 @@ class TestTestResult extends Tester\TestCase
         [
           "hw-group-id" => "A",
           "memory" => 8096,
-          "time" => 1.0
+          "wall-time" => 1.0
         ]
       ]
     ]
@@ -111,14 +110,14 @@ class TestTestResult extends Tester\TestCase
     Assert::true($res->didExecutionMeetLimits());
     Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/8096.0, $res->getUsedMemoryRatio());
-    Assert::same(0.037/1.0, $res->getUsedTimeRatio());
+    Assert::same(0.092/1.0, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
   }
 
   public function testFailedTestBecauseOfLimits() {
     $execCfg = self::$execCfg;
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
-    $execCfg["sandbox"]["limits"][0]["time"] = 0.01;
+    $execCfg["sandbox"]["limits"][0]["wall-time"] = 0.01;
 
     $cfg = new TestConfig(
       "some ID",
@@ -141,7 +140,7 @@ class TestTestResult extends Tester\TestCase
     Assert::equal(0.0, $res->getScore());
     Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/1024.0, $res->getUsedMemoryRatio());
-    Assert::same(0.037/0.01, $res->getUsedTimeRatio());
+    Assert::same(0.092/0.01, $res->getUsedTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
   }
 

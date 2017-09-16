@@ -43,6 +43,12 @@ class Variable implements JsonSerializable
   protected $value = null;
 
   /**
+   * Prefix of variable.
+   * @var string
+   */
+  protected $prefix = "";
+
+  /**
    * Determines if variable is array or not.
    * @var bool
    */
@@ -55,7 +61,7 @@ class Variable implements JsonSerializable
    * @param string|null $name
    * @param string|array $value
    */
-  public function __construct(string $type, string $name = NULL, $value = NULL) {
+  public function __construct(string $type, string $name = null, $value = null) {
     $this->type = $type;
     $this->name = $name;
     $this->value = $value;
@@ -143,6 +149,14 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Check if variable is empty.
+   * @return bool
+   */
+  public function isEmpty(): bool {
+    return empty($this->value);
+  }
+
+  /**
    * Return true if variable type is an array.
    * @return bool
    */
@@ -178,6 +192,24 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Get prefixed value or values.
+   * This method should be used in boxes compilation.
+   * @param string $prefix another prefix which can be added to values
+   * @return array|string
+   */
+  public function getPrefixedValue(string $prefix = "") {
+    $value = $this->getValue();
+    $prefix = $prefix . $this->prefix;
+    if (is_scalar($value)) {
+      return $prefix . $value;
+    } else {
+      return array_map(function ($val) use ($prefix) {
+        return $prefix . $val;
+      }, $value);
+    }
+  }
+
+  /**
    * Get value of the variable.
    * @return array|string
    */
@@ -198,6 +230,16 @@ class Variable implements JsonSerializable
   public function setValue($value): Variable {
     $this->value = $value;
     $this->validateValue();
+    return $this;
+  }
+
+  /**
+   * Set given prefix to variable.
+   * @param string $prefix
+   * @return Variable
+   */
+  public function setValuePrefix(string $prefix): Variable {
+    $this->prefix = $prefix;
     return $this;
   }
 

@@ -40,7 +40,7 @@ class TestPipelineValidator extends Tester\TestCase
 
     $compileBoxMeta = new BoxMeta();
     $compileBoxMeta->setName("compile");
-    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
+    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILES_PORT_KEY, "file",
       "input")));
     $compileBoxMeta->addOutputPort(new Port(PortMeta::create(GccCompilationBox::$BINARY_FILE_PORT_KEY, "file",
       "output")));
@@ -157,7 +157,7 @@ class TestPipelineValidator extends Tester\TestCase
 
     $compileBoxMeta = new BoxMeta();
     $compileBoxMeta->setName("compile");
-    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILE_PORT_KEY, "file",
+    $compileBoxMeta->addInputPort(new Port(PortMeta::create(GccCompilationBox::$SOURCE_FILES_PORT_KEY, "file",
       "input")));
     $pipeline->set(new GccCompilationBox($compileBoxMeta));
 

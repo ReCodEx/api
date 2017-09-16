@@ -87,14 +87,8 @@ class VariablesResolver {
         throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
       }
 
-      // get variable from environment config and resolve possible regexps
-      $variable = $environmentVariables->get($variableName);
-      $variable = $this->resolveFileInputsRegexp($variable, $submittedFiles);
-
       // variable value in local pipeline config
-      if (!$variable) {
-        $variable = $pipelineVariables->get($variableName);
-      }
+      $variable = $pipelineVariables->get($variableName);
       if (!$variable) {
         // something is really wrong there... just leave and do not look back
         throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
@@ -103,19 +97,25 @@ class VariablesResolver {
       // find references
       $variable = $this->findReferenceIfAny($variable, $environmentVariables, $exerciseVariables);
 
-      // try to look for remote variable in configurations tables
-      $remoteVariable = null;
+      // try to look for remote variable in configuration tables
+      $inputVariable = null;
       $environmentVariable = $environmentVariables->get($variableName);
-      if ($environmentVariable && $environmentVariable->isRemoteFile()) {
-        $remoteVariable = $environmentVariable;
-      }
       $exerciseVariable = $exerciseVariables->get($variableName);
-      if (!$remoteVariable && $exerciseVariable && $exerciseVariable->isRemoteFile()) {
-        $remoteVariable = $exerciseVariable;
+      if ($environmentVariable) {
+        $inputVariable = $this->resolveFileInputsRegexp($environmentVariable, $submittedFiles);
+      } else if ($exerciseVariable) {
+        $inputVariable = $exerciseVariable;
+      }
+
+      if ($variable->isEmpty()) {
+        // variable value is empty, replace it with input variable value
+        // there is no need for explicit input variable anymore
+        $variable = $inputVariable;
+        $inputVariable = null;
       }
 
       // assign variable to both nodes
-      $inputBox->setRemoteVariable($remoteVariable);
+      $inputBox->setInputVariable($inputVariable);
       $outputPort->setVariableValue($variable);
       $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
     }

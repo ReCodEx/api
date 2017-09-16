@@ -7,6 +7,10 @@ use App\Model\Repository\Users;
 use App\Model\Entity\UploadedFile;
 use Tester\Assert;
 
+
+/**
+ * @testCase
+ */
 class TestCleanupUploads extends Tester\TestCase
 {
   /** @var CleanupUploads */
