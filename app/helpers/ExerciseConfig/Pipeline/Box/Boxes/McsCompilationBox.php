@@ -21,7 +21,9 @@ class McsCompilationBox extends Box
   public static $MCS_TYPE = "mcs";
   public static $MCS_BINARY = "/usr/bin/mcs";
   public static $MCS_ARGS_PORT_KEY = "args";
+  public static $MAIN_CLASS_PORT_KEY = "main-class";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
+  public static $EXTERNAL_SOURCES_PORT_KEY = "external-sources";
   public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
   public static $DEFAULT_NAME = "Mono Compilation";
 
@@ -36,6 +38,8 @@ class McsCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta)->setName(self::$MAIN_CLASS_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXTERNAL_SOURCES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$MCS_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
@@ -103,11 +107,26 @@ class McsCompilationBox extends Box
     if ($this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue() !== null) {
       $args = $this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue()->getValue();
     }
+    $externalSources = [];
+    if ($this->getInputPort(self::$EXTERNAL_SOURCES_PORT_KEY)->getVariableValue() !== null) {
+      $externalSources = $this->getInputPort(self::$EXTERNAL_SOURCES_PORT_KEY)
+        ->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    }
+    $mainClass = [];
+    if ($this->getInputPort(self::$MAIN_CLASS_PORT_KEY)->getVariableValue() !== null) {
+      $mainClass = [
+        "-main:" . $this->getInputPort(self::$MAIN_CLASS_PORT_KEY)
+          ->getVariableValue()->getValue()
+      ];
+    }
+
     $task->setCommandArguments(
       array_merge(
         $args,
         $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+        $externalSources,
+        $mainClass,
         [
           "-out:" . $this->getOutputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
