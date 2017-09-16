@@ -12,29 +12,32 @@ App\Model\Entity\PipelineConfig:
                   value: a.out
               boxes:
                 - name: source
+                  type: data-in
                   portsIn: []
                   portsOut:
                     in-data:
                        type: file
                        value: source_files
-                  type: data-in
                 - name: compilation
+                  type: gcc
                   portsIn:
                     source-files:
                       type: file[]
                       value: source_files
+                    args:
+                      type: string[]
+                      value: ""
                   portsOut:
                     binary-file:
                       type: file
                       value: binary_file
-                  type: gcc
                 - name: output
+                  type: data-out
                   portsOut: []
                   portsIn:
                     out-data:
                        type: file
                        value: binary_file
-                  type: data-out
               '''
             - @demoAdmin
     demoTestPipelineConfig:

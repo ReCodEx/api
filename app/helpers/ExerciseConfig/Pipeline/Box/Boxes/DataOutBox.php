@@ -29,7 +29,7 @@ class DataOutBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE))
       );
       self::$defaultOutputPorts = array();
     }

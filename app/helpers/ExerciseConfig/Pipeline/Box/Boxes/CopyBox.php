@@ -33,10 +33,10 @@ class CopyBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }

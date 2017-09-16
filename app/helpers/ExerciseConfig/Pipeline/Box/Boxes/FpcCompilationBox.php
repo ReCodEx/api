@@ -20,6 +20,7 @@ class FpcCompilationBox extends Box
   /** Type key */
   public static $FPC_TYPE = "fpc";
   public static $FPC_BINARY = "/usr/bin/fpc";
+  public static $FPC_ARGS_PORT_KEY = "args";
   public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "FreePascal Compilation";
@@ -35,10 +36,11 @@ class FpcCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$FPC_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -96,7 +98,12 @@ class FpcCompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
     $task->setCommandBinary(self::$FPC_BINARY);
-    $task->setCommandArguments(
+
+    $args = [];
+    if ($this->getInputPort(self::$FPC_ARGS_PORT_KEY)->getVariableValue() !== null) {
+      $args = $this->getInputPort(self::$FPC_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    }
+    $args = array_merge($args,
       [
         $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
@@ -104,6 +111,8 @@ class FpcCompilationBox extends Box
           ->getPrefixedValue(ConfigParams::$EVAL_DIR)
       ]
     );
+    $task->setCommandArguments($args);
+
     $task->setSandboxConfig((new SandboxConfig)
       ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];

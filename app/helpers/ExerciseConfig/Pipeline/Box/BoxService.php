@@ -31,10 +31,11 @@ class BoxService
       DataOutBox::$DATA_OUT_TYPE => DataOutBox::class,
       JudgeNormalBox::$JUDGE_NORMAL_TYPE => JudgeNormalBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
+      GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
-      MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class
+      MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
     ];
   }
 

@@ -20,6 +20,7 @@ class GccCompilationBox extends Box
   /** Type key */
   public static $GCC_TYPE = "gcc";
   public static $GCC_BINARY = "/usr/bin/gcc";
+  public static $GCC_ARGS_PORT_KEY = "args";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "GCC Compilation";
@@ -35,10 +36,11 @@ class GccCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$GCC_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -96,8 +98,14 @@ class GccCompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
     $task->setCommandBinary(self::$GCC_BINARY);
+
+    $args = [];
+    if ($this->getInputPort(self::$GCC_ARGS_PORT_KEY)->getVariableValue() !== null) {
+      $args = $this->getInputPort(self::$GCC_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    }
     $task->setCommandArguments(
       array_merge(
+        $args,
         $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         [
@@ -107,6 +115,7 @@ class GccCompilationBox extends Box
         ]
       )
     );
+
     $task->setSandboxConfig((new SandboxConfig)
       ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];

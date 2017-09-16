@@ -13,17 +13,17 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents mcs compilation unit.
+ * Box which represents g++ compilation unit.
  */
-class McsCompilationBox extends Box
+class GppCompilationBox extends Box
 {
   /** Type key */
-  public static $MCS_TYPE = "mcs";
-  public static $MCS_BINARY = "/usr/bin/mcs";
-  public static $MCS_ARGS_PORT_KEY = "args";
+  public static $GPP_TYPE = "g++";
+  public static $GPP_BINARY = "/usr/bin/g++";
+  public static $GPP_ARGS_PORT_KEY = "args";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
-  public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
-  public static $DEFAULT_NAME = "Mono Compilation";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $DEFAULT_NAME = "G++ Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -36,11 +36,11 @@ class McsCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$MCS_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$GPP_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
       );
     }
   }
@@ -59,7 +59,7 @@ class McsCompilationBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$MCS_TYPE;
+    return self::$GPP_TYPE;
   }
 
   /**
@@ -97,11 +97,11 @@ class McsCompilationBox extends Box
     $task = new Task();
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
-    $task->setCommandBinary(self::$MCS_BINARY);
+    $task->setCommandBinary(self::$GPP_BINARY);
 
     $args = [];
-    if ($this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $args = $this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    if ($this->getInputPort(self::$GPP_ARGS_PORT_KEY)->getVariableValue() !== null) {
+      $args = $this->getInputPort(self::$GPP_ARGS_PORT_KEY)->getVariableValue()->getValue();
     }
     $task->setCommandArguments(
       array_merge(
@@ -109,7 +109,8 @@ class McsCompilationBox extends Box
         $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         [
-          "-out:" . $this->getOutputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()
+          "-o",
+          $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )

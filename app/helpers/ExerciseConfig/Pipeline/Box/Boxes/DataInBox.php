@@ -34,7 +34,7 @@ class DataInBox extends Box
       self::$initialized = true;
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE))
       );
     }
   }

@@ -98,6 +98,7 @@ class TestBaseCompiler extends Tester\TestCase
         "name" => "compilation",
         "type" => "gcc",
         "portsIn" => [
+          "args" => ["type" => "string[]", "value" => ""],
           "source-files" => ["type" => "file[]", "value" => "source_files"]
         ],
         "portsOut" => [
