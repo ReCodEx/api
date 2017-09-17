@@ -125,7 +125,7 @@ class DataInBox extends Box
 
     // remote file which should be downloaded from file-server
     $inputVariable = $this->inputVariable;
-    $variable = $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariableValue();
+    $variable = $this->getOutputPortValue(self::$DATA_IN_PORT_KEY);
     $isRemote = $inputVariable && $inputVariable->isRemoteFile();
 
     if (!$inputVariable) {

@@ -91,16 +91,16 @@ class CopyBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    if ($this->getInputPort(self::$COPY_PORT_IN_KEY)->getVariableValue()->getPrefixedValue() ===
-        $this->getOutputPort(self::$COPY_PORT_OUT_KEY)->getVariableValue()->getPrefixedValue()) {
+    if ($this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getPrefixedValue() ===
+        $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getPrefixedValue()) {
       return [];
     }
 
     $task = new Task();
     $task->setCommandBinary(TaskCommands::$COPY);
     $task->setCommandArguments([
-      $this->getInputPort(self::$COPY_PORT_IN_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $this->getOutputPort(self::$COPY_PORT_OUT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
+      $this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

@@ -100,17 +100,17 @@ class GccCompilationBox extends Box
     $task->setCommandBinary(self::$GCC_BINARY);
 
     $args = [];
-    if ($this->getInputPort(self::$GCC_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $args = $this->getInputPort(self::$GCC_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    if ($this->hasInputPortValue(self::$GCC_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$GCC_ARGS_PORT_KEY)->getValue();
     }
     $task->setCommandArguments(
       array_merge(
         $args,
-        $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         [
           "-o",
-          $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+          $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )

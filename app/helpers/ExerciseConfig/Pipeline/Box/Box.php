@@ -6,6 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\PipelineVars;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -174,6 +175,42 @@ abstract class Box implements JsonSerializable
    */
   public function getOutputPort(string $port): ?Port {
     return $this->meta->getOutputPort($port);
+  }
+
+  /**
+   * Check if input port with given name has filled variable value.
+   * @param string $port
+   * @return bool
+   */
+  protected function hasInputPortValue(string $port): bool {
+    return $this->getInputPort($port)->getVariableValue() !== null;
+  }
+
+  /**
+   * Check if ouput port with given name has filled variable value.
+   * @param string $port
+   * @return bool
+   */
+  protected function hasOutputPortValue(string $port): bool {
+    return $this->getOutputPort($port)->getVariableValue() !== null;
+  }
+
+  /**
+   * Return variable value of input port with given name.
+   * @param string $port
+   * @return Variable|null
+   */
+  protected function getInputPortValue(string $port): ?Variable {
+    return $this->getInputPort($port)->getVariableValue();
+  }
+
+  /**
+   * Return variable value of output port with given name.
+   * @param string $port
+   * @return Variable|null
+   */
+  protected function getOutputPortValue(string $port): ?Variable {
+    return $this->getOutputPort($port)->getVariableValue();
   }
 
 

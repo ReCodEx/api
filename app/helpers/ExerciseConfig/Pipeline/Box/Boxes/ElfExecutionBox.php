@@ -100,17 +100,17 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
-    if ($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $task->setCommandArguments($this->getInputPort(self::$BINARY_ARGS_PORT_KEY)->getVariableValue()->getValue());
+    $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
+      $task->setCommandArguments($this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
     }
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
-    if ($this->getInputPort(self::$STDIN_FILE_PORT_KEY)->getVariableValue() !== null) {
-      $sandbox->setStdin($this->getInputPort(self::$STDIN_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
+      $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
-    if ($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue() !== null) {
-      $sandbox->setStdout($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    if ($this->hasOutputPortValue(self::$STDOUT_FILE_PORT_KEY)) {
+      $sandbox->setStdout($this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
     $task->setSandboxConfig($sandbox);
 

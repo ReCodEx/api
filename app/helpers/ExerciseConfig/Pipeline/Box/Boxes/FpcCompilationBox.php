@@ -100,14 +100,14 @@ class FpcCompilationBox extends Box
     $task->setCommandBinary(self::$FPC_BINARY);
 
     $args = [];
-    if ($this->getInputPort(self::$FPC_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $args = $this->getInputPort(self::$FPC_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    if ($this->hasInputPortValue(self::$FPC_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$FPC_ARGS_PORT_KEY)->getValue();
     }
     $args = array_merge($args,
       [
-        $this->getInputPort(self::$SOURCE_FILE_PORT_KEY)->getVariableValue()
+        $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
-        "-o" . $this->getOutputPort(self::$BINARY_FILE_PORT_KEY)->getVariableValue()
+        "-o" . $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR)
       ]
     );

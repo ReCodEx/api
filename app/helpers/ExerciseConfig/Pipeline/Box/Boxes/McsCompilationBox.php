@@ -104,31 +104,30 @@ class McsCompilationBox extends Box
     $task->setCommandBinary(self::$MCS_BINARY);
 
     $args = [];
-    if ($this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue() !== null) {
-      $args = $this->getInputPort(self::$MCS_ARGS_PORT_KEY)->getVariableValue()->getValue();
+    if ($this->hasInputPortValue(self::$MCS_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$MCS_ARGS_PORT_KEY)->getValue();
     }
     $externalSources = [];
-    if ($this->getInputPort(self::$EXTERNAL_SOURCES_PORT_KEY)->getVariableValue() !== null) {
-      $externalSources = $this->getInputPort(self::$EXTERNAL_SOURCES_PORT_KEY)
-        ->getVariableValue()->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    if ($this->hasInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)) {
+      $externalSources = $this->getInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)
+        ->getPrefixedValue(ConfigParams::$EVAL_DIR);
     }
     $mainClass = [];
-    if ($this->getInputPort(self::$MAIN_CLASS_PORT_KEY)->getVariableValue() !== null) {
+    if ($this->hasInputPortValue(self::$MAIN_CLASS_PORT_KEY)) {
       $mainClass = [
-        "-main:" . $this->getInputPort(self::$MAIN_CLASS_PORT_KEY)
-          ->getVariableValue()->getValue()
+        "-main:" . $this->getInputPortValue(self::$MAIN_CLASS_PORT_KEY)->getValue()
       ];
     }
 
     $task->setCommandArguments(
       array_merge(
         $args,
-        $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         $externalSources,
         $mainClass,
         [
-          "-out:" . $this->getOutputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()
+          "-out:" . $this->getOutputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )
