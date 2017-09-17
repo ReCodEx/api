@@ -2,6 +2,8 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
@@ -18,6 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getVersion()
  * @method Exercise getExercise()
  * @method DateTime getDeletedAt()
+ * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
@@ -92,18 +95,24 @@ class Pipeline implements JsonSerializable
   protected $exercise;
 
   /**
-   * Constructor
+   * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
+   */
+  protected $supplementaryEvaluationFiles;
+
+  /**
+   * Pipeline constructor.
    * @param string $name
    * @param int $version
    * @param string $description
    * @param PipelineConfig $pipelineConfig
+   * @param Collection $supplementaryEvaluationFiles
    * @param User $author
    * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise
    */
   private function __construct(string $name, int $version, string $description,
-      PipelineConfig $pipelineConfig, User $author,
-      Pipeline $createdFrom = null, Exercise $exercise = null) {
+      PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
+      User $author, Pipeline $createdFrom = null, Exercise $exercise = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -114,7 +123,28 @@ class Pipeline implements JsonSerializable
     $this->author = $author;
     $this->createdFrom = $createdFrom;
     $this->exercise = $exercise;
+    $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
   }
+
+  /**
+   * Add supplementary file which should be accessible within pipeline.
+   * @param SupplementaryExerciseFile $exerciseFile
+   */
+  public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
+    $this->supplementaryEvaluationFiles->add($exerciseFile);
+  }
+
+  /**
+   * Get array of identifications of supplementary files
+   * @return array
+   */
+  public function getSupplementaryFilesIds() {
+    return $this->supplementaryEvaluationFiles->map(
+      function(SupplementaryExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
 
   /**
    * Create empty pipeline entity.
@@ -127,6 +157,7 @@ class Pipeline implements JsonSerializable
       1,
       "",
       new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
+      new ArrayCollection,
       $user
     );
   }
@@ -145,6 +176,7 @@ class Pipeline implements JsonSerializable
       $pipeline->getVersion(),
       $pipeline->getDescription(),
       $pipeline->getPipelineConfig(),
+      $pipeline->getSupplementaryEvaluationFiles(),
       $user,
       $pipeline,
       $exercise
@@ -161,6 +193,7 @@ class Pipeline implements JsonSerializable
       "description" => $this->description,
       "author" => $this->author->getId(),
       "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
+      "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline()
     ];
   }

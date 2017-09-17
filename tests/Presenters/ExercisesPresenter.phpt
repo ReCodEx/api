@@ -8,7 +8,7 @@ use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExercisesPresenter;
-use App\Model\Entity\ExerciseFile;
+use App\Model\Entity\SupplementaryExerciseFile;
 use Tester\Assert;
 
 
@@ -305,7 +305,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::count(2, $payload);
 
     foreach ($payload as $item) {
-      Assert::type(App\Model\Entity\ExerciseFile::class, $item);
+      Assert::type(App\Model\Entity\SupplementaryExerciseFile::class, $item);
     }
   }
 
@@ -315,8 +315,8 @@ class TestExercisesPresenter extends Tester\TestCase
     // prepare files into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $exercise = current($this->presenter->exercises->findAll());
-    $expectedFile1 = new ExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
-    $expectedFile2 = new ExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, $exercise);
+    $expectedFile1 = new SupplementaryExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
+    $expectedFile2 = new SupplementaryExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, $exercise);
     $this->supplementaryFiles->persist($expectedFile1, FALSE);
     $this->supplementaryFiles->persist($expectedFile2, FALSE);
     $this->supplementaryFiles->flush();

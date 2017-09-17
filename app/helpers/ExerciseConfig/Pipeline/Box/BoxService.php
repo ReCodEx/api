@@ -34,7 +34,8 @@ class BoxService
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
-      MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class
+      MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
+      FetchBox::$FETCH_TYPE => FetchBox::class
     ];
   }
 
