@@ -297,7 +297,7 @@ class PipelinesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->store($file, null, $pipeline);
+      $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->storePipelineFile($file, $pipeline);
       $this->uploadedFiles->persist($pipelineFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
       $deletedFiles[] = $file;

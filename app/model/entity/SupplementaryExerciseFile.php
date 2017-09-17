@@ -71,7 +71,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     }
   }
 
-  public static function fromUploadedFile(UploadedFile $file, ?Exercise $exercise, ?Pipeline $pipeline, string $hashName, string $fileServerPath) {
+  public static function fromUploadedFileAndExercise(UploadedFile $file, Exercise $exercise, string $hashName, string $fileServerPath) {
     return new self(
       $file->getName(),
       $file->getUploadedAt(),
@@ -80,6 +80,19 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
       $fileServerPath,
       $file->getUser(),
       $exercise,
+      null
+    );
+  }
+
+  public static function fromUploadedFileAndPipeline(UploadedFile $file, Pipeline $pipeline, string $hashName, string $fileServerPath) {
+    return new self(
+      $file->getName(),
+      $file->getUploadedAt(),
+      $file->getFileSize(),
+      $hashName,
+      $fileServerPath,
+      $file->getUser(),
+      null,
       $pipeline
     );
   }

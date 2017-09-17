@@ -236,7 +236,7 @@ class ExercisesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      $supplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->store($file, $exercise);
+      $supplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
       $deletedFiles[] = $file;
