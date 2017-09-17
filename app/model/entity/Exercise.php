@@ -117,7 +117,7 @@ class Exercise implements JsonSerializable
   protected $referenceSolutions;
 
   /**
-   * @ORM\ManyToMany(targetEntity="ExerciseFile", inversedBy="exercises")
+   * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="exercises")
    */
   protected $supplementaryEvaluationFiles;
 
@@ -303,7 +303,7 @@ class Exercise implements JsonSerializable
     $this->localizedTexts->add($localizedText);
   }
 
-  public function addSupplementaryEvaluationFile(ExerciseFile $exerciseFile) {
+  public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
     $this->supplementaryEvaluationFiles->add($exerciseFile);
   }
 
@@ -397,7 +397,7 @@ class Exercise implements JsonSerializable
 
   public function getSupplementaryFilesIds() {
     return $this->supplementaryEvaluationFiles->map(
-      function(ExerciseFile $file) {
+      function(SupplementaryExerciseFile $file) {
         return $file->getId();
       })->getValues();
   }

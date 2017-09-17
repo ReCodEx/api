@@ -3,17 +3,23 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
+use App\Helpers\ExerciseFileStorage;
+use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\PipelineConfig;
+use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
+use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\Pipeline;
 use App\Helpers\ExerciseConfig\Validator as ConfigValidator;
+use Exception;
 
 
 /**
@@ -64,6 +70,24 @@ class PipelinesPresenter extends BasePresenter {
    * @inject
    */
   public $configValidator;
+
+  /**
+   * @var UploadedFiles
+   * @inject
+   */
+  public $uploadedFiles;
+
+  /**
+   * @var ExerciseFileStorage
+   * @inject
+   */
+  public $supplementaryFileStorage;
+
+  /**
+   * @var UploadedFileStorage
+   * @inject
+   */
+  public $uploadedFileStorage;
 
 
   /**
@@ -246,6 +270,64 @@ class PipelinesPresenter extends BasePresenter {
     $this->sendSuccessResponse([
       "versionIsUpToDate" => $pipeline->getVersion() === $version
     ]);
+  }
+
+  /**
+   * Associate supplementary files with a pipeline and upload them to remote file server
+   * @POST
+   * @Param(type="post", name="files", description="Identifiers of supplementary files")
+   * @param string $id identification of pipeline
+   * @throws BadRequestException
+   * @throws CannotReceiveUploadedFileException
+   * @throws ForbiddenRequestException
+   */
+  public function actionUploadSupplementaryFiles(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canUpdate($pipeline)) {
+      throw new ForbiddenRequestException("You cannot update this pipeline.");
+    }
+
+    $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
+    $supplementaryFiles = [];
+    $deletedFiles = [];
+
+    /** @var UploadedFile $file */
+    foreach ($files as $file) {
+      if (get_class($file) !== UploadedFile::class) {
+        throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
+      }
+
+      $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->store($file, null, $pipeline);
+      $this->uploadedFiles->persist($pipelineFile, FALSE);
+      $this->uploadedFiles->remove($file, FALSE);
+      $deletedFiles[] = $file;
+    }
+
+    $this->uploadedFiles->flush();
+
+    /** @var UploadedFile $file */
+    foreach ($deletedFiles as $file) {
+      try {
+        $this->uploadedFileStorage->delete($file);
+      } catch (Exception $e) {}
+    }
+
+    $this->sendSuccessResponse($supplementaryFiles);
+  }
+
+  /**
+   * Get list of all supplementary files for a pipeline
+   * @GET
+   * @param string $id identification of pipeline
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetSupplementaryFiles(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canViewDetail($pipeline)) {
+      throw new ForbiddenRequestException("You cannot view supplementary files for this pipeline.");
+    }
+
+    $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
   }
 
 }

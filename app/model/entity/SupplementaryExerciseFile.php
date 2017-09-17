@@ -10,7 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 /**
  * @ORM\Entity
  */
-class ExerciseFile extends UploadedFile implements JsonSerializable
+class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 {
   /**
    * @ORM\Column(type="string")
@@ -27,6 +27,22 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
    */
   protected $exercises;
 
+  /**
+   * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="supplementaryEvaluationFiles")
+   */
+  protected $pipelines;
+
+  /**
+   * SupplementaryExerciseFile constructor.
+   * @param string $name
+   * @param DateTime $uploadedAt
+   * @param int $fileSize
+   * @param string $hashName
+   * @param string $fileServerPath
+   * @param User $user
+   * @param Exercise|null $exercise
+   * @param Pipeline|null $pipeline
+   */
   public function __construct(
     string $name,
     DateTime $uploadedAt,
@@ -34,18 +50,28 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
     string $hashName,
     string $fileServerPath,
     User $user,
-    Exercise $exercise
+    Exercise $exercise = null,
+    Pipeline $pipeline = null
   ) {
     parent::__construct($name, $uploadedAt, $fileSize, $user);
     $this->hashName = $hashName;
     $this->fileServerPath = $fileServerPath;
 
     $this->exercises = new ArrayCollection;
-    $this->exercises->add($exercise);
-    $exercise->addSupplementaryEvaluationFile($this);
+    $this->pipelines = new ArrayCollection;
+
+    if ($exercise) {
+      $this->exercises->add($exercise);
+      $exercise->addSupplementaryEvaluationFile($this);
+    }
+
+    if ($pipeline) {
+      $this->pipelines->add($pipeline);
+      $pipeline->addSupplementaryEvaluationFile($this);
+    }
   }
 
-  public static function fromUploadedFile(UploadedFile $file, Exercise $exercise, string $hashName, string $fileServerPath) {
+  public static function fromUploadedFile(UploadedFile $file, ?Exercise $exercise, ?Pipeline $pipeline, string $hashName, string $fileServerPath) {
     return new self(
       $file->getName(),
       $file->getUploadedAt(),
@@ -53,7 +79,8 @@ class ExerciseFile extends UploadedFile implements JsonSerializable
       $hashName,
       $fileServerPath,
       $file->getUser(),
-      $exercise
+      $exercise,
+      $pipeline
     );
   }
 
