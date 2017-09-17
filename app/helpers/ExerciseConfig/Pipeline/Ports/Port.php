@@ -53,6 +53,11 @@ class Port implements JsonSerializable
       $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$FILE_TYPE)) {
       $this->meta->setType(VariableTypes::$FILE_TYPE);
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)) {
+      $this->meta->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE);
+      $this->isArray = true;
+    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$REMOTE_FILE_TYPE)) {
+      $this->meta->setType(VariableTypes::$REMOTE_FILE_TYPE);
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_ARRAY_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_ARRAY_TYPE);
       $this->isArray = true;
