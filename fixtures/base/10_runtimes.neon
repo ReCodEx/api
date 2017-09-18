@@ -64,3 +64,16 @@ App\Model\Entity\RuntimeEnvironment:
                 type: "file[]"
                 value: "*.java"
               '''
+    Python3Runtime:
+        __construct:
+            - python3
+            - "Python 3"
+            - "Python 3"
+            - "[py]"
+            - "GNU/Linux"
+            - "Python 3 (CPython)"
+            - '''
+              - name: "source_file"
+                type: "file"
+                value: "*.py"
+              '''
