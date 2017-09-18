@@ -73,7 +73,7 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "Python 3 (CPython)"
             - '''
-              - name: "source_files"
+              - name: "source_file"
                 type: "file"
                 value: "*.py"
               '''
