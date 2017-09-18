@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Compilation\Tree;
 
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use Nette\Utils\Arrays;
 
 
 /**
@@ -104,6 +105,15 @@ class PortNode {
   }
 
   /**
+   * Get parent for specified port.
+   * @param string $port
+   * @return PortNode|null
+   */
+  public function getParent(string $port): ?PortNode {
+    return Arrays::get($this->parents, $port, null);
+  }
+
+  /**
    * Find port of given parent.
    * @param PortNode $node
    * @return null|string
@@ -153,6 +163,15 @@ class PortNode {
    */
   public function getChildrenByPort(): array {
     return $this->childrenByPort;
+  }
+
+  /**
+   * Get children with given port.
+   * @param string $port
+   * @return PortNode[]
+   */
+  public function getChildrenByPortName(string $port): array {
+    return Arrays::get($this->childrenByPort, $port, []);
   }
 
   /**
