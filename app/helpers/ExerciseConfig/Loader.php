@@ -7,7 +7,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortFactory;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 
 /**
@@ -16,11 +15,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  * exception is thrown.
  */
 class Loader {
-
-  /**
-   * @var PortFactory
-   */
-  private $portFactory;
 
   /**
    * @var BoxService
@@ -32,7 +26,6 @@ class Loader {
    * @param BoxService $boxService
    */
   public function __construct(BoxService $boxService) {
-    $this->portFactory = new PortFactory();
     $this->boxService = $boxService;
   }
 
@@ -268,7 +261,7 @@ class Loader {
     }
     $port->setVariable($data[PortMeta::VARIABLE_KEY]);
 
-    return $this->portFactory->create($port);
+    return new Port($port);
   }
 
   /**

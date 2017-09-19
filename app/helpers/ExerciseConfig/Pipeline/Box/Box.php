@@ -105,8 +105,7 @@ abstract class Box implements JsonSerializable
     // check if all default input ports are present and have same type
     foreach ($defaultInPorts as $defaultInPort) {
       $inPort = $this->meta->getInputPort($defaultInPort->getName());
-      if (!$inPort || (!($inPort->getType() === $defaultInPort->getType())) &&
-          !($defaultInPort->getType() === VariableTypes::$UNDEFINED_TYPE)) {
+      if (!$inPort || (!($inPort->getType() === $defaultInPort->getType()))) {
         // input port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the input port
@@ -117,8 +116,7 @@ abstract class Box implements JsonSerializable
     // check if all default output ports are present and have same type
     foreach ($defaultOutPorts as $defaultOutPort) {
       $outPort = $this->meta->getOutputPort($defaultOutPort->getName());
-      if (!$outPort || (!($outPort->getType() === $defaultOutPort->getType())) &&
-          !($defaultOutPort->getType() === VariableTypes::$UNDEFINED_TYPE)) {
+      if (!$outPort || (!($outPort->getType() === $defaultOutPort->getType()))) {
         // output port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the output port
