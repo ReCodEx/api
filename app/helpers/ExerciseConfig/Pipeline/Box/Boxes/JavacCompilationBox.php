@@ -13,17 +13,17 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents g++ compilation unit.
+ * Box which represents javac compilation unit.
  */
-class GppCompilationBox extends Box
+class JavacCompilationBox extends Box
 {
   /** Type key */
-  public static $GPP_TYPE = "g++";
-  public static $GPP_BINARY = "/usr/bin/g++";
-  public static $GPP_ARGS_PORT_KEY = "args";
+  public static $JAVAC_TYPE = "javac";
+  public static $JAVAC_BINARY = "/usr/bin/javac";
+  public static $JAVAC_ARGS_PORT_KEY = "args";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
-  public static $DEFAULT_NAME = "G++ Compilation";
+  public static $CLASS_FILES_PORT_KEY = "class-files";
+  public static $DEFAULT_NAME = "Javac Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -36,11 +36,11 @@ class GppCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$GPP_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$JAVAC_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }
@@ -59,7 +59,7 @@ class GppCompilationBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$GPP_TYPE;
+    return self::$JAVAC_TYPE;
   }
 
   /**
@@ -97,22 +97,17 @@ class GppCompilationBox extends Box
     $task = new Task();
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
-    $task->setCommandBinary(self::$GPP_BINARY);
+    $task->setCommandBinary(self::$JAVAC_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$GPP_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$GPP_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$JAVAC_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$JAVAC_ARGS_PORT_KEY)->getValue();
     }
     $task->setCommandArguments(
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
-          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
-        [
-          "-o",
-          $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
-            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
-        ]
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR)
       )
     );
 
