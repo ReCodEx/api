@@ -113,7 +113,7 @@ class FilesInBox extends DataInBox
     }
 
     // validate variable value and prepare arrays which will be processed
-    if ($inputVariable->isValueArray() && $variable->isValueArray()) {
+    if ($inputVariable->isValueArray()) {
       // both variable and input variable are arrays
       if (count($inputVariable->getValue()) !== count($variable->getValue())) {
         throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
@@ -121,10 +121,6 @@ class FilesInBox extends DataInBox
 
       $inputFiles = $inputVariable->getValue();
       $files = $variable->getPrefixedValue();
-    } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
-      // both variable and input variable are scalars
-      $inputFiles = [$inputVariable->getValue()];
-      $files = [$variable->getPrefixedValue()];
     } else {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
     }

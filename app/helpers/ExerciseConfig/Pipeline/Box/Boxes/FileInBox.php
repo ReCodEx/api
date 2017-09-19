@@ -112,52 +112,35 @@ class FileInBox extends DataInBox
       $inputVariable = $variable;
     }
 
-    // validate variable value and prepare arrays which will be processed
-    if ($inputVariable->isValueArray() && $variable->isValueArray()) {
-      // both variable and input variable are arrays
-      if (count($inputVariable->getValue()) !== count($variable->getValue())) {
-        throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILE_IN_TYPE));
-      }
-
-      $inputFiles = $inputVariable->getValue();
-      $files = $variable->getPrefixedValue();
-    } else if (!$inputVariable->isValueArray() && !$variable->isValueArray()) {
-      // both variable and input variable are scalars
-      $inputFiles = [$inputVariable->getValue()];
-      $files = [$variable->getPrefixedValue()];
-    } else {
+    // value is array which it should not be
+    if ($inputVariable->isValueArray()) {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILE_IN_TYPE));
     }
 
-    // general foreach for both local and remote files
-    $tasks = [];
-    for ($i = 0; $i < count($files); ++$i) {
-      $task = new Task();
-
-      if ($isRemote) {
-        // remote file has to have fetch task
-        $task->setCommandBinary(TaskCommands::$FETCH);
-        $task->setCommandArguments([
-          $inputFiles[$i],
-          ConfigParams::$SOURCE_DIR . $files[$i]
-        ]);
-      } else {
-        if ($inputFiles[$i] === $files[$i]) {
-          // files have exactly same names, we can skip renaming
-          continue;
-        }
-
-        $task->setCommandBinary(TaskCommands::$COPY);
-        $task->setCommandArguments([
-          ConfigParams::$SOURCE_DIR . $inputFiles[$i],
-          ConfigParams::$SOURCE_DIR . $files[$i]
-        ]);
-      }
-
-      // add task to result
-      $tasks[] = $task;
+    // values of both variables are the same
+    if ($inputVariable->getValue() === $variable->getPrefixedValue()) {
+      // files have exactly same names, we can skip renaming
+      return [];
     }
-    return $tasks;
+
+    // construct task
+    $task = new Task();
+    if ($isRemote) {
+      // remote file has to have fetch task
+      $task->setCommandBinary(TaskCommands::$FETCH);
+      $task->setCommandArguments([
+        $inputVariable->getValue(),
+        ConfigParams::$SOURCE_DIR . $variable->getPrefixedValue()
+      ]);
+    } else {
+      $task->setCommandBinary(TaskCommands::$COPY);
+      $task->setCommandArguments([
+        ConfigParams::$SOURCE_DIR . $inputVariable->getValue(),
+        ConfigParams::$SOURCE_DIR . $variable->getPrefixedValue()
+      ]);
+    }
+
+    return [$task];
   }
 
 }
