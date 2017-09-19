@@ -39,7 +39,8 @@ class BoxService
       McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
       MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
       FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
-      FetchFileBox::$FETCH_TYPE => FetchFileBox::class
+      FetchFileBox::$FETCH_TYPE => FetchFileBox::class,
+      JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::$JAVA_RUNNER_TYPE
     ];
   }
 
