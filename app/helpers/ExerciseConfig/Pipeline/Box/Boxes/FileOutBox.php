@@ -9,14 +9,14 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents data source, mainly files which are output from pipeline.
+ * Box which represents exporting of file out of pipeline.
  */
-class DataOutBox extends Box
+class FileOutBox extends DataOutBox
 {
   /** Type key */
-  public static $DATA_OUT_TYPE = "data-out";
-  public static $DATA_OUT_PORT_KEY = "out-data";
-  public static $DEFAULT_NAME = "Output Data";
+  public static $FILE_OUT_TYPE = "file-out";
+  public static $FILE_OUT_PORT_KEY = "output";
+  public static $DEFAULT_NAME = "Output File";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -29,7 +29,7 @@ class DataOutBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$DATA_OUT_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE))
+        new Port((new PortMeta)->setName(self::$FILE_OUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array();
     }
@@ -49,7 +49,7 @@ class DataOutBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$DATA_OUT_TYPE;
+    return self::$FILE_OUT_TYPE;
   }
 
   /**

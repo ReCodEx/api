@@ -13,7 +13,9 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileOutBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FilesInBox;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Repository\Pipelines;
 use Tester\Assert;
@@ -115,10 +117,10 @@ class TestPipelinesMerger extends Tester\TestCase
       "boxes" => [
         [
           "name" => "source",
-          "type" => "data-in",
+          "type" => "files-in",
           "portsIn" => [],
           "portsOut" => [
-            "in-data" => [ "type" => "file[]", "value" => "source_files" ]
+            "input" => [ "type" => "file[]", "value" => "source_files" ]
           ]
         ],
         [
@@ -134,9 +136,9 @@ class TestPipelinesMerger extends Tester\TestCase
         ],
         [
           "name" => "output",
-          "type" => "data-out",
+          "type" => "file-out",
           "portsIn" => [
-            "out-data" => [ "type" => "file", "value" => "binary_file" ]
+            "output" => [ "type" => "file", "value" => "binary_file" ]
           ],
           "portsOut" => []
         ]
@@ -151,18 +153,18 @@ class TestPipelinesMerger extends Tester\TestCase
       "boxes" => [
         [
           "name" => "binary",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
           "portsOut" => [
-            "in-data" => [ "type" => "file", "value" => "binary_file" ]
+            "input" => [ "type" => "file", "value" => "binary_file" ]
           ]
         ],
         [
           "name" => "test",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
           "portsOut" => [
-            "in-data" => [ "type" => "file", "value" => "expected_output" ]
+            "input" => [ "type" => "file", "value" => "expected_output" ]
           ]
         ],
         [
@@ -258,7 +260,7 @@ class TestPipelinesMerger extends Tester\TestCase
       $inputNodes[$inputNode->getBox()->getName()] = $inputNode;
     }
     foreach ($testA->getOutputNodes() as $outputNode) {
-      Assert::type(DataOutBox::class, $outputNode->getBox());
+      Assert::type(FileOutBox::class, $outputNode->getBox());
       $outputNodes[$outputNode->getBox()->getName()] = $outputNode;
     }
     foreach ($testA->getOtherNodes() as $otherNode) {
@@ -344,7 +346,7 @@ class TestPipelinesMerger extends Tester\TestCase
       $inputNodes[$inputNode->getBox()->getName()] = $inputNode;
     }
     foreach ($testB->getOutputNodes() as $outputNode) {
-      Assert::type(DataOutBox::class, $outputNode->getBox());
+      Assert::type(FileOutBox::class, $outputNode->getBox());
       $outputNodes[$outputNode->getBox()->getName()] = $outputNode;
     }
     foreach ($testB->getOtherNodes() as $otherNode) {

@@ -13,14 +13,14 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents data source, mainly files.
+ * Box which represents external files source.
  */
-class DataInBox extends Box
+class FilesInBox extends DataInBox
 {
   /** Type key */
-  public static $DATA_IN_TYPE = "data-in";
-  public static $DATA_IN_PORT_KEY = "in-data";
-  public static $DEFAULT_NAME = "Input Data";
+  public static $FILES_IN_TYPE = "files-in";
+  public static $FILES_IN_PORT_KEY = "input";
+  public static $DEFAULT_NAME = "Input Files";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -34,21 +34,14 @@ class DataInBox extends Box
       self::$initialized = true;
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$DATA_IN_PORT_KEY)->setType(VariableTypes::$UNDEFINED_TYPE))
+        new Port((new PortMeta)->setName(self::$FILES_IN_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }
 
 
   /**
-   * If data for this box is remote, fill this with the right variable reference.
-   * @var Variable
-   */
-  private $inputVariable = null;
-
-
-  /**
-   * DataInBox constructor.
+   * FilesInBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
@@ -61,7 +54,7 @@ class DataInBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$DATA_IN_TYPE;
+    return self::$FILES_IN_TYPE;
   }
 
   /**
@@ -92,27 +85,11 @@ class DataInBox extends Box
 
 
   /**
-   * Get remote variable.
-   * @return Variable|null
-   */
-  public function getInputVariable(): ?Variable {
-    return $this->inputVariable;
-  }
-
-  /**
-   * Set remote variable corresponding to this box.
-   * @param Variable|null $variable
-   */
-  public function setInputVariable(?Variable $variable) {
-    $this->inputVariable = $variable;
-  }
-
-  /**
    * Get variable name of the output port.
    * @return null|string
    */
   public function getVariableName(): ?string {
-    return $this->getOutputPort(self::$DATA_IN_PORT_KEY)->getVariable();
+    return $this->getOutputPort(self::$FILES_IN_PORT_KEY)->getVariable();
   }
 
 
@@ -125,7 +102,7 @@ class DataInBox extends Box
 
     // remote file which should be downloaded from file-server
     $inputVariable = $this->inputVariable;
-    $variable = $this->getOutputPortValue(self::$DATA_IN_PORT_KEY);
+    $variable = $this->getOutputPortValue(self::$FILES_IN_PORT_KEY);
     $isRemote = $inputVariable && $inputVariable->isRemoteFile();
 
     if (!$inputVariable) {
@@ -139,7 +116,7 @@ class DataInBox extends Box
     if ($inputVariable->isValueArray() && $variable->isValueArray()) {
       // both variable and input variable are arrays
       if (count($inputVariable->getValue()) !== count($variable->getValue())) {
-        throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$DATA_IN_TYPE));
+        throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
       }
 
       $inputFiles = $inputVariable->getValue();
@@ -149,7 +126,7 @@ class DataInBox extends Box
       $inputFiles = [$inputVariable->getValue()];
       $files = [$variable->getPrefixedValue()];
     } else {
-      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$DATA_IN_TYPE));
+      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
     }
 
     // general foreach for both local and remote files

@@ -27,8 +27,10 @@ class BoxService
    */
   public function __construct() {
     $this->boxes = [
-      DataInBox::$DATA_IN_TYPE => DataInBox::class,
-      DataOutBox::$DATA_OUT_TYPE => DataOutBox::class,
+      FileInBox::$FILE_IN_TYPE => FileInBox::class,
+      FilesInBox::$FILES_IN_TYPE => FilesInBox::class,
+      FileOutBox::$FILE_OUT_TYPE => FileOutBox::class,
+      FilesOutBox::$FILES_OUT_TYPE => FilesOutBox::class,
       JudgeNormalBox::$JUDGE_NORMAL_TYPE => JudgeNormalBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,

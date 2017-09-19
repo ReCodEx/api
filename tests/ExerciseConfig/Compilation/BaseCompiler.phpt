@@ -88,10 +88,10 @@ class TestBaseCompiler extends Tester\TestCase
     "boxes" => [
       [
         "name" => "source",
-        "type" => "data-in",
+        "type" => "files-in",
         "portsIn" => [],
         "portsOut" => [
-          "in-data" => ["type" => "file[]", "value" => "source_files"]
+          "input" => ["type" => "file[]", "value" => "source_files"]
         ]
       ],
       [
@@ -107,9 +107,9 @@ class TestBaseCompiler extends Tester\TestCase
       ],
       [
         "name" => "output",
-        "type" => "data-out",
+        "type" => "file-out",
         "portsIn" => [
-          "out-data" => ["type" => "file", "value" => "binary_file"]
+          "output" => ["type" => "file", "value" => "binary_file"]
         ],
         "portsOut" => []
       ]
@@ -124,18 +124,18 @@ class TestBaseCompiler extends Tester\TestCase
     "boxes" => [
       [
         "name" => "binary",
-        "type" => "data-in",
+        "type" => "file-in",
         "portsIn" => [],
         "portsOut" => [
-          "in-data" => [ "type" => "file", "value" => "binary_file" ]
+          "input" => [ "type" => "file", "value" => "binary_file" ]
         ]
       ],
       [
         "name" => "test",
-        "type" => "data-in",
+        "type" => "file-in",
         "portsIn" => [],
         "portsOut" => [
-          "in-data" => [ "type" => "file", "value" => "expected_output" ]
+          "input" => [ "type" => "file", "value" => "expected_output" ]
         ]
       ],
       [

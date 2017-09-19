@@ -5,7 +5,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 
@@ -73,7 +73,7 @@ class VariablesResolver {
       VariablesTable $pipelineVariables, array $submittedFiles) {
     foreach ($mergeTree->getInputNodes() as $node) {
 
-      /** @var DataInBox $inputBox */
+      /** @var FileInBox $inputBox */
       $inputBox = $node->getBox();
 
       // input data box should have only one output port, that is why current is sufficient

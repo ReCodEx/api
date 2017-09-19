@@ -5,8 +5,8 @@ include '../../bootstrap.php';
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileOutBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -35,8 +35,8 @@ class TestPipelineValidator extends Tester\TestCase
 
     $dataInBoxMeta = new BoxMeta();
     $dataInBoxMeta->setName("input");
-    $dataInBoxMeta->addOutputPort(new Port(PortMeta::create(DataInBox::$DATA_IN_PORT_KEY, "file", "input")));
-    $pipeline->set(new DataInBox($dataInBoxMeta));
+    $dataInBoxMeta->addOutputPort(new Port(PortMeta::create(FileInBox::$FILE_IN_PORT_KEY, "file", "input")));
+    $pipeline->set(new FileInBox($dataInBoxMeta));
 
     $compileBoxMeta = new BoxMeta();
     $compileBoxMeta->setName("compile");
@@ -48,8 +48,8 @@ class TestPipelineValidator extends Tester\TestCase
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "output")));
-    $pipeline->set(new DataOutBox($dataOutBoxMeta));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(FileOutBox::$FILE_OUT_PORT_KEY, "file", "output")));
+    $pipeline->set(new FileOutBox($dataOutBoxMeta));
 
     Assert::noError(function () use ($pipeline) {
       $this->validator->validate($pipeline);
@@ -72,12 +72,12 @@ class TestPipelineValidator extends Tester\TestCase
     $varAInMeta = new BoxMeta();
     $varAInMeta->setName("varA_in");
     $varAInMeta->addOutputPort(new Port(PortMeta::create("varA_in", "file", "varA")));
-    $pipeline->set(new DataInBox($varAInMeta));
+    $pipeline->set(new FileInBox($varAInMeta));
 
     $varBInMeta = new BoxMeta();
     $varBInMeta->setName("varB_in");
     $varBInMeta->addOutputPort(new Port(PortMeta::create("varB_in", "file", "varB")));
-    $pipeline->set(new DataInBox($varBInMeta));
+    $pipeline->set(new FileInBox($varBInMeta));
 
     $judgeBoxMeta = new BoxMeta();
     $pipeline->set(new JudgeNormalBox($judgeBoxMeta));
@@ -129,8 +129,8 @@ class TestPipelineValidator extends Tester\TestCase
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
-    $pipeline->set(new DataOutBox($dataOutBoxMeta));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(FileOutBox::$FILE_OUT_PORT_KEY, "file", "varA")));
+    $pipeline->set(new FileOutBox($dataOutBoxMeta));
 
     Assert::exception(function () use ($pipeline) {
       $this->validator->validate($pipeline);
@@ -143,8 +143,8 @@ class TestPipelineValidator extends Tester\TestCase
 
     $dataOutBoxMeta = new BoxMeta();
     $dataOutBoxMeta->setName("output");
-    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(DataOutBox::$DATA_OUT_PORT_KEY, "file", "varA")));
-    $pipeline->set(new DataOutBox($dataOutBoxMeta));
+    $dataOutBoxMeta->addInputPort(new Port(PortMeta::create(FileOutBox::$FILE_OUT_PORT_KEY, "file", "varA")));
+    $pipeline->set(new FileOutBox($dataOutBoxMeta));
 
     Assert::noError(function () use ($pipeline) {
       $this->validator->validate($pipeline);

@@ -12,10 +12,10 @@ App\Model\Entity\PipelineConfig:
                   value: a.out
               boxes:
                 - name: source
-                  type: data-in
+                  type: file-in
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: source_files
                 - name: compilation
@@ -32,10 +32,10 @@ App\Model\Entity\PipelineConfig:
                       type: file
                       value: binary_file
                 - name: output
-                  type: data-out
+                  type: file-out
                   portsOut: []
                   portsIn:
-                    out-data:
+                    output:
                        type: file
                        value: binary_file
               '''
@@ -61,24 +61,24 @@ App\Model\Entity\PipelineConfig:
                 - name: binary
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: binary_file
-                  type: data-in
+                  type: file-in
                 - name: input
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: input_file
-                  type: data-in
+                  type: file-in
                 - name: test
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                       type: file
                       value: expected_output
-                  type: data-in
+                  type: file-in
                 - name: run
                   type: elf-exec
                   portsIn:
