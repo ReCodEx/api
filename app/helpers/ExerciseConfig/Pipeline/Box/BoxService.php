@@ -41,6 +41,7 @@ class BoxService
       FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
       FetchFileBox::$FETCH_TYPE => FetchFileBox::class,
       JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::class,
+      JavacCompilationBox::$JAVAC_TYPE => JavacCompilationBox::class,
       Python3Box::$PYTHON3_TYPE => Python3Box::class
     ];
   }
