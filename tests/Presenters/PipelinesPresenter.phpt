@@ -131,6 +131,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::type(\App\Model\Entity\Pipeline::class, $payload);
     Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+    Assert::null($payload->getExercise());
   }
 
   public function testForkPipeline() {

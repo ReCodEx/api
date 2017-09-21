@@ -125,16 +125,23 @@ class PipelinesPresenter extends BasePresenter {
   /**
    * Create pipeline.
    * @POST
+   * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionCreatePipeline() {
-    if (!$this->pipelineAcl->canCreate()) {
+    $exercise = NULL;
+    if ($this->getRequest()->getPost("exerciseId")) {
+      $exercise = $this->exercises->findOrThrow($this->getRequest()->getPost("exerciseId"));
+    }
+
+    if (!$this->pipelineAcl->canCreate() ||
+        ($exercise && !$this->exerciseAcl->canCreatePipeline($exercise))) {
       throw new ForbiddenRequestException("You are not allowed to create pipeline.");
     }
 
     // create pipeline entity, persist it and return it
-    $pipeline = Pipeline::create($this->getCurrentUser());
+    $pipeline = Pipeline::create($this->getCurrentUser(), $exercise);
     $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
     $this->pipelines->persist($pipeline);
 

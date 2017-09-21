@@ -149,16 +149,19 @@ class Pipeline implements JsonSerializable
   /**
    * Create empty pipeline entity.
    * @param User $user
+   * @param Exercise|null $exercise
    * @return Pipeline
    */
-  public static function create(User $user): Pipeline {
+  public static function create(User $user, Exercise $exercise = null): Pipeline {
     return new self(
       "",
       1,
       "",
       new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
       new ArrayCollection,
-      $user
+      $user,
+      null,
+      $exercise
     );
   }
 
