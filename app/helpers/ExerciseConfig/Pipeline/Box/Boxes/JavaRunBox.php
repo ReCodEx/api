@@ -19,7 +19,7 @@ class JavaRunBox extends Box
 {
   /** Type key */
   public static $JAVA_RUNNER_TYPE = "java-groovy-run";
-  public static $GROOVY_BINARY = "groovy";
+  public static $GROOVY_BINARY = "/usr/bin/groovy";
   public static $RUNNER_FILE_PORT_KEY = "runner";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $BINARY_ARGS_PORT_KEY = "args";
