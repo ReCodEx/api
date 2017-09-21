@@ -112,6 +112,11 @@ class FilesInBox extends DataInBox
       $inputVariable = $variable;
     }
 
+    if ($inputVariable->isEmpty() && $variable->isEmpty()) {
+      // there are no files which should be renamed
+      return [];
+    }
+
     // validate variable value and prepare arrays which will be processed
     if ($inputVariable->isValueArray()) {
       // both variable and input variable are arrays

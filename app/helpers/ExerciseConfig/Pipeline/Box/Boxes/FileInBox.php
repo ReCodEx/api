@@ -112,6 +112,11 @@ class FileInBox extends DataInBox
       $inputVariable = $variable;
     }
 
+    if ($inputVariable->isEmpty() && $variable->isEmpty()) {
+      // there are no files which should be renamed
+      return [];
+    }
+
     // value is array which it should not be
     if ($inputVariable->isValueArray()) {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILE_IN_TYPE));
