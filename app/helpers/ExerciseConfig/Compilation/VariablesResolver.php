@@ -107,7 +107,7 @@ class VariablesResolver {
         $inputVariable = $exerciseVariable;
       }
 
-      if ($variable->isEmpty()) {
+      if ($inputVariable && $variable->isEmpty()) {
         // variable value is empty, replace it with input variable value
         // there is no need for explicit input variable anymore
         $variable = $inputVariable;
