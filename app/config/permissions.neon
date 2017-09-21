@@ -295,6 +295,7 @@ permissions:
           - setLimits
           - fork
           - evaluateReferenceSolution
+          - viewPipelines
       conditions:
           - exercise.isGroupSupervisor
 
