@@ -19,6 +19,7 @@ class JavaRunBox extends Box
 {
   /** Type key */
   public static $JAVA_RUNNER_TYPE = "java-groovy-run";
+  public static $GROOVY_BINARY = "groovy";
   public static $RUNNER_FILE_PORT_KEY = "runner";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $BINARY_ARGS_PORT_KEY = "args";
@@ -102,10 +103,16 @@ class JavaRunBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    $task->setCommandBinary(self::$GROOVY_BINARY);
+
+    $args = [
+      $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR),
+      "run"
+    ];
     if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
-      $task->setCommandArguments($this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
+      $args = array_merge($args, $this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
     }
+    $task->setCommandArguments($args);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
     if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
