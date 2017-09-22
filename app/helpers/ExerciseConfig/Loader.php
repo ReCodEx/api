@@ -50,10 +50,9 @@ class Loader {
     }
     $variable->setName($data[Variable::NAME_KEY]);
 
-    if (!isset($data[Variable::VALUE_KEY])) {
-      throw new ExerciseConfigException("Exercise variable does not have any value");
+    if (isset($data[Variable::VALUE_KEY])) {
+      $variable->setValue($data[Variable::VALUE_KEY]);
     }
-    $variable->setValue($data[Variable::VALUE_KEY]);
 
     return $variable;
   }
