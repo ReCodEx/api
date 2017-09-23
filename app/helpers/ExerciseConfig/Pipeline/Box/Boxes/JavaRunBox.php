@@ -10,6 +10,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
+use Nette\Utils\Strings;
 
 
 /**
@@ -18,8 +19,8 @@ use App\Helpers\JobConfig\Tasks\Task;
 class JavaRunBox extends Box
 {
   /** Type key */
-  public static $JAVA_RUNNER_TYPE = "java-groovy-run";
-  public static $GROOVY_BINARY = "/usr/bin/groovy";
+  public static $JAVA_RUNNER_TYPE = "java-runner";
+  public static $JAVA_BINARY = "/usr/bin/java";
   public static $RUNNER_FILE_PORT_KEY = "runner";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $BINARY_ARGS_PORT_KEY = "args";
@@ -27,7 +28,7 @@ class JavaRunBox extends Box
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
-  public static $DEFAULT_NAME = "Java Groovy Runner";
+  public static $DEFAULT_NAME = "Java Runner";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -103,10 +104,19 @@ class JavaRunBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary(self::$GROOVY_BINARY);
+    $task->setCommandBinary(self::$JAVA_BINARY);
+
+    // well we are running java and java is not smart enough to derive class
+    // name from class filename, so we are gonna be nice and do this tedious job
+    // instead of java runtime, you are welcome
+    $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    if (Strings::endsWith($runnerClass, ".class")) {
+      $runnerLength = Strings::length($runnerClass);
+      $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
+    }
 
     $args = [
-      $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR),
+      $runnerClass,
       "run"
     ];
     if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
