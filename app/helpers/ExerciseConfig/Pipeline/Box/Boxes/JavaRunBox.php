@@ -109,7 +109,7 @@ class JavaRunBox extends Box
     // well we are running java and java is not smart enough to derive class
     // name from class filename, so we are gonna be nice and do this tedious job
     // instead of java runtime, you are welcome
-    $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
     if (Strings::endsWith($runnerClass, ".class")) {
       $runnerLength = Strings::length($runnerClass);
       $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
