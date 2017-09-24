@@ -318,16 +318,14 @@ class Loader {
 
     $pipeline = new Pipeline;
 
-    if (!isset($data[Pipeline::VARIABLES_KEY]) || !is_array($data[Pipeline::VARIABLES_KEY])) {
-      throw new ExerciseConfigException("Pipeline does not have variables specified");
+    if (isset($data[Pipeline::VARIABLES_KEY]) && is_array($data[Pipeline::VARIABLES_KEY])) {
+      $pipeline->setVariablesTable($this->loadVariablesTable($data[Pipeline::VARIABLES_KEY]));
     }
-    $pipeline->setVariablesTable($this->loadVariablesTable($data[Pipeline::VARIABLES_KEY]));
 
-    if (!isset($data[Pipeline::BOXES_KEY]) || !is_array($data[Pipeline::BOXES_KEY])) {
-      throw new ExerciseConfigException("Pipeline does not have boxes specified");
-    }
-    foreach ($data[Pipeline::BOXES_KEY] as $box) {
-      $pipeline->set($this->loadBox($box));
+    if (isset($data[Pipeline::BOXES_KEY]) && is_array($data[Pipeline::BOXES_KEY])) {
+      foreach ($data[Pipeline::BOXES_KEY] as $box) {
+        $pipeline->set($this->loadBox($box));
+      }
     }
 
     return $pipeline;

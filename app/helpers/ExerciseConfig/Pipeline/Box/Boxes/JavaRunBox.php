@@ -14,7 +14,7 @@ use Nette\Utils\Strings;
 
 
 /**
- * Run Java with ReCodEx Groovy runner.
+ * Run Java with ReCodEx Runner.
  */
 class JavaRunBox extends Box
 {
