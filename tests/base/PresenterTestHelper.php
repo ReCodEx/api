@@ -26,7 +26,7 @@ class PresenterTestHelper
   {
     $command = $container->getByType(App\Console\DoctrineFixtures::class);
 
-    $input = new Symfony\Component\Console\Input\ArgvInput(["index.php", "base", $group]);
+    $input = new Symfony\Component\Console\Input\ArgvInput(["index.php", "-test", "base", $group]);
     $output = new Symfony\Component\Console\Output\NullOutput();
 
     $command->run($input, $output);
