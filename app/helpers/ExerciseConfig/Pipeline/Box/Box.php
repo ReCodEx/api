@@ -6,6 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\PipelineVars;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -104,8 +105,7 @@ abstract class Box implements JsonSerializable
     // check if all default input ports are present and have same type
     foreach ($defaultInPorts as $defaultInPort) {
       $inPort = $this->meta->getInputPort($defaultInPort->getName());
-      if (!$inPort || (!($inPort->getType() === $defaultInPort->getType())) &&
-          !($defaultInPort->getType() === VariableTypes::$UNDEFINED_TYPE)) {
+      if (!$inPort || (!($inPort->getType() === $defaultInPort->getType()))) {
         // input port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the input port
@@ -116,8 +116,7 @@ abstract class Box implements JsonSerializable
     // check if all default output ports are present and have same type
     foreach ($defaultOutPorts as $defaultOutPort) {
       $outPort = $this->meta->getOutputPort($defaultOutPort->getName());
-      if (!$outPort || (!($outPort->getType() === $defaultOutPort->getType())) &&
-          !($defaultOutPort->getType() === VariableTypes::$UNDEFINED_TYPE)) {
+      if (!$outPort || (!($outPort->getType() === $defaultOutPort->getType()))) {
         // output port is missing or types of port and default port are not the
         // same, but if types are not the same and default port is undefined
         // there can be any type in the output port
@@ -174,6 +173,44 @@ abstract class Box implements JsonSerializable
    */
   public function getOutputPort(string $port): ?Port {
     return $this->meta->getOutputPort($port);
+  }
+
+  /**
+   * Check if input port with given name has filled variable value.
+   * @param string $port
+   * @return bool
+   */
+  protected function hasInputPortValue(string $port): bool {
+    return $this->getInputPort($port)->getVariableValue() !== null &&
+      !$this->getInputPort($port)->getVariableValue()->isEmpty();
+  }
+
+  /**
+   * Check if ouput port with given name has filled variable value.
+   * @param string $port
+   * @return bool
+   */
+  protected function hasOutputPortValue(string $port): bool {
+    return $this->getOutputPort($port)->getVariableValue() !== null &&
+      !$this->getOutputPort($port)->getVariableValue()->isEmpty();
+  }
+
+  /**
+   * Return variable value of input port with given name.
+   * @param string $port
+   * @return Variable|null
+   */
+  protected function getInputPortValue(string $port): ?Variable {
+    return $this->getInputPort($port)->getVariableValue();
+  }
+
+  /**
+   * Return variable value of output port with given name.
+   * @param string $port
+   * @return Variable|null
+   */
+  protected function getOutputPortValue(string $port): ?Variable {
+    return $this->getOutputPort($port)->getVariableValue();
   }
 
 

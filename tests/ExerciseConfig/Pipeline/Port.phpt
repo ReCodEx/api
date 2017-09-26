@@ -96,7 +96,7 @@ class TestPort extends Tester\TestCase
 
     Assert::equal(null, $port->getName());
     Assert::equal(null, $port->getType());
-    Assert::equal(null, $port->getVariable());
+    Assert::equal("", $port->getVariable());
 
     $port->setName("name");
     $port->setType("file");

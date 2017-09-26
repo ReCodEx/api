@@ -33,10 +33,10 @@ class RenameBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$RENAME_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$RENAME_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$RENAME_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$RENAME_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -91,16 +91,16 @@ class RenameBox extends Box
    * @return Task[]
    */
   public function compile(): array {
-    if ($this->getInputPort(self::$RENAME_PORT_IN_KEY)->getVariableValue()->getValue() ===
-        $this->getOutputPort(self::$RENAME_PORT_OUT_KEY)->getVariableValue()->getValue()) {
+    if ($this->getInputPortValue(self::$RENAME_PORT_IN_KEY)->getValue() ===
+        $this->getOutputPortValue(self::$RENAME_PORT_OUT_KEY)->getValue()) {
       return [];
     }
 
     $task = new Task();
     $task->setCommandBinary(TaskCommands::$RENAME);
     $task->setCommandArguments([
-      $this->getInputPort(self::$RENAME_PORT_IN_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $this->getOutputPort(self::$RENAME_PORT_OUT_KEY)->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
+      $this->getInputPortValue(self::$RENAME_PORT_IN_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $this->getOutputPortValue(self::$RENAME_PORT_OUT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
+
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;

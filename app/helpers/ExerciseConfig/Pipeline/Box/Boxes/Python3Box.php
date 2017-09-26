@@ -15,17 +15,18 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents execution of custom compiled program in ELF format.
  */
-class ElfExecutionBox extends Box
+class Python3Box extends Box
 {
   /** Type key */
-  public static $ELF_EXEC_TYPE = "elf-exec";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $PYTHON3_TYPE = "python3";
+  public static $PYTHON3_BINARY = "/usr/bin/python3";
+  public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $BINARY_ARGS_PORT_KEY = "args";
   public static $INPUT_FILES_PORT_KEY = "input-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
-  public static $DEFAULT_NAME = "ELF Execution";
+  public static $DEFAULT_NAME = "Python3 Execution";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -38,10 +39,10 @@ class ElfExecutionBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta)->setName(self::$BINARY_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -64,7 +65,7 @@ class ElfExecutionBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$ELF_EXEC_TYPE;
+    return self::$PYTHON3_TYPE;
   }
 
   /**
@@ -100,10 +101,13 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    $task->setCommandBinary(self::$PYTHON3_BINARY);
+
+    $args = [$this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
     if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
-      $task->setCommandArguments($this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
+      $args = array_merge($args, $this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
     }
+    $task->setCommandArguments($args);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
     if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {

@@ -276,7 +276,7 @@ class Variable implements JsonSerializable
 
     $data[self::NAME_KEY] = $this->name;
     $data[self::TYPE_KEY] = $this->type;
-    $data[self::VALUE_KEY] = $this->value;
+    if ($this->value !== null) { $data[self::VALUE_KEY] = $this->value; }
 
     return $data;
   }

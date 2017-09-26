@@ -99,12 +99,12 @@ class TestVariable extends Tester\TestCase
   }
 
   public function testMissingValue() {
-    Assert::exception(function () {
+    Assert::noError(function () {
       $this->loader->loadVariable([
         "name" => "varName",
         "type" => "string"
       ]);
-    }, ExerciseConfigException::class);
+    });
   }
 
   public function testEscaping() {

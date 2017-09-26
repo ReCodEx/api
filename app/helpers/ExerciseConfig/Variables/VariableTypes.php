@@ -11,5 +11,4 @@ class VariableTypes
   public static $REMOTE_FILE_ARRAY_TYPE = "remote-file[]";
   public static $STRING_TYPE = "string";
   public static $STRING_ARRAY_TYPE = "string[]";
-  public static $UNDEFINED_TYPE = "?";
 }

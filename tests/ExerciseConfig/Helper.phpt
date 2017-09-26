@@ -36,9 +36,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => ["in-data" => ['type' => 'file', 'value' => "data-in"]]
+          "portsOut" => ["input" => ['type' => 'file', 'value' => "data-in"]]
         ]
       ]
     ]);
@@ -60,8 +60,8 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "file",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join"]],
           "portsOut" => []
         ]
       ]
@@ -72,9 +72,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join"] ]
         ]
       ]
     ]);
@@ -111,8 +111,8 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "file",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join"]],
           "portsOut" => []
         ],
         [
@@ -130,9 +130,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join"] ]
         ]
       ]
     ]);
@@ -163,14 +163,14 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "input",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "input"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "input"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join"]],
           "portsOut" => []
         ]
       ]
@@ -181,15 +181,15 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "test",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "test"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "test"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join"] ]
         ]
       ]
     ]);
@@ -221,14 +221,14 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "input",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "input"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "input"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join"]],
           "portsOut" => []
         ]
       ]
@@ -239,15 +239,15 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "test",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "test"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "test"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join"] ]
         ]
       ]
     ]);
@@ -279,14 +279,14 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "input",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "input"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "input"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join"]],
           "portsOut" => []
         ]
       ]
@@ -297,20 +297,20 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "test",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "test"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "test"] ]
         ],
         [
           "name" => "file",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join"] ]
         ],
         [
           "name" => "output",
-          "type" => "data-out",
-          "portsIn" => ["out-data" => ['type' => 'file', 'value' => "join-second"]],
+          "type" => "file-out",
+          "portsIn" => ["output" => ['type' => 'file', 'value' => "join-second"]],
           "portsOut" => []
         ]
       ]
@@ -321,33 +321,33 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "boxes" => [
         [
           "name" => "environment",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'string', 'value' => "environment"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "environment"] ]
         ],
         [
           "name" => "non-environment-a",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'string', 'value' => "non-environment-a"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "non-environment-a"] ]
         ],
         [
           "name" => "non-environment-b",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'string', 'value' => "non-environment-b"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "non-environment-b"] ]
         ],
         [
           "name" => "input",
-          "type" => "data-in",
+          "type" => "file-in",
           "portsIn" => [],
-          "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "join-second"] ]
+          "portsOut" => [ "input" => ['type' => 'file', 'value' => "join-second"] ]
         ]
       ]
     ]);
     $variablesTable = $this->loader->loadVariablesTable([
       [ "name" => "test", "type" => "file", "value" => "test.in" ],
-      [ "name" => "environment", "type" => "string", "value" => "environment" ]
+      [ "name" => "environment", "type" => "file", "value" => "environment" ]
     ]);
 
     $result = $this->helper->getVariablesForExercise(
@@ -371,8 +371,8 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::equal("non-environment-b", $result[$pipelineCid][1]->getName());
 
     Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
-    Assert::equal(VariableTypes::$STRING_TYPE, $result[$pipelineCid][0]->getType());
-    Assert::equal(VariableTypes::$STRING_TYPE, $result[$pipelineCid][1]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][1]->getType());
   }
 
 }

@@ -10,22 +10,25 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
+use Nette\Utils\Strings;
 
 
 /**
- * Box which represents execution of custom compiled program in ELF format.
+ * Run Java with ReCodEx Runner.
  */
-class ElfExecutionBox extends Box
+class JavaRunBox extends Box
 {
   /** Type key */
-  public static $ELF_EXEC_TYPE = "elf-exec";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $JAVA_RUNNER_TYPE = "java-runner";
+  public static $JAVA_BINARY = "/usr/bin/java";
+  public static $RUNNER_FILE_PORT_KEY = "runner";
+  public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $BINARY_ARGS_PORT_KEY = "args";
   public static $INPUT_FILES_PORT_KEY = "input-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
-  public static $DEFAULT_NAME = "ELF Execution";
+  public static $DEFAULT_NAME = "Java Runner";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -38,10 +41,11 @@ class ElfExecutionBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta)->setName(self::$RUNNER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta)->setName(self::$BINARY_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -64,7 +68,7 @@ class ElfExecutionBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$ELF_EXEC_TYPE;
+    return self::$JAVA_RUNNER_TYPE;
   }
 
   /**
@@ -100,10 +104,25 @@ class ElfExecutionBox extends Box
   public function compile(): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
-    $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
-    if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
-      $task->setCommandArguments($this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
+    $task->setCommandBinary(self::$JAVA_BINARY);
+
+    // well we are running java and java is not smart enough to derive class
+    // name from class filename, so we are gonna be nice and do this tedious job
+    // instead of java runtime, you are welcome
+    $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
+    if (Strings::endsWith($runnerClass, ".class")) {
+      $runnerLength = Strings::length($runnerClass);
+      $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
     }
+
+    $args = [
+      $runnerClass,
+      "run"
+    ];
+    if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
+      $args = array_merge($args, $this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
+    }
+    $task->setCommandArguments($args);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
     if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {

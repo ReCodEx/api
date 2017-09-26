@@ -6,7 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
-use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
@@ -26,9 +26,9 @@ class TestPipeline extends Tester\TestCase
     "boxes" => [
       [
         "name" => "file",
-        "type" => "data-in",
+        "type" => "file-in",
         "portsIn" => [],
-        "portsOut" => [ "in-data" => ['type' => 'file', 'value' => "out_data_file"] ]
+        "portsOut" => [ "input" => ['type' => 'file', 'value' => "out_data_file"] ]
       ],
       [
         "name" => "evaluation",
@@ -41,8 +41,8 @@ class TestPipeline extends Tester\TestCase
       ],
       [
         "name" => "file-out",
-        "type" => "data-out",
-        "portsIn" => [ "out-data" => ['type' => 'file', 'value' => "out_data_file"] ],
+        "type" => "file-out",
+        "portsIn" => [ "output" => ['type' => 'file', 'value' => "out_data_file"] ],
         "portsOut" => []
       ]
     ]
@@ -85,7 +85,7 @@ class TestPipeline extends Tester\TestCase
     $boxMeta->setName("boxA");
 
     $pipeline = new Pipeline;
-    $box = new DataInBox($boxMeta);
+    $box = new FileInBox($boxMeta);
 
     $pipeline->set($box);
     Assert::equal(1, $pipeline->size());
@@ -105,7 +105,7 @@ class TestPipeline extends Tester\TestCase
     Assert::equal(VariableTypes::$STRING_TYPE, $pipeline->getVariablesTable()->get("varA")->getType());
     Assert::equal("valA", $pipeline->getVariablesTable()->get("varA")->getValue());
 
-    Assert::type(DataInBox::class, $pipeline->get("file"));
+    Assert::type(FileInBox::class, $pipeline->get("file"));
     Assert::type(JudgeNormalBox::class, $pipeline->get("evaluation"));
 
     Assert::equal("file", $pipeline->get("file")->getName());
