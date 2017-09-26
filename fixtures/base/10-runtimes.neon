@@ -25,14 +25,14 @@ App\Model\Entity\RuntimeEnvironment:
                 type: "file"
                 value: "*.pas"
               '''
-    CPP11Runtime:
+    CPPRuntime:
         __construct:
-            - cxx11-gcc-linux
-            - "C++11 (GCC)"
+            - cxx-gcc-linux
+            - "C++ (GCC)"
             - 'C++'
             - "[cpp, h, hpp]"
             - "GNU/Linux"
-            - C++11 compiled with G++
+            - C++ compiled with G++
             - '''
               - name: "source_files"
                 type: "file[]"
@@ -40,7 +40,7 @@ App\Model\Entity\RuntimeEnvironment:
               '''
     MonoRuntime:
         __construct:
-            - mono46
+            - mono
             - "C# (Mono)"
             - 'C#'
             - "[cs]"
@@ -51,14 +51,14 @@ App\Model\Entity\RuntimeEnvironment:
                 type: "file[]"
                 value: "*.cs"
               '''
-    Java8Runtime:
+    JavaRuntime:
         __construct:
-            - java8
-            - "Java 8"
-            - 'Java 8'
+            - java
+            - "Java (OpenJDK)"
+            - 'Java'
             - "[java]"
             - "GNU/Linux"
-            - "Java 8"
+            - "Java"
             - '''
               - name: "source_files"
                 type: "file[]"

@@ -164,7 +164,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // check all environments
     foreach ($payload as $environment) {
-      Assert::contains($environment['name'], [ "default", "java8", "c-gcc-linux" ]);
+      Assert::contains($environment['name'], [ "default", "java", "c-gcc-linux" ]);
       Assert::count(count($exerciseConfig->getTests()), $environment['tests']);
 
       foreach ($environment['tests'] as $test) {
@@ -210,7 +210,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         ]
       ],
       [
-        "name" => "java8",
+        "name" => "java",
         "tests" => [
           ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],

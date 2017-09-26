@@ -15,6 +15,7 @@ use DateTime;
  *
  * @method string getId()
  * @method User getAuthor()
+ * @method string getPipelineConfig()
  */
 class PipelineConfig
 {

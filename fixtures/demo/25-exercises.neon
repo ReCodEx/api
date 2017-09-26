@@ -9,7 +9,7 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         runtimeEnvironments:
             - @CRuntime
-            - @Java8Runtime
+            - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
@@ -29,7 +29,7 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         runtimeEnvironments:
             - @CRuntime
-            - @Java8Runtime
+            - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
@@ -50,7 +50,7 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         runtimeEnvironments:
             - @CRuntime
-            - @Java8Runtime
+            - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
@@ -71,7 +71,7 @@ App\Model\Entity\Exercise:
             - @demoLocalizedText
         runtimeEnvironments:
             - @CRuntime
-            - @Java8Runtime
+            - @JavaRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2

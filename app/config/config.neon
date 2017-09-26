@@ -188,6 +188,8 @@ services:
     tags: [kdyby.console.command]
   - class: App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
     tags: [kdyby.console.command]
+  - class: App\Console\ExportDatabase
+    tags: [kdyby.console.command]
 
   - class: Gedmo\SoftDeleteable\SoftDeleteableListener()
     tags: [kdyby.subscriber]
