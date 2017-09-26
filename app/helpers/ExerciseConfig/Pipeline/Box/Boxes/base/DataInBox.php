@@ -50,4 +50,30 @@ abstract class DataInBox extends Box
     $this->inputVariable = $variable;
   }
 
+  /**
+   * Compile task from given information.
+   * @param bool $isRemote
+   * @param string $input
+   * @param string $local
+   * @return Task
+   */
+  protected function compileTask(bool $isRemote, string $input, string $local): Task {
+    $task = new Task();
+    if ($isRemote) {
+      // remote file has to have fetch task
+      $task->setCommandBinary(TaskCommands::$FETCH);
+      $task->setCommandArguments([
+        $input,
+        ConfigParams::$SOURCE_DIR . $local
+      ]);
+    } else {
+      $task->setCommandBinary(TaskCommands::$COPY);
+      $task->setCommandArguments([
+        ConfigParams::$SOURCE_DIR . $input,
+        ConfigParams::$SOURCE_DIR . $local
+      ]);
+    }
+    return $task;
+  }
+
 }

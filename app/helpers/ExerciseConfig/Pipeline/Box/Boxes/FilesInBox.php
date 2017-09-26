@@ -112,50 +112,29 @@ class FilesInBox extends DataInBox
       $inputVariable = $variable;
     }
 
-    if ($inputVariable->isEmpty() && $variable->isEmpty()) {
+    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
+        ($inputVariable->isEmpty() && $variable->isEmpty())) {
       // there are no files which should be renamed
       return [];
     }
 
-    // validate variable value and prepare arrays which will be processed
-    if ($inputVariable->isValueArray()) {
-      // both variable and input variable are arrays
-      if (count($inputVariable->getValue()) !== count($variable->getValue())) {
-        throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
-      }
-
-      $inputFiles = $inputVariable->getValue();
-      $files = $variable->getPrefixedValue();
-    } else {
+    if (!$inputVariable->isValueArray()) {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
     }
+
+    // both variable and input variable are arrays
+    if (count($inputVariable->getValue()) !== count($variable->getValue())) {
+      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
+    }
+
+    // validate variable value and prepare arrays which will be processed
+    $inputFiles = $inputVariable->getValue();
+    $files = $variable->getPrefixedValue();
 
     // general foreach for both local and remote files
     $tasks = [];
     for ($i = 0; $i < count($files); ++$i) {
-      $task = new Task();
-
-      if ($isRemote) {
-        // remote file has to have fetch task
-        $task->setCommandBinary(TaskCommands::$FETCH);
-        $task->setCommandArguments([
-          $inputFiles[$i],
-          ConfigParams::$SOURCE_DIR . $files[$i]
-        ]);
-      } else {
-        if ($inputFiles[$i] === $files[$i]) {
-          // files have exactly same names, we can skip renaming
-          continue;
-        }
-
-        $task->setCommandBinary(TaskCommands::$COPY);
-        $task->setCommandArguments([
-          ConfigParams::$SOURCE_DIR . $inputFiles[$i],
-          ConfigParams::$SOURCE_DIR . $files[$i]
-        ]);
-      }
-
-      // add task to result
+      $task = $this->compileTask($isRemote, $inputFiles[$i], $files[$i]);
       $tasks[] = $task;
     }
     return $tasks;

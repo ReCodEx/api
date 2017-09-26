@@ -112,7 +112,8 @@ class FileInBox extends DataInBox
       $inputVariable = $variable;
     }
 
-    if ($inputVariable->isEmpty() && $variable->isEmpty()) {
+    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
+        ($inputVariable->isEmpty() && $variable->isEmpty())) {
       // there are no files which should be renamed
       return [];
     }
@@ -122,29 +123,9 @@ class FileInBox extends DataInBox
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILE_IN_TYPE));
     }
 
-    // values of both variables are the same
-    if ($inputVariable->getValue() === $variable->getPrefixedValue()) {
-      // files have exactly same names, we can skip renaming
-      return [];
-    }
-
-    // construct task
-    $task = new Task();
-    if ($isRemote) {
-      // remote file has to have fetch task
-      $task->setCommandBinary(TaskCommands::$FETCH);
-      $task->setCommandArguments([
-        $inputVariable->getValue(),
-        ConfigParams::$SOURCE_DIR . $variable->getPrefixedValue()
-      ]);
-    } else {
-      $task->setCommandBinary(TaskCommands::$COPY);
-      $task->setCommandArguments([
-        ConfigParams::$SOURCE_DIR . $inputVariable->getValue(),
-        ConfigParams::$SOURCE_DIR . $variable->getPrefixedValue()
-      ]);
-    }
-
+    // construct task and return it
+    $task = $this->compileTask($isRemote, $inputVariable->getValue(),
+      $variable->getPrefixedValue());
     return [$task];
   }
 

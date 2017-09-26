@@ -2,9 +2,11 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 
 
@@ -94,22 +96,59 @@ class JoinPipelinesBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(): array {
-    if (current($this->getInputPorts())->getVariableValue()->getValue() ===
-        current($this->getOutputPorts())->getVariableValue()->getValue()) {
+    /**
+     * @var Variable $inputVariable
+     * @var Variable $outputVariable
+     */
+    $inputVariable = current($this->getInputPorts())->getVariableValue();
+    $outputVariable = current($this->getOutputPorts())->getVariableValue();
+
+    // check for emptiness or same values, in those cases nothing has to be done
+    if (($inputVariable->getValue() === $outputVariable->getValue()) ||
+        ($inputVariable->isEmpty() && $outputVariable->isEmpty())) {
       return [];
     }
 
-    // if values in ports are different then we should engage rename task
-    $task = new Task();
-    $task->setCommandBinary(TaskCommands::$RENAME);
-    $task->setCommandArguments([
-      current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
-      current($this->getOutputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)
-    ]);
-    return [$task];
+    // prepare inputs and outputs
+    if ($inputVariable->isValueArray() && $outputVariable->isValueArray()) {
+      // both variable and input variable are arrays
+      if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
+        throw new ExerciseConfigException("Different count of remote variables and local variables in box '{$this->getName()}'");
+      }
+
+      $inputs = $inputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+      $outputs = $outputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+    } else if (!$inputVariable->isValueArray() && !$outputVariable->isValueArray()) {
+      // both variable values are single values
+      $inputs = [$inputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
+      $outputs = [$outputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
+    } else {
+      throw new ExerciseConfigException("Incompatible types of variables in joining box '{$this->getName()}'");
+    }
+
+    // general foreach for processing both arrays and single elements
+    $tasks = [];
+    for ($i = 0; $i < count($inputs); ++$i) {
+      if ($inputs[$i] === $outputs[$i]) {
+        continue;
+      }
+
+      $task = new Task();
+      $task->setCommandBinary(TaskCommands::$RENAME);
+      $task->setCommandArguments([
+        $inputs[$i],
+        $outputs[$i]
+      ]);
+
+      // add task to result
+      $tasks[] = $task;
+    }
+
+    return $tasks;
   }
 
 }
