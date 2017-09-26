@@ -17,3 +17,4 @@ phpDocumentor.phar
 /job_config
 coverage.xml
 coverage.html
+/fixtures/generated/*

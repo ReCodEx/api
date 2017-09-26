@@ -12,6 +12,12 @@ use App\Exceptions\ApiException;
  * @ORM\Entity
  *
  * @method string getId()
+ * @method string getName()
+ * @method string getLanguage()
+ * @method string getExtensions()
+ * @method string getPlatform()
+ * @method string getDescription()
+ * @method string getDefaultVariables()
  */
 class RuntimeEnvironment implements JsonSerializable
 {

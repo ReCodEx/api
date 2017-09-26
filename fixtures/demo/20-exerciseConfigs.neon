@@ -10,7 +10,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
             - @demoAdmin
     demoJavaEnvironmentConfig:
         __construct:
-            - @Java8Runtime
+            - @JavaRuntime
             - '''
               - name: "source_files"
                 type: "file[]"
@@ -24,7 +24,7 @@ App\Model\Entity\ExerciseConfig:
         __construct:
             - '''
               environments:
-                - java8
+                - java
                 - c-gcc-linux
               tests:
                 "Test 1":
@@ -35,7 +35,7 @@ App\Model\Entity\ExerciseConfig:
                           type: remote-file
                           value: expected.1.out
                   environments:
-                    java8:
+                    java:
                       pipelines:
                         - name: "compilationPipeline"
                           variables:

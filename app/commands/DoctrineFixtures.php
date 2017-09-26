@@ -12,6 +12,7 @@ use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
 
@@ -59,6 +60,7 @@ class DoctrineFixtures extends Command {
    */
   protected function configure() {
     $this->setName('db:fill')->setDescription('Clear the database and fill it with initial data.');
+    $this->addOption('test', 't', InputOption::VALUE_OPTIONAL, 'Determines if command was executed within tests', false);
     $this->addArgument('groups', InputArgument::IS_ARRAY, 'Fixture groups to be loaded', ['base']);
   }
 
@@ -71,9 +73,11 @@ class DoctrineFixtures extends Command {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->clearDatabase();
 
-    // Pipeline fixtures can set their own ids
-    $metadata = $this->em->getClassMetadata(Pipeline::class);
-    $metadata->setIdGenerator(new AssignedGenerator());
+    if ($input->getOption("test")) {
+      // Pipeline fixtures can set their own ids
+      $metadata = $this->em->getClassMetadata(Pipeline::class);
+      $metadata->setIdGenerator(new AssignedGenerator());
+    }
 
     $fixtureDir = __DIR__ . '/../../fixtures';
     $fixtureFiles = [];
