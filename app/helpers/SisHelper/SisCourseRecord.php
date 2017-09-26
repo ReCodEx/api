@@ -143,7 +143,8 @@ class SisCourseRecord implements JsonSerializable {
       'dayOfWeek' => $this->dayOfWeek,
       'time' => $this->time,
       'fortnightly' => $this->fortnightly,
-      'oddWeeks' => $this->oddWeeks
+      'oddWeeks' => $this->oddWeeks,
+      'type' => $this->type
     ];
   }
 }
