@@ -12,6 +12,8 @@ class SisCourseRecord implements JsonSerializable {
 
   private $courseId;
 
+  private $type;
+
   private $affiliation;
 
   private $captions;
@@ -31,6 +33,11 @@ class SisCourseRecord implements JsonSerializable {
   private $fortnightly;
 
   private $oddWeeks;
+
+  private static $typeMap = [
+	  "P" => "lecture",
+	  "X" => "lab"
+  ];
 
   /**
    * @param $sisUserId
@@ -53,6 +60,7 @@ class SisCourseRecord implements JsonSerializable {
       ->format("H:i");
     $result->fortnightly = $data["fortnight"];
     $result->oddWeeks = $data["firstweek"] == 1;
+    $result->type = array_key_exists($data["type"], static::$typeMap) ? static::$typeMap[$data["type"]] : "unknown";
 
     foreach (static::$languages as $language) {
       $result->captions[$language] = $data["caption_" . $language];
@@ -135,7 +143,8 @@ class SisCourseRecord implements JsonSerializable {
       'dayOfWeek' => $this->dayOfWeek,
       'time' => $this->time,
       'fortnightly' => $this->fortnightly,
-      'oddWeeks' => $this->oddWeeks
+      'oddWeeks' => $this->oddWeeks,
+      'type' => $this->type
     ];
   }
 }
