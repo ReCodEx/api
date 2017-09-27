@@ -4,8 +4,10 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
+use App\Model\Entity\User;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IInstancePermissions;
+use App\Security\ACL\IUserPermissions;
 use App\Security\Identity;
 use Nette\Http\IResponse;
 
@@ -43,6 +45,12 @@ class InstancesPresenter extends BasePresenter {
    * @inject
    */
   public $groupAcl;
+
+  /**
+   * @var IUserPermissions
+   * @inject
+   */
+  public $userAcl;
 
   /**
    * Get a list of all instances
@@ -187,7 +195,10 @@ class InstancesPresenter extends BasePresenter {
     }
 
     $members = $instance->getMembers($search);
-    $this->sendSuccessResponse($members->getValues());
+    $members = array_filter($members, function (User $user) {
+      return $this->userAcl->canViewDetail($user);
+    });
+    $this->sendSuccessResponse($members);
   }
 
   /**

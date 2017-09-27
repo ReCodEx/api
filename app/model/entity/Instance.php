@@ -104,40 +104,44 @@ class Instance implements JsonSerializable
    */
   protected $members;
 
+  /**
+   * Get members of the instance with given filter applied.
+   * @param null $search
+   * @return User[]
+   */
   public function getMembers($search = NULL) {
     $result = $this->members->filter(function (User $user) {
       return $user->getDeletedAt() === NULL;
     });
 
-    if ($search !== NULL && !empty($search)) {
-      $filter = Criteria::create()
-                  ->where(Criteria::expr()->contains("firstName", $search))
-                  ->orWhere(Criteria::expr()->contains("lastName", $search));
-      $members = $result->matching($filter);
-      if ($members->count() > 0) {
-        return $members;
-      }
-
-      // weaker filter - the strict one did not match anything
-      $members = $result;
-      foreach (explode(" ", $search) as $part) {
-        // skip empty parts
-        $part = trim($part);
-        if (empty($part)) {
-          continue;
-        }
-
-        $filter = Criteria::create()
-                      ->orWhere(Criteria::expr()->contains("firstName", $part))
-                      ->orWhere(Criteria::expr()->contains("lastName", $part));
-        $members = $members->matching($filter);
-      }
-
-      return $members;
+    if ($search === NULL || empty($search)) {
+      return $result->toArray();
     }
 
-    // no query is present
-    return $result;
+    $filter = Criteria::create()
+      ->where(Criteria::expr()->contains("firstName", $search))
+      ->orWhere(Criteria::expr()->contains("lastName", $search));
+    $members = $result->matching($filter);
+    if ($members->count() > 0) {
+      return $members->toArray();
+    }
+
+    // weaker filter - the strict one did not match anything
+    $members = [];
+    foreach (explode(" ", $search) as $part) {
+      // skip empty parts
+      $part = trim($part);
+      if (empty($part)) {
+        continue;
+      }
+
+      $filter = Criteria::create()
+        ->orWhere(Criteria::expr()->contains("firstName", $part))
+        ->orWhere(Criteria::expr()->contains("lastName", $part));
+      $members = array_merge($members, $result->matching($filter)->toArray());
+    }
+
+    return $members;
   }
 
   public function addMember(User $user) {

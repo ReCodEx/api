@@ -192,7 +192,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($this->presenter->instances->get($instance->id)->getMembers(NULL)->getValues(), $result['payload']);
+    Assert::equal($this->presenter->instances->get($instance->id)->getMembers(), $result['payload']);
   }
 
   public function testGetLicences()
