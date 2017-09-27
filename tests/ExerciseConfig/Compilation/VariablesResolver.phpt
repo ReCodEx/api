@@ -99,10 +99,13 @@ class TestVariablesResolver extends Tester\TestCase
     $testInputVarBB = (new Variable("file"))->setName("test-bb-input")->setValue("");
     $testOutputVarBA = (new Variable("file"))->setName("test-ba-output")->setValue("");
     $testOutputVarBB = (new Variable("file"))->setName("test-bb-output")->setValue("");
+    $testOnlyInputVarB = (new Variable("string"))->setName("test-b-only-input")->setValue("only-input");
 
     $this->envVarTableB = (new VariablesTable)->set($testInputVarBA);
     $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
-    $this->pipeVarTableB = (new VariablesTable)->set($testInputVarBA)->set($testInputVarBB)->set($testOutputVarBA)->set($testOutputVarBB);
+    $this->pipeVarTableB = (new VariablesTable)->set($testInputVarBA)
+      ->set($testInputVarBB)->set($testOutputVarBA)->set($testOutputVarBB)
+      ->set($testOnlyInputVarB);
 
     $outPortBA = new Port((new PortMeta)->setName("data-in-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBA->getName()));
     $dataInNodeBA = new PortNode((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
@@ -110,10 +113,13 @@ class TestVariablesResolver extends Tester\TestCase
     $outPortBB = new Port((new PortMeta)->setName("data-in-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBB->getName()));
     $dataInNodeBB = new PortNode((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
 
+    $onlyInPortB = new Port((new PortMeta)->setName("data-only-in")->setType(VariableTypes::$STRING_TYPE)->setVariable($testOnlyInputVarB->getName()));
     $inPortBA = new Port((new PortMeta)->setName("data-out-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBA->getName()));
     $inPortBB = new Port((new PortMeta)->setName("data-out-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBB->getName()));
-    $execNodeB = new PortNode((new CustomBox)->setName("execB")->addInputPort($outPortBA)
-      ->addInputPort($outPortBB)->addOutputPort($inPortBA)->addOutputPort($inPortBB));
+    $execNodeB = new PortNode((new CustomBox)->setName("execB")
+      ->addInputPort($onlyInPortB)->addInputPort($outPortBA)
+      ->addInputPort($outPortBB)->addOutputPort($inPortBA)
+      ->addOutputPort($inPortBB));
 
     $dataOutNodeBA = new PortNode((new CustomBox)->setName("outBA")->addInputPort($inPortBA));
     $dataOutNodeBB = new PortNode((new CustomBox)->setName("outBB")->addInputPort($inPortBB));
@@ -257,6 +263,7 @@ class TestVariablesResolver extends Tester\TestCase
     Assert::equal("test-ba-input", $treeB->getInputNodes()[0]->getBox()->getOutputPorts()["data-in-a"]->getVariableValue()->getName());
     Assert::equal("test-ba-input", $treeB->getOtherNodes()[0]->getBox()->getInputPorts()["data-in-a"]->getVariableValue()->getName());
     Assert::equal("test-bb-input", $treeB->getInputNodes()[1]->getBox()->getOutputPorts()["data-in-b"]->getVariableValue()->getName());
+    Assert::equal("test-b-only-input", $treeB->getOtherNodes()[0]->getBox()->getInputPorts()["data-only-in"]->getVariableValue()->getName());
     Assert::equal("test-bb-input", $treeB->getOtherNodes()[0]->getBox()->getInputPorts()["data-in-b"]->getVariableValue()->getName());
     Assert::equal("test-ba-output", $treeB->getOtherNodes()[0]->getBox()->getOutputPorts()["data-out-a"]->getVariableValue()->getName());
     Assert::equal("test-ba-output", $treeB->getOutputNodes()[0]->getBox()->getInputPorts()["data-out-a"]->getVariableValue()->getName());

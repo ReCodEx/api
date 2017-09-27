@@ -20,7 +20,10 @@ class McsCompilationBox extends Box
   /** Type key */
   public static $MCS_TYPE = "mcs";
   public static $MCS_BINARY = "/usr/bin/mcs";
+  public static $MCS_ARGS_PORT_KEY = "args";
+  public static $MAIN_CLASS_PORT_KEY = "main-class";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
+  public static $EXTERNAL_SOURCES_PORT_KEY = "external-sources";
   public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
   public static $DEFAULT_NAME = "Mono Compilation";
 
@@ -35,10 +38,13 @@ class McsCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$MAIN_CLASS_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXTERNAL_SOURCES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$MCS_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)->setVariable(""))
+        new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -96,16 +102,37 @@ class McsCompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
     $task->setCommandBinary(self::$MCS_BINARY);
+
+    $args = [];
+    if ($this->hasInputPortValue(self::$MCS_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$MCS_ARGS_PORT_KEY)->getValue();
+    }
+    $externalSources = [];
+    if ($this->hasInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)) {
+      $externalSources = $this->getInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)
+        ->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    }
+    $mainClass = [];
+    if ($this->hasInputPortValue(self::$MAIN_CLASS_PORT_KEY)) {
+      $mainClass = [
+        "-main:" . $this->getInputPortValue(self::$MAIN_CLASS_PORT_KEY)->getValue()
+      ];
+    }
+
     $task->setCommandArguments(
       array_merge(
-        $this->getInputPort(self::$SOURCE_FILES_PORT_KEY)->getVariableValue()
+        $args,
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+        $externalSources,
+        $mainClass,
         [
-          "-out:" . $this->getOutputPort(self::$ASSEMBLY_FILE_PORT_KEY)->getVariableValue()
+          "-out:" . $this->getOutputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)
             ->getPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );
+
     $task->setSandboxConfig((new SandboxConfig)
       ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];

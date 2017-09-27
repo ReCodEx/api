@@ -196,9 +196,9 @@ class TestPipelinesPresenter extends Tester\TestCase
       "boxes" => [
         [
           'name' => 'infile',
-          'type' => 'data-in',
+          'type' => 'file-in',
           'portsIn' => [],
-          'portsOut' => ['in-data' => ['type' => 'file', 'value' => 'in_data_file']]
+          'portsOut' => ['input' => ['type' => 'file', 'value' => 'in_data_file']]
         ],
         [
           'name' => 'judgement',
@@ -237,7 +237,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();
     Assert::equal("infile", $parsedPipeline["boxes"][0]["name"]);
     Assert::equal("judgement", $parsedPipeline["boxes"][1]["name"]);
-    Assert::equal("data-in", $parsedPipeline["boxes"][0]["type"]);
+    Assert::equal("file-in", $parsedPipeline["boxes"][0]["type"]);
     Assert::equal("judge-normal", $parsedPipeline["boxes"][1]["type"]);
   }
 

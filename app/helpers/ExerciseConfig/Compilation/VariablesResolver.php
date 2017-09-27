@@ -107,7 +107,7 @@ class VariablesResolver {
         $inputVariable = $exerciseVariable;
       }
 
-      if ($variable->isEmpty()) {
+      if ($inputVariable && $variable->isEmpty()) {
         // variable value is empty, replace it with input variable value
         // there is no need for explicit input variable anymore
         $variable = $inputVariable;
@@ -151,34 +151,42 @@ class VariablesResolver {
   /**
    * Resolve variables from other nodes, that means nodes which are not input
    * ones. This is general method for handling parent -> children pairs.
-   * @param PortNode $parent
+   * @note Parent and outPortName can be null
+   * @param PortNode|null $parent
    * @param PortNode $child
    * @param string $inPortName
-   * @param string $outPortName
+   * @param string|null $outPortName
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
    * @throws ExerciseConfigException
    */
-  private function resolveForVariable(PortNode $parent, PortNode $child,
-      string $inPortName, string $outPortName,
+  private function resolveForVariable(?PortNode $parent, PortNode $child,
+      string $inPortName, ?string $outPortName,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
       VariablesTable $pipelineVariables) {
 
     // init
     $inPort = $child->getBox()->getInputPort($inPortName);
-    $outPort = $parent->getBox()->getOutputPort($outPortName);
+    $outPort = $parent === null ? null : $parent->getBox()->getOutputPort($outPortName);
 
     // check if the ports was processed and processed correctly
-    if ($inPort->getVariableValue() && $outPort->getVariableValue()) {
+    if ($inPort->getVariableValue() !== null) {
       return; // this port was already processed
-    } else if ($inPort->getVariableValue() || $outPort->getVariableValue()) {
-      // only one value is assigned... well this is weird
+    } else if ($inPort->getVariableValue() === null && $outPort && $outPort->getVariableValue() !== null) {
+      // only input value is assigned... well this is weird
       throw new ExerciseConfigException("Malformed ports detected: $inPortName, $outPortName");
     }
 
     $variableName = $inPort->getVariable();
-    if ($variableName !== $outPort->getVariable()) {
+    if (empty($variableName)) {
+      // variable is either null or empty, this means that we do not have to
+      // process it and can safely return
+      return;
+    }
+
+    // check if variable name is the same in both ports
+    if ($outPort !== null && $variableName !== $outPort->getVariable()) {
       throw new ExerciseConfigException("Malformed tree - variables in corresponding ports ($inPortName, $outPortName) do not matches");
     }
 
@@ -194,7 +202,7 @@ class VariablesResolver {
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
-    $outPort->setVariableValue($variable);
+    if ($outPort !== null) { $outPort->setVariableValue($variable); }
   }
 
   /**
@@ -211,9 +219,10 @@ class VariablesResolver {
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
       VariablesTable $pipelineVariables) {
     foreach ($mergeTree->getOtherNodes() as $node) {
-      foreach ($node->getParents() as $inPortName => $parent) {
-        $outPortName = $parent->findChildPort($node);
-        if (!$outPortName) {
+      foreach ($node->getBox()->getInputPorts() as $inPortName => $inputPort) {
+        $parent = $node->getParent($inPortName);
+        $outPortName = $parent === null ? null : $parent->findChildPort($node);
+        if ($parent !== null && $outPortName === null) {
           // I do not like what you got!
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
         }

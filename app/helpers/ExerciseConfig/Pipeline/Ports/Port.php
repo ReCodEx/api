@@ -63,8 +63,6 @@ class Port implements JsonSerializable
       $this->isArray = true;
     } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$STRING_TYPE)) {
       $this->meta->setType(VariableTypes::$STRING_TYPE);
-    } else if (strtolower($this->meta->getType()) === strtolower(VariableTypes::$UNDEFINED_TYPE)) {
-      $this->meta->setType(VariableTypes::$UNDEFINED_TYPE);
     } else {
       throw new ExerciseConfigException("Unknown port type: {$this->meta->getType()}");
     }

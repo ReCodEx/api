@@ -13,16 +13,17 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents recodex-judge-normal executable.
+ * Box which represents javac compilation unit.
  */
-class JudgeNormalBox extends Box
+class JavacCompilationBox extends Box
 {
   /** Type key */
-  public static $JUDGE_NORMAL_TYPE = "judge-normal";
-  public static $JUDGE_NORMAL_BINARY = "recodex-judge-normal";
-  public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
-  public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
-  public static $DEFAULT_NAME = "ReCodEx Judge Normal";
+  public static $JAVAC_TYPE = "javac";
+  public static $JAVAC_BINARY = "/usr/bin/javac";
+  public static $JAVAC_ARGS_PORT_KEY = "args";
+  public static $SOURCE_FILES_PORT_KEY = "source-files";
+  public static $CLASS_FILES_PORT_KEY = "class-files";
+  public static $DEFAULT_NAME = "Javac Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -35,10 +36,12 @@ class JudgeNormalBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$JAVAC_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
-      self::$defaultOutputPorts = array();
+      self::$defaultOutputPorts = array(
+        new Port((new PortMeta)->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+      );
     }
   }
 
@@ -56,7 +59,7 @@ class JudgeNormalBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$JUDGE_NORMAL_TYPE;
+    return self::$JAVAC_TYPE;
   }
 
   /**
@@ -85,23 +88,31 @@ class JudgeNormalBox extends Box
     return self::$DEFAULT_NAME;
   }
 
+
   /**
    * Compile box into set of low-level tasks.
    * @return Task[]
    */
   public function compile(): array {
     $task = new Task();
-    $task->setType(TaskType::$EVALUATION);
-    $task->setCommandBinary(ConfigParams::$JUDGES_DIR . self::$JUDGE_NORMAL_BINARY);
-    $task->setCommandArguments([
-      $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR),
-      $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)
-    ]);
+    $task->setType(TaskType::$INITIATION);
+    $task->setFatalFailure(true);
+    $task->setCommandBinary(self::$JAVAC_BINARY);
 
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
-    $sandbox->setOutput(true);
-    $task->setSandboxConfig($sandbox);
+    $args = [];
+    if ($this->hasInputPortValue(self::$JAVAC_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$JAVAC_ARGS_PORT_KEY)->getValue();
+    }
+    $task->setCommandArguments(
+      array_merge(
+        $args,
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+      )
+    );
 
+    $task->setSandboxConfig((new SandboxConfig)
+      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];
   }
 

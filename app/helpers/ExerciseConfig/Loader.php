@@ -7,7 +7,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use App\Helpers\ExerciseConfig\Pipeline\Ports\PortFactory;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 
 /**
@@ -16,11 +15,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
  * exception is thrown.
  */
 class Loader {
-
-  /**
-   * @var PortFactory
-   */
-  private $portFactory;
 
   /**
    * @var BoxService
@@ -32,7 +26,6 @@ class Loader {
    * @param BoxService $boxService
    */
   public function __construct(BoxService $boxService) {
-    $this->portFactory = new PortFactory();
     $this->boxService = $boxService;
   }
 
@@ -57,10 +50,9 @@ class Loader {
     }
     $variable->setName($data[Variable::NAME_KEY]);
 
-    if (!isset($data[Variable::VALUE_KEY])) {
-      throw new ExerciseConfigException("Exercise variable does not have any value");
+    if (isset($data[Variable::VALUE_KEY])) {
+      $variable->setValue($data[Variable::VALUE_KEY]);
     }
-    $variable->setValue($data[Variable::VALUE_KEY]);
 
     return $variable;
   }
@@ -268,7 +260,7 @@ class Loader {
     }
     $port->setVariable($data[PortMeta::VARIABLE_KEY]);
 
-    return $this->portFactory->create($port);
+    return new Port($port);
   }
 
   /**
@@ -326,16 +318,14 @@ class Loader {
 
     $pipeline = new Pipeline;
 
-    if (!isset($data[Pipeline::VARIABLES_KEY]) || !is_array($data[Pipeline::VARIABLES_KEY])) {
-      throw new ExerciseConfigException("Pipeline does not have variables specified");
+    if (isset($data[Pipeline::VARIABLES_KEY]) && is_array($data[Pipeline::VARIABLES_KEY])) {
+      $pipeline->setVariablesTable($this->loadVariablesTable($data[Pipeline::VARIABLES_KEY]));
     }
-    $pipeline->setVariablesTable($this->loadVariablesTable($data[Pipeline::VARIABLES_KEY]));
 
-    if (!isset($data[Pipeline::BOXES_KEY]) || !is_array($data[Pipeline::BOXES_KEY])) {
-      throw new ExerciseConfigException("Pipeline does not have boxes specified");
-    }
-    foreach ($data[Pipeline::BOXES_KEY] as $box) {
-      $pipeline->set($this->loadBox($box));
+    if (isset($data[Pipeline::BOXES_KEY]) && is_array($data[Pipeline::BOXES_KEY])) {
+      foreach ($data[Pipeline::BOXES_KEY] as $box) {
+        $pipeline->set($this->loadBox($box));
+      }
     }
 
     return $pipeline;

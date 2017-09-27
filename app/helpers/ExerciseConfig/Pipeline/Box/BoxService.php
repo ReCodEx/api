@@ -27,15 +27,22 @@ class BoxService
    */
   public function __construct() {
     $this->boxes = [
-      DataInBox::$DATA_IN_TYPE => DataInBox::class,
-      DataOutBox::$DATA_OUT_TYPE => DataOutBox::class,
+      FileInBox::$FILE_IN_TYPE => FileInBox::class,
+      FilesInBox::$FILES_IN_TYPE => FilesInBox::class,
+      FileOutBox::$FILE_OUT_TYPE => FileOutBox::class,
+      FilesOutBox::$FILES_OUT_TYPE => FilesOutBox::class,
       JudgeNormalBox::$JUDGE_NORMAL_TYPE => JudgeNormalBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
+      GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
       MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
-      FetchBox::$FETCH_TYPE => FetchBox::class
+      FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
+      FetchFileBox::$FETCH_TYPE => FetchFileBox::class,
+      JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::class,
+      JavacCompilationBox::$JAVAC_TYPE => JavacCompilationBox::class,
+      Python3Box::$PYTHON3_TYPE => Python3Box::class
     ];
   }
 

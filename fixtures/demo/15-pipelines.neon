@@ -12,29 +12,32 @@ App\Model\Entity\PipelineConfig:
                   value: a.out
               boxes:
                 - name: source
+                  type: file-in
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: source_files
-                  type: data-in
                 - name: compilation
+                  type: gcc
                   portsIn:
                     source-files:
                       type: file[]
                       value: source_files
+                    args:
+                      type: string[]
+                      value: ""
                   portsOut:
                     binary-file:
                       type: file
                       value: binary_file
-                  type: gcc
                 - name: output
+                  type: file-out
                   portsOut: []
                   portsIn:
-                    out-data:
+                    output:
                        type: file
                        value: binary_file
-                  type: data-out
               '''
             - @demoAdmin
     demoTestPipelineConfig:
@@ -58,24 +61,24 @@ App\Model\Entity\PipelineConfig:
                 - name: binary
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: binary_file
-                  type: data-in
+                  type: file-in
                 - name: input
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                        type: file
                        value: input_file
-                  type: data-in
+                  type: file-in
                 - name: test
                   portsIn: []
                   portsOut:
-                    in-data:
+                    input:
                       type: file
                       value: expected_output
-                  type: data-in
+                  type: file-in
                 - name: run
                   type: elf-exec
                   portsIn:

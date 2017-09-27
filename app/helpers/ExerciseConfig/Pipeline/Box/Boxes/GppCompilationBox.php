@@ -13,16 +13,17 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which represents recodex-judge-normal executable.
+ * Box which represents g++ compilation unit.
  */
-class JudgeNormalBox extends Box
+class GppCompilationBox extends Box
 {
   /** Type key */
-  public static $JUDGE_NORMAL_TYPE = "judge-normal";
-  public static $JUDGE_NORMAL_BINARY = "recodex-judge-normal";
-  public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
-  public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
-  public static $DEFAULT_NAME = "ReCodEx Judge Normal";
+  public static $GPP_TYPE = "g++";
+  public static $GPP_BINARY = "/usr/bin/g++";
+  public static $GPP_ARGS_PORT_KEY = "args";
+  public static $SOURCE_FILES_PORT_KEY = "source-files";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
+  public static $DEFAULT_NAME = "G++ Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -35,10 +36,12 @@ class JudgeNormalBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$GPP_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
-      self::$defaultOutputPorts = array();
+      self::$defaultOutputPorts = array(
+        new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+      );
     }
   }
 
@@ -56,7 +59,7 @@ class JudgeNormalBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$JUDGE_NORMAL_TYPE;
+    return self::$GPP_TYPE;
   }
 
   /**
@@ -85,23 +88,36 @@ class JudgeNormalBox extends Box
     return self::$DEFAULT_NAME;
   }
 
+
   /**
    * Compile box into set of low-level tasks.
    * @return Task[]
    */
   public function compile(): array {
     $task = new Task();
-    $task->setType(TaskType::$EVALUATION);
-    $task->setCommandBinary(ConfigParams::$JUDGES_DIR . self::$JUDGE_NORMAL_BINARY);
-    $task->setCommandArguments([
-      $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR),
-      $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)
-    ]);
+    $task->setType(TaskType::$INITIATION);
+    $task->setFatalFailure(true);
+    $task->setCommandBinary(self::$GPP_BINARY);
 
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
-    $sandbox->setOutput(true);
-    $task->setSandboxConfig($sandbox);
+    $args = [];
+    if ($this->hasInputPortValue(self::$GPP_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$GPP_ARGS_PORT_KEY)->getValue();
+    }
+    $task->setCommandArguments(
+      array_merge(
+        $args,
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+        [
+          "-o",
+          $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
+            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+        ]
+      )
+    );
 
+    $task->setSandboxConfig((new SandboxConfig)
+      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
     return [$task];
   }
 

@@ -7,7 +7,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -15,13 +14,13 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents data source, mainly files.
  */
-class FetchBox extends Box
+class FetchFileBox extends Box
 {
   /** Type key */
-  public static $FETCH_TYPE = "fetch";
+  public static $FETCH_TYPE = "fetch-file";
   public static $REMOTE_PORT_KEY = "remote";
   public static $INPUT_PORT_KEY = "input";
-  public static $DEFAULT_NAME = "Fetch Pipeline Files";
+  public static $DEFAULT_NAME = "Fetch Pipeline File";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -34,10 +33,10 @@ class FetchBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -93,35 +92,16 @@ class FetchBox extends Box
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(): array {
+    $task = new Task();
 
-    // remote file which should be downloaded from file-server
-    $remoteVariable = $this->getInputPort(self::$REMOTE_PORT_KEY)->getVariableValue();
-    $variable = $this->getOutputPort(self::$INPUT_PORT_KEY)->getVariableValue();
+    // remote file has to have fetch task
+    $task->setCommandBinary(TaskCommands::$FETCH);
+    $task->setCommandArguments([
+      $this->getInputPortValue(self::$REMOTE_PORT_KEY)->getValue(),
+      $this->getOutputPortValue(self::$INPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)
+    ]);
 
-    // both variable and input variable are arrays
-    if (count($remoteVariable->getValue()) !== count($variable->getValue())) {
-      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FETCH_TYPE));
-    }
-
-    $remoteFiles = $remoteVariable->getValue();
-    $files = $variable->getPrefixedValue(ConfigParams::$SOURCE_DIR);
-
-    // general foreach for both local and remote files
-    $tasks = [];
-    for ($i = 0; $i < count($files); ++$i) {
-      $task = new Task();
-
-      // remote file has to have fetch task
-      $task->setCommandBinary(TaskCommands::$FETCH);
-      $task->setCommandArguments([
-        $remoteFiles[$i],
-        $files[$i]
-      ]);
-
-      // add task to result
-      $tasks[] = $task;
-    }
-    return $tasks;
+    return [$task];
   }
 
 }
