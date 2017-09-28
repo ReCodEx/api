@@ -19,6 +19,9 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @method DateTime getEvaluatedAt()
  * @method bool getEvaluationFailed()
+ * @method float getScore()
+ * @method int getPoints()
+ * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  */
 class SolutionEvaluation implements JsonSerializable
@@ -47,7 +50,10 @@ class SolutionEvaluation implements JsonSerializable
    * @ORM\Column(type="float")
    */
   protected $score;
-  public function isCorrect() { return $this->score > 0; }
+
+  public function isCorrect() {
+    return $this->score > 0;
+  }
 
   /**
    * @ORM\Column(type="integer")
@@ -68,7 +74,10 @@ class SolutionEvaluation implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isValid;
-  public function isValid() { return $this->isValid; }
+
+  public function isValid() {
+    return $this->isValid;
+  }
 
   /**
    * Automaticaly detected error in evaluation (reported by broker).

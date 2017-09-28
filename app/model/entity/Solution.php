@@ -13,6 +13,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @method string getId()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
+ * @method void setEvaluated(bool)
  */
 class Solution implements JsonSerializable
 {

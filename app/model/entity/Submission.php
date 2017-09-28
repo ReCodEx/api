@@ -114,6 +114,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     protected $submittedBy;
 
     /**
+     * @var Solution
      * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
      */
     protected $solution;
@@ -137,6 +138,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
     /**
+     * @var SolutionEvaluation
      * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
      */
     protected $evaluation;
@@ -198,6 +200,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
+        "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
         "maxPoints" => $this->getMaxPoints(),
         "accepted" => $this->accepted,
         "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
@@ -223,8 +226,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @param Submission $originalSubmission
    * @return Submission
    * @throws ForbiddenRequestException
-   * @internal param array $files The submitted files
-   * @internal param RuntimeConfig $runtime Runtime configuration
    */
     public static function createSubmission(
       string $note,
@@ -259,7 +260,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
   function isValid(): bool {
-    return $this->evaluation->isValid;
+    return $this->evaluation->isValid();
   }
 
   function isCorrect(): bool {
