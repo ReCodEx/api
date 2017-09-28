@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\BoxesCompiler;
 use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use App\Helpers\ExerciseConfig\Compilation\BoxesSorter;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
@@ -218,7 +219,10 @@ class TestBaseCompiler extends Tester\TestCase
       "groupA" => $this->loader->loadExerciseLimits(self::$limits[0]),
       "groupB" => $this->loader->loadExerciseLimits(self::$limits[1])
     ];
-    $jobConfig = $this->compiler->compile($exerciseConfig, $environmentConfigVariables, $limits, self::$environment, []);
+
+    $jobConfig = $this->compiler->compile($exerciseConfig,
+      $environmentConfigVariables, $limits, self::$environment,
+      CompilationParams::create());
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());

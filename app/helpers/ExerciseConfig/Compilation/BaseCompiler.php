@@ -64,17 +64,17 @@ class BaseCompiler {
    * @param VariablesTable $environmentConfigVariables
    * @param ExerciseLimits[] $limits
    * @param string $runtimeEnvironmentId
-   * @param string[] $submittedFiles
+   * @param CompilationParams $params
    * @return JobConfig
    */
   public function compile(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables, array $limits,
-      string $runtimeEnvironmentId, array $submittedFiles): JobConfig {
-    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId, $submittedFiles);
+      string $runtimeEnvironmentId, CompilationParams $params): JobConfig {
+    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId, $params);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
     $testDirectories = $this->testDirectoriesResolver->resolve($optimized);
-    $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits);
+    $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits, $params);
     return $jobConfig;
   }
 

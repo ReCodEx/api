@@ -7,6 +7,7 @@ use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\FileServerProxy;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
@@ -240,8 +241,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $errors = [];
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
+    $compilationParams = CompilationParams::create($submittedFiles, false); // TODO: debug flag
     list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator
-      ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $submittedFiles);
+      ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
+
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
       $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);

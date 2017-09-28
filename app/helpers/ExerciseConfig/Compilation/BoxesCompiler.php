@@ -125,9 +125,11 @@ class BoxesCompiler {
    * Go through given array find boxes and compile them into JobConfig.
    * @param RootedTree $rootedTree
    * @param ExerciseLimits[] $limits indexed by hwgroup
+   * @param CompilationParams $params
    * @return JobConfig
    */
-  public function compile(RootedTree $rootedTree, array $limits): JobConfig {
+  public function compile(RootedTree $rootedTree, array $limits,
+      CompilationParams $params): JobConfig {
     $jobConfig = new JobConfig();
 
     // @todo: logging will be for now turn on by default

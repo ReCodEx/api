@@ -92,7 +92,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
-    $this->sendSuccessResponse($exercises);
+    $this->sendSuccessResponse(array_values($exercises));
   }
 
   /**
