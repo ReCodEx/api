@@ -3,7 +3,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @CRuntime
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
                 value: "*.cpp"
               '''
@@ -12,7 +12,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
         __construct:
             - @JavaRuntime
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
                 value: "*.java"
               '''
@@ -31,7 +31,7 @@ App\Model\Entity\ExerciseConfig:
                   pipelines:
                     - name: "compilationPipeline"
                       variables:
-                        - name: expected_output
+                        - name: expected-output
                           type: remote-file
                           value: expected.1.out
                   environments:
@@ -39,7 +39,7 @@ App\Model\Entity\ExerciseConfig:
                       pipelines:
                         - name: "compilationPipeline"
                           variables:
-                            - name: expected_output
+                            - name: expected-output
                               type: remote-file
                               value: expected.1.java.out
                     c-gcc-linux: []
@@ -47,7 +47,7 @@ App\Model\Entity\ExerciseConfig:
                   pipelines:
                     - name: "compilationPipeline"
                       variables:
-                        - name: expected_output
+                        - name: expected-output
                           type: remote-file
                           value: expected.2.out
                   environments:
@@ -55,7 +55,7 @@ App\Model\Entity\ExerciseConfig:
                       pipelines:
                         - name: "compilationPipeline"
                           variables:
-                            - name: expected_output
+                            - name: expected-output
                               type: remote-file
                               value: expected.2.cpp.out
               '''

@@ -84,7 +84,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       // check variables, again defined in fixtures
       $variablesTable = $config["variablesTable"];
       Assert::count(1, $variablesTable);
-      Assert::equal("source_files", current($variablesTable)["name"]);
+      Assert::equal("source-files", current($variablesTable)["name"]);
     }
   }
 
@@ -188,12 +188,12 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         "name" => "default",
         "tests" => [
           ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
-            ["name" => "source_files", "type" => "file[]", "value" => []]
+            ["name" => "source-files", "type" => "file[]", "value" => []]
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input_file", "type" => "file", "value" => "defValB"],
-            ["name" => "binary_file", "type" => "file", "value" => "defValB"],
-            ["name" => "expected_output", "type" => "file", "value" => "defValB"]
+            ["name" => "input-file", "type" => "file", "value" => "defValB"],
+            ["name" => "binary-file", "type" => "file", "value" => "defValB"],
+            ["name" => "expected-output", "type" => "file", "value" => "defValB"]
           ]]]]
         ]
       ],
@@ -203,9 +203,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input_file", "type" => "file", "value" => "defValB"],
-            ["name" => "binary_file", "type" => "file", "value" => "defValB"],
-            ["name" => "expected_output", "type" => "file", "value" => "BValB"]
+            ["name" => "input-file", "type" => "file", "value" => "defValB"],
+            ["name" => "binary-file", "type" => "file", "value" => "defValB"],
+            ["name" => "expected-output", "type" => "file", "value" => "BValB"]
           ]]]]
         ]
       ],
@@ -215,9 +215,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
           ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input_file", "type" => "file", "value" => "defValB"],
-            ["name" => "binary_file", "type" => "file", "value" => "defValB"],
-            ["name" => "expected_output", "type" => "file", "value" => "BValC"]
+            ["name" => "input-file", "type" => "file", "value" => "defValB"],
+            ["name" => "binary-file", "type" => "file", "value" => "defValB"],
+            ["name" => "expected-output", "type" => "file", "value" => "BValC"]
           ]]]]
         ]
       ]
@@ -242,8 +242,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline($compilationPipeline->getId()));
     Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline($testPipeline->getId()));
-    Assert::equal([], $exerciseConfig->getTest('testA')->getPipeline($compilationPipeline->getId())->getVariablesTable()->get('source_files')->getValue());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary_file')->getValue());
+    Assert::equal([], $exerciseConfig->getTest('testA')->getPipeline($compilationPipeline->getId())->getVariablesTable()->get('source-files')->getValue());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary-file')->getValue());
   }
 
   public function testGetVariablesForExerciseConfig()
@@ -276,8 +276,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $testPipeline = $payload["testPipeline"];
     Assert::count(2, $testPipeline);
-    Assert::equal("input_file", $testPipeline[0]->getName());
-    Assert::equal("expected_output", $testPipeline[1]->getName());
+    Assert::equal("input-file", $testPipeline[0]->getName());
+    Assert::equal("expected-output", $testPipeline[1]->getName());
   }
 
   public function testGetLimits()

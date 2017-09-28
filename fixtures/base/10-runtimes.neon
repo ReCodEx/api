@@ -8,9 +8,9 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "C compiled with GCC"
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
-                value: "*.c"
+                value: "*.{c,h}"
               '''
     PascalRuntime:
         __construct:
@@ -21,7 +21,7 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "Pascal compiled with FreePascal"
             - '''
-              - name: "source_file"
+              - name: "source-file"
                 type: "file"
                 value: "*.pas"
               '''
@@ -34,9 +34,9 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - C++ compiled with G++
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
-                value: "*.cpp"
+                value: "*.{cpp,h,hpp}"
               '''
     MonoRuntime:
         __construct:
@@ -47,7 +47,7 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "C# run in Mono"
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
                 value: "*.cs"
               '''
@@ -60,7 +60,7 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "Java"
             - '''
-              - name: "source_files"
+              - name: "source-files"
                 type: "file[]"
                 value: "*.java"
               '''
@@ -73,7 +73,7 @@ App\Model\Entity\RuntimeEnvironment:
             - "GNU/Linux"
             - "Python 3 (CPython)"
             - '''
-              - name: "source_file"
+              - name: "source-file"
                 type: "file"
                 value: "*.py"
               '''

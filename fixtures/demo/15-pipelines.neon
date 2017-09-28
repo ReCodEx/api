@@ -3,11 +3,11 @@ App\Model\Entity\PipelineConfig:
         __construct:
             - '''
               variables:
-                - name: source_files
+                - name: source-files
                   type: file[]
                   value:
                     - source.cpp
-                - name: binary_file
+                - name: binary-file
                   type: file
                   value: a.out
               boxes:
@@ -17,44 +17,44 @@ App\Model\Entity\PipelineConfig:
                   portsOut:
                     input:
                        type: file
-                       value: source_files
+                       value: source-files
                 - name: compilation
                   type: gcc
                   portsIn:
                     source-files:
                       type: file[]
-                      value: source_files
+                      value: source-files
                     args:
                       type: string[]
                       value: ""
                   portsOut:
                     binary-file:
                       type: file
-                      value: binary_file
+                      value: binary-file
                 - name: output
                   type: file-out
                   portsOut: []
                   portsIn:
                     output:
                        type: file
-                       value: binary_file
+                       value: binary-file
               '''
             - @demoAdmin
     demoTestPipelineConfig:
         __construct:
             - '''
               variables:
-                - name: binary_file
+                - name: binary-file
                   type: file
                   value: a.out
-                - name: input_files
+                - name: input-files
                   type: file[]
                   value:
                     - input.in
-                - name: expected_output
+                - name: expected-output
                   type: file
                   value: expected.out
-                - name: actual_output
+                - name: actual-output
                   type: file
                   value: actual.out
               boxes:
@@ -63,21 +63,21 @@ App\Model\Entity\PipelineConfig:
                   portsOut:
                     input:
                        type: file
-                       value: binary_file
+                       value: binary-file
                   type: file-in
                 - name: input
                   portsIn: []
                   portsOut:
                     input:
                        type: file
-                       value: input_file
+                       value: input-file
                   type: file-in
                 - name: test
                   portsIn: []
                   portsOut:
                     input:
                       type: file
-                      value: expected_output
+                      value: expected-output
                   type: file-in
                 - name: run
                   type: elf-exec
@@ -90,25 +90,25 @@ App\Model\Entity\PipelineConfig:
                       value: ""
                     binary-file:
                       type: file
-                      value: binary_file
+                      value: binary-file
                     input-files:
                       type: file[]
-                      value: input_files
+                      value: input-files
                   portsOut:
                     stdout:
                       type: file
                       value: ""
                     output-file:
                       type: file
-                      value: actual_output
+                      value: actual-output
                 - name: judge
                   portsIn:
                     actual-output:
                       type: file
-                      value: actual_output
+                      value: actual-output
                     expected-output:
                       type: file
-                      value: expected_output
+                      value: expected-output
                   portsOut: []
                   type: judge-normal
               '''
