@@ -110,18 +110,20 @@ class Instance implements JsonSerializable
    * @return User[]
    */
   public function getMembers($search = NULL) {
-    $result = $this->members->filter(function (User $user) {
-      return $user->getDeletedAt() === NULL;
-    });
-
     if ($search === NULL || empty($search)) {
-      return $result->toArray();
+      return $this->members->filter(function (User $user) {
+        return $user->getDeletedAt() === NULL;
+      })->toArray();
     }
 
-    $filter = Criteria::create()
-      ->where(Criteria::expr()->contains("firstName", $search))
-      ->orWhere(Criteria::expr()->contains("lastName", $search));
-    $members = $result->matching($filter);
+    $filter = Criteria::create()->where(Criteria::expr()->andX(
+      Criteria::expr()->isNull("deletedAt"),
+      Criteria::expr()->orX(
+        Criteria::expr()->contains("firstName", $search),
+        Criteria::expr()->contains("lastName", $search)
+      )
+    ));
+    $members = $this->members->matching($filter);
     if ($members->count() > 0) {
       return $members->toArray();
     }
@@ -135,10 +137,14 @@ class Instance implements JsonSerializable
         continue;
       }
 
-      $filter = Criteria::create()
-        ->orWhere(Criteria::expr()->contains("firstName", $part))
-        ->orWhere(Criteria::expr()->contains("lastName", $part));
-      $members = array_merge($members, $result->matching($filter)->toArray());
+      $filter = Criteria::create()->where(Criteria::expr()->andX(
+        Criteria::expr()->isNull("deletedAt"),
+        Criteria::expr()->orX(
+          Criteria::expr()->contains("firstName", $part),
+          Criteria::expr()->contains("lastName", $part)
+        )
+      ));
+      $members = array_merge($members, $this->members->matching($filter)->toArray());
     }
 
     return $members;
