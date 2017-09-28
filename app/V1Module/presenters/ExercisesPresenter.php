@@ -15,6 +15,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\ExerciseFileStorage;
 use App\Model\Entity\LocalizedText;
+use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
@@ -40,6 +41,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $groups;
+
+  /**
+   * @var HardwareGroups
+   * @inject
+   */
+  public $hardwareGroups;
 
   /**
    * @var UploadedFiles
@@ -362,6 +369,12 @@ class ExercisesPresenter extends BasePresenter {
     // create and store basic exercise configuration
     $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);
     $exercise->setExerciseConfig($exerciseConfig);
+
+    // set all hardware groups from the system to exercise
+    // TODO: not quite good solution, automatically assign hwgroups, but sufficient for now
+    foreach ($this->hardwareGroups->findAll() as $hardwareGroup) {
+      $exercise->addHardwareGroup($hardwareGroup);
+    }
 
     // and finally make changes to database
     $this->exercises->persist($exercise);
