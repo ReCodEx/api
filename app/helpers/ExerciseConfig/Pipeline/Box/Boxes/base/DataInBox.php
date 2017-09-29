@@ -53,11 +53,11 @@ abstract class DataInBox extends Box
   /**
    * General compilation for both FilesInBox and FileInBox. Initial checks
    * have to be performed before calling this function.
-   * @param Variable $inputVariable
+   * @param Variable|null $inputVariable
    * @param Variable $variable
    * @return Task[]
    */
-  protected function compileInternal(Variable $inputVariable,
+  protected function compileInternal(?Variable $inputVariable,
       Variable $variable): array {
 
     // preparations
