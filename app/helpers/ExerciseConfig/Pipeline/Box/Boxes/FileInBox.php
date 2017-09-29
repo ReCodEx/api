@@ -97,7 +97,7 @@ class FileInBox extends DataInBox
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
+   * @return Task[]
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(CompilationParams $params): array {
@@ -105,30 +105,14 @@ class FileInBox extends DataInBox
     // remote file which should be downloaded from file-server
     $inputVariable = $this->inputVariable;
     $variable = $this->getOutputPortValue(self::$FILE_IN_PORT_KEY);
-    $isRemote = $inputVariable && $inputVariable->isRemoteFile();
 
-    if (!$inputVariable) {
-      // input variable was not given, which is fine, treatment in validation
-      // which takes place next can be applied even in this situation,
-      // getValue and getPrefixedValue are sufficient and correct here
-      $inputVariable = $variable;
-    }
-
-    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
-        ($inputVariable->isEmpty() && $variable->isEmpty())) {
-      // there are no files which should be renamed
-      return [];
-    }
-
-    // value is array which it should not be
-    if ($inputVariable->isValueArray()) {
+    // value is array, but it should not be
+    if ($inputVariable && $inputVariable->isValueArray()) {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILE_IN_TYPE));
     }
 
-    // construct task and return it
-    $task = $this->compileTask($isRemote, $inputVariable->getValue(),
-      $variable->getPrefixedValue());
-    return [$task];
+    // compilation
+    return $this->compileInternal($inputVariable, $variable);
   }
 
 }

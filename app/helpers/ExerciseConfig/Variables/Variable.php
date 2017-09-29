@@ -210,16 +210,42 @@ class Variable implements JsonSerializable
   }
 
   /**
+   * Get prefixed value as array if it is not array already.
+   * This method should be used in boxes compilation.
+   * @param string $prefix another prefix which can be added to values
+   * @return array|string
+   */
+  public function getPrefixedValueAsArray(string $prefix = "") {
+    $value = $this->getPrefixedValue($prefix);
+    if (!is_array($value)) {
+      $value = [$value];
+    }
+    return $value;
+  }
+
+  /**
    * Get value of the variable.
    * @return array|string
    */
   public function getValue() {
-    $val = $this->value;
-    if (is_scalar($val) && Strings::startsWith($val, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
-      return Strings::substring($val, 1);
+    $value = $this->value;
+    if (is_scalar($value) && Strings::startsWith($value, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
+      return Strings::substring($value, 1);
     }
 
-    return $val;
+    return $value;
+  }
+
+  /**
+   * Get value of the variable as array if it is not an array already.
+   * @return array|string
+   */
+  public function getValueAsArray() {
+    $value = $this->getValue();
+    if (!is_array($value)) {
+      $value = [$value];
+    }
+    return $value;
   }
 
   /**
@@ -241,6 +267,14 @@ class Variable implements JsonSerializable
   public function setValuePrefix(string $prefix): Variable {
     $this->prefix = $prefix;
     return $this;
+  }
+
+  /**
+   * Get current variable prefix.
+   * @return string
+   */
+  public function getValuePrefix(): string {
+    return $this->prefix;
   }
 
   /**

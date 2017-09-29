@@ -27,8 +27,8 @@ class JudgeBox extends Box
   public static $DEFAULT_NAME = "ReCodEx Judge";
 
   /* TYPES OF JUDGES */
-  public static $RECODEX_NORMAL = "recodex-judge-normal";
-  public static $RECODEX_SHUFFLE = "recodex-judge-shuffle";
+  public static $RECODEX_NORMAL_TYPE = "recodex-judge-normal";
+  public static $RECODEX_SHUFFLE_TYPE = "recodex-judge-shuffle";
   public static $DIFF_TYPE = "diff";
   public static $DIFF_BINARY = "/usr/bin/diff";
 
@@ -106,10 +106,10 @@ class JudgeBox extends Box
     }
 
     // judge type decision logic
-    if (empty($judgeType) || strtolower($judgeType) === self::$RECODEX_NORMAL) {
-      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_NORMAL, []];
-    } else if (strtolower($judgeType) === self::$RECODEX_SHUFFLE) {
-      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_SHUFFLE, []];
+    if (empty($judgeType) || strtolower($judgeType) === self::$RECODEX_NORMAL_TYPE) {
+      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_NORMAL_TYPE, []];
+    } else if (strtolower($judgeType) === self::$RECODEX_SHUFFLE_TYPE) {
+      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_SHUFFLE_TYPE, []];
     } else if (strtolower($judgeType) === self::$DIFF_TYPE) {
       return [self::$DIFF_BINARY, []];
     }

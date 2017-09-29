@@ -51,6 +51,50 @@ abstract class DataInBox extends Box
   }
 
   /**
+   * General compilation for both FilesInBox and FileInBox. Initial checks
+   * have to be performed before calling this function.
+   * @param Variable $inputVariable
+   * @param Variable $variable
+   * @return Task[]
+   */
+  protected function compileInternal(Variable $inputVariable,
+      Variable $variable): array {
+
+    // preparations
+    $isRemote = $inputVariable && $inputVariable->isRemoteFile();
+    if (!$inputVariable) {
+      // input variable was not given, which is fine, treatment in validation
+      // which takes place next can be applied even in this situation,
+      // getValue and getPrefixedValue are sufficient and correct here
+      $inputVariable = $variable;
+    }
+
+    // variable is empty, this means that there is no request to rename fetched
+    // files, therefore we have to fill variable with remote file names
+    if ($variable->isEmpty()) {
+      $variable->setValue($inputVariable->getValue());
+    }
+
+    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
+      ($inputVariable->isEmpty() && $variable->isEmpty())) {
+      // there are no files which should be renamed
+      return [];
+    }
+
+    // prepare arrays which will be processed
+    $inputFiles = $inputVariable->getValueAsArray();
+    $files = $variable->getPrefixedValueAsArray();
+
+    // general foreach for both local and remote files
+    $tasks = [];
+    for ($i = 0; $i < count($files); ++$i) {
+      $task = $this->compileTask($isRemote, $inputFiles[$i], $files[$i]);
+      $tasks[] = $task;
+    }
+    return $tasks;
+  }
+
+  /**
    * Compile task from given information.
    * @param bool $isRemote
    * @param string $input

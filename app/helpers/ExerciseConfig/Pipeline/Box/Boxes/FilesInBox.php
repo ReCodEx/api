@@ -97,7 +97,7 @@ class FilesInBox extends DataInBox
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
+   * @return Task[]
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(CompilationParams $params): array {
@@ -105,41 +105,19 @@ class FilesInBox extends DataInBox
     // remote file which should be downloaded from file-server
     $inputVariable = $this->inputVariable;
     $variable = $this->getOutputPortValue(self::$FILES_IN_PORT_KEY);
-    $isRemote = $inputVariable && $inputVariable->isRemoteFile();
 
-    if (!$inputVariable) {
-      // input variable was not given, which is fine, treatment in validation
-      // which takes place next can be applied even in this situation,
-      // getValue and getPrefixedValue are sufficient and correct here
-      $inputVariable = $variable;
-    }
-
-    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
-        ($inputVariable->isEmpty() && $variable->isEmpty())) {
-      // there are no files which should be renamed
-      return [];
-    }
-
-    if (!$inputVariable->isValueArray()) {
+    // input variable is not array
+    if ($inputVariable && !$inputVariable->isValueArray()) {
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
     }
 
     // both variable and input variable are arrays
-    if (count($inputVariable->getValue()) !== count($variable->getValue())) {
+    if ($inputVariable && (count($inputVariable->getValue()) !== count($variable->getValue()))) {
       throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
     }
 
-    // validate variable value and prepare arrays which will be processed
-    $inputFiles = $inputVariable->getValue();
-    $files = $variable->getPrefixedValue();
-
-    // general foreach for both local and remote files
-    $tasks = [];
-    for ($i = 0; $i < count($files); ++$i) {
-      $task = $this->compileTask($isRemote, $inputFiles[$i], $files[$i]);
-      $tasks[] = $task;
-    }
-    return $tasks;
+    // compilation
+    return $this->compileInternal($inputVariable, $variable);
   }
 
 }
