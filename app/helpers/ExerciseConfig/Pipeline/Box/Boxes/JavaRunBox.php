@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
@@ -99,9 +100,10 @@ class JavaRunBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @param CompilationParams $params
+   * @return array
    */
-  public function compile(): array {
+  public function compile(CompilationParams $params): array {
     $task = new Task();
     $task->setType(TaskType::$EXECUTION);
     $task->setCommandBinary(self::$JAVA_BINARY);

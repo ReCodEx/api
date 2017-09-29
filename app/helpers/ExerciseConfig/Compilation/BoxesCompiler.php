@@ -61,9 +61,10 @@ class BoxesCompiler {
    * @param JobConfig $jobConfig
    * @param RootedTree $rootedTree
    * @param array $limits
+   * @param CompilationParams $params
    */
   private function processTree(JobConfig $jobConfig,
-      RootedTree $rootedTree, array $limits) {
+      RootedTree $rootedTree, array $limits, CompilationParams $params) {
     // stack for DFS, better stay in order by reversing original root nodes
     $stack = array_reverse($rootedTree->getRootNodes());
     $order = 65536; // if there is more tasks this will fail spectacularly
@@ -72,7 +73,7 @@ class BoxesCompiler {
     while (!empty($stack)) {
       $current = array_pop($stack); /** @var Node $current */
       // compile box into set of tasks
-      $tasks = $current->getBox()->compile();
+      $tasks = $current->getBox()->compile($params);
 
       // construct dependencies
       $dependencies = array();
@@ -132,12 +133,13 @@ class BoxesCompiler {
       CompilationParams $params): JobConfig {
     $jobConfig = new JobConfig();
 
-    // @todo: logging will be for now turn on by default
-    $jobConfig->getSubmissionHeader()->setLog(true);
+    // if this is debug submission, turn logging on
+    $jobConfig->getSubmissionHeader()->setLog($params->debugSubmission); // TODO: engage
+    $jobConfig->getSubmissionHeader()->setLog(true); // TODO: delete
     // add hwgroups identifications into job configuration
     $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
     // perform DFS
-    $this->processTree($jobConfig, $rootedTree, $limits);
+    $this->processTree($jobConfig, $rootedTree, $limits, $params);
 
     return $jobConfig;
   }

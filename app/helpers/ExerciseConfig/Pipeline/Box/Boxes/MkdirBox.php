@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -94,9 +95,10 @@ class MkdirBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @param CompilationParams $params
+   * @return array
    */
-  public function compile(): array {
+  public function compile(CompilationParams $params): array {
     $task = new Task();
     $task->setCommandBinary(TaskCommands::$MKDIR);
     $task->setCommandArguments([

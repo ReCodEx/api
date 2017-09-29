@@ -179,7 +179,7 @@ class SubmitPresenter extends BasePresenter {
     $this->solutions->persist($solution);
 
     // generate job configuration
-    $compilationParams = CompilationParams::create($submittedFiles, false);
+    $compilationParams = CompilationParams::create($submittedFiles, false); // TODO: debug flag
     list($jobConfigPath, $jobConfig) =
       $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment,
         $runtimeEnvironment, $compilationParams);

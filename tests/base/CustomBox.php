@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -132,9 +133,10 @@ class CustomBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @param CompilationParams $params
+   * @return array
    */
-  public function compile(): array {
+  public function compile(CompilationParams $params): array {
     return [];
   }
 
