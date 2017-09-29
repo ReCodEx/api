@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -88,9 +89,10 @@ class CopyBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
-   * @return Task[]
+   * @param CompilationParams $params
+   * @return array
    */
-  public function compile(): array {
+  public function compile(CompilationParams $params): array {
     if ($this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getPrefixedValue() ===
         $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getPrefixedValue()) {
       return [];

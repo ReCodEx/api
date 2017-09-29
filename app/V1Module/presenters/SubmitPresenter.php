@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
@@ -178,7 +179,10 @@ class SubmitPresenter extends BasePresenter {
     $this->solutions->persist($solution);
 
     // generate job configuration
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment, $runtimeEnvironment, $submittedFiles);
+    $compilationParams = CompilationParams::create($submittedFiles, false); // TODO: debug flag
+    list($jobConfigPath, $jobConfig) =
+      $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment,
+        $runtimeEnvironment, $compilationParams);
 
     // create and persist submission in the database
     $note = $req->getPost("note");

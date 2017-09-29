@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -88,10 +89,10 @@ class FetchFileBox extends Box
 
   /**
    * Compile box into set of low-level tasks.
+   * @param CompilationParams $params
    * @return array
-   * @throws ExerciseConfigException in case of compilation error
    */
-  public function compile(): array {
+  public function compile(CompilationParams $params): array {
     $task = new Task();
 
     // remote file has to have fetch task

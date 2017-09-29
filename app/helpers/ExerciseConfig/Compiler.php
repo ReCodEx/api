@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
@@ -19,7 +20,7 @@ class Compiler {
   /**
    * @var BaseCompiler
    */
-  private $exerciseConfigCompiler;
+  private $baseCompiler;
 
   /**
    * @var Loader
@@ -33,7 +34,7 @@ class Compiler {
    */
   public function __construct(BaseCompiler $exerciseConfigCompiler,
       Loader $loader) {
-    $this->exerciseConfigCompiler = $exerciseConfigCompiler;
+    $this->baseCompiler = $exerciseConfigCompiler;
     $this->loader = $loader;
   }
 
@@ -41,12 +42,12 @@ class Compiler {
    * Generate job configuration from given exercise configuration.
    * @param Exercise|Assignment $exerciseAssignment
    * @param RuntimeEnvironment $runtimeEnvironment
-   * @param string[] $submittedFiles
+   * @param CompilationParams $params
    * @return JobConfig
    */
   public function compile($exerciseAssignment,
       RuntimeEnvironment $runtimeEnvironment,
-      array $submittedFiles): JobConfig {
+      CompilationParams $params): JobConfig {
     $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
 
     $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
@@ -63,8 +64,8 @@ class Compiler {
       $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($parsedLimits);
     }
 
-    return $this->exerciseConfigCompiler->compile($exerciseConfig,
+    return $this->baseCompiler->compile($exerciseConfig,
       $environmentConfigVariables, $limits, $runtimeEnvironment->getId(),
-      $submittedFiles);
+      $params);
   }
 }
