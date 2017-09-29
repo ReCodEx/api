@@ -255,10 +255,9 @@ class Loader {
     }
     $port->setType($data[PortMeta::TYPE_KEY]);
 
-    if (!isset($data[PortMeta::VARIABLE_KEY])) {
-      throw new ExerciseConfigException("Pipeline port '$name' does not have any value");
+    if (isset($data[PortMeta::VARIABLE_KEY])) {
+      $port->setVariable($data[PortMeta::VARIABLE_KEY]);
     }
-    $port->setVariable($data[PortMeta::VARIABLE_KEY]);
 
     return new Port($port);
   }

@@ -117,8 +117,10 @@ class TestExerciseConfigHelper extends Tester\TestCase
         ],
         [
           "name" => "judge",
-          "type" => "judge-normal",
-          "portsIn" => ["actual-output" => ['type' => 'file', 'value' => "actual"],
+          "type" => "judge",
+          "portsIn" => [
+            "judge-type" => ['type' => 'string', 'value' => ""],
+            "actual-output" => ['type' => 'file', 'value' => "actual"],
             "expected-output" => ['type' => 'file', 'value' => "expected"]],
           "portsOut" => []
         ]

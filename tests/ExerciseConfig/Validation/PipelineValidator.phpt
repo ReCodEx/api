@@ -8,7 +8,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileOutBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
@@ -80,10 +80,10 @@ class TestPipelineValidator extends Tester\TestCase
     $pipeline->set(new FileInBox($varBInMeta));
 
     $judgeBoxMeta = new BoxMeta();
-    $pipeline->set(new JudgeNormalBox($judgeBoxMeta));
+    $pipeline->set(new JudgeBox($judgeBoxMeta));
     $judgeBoxMeta->setName("judge");
-    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
-    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varA")));
 
     Assert::exception(function () use ($pipeline) {
       $this->validator->validate($pipeline);
@@ -94,10 +94,10 @@ class TestPipelineValidator extends Tester\TestCase
     $pipeline = new Pipeline();
     $pipeline->getVariablesTable()->set(new Variable("file", "varA", "a.txt"));
     $judgeBoxMeta = new BoxMeta();
-    $pipeline->set(new JudgeNormalBox($judgeBoxMeta));
+    $pipeline->set(new JudgeBox($judgeBoxMeta));
     $judgeBoxMeta->setName("judge");
-    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
-    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeNormalBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varB")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeBox::$ACTUAL_OUTPUT_PORT_KEY, "file", "varA")));
+    $judgeBoxMeta->addInputPort(new Port(PortMeta::create(JudgeBox::$EXPECTED_OUTPUT_PORT_KEY, "file", "varB")));
 
     Assert::exception(function () use ($pipeline) {
       $this->validator->validate($pipeline);

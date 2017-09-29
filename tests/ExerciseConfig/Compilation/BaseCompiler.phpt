@@ -13,7 +13,7 @@ use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
@@ -155,8 +155,9 @@ class TestBaseCompiler extends Tester\TestCase
       ],
       [
         "name" => "judge",
-        "type" => "judge-normal",
+        "type" => "judge",
         "portsIn" => [
+          "judge-type" => [ "type" => "string", "value" => "" ],
           "actual-output" => [ "type" => "file", "value" => "actual_output" ],
           "expected-output" => [ "type" => "file", "value" => "expected_output" ]
         ],
@@ -309,7 +310,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(65530, $testAJudgeTask->getPriority());
     Assert::count(2, $testAJudgeTask->getDependencies());
     Assert::equal([$testATestTask->getId(), $testARunTask->getId()], $testAJudgeTask->getDependencies());
-    Assert::equal(ConfigParams::$JUDGES_DIR . JudgeNormalBox::$JUDGE_NORMAL_BINARY, $testAJudgeTask->getCommandBinary());
+    Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-judge-normal", $testAJudgeTask->getCommandBinary());
     Assert::equal([ConfigParams::$EVAL_DIR . "testA/expected.out", ConfigParams::$EVAL_DIR . "testA/actual.out"], $testAJudgeTask->getCommandArguments());
     Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
     Assert::equal("testA", $testAJudgeTask->getTestId());

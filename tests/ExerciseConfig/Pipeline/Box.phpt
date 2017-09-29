@@ -6,7 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -25,8 +25,9 @@ class TestBox extends Tester\TestCase
 
   static $configJudge = [
     "name" => "eval",
-    "type" => "judge-normal",
+    "type" => "judge",
     "portsIn" => [
+      "judge-type" => ['type' => 'string', 'value' => ""],
       "expected-output" => ['type' => 'file', 'value' => "exp"],
       "actual-output" => ['type' => 'file', 'value' => "act"]
     ],
@@ -83,10 +84,10 @@ class TestBox extends Tester\TestCase
     Assert::type(FileInBox::class, $this->loader->loadBox($dataBox));
 
     $judgeNormalBox = self::$configJudge;
-    $judgeNormalBox["type"] = "judge-normal";
-    Assert::type(JudgeNormalBox::class, $this->loader->loadBox($judgeNormalBox));
-    $judgeNormalBox["type"] = "JuDgE-nOrMaL";
-    Assert::type(JudgeNormalBox::class, $this->loader->loadBox($judgeNormalBox));
+    $judgeNormalBox["type"] = "judge";
+    Assert::type(JudgeBox::class, $this->loader->loadBox($judgeNormalBox));
+    $judgeNormalBox["type"] = "JuDgE";
+    Assert::type(JudgeBox::class, $this->loader->loadBox($judgeNormalBox));
   }
 
   public function testMissingType() {
