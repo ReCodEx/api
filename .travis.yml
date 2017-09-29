@@ -1,13 +1,11 @@
-dist: precise
+sudo: required
 language: php
 
 php:
   - 7.1
 
 before_install:
-  - echo "extension=ldap.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension=zmq.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - echo "extension=ldap.so" >> test.ini
   - echo "zend_extension=xdebug.so" >> test.ini
   - echo "xdebug.remote_enable=on" >> test.ini
   - echo "xdebug.remote_host=127.0.0.1" >> test.ini
@@ -15,6 +13,11 @@ before_install:
   - echo "xdebug.remote_handler=dbgp" >> test.ini
 
 install:
+  - sudo apt-get update -qq
+  # Install ZeroMQ
+  - sudo apt-get install -y libzmq3-dev libzmq3
+  # Install php binding of ZeroMQ
+  - yes '' | pecl install channel://pecl.php.net/zmq-1.1.3
   - composer install --no-interaction --prefer-source
   - travis_retry wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
 
