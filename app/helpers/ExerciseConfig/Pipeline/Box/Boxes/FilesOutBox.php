@@ -83,10 +83,10 @@ class FilesOutBox extends DataOutBox
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
+   * @return Task[]
    */
   public function compile(CompilationParams $params): array {
-    return [];
+    return $this->compileInternal($params, $this->getInputPortValue(self::$FILES_OUT_PORT_KEY));
   }
 
 }
