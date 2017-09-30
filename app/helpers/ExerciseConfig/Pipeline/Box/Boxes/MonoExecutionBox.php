@@ -4,30 +4,21 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
-use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
  * Box which represents execution of assembly in C# which will be executed with
  * mono.
  */
-class MonoExecutionBox extends Box
+class MonoExecutionBox extends ExecutionBox
 {
   /** Type key */
   public static $MONO_EXEC_TYPE = "mono-exec";
   public static $MONO_BINARY = "/usr/bin/mono";
   public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
-  public static $BINARY_ARGS_PORT_KEY = "args";
-  public static $INPUT_FILES_PORT_KEY = "input-files";
-  public static $STDIN_FILE_PORT_KEY = "stdin";
-  public static $OUTPUT_FILE_PORT_KEY = "output-file";
-  public static $STDOUT_FILE_PORT_KEY = "stdout";
   public static $DEFAULT_NAME = "Mono Execution";
 
   private static $initialized = false;
@@ -41,7 +32,7 @@ class MonoExecutionBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$BINARY_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
@@ -102,24 +93,14 @@ class MonoExecutionBox extends Box
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    $task = new Task();
-    $task->setType(TaskType::$EXECUTION);
+    $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$MONO_BINARY);
 
     $args = [$this->getInputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
-    if ($this->hasInputPortValue(self::$BINARY_ARGS_PORT_KEY)) {
-      $args = array_merge($args, $this->getInputPortValue(self::$BINARY_ARGS_PORT_KEY)->getValue());
+    if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
+      $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
     $task->setCommandArguments($args);
-
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
-    if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
-      $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
-    }
-    if ($this->hasOutputPortValue(self::$STDOUT_FILE_PORT_KEY)) {
-      $sandbox->setStdout($this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
-    }
-    $task->setSandboxConfig($sandbox);
 
     return [$task];
   }
