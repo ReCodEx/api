@@ -109,9 +109,15 @@ class JoinPipelinesBox extends Box
     $inputVariable = current($this->getInputPorts())->getVariableValue();
     $outputVariable = current($this->getOutputPorts())->getVariableValue();
 
+    if ($outputVariable->isEmpty()) {
+      // output file or files is empty this means that renaming is not
+      // requested, to maintain proper structure set files from input to output
+      $outputVariable->setValue($inputVariable->getValue());
+    }
+
     // check for emptiness or same values, in those cases nothing has to be done
     if (($inputVariable->getValue() === $outputVariable->getValue()) ||
-        ($inputVariable->isEmpty() && $outputVariable->isEmpty())) {
+      ($inputVariable->isEmpty() && $outputVariable->isEmpty())) {
       return [];
     }
 

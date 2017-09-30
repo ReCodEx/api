@@ -8,6 +8,8 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
+use Nette\Utils\Random;
+use Nette\Utils\Strings;
 
 
 /**
@@ -47,8 +49,13 @@ abstract class ExecutionBox extends Box
     if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
       $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
-    if ($this->hasOutputPortValue(self::$STDOUT_FILE_PORT_KEY)) {
-      $sandbox->setStdout($this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    if ($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue() !== null) {
+      $stdoutValue = $this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY);
+      if ($stdoutValue->isEmpty()) {
+        // name of the file is empty, so just make up some appropriate one
+        $stdoutValue->setValue(Random::generate(20));
+      }
+      $sandbox->setStdout($stdoutValue->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
     $task->setSandboxConfig($sandbox);
 

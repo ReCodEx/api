@@ -166,6 +166,7 @@ class TestVariable extends Tester\TestCase
     Assert::true(is_array($variable->getValue()));
     Assert::equal("hehe", $variable->getValue()[0]);
     Assert::equal("haha", $variable->getValue()[1]);
+    Assert::equal(["hehe", "haha"], $variable->getValueAsArray());
     Assert::equal("nice_prefix/hehe", $variable->getPrefixedValue()[0]);
     Assert::equal("nice_prefix/haha", $variable->getPrefixedValue()[1]);
   }
@@ -175,6 +176,7 @@ class TestVariable extends Tester\TestCase
     $variable->setValuePrefix("nice_prefix/");
     Assert::equal("string", $variable->getType());
     Assert::equal("varValue", $variable->getValue());
+    Assert::equal(["varValue"], $variable->getValueAsArray());
     Assert::equal("nice_prefix/varValue", $variable->getPrefixedValue());
   }
 
