@@ -12,14 +12,31 @@ class CompilationParams {
    * Files submitted by user.
    * @var string[]
    */
-  public $submittedFiles = [];
+  private $files = [];
 
   /**
    * Flag determining if compilation should include debug execution information.
    * @var bool
    */
-  public $debugSubmission = false;
+  private $debug = false;
 
+
+  /**
+   * Get files submitted by user.
+   * @return string[]
+   */
+  public function getFiles(): array {
+    return $this->files;
+  }
+
+  /**
+   * True if execution should include debug information and output files to
+   * results.
+   * @return bool
+   */
+  public function isDebug(): bool {
+    return $this->debug;
+  }
 
   /**
    * Factory.
@@ -29,8 +46,8 @@ class CompilationParams {
    */
   public static function create(array $files = [], bool $debug = false): CompilationParams {
     $params = new CompilationParams();
-    $params->submittedFiles = $files;
-    $params->debugSubmission = $debug;
+    $params->files = $files;
+    $params->debug = $debug;
     return $params;
   }
 

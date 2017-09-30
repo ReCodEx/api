@@ -270,10 +270,11 @@ class TestSubmitPresenter extends Tester\TestCase
       ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast(1)
       ->shouldReceive("setFileCollector")->with($fileserverUrl)->once();
 
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->once();
-    $this->presenter->jobConfigs = $mockStorage;
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
+      ->andReturn(["jobConfigPath", $mockJobConfig])->once();
+    $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
     /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */

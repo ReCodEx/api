@@ -187,9 +187,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Evaluate a single reference exercise solution for all configured hardware groups
    * @POST
    * @param string $id Identifier of the reference solution
+   * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
    */
   public function actionEvaluate(string $id) {
+    $req = $this->getRequest();
+    $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
+
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
@@ -197,7 +201,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
+    list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution, $isDebug);
 
     $this->sendSuccessResponse([
       "referenceSolution" => $referenceSolution,
@@ -210,9 +214,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Evaluate all reference solutions for an exercise (and for all configured hardware groups).
    * @POST
    * @param string $exerciseId Identifier of the exercise
+   * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
    */
   public function actionEvaluateForExercise($exerciseId) {
+    $req = $this->getRequest();
+    $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
+
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $result = [];
@@ -222,7 +230,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
-      list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution);
+      list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution, $isDebug);
       $result[] = [
         "referenceSolution" => $referenceSolution,
         "evaluations" => $evaluations,
@@ -233,7 +241,15 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($result);
   }
 
-  private function evaluateReferenceSolution(ReferenceExerciseSolution $referenceSolution): array {
+  /**
+   * @param ReferenceExerciseSolution $referenceSolution
+   * @param bool $isDebug
+   * @return array
+   */
+  private function evaluateReferenceSolution(
+      ReferenceExerciseSolution $referenceSolution,
+      bool $isDebug = false
+  ): array {
     $exercise = $referenceSolution->getExercise();
     $runtimeEnvironment = $referenceSolution->getRuntimeEnvironment();
     $hwGroups = $exercise->getHardwareGroups();
@@ -241,7 +257,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $errors = [];
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
-    $compilationParams = CompilationParams::create($submittedFiles, false); // TODO: debug flag
+    $compilationParams = CompilationParams::create($submittedFiles, $isDebug);
     list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator
       ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
 

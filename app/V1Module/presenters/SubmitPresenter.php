@@ -179,7 +179,7 @@ class SubmitPresenter extends BasePresenter {
     $this->solutions->persist($solution);
 
     // generate job configuration
-    $compilationParams = CompilationParams::create($submittedFiles, false); // TODO: debug flag
+    $compilationParams = CompilationParams::create($submittedFiles, false);
     list($jobConfigPath, $jobConfig) =
       $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment,
         $runtimeEnvironment, $compilationParams);
@@ -246,30 +246,41 @@ class SubmitPresenter extends BasePresenter {
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
-   * @Param(type="post", name="private", validationRule="bool", "Flag the submission as private (not visible to students)")
+   * @Param(type="post", name="private", validation="bool", "Flag the submission as private (not visible to students)")
+   * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
    * @throws ForbiddenRequestException
    */
   public function actionResubmit(string $id) {
     $user = $this->getCurrentUser();
+    $req = $this->getRequest();
+    $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
+    $isPrivate = filter_var($req->getPost("private"), FILTER_VALIDATE_BOOLEAN);
 
     /** @var Submission $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
-
     if (!$this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
     }
 
+    // generate job configuration
+    $compilationParams = CompilationParams::create($oldSubmission->getSolution()->getFileNames(), $isDebug);
+    list($jobConfigPath, $jobConfig) =
+      $this->jobConfigGenerator->generateJobConfig($user,
+        $oldSubmission->getAssignment(),
+        $oldSubmission->getSolution()->getRuntimeEnvironment(),
+        $compilationParams);
+
     $submission = Submission::createSubmission(
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-      $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
+      $oldSubmission->getSolution(), $jobConfigPath, FALSE, $oldSubmission
     );
 
-    $submission->setPrivate($this->getRequest()->getPost(filter_var("private")));
+    $submission->setPrivate($isPrivate);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);
 
-    $this->sendSuccessResponse($this->finishSubmission($submission));
+    $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
   }
 
   /**

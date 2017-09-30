@@ -47,6 +47,7 @@ class Solution implements JsonSerializable
    */
   protected $evaluated;
 
+
   /**
    * @return array
    */
@@ -70,8 +71,18 @@ class Solution implements JsonSerializable
     $this->runtimeEnvironment = $runtimeEnvironment;
   }
 
-  public function addFile(SolutionFile $file)
-  {
+  public function addFile(SolutionFile $file) {
     $this->files->add($file);
   }
+
+  /**
+   * Get names of the file which belongs to solution.
+   * @return string[]
+   */
+  public function getFileNames(): array {
+    return $this->files->map(function (SolutionFile $file) {
+      return $file->getName();
+    })->toArray();
+  }
+
 }

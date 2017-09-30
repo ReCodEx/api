@@ -16,6 +16,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Model\Repository\Pipelines;
 use Tester\Assert;
@@ -223,11 +224,11 @@ class TestBaseCompiler extends Tester\TestCase
 
     $jobConfig = $this->compiler->compile($exerciseConfig,
       $environmentConfigVariables, $limits, self::$environment,
-      CompilationParams::create());
+      CompilationParams::create([], true));
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
-    Assert::equal(9, $jobConfig->getTasksCount());
+    Assert::equal(10, $jobConfig->getTasksCount());
 
     ////////////////////////////////////////////////////////////////////////////
     // check order of all tasks and right attributes
@@ -324,7 +325,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(65529, $testBSourceTask->getPriority());
     Assert::count(1, $testBSourceTask->getDependencies());
     Assert::equal([$testBMkdir->getId()], $testBSourceTask->getDependencies());
-    Assert::equal("cp", $testBSourceTask->getCommandBinary());
+    Assert::equal(TaskCommands::$COPY, $testBSourceTask->getCommandBinary());
     Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testB/source"], $testBSourceTask->getCommandArguments());
     Assert::null($testBSourceTask->getType());
     Assert::equal("testB", $testBSourceTask->getTestId());
@@ -342,6 +343,16 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
     Assert::count(0, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
+
+    $testBOutputTask = $jobConfig->getTasks()[9];
+    Assert::equal("testB.compilationPipeline.output.65527", $testBOutputTask->getId());
+    Assert::equal(65527, $testBOutputTask->getPriority());
+    Assert::count(1, $testBOutputTask->getDependencies());
+    Assert::equal([$testBCompilationTask->getId()], $testBOutputTask->getDependencies());
+    Assert::equal(TaskCommands::$COPY, $testBOutputTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "testB/a.out", ConfigParams::$RESULT_DIR . "a.out"], $testBOutputTask->getCommandArguments());
+    Assert::equal("testB", $testBOutputTask->getTestId());
+    Assert::null($testBOutputTask->getSandboxConfig());
   }
 
 }
