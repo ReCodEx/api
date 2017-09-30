@@ -70,7 +70,7 @@ abstract class Box implements JsonSerializable
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
+   * @return Task[]
    */
   public abstract function compile(CompilationParams $params): array;
 

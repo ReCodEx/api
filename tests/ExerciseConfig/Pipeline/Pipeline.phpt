@@ -7,7 +7,7 @@ use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeNormalBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -32,8 +32,9 @@ class TestPipeline extends Tester\TestCase
       ],
       [
         "name" => "evaluation",
-        "type" => "judge-normal",
+        "type" => "judge",
         "portsIn" => [
+          "judge-type" => ['type' => 'string', 'value' => ""],
           "expected-output" => ['type' => 'file', 'value' => "test_in_file"],
           "actual-output" => ['type' => 'file', 'value' => "out_exec_file"]
         ],
@@ -106,13 +107,13 @@ class TestPipeline extends Tester\TestCase
     Assert::equal("valA", $pipeline->getVariablesTable()->get("varA")->getValue());
 
     Assert::type(FileInBox::class, $pipeline->get("file"));
-    Assert::type(JudgeNormalBox::class, $pipeline->get("evaluation"));
+    Assert::type(JudgeBox::class, $pipeline->get("evaluation"));
 
     Assert::equal("file", $pipeline->get("file")->getName());
     Assert::equal("evaluation", $pipeline->get("evaluation")->getName());
 
     Assert::count(0, $pipeline->get("file")->getInputPorts());
-    Assert::count(2, $pipeline->get("evaluation")->getInputPorts());
+    Assert::count(3, $pipeline->get("evaluation")->getInputPorts());
 
     Assert::count(1, $pipeline->get("file")->getOutputPorts());
 

@@ -103,6 +103,9 @@ App\Model\Entity\PipelineConfig:
                       value: actual-output
                 - name: judge
                   portsIn:
+                    judge-type:
+                      type: string
+                      value: ""
                     actual-output:
                       type: file
                       value: actual-output
@@ -110,7 +113,7 @@ App\Model\Entity\PipelineConfig:
                       type: file
                       value: expected-output
                   portsOut: []
-                  type: judge-normal
+                  type: judge
               '''
             - @demoAdmin
 

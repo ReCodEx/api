@@ -184,8 +184,9 @@ class TestPipelinesMerger extends Tester\TestCase
         ],
         [
           "name" => "judge",
-          "type" => "judge-normal",
+          "type" => "judge",
           "portsIn" => [
+            "judge-type" => [ "type" => "string", "value" => "" ],
             "actual-output" => [ "type" => "file", "value" => "actual_output" ],
             "expected-output" => [ "type" => "file", "value" => "expected_output" ]
           ],

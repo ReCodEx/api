@@ -31,7 +31,7 @@ class BoxService
       FilesInBox::$FILES_IN_TYPE => FilesInBox::class,
       FileOutBox::$FILE_OUT_TYPE => FileOutBox::class,
       FilesOutBox::$FILES_OUT_TYPE => FilesOutBox::class,
-      JudgeNormalBox::$JUDGE_NORMAL_TYPE => JudgeNormalBox::class,
+      JudgeBox::$JUDGE_TYPE => JudgeBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,

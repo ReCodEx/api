@@ -78,14 +78,6 @@ class TestPort extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testMissingValue() {
-    Assert::exception(function () {
-      $this->loader->loadPort("name", [
-        "type" => "string"
-      ]);
-    }, ExerciseConfigException::class);
-  }
-
   public function testSerialization() {
     $deserialized = Yaml::parse((string)$this->loader->loadPort("name", self::$config));
     Assert::equal(self::$config, $deserialized);
