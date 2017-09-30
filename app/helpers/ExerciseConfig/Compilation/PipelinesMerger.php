@@ -279,7 +279,7 @@ class PipelinesMerger {
     // resolve all variables in pipeline tree
     $this->variablesResolver->resolve($pipelineTree,
       $environmentConfigVariables, $pipelineVars->getVariablesTable(),
-      $pipelineConfig->getVariablesTable(), $params->submittedFiles);
+      $pipelineConfig->getVariablesTable(), $params->getFiles());
 
     return $pipelineTree;
   }

@@ -30,7 +30,7 @@ abstract class DataOutBox extends Box
    * @return array
    */
   protected function compileInternal(CompilationParams $params, Variable $output): array {
-    if ($params->debugSubmission === false || $output->isEmpty()) {
+    if ($params->isDebug() === false || $output->isEmpty()) {
       return [];
     }
 

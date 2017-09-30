@@ -134,7 +134,7 @@ class BoxesCompiler {
     $jobConfig = new JobConfig();
 
     // if this is debug submission, turn logging on
-    $jobConfig->getSubmissionHeader()->setLog($params->debugSubmission);
+    $jobConfig->getSubmissionHeader()->setLog($params->isDebug());
     // add hwgroups identifications into job configuration
     $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
     // perform DFS
