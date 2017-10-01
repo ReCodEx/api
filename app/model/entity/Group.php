@@ -124,7 +124,7 @@ class Group implements JsonSerializable
   protected $childGroups;
 
   /**
-   * Recursivelly merge all the subgroups into a flat array of groups.
+   * Recursively merge all the subgroups into a flat array of groups.
    * @return array
    */
   public function getAllSubgroups() {
@@ -381,6 +381,21 @@ class Group implements JsonSerializable
     );
   }
 
+  /**
+   * Get identifications of groups in descending order.
+   * @return string[]
+   */
+  public function getParentGroupsIds(): array {
+    $group = $this->getParentGroup();
+    $parents = [];
+    while ($group !== NULL) {
+      $parents[] = $group->getId();
+      $group = $group->getParentGroup();
+    }
+
+    return array_values(array_reverse($parents));
+  }
+
   public function jsonSerialize() {
     $instance = $this->getInstance();
     return [
@@ -395,6 +410,7 @@ class Group implements JsonSerializable
       "instanceId" => $instance ? $instance->getId() : NULL,
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
+      "parentGroupsIds" => $this->getParentGroupsIds(),
       "childGroups" => [
         "all" => $this->getChildGroups()->map(
           function(Group $group) {
