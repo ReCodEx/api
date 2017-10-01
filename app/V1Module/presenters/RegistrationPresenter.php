@@ -2,6 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
@@ -81,6 +83,7 @@ class RegistrationPresenter extends BasePresenter {
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="password", validation="string:1..", msg="Password cannot be empty.", description="A password for authentication")
+   * @Param(type="post", name="passwordConfirm", validation="string:1..", msg="Confirm Password cannot be empty.", description="A password confirmation")
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="degreesBeforeName", required=false, validation="string:1..", description="Degrees which is placed before user name")
    * @Param(type="post", name="degreesAfterName", required=false, validation="string:1..", description="Degrees which is placed after user name")
@@ -100,6 +103,13 @@ class RegistrationPresenter extends BasePresenter {
     $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
 
+    // check given passwords
+    $password = $req->getPost("password");
+    $passwordConfirm = $req->getPost("passwordConfirm");
+    if ($password !== $passwordConfirm) {
+      throw new WrongCredentialsException("Provided passwords do not match");
+    }
+
     $user = new User(
       $email,
       $req->getPost("firstName"),
@@ -109,7 +119,7 @@ class RegistrationPresenter extends BasePresenter {
       self::DEFAULT_ROLE,
       $instance
     );
-    $login = Login::createLogin($user, $email, $req->getPost("password"));
+    $login = Login::createLogin($user, $email, $password);
 
     $this->users->persist($user);
     $this->logins->persist($login);

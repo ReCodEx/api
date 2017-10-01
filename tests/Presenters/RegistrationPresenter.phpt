@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\RegistrationPresenter;
 use Tester\Assert;
@@ -85,6 +86,7 @@ class TestRegistrationPresenter extends Tester\TestCase
           'firstName' => $firstName,
           'lastName' => $lastName,
           'password' => $password,
+          'passwordConfirm' => $password,
           'instanceId' => $instanceId,
           'degreesBeforeName' => $degreesBeforeName,
           'degreesAfterName' => $degreesAfterName
@@ -132,6 +134,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         'firstName' => $firstName,
         'lastName' => $lastName,
         'password' => $password,
+        'passwordConfirm' => $password,
         'instanceId' => $instanceId,
         'degreesBeforeName' => $degreesBeforeName,
         'degreesAfterName' => $degreesAfterName
@@ -141,6 +144,37 @@ class TestRegistrationPresenter extends Tester\TestCase
     Assert::throws(function () use ($request) {
         $this->presenter->run($request);
     }, BadRequestException::class, "Bad Request - Instance '$instanceId' does not exist.");
+  }
+
+  public function testCreateAccountBadConfirmationPassword()
+  {
+    $email = "email@email.email";
+    $firstName = "firstName";
+    $lastName = "lastName";
+    $password = "password";
+    $passwordConfirm = "passwordConfirm";
+    $instances = $this->instances->findAll();
+    $instanceId = array_pop($instances)->getId();
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccount'],
+      [
+        'email' => $email,
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'password' => $password,
+        'passwordConfirm' => $passwordConfirm,
+        'instanceId' => $instanceId,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+
+    Assert::throws(function () use ($request) {
+      $this->presenter->run($request);
+    }, WrongCredentialsException::class);
   }
 
   public function testCreateAccountExistingUser()
@@ -160,6 +194,7 @@ class TestRegistrationPresenter extends Tester\TestCase
         'firstName' => $firstName,
         'lastName' => $lastName,
         'password' => $password,
+        'passwordConfirm' => $password,
         'instanceId' => $instanceId,
         'degreesBeforeName' => $degreesBeforeName,
         'degreesAfterName' => $degreesAfterName
@@ -177,7 +212,6 @@ class TestRegistrationPresenter extends Tester\TestCase
     $username = "user@domain.tld";
     $firstname = "firstnameExt";
     $lastname = "lastnameExt";
-    $password = "passwordExt";
     $degreesBeforeName = "degreesBeforeName";
     $degreesAfterName = "degreesAfterName";
     $instances = $this->instances->findAll();
@@ -205,7 +239,6 @@ class TestRegistrationPresenter extends Tester\TestCase
       ['action' => 'createAccountExt'],
       [
         'username' => $username,
-        'password' => $password,
         'instanceId' => $instanceId,
         'serviceId' => $serviceId
       ]
