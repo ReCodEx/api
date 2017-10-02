@@ -2,9 +2,12 @@
 
 include '../../bootstrap.php';
 
+use App\Helpers\EvaluationResults\EvaluationTaskResult;
+use App\Helpers\EvaluationResults\ExecutionTaskResult;
+use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\TaskResult;
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
-use App\Helpers\EvaluationResults\FailedTestResult;
 use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
@@ -35,10 +38,31 @@ class TestFailedTestResult extends Tester\TestCase
       "limits" => [
         [
           "hw-group-id" => "A",
-          "memory" => 8096,
-          "time" => 1.0
+          "memory" => 10000,
+          "wall-time" => 1.0
         ]
       ]
+    ]
+  ];
+
+  static $evalRes = [
+    "task-id" => "X",
+    "status" => TaskResult::STATUS_SKIPPED
+  ];
+
+  static $execRes = [
+    "task-id" => "Y",
+    "status" => TaskResult::STATUS_FAILED,
+    "sandbox_results" => [
+      "exitcode"  => 10,
+      "max-rss"   => 19696,
+      "memory"    => 8000,
+      "wall-time" => 0.092,
+      "exitsig"   => 0,
+      "message"   => "This is a random message",
+      "status"    => "OK",
+      "time"      => 0.037,
+      "killed"    => false
     ]
   ];
 
@@ -61,16 +85,18 @@ class TestFailedTestResult extends Tester\TestCase
       ]
     );
 
-    $res = new FailedTestResult($cfg);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
+    $evalRes = new EvaluationTaskResult(self::$evalRes);
+
+    $res = new TestResult($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TestResult::STATUS_FAILED, $res->getStatus());
-    Assert::equal([], $res->getStats());
     Assert::equal(0.0, $res->getScore());
-    Assert::false($res->didExecutionMeetLimits());
-    Assert::same(0, $res->getExitCode());
-    Assert::same(0.0, $res->getUsedMemoryRatio());
-    Assert::same(0.0, $res->getUsedTimeRatio());
-    Assert::same("", $res->getMessage());
+    Assert::true($res->didExecutionMeetLimits());
+    Assert::same(10, $res->getExitCode());
+    Assert::same(0.8, $res->getUsedMemoryRatio());
+    Assert::same(0.092, $res->getUsedTimeRatio());
+    Assert::same("This is a random message", $res->getMessage());
   }
 
 }

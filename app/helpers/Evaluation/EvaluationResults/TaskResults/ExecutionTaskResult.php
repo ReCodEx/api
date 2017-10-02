@@ -20,7 +20,7 @@ class ExecutionTaskResult extends TaskResult {
   public function __construct(array $data) {
     parent::__construct($data);
 
-    if ($this->isOK()) {
+    if (!$this->isSkipped()) {
       if(!isset($data[self::SANDBOX_RESULTS_KEY])) {
         throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain sandbox results.");
       }
