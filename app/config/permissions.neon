@@ -421,31 +421,31 @@ permissions:
       # Sis permissions #
       ###################
 
-      - allow: true
-        role: supervisor
-        resource: sis
-        actions:
-          - createTerm
+    - allow: true
+      role: supervisor
+      resource: sis
+      actions:
+        - createTerm
 
-      - allow: true
-        role: supervisor
-        resource: sis
-        actions:
-          - createGroup
-        conditions:
-          - course.isSupervisor
+    - allow: true
+      role: supervisor
+      resource: sis
+      actions:
+        - createGroup
+      conditions:
+        - course.isSupervisor
 
-      - allow: true
-        resource: sis
-        actions:
-          - viewCourses
-        conditions:
-          - sisId.isLinkedToUser
+    - allow: true
+      resource: sis
+      actions:
+        - viewCourses
+      conditions:
+        - sisId.isLinkedToUser
 
-      - allow: true
-        resource: sis
-        actions:
-          - bindGroup
-        conditions:
-          - group.isSupervisor
-          - course.isSupervisor
+    - allow: true
+      resource: sis
+      actions:
+        - bindGroup
+      conditions:
+        - group.isSupervisor
+        - course.isSupervisor
