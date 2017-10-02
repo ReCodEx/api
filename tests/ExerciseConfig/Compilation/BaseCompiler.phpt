@@ -370,7 +370,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testBOutputTask->getDependencies());
     Assert::equal([$testBCompilationTask->getId()], $testBOutputTask->getDependencies());
     Assert::equal(TaskCommands::$COPY, $testBOutputTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "testB/a.out", ConfigParams::$RESULT_DIR . "a.out"], $testBOutputTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "testB/a.out", ConfigParams::$RESULT_DIR . "testB/a.out"], $testBOutputTask->getCommandArguments());
     Assert::equal("testB", $testBOutputTask->getTestId());
     Assert::null($testBOutputTask->getSandboxConfig());
   }

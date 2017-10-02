@@ -35,14 +35,14 @@ abstract class DataOutBox extends Box
     }
 
     $tasks = [];
-    $filenames = $output->getValueAsArray();
     $files = $output->getPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
-    for ($i = 0; $i < count($filenames); $i++) {
+    $resultFiles = $output->getPrefixedValueAsArray(ConfigParams::$RESULT_DIR);
+    for ($i = 0; $i < count($files); $i++) {
       $task = new Task;
       $task->setCommandBinary(TaskCommands::$COPY);
       $task->setCommandArguments([
         $files[$i],
-        ConfigParams::$RESULT_DIR . $filenames[$i]
+        $resultFiles[$i]
       ]);
       $tasks[] = $task;
     }
