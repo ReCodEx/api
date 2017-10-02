@@ -10,11 +10,14 @@ use App\Helpers\JobConfig\TestConfig;
  * of multiple types: zero or many initiation tasks, zero on many execution
  * tasks and exactly one task of evaluation type.
  */
-class TestResult implements ITestResult {
+class TestResult {
 
   const STATUS_OK = "OK";
   const STATUS_FAILED = "FAILED";
   const STATUS_SKIPPED = "SKIPPED";
+
+  const SCORE_MIN = 0.0;
+  const SCORE_MAX = 1.0;
 
   /** @var TestConfig Test configuration */
   private $config;
@@ -22,7 +25,7 @@ class TestResult implements ITestResult {
   /** @var ExecutionTaskResult[] Result of the execution task */
   private $executionResults;
 
-  /** @var EvaluationTaskResult Result of the evaluation task */
+  /** @var TaskResult Result of the evaluation task */
   private $evaluationResult;
 
   /** @var string Status of the test */
@@ -38,13 +41,13 @@ class TestResult implements ITestResult {
    * Constructor
    * @param TestConfig            $config           Test configuration (contained tasks grupped by types, limits)
    * @param array                 $executionResults Results of execution tasks
-   * @param EvaluationTaskResult $evaluationResult Result of the one evaluation task
+   * @param TaskResult $evaluationResult Result of the one evaluation task
    * @param string                $hardwareGroupId  Identifier of hardware group on which was the test evaluated
    */
   public function __construct(
     TestConfig $config,
     array $executionResults,
-    EvaluationTaskResult $evaluationResult,
+    TaskResult $evaluationResult,
     string     $hardwareGroupId
   ) {
     $this->config = $config;
@@ -103,7 +106,7 @@ class TestResult implements ITestResult {
 
   /**
    * Get parsed result statistics for each task
-   * @return IStats[] List of results for each task in this test
+   * @return array List of results for each task in this test
    */
   public function getStats(): array {
     return array_map(
@@ -114,7 +117,7 @@ class TestResult implements ITestResult {
 
   /**
    * Gets array of execution tasks results
-   * @return ExecutionTaskResult[] List of results for all execution tasks in this test
+   * @return array List of results for all execution tasks in this test
    */
   public function getExecutionResults(): array {
     return $this->executionResults;
@@ -134,7 +137,7 @@ class TestResult implements ITestResult {
   }
 
   /**
-   * Checks the configuration agains the actual performace.
+   * Checks the configuration agains the actual performance.
    * @return boolean The result
    */
   public function didExecutionMeetLimits(): bool {

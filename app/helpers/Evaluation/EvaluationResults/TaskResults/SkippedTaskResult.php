@@ -20,4 +20,8 @@ class SkippedTaskResult extends TaskResult {
     ]);
   }
 
+  public function getStats(): ?IStats {
+    return new SkippedStats();
+  }
+
 }

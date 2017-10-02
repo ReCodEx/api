@@ -20,7 +20,7 @@ class TestResult implements JsonSerializable
 
   public function __construct(
     SolutionEvaluation $evaluation,
-    ER\ITestResult $result
+    ER\TestResult $result
   ) {
     $this->solutionEvaluation = $evaluation;
     $this->testName = $result->getId();

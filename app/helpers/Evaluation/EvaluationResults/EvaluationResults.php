@@ -127,7 +127,7 @@ class EvaluationResults {
 
   /**
    * Get results for all logical tests, one result per test
-   * @return ITestResult[] Results of all test inside job
+   * @return TestResult[] Results of all test inside job
    * @internal param string $hardwareGroupId Hardware group
    */
   public function getTestsResults() {
@@ -139,28 +139,11 @@ class EvaluationResults {
   /**
    * Get (aggregate) result for one test
    * @param TestConfig $test Configuration of the test
-   * @return ITestResult Results for specified test
+   * @return TestResult Results for specified test
    */
   public function getTestResult(TestConfig $test) {
-    if ($this->initOK === FALSE) {
-      return new SkippedTestResult($test);
-    }
-
     $execTasks = $this->getExecutionTasksResult($test);
     $eval = $this->getEvaluationTaskResult($test);
-
-    foreach ($execTasks as $exec) {
-      if ($exec->isSkipped()) {
-        return new SkippedTestResult($test);
-      } else if ($exec->hasFailed()) {
-        return new FailedTestResult($test);
-      }
-    }
-
-    if ($eval->isSkipped()) {
-      return new FailedTestResult($test);
-    }
-
     return new TestResult($test, $execTasks, $eval, $this->hardwareGroup);
   }
 

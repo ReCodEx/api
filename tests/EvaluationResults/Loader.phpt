@@ -2,6 +2,7 @@
 
 include '../bootstrap.php';
 
+use App\Helpers\EvaluationResults\TestResult;
 use Tester\Assert;
 
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
@@ -34,7 +35,7 @@ class TestEvaluationResultsLoader extends Tester\TestCase
     Assert::false($results->initOK());
     Assert::equal(6, count($results->getTestsResults()));
     foreach ($results->getTestsResults() as $testResult) {
-      Assert::type(SkippedTestResult::CLASS, $testResult);
+      Assert::equal(TestResult::STATUS_SKIPPED, $testResult->getStatus());
     }
   }
 
@@ -68,7 +69,7 @@ b:
     Assert::true($results->initOK());
     Assert::equal(6, count($results->getTestsResults()));
     foreach ($results->getTestsResults() as $result) {
-      Assert::type(SkippedTestResult::CLASS, $result);
+      Assert::equal(TestResult::STATUS_SKIPPED, $result->getStatus());
     }
   }
 
