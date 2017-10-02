@@ -22,7 +22,7 @@ class TestResult {
   /** @var TestConfig Test configuration */
   private $config;
 
-  /** @var ExecutionTaskResult[] Result of the execution task */
+  /** @var TaskResult[] Result of the execution task */
   private $executionResults;
 
   /** @var TaskResult Result of the evaluation task */
@@ -110,7 +110,7 @@ class TestResult {
    */
   public function getStats(): array {
     return array_map(
-      function (ExecutionTaskResult $result) {return $result->getStats(); },
+      function (TaskResult $result) {return $result->getStats(); },
       $this->executionResults
     );
   }
