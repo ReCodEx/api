@@ -174,8 +174,10 @@ class VariablesResolver {
     if ($inPort->getVariableValue() !== null) {
       return; // this port was already processed
     } else if ($inPort->getVariableValue() === null && $outPort && $outPort->getVariableValue() !== null) {
-      // only input value is assigned... well this is weird
-      throw new ExerciseConfigException("Malformed ports detected: $inPortName, $outPortName");
+      // only input value is assigned... this means it was process before with
+      // some other child, so just assign value and return
+      $inPort->setVariableValue($outPort->getVariableValue());
+      return;
     }
 
     $variableName = $inPort->getVariable();
