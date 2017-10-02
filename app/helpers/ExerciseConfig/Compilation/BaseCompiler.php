@@ -73,7 +73,7 @@ class BaseCompiler {
     $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $runtimeEnvironmentId, $params);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
-    $testDirectories = $this->testDirectoriesResolver->resolve($optimized);
+    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $params);
     $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits, $params);
     return $jobConfig;
   }

@@ -2,6 +2,7 @@
 
 include '../../bootstrap.php';
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
@@ -84,7 +85,8 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     $tree->addRootNode($A);
 
     // execute and assert
-    $result = $this->resolver->resolve($tree);
+    $params = CompilationParams::create();
+    $result = $this->resolver->resolve($tree, $params);
     Assert::count(1, $result->getRootNodes());
 
     $mkdirA = $result->getRootNodes()[0];
