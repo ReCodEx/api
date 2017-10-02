@@ -72,6 +72,14 @@ class TaskResult {
   }
 
   /**
+   * Get parsed statistics of execution
+   * @return IStats|null Statistics of the execution
+   */
+  public function getStats(): ?IStats {
+    return null;
+  }
+
+  /**
    * Get standard and error output of the program (if enabled).
    * May be truncated by worker.
    * @return string The standard output

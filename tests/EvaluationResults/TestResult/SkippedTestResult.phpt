@@ -2,9 +2,12 @@
 
 include '../../bootstrap.php';
 
+use App\Helpers\EvaluationResults\EvaluationTaskResult;
+use App\Helpers\EvaluationResults\ExecutionTaskResult;
+use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\TaskResult;
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
-use App\Helpers\EvaluationResults\SkippedTestResult;
 use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\Tasks\Task;
 use App\Helpers\JobConfig\Tasks\EvaluationTaskType;
@@ -43,6 +46,16 @@ class TestSkippedTestResult extends Tester\TestCase
     ]
   ];
 
+  static $evalRes = [
+    "task-id" => "X",
+    "status" => TaskResult::STATUS_SKIPPED
+  ];
+
+  static $execRes = [
+    "task-id" => "Y",
+    "status" => TaskResult::STATUS_SKIPPED
+  ];
+
   /** @var Loader */
   private $builder;
 
@@ -62,13 +75,16 @@ class TestSkippedTestResult extends Tester\TestCase
       ]
     );
 
-    $res = new SkippedTestResult($cfg);
+    $execRes = [ new ExecutionTaskResult(self::$execRes) ];
+    $evalRes = new EvaluationTaskResult(self::$evalRes);
+
+    $res = new TestResult($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TestResult::STATUS_SKIPPED, $res->getStatus());
-    Assert::equal([], $res->getStats());
+    Assert::equal([new SkippedStats()], $res->getStats());
     Assert::equal(0.0, $res->getScore());
     Assert::false($res->didExecutionMeetLimits());
-    Assert::same(0, $res->getExitCode());
+    Assert::same(255, $res->getExitCode());
     Assert::same(0.0, $res->getUsedMemoryRatio());
     Assert::same(0.0, $res->getUsedTimeRatio());
     Assert::same("", $res->getMessage());

@@ -170,7 +170,7 @@ class TestTestResult extends Tester\TestCase
       $execRes = new ExecutionTaskResult($execRes);
       $evalRes = new EvaluationTaskResult($evalRes);
       $res = new TR($cfg, [ $execRes ], $evalRes, "A");
-      Assert::false($res->didExecutionMeetLimits());
+      Assert::equal($execStatus === TaskResult::STATUS_SKIPPED ? false : true, $res->didExecutionMeetLimits());
       Assert::equal($result, $res->getStatus());
       Assert::equal(0.0, $res->getScore());
     }
