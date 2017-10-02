@@ -7,6 +7,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\ResultMkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
@@ -60,12 +61,32 @@ class TestDirectoriesResolver {
   }
 
   /**
+   * Based on given information create test mkdir box and node.
+   * @param string $testId
+   * @return Node
+   */
+  private function createResultMkdirNode(string $testId): Node {
+    $variable = new Variable(VariableTypes::$STRING_TYPE);
+    $variable->setValue($testId);
+
+    $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
+
+    $boxMeta = (new BoxMeta)->setName(MkdirBox::$MKDIR_TYPE);
+    $box = (new ResultMkdirBox($boxMeta))->setInputPort($port);
+
+    $node = (new Node)->setBox($box)->setTestId($testId);
+    return $node;
+  }
+
+  /**
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
    * @param Node[] $firstNodesOfTests indexed with testId
+   * @param CompilationParams $params
    * @return RootedTree
    */
-  private function addDirectories(RootedTree $tree, array $firstNodesOfTests): RootedTree {
+  private function addDirectories(RootedTree $tree, array $firstNodesOfTests,
+      CompilationParams $params): RootedTree {
     if (count($firstNodesOfTests) === 0) {
       return $tree;
     }
@@ -78,17 +99,23 @@ class TestDirectoriesResolver {
         $lastMkdirNode = $this->createMkdirNode($testId);
         $result->addRootNode($lastMkdirNode);
         $firstTestNode->addDependency($lastMkdirNode);
-        continue;
+      } else {
+        $mkdirNode = $this->createMkdirNode($testId);
+        $mkdirNode->addParent($lastMkdirNode);
+        $lastMkdirNode->addChild($mkdirNode);
+        // set dependency for the first proper task of test
+        $firstTestNode->addDependency($mkdirNode);
+        $lastMkdirNode = $mkdirNode;
       }
 
-      $mkdirNode = $this->createMkdirNode($testId);
-      $mkdirNode->addParent($lastMkdirNode);
-      $lastMkdirNode->addChild($mkdirNode);
-
-      // set dependency for the first proper task of test
-      $firstTestNode->addDependency($mkdirNode);
-
-      $lastMkdirNode = $mkdirNode;
+      if ($params->isDebug()) {
+        $resultMkdirNode = $this->createResultMkdirNode($testId);
+        $resultMkdirNode->addParent($lastMkdirNode);
+        $lastMkdirNode->addChild($resultMkdirNode);
+        // set dependency for the first proper task of test
+        $firstTestNode->addDependency($resultMkdirNode);
+        $lastMkdirNode = $resultMkdirNode;
+      }
     }
 
     // do not forget to connect original root nodes to new tree
@@ -103,9 +130,10 @@ class TestDirectoriesResolver {
   /**
    * Resolve and assign proper directories to particular tests.
    * @param RootedTree $tree
+   * @param CompilationParams $params
    * @return RootedTree
    */
-  public function resolve(RootedTree $tree): RootedTree {
+  public function resolve(RootedTree $tree, CompilationParams $params): RootedTree {
     $firstNodesOfTests = [];
     $stack = array_reverse($tree->getRootNodes());
     while (!empty($stack)) {
@@ -128,7 +156,7 @@ class TestDirectoriesResolver {
       }
     }
 
-    return $this->addDirectories($tree, $firstNodesOfTests);
+    return $this->addDirectories($tree, $firstNodesOfTests, $params);
   }
 
 }
