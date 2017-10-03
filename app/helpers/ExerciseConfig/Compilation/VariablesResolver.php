@@ -107,13 +107,6 @@ class VariablesResolver {
         $inputVariable = $exerciseVariable;
       }
 
-      if ($inputVariable && $variable->isEmpty()) {
-        // variable value is empty, replace it with input variable value
-        // there is no need for explicit input variable anymore
-        $variable = $inputVariable;
-        $inputVariable = null;
-      }
-
       // assign variable to both nodes
       $inputBox->setInputVariable($inputVariable);
       $outputPort->setVariableValue($variable);

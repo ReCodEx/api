@@ -76,7 +76,6 @@ abstract class DataInBox extends Box
     // variable is empty, this means that there is no request to rename fetched
     // files, therefore we have to fill variable with remote file names
     if ($variable->isEmpty()) {
-      $variable->setValuePrefix($inputVariable->getValuePrefix());
       $variable->setValue($inputVariable->getValue());
     }
 
