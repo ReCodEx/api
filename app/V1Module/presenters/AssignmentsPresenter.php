@@ -258,6 +258,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
     }
 
+    if ($exercise->getReferenceSolutions()->isEmpty()) {
+      throw new InvalidArgumentException("Exercise '$exerciseId' does not have any reference solutions");
+    }
+
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
