@@ -8,6 +8,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\Wildcards;
 
 
 /**
@@ -37,7 +38,7 @@ class VariablesResolver {
     // regexp matching of all files against variable value
     $value = $variable->getValue();
     $matches = array_filter($submittedFiles, function (string $file) use ($value) {
-      return fnmatch($value, $file);
+      return Wildcards::match($value, $file);
     });
 
     if (empty($matches)) {
