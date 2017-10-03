@@ -54,14 +54,15 @@ class UserAction implements JsonSerializable
   protected $data;
 
   /**
-   * @param User     $user
-   * @param DateTime $loggedAt    Time of the action
-   * @param string   $action      Action name
-   * @param array    $params      Parameters of the action
-   * @param int      $code        HTTP response code
-   * @param mixed    $data        Additional data
+   * @param User|null $user
+   * @param DateTime $loggedAt Time of the action
+   * @param string $action Action name
+   * @param array $params Parameters of the action
+   * @param int $code HTTP response code
+   * @param mixed $data Additional data
    */
-  public function __construct(User $user, DateTime $loggedAt, string $action, array $params, int $code, $data = NULL) {
+  public function __construct(?User $user, DateTime $loggedAt, string $action,
+      array $params, int $code, $data = NULL) {
     $this->user = $user;
     $this->loggedAt = $loggedAt;
     $this->action = $action;
@@ -73,7 +74,7 @@ class UserAction implements JsonSerializable
   public function jsonSerialize() {
     return [
       "loggedAt"  => $this->loggedAt,
-      "userId"    => $this->user->getId(),
+      "userId"    => $this->user === null ? "" : $this->user->getId(),
       "action"    => $this->action,
       "code"      => $this->code
     ];
