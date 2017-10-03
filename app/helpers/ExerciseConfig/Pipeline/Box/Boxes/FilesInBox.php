@@ -111,11 +111,6 @@ class FilesInBox extends DataInBox
       throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
     }
 
-    // both variable and input variable are arrays
-    if ($inputVariable && (count($inputVariable->getValue()) !== count($variable->getValue()))) {
-      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FILES_IN_TYPE));
-    }
-
     // compilation
     return $this->compileInternal($inputVariable, $variable);
   }
