@@ -23,6 +23,7 @@ use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
+use Tracy\ILogger;
 
 class BasePresenter extends \App\Presenters\BasePresenter {
 
@@ -55,6 +56,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $authorizator;
+
+  /**
+   * @var ILogger
+   * @inject
+   */
+  public $logger;
 
   /** @var object Processed parameters from annotations */
   protected $parameters;

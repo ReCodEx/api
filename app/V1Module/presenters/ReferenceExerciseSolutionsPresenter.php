@@ -24,6 +24,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IExercisePermissions;
+use Tracy\ILogger;
 
 /**
  * Endpoints for manipulation of reference solutions of exercises
@@ -279,6 +280,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         $this->referenceEvaluations->flush();
         $evaluations[] = $evaluation;
       } catch (SubmissionFailedException $e) {
+        $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
         $errors[] = $hwGroup->getId();
       }
     }
