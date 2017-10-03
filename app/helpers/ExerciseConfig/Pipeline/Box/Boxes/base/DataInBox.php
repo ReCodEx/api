@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Variable;
@@ -51,7 +52,8 @@ abstract class DataInBox extends Box
    * have to be performed before calling this function.
    * @param Variable|null $inputVariable
    * @param Variable $variable
-   * @return Task[]
+   * @return array
+   * @throws ExerciseConfigException
    */
   protected function compileInternal(?Variable $inputVariable,
       Variable $variable): array {
@@ -65,21 +67,27 @@ abstract class DataInBox extends Box
       $inputVariable = $variable;
     }
 
-    // variable is empty, this means that there is no request to rename fetched
-    // files, therefore we have to fill variable with remote file names
-    if ($variable->isEmpty()) {
-      $variable->setValue($inputVariable->getValue());
-    }
-
     if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
       ($inputVariable->isEmpty() && $variable->isEmpty())) {
       // there are no files which should be renamed
       return [];
     }
 
+    // variable is empty, this means that there is no request to rename fetched
+    // files, therefore we have to fill variable with remote file names
+    if ($variable->isEmpty()) {
+      $variable->setValuePrefix($inputVariable->getValuePrefix());
+      $variable->setValue($inputVariable->getValue());
+    }
+
     // prepare arrays which will be processed
     $inputFiles = $inputVariable->getValueAsArray();
     $files = $variable->getPrefixedValueAsArray();
+
+    // counts are not the same, this is really bad situation, end it now!
+    if (count($inputFiles) !== count($files)) {
+      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", $this->getName()));
+    }
 
     // general foreach for both local and remote files
     $tasks = [];
