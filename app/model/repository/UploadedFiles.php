@@ -54,6 +54,36 @@ class UploadedFiles extends BaseRepository {
   }
 
   /**
+   * If given file belongs to an exercise, find the group to which exercise belongs to.
+   * @param UploadedFile $file
+   * @return Group|null
+   */
+  public function findGroupForReferenceSolutionFile(UploadedFile $file)
+  {
+    if (!($file instanceof SolutionFile)) {
+      return NULL;
+    }
+
+    $query = $this->em->createQuery("
+      SELECT ref
+      FROM App\Model\Entity\ReferenceExerciseSolution ref
+      WHERE IDENTITY(ref.solution) = :solutionId
+    ");
+
+    $query->setParameters([
+      'solutionId' => $file->getSolution()->getId()
+    ]);
+
+    $result = $query->getOneOrNullResult();
+
+    if ($result === NULL) {
+      return NULL;
+    }
+
+    return $result->getExercise()->getGroup();
+  }
+
+  /**
    * Find uploaded files that are too old and not assigned to an Exercise or Solution
    * @param DateTime $now Current date
    * @param string $threshold Maximum allowed age of uploaded files

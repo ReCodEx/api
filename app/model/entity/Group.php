@@ -426,7 +426,6 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "parentGroupsIds" => $this->getParentGroupsIds(),
-      "parentGroupsNames" => $this->getParentGroupsNames(),
       "childGroups" => [
         "all" => $this->getChildGroups()->map(
           function(Group $group) {

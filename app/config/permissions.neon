@@ -347,6 +347,14 @@ permissions:
           - download
           - viewDetail
       conditions:
+          - file.isReferenceSolutionInSupervisedGroup
+
+    - allow: true
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+      conditions:
           - file.isPublic
 
     - allow: true
