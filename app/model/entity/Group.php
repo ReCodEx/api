@@ -396,6 +396,21 @@ class Group implements JsonSerializable
     return array_values(array_reverse($parents));
   }
 
+  /**
+   * Get names of parent groups in descending order.
+   * @return string[]
+   */
+  public function getParentGroupsNames(): array {
+    $group = $this->getParentGroup();
+    $parentsNames = [];
+    while ($group !== NULL) {
+      $parentsNames[] = $group->getName();
+      $group = $group->getParentGroup();
+    }
+
+    return array_values(array_reverse($parentsNames));
+  }
+
   public function jsonSerialize() {
     $instance = $this->getInstance();
     return [
@@ -411,6 +426,7 @@ class Group implements JsonSerializable
       "hasValidLicence" => $this->hasValidLicence(),
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "parentGroupsIds" => $this->getParentGroupsIds(),
+      "parentGroupsNames" => $this->getParentGroupsNames(),
       "childGroups" => [
         "all" => $this->getChildGroups()->map(
           function(Group $group) {

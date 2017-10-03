@@ -6,6 +6,7 @@ use App\Model\Entity\Exercise;
 use App\Security\Identity;
 
 class ExercisePermissionPolicy implements IPermissionPolicy {
+
   public function getAssociatedClass() {
     return Exercise::class;
   }

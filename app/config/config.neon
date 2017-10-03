@@ -168,6 +168,7 @@ acl:
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
     sis: App\Security\Policies\SisPermissionPolicy
+    course: App\Security\Policies\SisCoursePermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension

@@ -6,6 +6,7 @@ use App\Model\Repository\ExternalLogins;
 use App\Security\Identity;
 
 class SisCoursePermissionPolicy implements IPermissionPolicy {
+
   function getAssociatedClass() {
     return SisCourseRecord::class;
   }
