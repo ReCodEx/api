@@ -442,6 +442,8 @@ permissions:
         - createGroup
       conditions:
         - course.isSupervisor
+        - groupContext.doesTermMatch
+        - groupContext.isParentGroupAssociatedWithCourse
 
     - allow: true
       resource: sis

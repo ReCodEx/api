@@ -18,6 +18,7 @@ use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\ISisPermissions;
+use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
 
@@ -63,12 +64,6 @@ class SisPresenter extends BasePresenter {
    * @inject
    */
   public $sisAcl;
-
-  /**
-   * @var IGroupPermissions
-   * @inject
-   */
-  public $groupAcl;
 
   /**
    * @GET
@@ -206,7 +201,7 @@ class SisPresenter extends BasePresenter {
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
-    if (!$this->sisAcl->canCreateGroup($parentGroup, $remoteCourse) || !$this->groupAcl->canAddSubgroup($parentGroup)) {
+    if (!$this->sisAcl->canCreateGroup(new SisGroupContext($parentGroup, $remoteCourse), $remoteCourse)) {
       throw new ForbiddenRequestException();
     }
 
