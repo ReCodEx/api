@@ -409,6 +409,16 @@ class Exercise implements JsonSerializable
       })->getValues();
   }
 
+  protected function getSerializedLocalizedTexts() {
+    return array_map(function (LocalizedText $text) {
+      $data = $text->jsonSerialize();
+      if ($data["shortText"] === NULL) {
+        $data["shortText"] = $this->name;
+      }
+      return $data;
+    }, $this->localizedTexts->getValues());
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -416,7 +426,7 @@ class Exercise implements JsonSerializable
       "version" => $this->version,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts->getValues(),
+      "localizedTexts" => $this->getSerializedLocalizedTexts(),
       "difficulty" => $this->difficulty,
       "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
       "hardwareGroups" => $this->hardwareGroups->getValues(),

@@ -184,6 +184,7 @@ class ExercisesPresenter extends BasePresenter {
       $localized = new LocalizedText(
         $localization["text"],
         $lang,
+        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
         $exercise->getLocalizedTextByLocale($lang)
       );
 

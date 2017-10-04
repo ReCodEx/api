@@ -18,12 +18,12 @@ class LocalizedText implements JsonSerializable
   public function __construct(
     string $text,
     string $locale,
+    ?string $shortText = NULL,
     $createdFrom = NULL
   ) {
     $this->text = $text;
+    $this->shortText = $shortText;
     $this->locale = $locale;
-    $this->assignments = new ArrayCollection;
-    $this->exercises = new ArrayCollection;
     $this->createdFrom = $createdFrom;
     $this->createdAt = new DateTime;
   }
@@ -48,6 +48,11 @@ class LocalizedText implements JsonSerializable
   protected $locale;
 
   /**
+   * @ORM\Column(type="string", nullable=TRUE)
+   */
+  protected $shortText;
+
+  /**
    * @ORM\Column(type="text")
    */
   protected $text;
@@ -57,42 +62,11 @@ class LocalizedText implements JsonSerializable
    */
   protected $createdAt;
 
-  /**
-   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="localizedTexts")
-   */
-  protected $assignments;
-
-  public function addAssignment(Assignment $assignment) {
-    $this->assignments[] = $assignment;
-    $assignment->addLocalizedText($this);
-    return $this;
-  }
-
-  public function removeAssignment(Assignment $assignment) {
-    $this->assignments->removeElement($assignment);
-    $assignment->removeLocalizedText($this);
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="localizedTexts")
-   */
-  protected $exercises;
-
-  public function addExercise(Exercise $exercise) {
-    $this->exercises[] = $exercise;
-    $exercise->addLocalizedText($this);
-    return $this;
-  }
-
-  public function removeExercise(Exercise $exercise) {
-    $this->exercises->removeElement($exercise);
-    $exercise->removeLocalizedText($this);
-  }
-
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "locale" => $this->locale,
+      "shortText" => $this->shortText,
       "text" => $this->text,
       "createdAt" => $this->createdAt->getTimestamp(),
       "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
