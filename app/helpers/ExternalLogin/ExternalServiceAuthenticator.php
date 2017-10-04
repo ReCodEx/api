@@ -134,7 +134,8 @@ class ExternalServiceAuthenticator {
     } else if (count($unconnectedUsers) > 1) {
       // multiple recodex accounts were found for emails in CAS
       throw new InvalidStateException(
-        "LDAP user '{$userData->getId()}' has multiple specified emails which are also registered in locally ReCodEx");
+        sprintf("LDAP user '%s' has multiple specified emails (%s) which are also registered locally in ReCodEx",
+          $userData->getId(), join(", ", $userData->getEmails())));
     }
 
     // there was only one suitable user, try to connect it
