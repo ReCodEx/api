@@ -39,7 +39,7 @@ class Login
   protected $passwordHash;
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User", inversedBy="logins")
    */
   protected $user;
 

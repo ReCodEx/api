@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Helpers\EmailVerificationHelper;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
@@ -91,7 +92,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::same($user, $result["payload"]);
   }
 
-  public function testUpdateProfile()
+  public function testUpdateProfileWithoutEmailAndPassword()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
@@ -125,6 +126,137 @@ class TestUsersPresenter extends Tester\TestCase
 
     $storedUpdatedUser = $this->users->get($user->getId());
     Assert::same($updatedUser, $storedUpdatedUser);
+  }
+
+  public function testUpdateProfileWithEmailAndWithoutPassword()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $firstName = "firstNameUpdated";
+    $lastName = "lastNameUpdated";
+    $degreesBeforeName = "degreesBeforeNameUpdated";
+    $degreesAfterName = "degreesAfterNameUpdated";
+    $email = "new-email@recodex.cz";
+
+    $emailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
+    $emailVerificationHelper->shouldReceive("process")->with($user)->andReturn()->once();
+    $this->presenter->emailVerificationHelper = $emailVerificationHelper;
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName,
+        'email' => $email
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::equal($firstName, $updatedUser->getFirstName());
+    Assert::equal($lastName, $updatedUser->getLastName());
+    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
+    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
+    Assert::equal($email, $updatedUser->getEmail());
+
+    $storedUpdatedUser = $this->users->get($user->getId());
+    Assert::same($updatedUser, $storedUpdatedUser);
+  }
+
+  public function testUpdateProfileWithoutEmailAndWithPassword()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $login = $this->presenter->logins->findByUsernameOrThrow($user->getEmail());
+
+    $firstName = "firstNameUpdated";
+    $lastName = "lastNameUpdated";
+    $degreesBeforeName = "degreesBeforeNameUpdated";
+    $degreesAfterName = "degreesAfterNameUpdated";
+    $oldPassword = "admin";
+    $password = "newPassword";
+    $passwordConfirm = "newPassword";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName,
+        'oldPassword' => $oldPassword,
+        'password' => $password,
+        'passwordConfirm' => $passwordConfirm
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::equal($firstName, $updatedUser->getFirstName());
+    Assert::equal($lastName, $updatedUser->getLastName());
+    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
+    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
+    Assert::true($login->passwordsMatch($password));
+
+    $storedUpdatedUser = $this->users->get($user->getId());
+    Assert::same($updatedUser, $storedUpdatedUser);
+  }
+
+  public function testUpdateProfileWithoutNewPassword()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'firstName' => "firstNameUpdated",
+        'lastName' => "lastNameUpdated",
+        'degreesBeforeName' => "degreesBeforeNameUpdated",
+        'degreesAfterName' => "degreesAfterNameUpdated",
+        'oldPassword' => "admin",
+        'passwordConfirm' => "newPassword"
+      ]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\InvalidArgumentException::class);
+  }
+
+  public function testUpdateProfileWithoutNewPasswordConfirm()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'firstName' => "firstNameUpdated",
+        'lastName' => "lastNameUpdated",
+        'degreesBeforeName' => "degreesBeforeNameUpdated",
+        'degreesAfterName' => "degreesAfterNameUpdated",
+        'oldPassword' => "admin",
+        'password' => "newPassword"
+      ]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\InvalidArgumentException::class);
   }
 
   public function testUpdateSettings()
