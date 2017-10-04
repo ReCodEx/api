@@ -431,6 +431,16 @@ class Assignment implements JsonSerializable
     return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
   }
 
+  protected function getSerializedLocalizedTexts() {
+    return array_map(function (LocalizedText $text) {
+      $data = $text->jsonSerialize();
+      if ($data["shortText"] === NULL) {
+        $data["shortText"] = $this->name;
+      }
+      return $data;
+    }, $this->localizedTexts->getValues());
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -439,7 +449,7 @@ class Assignment implements JsonSerializable
       "isPublic" => $this->isPublic,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts->getValues(),
+      "localizedTexts" => $this->getSerializedLocalizedTexts(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeadline" => $this->secondDeadline->getTimestamp(),

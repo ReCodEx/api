@@ -203,6 +203,7 @@ class AssignmentsPresenter extends BasePresenter {
       $localized = new LocalizedText(
         $localization["text"],
         $lang,
+        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
         $assignment->getLocalizedTextByLocale($lang)
       );
 
