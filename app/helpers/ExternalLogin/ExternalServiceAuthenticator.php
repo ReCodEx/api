@@ -3,6 +3,7 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
@@ -108,21 +109,43 @@ class ExternalServiceAuthenticator {
 
 
   /**
+   * Try connecting given LDAP user to local ReCodEx user account.
    * @param IExternalLoginService $service
    * @param UserData $userData
-   * @return User|bool|null
+   * @return User|null
+   * @throws InvalidStateException
    */
   private function tryConnect(IExternalLoginService $service, UserData $userData): ?User {
-    if (!empty($userData->getEmail())) {
-      $unconnectedUser = $this->users->getByEmail($userData->getEmail());
-      if ($unconnectedUser
-        && $unconnectedUser->isVerified()
-        && $this->externalLogins->connect($service, $unconnectedUser, $userData->getId())
-      ) {
-        return $unconnectedUser;
+    $unconnectedUsers = [];
+    foreach ($userData->getEmails() as $email) {
+      if (!empty($email)) {
+        continue;
+      }
+
+      $user = $this->users->getByEmail($email);
+      if ($user && $user->isVerified()) {
+        $unconnectedUsers[] = $user;
       }
     }
 
-    return NULL;
+    if (count($unconnectedUsers) === 0) {
+      // no recodex users are suitable for connecting to CAS account
+      return null;
+    } else if (count($unconnectedUsers) > 1) {
+      // multiple recodex accounts were found for emails in CAS
+      throw new InvalidStateException(
+        "LDAP user '{$userData->getId()}' has multiple specified emails which are also registered in locally ReCodEx");
+    }
+
+    // there was only one suitable user, try to connect it
+    $unconnectedUser = current($unconnectedUsers);
+    if ($this->externalLogins->connect($service, $unconnectedUser, $userData->getId())
+    ) {
+      return $unconnectedUser;
+    }
+
+    // user was not connected... normally unreachable
+    return null;
   }
+
 }

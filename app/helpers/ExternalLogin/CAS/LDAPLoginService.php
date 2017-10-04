@@ -139,7 +139,7 @@ class LDAPLoginService implements IExternalLoginService {
     return new UserData($ukco, $email, $firstName, $lastName, "", "");
   }
 
-  /**a
+  /**
    * Get value of an LDAP attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value

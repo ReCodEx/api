@@ -26,7 +26,7 @@ use GuzzleHttp\Client;
  * would with direct access into the LDAP database.
  *
  * This is hard to test on a local server, as the CAS will only reveal the sensitive
- * personal information to coputers in the CUNI network.
+ * personal information to computers in the CUNI network.
  */
 class OAuthLoginService implements IExternalLoginService {
 
@@ -156,7 +156,7 @@ class OAuthLoginService implements IExternalLoginService {
 
     try {
       $ukco = Arrays::get($info, $this->ukcoField);
-      $email = Arrays::get($info, $this->emailField);
+      $emails = Arrays::get($info, $this->emailField);
       $firstName = Arrays::get($info, $this->firstNameField);
       $lastName = Arrays::get($info, $this->lastNameField);
       // $affiliation = Arrays::get($info, $this->affiliationField); // @todo automatically change role according to this value
@@ -165,7 +165,7 @@ class OAuthLoginService implements IExternalLoginService {
     }
 
     // we do not get this information about the degrees of the user
-    return new UserData($ukco, $email, $firstName, $lastName, "", "");
+    return new UserData($ukco, $emails, $firstName, $lastName, "", "");
   }
 
 }

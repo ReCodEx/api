@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExternalLogin;
 
+use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 
@@ -31,36 +32,48 @@ final class UserData {
   /** @var string Degrees after user's name */
   private $degreesAfterName;
 
-  /** @var string Email address of user */
-  private $email;
+  /** @var string[] Email address of user */
+  private $emails;
 
   /**
    * get user's email address
-   * @return string
+   * @return string[]
    */
-  public function getEmail() { return $this->email; }
+  public function getEmails() { return $this->emails; }
 
   /**
    * Constructor
-   * @param string                $id          Identifier of user (inside identity provider)
-   * @param string                $email       Email address of user
-   * @param string                $firstName   First name of user
-   * @param string                $lastName    Last name of user
-   * @param string                $degreesBeforeName   Degrees before user's name
-   * @param string                $degreesAfterName    Degrees after user's name
+   * @param string $id Identifier of user (inside identity provider)
+   * @param mixed $emails Email address of user
+   * @param string $firstName First name of user
+   * @param string $lastName Last name of user
+   * @param string $degreesBeforeName Degrees before user's name
+   * @param string $degreesAfterName Degrees after user's name
+   * @throws InvalidArgumentException
    */
   public function __construct(
     string $id,
-    string $email,
+    $emails,
     string $firstName,
     string $lastName,
     string $degreesBeforeName,
     string $degreesAfterName
   ) {
+
+    // emails are not array, so make it then
+    if (is_scalar($emails)) {
+      $emails = [$emails];
+    }
+
+    // check if at least one email was given
+    if (count($emails) === 0) {
+      throw new InvalidArgumentException("LDAP user '$id' does not have any email specified");
+    }
+
     $this->id = $id;
     $this->firstName = $firstName;
     $this->lastName = $lastName;
-    $this->email = $email;
+    $this->emails = $emails;
     $this->degreesBeforeName = $degreesBeforeName;
     $this->degreesAfterName = $degreesAfterName;
   }
@@ -73,7 +86,7 @@ final class UserData {
    */
   public function createEntity(Instance $instance, string $role): User {
     return new User(
-      $this->email,
+      current($this->emails), // first email is picked
       $this->firstName,
       $this->lastName,
       $this->degreesBeforeName,
