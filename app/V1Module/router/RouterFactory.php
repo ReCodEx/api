@@ -374,6 +374,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/terms/", "Sis:registerTerm");
     $router[] = new GetRoute("$prefix/users/<userId>/subscribed-groups/<year>/<term>/as-student", "Sis:subscribedGroups");
     $router[] = new GetRoute("$prefix/users/<userId>/supervised-courses/<year>/<term>", "Sis:supervisedCourses");
+    $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/create", "Sis:createGroup");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/bind", "Sis:bindGroup");
     return $router;

@@ -16,12 +16,14 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
-use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\ISisPermissions;
 use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
 
+/**
+ * @LoggedIn
+ */
 class SisPresenter extends BasePresenter {
   /**
    * @var SisHelper
@@ -252,6 +254,23 @@ class SisPresenter extends BasePresenter {
     $binding = new SisGroupBinding($group, $remoteCourse->getCode());
     $this->sisGroupBindings->persist($binding);
     $this->sendSuccessResponse($group);
+  }
+
+  /**
+   * Find groups that can be chosen as parents of a group created from given SIS group by current user
+   * @POST
+   * @param $courseId
+   * @throws ApiException
+   * @throws ForbiddenRequestException
+   * @Param(name="courseId", type="post")
+   */
+  public function actionPossibleParents($courseId) {
+    $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
+    $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
+
+    $this->sendSuccessResponse(array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
+      return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse);
+    }));
   }
 
   protected function getSisUserIdOrThrow(User $user) {
