@@ -115,6 +115,54 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
         Assert::equal($user, $authenticator->authenticate($serviceA, [ "a" => "b" ]));
     }
 
+  public function testTryConnectFailed() {
+    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+
+    $serviceA = Mockery::mock(IExternalLoginService::class);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getServiceId")->andReturn("x");
+
+    $role = Mockery::mock(Role::class);
+    $instance = Mockery::mock(Instance::class);
+    $instance->shouldReceive("addMember");
+    $user = new User("a@b.cd", "A", "B", "", "", $role, $instance, FALSE);
+    $user->setVerified(true); // user has to be verified
+
+    $logins = Mockery::mock(ExternalLogins::class);
+    $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(null);
+
+    $users = Mockery::mock(Users::class);
+    $users->shouldReceive("getByEmail")->with("a@b.cd")->andReturn(null)->once();
+
+    Assert::exception(function () use ($logins, $users, $serviceA) {
+      $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
+      $authenticator->authenticate($serviceA, [ "a" => "b" ]);
+    }, WrongCredentialsException::class);
+  }
+
+  public function testTryConnectCorrect() {
+    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+
+    $serviceA = Mockery::mock(IExternalLoginService::class);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getServiceId")->andReturn("x");
+
+    $role = Mockery::mock(Role::class);
+    $instance = Mockery::mock(Instance::class);
+    $instance->shouldReceive("addMember");
+    $user = new User("a@b.cd", "A", "B", "", "", $role, $instance, FALSE);
+    $user->setVerified(true); // user has to be verified
+
+    $logins = Mockery::mock(ExternalLogins::class);
+    $logins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(null);
+    $logins->shouldReceive("connect")->with($serviceA, $user, $userData->getId())->andReturn(true)->once();
+
+    $users = Mockery::mock(Users::class);
+    $users->shouldReceive("getByEmail")->with("a@b.cd")->andReturn($user)->once();
+
+    $authenticator = new ExternalServiceAuthenticator($logins, $users, $serviceA);
+    Assert::equal($user, $authenticator->authenticate($serviceA, [ "a" => "b" ]));
+  }
 
 }
 

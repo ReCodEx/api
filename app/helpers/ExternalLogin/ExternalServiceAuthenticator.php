@@ -118,7 +118,7 @@ class ExternalServiceAuthenticator {
   private function tryConnect(IExternalLoginService $service, UserData $userData): ?User {
     $unconnectedUsers = [];
     foreach ($userData->getEmails() as $email) {
-      if (!empty($email)) {
+      if (empty($email)) {
         continue;
       }
 
@@ -139,8 +139,7 @@ class ExternalServiceAuthenticator {
 
     // there was only one suitable user, try to connect it
     $unconnectedUser = current($unconnectedUsers);
-    if ($this->externalLogins->connect($service, $unconnectedUser, $userData->getId())
-    ) {
+    if ($this->externalLogins->connect($service, $unconnectedUser, $userData->getId())) {
       return $unconnectedUser;
     }
 
