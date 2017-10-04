@@ -3,10 +3,15 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Group;
+use App\Model\Entity\Login;
+use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
 
 /**
@@ -94,13 +99,17 @@ class UsersPresenter extends BasePresenter {
    * Update the profile associated with a user account
    * @POST
    * @param string $id Identifier of the user
+   * @throws BadRequestException
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    * @Param(type="post", name="firstName", validation="string:2..", description="First name")
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", validation="email", description="New email address", required=FALSE)
-   * @throws BadRequestException
-   * @throws ForbiddenRequestException
+   * @Param(type="post", name="oldPassword", required=FALSE, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="New password of current user")
+   * @Param(type="post", name="passwordConfirm", required=FALSE, validation="string:1..", description="Confirmation of new password of current user")
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();
@@ -111,33 +120,16 @@ class UsersPresenter extends BasePresenter {
 
     // fill user with provided data
     $user = $this->users->findOrThrow($id);
+    $login = $this->logins->findCurrent();
 
     if (!$this->userAcl->canUpdateProfile($user)) {
       throw new ForbiddenRequestException();
     }
 
-    // change the email only of the user wants to
-    $email = $req->getPost("email");
-    if ($email && strlen($email) > 0) {
-
-      // check if there is not another user using provided email
-      $userEmail = $this->users->getByEmail($email);
-      if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
-        throw new BadRequestException("This email address is already taken.");
-      }
-
-      $user->setEmail($email); // @todo: The email address must be now validated
-
-      // do not forget to change local login (if any)
-      $login = $this->logins->findCurrent();
-      if ($login) {
-        $login->setUsername($email);
-      }
-
-      // email has to be re-verified
-      $user->setVerified(FALSE);
-      $this->emailVerificationHelper->process($user);
-    }
+    // change the email and passwords
+    $this->changeUserEmail($user, $login, $req->getPost("email"));
+    $this->changeUserPassword($user, $login, $req->getPost("oldPassword"),
+      $req->getPost("password"), $req->getPost("passwordConfirm"));
 
     $user->setFirstName($firstName);
     $user->setLastName($lastName);
@@ -146,8 +138,84 @@ class UsersPresenter extends BasePresenter {
 
     // make changes permanent
     $this->users->flush();
+    $this->logins->flush();
 
     $this->sendSuccessResponse($user);
+  }
+
+  /**
+   * Change email if any given of the provided user.
+   * @param User $user
+   * @param Login|null $login
+   * @param null|string $email
+   * @throws BadRequestException
+   * @throws InvalidArgumentException
+   */
+  private function changeUserEmail(User $user, ?Login $login, ?string $email) {
+    if ($email === null || strlen($email) === 0) {
+      return;
+    }
+
+    // check if there is not another user using provided email
+    $userEmail = $this->users->getByEmail($email);
+    if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+      throw new BadRequestException("This email address is already taken.");
+    }
+
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+      throw new InvalidArgumentException("Provided email is not in correct format");
+    }
+
+    $oldEmail = $user->getEmail();
+    if ($oldEmail !== $email) {
+      // old and new email are not same, we have to changed and verify it
+      $user->setEmail($email);
+
+      // do not forget to change local login (if any)
+      if ($login) {
+        $login->setUsername($email);
+      }
+
+      // email has to be re-verified
+      $user->setVerified(FALSE);
+      $this->emailVerificationHelper->process($user);
+    }
+  }
+
+  /**
+   * Change password of user if provided.
+   * @param User $user
+   * @param Login|null $login
+   * @param null|string $oldPassword
+   * @param null|string $password
+   * @param null|string $passwordConfirm
+   * @throws InvalidArgumentException
+   * @throws WrongCredentialsException
+   */
+  private function changeUserPassword(User $user, ?Login $login,
+      ?string $oldPassword, ?string $password, ?string $passwordConfirm) {
+
+    if (!$login || !$oldPassword) {
+      // password was not provided, or user is not logged as local one
+      return;
+    }
+
+    if (!$password || !$passwordConfirm) {
+      // old password was provided but the new ones not, illegal state
+      throw new InvalidArgumentException("New password was not provided");
+    }
+
+    // passwords need to be handled differently
+    if (($oldPassword !== NULL && !empty($oldPassword) && $login->passwordsMatch($oldPassword))) {
+      // old password was provided, just check it against the one from db
+      if ($password !== $passwordConfirm) {
+        throw new WrongCredentialsException("Provided passwords do not match");
+      }
+
+      $login->changePassword($password);
+    } else {
+      throw new WrongCredentialsException("Your current password does not match");
+    }
   }
 
   /**

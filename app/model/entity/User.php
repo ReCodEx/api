@@ -61,6 +61,7 @@ class User implements JsonSerializable
     $this->instance = $instance;
     $instance->addMember($this);
     $this->settings = new UserSettings(TRUE, FALSE, "en");
+    $this->logins = new ArrayCollection();
 
     if ($instanceAdmin) {
       $instance->setAdmin($this);
@@ -266,6 +267,11 @@ class User implements JsonSerializable
    */
   protected $role;
 
+  /**
+   * @ORM\OneToMany(targetEntity="Login", mappedBy="user")
+   */
+  protected $logins;
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -279,7 +285,8 @@ class User implements JsonSerializable
         "studentOf" => $this->getGroupsAsStudent()->map(function (Group $group) { return $group->getId(); })->getValues(),
         "supervisorOf" => $this->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
       ],
-      "settings" => $this->settings
+      "settings" => $this->settings,
+      "isExternal" => $this->logins->isEmpty()
     ];
   }
 

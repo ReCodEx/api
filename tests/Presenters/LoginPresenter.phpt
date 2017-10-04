@@ -172,31 +172,6 @@ class TestLoginPresenter extends Tester\TestCase
     }, \App\Exceptions\ForbiddenRequestException::class);
   }
 
-  public function testUpdateLogin()
-  {
-    PresenterTestHelper::login($this->container, $this->userLogin);
-    $password = $this->userPassword;
-    $newPassword = "newPassword";
-
-    $request = new Nette\Application\Request("V1:Login", 'POST',
-      ['action' => 'changePassword'],
-      [
-        'password' => $password,
-        'newPassword' => $newPassword
-      ]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-
-    $updatedUser = $result["payload"];
-    $updatedLogin = $this->logins->findByUsernameOrThrow($this->userLogin);
-    Assert::type(\App\Model\Entity\User::class, $updatedUser);
-    Assert::false($updatedLogin->passwordsMatch($password));
-    Assert::true($updatedLogin->passwordsMatch($newPassword));
-  }
 }
 
 $testCase = new TestLoginPresenter();
