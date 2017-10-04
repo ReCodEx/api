@@ -10,17 +10,18 @@ namespace App\Security\Policies;
 
 
 use App\Security\ACL\SisGroupContext;
+use App\Security\Identity;
 
 class SisGroupContextPermissionPolicy implements IPermissionPolicy {
   public function getAssociatedClass() {
     return SisGroupContext::class;
   }
 
-  public function doesTermMatch(SisGroupContext $context): bool {
+  public function doesTermMatch(Identity $identity, SisGroupContext $context): bool {
     return $context->getParentGroup()->getExternalId() === $context->getCourse()->getTermIdentifier();
   }
 
-  public function isParentGroupAssociatedWithCourse(SisGroupContext $context): bool {
+  public function isParentGroupAssociatedWithCourse(Identity $identity, SisGroupContext $context): bool {
     $cursor = $context->getParentGroup();
 
     while ($cursor !== NULL) {
