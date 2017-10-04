@@ -436,7 +436,6 @@ permissions:
         - createTerm
 
     - allow: true
-      role: supervisor
       resource: sis
       actions:
         - createGroup
