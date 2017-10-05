@@ -16,11 +16,14 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
-use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\ISisPermissions;
+use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
 
+/**
+ * @LoggedIn
+ */
 class SisPresenter extends BasePresenter {
   /**
    * @var SisHelper
@@ -63,12 +66,6 @@ class SisPresenter extends BasePresenter {
    * @inject
    */
   public $sisAcl;
-
-  /**
-   * @var IGroupPermissions
-   * @inject
-   */
-  public $groupAcl;
 
   /**
    * @GET
@@ -206,7 +203,7 @@ class SisPresenter extends BasePresenter {
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
-    if (!$this->sisAcl->canCreateGroup($parentGroup, $remoteCourse) || !$this->groupAcl->canAddSubgroup($parentGroup)) {
+    if (!$this->sisAcl->canCreateGroup(new SisGroupContext($parentGroup, $remoteCourse), $remoteCourse)) {
       throw new ForbiddenRequestException();
     }
 
@@ -259,6 +256,22 @@ class SisPresenter extends BasePresenter {
     $this->sendSuccessResponse($group);
   }
 
+  /**
+   * Find groups that can be chosen as parents of a group created from given SIS group by current user
+   * @GET
+   * @param $courseId
+   * @throws ApiException
+   * @throws ForbiddenRequestException
+   */
+  public function actionPossibleParents($courseId) {
+    $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
+    $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
+
+    $this->sendSuccessResponse(array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
+      return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse);
+    }));
+  }
+
   protected function getSisUserIdOrThrow(User $user) {
     $login = $this->externalLogins->findByUser($user, "cas-uk");
 
@@ -276,9 +289,11 @@ class SisPresenter extends BasePresenter {
    * @throws BadRequestException
    */
   private function findRemoteCourseOrThrow($remoteGroupId, $sisUserId) {
-    foreach ($this->sisHelper->getCourses($sisUserId) as $course) {
-      if ($course->getCode() === $remoteGroupId) {
-        return $course;
+    foreach ($this->sisValidTerms->findAll() as $term) {
+      foreach ($this->sisHelper->getCourses($sisUserId, $term->getYear(), $term->getTerm()) as $course) {
+        if ($course->getCode() === $remoteGroupId) {
+          return $course;
+        }
       }
     }
 

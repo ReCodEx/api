@@ -90,6 +90,10 @@ class SisCourseRecord implements JsonSerializable {
     return $this->annotations[$lang];
   }
 
+  public function getTermIdentifier(): string {
+    return sprintf("%s-%s", $this->year, $this->term);
+  }
+
   public function isOwnerStudent() {
     return $this->affiliation === "student";
   }

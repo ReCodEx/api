@@ -13,8 +13,7 @@ class PolicyRegistry {
   }
 
   public function get($resource, $policyName) {
-    $policy = $this->findPolicyOrThrow($resource);
-    $this->checkPolicy($policy, $policyName);
+    $this->findPolicyOrThrow($resource, $policyName);
 
     return function (Identity $queriedIdentity, $subject) use ($policyName) {
       return $this->check($subject, $policyName, $queriedIdentity);
@@ -22,30 +21,22 @@ class PolicyRegistry {
   }
 
   public function check($subject, $policyName, $queriedIdentity): bool {
-    $policyObject = $this->findPolicyOrThrow($subject);
-    $this->checkPolicy($policyObject, $policyName);
-
+    $policyObject = $this->findPolicyOrThrow($subject, $policyName);
     return $policyObject->$policyName($queriedIdentity, $subject);
   }
 
-  private function findPolicyOrThrow($subject): IPermissionPolicy {
+  private function findPolicyOrThrow($subject, $policyName): IPermissionPolicy {
     foreach ($this->policies as $policy) {
       $associatedClass = $policy->getAssociatedClass();
-      if ($subject instanceof $associatedClass) {
+      if ($subject instanceof $associatedClass && method_exists($policy, $policyName)) {
         return $policy;
       }
     }
 
-    throw new InvalidArgumentException(sprintf("No policy for resource of type '%s'", get_class($subject)));
-  }
-
-  private function checkPolicy($policy, $policyName): void {
-    if (!method_exists($policy, $policyName)) {
-      throw new InvalidArgumentException(sprintf(
-        "Unknown policy '%s' for class '%s'",
-        $policyName,
-        get_class($policy)
-      ));
-    }
+    throw new InvalidArgumentException(sprintf(
+      "Policy '%s' not found for resource of type '%s'",
+      $policyName,
+      get_class($subject)
+    ));
   }
 }

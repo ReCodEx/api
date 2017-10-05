@@ -15,4 +15,11 @@ class SisValidTerms extends BaseRepository {
       "term" => $term
     ]);
   }
+
+  public function findAll() {
+    return $this->repository->findBy([], [
+      "year" => "DESC",
+      "term" => "DESC",
+    ]);
+  }
 }

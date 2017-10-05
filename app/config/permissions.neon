@@ -436,12 +436,13 @@ permissions:
         - createTerm
 
     - allow: true
-      role: supervisor
       resource: sis
       actions:
         - createGroup
       conditions:
         - course.isSupervisor
+        - groupContext.doesTermMatch
+        - groupContext.isParentGroupAssociatedWithCourse
 
     - allow: true
       resource: sis
