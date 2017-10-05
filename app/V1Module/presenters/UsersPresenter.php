@@ -128,7 +128,7 @@ class UsersPresenter extends BasePresenter {
 
     // change the email and passwords
     $this->changeUserEmail($user, $login, $req->getPost("email"));
-    $this->changeUserPassword($user, $login, $req->getPost("oldPassword"),
+    $this->changeUserPassword($login, $req->getPost("oldPassword"),
       $req->getPost("password"), $req->getPost("passwordConfirm"));
 
     $user->setFirstName($firstName);
@@ -152,6 +152,7 @@ class UsersPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   private function changeUserEmail(User $user, ?Login $login, ?string $email) {
+    $email = trim($email);
     if ($email === null || strlen($email) === 0) {
       return;
     }
@@ -167,7 +168,7 @@ class UsersPresenter extends BasePresenter {
     }
 
     $oldEmail = $user->getEmail();
-    if ($oldEmail !== $email) {
+    if (strtolower($oldEmail) !== strtolower($email)) {
       // old and new email are not same, we have to changed and verify it
       $user->setEmail($email);
 
@@ -184,7 +185,6 @@ class UsersPresenter extends BasePresenter {
 
   /**
    * Change password of user if provided.
-   * @param User $user
    * @param Login|null $login
    * @param null|string $oldPassword
    * @param null|string $password
@@ -192,10 +192,10 @@ class UsersPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    * @throws WrongCredentialsException
    */
-  private function changeUserPassword(User $user, ?Login $login,
-      ?string $oldPassword, ?string $password, ?string $passwordConfirm) {
+  private function changeUserPassword(?Login $login, ?string $oldPassword,
+      ?string $password, ?string $passwordConfirm) {
 
-    if (!$login || !$oldPassword) {
+    if (!$login || (!$oldPassword && !$password && !$passwordConfirm)) {
       // password was not provided, or user is not logged as local one
       return;
     }
@@ -206,7 +206,7 @@ class UsersPresenter extends BasePresenter {
     }
 
     // passwords need to be handled differently
-    if (($oldPassword !== NULL && !empty($oldPassword) && $login->passwordsMatch($oldPassword))) {
+    if ($login->passwordsMatch($oldPassword)) {
       // old password was provided, just check it against the one from db
       if ($password !== $passwordConfirm) {
         throw new WrongCredentialsException("Provided passwords do not match");

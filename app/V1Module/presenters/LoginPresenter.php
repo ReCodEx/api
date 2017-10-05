@@ -56,8 +56,8 @@ class LoginPresenter extends BasePresenter {
   /**
    * Log in using user credentials
    * @POST
-   * @Param(type="post", name="username", validation="email", description="User's E-mail")
-   * @Param(type="post", name="password", validation="string", description="Password")
+   * @Param(type="post", name="username", validation="email:1..", description="User's E-mail")
+   * @Param(type="post", name="password", validation="string:1..", description="Password")
    */
   public function actionDefault() {
     $req = $this->getRequest();

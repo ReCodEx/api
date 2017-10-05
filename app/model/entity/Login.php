@@ -65,11 +65,24 @@ class Login
   }
 
   /**
+   * Clear user password.
+   */
+  public function clearPassword() {
+    $this->setPasswordHash("");
+  }
+
+  /**
    * Verify that the given password matches the stored password.
    * @param string $password The password given by the user
    * @return bool
    */
   public function passwordsMatch($password) {
+    if (empty($this->passwordHash) && empty($password)) {
+      // quite special situation, but can happen if user register using CAS and
+      // already have existing local account
+      return TRUE;
+    }
+
     if (Passwords::verify($password, $this->passwordHash)) {
       if (Passwords::needsRehash($this->passwordHash, self::HASHING_OPTIONS)) {
         $this->passwordHash = self::hashPassword($password);

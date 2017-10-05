@@ -92,7 +92,7 @@ class RegistrationPresenter extends BasePresenter {
     $req = $this->getRequest();
 
     // check if the email is free
-    $email = $req->getPost("email");
+    $email = trim($req->getPost("email"));
     if ($this->users->getByEmail($email) !== NULL) {
       throw new BadRequestException("This email address is already taken.");
     }
@@ -149,27 +149,10 @@ class RegistrationPresenter extends BasePresenter {
     $instance = $this->getInstance($instanceId);
 
     $authService = $this->externalServiceAuthenticator->findService($serviceId, $authType);
-    $externalData = $authService->getUser($req->getPost()); // throws if the user cannot be logged in
-    $user = $this->externalLogins->getUser($serviceId, $externalData->getId());
-
-    if ($user !== NULL) {
-      throw new BadRequestException("User is already registered.");
-    }
-
-    $creatingNewUser = !$this->user->isLoggedIn();
-
-    if ($creatingNewUser) {
-      $user = $externalData->createEntity($instance, self::DEFAULT_ROLE);
-      $this->users->persist($user);
-    } else {
-      $user = $this->getCurrentUser();
-    }
-
-    // connect the account to the login method
-      $this->externalLogins->connect($authService, $user, $externalData->getId());
+    $user = $this->externalServiceAuthenticator->register($authService, $instance, $req->getPost());
 
     // email verification
-    if ($creatingNewUser) {
+    if (!$user->isVerified()) {
       $this->emailVerificationHelper->process($user);
     }
 

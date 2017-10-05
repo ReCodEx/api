@@ -3,6 +3,9 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\WrongCredentialsException;
+use App\Helpers\EmailVerificationHelper;
+use App\Model\Entity\Instance;
+use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\RegistrationPresenter;
 use Tester\Assert;
@@ -103,7 +106,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(\App\Model\Entity\User::class, $user);
+    Assert::type(User::class, $user);
     Assert::equal($email, $user->getEmail());
     Assert::equal($firstName, $user->getFirstName());
     Assert::equal($lastName, $user->getLastName());
@@ -208,32 +211,35 @@ class TestRegistrationPresenter extends Tester\TestCase
 
   public function testCreateAccountExt()
   {
-    $userId = "userIdExt";
     $username = "user@domain.tld";
     $firstname = "firstnameExt";
     $lastname = "lastnameExt";
     $degreesBeforeName = "degreesBeforeName";
     $degreesAfterName = "degreesAfterName";
-    $instances = $this->instances->findAll();
-    $instanceId = array_pop($instances)->getId();
+    $instance = current($this->instances->findAll());
+    $instanceId = $instance->getId();
     $serviceId = "serviceId";
+
+    $user = new User($username, $firstname, $lastname, $degreesBeforeName,
+      $degreesAfterName, "", $instance, FALSE);
 
     // setup mocking authService
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
     $mockExternalLoginService->shouldReceive("getServiceId")->withAnyArgs()->andReturn($serviceId);
 
-    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
+    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\ExternalServiceAuthenticator::class);
     $mockAuthService->shouldReceive("findService")
       ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
-
-    $mockExternalLoginService->shouldReceive("getUser")->withAnyArgs()
-      ->andReturn(new UserData(
-        $userId, $username, $firstname, $lastname, $degreesBeforeName, $degreesAfterName, $mockExternalLoginService
-      ))
-      ->once();
+    $mockAuthService->shouldReceive("register")->with($mockExternalLoginService, $instance, Mockery::any())
+      ->andReturn($user)->once();
 
     // set mocks to presenter
     $this->presenter->externalServiceAuthenticator = $mockAuthService;
+
+    // mock verification email helper
+    $mockVerificationEmail = Mockery::mock(EmailVerificationHelper::class);
+    $mockVerificationEmail->shouldReceive("process")->with($user)->once();
+    $this->presenter->emailVerificationHelper = $mockVerificationEmail;
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createAccountExt'],
@@ -254,50 +260,45 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(\App\Model\Entity\User::class, $user);
+    Assert::type(User::class, $user);
     Assert::equal($username, $user->getEmail());
     Assert::equal($firstname, $user->getFirstName());
     Assert::equal($lastname, $user->getLastName());
     Assert::equal($instanceId, $user->getInstance()->getId());
     Assert::equal($degreesBeforeName, $user->getDegreesBeforeName());
     Assert::equal($degreesAfterName, $user->getDegreesAfterName());
-
-    // check created login
-    $createdUser = $this->externalLogins->getUser($serviceId, $userId);
-    Assert::same($user, $createdUser);
   }
 
   public function testLinkExternalAccount()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $existingUser = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $existingUser->setVerified(true);
 
     $userId = "userIdExt";
     $username = "user@domain.tld";
-    $firstname = "firstnameExt";
-    $lastname = "lastnameExt";
     $password = "passwordExt";
-    $degreesBeforeName = "degreesBeforeName";
-    $degreesAfterName = "degreesAfterName";
-    $instances = $this->instances->findAll();
-    $instanceId = array_pop($instances)->getId();
+    $instance = current($this->instances->findAll());
+    $instanceId = $instance->getId();
     $serviceId = "serviceId";
 
     // setup mocking authService
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);
     $mockExternalLoginService->shouldReceive("getServiceId")->withAnyArgs()->andReturn($serviceId);
 
-    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\AuthService::class);
+    $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\ExternalServiceAuthenticator::class);
     $mockAuthService->shouldReceive("findService")
       ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
-
-    $mockExternalLoginService->shouldReceive("getUser")->withAnyArgs()
-      ->andReturn(new UserData(
-        $userId, $username, $firstname, $lastname, $degreesBeforeName, $degreesAfterName, $mockExternalLoginService
-      ));
+    $mockAuthService->shouldReceive("register")->with($mockExternalLoginService, $instance, Mockery::any())
+      ->andReturn($existingUser)->once();
 
     // set mocks to presenter
     $this->presenter->externalServiceAuthenticator = $mockAuthService;
+
+    // mock verification email helper
+    $mockVerificationEmail = Mockery::mock(EmailVerificationHelper::class);
+    $mockVerificationEmail->shouldReceive("process")->withAnyArgs()->never();
+    $this->presenter->emailVerificationHelper = $mockVerificationEmail;
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createAccountExt'],
@@ -320,13 +321,9 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(\App\Model\Entity\User::class, $user);
+    Assert::type(User::class, $user);
     Assert::same($existingUser, $user);
     Assert::equal($existingUser->getEmail(), $user->getEmail());
-
-    // check created login
-    $createdUser = $this->externalLogins->getUser($serviceId, $userId);
-    Assert::same($user, $createdUser);
   }
 
   public function testValidateRegistrationData()
