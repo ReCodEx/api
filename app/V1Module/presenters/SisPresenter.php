@@ -289,9 +289,11 @@ class SisPresenter extends BasePresenter {
    * @throws BadRequestException
    */
   private function findRemoteCourseOrThrow($remoteGroupId, $sisUserId) {
-    foreach ($this->sisHelper->getCourses($sisUserId) as $course) {
-      if ($course->getCode() === $remoteGroupId) {
-        return $course;
+    foreach ($this->sisValidTerms->findAll() as $term) {
+      foreach ($this->sisHelper->getCourses($sisUserId, $term->getYear(), $term->getTerm()) as $course) {
+        if ($course->getCode() === $remoteGroupId) {
+          return $course;
+        }
       }
     }
 
