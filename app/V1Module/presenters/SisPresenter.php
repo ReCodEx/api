@@ -262,7 +262,6 @@ class SisPresenter extends BasePresenter {
    * @param $courseId
    * @throws ApiException
    * @throws ForbiddenRequestException
-   * @Param(name="courseId", type="post")
    */
   public function actionPossibleParents($courseId) {
     $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
