@@ -78,4 +78,16 @@ class Logins extends BaseRepository {
     return NULL;
   }
 
+  /**
+   * Clear password of given user.
+   * @param User $user
+   */
+  public function clearUserPassword(User $user) {
+    $login = $this->findByUserId($user->getId());
+    if ($login) {
+      $login->clearPassword();
+      $this->flush();
+    }
+  }
+
 }

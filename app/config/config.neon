@@ -206,6 +206,7 @@ services:
   - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
     @App\Model\Repository\ExternalLogins,
     @App\Model\Repository\Users,
+    @App\Model\Repository\Logins,
     @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
     @App\Helpers\ExternalLogin\CAS\OAuthLoginService,
   )

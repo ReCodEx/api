@@ -48,12 +48,12 @@ class ExternalLogins extends BaseRepository {
    * @param IExternalLoginService $service
    * @param User $user
    * @param string $externalId
-   * @return bool
+   * @return ExternalLogin
    */
-  public function connect(IExternalLoginService $service, User $user, string $externalId): bool {
+  public function connect(IExternalLoginService $service, User $user, string $externalId): ExternalLogin {
     $externalLogin = new ExternalLogin($user, $service->getServiceId(), $externalId);
     $this->persist($externalLogin);
-    return TRUE;
+    return $externalLogin;
   }
 
 }
