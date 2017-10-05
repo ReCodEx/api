@@ -258,7 +258,7 @@ class SisPresenter extends BasePresenter {
 
   /**
    * Find groups that can be chosen as parents of a group created from given SIS group by current user
-   * @POST
+   * @GET
    * @param $courseId
    * @throws ApiException
    * @throws ForbiddenRequestException
