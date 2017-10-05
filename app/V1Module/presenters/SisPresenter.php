@@ -297,7 +297,7 @@ class SisPresenter extends BasePresenter {
       }
     }
 
-    throw new BadRequestException();
+    throw new BadRequestException(sprintf("Sis course %s was not found", $remoteGroupId));
   }
 
   private function dayToString($day, $language) {

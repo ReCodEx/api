@@ -105,6 +105,8 @@ class TestSisPresenter extends TestCase {
     $user = $this->user->getIdentity()->getUserData();
     $login = new ExternalLogin($user, "cas-uk", "12345678");
     $this->em->persist($login);
+    $term = new SisValidTerm(2016, 2);
+    $this->em->persist($term);
     $this->em->flush();
 
     $this->httpHandler->append(
