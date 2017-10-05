@@ -152,6 +152,7 @@ class UsersPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   private function changeUserEmail(User $user, ?Login $login, ?string $email) {
+    $email = trim($email);
     if ($email === null || strlen($email) === 0) {
       return;
     }
@@ -167,7 +168,7 @@ class UsersPresenter extends BasePresenter {
     }
 
     $oldEmail = $user->getEmail();
-    if ($oldEmail !== $email) {
+    if (strtolower($oldEmail) !== strtolower($email)) {
       // old and new email are not same, we have to changed and verify it
       $user->setEmail($email);
 

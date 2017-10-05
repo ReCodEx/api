@@ -92,7 +92,7 @@ class RegistrationPresenter extends BasePresenter {
     $req = $this->getRequest();
 
     // check if the email is free
-    $email = $req->getPost("email");
+    $email = trim($req->getPost("email"));
     if ($this->users->getByEmail($email) !== NULL) {
       throw new BadRequestException("This email address is already taken.");
     }
