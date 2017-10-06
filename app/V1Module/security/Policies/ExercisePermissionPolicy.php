@@ -24,7 +24,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
     $group = $exercise->getGroup();
 
-    if ($user === NULL || $group === NULL) {
+    if ($user === NULL || $group === NULL || $exercise->isPublic() === FALSE) {
       return FALSE;
     }
 

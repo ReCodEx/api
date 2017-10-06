@@ -80,6 +80,12 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
+  /**
+   * Get public data about user.
+   * @GET
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
   public function actionPublicData(string $id) {
     $user = $this->users->findOrThrow($id);
     if (!$this->userAcl->canViewPublicData($user)) {
