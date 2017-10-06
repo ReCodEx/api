@@ -32,6 +32,6 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
   }
 
   public function isPublic(Identity $identity, Exercise $exercise) {
-    return $exercise->isPublic();
+    return $exercise->isPublic() && $exercise->getGroup() === NULL;
   }
 }
