@@ -92,13 +92,7 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse([
-      'id' => $user->getId(),
-      'fullName' => $user->getName(),
-      'name' => $user->getNameParts(),
-      'avatarUrl' => $user->getAvatarUrl(),
-      'isVerified' => $user->isVerified()
-    ]);
+    $this->sendSuccessResponse($user->getPublicData());
   }
 
   /**

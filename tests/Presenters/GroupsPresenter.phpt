@@ -293,6 +293,27 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal($group->getId(), $payload->id);
   }
 
+  public function testPublicDetail()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    $group = array_pop($groups);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'publicDetail', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal($group->getId(), $payload['id']);
+    Assert::true($payload['canView']);
+  }
+
   public function testSubgroups()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);

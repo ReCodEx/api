@@ -272,6 +272,16 @@ class User implements JsonSerializable
    */
   protected $logins;
 
+  public function getPublicData(): array {
+    return [
+      'id' => $this->getId(),
+      'fullName' => $this->getName(),
+      'name' => $this->getNameParts(),
+      'avatarUrl' => $this->getAvatarUrl(),
+      'isVerified' => $this->isVerified()
+    ];
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,

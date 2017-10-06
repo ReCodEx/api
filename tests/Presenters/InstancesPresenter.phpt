@@ -179,6 +179,28 @@ class TestInstancesPresenter extends Tester\TestCase
     );
   }
 
+  public function testGetPublicGroups()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $allInstances = $this->presenter->instances->findAll();
+    $instance = array_pop($allInstances);
+
+    $request = new Nette\Application\Request('V1:Instances', 'GET',
+      ['action' => 'publicGroups', 'id' => $instance->id]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $groups = $result['payload'];
+    Assert::equal(4, count($groups));
+    Assert::equal(
+      ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
+      array_map(function ($group) { return $group["name"]; }, $groups)
+    );
+  }
+
   public function testGetUsers()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
