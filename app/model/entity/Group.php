@@ -411,6 +411,52 @@ class Group implements JsonSerializable
     return array_values(array_reverse($parentsNames));
   }
 
+  /**
+   * Get identification of all child groups.
+   * @return array
+   */
+  public function getChildGroupsIds(): array {
+    return $this->getChildGroups()->map(
+      function(Group $group) {
+        return $group->getId();
+      }
+    )->getValues();
+  }
+
+  /**
+   * Get identification of public child groups.
+   * @return array
+   */
+  public function getPublicChildGroupsIds(): array {
+    return $this->getChildGroups()->filter(
+      function(Group $group) {
+        return $group->isPublic();
+      }
+    )->map(
+      function(Group $group) {
+        return $group->getId();
+      }
+    )->getValues();
+  }
+
+  /**
+   * Get public data concerning group.
+   * @param bool $canView
+   * @return array
+   */
+  public function getPublicData(bool $canView): array {
+    return [
+      "id" => $this->id,
+      "externalId" => $this->externalId,
+      "name" => $this->name,
+      "childGroups" => [
+        "all" => $this->getChildGroupsIds(),
+        "public" => $this->getPublicChildGroupsIds()
+      ],
+      "canView" => $canView
+    ];
+  }
+
   public function jsonSerialize() {
     $instance = $this->getInstance();
     return [
@@ -427,20 +473,8 @@ class Group implements JsonSerializable
       "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
       "parentGroupsIds" => $this->getParentGroupsIds(),
       "childGroups" => [
-        "all" => $this->getChildGroups()->map(
-          function(Group $group) {
-            return $group->getId();
-          }
-        )->getValues(),
-        "public" => $this->getChildGroups()->filter(
-          function(Group $g) {
-            return $g->isPublic();
-          }
-        )->map(
-          function(Group $group) {
-            return $group->getId();
-          }
-        )->getValues()
+        "all" => $this->getChildGroupsIds(),
+        "public" => $this->getPublicChildGroupsIds()
       ],
       "assignments" => [
         "all" => $this->getAssignmentsIds(),

@@ -28,4 +28,5 @@ interface IGroupPermissions
   function canViewExercises(Group $group): bool;
   function canAssignExercise(Group $group, Exercise $exercise): bool;
   function canCreateExercise(Group $group): bool;
+  function canViewPublicDetail(Group $group): bool;
 }

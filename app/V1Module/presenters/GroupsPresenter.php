@@ -224,6 +224,22 @@ class GroupsPresenter extends BasePresenter {
   }
 
   /**
+   * Get public data about group.
+   * @GET
+   * @param string $id
+   * @throws ForbiddenRequestException
+   */
+  public function actionPublicDetail(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    if (!$this->groupAcl->canViewPublicDetail($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $groupData = $group->getPublicData($this->groupAcl->canViewDetail($group));
+    $this->sendSuccessResponse($groupData);
+  }
+
+  /**
    * Get a list of subgroups of a group
    * @GET
    * @param string $id Identifier of the group

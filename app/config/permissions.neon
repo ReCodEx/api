@@ -37,6 +37,12 @@ permissions:
           - group.isInSameInstance
 
     - allow: true
+      role: student
+      resource: group
+      actions: viewPublicDetail
+      conditions: group.isPublic
+
+    - allow: true
       resource: group
       actions:
           - setAdmin
@@ -74,6 +80,7 @@ permissions:
           - removeStudent
           - viewExercises
           - viewStats
+          - viewPublicDetail
       conditions: group.isSupervisor
 
     - allow: true

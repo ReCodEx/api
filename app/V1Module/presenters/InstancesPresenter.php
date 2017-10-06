@@ -165,7 +165,7 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of groups in an instance
+   * Get a list of all groups which user can view in an instance
    * @GET
    * @param string $id An identifier of the instance
    * @throws ForbiddenRequestException
@@ -181,13 +181,34 @@ class InstancesPresenter extends BasePresenter {
     })));
   }
 
-    /**
-     * Get a list of users registered in an instance
-     * @GET
-     * @param string $id An identifier of the instance
-     * @param string $search A result filter
-     * @throws ForbiddenRequestException
-     */
+  /**
+   * Get a list of all public groups in an instance.
+   * @GET
+   * @param string $id An identifier of the instance
+   * @throws ForbiddenRequestException
+   */
+  public function actionPublicGroups(string $id) {
+    $instance = $this->instances->findOrThrow($id);
+    if (!$this->instanceAcl->canViewGroups($instance)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $groups = array_filter($instance->getGroups()->getValues(), function (Group $group) {
+      return $this->groupAcl->canViewPublicDetail($group);
+    });
+    $publicGroups = array_map(function (Group $group) {
+      return $group->getPublicData($this->groupAcl->canViewDetail($group));
+    }, $groups);
+    $this->sendSuccessResponse(array_values($publicGroups));
+  }
+
+  /**
+   * Get a list of users registered in an instance
+   * @GET
+   * @param string $id An identifier of the instance
+   * @param string $search A result filter
+   * @throws ForbiddenRequestException
+   */
   public function actionUsers(string $id, string $search = NULL) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewUsers($instance)) {
