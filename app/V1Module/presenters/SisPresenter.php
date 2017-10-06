@@ -267,9 +267,10 @@ class SisPresenter extends BasePresenter {
     $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
-    $this->sendSuccessResponse(array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
+    $groups = array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
       return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse);
-    }));
+    });
+    $this->sendSuccessResponse(array_values($groups));
   }
 
   protected function getSisUserIdOrThrow(User $user) {
