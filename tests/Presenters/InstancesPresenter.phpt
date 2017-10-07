@@ -215,7 +215,8 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($this->presenter->instances->get($instance->id)->getMembers(), $result['payload']);
+    $users = $result['payload'];
+    Assert::equal(16, count($users));
   }
 
   public function testGetUsersSearch()
@@ -234,7 +235,7 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(1, $result['payload']);
-    Assert::equal([$user], $result['payload']);
+    Assert::equal($user->getName(), $result['payload'][0]['fullName']);
   }
 
   public function testGetLicences()

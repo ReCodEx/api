@@ -51,7 +51,8 @@ class GroupPermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    return $group->isMemberOf($user)
+    return $group->isAdminOf($user)
+        || $group->isMemberOf($user)
         || $group->isPublic()
         || ($user->getInstance() !== NULL
             && $user->getInstance()->getRootGroup() !== NULL
