@@ -21,7 +21,6 @@ use ZxcvbnPhp\Zxcvbn;
  * Registration management endpoints
  */
 class RegistrationPresenter extends BasePresenter {
-  const DEFAULT_ROLE = "student";
 
   /**
    * @var Logins
@@ -116,7 +115,7 @@ class RegistrationPresenter extends BasePresenter {
       $req->getPost("lastName"),
       $degreesBeforeName,
       $degreesAfterName,
-      self::DEFAULT_ROLE,
+      User::STUDENT_ROLE,
       $instance
     );
     $login = Login::createLogin($user, $email, $password);

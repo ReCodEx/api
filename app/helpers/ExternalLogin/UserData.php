@@ -35,6 +35,9 @@ final class UserData {
   /** @var string[] Email address of user */
   private $emails;
 
+  /** @var string|null Role which created user should have */
+  private $role;
+
   /**
    * get user's email address
    * @return string[]
@@ -44,27 +47,23 @@ final class UserData {
   /**
    * Constructor
    * @param string $id Identifier of user (inside identity provider)
-   * @param mixed $emails Email address of user
+   * @param array $emails Email address of user
    * @param string $firstName First name of user
    * @param string $lastName Last name of user
    * @param string $degreesBeforeName Degrees before user's name
    * @param string $degreesAfterName Degrees after user's name
+   * @param string|null $role
    * @throws InvalidArgumentException
    */
   public function __construct(
     string $id,
-    $emails,
+    array $emails,
     string $firstName,
     string $lastName,
     string $degreesBeforeName,
-    string $degreesAfterName
+    string $degreesAfterName,
+    string $role = null
   ) {
-
-    // emails are not array, so make it then
-    if (is_scalar($emails)) {
-      $emails = [$emails];
-    }
-
     // check if at least one email was given
     if (count($emails) === 0) {
       throw new InvalidArgumentException("LDAP user '$id' does not have any email specified");
@@ -76,22 +75,22 @@ final class UserData {
     $this->emails = $emails;
     $this->degreesBeforeName = $degreesBeforeName;
     $this->degreesAfterName = $degreesAfterName;
+    $this->role = $role;
   }
 
   /**
    * Create database entity for current user
    * @param Instance $instance Used instance of ReCodEx
-   * @param string     $role     Base permission role for current user
    * @return User Database entity for the user
    */
-  public function createEntity(Instance $instance, string $role): User {
+  public function createEntity(Instance $instance): User {
     return new User(
       current($this->emails), // first email is picked
       $this->firstName,
       $this->lastName,
       $this->degreesBeforeName,
       $this->degreesAfterName,
-      $role,
+      $this->role,
       $instance
     );
   }

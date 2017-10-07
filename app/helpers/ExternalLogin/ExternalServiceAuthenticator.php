@@ -116,7 +116,7 @@ class ExternalServiceAuthenticator {
     $user = $this->tryConnect($service, $userData);
     if ($user === NULL) {
       // user is not registered locally, create brand new one
-      $user = $userData->createEntity($instance, RegistrationPresenter::DEFAULT_ROLE);
+      $user = $userData->createEntity($instance);
       $this->users->persist($user);
     }
 

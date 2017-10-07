@@ -66,7 +66,7 @@ parameters:
         email: "mail"
         firstName: "givenname"
         lastName: "sn"
-        affiliation: "edupersonscopedaffiliation"
+        affiliation: "edupersonaffiliation"
       ldap:
         email: "mail"
         firstName: "givenName"

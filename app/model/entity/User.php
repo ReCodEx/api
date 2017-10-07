@@ -36,13 +36,17 @@ class User implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
+  public const STUDENT_ROLE = "student";
+  public const SUPERVISOR_ROLE = "supervisor";
+  public const SUPERADMIN_ROLE = "superadmin";
+
   public function __construct(
     string $email,
     string $firstName,
     string $lastName,
     string $degreesBeforeName,
     string $degreesAfterName,
-    string $role,
+    ?string $role,
     Instance $instance,
     bool $instanceAdmin = FALSE
   ) {
@@ -55,13 +59,18 @@ class User implements JsonSerializable
     $this->isAllowed = TRUE;
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
-    $this->role = $role;
     $this->createdAt = new DateTime();
     $this->deletedAt = NULL;
     $this->instance = $instance;
     $instance->addMember($this);
     $this->settings = new UserSettings(TRUE, FALSE, "en");
     $this->logins = new ArrayCollection();
+
+    if (empty($role)) {
+      $this->role = self::STUDENT_ROLE;
+    } else {
+      $this->role = $role;
+    }
 
     if ($instanceAdmin) {
       $instance->setAdmin($this);
