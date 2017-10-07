@@ -118,10 +118,10 @@ class ExternalServiceAuthenticator {
       // user is not registered locally, create brand new one
       $user = $userData->createEntity($instance);
       $this->users->persist($user);
+      // connect the account to the login method
+      $this->externalLogins->connect($service, $user, $userData->getId());
     }
 
-    // connect the account to the login method
-    $this->externalLogins->connect($service, $user, $userData->getId());
     return $user;
   }
 
