@@ -217,9 +217,12 @@ class InstancesPresenter extends BasePresenter {
 
     $members = $instance->getMembers($search);
     $members = array_filter($members, function (User $user) {
-      return $this->userAcl->canViewDetail($user);
+      return $this->userAcl->canViewPublicData($user);
     });
-    $this->sendSuccessResponse($members);
+    $members = array_map(function (User $user) {
+      return $user->getPublicData();
+    }, $members);
+    $this->sendSuccessResponse(array_values($members));
   }
 
   /**
