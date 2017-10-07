@@ -23,6 +23,8 @@ use JsonSerializable;
  * @method Group getParentGroup()
  * @method string getExternalId()
  * @method string getDescription()
+ * @method User getAdmin()
+ * @method Instance getInstance()
  */
 class Group implements JsonSerializable
 {
@@ -150,18 +152,6 @@ class Group implements JsonSerializable
    */
   protected $instance;
 
-  public function getInstance() {
-    $group = $this;
-    do {
-      if ($group->instance) {
-        return $group->instance;
-      }
-      $group = $group->parentGroup;
-    } while ($group);
-
-    return NULL;
-  }
-
   public function hasValidLicence() {
     $instance = $this->getInstance();
     return $instance && $instance->hasValidLicence();
@@ -242,11 +232,11 @@ class Group implements JsonSerializable
     $group = $this;
     $admins = [];
     while ($group !== NULL) {
-      if ($group->admin !== NULL) {
-        $admins[] = $group->admin->getId();
+      if ($group->getAdmin() !== NULL) {
+        $admins[] = $group->getAdmin()->getId();
       }
 
-      $group = $group->parentGroup;
+      $group = $group->getParentGroup();
     }
 
     return array_values(array_unique($admins));
