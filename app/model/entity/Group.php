@@ -195,6 +195,8 @@ class Group implements JsonSerializable
 
   /**
    * Return all active members depending on specified type
+   * @param string $type
+   * @return Collection|static
    */
   protected function getActiveMembers(string $type) {
     if ($type == GroupMembership::TYPE_ALL) {

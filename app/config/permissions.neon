@@ -40,7 +40,7 @@ permissions:
       role: student
       resource: group
       actions: viewPublicDetail
-      conditions: group.isPublic
+      conditions: group.isInSameInstance
 
     - allow: true
       resource: group
