@@ -243,7 +243,7 @@ class Group implements JsonSerializable
   }
 
   /**
-   * User is admin of a group when he is
+   * User is admin of a group when he is admin of any parent group.
    * @param User $user
    * @return bool
    */
@@ -252,6 +252,29 @@ class Group implements JsonSerializable
     return array_search($user->getId(), $admins, TRUE) !== FALSE;
   }
 
+  /**
+   * User is admin of subgroup or supervisor of any subgroup.
+   * @param User $user
+   * @return bool
+   */
+  public function isAdminOrSupervisorOfSubgroup(User $user): bool {
+    if ($this->isAdminOf($user) || $this->isSupervisorOf($user)) {
+      return true;
+    }
+
+    foreach ($this->childGroups as $childGroup) {
+      if ($childGroup->isAdminOrSupervisorOfSubgroup($user)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Make given user as admin of the group.
+   * @param User $user
+   */
   public function makeAdmin(User $user) {
     $this->admin = $user;
   }

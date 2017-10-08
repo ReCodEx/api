@@ -200,7 +200,7 @@ permissions:
       actions:
           - assignExercise
       conditions:
-          - exercise.isGroupSupervisor
+          - exercise.isSubGroupSupervisor
 
     - allow: true
       resource: group
@@ -299,12 +299,11 @@ permissions:
       actions:
           - viewDetail
           - viewLimits
-          - setLimits
           - fork
           - evaluateReferenceSolution
           - viewPipelines
       conditions:
-          - exercise.isGroupSupervisor
+          - exercise.isSubGroupSupervisor
 
     - allow: true
       role: supervisor
