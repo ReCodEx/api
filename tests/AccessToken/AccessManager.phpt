@@ -97,7 +97,7 @@ class TestAccessManager extends Tester\TestCase
     Assert::equal($user->getId(), $payload->sub);
     Assert::equal("X", $payload->iss);
     Assert::equal("Y", $payload->aud);
-    Assert::equal(time() + 123, $payload->exp);
+    Assert::true((time() + 123) >= $payload->exp);
     Assert::equal(time(), $payload->nbf);
     Assert::equal(time(), $payload->iat);
     Assert::equal([], $payload->scopes);
