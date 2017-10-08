@@ -20,7 +20,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
     return $user === $exercise->getAuthor();
   }
 
-  public function isGroupSupervisor(Identity $identity, Exercise $exercise) {
+  public function isSubGroupSupervisor(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
     $group = $exercise->getGroup();
 
@@ -28,7 +28,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    return $group->isAdminOf($user) || $group->isSupervisorOf($user);
+    return $group->isAdminOrSupervisorOfSubgroup($user);
   }
 
   public function isPublic(Identity $identity, Exercise $exercise) {
