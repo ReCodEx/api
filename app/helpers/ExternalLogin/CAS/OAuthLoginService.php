@@ -60,6 +60,9 @@ class OAuthLoginService implements IExternalLoginService {
   /** @var string Name of JSON field containing user last name */
   private $lastNameField;
 
+  /** @var array Array containing identifier which registers person as a supervisor in retrieved affiliation */
+  private $supervisorAffiliations;
+
   /** @var string The base URI for the validation of login tickets */
   private $casHttpBaseUri;
 
@@ -74,7 +77,8 @@ class OAuthLoginService implements IExternalLoginService {
 
     // The field names of user's information stored in the CAS LDAP
     $this->ukcoField = Arrays::get($fields, "ukco", "cunipersonalid");
-    $this->affiliationField = Arrays::get($fields, "ukco", "edupersonaffiliation");
+    $this->affiliationField = Arrays::get($fields, "affiliation", "edupersonscopedaffiliation");
+    $this->supervisorAffiliations = Arrays::get($fields, "supervisorAffiliations", []);
     $this->emailField = Arrays::get($fields, "email", "mail");
     $this->firstNameField = Arrays::get($fields, "firstName", "givenname");
     $this->lastNameField = Arrays::get($fields, "lastName", "sn");
@@ -176,9 +180,10 @@ class OAuthLoginService implements IExternalLoginService {
    * @return null|string
    */
   private function getUserRole(array $affiliation): ?string {
-    if (array_search("staff", $affiliation) !== false ||
-        array_search("employee", $affiliation) !== false) {
-      return User::SUPERVISOR_ROLE;
+    foreach ($this->supervisorAffiliations as $supervisorAffiliation) {
+      if (array_search($supervisorAffiliation, $affiliation) !== false) {
+        return User::SUPERVISOR_ROLE;
+      }
     }
 
     return null;
