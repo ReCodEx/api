@@ -8,6 +8,7 @@ use App\Helpers\ExternalLogin\UserData;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
+use App\Model\Entity\User;
 use GuzzleHttp\Psr7\Request;
 use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
@@ -59,6 +60,9 @@ class OAuthLoginService implements IExternalLoginService {
   /** @var string Name of JSON field containing user last name */
   private $lastNameField;
 
+  /** @var array Array containing identifier which registers person as a supervisor in retrieved affiliation */
+  private $supervisorAffiliations;
+
   /** @var string The base URI for the validation of login tickets */
   private $casHttpBaseUri;
 
@@ -73,7 +77,8 @@ class OAuthLoginService implements IExternalLoginService {
 
     // The field names of user's information stored in the CAS LDAP
     $this->ukcoField = Arrays::get($fields, "ukco", "cunipersonalid");
-    $this->affiliationField = Arrays::get($fields, "ukco", "edupersonscopedaffiliation");
+    $this->affiliationField = Arrays::get($fields, "affiliation", "edupersonscopedaffiliation");
+    $this->supervisorAffiliations = Arrays::get($fields, "supervisorAffiliations", []);
     $this->emailField = Arrays::get($fields, "email", "mail");
     $this->firstNameField = Arrays::get($fields, "firstName", "givenname");
     $this->lastNameField = Arrays::get($fields, "lastName", "sn");
@@ -155,17 +160,33 @@ class OAuthLoginService implements IExternalLoginService {
     }
 
     try {
-      $ukco = Arrays::get($info, $this->ukcoField);
-      $emails = Arrays::get($info, $this->emailField);
-      $firstName = Arrays::get($info, $this->firstNameField);
-      $lastName = Arrays::get($info, $this->lastNameField);
-      // $affiliation = Arrays::get($info, $this->affiliationField); // @todo automatically change role according to this value
+      $ukco = LDAPHelper::getScalar(Arrays::get($info, $this->ukcoField));
+      $emails = LDAPHelper::getArray(Arrays::get($info, $this->emailField));
+      $firstName = LDAPHelper::getScalar(Arrays::get($info, $this->firstNameField));
+      $lastName = LDAPHelper::getScalar(Arrays::get($info, $this->lastNameField));
+      $affiliation = LDAPHelper::getArray(Arrays::get($info, $this->affiliationField));
     } catch (InvalidArgumentException $e) {
       throw new CASMissingInfoException("The information of the user received from the CAS is incomplete.");
     }
 
-    // we do not get this information about the degrees of the user
-    return new UserData($ukco, $emails, $firstName, $lastName, "", "");
+    // we do not get information about the degrees of the user
+    $role = $this->getUserRole($affiliation);
+    return new UserData($ukco, $emails, $firstName, $lastName, "", "", $role);
+  }
+
+  /**
+   * Get role for the given affiliation.
+   * @param array $affiliation
+   * @return null|string
+   */
+  private function getUserRole(array $affiliation): ?string {
+    foreach ($this->supervisorAffiliations as $supervisorAffiliation) {
+      if (array_search($supervisorAffiliation, $affiliation) !== false) {
+        return User::SUPERVISOR_ROLE;
+      }
+    }
+
+    return null;
   }
 
 }

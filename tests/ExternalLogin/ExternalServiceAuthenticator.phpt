@@ -81,7 +81,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateMissingUser() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -102,7 +102,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateFindUser() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -123,7 +123,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateTryConnectFailed() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -149,7 +149,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateTryConnectCorrect() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -176,7 +176,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testRegisterExistingUser() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -199,7 +199,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testRegisterUserConnectWithExisting() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
@@ -226,7 +226,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testRegisterUserCorrect() {
-    $userData = new UserData("123", "a@b.cd", "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
     $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);

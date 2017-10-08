@@ -131,9 +131,9 @@ class LDAPLoginService implements IExternalLoginService {
    * @return UserData
    */
   public function getUserData($ukco, Node $data): UserData {
-    $email = $this->getValue($data->get($this->emailField)); // throws when field is invalid or empty
-    $firstName = $this->getValue($data->get($this->firstNameField)); // throws when field is invalid or empty
-    $lastName = $this->getValue($data->get($this->lastNameField)); // throws when field is invalid or empty
+    $email = LDAPHelper::getArray($this->getValue($data->get($this->emailField))); // throws when field is invalid or empty
+    $firstName = LDAPHelper::getScalar($this->getValue($data->get($this->firstNameField))); // throws when field is invalid or empty
+    $lastName = LDAPHelper::getScalar($this->getValue($data->get($this->lastNameField))); // throws when field is invalid or empty
 
     // we do not get this information about the degrees of the user
     return new UserData($ukco, $email, $firstName, $lastName, "", "");
