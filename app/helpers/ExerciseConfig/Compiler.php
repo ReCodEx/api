@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\JobConfig\JobConfig;
@@ -44,12 +45,19 @@ class Compiler {
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param CompilationParams $params
    * @return JobConfig
+   * @throws ExerciseConfigException
    */
   public function compile($exerciseAssignment,
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
-    $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
 
+    // check submitted files if they are unique
+    $uniqueFiles = array_unique($params->getFiles());
+    if (count($params->getFiles()) !== count($uniqueFiles)) {
+      throw new ExerciseConfigException("Submitted files contains two or more files with the same name.");
+    }
+
+    $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
     $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
     $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
