@@ -28,7 +28,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
- * @method Group getGroup()
+ * @method Collection getGroups()
  * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
  * @method int getVersion()
  * @method void setDifficulty(string $difficulty)
@@ -159,9 +159,9 @@ class Exercise implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Group", inversedBy="exercises")
+   * @ORM\ManyToMany(targetEntity="Group", inversedBy="exercises")
    */
-  protected $group;
+  protected $groups;
 
   /**
    * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
@@ -203,10 +203,10 @@ class Exercise implements JsonSerializable
    * @param Collection $exerciseLimits
    * @param Collection $exerciseEnvironmentConfigs
    * @param Collection $pipelines
+   * @param Collection $groups
    * @param Exercise|null $exercise
    * @param ExerciseConfig|null $exerciseConfig
    * @param User $user
-   * @param Group|null $group
    * @param bool $isPublic
    * @param string $description
    * @param bool $isLocked
@@ -216,9 +216,9 @@ class Exercise implements JsonSerializable
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
-      ?Exercise $exercise, ?ExerciseConfig $exerciseConfig = NULL, User $user,
-      ?Group $group = NULL, bool $isPublic = TRUE, string $description = "",
-      bool $isLocked = FALSE) {
+      Collection $groups = NULL, ?Exercise $exercise,
+      ?ExerciseConfig $exerciseConfig = NULL, User $user, bool $isPublic = TRUE,
+      string $description = "", bool $isLocked = FALSE) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -232,7 +232,7 @@ class Exercise implements JsonSerializable
     $this->isPublic = $isPublic;
     $this->isLocked = $isLocked;
     $this->description = $description;
-    $this->group = $group;
+    $this->groups = $groups;
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
@@ -242,6 +242,11 @@ class Exercise implements JsonSerializable
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
+    $groups = new ArrayCollection;
+    if ($group !== null) {
+      $groups->add($group);
+    }
+
     return new self(
       "",
       1,
@@ -254,10 +259,10 @@ class Exercise implements JsonSerializable
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
+      $groups,
       NULL,
       NULL,
-      $user,
-      $group
+      $user
     );
   }
 
@@ -274,10 +279,10 @@ class Exercise implements JsonSerializable
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
       $exercise->pipelines,
+      $exercise->groups,
       $exercise,
       $exercise->exerciseConfig,
       $user,
-      $exercise->group,
       $exercise->isPublic,
       $exercise->description
     );
@@ -395,6 +400,20 @@ class Exercise implements JsonSerializable
     return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
   }
 
+  /**
+   * Get IDs of all assigned groups.
+   * @return string[]
+   */
+  public function getGroupsIds() {
+    return $this->groups->map(function(Group $group) {
+      return $group->getId();
+    })->getValues();
+  }
+
+  /**
+   * Get identifications of supplementary evaluation files.
+   * @return array
+   */
   public function getSupplementaryFilesIds() {
     return $this->supplementaryEvaluationFiles->map(
       function(SupplementaryExerciseFile $file) {
@@ -402,6 +421,10 @@ class Exercise implements JsonSerializable
       })->getValues();
   }
 
+  /**
+   * Get identifications of additional exercise files.
+   * @return array
+   */
   public function getAdditionalExerciseFilesIds() {
     return $this->additionalFiles->map(
       function(AdditionalExerciseFile $file) {
@@ -432,7 +455,7 @@ class Exercise implements JsonSerializable
       "hardwareGroups" => $this->hardwareGroups->getValues(),
       "forkedFrom" => $this->getForkedFrom(),
       "authorId" => $this->author->getId(),
-      "groupId" => $this->group ? $this->group->getId() : NULL,
+      "groupsIds" => $this->getGroupsIds(),
       "isPublic" => $this->isPublic,
       "isLocked" => $this->isLocked,
       "description" => $this->description,

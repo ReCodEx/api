@@ -137,7 +137,7 @@ class Group implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Exercise", mappedBy="group")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="groups")
    */
   protected $exercises;
 
