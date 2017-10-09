@@ -16,8 +16,8 @@ Installation
 3. Create a database and fill in the access information in 
    `app/config/config.local.neon` (for an example, see 
    `app/config/config.local.neon.example`)
-4. Setup the database schema by running `php www/index.php 
-   orm:schema-tool:update --force`
+4. Setup the database schema by running `php www/index.php
+   migrations:migrate`
 5. Fill database with initial values by running `php www/index.php 
    db:fill`
 
