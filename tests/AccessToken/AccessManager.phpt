@@ -126,7 +126,7 @@ class TestAccessManager extends Tester\TestCase
     $token = $manager->issueToken($user, NULL, 30);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
-    Assert::equal(time() + 30, $payload->exp);
+    Assert::true((time() + 30) >= $payload->exp);
   }
 
   public function testCustomPayload() {
@@ -139,7 +139,7 @@ class TestAccessManager extends Tester\TestCase
     $token = $manager->issueToken($user, NULL, 30, [ "sub" => "abcde", "xyz" => "uvw" ]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
-    Assert::equal(time() + 30, $payload->exp);
+    Assert::true((time() + 30) >= $payload->exp);
     Assert::equal("123456", $payload->sub);
     Assert::equal("uvw", $payload->xyz);
   }
