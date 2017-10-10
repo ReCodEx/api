@@ -28,7 +28,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
- * @method Collection getGroups()
  * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
  * @method int getVersion()
  * @method void setDifficulty(string $difficulty)
@@ -162,6 +161,15 @@ class Exercise implements JsonSerializable
    * @ORM\ManyToMany(targetEntity="Group", inversedBy="exercises")
    */
   protected $groups;
+
+  /**
+   * @return Collection
+   */
+  public function getGroups() {
+    return $this->groups->filter(function (Group $group) {
+      return $group->getDeletedAt() === NULL;
+    });
+  }
 
   /**
    * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
@@ -405,7 +413,7 @@ class Exercise implements JsonSerializable
    * @return string[]
    */
   public function getGroupsIds() {
-    return $this->groups->map(function(Group $group) {
+    return $this->getGroups()->map(function(Group $group) {
       return $group->getId();
     })->getValues();
   }
