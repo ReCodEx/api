@@ -44,13 +44,12 @@ class UploadedFiles extends BaseRepository {
       'solutionId' => $file->getSolution()->getId()
     ]);
 
-    $result = $query->getOneOrNullResult();
-
-    if ($result === NULL) {
+    $result = $query->getResult();
+    if (count($result) === 0) {
       return NULL;
     }
 
-    return $result->assignment->group;
+    return current($result)->assignment->group;
   }
 
   /**
@@ -74,13 +73,12 @@ class UploadedFiles extends BaseRepository {
       'solutionId' => $file->getSolution()->getId()
     ]);
 
-    $result = $query->getOneOrNullResult();
-
-    if ($result === NULL) {
+    $result = $query->getResult();
+    if (count($result) === 0) {
       return NULL;
     }
 
-    return $result->getExercise()->getGroup();
+    return current($result)->getExercise()->getGroup();
   }
 
   /**
