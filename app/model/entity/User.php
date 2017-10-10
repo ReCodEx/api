@@ -294,6 +294,7 @@ class User implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
+      "email" => $this->email,
       "fullName" => $this->getName(),
       "name" => $this->getNameParts(),
       "instanceId" => $this->instance->getId(),

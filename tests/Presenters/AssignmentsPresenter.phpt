@@ -238,6 +238,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $user = $submission->getUser();
     $assignment = $submission->getAssignment();
     $submissions = $this->presenter->submissions->findSubmissions($assignment, $user->getId());
+    $submissions = array_map(function ($submission) {
+      return $submission->getData(true);
+    }, $submissions);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
       ['action' => 'submissions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
