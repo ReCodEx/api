@@ -218,7 +218,7 @@ permissions:
       conditions:
           - student.isSameUser
 
-    #########################
+    ##########################
     # Submission permissions #
     ##########################
 

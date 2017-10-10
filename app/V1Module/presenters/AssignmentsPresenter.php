@@ -316,6 +316,10 @@ class AssignmentsPresenter extends BasePresenter {
     $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (Submission $submission) {
       return $this->submissionAcl->canViewDetail($submission);
     });
+    $submissions = array_map(function (Submission $submission) {
+      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
+      return $submission->getData($canViewDetails);
+    }, $submissions);
 
     $this->sendSuccessResponse($submissions);
   }
@@ -341,7 +345,8 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse($submission);
+    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
+    $this->sendSuccessResponse($submission->getData($canViewDetails));
   }
 
 }
