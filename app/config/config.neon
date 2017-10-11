@@ -107,14 +107,14 @@ parameters:
 
   forgottenPassword:
     redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/forgotten-password/change"
-    tokenExpiration: 600 # 10 minues
+    tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
       subjectPrefix: "ReCodEx Forgotten Password Request - "
 
   emailVerification:
     redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/email-verification"
-    tokenExpiration: 600 # 10 minues
+    tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
       subjectPrefix: "ReCodEx Email Verification Request - "
@@ -131,6 +131,12 @@ parameters:
         verify_peer: false
         verify_peer_name: false
         allow_self_signed: true
+
+  migrations:
+    table: doctrine_migrations # database table for applied migrations
+    column: version # database column for applied migrations
+    directory: %appDir%/../migrations # directory, where all migrations are stored
+    namespace: Migrations # namespace of migration classes
 
 
 application:
@@ -182,20 +188,42 @@ extensions:
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
   acl: App\Security\SecurityExtension(%tempDir%)
 
+decorator:
+  Symfony\Component\Console\Command\Command:
+    tags: [kdyby.console.command]
+  Doctrine\DBAL\Migrations\Tools\Console\Command\AbstractCommand:
+    setup:
+      - setMigrationConfiguration(@migrations.configuration)
+
 services:
   router: App\RouterFactory::createRouter
   - Nette\Mail\SmtpMailer(%mail%)
-  - class: App\Console\DoctrineFixtures
-    tags: [kdyby.console.command]
-  - class: App\Console\GenerateSwagger(@router)
-    tags: [kdyby.console.command]
-  - class: App\Console\CleanupUploads()
-    tags: [kdyby.console.command]
-  - class: App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
-    tags: [kdyby.console.command]
-  - class: App\Console\ExportDatabase
-    tags: [kdyby.console.command]
 
+  # commands
+  - App\Console\DoctrineFixtures
+  - App\Console\GenerateSwagger(@router)
+  - App\Console\CleanupUploads()
+  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
+  - App\Console\ExportDatabase
+
+  # migrations commands
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\DiffCommand
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\GenerateCommand
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\StatusCommand
+  - Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand
+
+  # doctrine migrations
+  migrations.configuration:
+    factory: Doctrine\DBAL\Migrations\Configuration\Configuration
+    setup:
+      - setMigrationsTableName(%migrations.table%)
+      - setMigrationsColumnName(%migrations.column%)
+      - setMigrationsDirectory(%migrations.directory%)
+      - setMigrationsNamespace(%migrations.namespace%)
+
+  # soft deletable filter
   - class: Gedmo\SoftDeleteable\SoftDeleteableListener()
     tags: [kdyby.subscriber]
 
