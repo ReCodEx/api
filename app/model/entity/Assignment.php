@@ -76,13 +76,13 @@ class Assignment implements JsonSerializable
     $this->submissions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
-    $this->hardwareGroups = $exercise->getHardwareGroups();
-    $this->exerciseLimits = $exercise->getExerciseLimits();
-    $this->exerciseEnvironmentConfigs = $exercise->getExerciseEnvironmentConfigs();
+    $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
+    $this->exerciseLimits = new ArrayCollection($exercise->getExerciseLimits()->toArray());
+    $this->exerciseEnvironmentConfigs = new ArrayCollection($exercise->getExerciseEnvironmentConfigs()->toArray());
     $this->exerciseConfig = $exercise->getExerciseConfig();
     $this->submissionsCountLimit = $submissionsCountLimit;
     $this->scoreConfig = "";
-    $this->localizedTexts = $exercise->getLocalizedTexts();
+    $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
     $this->canViewLimitRatios = $canViewLimitRatios;
     $this->version = 1;
     $this->isBonus = $isBonus;
@@ -441,7 +441,44 @@ class Assignment implements JsonSerializable
     }, $this->localizedTexts->getValues());
   }
 
+  public function syncWithExercise() {
+    $exercise = $this->getExercise();
+
+    $this->hardwareGroups->clear();
+    foreach ($exercise->getHardwareGroups() as $group) {
+      $this->hardwareGroups->add($group);
+    }
+
+    $this->localizedTexts->clear();
+    foreach ($exercise->getLocalizedTexts() as $text) {
+      $this->localizedTexts->add($text);
+    }
+
+    $this->exerciseConfig = $exercise->getExerciseConfig();
+
+    $this->exerciseEnvironmentConfigs->clear();
+    foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
+      $this->exerciseEnvironmentConfigs->add($config);
+    }
+
+    $this->exerciseLimits->clear();
+    foreach ($exercise->getExerciseLimits() as $limits) {
+      $this->exerciseLimits->add($limits);
+    }
+  }
+
   public function jsonSerialize() {
+    $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(function (RuntimeEnvironment $env) {
+      $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
+      $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
+      return $ours === $theirs;
+    });
+
+    $hwGroupsInSync = $this->getHardwareGroups()->count() === $this->getExercise()->getHardwareGroups()->count()
+      && $this->getHardwareGroups()->forAll(function (HardwareGroup $group) {
+        return $this->getExercise()->getHardwareGroups()->contains($group);
+      });
+
     return [
       "id" => $this->id,
       "name" => $this->name,
@@ -462,7 +499,34 @@ class Assignment implements JsonSerializable
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $this->canViewLimitRatios,
       "isBonus" => $this->isBonus,
-      "pointsPercentualThreshold" => $this->pointsPercentualThreshold
+      "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
+      "exerciseSynchronizationInfo" => [
+        "exerciseConfig" => [
+          "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),
+        ],
+        "exerciseEnvironmentConfigs" => [
+          "upToDate" => $envConfigsInSync
+        ],
+        "hardwareGroups" => [
+          "upToDate" => $hwGroupsInSync
+        ],
+        "localizedTexts" => [
+          "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
+              && $this->getLocalizedTexts()->forAll(function (LocalizedText $ours) {
+            $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
+            return $theirs === NULL || $theirs === $ours;
+          })
+        ],
+        "limits" => [
+          "upToDate" => $envConfigsInSync && $hwGroupsInSync && $this->runtimeEnvironments->forAll(function (RuntimeEnvironment $env) {
+            return $this->hardwareGroups->forAll(function (HardwareGroup $group) use ($env) {
+              $ours = $this->getLimitsByEnvironmentAndHwGroup($env, $group);
+              $theirs = $this->getExercise()->getLimitsByEnvironmentAndHwGroup($env, $group);
+              return $ours === $theirs;
+            });
+          })
+        ]
+      ]
     ];
   }
 }

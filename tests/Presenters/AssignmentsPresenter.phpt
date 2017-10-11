@@ -2,7 +2,14 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseLimits;
+use App\Model\Entity\Group;
+use App\Model\Entity\HardwareGroup;
+use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Repository\HardwareGroups;
+use App\Model\Repository\RuntimeEnvironments;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -29,6 +36,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
   /** @var Nette\Security\User */
   private $user;
 
+  /** @var RuntimeEnvironments */
+  private $runtimeEnvironments;
+
+  /** @var HardwareGroups */
+  private $hardwareGroups;
+
   public function __construct()
   {
     global $container;
@@ -36,6 +49,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
+    $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
+    $this->hardwareGroups = $container->getByType(HardwareGroups::class);
   }
 
   protected function setUp()
@@ -208,6 +223,60 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, App\Exceptions\InvalidArgumentException::class);
+  }
+
+  public function testSyncWithExercise()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = PresenterTestHelper::getUser($this->container);
+
+    /** @var RuntimeEnvironment $environment */
+    $environment = $this->runtimeEnvironments->findAll()[0];
+
+    /** @var HardwareGroup $hwGroup */
+    $hwGroup = $this->hardwareGroups->findAll()[0];
+
+    /** @var Group $group */
+    $group = $this->presenter->groups->findAll()[0];
+
+    $limits = "
+      memory: 42,
+      wall-time: 33
+    ";
+
+    $newLimits = "
+      memory: 33,
+      wall-time: 44
+    ";
+
+    /** @var Exercise $exercise */
+    $exercise = $this->presenter->exercises->findAll()[0];
+    $exerciseLimits = new ExerciseLimits($environment, $hwGroup, $limits, $user);
+    $this->em->persist($exerciseLimits);
+
+    $exercise->addExerciseLimits($exerciseLimits);
+    $assignment = Assignment::assignToGroup($exercise, $group);
+    $this->em->persist($assignment);
+
+    $this->em->flush();
+
+    $newExerciseLimits = new ExerciseLimits($environment, $hwGroup, $newLimits, $user);
+    $this->em->persist($newExerciseLimits);
+    $exercise->clearExerciseLimits();
+    $exercise->addExerciseLimits($newExerciseLimits);
+
+    $this->em->flush();
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'syncWithExercise', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+    $payload = $response->getPayload();
+    $data = $payload["payload"];
+
+    Assert::same($assignment, $data);
+    Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
   }
 
   public function testRemove()

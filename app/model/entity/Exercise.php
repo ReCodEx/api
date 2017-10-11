@@ -475,4 +475,8 @@ class Exercise implements JsonSerializable
   public function setLocked($value = TRUE) {
     $this->isLocked = $value;
   }
+
+  public function clearExerciseLimits() {
+    $this->exerciseLimits->clear();
+  }
 }
