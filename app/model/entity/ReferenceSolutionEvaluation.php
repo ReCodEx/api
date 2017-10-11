@@ -79,7 +79,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 
     return [
       "id" => $this->id,
-      "referenceSolution" => $this->referenceSolution,
+      "referenceSolutionId" => $this->referenceSolution->getId(),
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "evaluation" => $evaluationData
     ];
@@ -92,10 +92,11 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   function isValid(): bool {
-    return $this->evaluation->isValid;
+    return $this->evaluation && $this->evaluation->isValid();
   }
 
   function isCorrect(): bool {
     return TRUE;
   }
+  
 }

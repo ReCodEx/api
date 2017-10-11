@@ -133,6 +133,22 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
+   * Get reference solution evaluation for an exercise solution.
+   * @GET
+   * @param string $evaluationId identifier of the reference exercise evaluation
+   * @throws ForbiddenRequestException
+   */
+  public function actionEvaluation(string $evaluationId) {
+    $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+    $exercise = $evaluation->getReferenceSolution()->getExercise();
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException("You cannot access this exercise evaluations");
+    }
+
+    $this->sendSuccessResponse($evaluation);
+  }
+
+  /**
    * Add new reference solution to an exercise
    * @POST
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")

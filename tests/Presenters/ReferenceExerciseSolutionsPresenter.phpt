@@ -9,6 +9,7 @@ use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
+use App\Model\Repository\ReferenceSolutionEvaluations;
 use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -34,6 +35,9 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   /** @var ReferenceExerciseSolutions */
   private $referenceSolutions;
 
+  /** @var ReferenceSolutionEvaluations */
+  private $referenceSolutionEvaluations;
+
   /** @var Exercises */
   private $exercises;
 
@@ -44,6 +48,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $this->em = PresenterTestHelper::prepareDatabase($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->referenceSolutions = $container->getByType(ReferenceExerciseSolutions::class);
+    $this->referenceSolutionEvaluations = $container->getByType(ReferenceSolutionEvaluations::class);
     $this->exercises = $container->getByType(Exercises::class);
   }
 
@@ -104,6 +109,29 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(2, count($payload));
     Assert::count(1, $payload[$environmentId]);
     Assert::type(ReferenceSolutionEvaluation::class, $payload[$environmentId][0]);
+  }
+
+  public function testGetSolutionEvaluation()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $evaluation = current($this->referenceSolutionEvaluations->findAll());
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
+      'action' => 'evaluation',
+      'evaluationId' => $evaluation->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::type(ReferenceSolutionEvaluation::class, $payload);
+    Assert::equal($evaluation->getId(), $payload->getId());
+    Assert::same($evaluation, $payload);
   }
 
   public function testCreateReferenceSolution()
