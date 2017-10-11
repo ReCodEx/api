@@ -22,16 +22,22 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
 
   public function isSubGroupSupervisor(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
-    $group = $exercise->getGroup();
 
-    if ($user === NULL || $group === NULL || $exercise->isPublic() === FALSE) {
+    if ($user === NULL || $exercise->getGroups()->isEmpty() ||
+        $exercise->isPublic() === FALSE) {
       return FALSE;
     }
 
-    return $group->isAdminOrSupervisorOfSubgroup($user);
+    foreach ($exercise->getGroups() as $group) {
+      if ($group->isAdminOrSupervisorOfSubgroup($user)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   public function isPublic(Identity $identity, Exercise $exercise) {
-    return $exercise->isPublic() && $exercise->getGroup() === NULL;
+    return $exercise->isPublic() && $exercise->getGroups()->isEmpty();
   }
 }

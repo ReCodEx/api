@@ -41,7 +41,8 @@
 		"bjeavons/zxcvbn-php": "^0.3.0",
 		"zenify/doctrine-fixtures": "^4.0",
 		"doctrine/orm": "2.5.6",
-		"gedmo/doctrine-extensions": "@stable"
+		"gedmo/doctrine-extensions": "@stable",
+		"doctrine/migrations": "^1.5"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
