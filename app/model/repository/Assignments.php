@@ -9,6 +9,9 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Assignment;
 
+/**
+ * @method Assignment findOrThrow($id)
+ */
 class Assignments extends BaseSoftDeleteRepository {
 
   public function replaceLocalizedTexts(Assignment $assignment, $localizations, $flush = TRUE) {

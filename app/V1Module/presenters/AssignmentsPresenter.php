@@ -299,6 +299,25 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
+   * Update the assignment so that it matches with the current version of the exercise (limits, texts, etc.)
+   * @param string $id Identifier of the exercise that should be synchronized
+   * @POST
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   */
+  public function actionSyncWithExercise($id) {
+    $assignment = $this->assignments->findOrThrow($id);
+
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot sync this assignment.");
+    }
+
+    $assignment->syncWithExercise();
+    $this->assignments->flush();
+    $this->sendSuccessResponse($assignment);
+  }
+
+  /**
    * Get a list of solutions submitted by a user of an assignment
    * @GET
    * @param string $id Identifier of the assignment

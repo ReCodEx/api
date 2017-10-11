@@ -10,6 +10,7 @@ use DateTime;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getLocale()
  */
 class LocalizedText implements JsonSerializable
 {
