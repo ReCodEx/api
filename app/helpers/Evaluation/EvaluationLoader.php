@@ -98,7 +98,16 @@ class EvaluationLoader {
       return NULL;
     }
 
-    return new SolutionEvaluation($results, NULL, NULL);
+    $evaluation = new SolutionEvaluation($results, NULL, NULL);
+
+    // set evaluation score as a mean of all score values
+    $score = 0;
+    foreach ($results->getTestsResults() as $testResult) {
+      $score += $testResult->getScore();
+    }
+    $evaluation->setScore($score / count($results->getTestsResults()));
+
+    return $evaluation;
   }
 
   /**
