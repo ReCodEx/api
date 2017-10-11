@@ -103,12 +103,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this exercise solutions");
     }
 
-    $this->sendSuccessResponse($exercise->referenceSolutions->getValues());
+    $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
   }
 
   /**
-   * Get reference solution evaluations for an exercise solution. Evaluations
-   * are grouped by environment identification.
+   * Get reference solution evaluations for an exercise solution.
    * @GET
    * @param string $solutionId identifier of the reference exercise solution
    * @throws ForbiddenRequestException
@@ -120,16 +119,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
     }
 
-    $evaluations = array();
-    foreach ($exercise->getRuntimeEnvironments() as $runtime) {
-      $evaluations[$runtime->getId()] = array();
-    }
-
-    foreach ($solution->getEvaluations() as $evaluation) {
-      $evaluations[$evaluation->getReferenceSolution()->getSolution()->getRuntimeEnvironment()->getId()][] = $evaluation;
-    }
-
-    $this->sendSuccessResponse($evaluations);
+    $this->sendSuccessResponse($solution->getEvaluations()->getValues());
   }
 
   /**

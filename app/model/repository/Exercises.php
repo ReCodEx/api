@@ -3,12 +3,10 @@
 namespace App\Model\Repository;
 
 use Kdyby\Doctrine\EntityManager;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Collection;
 use App\Model\Entity\Exercise;
 
 /**
- * @method Exercise findOrThrow($exerciseId)
+ * @method Exercise findOrThrow($solutionId)
  */
 class Exercises extends BaseSoftDeleteRepository {
 
