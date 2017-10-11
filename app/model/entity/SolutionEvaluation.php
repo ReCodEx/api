@@ -3,7 +3,6 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\SubmissionEvaluationFailedException;
-use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\IScoreCalculator;
 
@@ -12,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
@@ -23,6 +21,7 @@ use Symfony\Component\Yaml\Yaml;
  * @method int getPoints()
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
+ * @method setScore(float $score)
  */
 class SolutionEvaluation implements JsonSerializable
 {
