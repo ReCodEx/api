@@ -62,6 +62,7 @@ class ReferenceExerciseSolution implements JsonSerializable
       "uploadedAt" => $this->uploadedAt->getTimestamp(),
       "description" => $this->description,
       "solution" => $this->solution,
+      "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
       "evaluations" => $this->evaluations->map(
         function ($evaluation) {
           return $evaluation->getId();
