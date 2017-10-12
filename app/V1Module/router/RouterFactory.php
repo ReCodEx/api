@@ -140,6 +140,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-submission", "Assignments:bestSubmission");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
+    $router[] = new PostRoute("$prefix/<id>/sync-exercise", "Assignments:syncWithExercise");
 
     $router[] = new GetRoute("$prefix/<id>/can-submit", "Submit:canSubmit");
     $router[] = new PostRoute("$prefix/<id>/submit", "Submit:submit");
