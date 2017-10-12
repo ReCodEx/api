@@ -36,7 +36,7 @@ class TestStats extends Tester\TestCase
 
   public function testMemoryLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "memory" => 100 ]));
-    Assert::equal(100, $stats->getUsedMemory(200));
+    Assert::equal(100, $stats->getUsedMemory());
     Assert::equal(TRUE, $stats->isMemoryOK(200));
     Assert::equal(FALSE, $stats->isMemoryOK(50));
   }

@@ -9,6 +9,9 @@ use App\Helpers\JobConfig\Limits;
  */
 interface IStats {
 
+  const EXIT_CODE_OK = 0;
+  const EXIT_CODE_UNKNOWN = -1;
+
   /**
    * Compares all the stats to the limits
    * @param  Limits $limits The configured limits

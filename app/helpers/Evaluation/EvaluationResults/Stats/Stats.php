@@ -15,7 +15,9 @@ class Stats implements IStats {
   const TIME_WALL_KEY = "wall-time";
   const MESSAGE_KEY = "message";
   const KILLED_KEY = "killed";
-  const OUTPUT_KEY = "output";
+  const STATUS_KEY = "status";
+
+  const STATUS_OK = "OK";
 
   /** @var array Raw data of the stats */
   private $data;
@@ -34,6 +36,9 @@ class Stats implements IStats {
 
   /** @var boolean Whether the process was killed by the evaluation system */
   private $killed;
+
+  /** @var string Status in which process ended */
+  private $status;
 
   /**
    * Constructor
@@ -67,6 +72,11 @@ class Stats implements IStats {
       throw new ResultsLoadingException("Sandbox results do not include the '" . self::KILLED_KEY . "' field.");
     }
     $this->killed = $data[self::KILLED_KEY];
+
+    if (!isset($data[self::STATUS_KEY])) {
+      throw new ResultsLoadingException("Sandbox results do not include the '" . self::STATUS_KEY . "' field.");
+    }
+    $this->status = $data[self::STATUS_KEY];
   }
 
   /**
@@ -123,6 +133,10 @@ class Stats implements IStats {
    * @return int The exit code fo the executable
    */
   public function getExitCode(): int {
+    if ($this->status !== self::STATUS_OK && $this->exitcode === self::EXIT_CODE_OK) {
+      return self::EXIT_CODE_UNKNOWN;
+    }
+
     return $this->exitcode;
   }
 

@@ -22,7 +22,7 @@ class TestSkippedStats extends Tester\TestCase
 
   public function testParseStats() {
     $stats = new SkippedStats();
-    Assert::equal(SkippedStats::EXIT_CODE, $stats->getExitCode());
+    Assert::equal(SkippedStats::EXIT_CODE_UNKNOWN, $stats->getExitCode());
     Assert::equal(0, $stats->getUsedMemory());
     Assert::equal(0.0, $stats->getUsedTime());
     Assert::false($stats->wasKilled());
