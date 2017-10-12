@@ -1,4 +1,6 @@
 <?php
+
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\CAS\LDAPLoginService;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
@@ -119,6 +121,39 @@ class TestLoginPresenter extends Tester\TestCase
     Assert::true($this->presenter->user->isLoggedIn());
   }
 
+  public function testTakeover()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+
+    $request = new Nette\Application\Request('V1:Login',
+      'POST',
+      ['action' => 'takeover', 'userId' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::same(200, $result["code"]);
+
+    Assert::true(array_key_exists("accessToken", $result["payload"]));
+    Assert::same($user, $result["payload"]["user"]);
+  }
+
+  public function testTakeoverIncorrect()
+  {
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+
+    $request = new Nette\Application\Request('V1:Login',
+      'POST',
+      ['action' => 'takeover', 'userId' => $user->getId()]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ForbiddenRequestException::class);
+  }
+
   public function testRefresh()
   {
     $user = $this->presenter->users->getByEmail($this->userLogin);
@@ -169,7 +204,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, \App\Exceptions\ForbiddenRequestException::class);
+    }, ForbiddenRequestException::class);
   }
 
 }

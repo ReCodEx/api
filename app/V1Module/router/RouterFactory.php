@@ -63,6 +63,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
+    $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeover");
     return $router;
   }
 
