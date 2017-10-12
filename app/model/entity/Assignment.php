@@ -468,14 +468,16 @@ class Assignment implements JsonSerializable
   }
 
   public function jsonSerialize() {
-    $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(function (RuntimeEnvironment $env) {
-      $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
-      $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
-      return $ours === $theirs;
-    });
+    $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(
+      function ($key, RuntimeEnvironment $env) {
+        $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
+        $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
+        return $ours === $theirs;
+      }
+    );
 
     $hwGroupsInSync = $this->getHardwareGroups()->count() === $this->getExercise()->getHardwareGroups()->count()
-      && $this->getHardwareGroups()->forAll(function (HardwareGroup $group) {
+      && $this->getHardwareGroups()->forAll(function ($key, HardwareGroup $group) {
         return $this->getExercise()->getHardwareGroups()->contains($group);
       });
 
@@ -512,14 +514,14 @@ class Assignment implements JsonSerializable
         ],
         "localizedTexts" => [
           "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
-              && $this->getLocalizedTexts()->forAll(function (LocalizedText $ours) {
+              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedText $ours) {
             $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
             return $theirs === NULL || $theirs === $ours;
           })
         ],
         "limits" => [
-          "upToDate" => $envConfigsInSync && $hwGroupsInSync && $this->runtimeEnvironments->forAll(function (RuntimeEnvironment $env) {
-            return $this->hardwareGroups->forAll(function (HardwareGroup $group) use ($env) {
+          "upToDate" => $envConfigsInSync && $hwGroupsInSync && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
+            return $this->hardwareGroups->forAll(function ($key, HardwareGroup $group) use ($env) {
               $ours = $this->getLimitsByEnvironmentAndHwGroup($env, $group);
               $theirs = $this->getExercise()->getLimitsByEnvironmentAndHwGroup($env, $group);
               return $ours === $theirs;
