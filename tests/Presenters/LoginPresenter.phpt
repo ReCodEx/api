@@ -128,7 +128,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Login',
       'POST',
-      ['action' => 'takeover', 'userId' => $user->getId()]
+      ['action' => 'takeOver', 'userId' => $user->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -146,7 +146,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Login',
       'POST',
-      ['action' => 'takeover', 'userId' => $user->getId()]
+      ['action' => 'takeOver', 'userId' => $user->getId()]
     );
 
     Assert::exception(function () use ($request) {

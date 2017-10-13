@@ -139,9 +139,16 @@ permissions:
       conditions:
           - instance.isMember
 
-     ####################
-     # User permissions #
-     ####################
+    ####################
+    # User permissions #
+    ####################
+
+    - allow: true
+      role: superadmin
+      resource: user
+      actions:
+        - takeOver
+
     - allow: true
       role: student
       resource: user

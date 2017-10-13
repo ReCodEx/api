@@ -90,15 +90,15 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
-   * Takover user account with specified user identification.
+   * Takeover user account with specified user identification.
    * @POST
    * @LoggedIn
    * @param $userId
    * @throws ForbiddenRequestException
    */
-  public function actionTakeover($userId) {
+  public function actionTakeOver($userId) {
     $user = $this->users->findOrThrow($userId);
-    if (!$this->userAcl->canTakeover($user)) {
+    if (!$this->userAcl->canTakeOver($user)) {
       throw new ForbiddenRequestException();
     }
 

@@ -13,5 +13,5 @@ interface IUserPermissions {
   function canViewGroups($user): bool;
   function canViewInstances($user): bool;
   function canDelete($user): bool;
-  function canTakeover($user): bool;
+  function canTakeOver($user): bool;
 }
