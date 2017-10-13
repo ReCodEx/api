@@ -128,14 +128,19 @@ class TestResult implements JsonSerializable
    */
   protected $tasks;
 
-  public function getData(bool $canViewRatios) {
+  public function getData(bool $canViewRatios, bool $canViewValues = false) {
+    $time = NULL;
     $timeRatio = NULL;
+    $memory = NULL;
     $memoryRatio = NULL;
-    $tasks = NULL;
+
     if ($canViewRatios) {
       $timeRatio = $this->usedTimeRatio;
       $memoryRatio = $this->usedMemoryRatio;
-      $tasks = $this->tasks->getValues();
+    }
+    if ($canViewValues) {
+      $time = $this->usedTime;
+      $memory = $this->usedMemory;
     }
 
     return [
@@ -150,7 +155,8 @@ class TestResult implements JsonSerializable
       "message" => $this->message,
       "timeRatio" => $timeRatio,
       "memoryRatio" => $memoryRatio,
-      "tasks" => $tasks
+      "time" => $time,
+      "memory" => $memory
     ];
   }
 
