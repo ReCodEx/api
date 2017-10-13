@@ -49,18 +49,18 @@ class UploadedFiles extends BaseRepository {
       return NULL;
     }
 
-    return current($result)->assignment->group;
+    return current($result)->getAssignment()->getGroup();
   }
 
   /**
-   * If given file belongs to an exercise, find the group to which exercise belongs to.
+   * If given file belongs to an exercise, find groups to which exercise belongs to.
    * @param UploadedFile $file
-   * @return Group|null
+   * @return Group[]
    */
-  public function findGroupForReferenceSolutionFile(UploadedFile $file)
+  public function findGroupsForReferenceSolutionFile(UploadedFile $file)
   {
     if (!($file instanceof SolutionFile)) {
-      return NULL;
+      return [];
     }
 
     $query = $this->em->createQuery("
@@ -75,10 +75,10 @@ class UploadedFiles extends BaseRepository {
 
     $result = $query->getResult();
     if (count($result) === 0) {
-      return NULL;
+      return [];
     }
 
-    return current($result)->getExercise()->getGroup();
+    return current($result)->getExercise()->getGroups()->toArray();
   }
 
   /**

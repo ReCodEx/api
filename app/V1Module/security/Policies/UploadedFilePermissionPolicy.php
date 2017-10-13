@@ -53,8 +53,14 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    $group = $this->files->findGroupForReferenceSolutionFile($file);
-    return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+    $groups = $this->files->findGroupsForReferenceSolutionFile($file);
+    foreach ($groups as $group) {
+      if ($group->isSupervisorOf($user) || $group->isAdminOf($user)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   public function isSolutionInSupervisedGroup(Identity $identity, UploadedFile $file) {

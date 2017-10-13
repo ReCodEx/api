@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\Group;
@@ -159,6 +160,7 @@ class SubmissionsPresenter extends BasePresenter {
    * @GET
    * @param string $id
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->submissions->findOrThrow($id);
@@ -172,6 +174,10 @@ class SubmissionsPresenter extends BasePresenter {
     }
 
     $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
+    if ($stream === null) {
+      throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
+    }
+
     $this->sendResponse(new GuzzleResponse($stream, $id . '.zip'));
   }
 

@@ -298,8 +298,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Download result archive from backend for a reference solution evaluation
    * @GET
    * @param string $evaluationId
-   * @throws NotReadyException
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws NotReadyException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
     /** @var ReferenceSolutionEvaluation $evaluation */
@@ -314,6 +315,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $stream = $this->fileServerProxy->getResultArchiveStream($evaluation->getResultsUrl());
+    if ($stream === null) {
+      throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
+    }
+
     $this->sendResponse(new GuzzleResponse($stream, $evaluationId . '.zip'));
   }
 }
