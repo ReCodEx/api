@@ -34,7 +34,7 @@ class TestResult {
   /** @var Limits[] Limits of the execution tasks of this test, indexed by task-id */
   private $limits;
 
-  /** @var array Stats interpretation for each execution task (indexed by task-id)  */
+  /** @var StatsInterpretation[] Stats interpretation for each execution task (indexed by task-id)  */
   private $statsInterpretation;
 
   /**
@@ -117,7 +117,7 @@ class TestResult {
 
   /**
    * Gets array of execution tasks results
-   * @return array List of results for all execution tasks in this test
+   * @return TaskResult[] List of results for all execution tasks in this test
    */
   public function getExecutionResults(): array {
     return $this->executionResults;
@@ -207,15 +207,45 @@ class TestResult {
   }
 
   /**
+   * Get maximum used memory of all tasks.
+   * @return int in kilobytes
+   */
+  public function getUsedMemory(): int {
+    $maxMemory = 0;
+    foreach ($this->statsInterpretation as $interpretation) {
+      if ($interpretation->getUsedMemory() > $maxMemory) {
+        $maxMemory = $interpretation->getUsedMemory();
+      }
+    }
+    return $maxMemory;
+  }
+
+  /**
    * Get maximum used time ratio of all tasks.
    * @return float The value in [0.0, 1.0]
    */
   public function getUsedTimeRatio(): float {
-    $sumRatio = 0.0;
+    $maxRatio = 0.0;
     foreach ($this->statsInterpretation as $interpretation) {
-      $sumRatio += $interpretation->getUsedTimeRatio();
+      if ($interpretation->getUsedTimeRatio() > $maxRatio) {
+        $maxRatio = $interpretation->getUsedTimeRatio();
+      }
     }
-    return $sumRatio;
+    return $maxRatio;
+  }
+
+  /**
+   * Get maximum used time of all tasks.
+   * @return float in seconds
+   */
+  public function getUsedTime(): float {
+    $maxTime = 0.0;
+    foreach ($this->statsInterpretation as $interpretation) {
+      if ($interpretation->getUsedTime() > $maxTime) {
+        $maxTime = $interpretation->getUsedTime();
+      }
+    }
+    return $maxTime;
   }
 
   /**

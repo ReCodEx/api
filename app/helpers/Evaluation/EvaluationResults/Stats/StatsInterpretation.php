@@ -61,6 +61,14 @@ class StatsInterpretation {
   }
 
   /**
+   * Get used memory in kilobytes.
+   * @return int
+   */
+  public function getUsedMemory(): int {
+    return $this->stats->getUsedMemory();
+  }
+
+  /**
    * Get percentage of used time
    * @return float Ratio between 0.0 and 1.0
    */
@@ -69,6 +77,14 @@ class StatsInterpretation {
       return 0;
     }
     return floatval($this->stats->getUsedTime()) / floatval($this->limits->getWallTime());
+  }
+
+  /**
+   * Get used time in seconds.
+   * @return float
+   */
+  public function getUsedTime(): float {
+    return $this->stats->getUsedTime();
   }
 
 }

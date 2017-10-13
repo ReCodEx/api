@@ -28,8 +28,10 @@ class TestResult implements JsonSerializable
     $this->score = $result->getScore();
     $this->exitCode = $result->getExitCode();
     $this->usedMemoryRatio = $result->getUsedMemoryRatio();
+    $this->usedMemory = $result->getUsedMemory();
     $this->memoryExceeded = !$result->isMemoryOK();
     $this->usedTimeRatio = $result->getUsedTimeRatio();
+    $this->usedTime = $result->getUsedTime();
     $this->timeExceeded = !$result->isTimeOK();
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
@@ -82,6 +84,11 @@ class TestResult implements JsonSerializable
   protected $usedMemoryRatio;
 
   /**
+   * @ORM\Column(type="integer")
+   */
+  protected $usedMemory;
+
+  /**
     * @ORM\Column(type="boolean")
     */
   protected $timeExceeded;
@@ -90,6 +97,11 @@ class TestResult implements JsonSerializable
    * @ORM\Column(type="float")
    */
   protected $usedTimeRatio;
+
+  /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedTime;
 
   /**
     * @ORM\Column(type="integer")
