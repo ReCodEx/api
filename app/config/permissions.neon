@@ -353,7 +353,7 @@ permissions:
           - download
           - viewDetail
       conditions:
-          - file.isReferenceSolutionInSupervisedGroup
+          - file.isReferenceSolutionInSupervisedSubGroup
 
     - allow: true
       resource: uploadedFile
