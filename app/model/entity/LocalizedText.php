@@ -11,6 +11,7 @@ use DateTime;
  * @ORM\Entity
  * @method string getId()
  * @method string getLocale()
+ * @method DateTime getCreatedAt()
  */
 class LocalizedText implements JsonSerializable
 {

@@ -526,7 +526,7 @@ class Assignment implements JsonSerializable
           "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
               && $this->getLocalizedTexts()->forAll(function ($key, LocalizedText $ours) {
             $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
-            return $theirs === NULL || $ours->equals($theirs);
+            return $theirs === NULL || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
           })
         ],
         "limits" => [
