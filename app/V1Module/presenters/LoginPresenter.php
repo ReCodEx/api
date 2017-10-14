@@ -8,6 +8,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
+use App\Security\ACL\IUserPermissions;
 use App\Security\CredentialsAuthenticator;
 use App\Security\Identity;
 
@@ -38,6 +39,13 @@ class LoginPresenter extends BasePresenter {
    * @inject
    */
   public $logins;
+
+  /**
+   * @var IUserPermissions
+   * @inject
+   */
+  public $userAcl;
+
 
   /**
    * Sends response with an access token, if the user exists.
@@ -82,15 +90,28 @@ class LoginPresenter extends BasePresenter {
   }
 
   /**
+   * Takeover user account with specified user identification.
+   * @POST
+   * @LoggedIn
+   * @param $userId
+   * @throws ForbiddenRequestException
+   */
+  public function actionTakeOver($userId) {
+    $user = $this->users->findOrThrow($userId);
+    if (!$this->userAcl->canTakeOver($user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $this->sendAccessTokenResponse($user);
+  }
+
+  /**
    * Refresh the access token of current user
    * @GET
    * @LoggedIn
    */
   public function actionRefresh() {
-    /** @var Identity $identity */
-    $identity = $this->getUser()->getIdentity();
-
-    if (!$identity->isInScope(AccessToken::SCOPE_REFRESH)) {
+    if (!$this->isInScope(AccessToken::SCOPE_REFRESH)) {
       throw new ForbiddenRequestException();
     }
 
