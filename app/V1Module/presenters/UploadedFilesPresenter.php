@@ -6,12 +6,13 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
+use App\Exceptions\NotFoundException;
+use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
-use App\Model\Entity\AdditionalExerciseFile;
-use App\Model\Entity\Group;
-use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
+use App\Responses\GuzzleResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use Nette\Application\Responses\FileResponse;
 
@@ -43,6 +44,19 @@ class UploadedFilesPresenter extends BasePresenter {
    * @inject
    */
   public $uploadedFileAcl;
+
+  /**
+   * @var SupplementaryExerciseFiles
+   * @inject
+   */
+  public $supplementaryFiles;
+
+  /**
+   * @var FileServerProxy
+   * @inject
+   */
+  public $fileServerProxy;
+
 
   /**
    * Get details of a file
@@ -116,4 +130,26 @@ class UploadedFilesPresenter extends BasePresenter {
       throw new CannotReceiveUploadedFileException($file->getSanitizedName());
     }
   }
+
+  /**
+   * Download supplementary file
+   * @GET
+   * @param string $id Identifier of the file
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionDownloadSupplementaryFile(string $id) {
+    $file = $this->supplementaryFiles->findOrThrow($id);
+    if (!$this->uploadedFileAcl->canDownloadSupplementaryFile($file)) {
+      throw new ForbiddenRequestException("You are not allowed to download file '{$file->getId()}");
+    }
+
+    $stream = $this->fileServerProxy->getResultArchiveStream($file->getFileServerPath());
+    if ($stream === null) {
+      throw new NotFoundException("Supplementary file '$id' not found on remote fileserver");
+    }
+
+    $this->sendResponse(new GuzzleResponse($stream, $file->getName()));
+  }
+
 }
