@@ -41,7 +41,7 @@ class SubmissionFailure implements JsonSerializable {
   protected $description;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Submission")
+   * @ORM\ManyToOne(targetEntity="Submission", inversedBy="failures")
    */
   protected $submission;
 
