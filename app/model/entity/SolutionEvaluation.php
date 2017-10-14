@@ -15,6 +15,7 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  *
+ * @method string getId()
  * @method DateTime getEvaluatedAt()
  * @method bool getEvaluationFailed()
  * @method float getScore()
@@ -111,9 +112,11 @@ class SolutionEvaluation implements JsonSerializable
     }
   }
 
-  public function getData(bool $canViewRatios) {
+  public function getData(bool $canViewRatios, bool $canViewValues = false) {
     $testResults = $this->testResults->map(
-      function (TestResult $res) use ($canViewRatios) { return $res->getData($canViewRatios); }
+      function (TestResult $res) use ($canViewRatios, $canViewValues) {
+        return $res->getData($canViewRatios, $canViewValues);
+      }
     )->getValues();
 
     return [

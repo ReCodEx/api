@@ -185,9 +185,9 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $this->evaluation->getTotalPoints();
     }
 
-    public function getData($canViewDetails = FALSE) {
+    public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
       $evaluation = $this->hasEvaluation()
-        ? $this->getEvaluation()->getData($canViewDetails)
+        ? $this->getEvaluation()->getData($canViewRatios, $canViewValues)
         : NULL;
 
       return [

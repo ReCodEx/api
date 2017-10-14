@@ -38,6 +38,7 @@ class TestStatsInterpretation extends Tester\TestCase
 
     Assert::equal(TRUE, $interpretation->isTimeOK());
     Assert::equal(0.092 / 0.1, $interpretation->getUsedTimeRatio());
+    Assert::equal(0.092, $interpretation->getUsedTime());
   }
 
   public function testTimeSame() {
@@ -45,8 +46,9 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isTimeOK());
+    Assert::equal(TRUE, $interpretation->isTimeOK());
     Assert::equal(1.0, $interpretation->getUsedTimeRatio());
+    Assert::equal(0.1, $interpretation->getUsedTime());
   }
 
   public function testTimeExceeded() {
@@ -56,6 +58,7 @@ class TestStatsInterpretation extends Tester\TestCase
 
     Assert::equal(FALSE, $interpretation->isTimeOK());
     Assert::equal(0.1 / 0.037, $interpretation->getUsedTimeRatio());
+    Assert::equal(0.1, $interpretation->getUsedTime());
   }
 
   public function testMemoryUnused() {
@@ -65,6 +68,7 @@ class TestStatsInterpretation extends Tester\TestCase
 
     Assert::equal(TRUE, $interpretation->isMemoryOK());
     Assert::equal(0.5, $interpretation->getUsedMemoryRatio());
+    Assert::equal(128, $interpretation->getUsedMemory());
   }
 
   public function testMemorySame() {
@@ -74,6 +78,7 @@ class TestStatsInterpretation extends Tester\TestCase
 
     Assert::equal(FALSE, $interpretation->isMemoryOK());
     Assert::equal(1.0, $interpretation->getUsedMemoryRatio());
+    Assert::equal(128, $interpretation->getUsedMemory());
   }
 
   public function testMemoryExceeded() {
@@ -83,6 +88,7 @@ class TestStatsInterpretation extends Tester\TestCase
 
     Assert::equal(FALSE, $interpretation->isMemoryOK());
     Assert::equal(2.0, $interpretation->getUsedMemoryRatio());
+    Assert::equal(256, $interpretation->getUsedMemory());
   }
 
   public function testBothOK() {

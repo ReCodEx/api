@@ -248,6 +248,7 @@ permissions:
           - viewDetail
           - viewEvaluation
           - viewEvaluationDetails
+          - viewEvaluationValues
           - setBonusPoints
           - setAccepted
           - downloadResultArchive

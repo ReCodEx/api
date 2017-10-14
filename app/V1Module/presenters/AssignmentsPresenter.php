@@ -337,7 +337,8 @@ class AssignmentsPresenter extends BasePresenter {
     });
     $submissions = array_map(function (Submission $submission) {
       $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-      return $submission->getData($canViewDetails);
+      $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
+      return $submission->getData($canViewDetails, $canViewValues);
     }, $submissions);
 
     $this->sendSuccessResponse($submissions);
@@ -365,7 +366,8 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-    $this->sendSuccessResponse($submission->getData($canViewDetails));
+    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
+    $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
 }

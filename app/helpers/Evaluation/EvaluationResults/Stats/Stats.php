@@ -105,7 +105,7 @@ class Stats implements IStats {
     if ($secondsLimit === 0.0) {
       return true;
     }
-    return $this->getUsedTime() < $secondsLimit;
+    return $this->getUsedTime() <= $secondsLimit;
   }
 
   /**

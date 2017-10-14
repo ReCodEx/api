@@ -56,6 +56,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 
   /**
    * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+   * @var SolutionEvaluation
    */
   protected $evaluation;
 
@@ -74,7 +75,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   public function jsonSerialize() {
     $evaluationData = NULL;
     if ($this->evaluation !== NULL) {
-      $evaluationData = $this->evaluation->getData(TRUE);
+      $evaluationData = $this->evaluation->getData(TRUE, TRUE);
     }
 
     return [
@@ -98,5 +99,5 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   function isCorrect(): bool {
     return TRUE;
   }
-  
+
 }

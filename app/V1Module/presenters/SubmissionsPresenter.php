@@ -98,7 +98,8 @@ class SubmissionsPresenter extends BasePresenter {
     }
 
     $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-    $this->sendSuccessResponse($submission->getData($canViewDetails));
+    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
+    $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
   /**
