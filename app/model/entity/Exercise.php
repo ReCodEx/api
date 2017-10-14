@@ -23,6 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
+ * @method Collection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method removeLocalizedText(LocalizedText $assignment)
  * @method \DateTime getDeletedAt()

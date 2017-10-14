@@ -310,7 +310,7 @@ services:
   - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
-  - App\Model\Repository\ExerciseFiles
+  - App\Model\Repository\SupplementaryExerciseFiles
   - App\Model\Repository\AdditionalExerciseFiles
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings

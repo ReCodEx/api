@@ -9,6 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getFileServerPath()
  */
 class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
 {
