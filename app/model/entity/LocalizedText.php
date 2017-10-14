@@ -63,6 +63,10 @@ class LocalizedText implements JsonSerializable
    */
   protected $createdAt;
 
+  public function equals(LocalizedText $other): bool {
+    return $this->text === $other->text && $this->shortText === $other->shortText;
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
