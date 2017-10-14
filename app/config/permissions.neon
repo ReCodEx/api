@@ -12,6 +12,20 @@ permissions:
     - allow: true
       role: superadmin
 
+    #############################
+    # User takeover permissions #
+    #############################
+
+    - allow: true
+      role: superadmin
+      resource: user
+      actions:
+        - takeOver
+
+    - allow: false  # A safety mechanism that prevents us from accidentaly allowing account takeover to non-admins (e.g. by wildcard rules)
+      actions:
+        - takeOver
+
     #####################
     # Group permissions #
     #####################
@@ -142,12 +156,6 @@ permissions:
     ####################
     # User permissions #
     ####################
-
-    - allow: true
-      role: superadmin
-      resource: user
-      actions:
-        - takeOver
 
     - allow: true
       role: student
