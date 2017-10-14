@@ -323,6 +323,47 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::same($submissions, $result['payload']);
   }
 
+  public function testBestSubmission()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignment = current($this->presenter->assignments->findAll());
+    $user = $assignment->getSubmissions()->first()->getUser();
+    $submission = $assignment->getBestSolution($user);
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'bestSubmission', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::equal($submission->getId(), $payload['id']);
+  }
+
+  public function testBestSubmissions()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignment = current($this->presenter->assignments->findAll());
+    $users = $assignment->getGroup()->getStudents();
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'bestSubmissions', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count(count($users), $payload);
+  }
+
 }
 
 $testCase = new TestAssignmentsPresenter();

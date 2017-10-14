@@ -352,7 +352,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionBestSubmission(string $id, string $userId) {
-    /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
     $submission = $assignment->getBestSolution($user);
@@ -368,6 +367,39 @@ class AssignmentsPresenter extends BasePresenter {
     $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
     $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
+  }
+
+  /**
+   * Get the best solutions to an assignment for all students in group.
+   * @GET
+   * @param string $id Identifier of the assignment
+   * @throws ForbiddenRequestException
+   */
+  public function actionBestSubmissions(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canViewDetail($assignment)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $bestSubmissions = [];
+    foreach ($assignment->getGroup()->getStudents() as $student) {
+      $submission = $assignment->getBestSolution($student);
+      if ($submission === null) {
+        $bestSubmissions[$student->getId()] = null;
+        continue;
+      }
+
+      if (!$this->assignmentAcl->canViewSubmissions($assignment, $student) ||
+          !$this->submissionAcl->canViewDetail($submission)) {
+        continue;
+      }
+
+      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
+      $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
+      $bestSubmissions[$student->getId()] = $submission->getData($canViewDetails, $canViewValues);
+    }
+
+    $this->sendSuccessResponse($bestSubmissions);
   }
 
 }

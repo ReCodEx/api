@@ -39,8 +39,18 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
+ * @method setName(string $name)
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
+ * @method setUpdatedAt(DateTime $date)
+ * @method setIsPublic(bool $public)
+ * @method setMaxPointsBeforeFirstDeadline(int $points)
+ * @method setMaxPointsBeforeSecondDeadline(int $points)
+ * @method setSubmissionsCountLimit(int $limit)
+ * @method setAllowSecondDeadline(bool $allow)
+ * @method setCanViewLimitRatios(bool $canView)
+ * @method setIsBonus(bool $bonus)
+ * @method setPointsPercentualThreshold(float $threshold)
  */
 class Assignment implements JsonSerializable
 {
