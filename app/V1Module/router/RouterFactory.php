@@ -28,7 +28,6 @@ class RouterFactory {
 
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
-    $router[] = new PreflightRoute($prefix, "Default:preflight");
 
     $router[] = self::createAuthRoutes("$prefix/login");
     $router[] = self::createBrokerReportsRoutes("$prefix/broker-reports");
