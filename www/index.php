@@ -4,6 +4,8 @@
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: headers, Authorization, Accept-Language");
 
+if (strtoupper($_SERVER['REQUEST_METHOD']) == 'OPTIONS') exit;
+
 // Uncomment this line if you must temporarily take down your site for maintenance.
 // require __DIR__ . '/.maintenance.php';
 

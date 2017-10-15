@@ -464,6 +464,9 @@ class Group implements JsonSerializable
       "id" => $this->id,
       "externalId" => $this->externalId,
       "name" => $this->name,
+      "admins" => [   // Note: this is an array, since we need to get ready for multiple admins
+        $this->admin->getPublicData()
+      ],
       "childGroups" => [
         "all" => $this->getChildGroupsIds(),
         "public" => $this->getPublicChildGroupsIds()
