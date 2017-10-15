@@ -405,6 +405,14 @@ permissions:
           - file.isAdditionalExerciseFile
           - file.isExercisePublic
 
+    - allow: true
+      role: supervisor
+      resource: uploadedFile
+      actions:
+          - downloadSupplementaryFile
+      conditions:
+          - file.isAuthorOfSupplementaryFileExercises
+
     #####################################
     # Runtime environments permisssions #
     #####################################

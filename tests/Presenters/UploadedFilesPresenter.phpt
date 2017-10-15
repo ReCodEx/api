@@ -32,6 +32,9 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   /** @var Kdyby\Doctrine\EntityManager */
   protected $em;
 
+  /** @var  Nette\DI\Container */
+  protected $container;
+
   /** @var Logins */
   protected $logins;
 
@@ -260,6 +263,36 @@ class TestUploadedFilesPresenter extends Tester\TestCase
       $this->presenter->run($request);
     }, \Nette\Application\BadRequestException::class, "File '/some/path' doesn't exist.");
   }
+
+  public function testDownloadResultArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $file = new \App\Model\Entity\SupplementaryExerciseFile("hefty name",
+      new DateTime, 1, "hash", "fileserverPath", $user);
+    $this->presenter->supplementaryFiles->persist($file);
+    $this->presenter->supplementaryFiles->flush();
+
+    // mock everything you can
+    $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);
+    $mockGuzzleStream->shouldReceive("getSize")->andReturn(0);
+    $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
+
+    $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+    $this->presenter->fileServerProxy = $mockProxy;
+
+    $request = new Nette\Application\Request('V1:UploadedFiles',
+      'GET',
+      ['action' => 'downloadSupplementaryFile', 'id' => $file->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal($file->getName(), $response->getName());
+  }
+
 }
 
 $testCase = new TestUploadedFilesPresenter();

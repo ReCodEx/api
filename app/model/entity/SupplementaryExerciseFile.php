@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -30,9 +31,19 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
   protected $exercises;
 
   /**
+   * @return Collection
+   */
+  public function getExercises() {
+    return $this->exercises->filter(function (Exercise $exercise) {
+      return $exercise->getDeletedAt() === null;
+    });
+  }
+
+    /**
    * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="supplementaryEvaluationFiles")
    */
   protected $pipelines;
+
 
   /**
    * SupplementaryExerciseFile constructor.
