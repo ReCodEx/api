@@ -193,7 +193,7 @@ class SubmitPresenter extends BasePresenter {
   }
 
   private function submissionFailed(Submission $submission, string $message) {
-    $failure = new SubmissionFailure(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
+    $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
     throw new SubmissionFailedException($message);
   }

@@ -48,6 +48,7 @@ App\Model\Entity\SubmissionFailure:
             - evaluation_failure
             - Things went south
             - "@submission<current()>"
+            - NULL
             - "<dateTime()>"
         resolve:
             - Got it!
@@ -56,4 +57,5 @@ App\Model\Entity\SubmissionFailure:
             - evaluation_failure
             - Things went south
             - @submission1
+            - NULL
             - "<dateTime()>"

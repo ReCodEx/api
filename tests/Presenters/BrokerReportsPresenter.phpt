@@ -1,5 +1,7 @@
 <?php
 use App\Helpers\BrokerConfig;
+use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\Submission;
 use App\V1Module\Presenters\BrokerReportsPresenter;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
@@ -79,7 +81,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
 
     $request = new Request("V1:BrokerReports", "POST", [
         "action" => "jobStatus",
-        "jobId" => $submission->id
+        "jobId" => Submission::JOB_TYPE . '_' . $submission->id
       ], [
         "status" => "FAILED",
         "message" => "whatever"
@@ -95,6 +97,31 @@ class TestBrokerReportsPresenter extends Tester\TestCase
 
     $newFailureCount = count($this->presenter->submissionFailures->findBySubmission($submission));
     Assert::same($failureCount + 1, $newFailureCount, "There should be a new failure report for the submission");
+  }
+
+  public function testReferenceEvaluationFailed()
+  {
+    $referenceSolution = current($this->presenter->referenceSolutions->findAll());
+    $failureCount = count($this->presenter->submissionFailures->findByReferenceSolution($referenceSolution));
+
+    $request = new Request("V1:BrokerReports", "POST", [
+      "action" => "jobStatus",
+      "jobId" => ReferenceSolutionEvaluation::JOB_TYPE . '_' . $referenceSolution->id
+    ], [
+        "status" => "FAILED",
+        "message" => "whatever"
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::same(200, $result["code"]);
+    Assert::same("OK", $result["payload"]);
+
+    $newFailureCount = count($this->presenter->submissionFailures->findByReferenceSolution($referenceSolution));
+    Assert::same($failureCount + 1, $newFailureCount, "There should be a new failure report for the solution");
   }
 }
 

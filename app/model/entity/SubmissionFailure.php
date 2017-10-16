@@ -42,8 +42,15 @@ class SubmissionFailure implements JsonSerializable {
 
   /**
    * @ORM\ManyToOne(targetEntity="Submission", inversedBy="failures")
+   * @ORM\JoinColumn(nullable=true)
    */
   protected $submission;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="failures")
+   * @ORM\JoinColumn(nullable=true)
+   */
+  protected $referenceSolution;
 
   /**
    * @ORM\Column(type="datetime")
@@ -61,11 +68,20 @@ class SubmissionFailure implements JsonSerializable {
    */
   protected $resolutionNote;
 
-  public function __construct(string $type, string $description, Submission $submission, DateTime $createdAt = NULL) {
+  public function __construct(string $type, string $description, Submission $submission = NULL, ReferenceExerciseSolution $referenceSolution = NULL, DateTime $createdAt = NULL) {
     $this->type = $type;
     $this->description = $description;
     $this->submission = $submission;
+    $this->referenceSolution = $referenceSolution;
     $this->createdAt = $createdAt ?: new DateTime();
+  }
+
+  public static function forSubmission(string $type, string $description, Submission $submission, DateTime $createdAt = NULL) {
+    return new static($type, $description, $submission, NULL, $createdAt);
+  }
+
+  public static function forReferenceSolution(string $type, string $description, ReferenceExerciseSolution $solution, DateTime $createdAt = NULL) {
+    return new static($type, $description, NULL, $solution, $createdAt);
   }
 
   public function resolve(string $note, DateTime $resolvedAt = NULL) {
@@ -77,7 +93,7 @@ class SubmissionFailure implements JsonSerializable {
     return [
       "type" => $this->type,
       "description" => $this->description,
-      "submission" => $this->submission->getId(),
+      "submission" => $this->submission ? $this->submission->getId() : NULL,
       "createdAt" => $this->createdAt->getTimestamp(),
       "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : NULL,
       "resolutionNote" => $this->resolutionNote
