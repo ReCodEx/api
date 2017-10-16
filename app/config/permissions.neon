@@ -409,6 +409,7 @@ permissions:
       role: supervisor
       resource: uploadedFile
       actions:
+          - viewDetail
           - downloadSupplementaryFile
       conditions:
           - file.isAuthorOfSupplementaryFileExercises
