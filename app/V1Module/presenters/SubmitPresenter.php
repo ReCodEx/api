@@ -126,8 +126,7 @@ class SubmitPresenter extends BasePresenter {
    * @Param(type="post", name="runtimeEnvironmentId", required=false, description="Identifier of the runtime environment used for evaluation")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   * @throws SubmissionEvaluationFailedException
+   * @throws InvalidArgumentException
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -150,7 +149,7 @@ class SubmitPresenter extends BasePresenter {
     // retrieve and check uploaded files
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
     if (count($uploadedFiles) === 0) {
-      throw new SubmissionEvaluationFailedException("No files were uploaded");
+      throw new InvalidArgumentException("files", "No files were uploaded");
     }
 
     // detect the runtime environment
