@@ -28,7 +28,6 @@ class RouterFactory {
 
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
-    $router[] = new PreflightRoute($prefix, "Default:preflight");
 
     $router[] = self::createAuthRoutes("$prefix/login");
     $router[] = self::createBrokerReportsRoutes("$prefix/broker-reports");
@@ -267,6 +266,7 @@ class RouterFactory {
   private static function createUploadedFilesRoutes(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "UploadedFiles:upload");
+    $router[] = new GetRoute("$prefix/supplementary-file/<id>/download", "UploadedFiles:downloadSupplementaryFile");
     $router[] = new GetRoute("$prefix/<id>", "UploadedFiles:detail");
     $router[] = new GetRoute("$prefix/<id>/download", "UploadedFiles:download");
     $router[] = new GetRoute("$prefix/<id>/content", "UploadedFiles:content");

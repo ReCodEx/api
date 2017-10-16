@@ -3,6 +3,7 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\UploadedFiles;
@@ -36,6 +37,25 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     return $file instanceof AdditionalExerciseFile && $file->getExercises()->exists(function ($i, Exercise $exercise) {
       return $exercise->isPublic();
     });
+  }
+
+  public function isAuthorOfSupplementaryFileExercises(Identity $identity, UploadedFile $file) {
+    if (!($file instanceof SupplementaryExerciseFile)) {
+      return FALSE;
+    }
+
+    $user = $identity->getUserData();
+    if ($user === NULL) {
+      return FALSE;
+    }
+
+    foreach ($file->getExercises() as $exercise) {
+      if ($exercise->isAuthor($user)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
   public function isOwner(Identity $identity, UploadedFile $file) {
@@ -91,4 +111,5 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
     return FALSE;
   }
+
 }

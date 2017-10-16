@@ -11,6 +11,7 @@ use DateTime;
  * @ORM\Entity
  * @method string getId()
  * @method string getLocale()
+ * @method DateTime getCreatedAt()
  */
 class LocalizedText implements JsonSerializable
 {
@@ -62,6 +63,10 @@ class LocalizedText implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
+
+  public function equals(LocalizedText $other): bool {
+    return $this->text === $other->text && $this->shortText === $other->shortText;
+  }
 
   public function jsonSerialize() {
     return [
