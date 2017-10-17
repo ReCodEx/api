@@ -203,10 +203,10 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge(new ExerciseConfig(), new VariablesTable(),
-      self::$environment, CompilationParams::create());
-    Assert::true(is_array($tests));
-    Assert::count(0, $tests);
+    Assert::exception(function () {
+      $this->merger->merge(new ExerciseConfig(), new VariablesTable(),
+        self::$environment, CompilationParams::create());
+    }, ExerciseConfigException::class);
   }
 
   public function testEmptyPipelines() {
@@ -224,13 +224,10 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge($config, $envVariablesTable,
-      self::$environment, CompilationParams::create());
-    Assert::true(is_array($tests));
-    Assert::count(2, $tests);
-
-    Assert::count(0, $tests["testA"]->getAllNodes());
-    Assert::count(0, $tests["testB"]->getAllNodes());
+    Assert::exception(function () use ($config, $envVariablesTable) {
+      $this->merger->merge($config, $envVariablesTable,
+        self::$environment, CompilationParams::create());
+    }, ExerciseConfigException::class);
   }
 
   public function testNonExistingPipeline() {

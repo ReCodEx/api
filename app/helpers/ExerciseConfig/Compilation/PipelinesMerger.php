@@ -292,6 +292,7 @@ class PipelinesMerger {
    * @param string $runtimeEnvironmentId
    * @param CompilationParams $params
    * @return MergeTree
+   * @throws ExerciseConfigException
    */
   private function processTest(string $testId, Test $test,
       VariablesTable $environmentConfigVariables,
@@ -303,6 +304,11 @@ class PipelinesMerger {
       $testPipelines = $environment->getPipelines();
     } else {
       $testPipelines = $test->getPipelines();
+    }
+
+    // check if there are any pipelines in specified environment
+    if (count($testPipelines) === 0) {
+      throw new ExerciseConfigException("Exercise configuration does not specify any pipelines for environment '$runtimeEnvironmentId' and test '$testId'");
     }
 
     // go through all pipelines and merge their data boxes into resulting array
@@ -326,11 +332,16 @@ class PipelinesMerger {
    * @param VariablesTable $environmentConfigVariables
    * @param string $runtimeEnvironmentId
    * @param CompilationParams $params
-   * @return array
+   * @return MergeTree[]
+   * @throws ExerciseConfigException
    */
   public function merge(ExerciseConfig $exerciseConfig,
       VariablesTable $environmentConfigVariables,
       string $runtimeEnvironmentId, CompilationParams $params): array {
+    if (count($exerciseConfig->getTests()) === 0) {
+      throw new ExerciseConfigException("Exercise configuration does not specify any tests");
+    }
+
     $tests = array();
     foreach ($exerciseConfig->getTests() as $testId => $test) {
       $tests[$testId] = $this->processTest($testId, $test,
