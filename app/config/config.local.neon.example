@@ -48,6 +48,11 @@ parameters:
       firstName: "givenName"
       lastName: "sn"
 
+  sis:
+    apiBase: https://sis.university.tld/is/
+    faculty: FACULTY
+    secret: SECRET_TOKEN
+
   emails:
     apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
     footerUrl: https://recodex.projekty.ms.mff.cuni.cz

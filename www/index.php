@@ -6,7 +6,7 @@ $acReqHeaders = (!empty($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
   ? $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
   : "headers, Authorization, Accept-Language";
 header("Access-Control-Allow-Headers: $acReqHeaders");
-header("Access-Control-Allow-Origin: GET, POST, PUT, DELETE, PATCH, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS");
 unset($acReqHeaders);  // Make sure we do not leave any mess at global scope
 
 // The OPTIONS request should have been stopped at Apache configuration level, but if it was not ...
