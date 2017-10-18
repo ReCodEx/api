@@ -122,7 +122,6 @@ class SolutionEvaluation implements JsonSerializable
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
-      "evaluationFailed" => FALSE,
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
