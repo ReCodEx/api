@@ -12,9 +12,11 @@ use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
 use App\Helpers\Notifications\SubmissionEmailsSender;
+use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\Submission;
 use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Entity\SubmissionFailure;
+use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
@@ -63,6 +65,12 @@ class BrokerReportsPresenter extends BasePresenter {
    * @inject
    */
   public $evaluations;
+
+  /**
+   * @var ReferenceExerciseSolutions
+   * @inject
+   */
+  public $referenceSolutions;
 
   /**
    * @var ReferenceSolutionEvaluations
@@ -140,9 +148,18 @@ class BrokerReportsPresenter extends BasePresenter {
           "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
         );
 
-        $submission = $this->submissions->findOrThrow($job->getId());
-        $failureReport = new SubmissionFailure(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
-        $this->submissionFailures->persist($failureReport);
+        switch ($job->getType()) {
+          case Submission::JOB_TYPE:
+            $submission = $this->submissions->findOrThrow($job->getId());
+            $failureReport = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
+            $this->submissionFailures->persist($failureReport);
+            break;
+          case ReferenceSolutionEvaluation::JOB_TYPE:
+            $referenceSolution = $this->referenceSolutions->findOrThrow($job->getId());
+            $failureReport = SubmissionFailure::forReferenceSolution(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolution);
+            $this->submissionFailures->persist($failureReport);
+            break;
+        }
 
         break;
     }

@@ -80,12 +80,6 @@ class SolutionEvaluation implements JsonSerializable
   }
 
   /**
-   * Automaticaly detected error in evaluation (reported by broker).
-   * @ORM\Column(type="boolean")
-   */
-  protected $evaluationFailed;
-
-  /**
    * @ORM\Column(type="text")
    */
   protected $resultYml;
@@ -128,7 +122,6 @@ class SolutionEvaluation implements JsonSerializable
       "initFailed" => $this->initFailed,
       "isValid" => $this->isValid,
       "isCorrect" => $this->isCorrect(),
-      "evaluationFailed" => $this->evaluationFailed,
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
@@ -149,7 +142,6 @@ class SolutionEvaluation implements JsonSerializable
   public function __construct(EvaluationResults $results, Submission $submission = NULL, IScoreCalculator $calculator = NULL) {
     $this->evaluatedAt = new \DateTime;
     $this->isValid = TRUE;
-    $this->evaluationFailed = !$results;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
     $this->score = 0;

@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -50,6 +51,12 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
    */
   protected $jobConfigPath;
 
+  /**
+   * @var Collection
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolution")
+   */
+  protected $failures;
+
   public function canBeEvaluated(): bool {
     return $this->resultsUrl !== NULL;
   }
@@ -93,7 +100,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   function isValid(): bool {
-    return $this->evaluation && $this->evaluation->isValid();
+    return $this->failures->count() === 0 && $this->evaluation && $this->evaluation->isValid();
   }
 
   function isCorrect(): bool {

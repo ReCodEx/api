@@ -7,7 +7,6 @@ App\Model\Entity\SolutionEvaluation:
         score: 0.95
         points: 10
         isValid: true
-        evaluationFailed: false
         resultYml: ""
         initiationOutputs: ""
         testResults: []
@@ -48,6 +47,7 @@ App\Model\Entity\SubmissionFailure:
             - evaluation_failure
             - Things went south
             - "@submission<current()>"
+            - NULL
             - "<dateTime()>"
         resolve:
             - Got it!
@@ -56,4 +56,5 @@ App\Model\Entity\SubmissionFailure:
             - evaluation_failure
             - Things went south
             - @submission1
+            - NULL
             - "<dateTime()>"

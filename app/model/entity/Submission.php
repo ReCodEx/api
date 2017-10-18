@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
@@ -118,6 +119,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
      * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
      */
     protected $solution;
+
+  /**
+   * @var Collection
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="submission")
+   */
+    protected $failures;
 
     /**
      * @ORM\Column(type="boolean")
@@ -260,7 +267,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
   function isValid(): bool {
-    return $this->evaluation->isValid();
+    return $this->failures->count() === 0 && $this->evaluation->isValid();
   }
 
   function isCorrect(): bool {
