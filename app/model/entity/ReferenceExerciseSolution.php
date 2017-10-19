@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
+use DateTime;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
@@ -17,7 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Solution getSolution()
  * @method Exercise getExercise()
  * @method Collection getEvaluations()
- * @method \DateTime getDeletedAt()
+ * @method DateTime getDeletedAt()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {
@@ -81,7 +82,7 @@ class ReferenceExerciseSolution implements JsonSerializable
 
   public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {
     $this->exercise = $exercise;
-    $this->uploadedAt = new \DateTime;
+    $this->uploadedAt = new DateTime;
     $this->description = $description;
     $this->solution = new Solution($user, $runtime);
     $this->evaluations = new ArrayCollection;
