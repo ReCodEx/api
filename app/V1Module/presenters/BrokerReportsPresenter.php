@@ -155,8 +155,8 @@ class BrokerReportsPresenter extends BasePresenter {
             $this->submissionFailures->persist($failureReport);
             break;
           case ReferenceSolutionEvaluation::JOB_TYPE:
-            $referenceSolutionEvaluations = $this->referenceSolutionEvaluations->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forReferenceSolution(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolutionEvaluations);
+            $referenceSolutionEvaluation = $this->referenceSolutionEvaluations->findOrThrow($job->getId());
+            $failureReport = SubmissionFailure::forReferenceSolution(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolutionEvaluation);
             $this->submissionFailures->persist($failureReport);
             break;
         }
