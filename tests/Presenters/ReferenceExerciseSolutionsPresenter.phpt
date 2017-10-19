@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
@@ -131,6 +132,31 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::type(ReferenceSolutionEvaluation::class, $payload);
     Assert::equal($evaluation->getId(), $payload->getId());
     Assert::same($evaluation, $payload);
+  }
+
+  public function testDeleteReferenceSolution()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
+    $solution = $exercise->getReferenceSolutions()->first();
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'DELETE', [
+      'action' => 'deleteReferenceSolution',
+      'solutionId' => $solution->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal('OK', $result['payload']);
+
+    Assert::exception(function () use ($solution) {
+      $this->referenceSolutions->findOrThrow($solution->getId());
+    }, NotFoundException::class);
   }
 
   public function testCreateReferenceSolution()

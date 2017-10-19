@@ -6,15 +6,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use DateTime;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
  * @method string getId()
  * @method string getDescription()
  * @method Solution getSolution()
  * @method Exercise getExercise()
  * @method Collection getEvaluations()
+ * @method \DateTime getDeletedAt()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {
@@ -36,6 +39,11 @@ class ReferenceExerciseSolution implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $uploadedAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $deletedAt;
 
   /**
    * @ORM\Column(type="text")
@@ -64,7 +72,7 @@ class ReferenceExerciseSolution implements JsonSerializable
       "solution" => $this->solution,
       "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
       "evaluations" => $this->evaluations->map(
-        function ($evaluation) {
+        function (ReferenceSolutionEvaluation $evaluation) {
           return $evaluation->getId();
         }
       )->getValues()

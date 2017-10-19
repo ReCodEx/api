@@ -304,6 +304,7 @@ permissions:
           - remove
           - fork
           - addReferenceSolution
+          - deleteReferenceSolution
           - evaluateReferenceSolution
           - createPipeline
           - viewPipelines
