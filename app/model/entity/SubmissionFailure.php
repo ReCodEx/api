@@ -47,10 +47,10 @@ class SubmissionFailure implements JsonSerializable {
   protected $submission;
 
   /**
-   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="failures")
+   * @ORM\ManyToOne(targetEntity="ReferenceSolutionEvaluation", inversedBy="failures")
    * @ORM\JoinColumn(nullable=true)
    */
-  protected $referenceSolution;
+  protected $referenceSolutionEvaluation;
 
   /**
    * @ORM\Column(type="datetime")
@@ -68,11 +68,11 @@ class SubmissionFailure implements JsonSerializable {
    */
   protected $resolutionNote;
 
-  public function __construct(string $type, string $description, Submission $submission = NULL, ReferenceExerciseSolution $referenceSolution = NULL, DateTime $createdAt = NULL) {
+  public function __construct(string $type, string $description, Submission $submission = NULL, ReferenceSolutionEvaluation $referenceSolutionEvaluation = NULL, DateTime $createdAt = NULL) {
     $this->type = $type;
     $this->description = $description;
     $this->submission = $submission;
-    $this->referenceSolution = $referenceSolution;
+    $this->referenceSolutionEvaluation = $referenceSolutionEvaluation;
     $this->createdAt = $createdAt ?: new DateTime();
   }
 
@@ -80,8 +80,8 @@ class SubmissionFailure implements JsonSerializable {
     return new static($type, $description, $submission, NULL, $createdAt);
   }
 
-  public static function forReferenceSolution(string $type, string $description, ReferenceExerciseSolution $solution, DateTime $createdAt = NULL) {
-    return new static($type, $description, NULL, $solution, $createdAt);
+  public static function forReferenceSolution(string $type, string $description, ReferenceSolutionEvaluation $evaluation, DateTime $createdAt = NULL) {
+    return new static($type, $description, NULL, $evaluation, $createdAt);
   }
 
   public function resolve(string $note, DateTime $resolvedAt = NULL) {

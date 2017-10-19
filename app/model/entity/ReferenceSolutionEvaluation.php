@@ -53,7 +53,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolution")
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionEvaluation")
    */
   protected $failures;
 
@@ -97,6 +97,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
     $this->jobConfigPath = $jobConfigPath;
+    $this->failures = new ArrayCollection();
   }
 
   function isValid(): bool {
