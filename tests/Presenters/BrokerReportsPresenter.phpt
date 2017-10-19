@@ -102,11 +102,12 @@ class TestBrokerReportsPresenter extends Tester\TestCase
   public function testReferenceEvaluationFailed()
   {
     $referenceSolution = current($this->presenter->referenceSolutions->findAll());
-    $failureCount = count($this->presenter->submissionFailures->findByReferenceSolution($referenceSolution));
+    $evaluation = $referenceSolution->getEvaluations()->first();
+    $failureCount = count($this->presenter->submissionFailures->findByReferenceSolutionEvaluation($evaluation));
 
     $request = new Request("V1:BrokerReports", "POST", [
       "action" => "jobStatus",
-      "jobId" => ReferenceSolutionEvaluation::JOB_TYPE . '_' . $referenceSolution->id
+      "jobId" => ReferenceSolutionEvaluation::JOB_TYPE . '_' . $evaluation->id
     ], [
         "status" => "FAILED",
         "message" => "whatever"
@@ -120,7 +121,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     Assert::same(200, $result["code"]);
     Assert::same("OK", $result["payload"]);
 
-    $newFailureCount = count($this->presenter->submissionFailures->findByReferenceSolution($referenceSolution));
+    $newFailureCount = count($this->presenter->submissionFailures->findByReferenceSolutionEvaluation($evaluation));
     Assert::same($failureCount + 1, $newFailureCount, "There should be a new failure report for the solution");
   }
 }
