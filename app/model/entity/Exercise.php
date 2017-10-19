@@ -20,7 +20,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getRuntimeEnvironments()
  * @method Collection getHardwareGroups()
  * @method Collection getLocalizedTexts()
- * @method Collection getReferenceSolutions()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
  * @method Collection getSupplementaryEvaluationFiles()
@@ -115,6 +114,15 @@ class Exercise implements JsonSerializable
    * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
    */
   protected $referenceSolutions;
+
+  /**
+   * @return Collection
+   */
+  public function getReferenceSolutions() {
+    return $this->referenceSolutions->filter(function (ReferenceExerciseSolution $solution) {
+      return $solution->getDeletedAt() === NULL;
+    });
+  }
 
   /**
    * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="exercises")
@@ -248,6 +256,7 @@ class Exercise implements JsonSerializable
     $this->hardwareGroups = $hardwareGroups;
     $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
     $this->pipelines = $pipelines;
+    $this->referenceSolutions = new ArrayCollection();
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
