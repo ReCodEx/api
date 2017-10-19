@@ -107,6 +107,24 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
+   * Delete reference solution with given identification.
+   * @DELETE
+   * @param string $solutionId identifier of reference solution
+   * @throws ForbiddenRequestException
+   */
+  public function actionDeleteReferenceSolution(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    $exercise = $solution->getExercise();
+    if (!$this->exerciseAcl->canDeleteReferenceSolution($exercise)) {
+      throw new ForbiddenRequestException("You cannot delete reference solution of this exercise");
+    }
+
+    $this->referenceSolutions->remove($solution);
+    $this->referenceSolutions->flush();
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Get reference solution evaluations for an exercise solution.
    * @GET
    * @param string $solutionId identifier of the reference exercise solution
