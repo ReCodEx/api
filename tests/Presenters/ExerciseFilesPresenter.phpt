@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AdditionalExerciseFile;
@@ -152,6 +153,31 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Assert::equal($expectedFiles, $result['payload']);
   }
 
+  public function testDeleteSupplementaryFile() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $exercise = current($this->presenter->exercises->findAll());
+    $filesCount = $exercise->getSupplementaryEvaluationFiles()->count();
+    $file = new SupplementaryExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
+    $this->supplementaryFiles->persist($file);
+    Assert::count($filesCount + 1, $exercise->getSupplementaryEvaluationFiles());
+
+    $request = new Nette\Application\Request("V1:ExerciseFiles", 'DELETE',
+      [
+        'action' => 'deleteSupplementaryFile',
+        'id' => $exercise->getId(),
+        'fileId' => $file->getId()
+      ]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+    Assert::count($filesCount, $exercise->getSupplementaryEvaluationFiles());
+  }
+
   public function testGetAdditionalFiles() {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -179,6 +205,31 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     sort($expectedFiles);
     sort($result['payload']);
     Assert::equal($expectedFiles, $result['payload']);
+  }
+
+  public function testDeleteAdditionalFile() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $exercise = current($this->presenter->exercises->findAll());
+    $filesCount = $exercise->getAdditionalFiles()->count();
+    $file = new AdditionalExerciseFile("name", new DateTime(), 1, "localPath", $user, $exercise);
+    $this->additionalFiles->persist($file);
+    Assert::count($filesCount + 1, $exercise->getAdditionalFiles());
+
+    $request = new Nette\Application\Request("V1:ExerciseFiles", 'DELETE',
+      [
+        'action' => 'deleteAdditionalFile',
+        'id' => $exercise->getId(),
+        'fileId' => $file->getId()
+      ]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+    Assert::count($filesCount, $exercise->getAdditionalFiles());
   }
 
 }

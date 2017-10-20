@@ -8,9 +8,11 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
+use App\Model\Repository\AdditionalExerciseFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\ExerciseFileStorage;
+use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IExercisePermissions;
 use Exception;
@@ -33,6 +35,18 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @inject
    */
   public $uploadedFiles;
+
+  /**
+   * @var SupplementaryExerciseFiles
+   * @inject
+   */
+  public $supplementaryFiles;
+
+  /**
+   * @var AdditionalExerciseFiles
+   * @inject
+   */
+  public $additionalFiles;
 
   /**
    * @var ExerciseFileStorage
@@ -114,6 +128,25 @@ class ExerciseFilesPresenter extends BasePresenter {
   }
 
   /**
+   * Delete supplementary exercise file with given id
+   * @DELETE
+   * @param string $id identification of exercise
+   * @param string $fileId identification of file
+   * @throws ForbiddenRequestException
+   */
+  public function actionDeleteSupplementaryFile(string $id, string $fileId) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $file = $this->supplementaryFiles->findOrThrow($fileId);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot delete supplementary files for this exercise.");
+    }
+
+    $exercise->removeSupplementaryEvaluationFile($file);
+    $this->exercises->flush();
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Associate additional exercise files with an exercise
    * @POST
    * @Param(type="post", name="files", description="Identifiers of additional files")
@@ -156,10 +189,29 @@ class ExerciseFilesPresenter extends BasePresenter {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot view supplementary files for this exercise.");
+      throw new ForbiddenRequestException("You cannot view additional files for this exercise.");
     }
 
     $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
+  }
+
+  /**
+   * Delete additional exercise file with given id
+   * @DELETE
+   * @param string $id identification of exercise
+   * @param string $fileId identification of file
+   * @throws ForbiddenRequestException
+   */
+  public function actionDeleteAdditionalFile(string $id, string $fileId) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $file = $this->additionalFiles->findOrThrow($fileId);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot delete additional files for this exercise.");
+    }
+
+    $exercise->removeAdditionalFile($file);
+    $this->exercises->flush();
+    $this->sendSuccessResponse("OK");
   }
 
 }

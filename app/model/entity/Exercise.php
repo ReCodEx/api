@@ -351,6 +351,22 @@ class Exercise implements JsonSerializable
   }
 
   /**
+   * @param SupplementaryExerciseFile $file
+   * @return bool
+   */
+  public function removeSupplementaryEvaluationFile(SupplementaryExerciseFile $file) {
+    return $this->supplementaryEvaluationFiles->removeElement($file);
+  }
+
+  /**
+   * @param AdditionalExerciseFile $file
+   * @return bool
+   */
+  public function removeAdditionalFile(AdditionalExerciseFile $file) {
+    return $this->additionalFiles->removeElement($file);
+  }
+
+  /**
    * Get localized text based on given locale.
    * @param string $locale
    * @return LocalizedText|NULL
