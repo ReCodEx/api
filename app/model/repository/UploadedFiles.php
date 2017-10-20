@@ -20,7 +20,7 @@ class UploadedFiles extends BaseRepository {
   }
 
   public function findAllById($ids) {
-    return $this->repository->findBy([ "id" => $ids ]);
+    return $this->findBy([ "id" => $ids ]);
   }
 
   /**
@@ -86,7 +86,7 @@ class UploadedFiles extends BaseRepository {
    * @param DateTime $now Current date
    * @param string $threshold Maximum allowed age of uploaded files
    *                          (in a form acceptable by DateTime::modify after prefixing with a "-" sign)
-   * @return array
+   * @return UploadedFile[]
    */
   public function findUnused(DateTime $now, $threshold)
   {

@@ -202,7 +202,7 @@ services:
   # commands
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
-  - App\Console\CleanupUploads()
+  - App\Console\CleanupUploads
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
   - App\Console\ExportDatabase
 
