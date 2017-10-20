@@ -239,7 +239,7 @@ class GenerateSwagger extends Command
         $description = Arrays::get($annotationParts, 2, "");
       }
 
-      $this->fillParamEntry($entry, $methodParameter->getName(), $in, !$methodParameter->isOptional(), $validation, $description);
+      $this->fillParamEntry($entry, $methodParameter->getName(), $in, !$methodParameter->isOptional(), $validation ?? "", $description);
     }
 
     $this->setArrayDefault($entry["responses"], "200", []);

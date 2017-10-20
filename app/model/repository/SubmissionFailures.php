@@ -2,6 +2,7 @@
 namespace App\Model\Repository;
 
 use App\Model\Entity\ReferenceExerciseSolution;
+use App\Model\Entity\ReferenceSolutionEvaluation;
 use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionFailure;
 use Kdyby\Doctrine\EntityManager;
@@ -23,9 +24,9 @@ class SubmissionFailures extends BaseRepository {
     ]);
   }
 
-  public function findByReferenceSolution(ReferenceExerciseSolution $solution) {
+  public function findByReferenceSolutionEvaluation(ReferenceSolutionEvaluation $evaluation) {
     return $this->findBy([
-      "referenceSolution" => $solution
+      "referenceSolutionEvaluation" => $evaluation
     ]);
   }
 }
