@@ -18,15 +18,19 @@ class EvaluationStatus {
    * @return string String representation of given object
    */
   public static function getStatus(IEvaluable $evaluable): string {
-      if (!$evaluable->canBeEvaluated() || !$evaluable->isValid()) {
-        return self::EVALUATION_STATUS_EVALUATION_FAILED;
-      }
+    if (!$evaluable->canBeEvaluated()) {
+      return self::EVALUATION_STATUS_EVALUATION_FAILED;
+    }
 
-      if (!$evaluable->hasEvaluation()) {
-        return self::EVALUATION_STATUS_IN_PROGRESS;
-      }
+    if (!$evaluable->hasEvaluation()) {
+      return self::EVALUATION_STATUS_IN_PROGRESS;
+    }
 
-      return $evaluable->isCorrect() ? self::EVALUATION_STATUS_DONE : self::EVALUATION_STATUS_FAILED;
+    if (!$evaluable->isValid()) {
+      return self::EVALUATION_STATUS_EVALUATION_FAILED;
+    }
+
+    return $evaluable->isCorrect() ? self::EVALUATION_STATUS_DONE : self::EVALUATION_STATUS_FAILED;
   }
 
 }
