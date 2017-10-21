@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
@@ -262,6 +263,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->accepted = false;
       $entity->originalSubmission = $originalSubmission;
       $entity->jobConfigPath = $jobConfigPath;
+      $entity->failures = new ArrayCollection();
 
       return $entity;
     }
