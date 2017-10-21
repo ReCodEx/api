@@ -269,10 +269,10 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
   function isValid(): bool {
-    return $this->failures->count() === 0 && $this->evaluation->isValid();
+    return $this->failures->count() === 0 && $this->evaluation && $this->evaluation->isValid();
   }
 
   function isCorrect(): bool {
-    return $this->evaluation->isCorrect();
+    return  $this->evaluation && $this->evaluation->isCorrect();
   }
 }
