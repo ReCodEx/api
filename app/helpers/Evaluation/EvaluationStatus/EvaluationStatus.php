@@ -18,7 +18,7 @@ class EvaluationStatus {
    * @return string String representation of given object
    */
   public static function getStatus(IEvaluable $evaluable): string {
-    if (!$evaluable->canBeEvaluated()) {
+    if (!$evaluable->canBeEvaluated() || $evaluable->isFailed()) {
       return self::EVALUATION_STATUS_EVALUATION_FAILED;
     }
 

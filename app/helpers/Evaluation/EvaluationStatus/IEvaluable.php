@@ -34,6 +34,12 @@ interface IEvaluable {
   function isValid(): bool;
 
   /**
+   * Return true if the evaluation failed
+   * @return bool
+   */
+  function isFailed(): bool;
+
+  /**
    * Return true if the evaluated object was marked as correct by the backend
    * @return bool
    */
