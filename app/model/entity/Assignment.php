@@ -353,10 +353,14 @@ class Assignment implements JsonSerializable
    */
   protected $group;
 
+  /**
+   * Determine if given user can submit solutions to this assignment.
+   * @param User|NULL $user
+   * @return bool
+   */
   public function canReceiveSubmissions(User $user = NULL) {
     return $this->isPublic === TRUE &&
       $this->group->hasValidLicence() &&
-      !$this->isAfterDeadline() &&
       ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
   }
 
