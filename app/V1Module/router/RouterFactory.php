@@ -180,8 +180,9 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/supervisors/<userId>", "Groups:addSupervisor");
     $router[] = new DeleteRoute("$prefix/<id>/supervisors/<userId>", "Groups:removeSupervisor");
 
-    $router[] = new GetRoute("$prefix/<id>/admin", "Groups:admin");
-    $router[] = new PostRoute("$prefix/<id>/admin", "Groups:makeAdmin");
+    $router[] = new GetRoute("$prefix/<id>/admin", "Groups:admins");
+    $router[] = new PostRoute("$prefix/<id>/admin", "Groups:addAdmin");
+    $router[] = new DeleteRoute("$prefix/<id>/admin/<userId>", "Groups:removeAdmin");
 
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Groups:exercises");

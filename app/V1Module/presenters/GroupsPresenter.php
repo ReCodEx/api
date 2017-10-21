@@ -530,7 +530,7 @@ class GroupsPresenter extends BasePresenter {
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
-  public function actionAdmin($id) {
+  public function actionAdmins($id) {
     $group = $this->groups->findOrThrow($id);
     if (!$this->groupAcl->canViewAdmin($group)) {
       throw new ForbiddenRequestException();
@@ -546,7 +546,7 @@ class GroupsPresenter extends BasePresenter {
    * @param string $id Identifier of the group
    * @throws ForbiddenRequestException
    */
-  public function actionMakeAdmin(string $id) {
+  public function actionAddAdmin(string $id) {
     $userId = $this->getRequest()->getPost("userId");
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
@@ -555,8 +555,30 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    // change admin of the group even if user is superadmin
-    $group->makeAdmin($user);
+    // make user admin of the group
+    $group->removePrimaryAdmin($user);
+    $group->addPrimaryAdmin($user);
+    $this->groups->flush();
+    $this->sendSuccessResponse($group);
+  }
+
+  /**
+   * Remove user as an administrator of a group
+   * @DELETE
+   * @param string $id Identifier of the group
+   * @param string $userId identifier of admin
+   * @throws ForbiddenRequestException
+   */
+  public function actionRemoveAdmin(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canSetAdmin($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    // delete admin and flush changes
+    $group->removePrimaryAdmin($user);
     $this->groups->flush();
     $this->sendSuccessResponse($group);
   }
