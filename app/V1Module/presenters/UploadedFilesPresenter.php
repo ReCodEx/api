@@ -6,6 +6,7 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
@@ -105,7 +106,7 @@ class UploadedFilesPresenter extends BasePresenter {
   /**
    * Upload a file
    * @POST
-   * @LoggedIn
+   * @throws InvalidArgumentException for files with invalid names
    */
   public function actionUpload() {
     if (!$this->uploadedFileAcl->canUpload()) {
@@ -122,13 +123,14 @@ class UploadedFilesPresenter extends BasePresenter {
 
     $file = array_pop($files);
     $uploadedFile = $this->fileStorage->store($file, $user);
-    if ($uploadedFile !== NULL) {
-      $this->uploadedFiles->persist($uploadedFile);
-      $this->uploadedFiles->flush();
-      $this->sendSuccessResponse($uploadedFile);
-    } else {
-      throw new CannotReceiveUploadedFileException($file->getSanitizedName());
+
+    if ($uploadedFile === NULL) {
+      throw new CannotReceiveUploadedFileException($file->getName());
     }
+
+    $this->uploadedFiles->persist($uploadedFile);
+    $this->uploadedFiles->flush();
+    $this->sendSuccessResponse($uploadedFile);
   }
 
   /**
