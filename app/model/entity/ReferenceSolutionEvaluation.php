@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use DateTime;
 use App\Helpers\EvaluationStatus as ES;
+use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
@@ -109,7 +110,10 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   function isCorrect(): bool {
-    return TRUE;
+    return $this->hasEvaluation() && $this->evaluation->getTestResults()->forAll(function ($key, TestResult $testResult) {
+      $diff = abs($testResult->getScore() - ER\TestResult::SCORE_MAX);
+      return $diff < 0.001; // Safe float comparison
+    });
   }
 
 }
