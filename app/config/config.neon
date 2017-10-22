@@ -325,6 +325,7 @@ doctrine:
     App\Model\Entity: %appDir%/model/entity
   types:
     bit: Doctrine\DBAL\Types\BooleanType
+    datetime: DoctrineExtensions\DBAL\Types\UTCDateTimeType
 
 fixtures:
   locale: "en_US"
