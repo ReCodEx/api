@@ -271,7 +271,7 @@ class SubmitPresenter extends BasePresenter {
 
     $submission = Submission::createSubmission(
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-      $oldSubmission->getSolution(), $jobConfigPath, FALSE, $oldSubmission
+      $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
     );
 
     $submission->setPrivate($isPrivate);
@@ -304,7 +304,7 @@ class SubmitPresenter extends BasePresenter {
     foreach ($assignment->getSubmissions() as $oldSubmission) {
       $submission = Submission::createSubmission(
         $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
-        $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), FALSE, $oldSubmission
+        $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), $oldSubmission
       );
 
       // persist all the data in the database - this will also assign the UUID to the submission

@@ -34,14 +34,4 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
-  public function isNotExpired(Identity $identity, Assignment $assignment) {
-    $group = $assignment->getGroup();
-    $user = $identity->getUserData();
-
-    if ($user === NULL) {
-      return FALSE;
-    }
-
-    return $group->getInstance()->hasValidLicence() && !$assignment->isAfterDeadline();
-  }
 }
