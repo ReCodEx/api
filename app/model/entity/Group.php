@@ -23,7 +23,6 @@ use JsonSerializable;
  * @method Group getParentGroup()
  * @method string getExternalId()
  * @method string getDescription()
- * @method User getAdmin()
  * @method Instance getInstance()
  */
 class Group implements JsonSerializable
@@ -43,13 +42,16 @@ class Group implements JsonSerializable
     $this->externalId = $externalId;
     $this->description = $description;
     $this->memberships = new ArrayCollection;
-    $this->admin = $admin;
+    $this->primaryAdmins = new ArrayCollection;
     $this->instance = $instance;
     $this->publicStats = $publicStats;
     $this->isPublic = $isPublic;
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
+    $this->exercises = new ArrayCollection;
+
     if ($admin !== NULL) {
+      $this->primaryAdmins->add($admin);
       $admin->makeSupervisorOf($this);
     }
 
@@ -224,18 +226,51 @@ class Group implements JsonSerializable
   }
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\ManyToMany(targetEntity="User")
    */
-  protected $admin;
+  protected $primaryAdmins;
 
+  /**
+   * @return Collection
+   */
+  public function getPrimaryAdmins() {
+    return $this->primaryAdmins->filter(function (User $admin) {
+      return $admin->getDeletedAt() === null;
+    });
+  }
+
+  /**
+   * @param User $user
+   */
+  public function addPrimaryAdmin(User $user) {
+    $this->primaryAdmins->add($user);
+  }
+
+  /**
+   * @param User $user
+   * @return bool
+   */
+  public function removePrimaryAdmin(User $user) {
+    return $this->primaryAdmins->removeElement($user);
+  }
+
+  /**
+   * @return array
+   */
+  public function getPrimaryAdminsIds() {
+    return $this->getPrimaryAdmins()->map(function (User $admin) {
+      return $admin->getId();
+    })->getValues();
+  }
+
+  /**
+   * @return array
+   */
   public function getAdminsIds() {
     $group = $this;
     $admins = [];
     while ($group !== NULL) {
-      if ($group->getAdmin() !== NULL) {
-        $admins[] = $group->getAdmin()->getId();
-      }
-
+      $admins = array_merge($admins, $group->getPrimaryAdminsIds());
       $group = $group->getParentGroup();
     }
 
@@ -269,14 +304,6 @@ class Group implements JsonSerializable
     }
 
     return false;
-  }
-
-  /**
-   * Make given user as admin of the group.
-   * @param User $user
-   */
-  public function makeAdmin(User $user) {
-    $this->admin = $user;
   }
 
   /**
@@ -464,9 +491,9 @@ class Group implements JsonSerializable
       "id" => $this->id,
       "externalId" => $this->externalId,
       "name" => $this->name,
-      "admins" => $this->admin ? [   // Note: this is an array, since we need to get the frontend ready for multiple admins
-        $this->admin->getPublicData()
-      ] : [],
+      "admins" => $this->getPrimaryAdmins()->map(function (User $user) {
+        return $user->getPublicData();
+      })->getValues(),
       "childGroups" => [
         "all" => $this->getChildGroupsIds(),
         "public" => $this->getPublicChildGroupsIds()
@@ -482,7 +509,7 @@ class Group implements JsonSerializable
       "externalId" => $this->externalId,
       "name" => $this->name,
       "description" => $this->description,
-      "adminId" => $this->admin ? $this->admin->getId() : NULL,
+      "primaryAdminsIds" => $this->getPrimaryAdminsIds(),
       "admins" => $this->getAdminsIds(),
       "supervisors" => $this->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
       "students" => $this->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
