@@ -233,9 +233,9 @@ class Exercise implements JsonSerializable
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
-      Collection $groups = NULL, ?Exercise $exercise,
-      ?ExerciseConfig $exerciseConfig = NULL, User $user, bool $isPublic = TRUE,
-      string $description = "", bool $isLocked = FALSE) {
+      Collection $groups = null, ?Exercise $exercise,
+      ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
+      string $description = "", bool $isLocked = true) {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
