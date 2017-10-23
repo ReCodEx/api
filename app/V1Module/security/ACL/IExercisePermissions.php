@@ -3,6 +3,7 @@ namespace App\Security\ACL;
 
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IExercisePermissions {
   function canViewAll(): bool;
