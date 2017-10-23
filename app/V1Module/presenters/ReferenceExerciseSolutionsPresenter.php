@@ -115,7 +115,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public function actionDeleteReferenceSolution(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
     $exercise = $solution->getExercise();
-    if (!$this->exerciseAcl->canDeleteReferenceSolution($exercise)) {
+    if (!$this->exerciseAcl->canDeleteReferenceSolution($exercise, $solution)) {
       throw new ForbiddenRequestException("You cannot delete reference solution of this exercise");
     }
 
@@ -222,7 +222,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($referenceSolution->getExercise())) {
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($referenceSolution->getExercise(), $referenceSolution)) {
       throw new ForbiddenRequestException();
     }
 
@@ -250,7 +250,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $result = [];
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($exercise)) {
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($exercise, null)) {   // null for a solution means all solutions whatsoever
       throw new ForbiddenRequestException();
     }
 
@@ -323,8 +323,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public function actionDownloadResultArchive(string $evaluationId) {
     /** @var ReferenceSolutionEvaluation $evaluation */
     $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+    $refSolution = $evaluation->getReferenceSolution();
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($evaluation->getReferenceSolution()->getExercise())) {
+    if (!$this->exerciseAcl->canEvaluateReferenceSolution($refSolution->getExercise(), $refSolution)) {
       throw new ForbiddenRequestException();
     }
 
