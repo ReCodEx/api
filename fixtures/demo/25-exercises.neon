@@ -19,6 +19,8 @@ App\Model\Entity\Exercise:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
+        isLocked: false
+        isPublic: true
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
@@ -39,13 +41,14 @@ App\Model\Entity\Exercise:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
+        isLocked: false
+        isPublic: true
     privateAdminExercise:
         __construct:
             create:
                 - @demoAdmin
         difficulty: "moderate"
         name: "alalal"
-        isPublic: FALSE
         addLocalizedText:
             - @demoLocalizedText
         runtimeEnvironments:
@@ -60,6 +63,8 @@ App\Model\Entity\Exercise:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
+        isLocked: false
+        isPublic: false
     publicSupervisor2Exercise:
         __construct:
             create:
@@ -81,6 +86,8 @@ App\Model\Entity\Exercise:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
         exerciseConfig: @demoExerciseConfig
+        isLocked: false
+        isPublic: true
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:
