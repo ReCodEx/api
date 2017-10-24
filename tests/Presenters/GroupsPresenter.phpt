@@ -519,13 +519,17 @@ class TestGroupsPresenter extends Tester\TestCase
 
   public function testAddAdmin()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $group = $this->presenter->groups->findAll()[0];
     $user = $this->presenter->users->getByEmail($this->userLogin);
 
     // initial checks
     Assert::equal(FALSE, $group->isAdminOf($user));
+
+    // initial setup
+    $user->makeSupervisorOf($group);
+    $this->presenter->groups->flush();
 
     $request = new Nette\Application\Request('V1:Groups',
       'POST',

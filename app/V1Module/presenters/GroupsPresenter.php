@@ -507,6 +507,11 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
+    // if supervisor is also admin, do not allow to remove his/hers supervisor privileges
+    if ($group->isAdminOf($user) === true) {
+      throw new ForbiddenRequestException("Supervisor is admin of group and thus cannot be removed as supervisor.");
+    }
+
     // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === TRUE) {
       $membership = $user->findMembershipAsSupervisor($group); // should be always there
@@ -553,6 +558,11 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$this->groupAcl->canSetAdmin($group)) {
       throw new ForbiddenRequestException();
+    }
+
+    // user has to be supervisor first
+    if ($group->isSupervisorOf($user) === false) {
+      throw new ForbiddenRequestException("User has to be supervisor before assigning as an admin");
     }
 
     // make user admin of the group
