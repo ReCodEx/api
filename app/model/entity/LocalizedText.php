@@ -9,11 +9,8 @@ use DateTime;
 
 /**
  * @ORM\Entity
- * @method string getId()
- * @method string getLocale()
- * @method DateTime getCreatedAt()
  */
-class LocalizedText implements JsonSerializable
+class LocalizedText extends LocalizedEntity implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -23,31 +20,11 @@ class LocalizedText implements JsonSerializable
     ?string $shortText = NULL,
     $createdFrom = NULL
   ) {
+    parent::__construct($locale);
     $this->text = $text;
     $this->shortText = $shortText;
-    $this->locale = $locale;
     $this->createdFrom = $createdFrom;
-    $this->createdAt = new DateTime;
   }
-
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
-
-  /**
-   * Created from.
-   * @ORM\ManyToOne(targetEntity="LocalizedText")
-   * @var LocalizedText
-   */
-  protected $createdFrom;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $locale;
 
   /**
    * @ORM\Column(type="string", nullable=TRUE)
@@ -60,12 +37,17 @@ class LocalizedText implements JsonSerializable
   protected $text;
 
   /**
-   * @ORM\Column(type="datetime")
+   * @ORM\ManyToOne(targetEntity="LocalizedText")
+   * @var LocalizedText
    */
-  protected $createdAt;
+  protected $createdFrom;
 
-  public function equals(LocalizedText $other): bool {
-    return $this->text === $other->text && $this->shortText === $other->shortText;
+  public function equals(LocalizedEntity $other): bool {
+    return $other instanceof LocalizedText && $this->text === $other->text && $this->shortText === $other->shortText;
+  }
+
+  public function setCreatedFrom(LocalizedEntity $entity) {
+    $this->createdFrom = $entity;
   }
 
   public function jsonSerialize() {
