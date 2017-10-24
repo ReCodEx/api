@@ -79,6 +79,12 @@ class TestUploadedFileStorage extends Tester\TestCase {
     Assert::type(UploadedFile::class, $file);
   }
 
+  public function testValid_6() {
+    $upload = $this->makeUpload('Hello');
+    $file = $this->storage->store($upload, $this->user);
+    Assert::type(UploadedFile::class, $file);
+  }
+
   public function testInvalidName_1() {
     Assert::exception(function () {
       $upload = $this->makeUpload('he$llo.txt');

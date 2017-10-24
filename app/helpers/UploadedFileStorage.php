@@ -6,6 +6,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Exceptions\UploadedFileException;
+use DateTime;
 use Nette;
 use Nette\Http\FileUpload;
 use Nette\Utils\Strings;
@@ -39,41 +40,48 @@ class UploadedFileStorage extends Nette\Object {
       return NULL;
     }
 
-    if (!Strings::contains($file->getName(), ".") || Strings::endsWith($file->getName(), ".")) {
-      throw new InvalidArgumentException("file", "The file name must have a valid extension");
+    if (!Strings::startsWith($file->getName(), ".") && Strings::contains($file->getName(), ".")) {
+      list($fileName, $fileExt) = explode(".", $file->getName(), 2);
+    } else {
+      list($fileName, $fileExt) = [$file->getName(), NULL];
     }
 
-    list($fileName, $fileExt) = explode(".", $file->getName(), 2);
-
     if (!Strings::match($fileName, self::FILENAME_PATTERN)
-        || !Strings::match($fileExt, self::FILENAME_PATTERN)) {
+        || ($fileExt != NULL && !Strings::match($fileExt, self::FILENAME_PATTERN))) {
       throw new InvalidArgumentException("file", "File name contains invalid characters");
     }
 
     try {
-      $filePath = $this->getFilePath($user->getId(), $file);
+      $filePath = $this->getFilePath($user->getId(), $fileName, $fileExt);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
     } catch (Nette\InvalidStateException $e) {
       return NULL;
     }
 
-    $uploadedFile = new UploadedFile(
-      sprintf("%s.%s", $fileName, strtolower($fileExt)), new \DateTime(), $file->getSize(), $user, $filePath
-    );
+    $uploadedFileName = $fileExt !== NULL ? sprintf("%s.%s", $fileName, strtolower($fileExt)) : $fileName;
+    $uploadedFile = new UploadedFile($uploadedFileName, new DateTime(), $file->getSize(), $user, $filePath);
 
     return $uploadedFile;
   }
 
   /**
    * For given user ID and file, get the path, where the file will be stored
-   * @param string     $userId User's identifier
-   * @param FileUpload $file   File to be stored
+   * @param string $userId User's identifier
+   * @param $fileName
+   * @param $ext
    * @return string Path, where the newly stored file will be saved (including configured uploadDir)
    */
-  protected function getFilePath($userId, FileUpload $file): string {
-    list($fileName, $ext) = $this->sanitizeNameAndExtension($file);
+  protected function getFilePath($userId, $fileName, $ext = NULL): string {
     $uniqueId = uniqid();
-    return "{$this->uploadDir}/user_{$userId}/{$fileName}_{$uniqueId}.$ext";
+
+    if ($ext !== null) {
+      $ext = strtolower($ext);
+      $path = "{$fileName}_{$uniqueId}.{$ext}";
+    } else {
+      $path = "{$fileName}_{$uniqueId}";
+    }
+
+    return "{$this->uploadDir}/user_{$userId}/{$path}";
   }
 
   protected function sanitizeNameAndExtension(FileUpload $file) {
