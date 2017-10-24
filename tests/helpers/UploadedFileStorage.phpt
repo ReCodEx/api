@@ -112,6 +112,20 @@ class TestUploadedFileStorage extends Tester\TestCase {
     Assert::type(UploadedFile::class, $file);
     Assert::same("hello world.pas", $file->getName());
   }
+
+  public function testLowercaseExtension_3() {
+    $upload = $this->makeUpload('.htaCCEss');
+    $file = $this->storage->store($upload, $this->user);
+    Assert::type(UploadedFile::class, $file);
+    Assert::same(".htaCCEss", $file->getName());
+  }
+
+  public function testLowercaseExtension_4() {
+    $upload = $this->makeUpload('foo.tAr.GZ');
+    $file = $this->storage->store($upload, $this->user);
+    Assert::type(UploadedFile::class, $file);
+    Assert::same("foo.tAr.gz", $file->getName());
+  }
 }
 
 (new TestUploadedFileStorage())->run();

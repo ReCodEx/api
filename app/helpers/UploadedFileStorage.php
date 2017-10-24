@@ -15,7 +15,7 @@ use Nette\Utils\Strings;
  * Stores uploaded files in a configured directory
  */
 class UploadedFileStorage extends Nette\Object {
-  public const FILENAME_PATTERN = '#^[a-z0-9\- _\.]+$#i';
+  public const FILENAME_PATTERN = '#^[a-z0-9\- _\.()\[\]!]+$#i';
 
   /** @var string Target directory, where the files will be stored */
   private $uploadDir;
@@ -40,11 +40,7 @@ class UploadedFileStorage extends Nette\Object {
       return NULL;
     }
 
-    if (!Strings::startsWith($file->getName(), ".") && Strings::contains($file->getName(), ".")) {
-      list($fileName, $fileExt) = explode(".", $file->getName(), 2);
-    } else {
-      list($fileName, $fileExt) = [$file->getName(), NULL];
-    }
+    list($fileName, $fileExt) = $this->splitFileName($file->getName());
 
     if (!Strings::match($fileName, self::FILENAME_PATTERN)
         || ($fileExt != NULL && !Strings::match($fileExt, self::FILENAME_PATTERN))) {
@@ -52,7 +48,8 @@ class UploadedFileStorage extends Nette\Object {
     }
 
     try {
-      $filePath = $this->getFilePath($user->getId(), $fileName, $fileExt);
+      list($sanitizedFileName, $sanitizedFileExt) = $this->splitFileName($file->getSanitizedName());
+      $filePath = $this->getFilePath($user->getId(), $sanitizedFileName, $sanitizedFileExt);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
     } catch (Nette\InvalidStateException $e) {
       return NULL;
@@ -84,11 +81,6 @@ class UploadedFileStorage extends Nette\Object {
     return "{$this->uploadDir}/user_{$userId}/{$path}";
   }
 
-  protected function sanitizeNameAndExtension(FileUpload $file) {
-    list($fileName, $ext) = explode(".", $file->getSanitizedName(), 2);
-    return [$fileName, strtolower($ext)];
-  }
-
   public function delete(UploadedFile $file) {
     if ($file->getLocalFilePath() !== NULL) {
       try {
@@ -96,6 +88,15 @@ class UploadedFileStorage extends Nette\Object {
       } catch (\Exception $e) {
         throw new UploadedFileException("File {$file->getName()} cannot be deleted", $e);
       }
+    }
+  }
+
+  protected function splitFileName($name): array
+  {
+    if (!Strings::startsWith($name, ".") && Strings::contains($name, ".")) {
+      return [pathinfo($name, PATHINFO_FILENAME), pathinfo($name, PATHINFO_EXTENSION)];
+    } else {
+      return [$name, NULL];
     }
   }
 }
