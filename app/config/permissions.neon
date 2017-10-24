@@ -317,10 +317,18 @@ permissions:
           - viewDetail
           - viewLimits
           - fork
-          - evaluateReferenceSolution
+          - addReferenceSolution
           - viewPipelines
       conditions:
           - exercise.isSubGroupSupervisor
+
+    - allow: true
+      resource: exercise
+      actions:
+          - deleteReferenceSolution
+          - evaluateReferenceSolution
+      conditions:
+          - referenceExerciseSolution.isAuthor
 
     - allow: true
       role: supervisor
@@ -335,7 +343,6 @@ permissions:
       role: supervisor
       resource: exercise
       actions:
-          - create
           - viewAll
 
     - allow: true

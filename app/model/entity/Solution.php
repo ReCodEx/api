@@ -11,6 +11,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method User getUser()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  * @method void setEvaluated(bool)

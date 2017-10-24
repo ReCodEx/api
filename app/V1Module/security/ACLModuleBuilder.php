@@ -46,7 +46,8 @@ class ACLModuleBuilder {
 
       foreach ($method->getParameters() as $parameter) {
         $contextStrings[] = sprintf('"%s" => $%s', $parameter->getName(), $parameter->getName());
-        $methodImpl->addParameter($parameter->getName())->setTypeHint((string) $parameter->getType());
+        $newParameter = $methodImpl->addParameter($parameter->getName())->setTypeHint((string) $parameter->getType());
+        if ($parameter->allowsNull()) $newParameter->setNullable();
       }
 
       $methodImpl->addBody(
