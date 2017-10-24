@@ -103,7 +103,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this exercise solutions");
     }
 
-    $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
+    $refSolutions = array_map(function($rs) use($exercise) {
+      $json = $rs->jsonSerialize();
+      $json['canDelete'] = $this->exerciseAcl->canDeleteReferenceSolution($exercise, $rs);
+      $json['canEvaluate'] = $this->exerciseAcl->canEvaluateReferenceSolution($exercise, $rs);
+      return $json;
+    }, $exercise->getReferenceSolutions()->getValues());
+
+    $this->sendSuccessResponse($refSolutions);
   }
 
   /**
@@ -205,7 +212,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $this->referenceSolutions->persist($referenceSolution);
-    $this->sendSuccessResponse($referenceSolution);
+
+    // Augment the result with permission flags ...
+    $json = $referenceSolution->jsonSerialize();
+    $json['canDelete'] = $this->exerciseAcl->canDeleteReferenceSolution($exercise, $referenceSolution);
+    $json['canEvaluate'] = $this->exerciseAcl->canEvaluateReferenceSolution($exercise, $referenceSolution);
+    $this->sendSuccessResponse($json);
   }
 
   /**
