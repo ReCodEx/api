@@ -22,6 +22,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method Assignment getAssignment()
  * @method string getResultsUrl()
  * @method User getUser()
+ * @method bool getAccepted()
  * @method setResultsUrl(string $url)
  * @method setAccepted(bool $accepted)
  * @method string getJobConfigPath()

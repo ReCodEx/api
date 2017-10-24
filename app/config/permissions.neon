@@ -72,11 +72,12 @@ permissions:
         - group.isInSameInstance
         - student.isSameUser
 
-    - allow: true # A student can leave any group
+    - allow: true
       role: student
       resource: group
       actions:
-        - removeStudent
+        - removeStudent # A student can leave any group
+        - viewStudentStats
       conditions:
         - group.isMember
         - student.isSameUser
@@ -94,17 +95,9 @@ permissions:
           - removeStudent
           - viewExercises
           - viewStats
+          - viewStudentStats
           - viewPublicDetail
       conditions: group.isSupervisor
-
-    - allow: true
-      role: student
-      resource: group
-      actions:
-        - viewStudentStats
-      conditions:
-        - group.isMember
-        - student.isSameUser
 
     - allow: true
       resource: group
