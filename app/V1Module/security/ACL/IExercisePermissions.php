@@ -3,6 +3,7 @@ namespace App\Security\ACL;
 
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IExercisePermissions {
   function canViewAll(): bool;
@@ -14,8 +15,8 @@ interface IExercisePermissions {
   function canViewLimits(Exercise $exercise): bool;
   function canSetLimits(Exercise $exercise): bool;
   function canAddReferenceSolution(Exercise $exercise): bool;
-  function canDeleteReferenceSolution(Exercise $exercise): bool;
-  function canEvaluateReferenceSolution(Exercise $exercise): bool;
+  function canDeleteReferenceSolution(Exercise $exercise, ?ReferenceExerciseSolution $referenceExerciseSolution): bool;
+  function canEvaluateReferenceSolution(Exercise $exercise, ?ReferenceExerciseSolution $referenceExerciseSolution): bool;
   function canCreatePipeline(Exercise $exercise): bool;
   function canViewPipelines(Exercise $exercise): bool;
 }

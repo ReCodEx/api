@@ -173,6 +173,7 @@ acl:
     assignment: App\Security\Policies\AssignmentPermissionPolicy
     comment: App\Security\Policies\CommentPermissionPolicy
     exercise: App\Security\Policies\ExercisePermissionPolicy
+    referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
     submission: App\Security\Policies\SubmissionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
