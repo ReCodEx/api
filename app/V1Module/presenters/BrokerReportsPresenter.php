@@ -128,15 +128,12 @@ class BrokerReportsPresenter extends BasePresenter {
             break;
           case Submission::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
-            // load the evaluation only if the submission is "async"
-            // (submitted by other person than the student/author or automatically)
-            if ($submission->isAsynchronous()) {
-              $result = $this->loadEvaluation($submission);
+            // load the evaluation of the student submission or resubmit
+            $result = $this->loadEvaluation($submission);
 
-              if ($result === TRUE) {
-                // the solution is always asynchronous here, so send notification to the user
-                $this->submissionEmailsSender->submissionEvaluated($submission);
-              }
+            if ($submission->isResubmit() && $result === TRUE) {
+              // the solution is resubmit by supervisor, so send notification to the user
+              $this->submissionEmailsSender->submissionEvaluated($submission);
             }
             break;
         }

@@ -75,6 +75,14 @@ class Submission implements JsonSerializable, ES\IEvaluable
    */
     protected $originalSubmission;
 
+  /**
+   * True if submission is resubmit of another one.
+   * @return bool
+   */
+    public function isResubmit() {
+      return $this->originalSubmission !== null;
+    }
+
     public function getMaxPoints() {
       return $this->assignment->getMaxPoints($this->submittedAt);
     }
@@ -126,15 +134,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="submission")
    */
     protected $failures;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $asynchronous;
-
-    public function isAsynchronous(): bool {
-      return $this->asynchronous;
-    }
 
     /**
      * @ORM\Column(type="boolean")
@@ -230,7 +229,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
    * @param string $jobConfigPath
-   * @param bool $asynchronous Flag if submitted by student (FALSE) or supervisor (TRUE)
    * @param Submission $originalSubmission
    * @return Submission
    * @throws ForbiddenRequestException
@@ -242,7 +240,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
       User $submitter,
       Solution $solution,
       string $jobConfigPath,
-      bool $asynchronous = false,
       ?Submission $originalSubmission = NULL
     ) {
       // the author must be a student and the submitter must be either this student, or a supervisor of their group
@@ -258,7 +255,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $entity->note = $note;
       $entity->submittedAt = new \DateTime;
       $entity->submittedBy = $submitter;
-      $entity->asynchronous = $asynchronous;
       $entity->solution = $solution;
       $entity->accepted = false;
       $entity->originalSubmission = $originalSubmission;

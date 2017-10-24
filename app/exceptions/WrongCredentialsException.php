@@ -14,7 +14,7 @@ class WrongCredentialsException extends ApiException {
    * @param string $msg description
    */
   public function __construct(string $msg = "The username or password is incorrect.") {
-    parent::__construct($msg, IResponse::S401_UNAUTHORIZED);
+    parent::__construct($msg, IResponse::S400_BAD_REQUEST);
   }
 
   public function getAdditionalHttpHeaders() {

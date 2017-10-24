@@ -496,7 +496,7 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(FALSE, $payload->isSupervisorOf($user));
   }
 
-  public function testGetAdmin()
+  public function testGetAdmins()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
@@ -505,7 +505,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Groups',
       'GET',
-      ['action' => 'admin', 'id' => $group->getId()]
+      ['action' => 'admins', 'id' => $group->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -517,9 +517,9 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal($group->getAdminsIds(), $payload);
   }
 
-  public function testMakeAdmin()
+  public function testAddAdmin()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $group = $this->presenter->groups->findAll()[0];
     $user = $this->presenter->users->getByEmail($this->userLogin);
@@ -527,9 +527,13 @@ class TestGroupsPresenter extends Tester\TestCase
     // initial checks
     Assert::equal(FALSE, $group->isAdminOf($user));
 
+    // initial setup
+    $user->makeSupervisorOf($group);
+    $this->presenter->groups->flush();
+
     $request = new Nette\Application\Request('V1:Groups',
       'POST',
-      ['action' => 'makeAdmin', 'id' => $group->id],
+      ['action' => 'addAdmin', 'id' => $group->id],
       ['userId' => $user->id]
     );
 
@@ -542,6 +546,29 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(200, $result["code"]);
 
     Assert::equal(TRUE, $payload->isAdminOf($user));
+  }
+
+  public function testRemoveAdmin()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[1];
+    $user = $group->getPrimaryAdmins()->first();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'DELETE',
+      ['action' => 'removeAdmin', 'id' => $group->id, 'userId' => $user->getId()]
+    );
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result["payload"];
+    Assert::equal(200, $result["code"]);
+
+    Assert::equal(FALSE, $group->isAdminOf($user));
   }
 
 }

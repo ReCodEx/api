@@ -7,6 +7,7 @@ use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\IScoreCalculator;
 
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
@@ -23,6 +24,7 @@ use JsonSerializable;
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  * @method setScore(float $score)
+ * @method Collection getTestResults()
  */
 class SolutionEvaluation implements JsonSerializable
 {
@@ -52,7 +54,8 @@ class SolutionEvaluation implements JsonSerializable
   protected $score;
 
   public function isCorrect() {
-    return $this->score > 0;
+    // If the number of points is less than the threshold, it is set to zero -> this only returns true for solutions over the threshold
+    return $this->points > 0;
   }
 
   /**
