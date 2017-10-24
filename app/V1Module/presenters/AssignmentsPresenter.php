@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
+use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
@@ -20,6 +21,7 @@ use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
+use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Submissions;
 
 use App\Security\ACL\IAssignmentPermissions;
@@ -58,6 +60,12 @@ class AssignmentsPresenter extends BasePresenter {
   public $submissions;
 
   /**
+   * @var SolutionEvaluations
+   * @inject
+   */
+  public $solutionEvaluations;
+
+  /**
    * @var ScoreCalculatorAccessor
    * @inject
    */
@@ -92,6 +100,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentEmailsSender;
+
+  /**
+   * @var EvaluationPointsLoader
+   * @inject
+   */
+  public $evaluationPointsLoader;
 
 
   /**
@@ -158,8 +172,19 @@ class AssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."); // @todo better exception
     }
 
+    // localized texts cannot be empty
+    $localizedTexts = $req->getPost("localizedTexts");
+    if (count($localizedTexts) == 0) {
+      throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    // old values of some attributes
     $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $oldFirstDeadlinePoints = $assignment->getMaxPointsBeforeFirstDeadline();
+    $firstDeadlinePoints = $req->getPost("maxPointsBeforeFirstDeadline");
+    $oldSecondDeadlinePoints = $assignment->getMaxPointsBeforeSecondDeadline();
+    $secondDeadlinePoints = $req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
 
     $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
@@ -167,8 +192,8 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setIsPublic($isPublic);
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $req->getPost("firstDeadline")));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $req->getPost("secondDeadline") ?: 0));
-    $assignment->setMaxPointsBeforeFirstDeadline($req->getPost("maxPointsBeforeFirstDeadline"));
-    $assignment->setMaxPointsBeforeSecondDeadline($req->getPost("maxPointsBeforeSecondDeadline") ?: 0);
+    $assignment->setMaxPointsBeforeFirstDeadline($firstDeadlinePoints);
+    $assignment->setMaxPointsBeforeSecondDeadline($secondDeadlinePoints);
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
     $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
@@ -182,16 +207,17 @@ class AssignmentsPresenter extends BasePresenter {
       $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
-    // retrieve localizations and prepare some temp variables
-    $localizedTexts = $req->getPost("localizedTexts");
-    $localizations = [];
-
-    // localized texts cannot be empty
-    if (count($localizedTexts) == 0) {
-      throw new InvalidArgumentException("No entry for localized texts given.");
+    // if points were changed, go through all submissions and recalculate points
+    if ($oldFirstDeadlinePoints != $firstDeadlinePoints ||
+        $oldSecondDeadlinePoints != $secondDeadlinePoints) {
+      foreach ($assignment->getSubmissions() as $submission) {
+        $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+      }
+      $this->solutionEvaluations->flush();
     }
 
     // go through given localizations and construct database entities
+    $localizations = [];
     foreach ($localizedTexts as $localization) {
       $lang = $localization["locale"];
 
@@ -251,12 +277,12 @@ class AssignmentsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($groupId);
     $exercise = $this->exercises->findOrThrow($exerciseId);
 
-    if ($exercise->isLocked()) {
-      throw new InvalidArgumentException("Exercise '$exerciseId' is locked");
-    }
-
     if (!$this->groupAcl->canAssignExercise($group, $exercise)) {
       throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
+    }
+
+    if ($exercise->isLocked()) {
+      throw new InvalidArgumentException("Exercise '$exerciseId' is locked");
     }
 
     if ($exercise->getReferenceSolutions()->isEmpty()) {

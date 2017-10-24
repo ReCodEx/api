@@ -30,17 +30,26 @@ class EvaluationPointsLoader {
 
 
   /**
+   * Set score and points to given evaluation of student submission.
    * @param SolutionEvaluation $evaluation
    */
   public function setStudentScoreAndPoints(SolutionEvaluation $evaluation) {
-    $submission = $evaluation->getSubmission();
-    if ($submission === null) {
+    $this->setStudentScore($evaluation);
+    $this->setStudentPoints($evaluation);
+  }
+
+  /**
+   * Set score to evaluation of student submission.
+   * @param SolutionEvaluation $evaluation
+   */
+  private function setStudentScore(SolutionEvaluation $evaluation) {
+    if ($evaluation === null || $evaluation->getSubmission() === null) {
       // not a student submission
       return;
     }
 
     $score = 0;
-    $maxPoints = $submission->getMaxPoints();
+    $submission = $evaluation->getSubmission();
     $calculator = $this->calculators->getCalculator($submission->getAssignment()->getScoreCalculator());
 
     // calculate scores for all tests
@@ -54,8 +63,27 @@ class EvaluationPointsLoader {
       $score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $scores);
     }
 
+    // ... and set results
+    $evaluation->setScore($score);
+  }
+
+  /**
+   * Set points to evaluation of student submission.
+   * @note Score has to be calculated before call of this function.
+   * @param SolutionEvaluation $evaluation
+   */
+  public function setStudentPoints(SolutionEvaluation $evaluation) {
+    if ($evaluation === null || $evaluation->getSubmission() === null) {
+      // not a student submission
+      return;
+    }
+
+    // setup
+    $submission = $evaluation->getSubmission();
+    $maxPoints = $submission->getMaxPoints();
+
     // calculate points from the score
-    $points = floor($score * $maxPoints);
+    $points = floor($evaluation->getScore() * $maxPoints);
 
     // if the submission does not meet point threshold, it does not deserve any points
     if ($submission !== NULL) {
@@ -66,7 +94,6 @@ class EvaluationPointsLoader {
     }
 
     // ... and set results
-    $evaluation->setScore($score);
     $evaluation->setPoints($points);
   }
 
