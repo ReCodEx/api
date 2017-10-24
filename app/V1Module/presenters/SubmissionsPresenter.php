@@ -126,7 +126,7 @@ class SubmissionsPresenter extends BasePresenter {
 
   /**
    * Set submission of student as accepted, this submission will be then presented as the best one.
-   * @GET
+   * @POST
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
    */
@@ -149,6 +149,27 @@ class SubmissionsPresenter extends BasePresenter {
 
     // finally set the right submission as accepted
     $submission->setAccepted(true);
+    $this->submissions->flush();
+
+    /** @var Group $groupOfSubmission */
+    $groupOfSubmission = $submission->getAssignment()->getGroup();
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getUser()->getId());
+  }
+
+  /**
+   * Set submission of student as unaccepted if it was.
+   * @DELETE
+   * @param string $id identifier of the submission
+   * @throws ForbiddenRequestException
+   */
+  public function actionUnsetAcceptedSubmission(string $id) {
+    $submission = $this->submissions->findOrThrow($id);
+    if (!$this->submissionAcl->canSetAccepted($submission)) {
+      throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
+    }
+
+    // set accepted flag as false even if it was false
+    $submission->setAccepted(false);
     $this->submissions->flush();
 
     /** @var Group $groupOfSubmission */

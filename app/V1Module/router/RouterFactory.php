@@ -240,7 +240,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix", "Submissions:");
     $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
     $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
-    $router[] = new GetRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
+    $router[] = new PostRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
+    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "Submissions:unsetAcceptedSubmission");
     $router[] = new GetRoute("$prefix/<id>/download-result", "Submissions:downloadResultArchive");
 
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
