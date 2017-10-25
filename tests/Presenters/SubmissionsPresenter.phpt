@@ -134,7 +134,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     PresenterTestHelper::login($this->container, $user->getEmail());
 
     $request = new Nette\Application\Request('V1:Submissions',
-      'GET',
+      'POST',
       ['action' => 'setAcceptedSubmission', 'id' => $submission->getId()]
     );
     $response = $this->presenter->run($request);
@@ -142,7 +142,39 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
     // Check invariants
     $submission = $this->presenter->submissions->get($submission->getId());
-    Assert::equal(true, $submission->isAccepted());
+    Assert::true($submission->isAccepted());
+  }
+
+  public function testUnsetAcceptedSubmission()
+  {
+    $allSubmissions = $this->presenter->submissions->findAll();
+    /** @var Submission $submission */
+    $submission = array_pop($allSubmissions);
+    $assignment = $submission->getAssignment();
+
+    // set accepted flag
+    $submission->setAccepted(true);
+    $this->presenter->submissions->flush();
+    Assert::true($submission->getAccepted());
+
+    $user = $assignment->getGroup()->getSupervisors()->filter(
+      function (User $user) use ($submission) {
+        return $submission->getUser() !== $user && $user->getRole() !== 'superadmin';
+      })->first();
+    Assert::notSame(NULL, $user);
+
+    PresenterTestHelper::login($this->container, $user->getEmail());
+
+    $request = new Nette\Application\Request('V1:Submissions',
+      'DELETE',
+      ['action' => 'unsetAcceptedSubmission', 'id' => $submission->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
+
+    // Check invariants
+    $submission = $this->presenter->submissions->get($submission->getId());
+    Assert::false($submission->isAccepted());
   }
 
   public function testDownloadResultArchive()
