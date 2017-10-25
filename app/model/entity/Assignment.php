@@ -40,6 +40,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
+ * @method int getVersion()
  * @method setName(string $name)
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
