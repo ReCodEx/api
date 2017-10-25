@@ -9,7 +9,7 @@ use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\LocalizedText;
+use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
@@ -157,7 +157,7 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localized = new LocalizedText(
+      $localized = new LocalizedExercise(
         $localization["text"],
         $lang,
         isset($localization["shortText"]) ? $localization["shortText"] : NULL,

@@ -24,7 +24,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getExerciseEnvironmentConfigs()
  * @method Collection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
- * @method removeLocalizedText(LocalizedText $assignment)
+ * @method removeLocalizedText(LocalizedExercise $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
@@ -80,7 +80,7 @@ class Exercise implements JsonSerializable
   protected $deletedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="exercises")
+   * @ORM\ManyToMany(targetEntity="LocalizedExercise")
    * @var Collection|Selectable
    */
   protected $localizedTexts;
@@ -322,7 +322,7 @@ class Exercise implements JsonSerializable
     $this->hardwareGroups->removeElement($hardwareGroup);
   }
 
-  public function addLocalizedText(LocalizedText $localizedText) {
+  public function addLocalizedText(LocalizedExercise $localizedText) {
     $this->localizedTexts->add($localizedText);
   }
 
@@ -369,7 +369,7 @@ class Exercise implements JsonSerializable
   /**
    * Get localized text based on given locale.
    * @param string $locale
-   * @return LocalizedText|NULL
+   * @return LocalizedExercise|NULL
    */
   public function getLocalizedTextByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
@@ -467,7 +467,7 @@ class Exercise implements JsonSerializable
   }
 
   protected function getSerializedLocalizedTexts() {
-    return array_map(function (LocalizedText $text) {
+    return array_map(function (LocalizedExercise $text) {
       $data = $text->jsonSerialize();
       if ($data["shortText"] === NULL) {
         $data["shortText"] = $this->name;

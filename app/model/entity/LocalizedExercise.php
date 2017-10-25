@@ -5,12 +5,11 @@ namespace App\Model\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use DateTime;
 
 /**
  * @ORM\Entity
  */
-class LocalizedText extends LocalizedEntity implements JsonSerializable
+class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -37,13 +36,13 @@ class LocalizedText extends LocalizedEntity implements JsonSerializable
   protected $text;
 
   /**
-   * @ORM\ManyToOne(targetEntity="LocalizedText")
-   * @var LocalizedText
+   * @ORM\ManyToOne(targetEntity="LocalizedExercise")
+   * @var LocalizedExercise
    */
   protected $createdFrom;
 
   public function equals(LocalizedEntity $other): bool {
-    return $other instanceof LocalizedText && $this->text === $other->text && $this->shortText === $other->shortText;
+    return $other instanceof LocalizedExercise && $this->text === $other->text && $this->shortText === $other->shortText;
   }
 
   public function setCreatedFrom(LocalizedEntity $entity) {

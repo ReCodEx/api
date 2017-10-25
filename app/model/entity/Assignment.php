@@ -30,7 +30,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
  * @method Collection getLocalizedTexts()
- * @method removeLocalizedText(LocalizedText $assignment)
+ * @method removeLocalizedText(LocalizedExercise $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
@@ -328,12 +328,12 @@ class Assignment implements JsonSerializable
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="assignments")
+   * @ORM\ManyToMany(targetEntity="LocalizedExercise")
    * @var Collection|Selectable
    */
   protected $localizedTexts;
 
-  public function addLocalizedText(LocalizedText $assignment) {
+  public function addLocalizedText(LocalizedExercise $assignment) {
     $this->localizedTexts->add($assignment);
   }
 
@@ -446,7 +446,7 @@ class Assignment implements JsonSerializable
   }
 
   protected function getSerializedLocalizedTexts() {
-    return array_map(function (LocalizedText $text) {
+    return array_map(function (LocalizedExercise $text) {
       $data = $text->jsonSerialize();
       if ($data["shortText"] === NULL) {
         $data["shortText"] = $this->name;
@@ -528,7 +528,7 @@ class Assignment implements JsonSerializable
         ],
         "localizedTexts" => [
           "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
-              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedText $ours) {
+              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
             $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
             return $theirs === NULL || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
           })

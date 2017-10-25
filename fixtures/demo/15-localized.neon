@@ -1,4 +1,4 @@
-App\Model\Entity\LocalizedText:
+App\Model\Entity\LocalizedExercise:
     demoLocalizedText:
         __construct:
             - "A true classic"

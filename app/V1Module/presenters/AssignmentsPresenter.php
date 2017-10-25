@@ -12,7 +12,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\LocalizedText;
+use App\Model\Entity\LocalizedExercise;
 
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -200,7 +200,7 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localized = new LocalizedText(
+      $localized = new LocalizedExercise(
         $localization["text"],
         $lang,
         isset($localization["shortText"]) ? $localization["shortText"] : NULL,
