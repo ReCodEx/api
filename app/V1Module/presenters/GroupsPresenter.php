@@ -508,7 +508,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // if supervisor is also admin, do not allow to remove his/hers supervisor privileges
-    if ($group->isAdminOf($user) === true) {
+    if ($group->isPrimaryAdminOf($user) === true) {
       throw new ForbiddenRequestException("Supervisor is admin of group and thus cannot be removed as supervisor.");
     }
 
