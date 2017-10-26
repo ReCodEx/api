@@ -147,6 +147,7 @@ class SolutionEvaluation implements JsonSerializable
     $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
+    $this->submission = $submission;
 
     if ($submission !== NULL) {
       $submission->setEvaluation($this);

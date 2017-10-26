@@ -48,9 +48,8 @@ class EvaluationPointsLoader {
       return;
     }
 
+    // setup
     $score = 0;
-    $submission = $evaluation->getSubmission();
-    $calculator = $this->calculators->getCalculator($submission->getAssignment()->getScoreCalculator());
 
     // calculate scores for all tests
     $scores = [];
@@ -59,6 +58,8 @@ class EvaluationPointsLoader {
     }
 
     // calculate percentual score of whole submission
+    $submission = $evaluation->getSubmission();
+    $calculator = $this->calculators->getCalculator($submission->getAssignment()->getScoreCalculator());
     if ($calculator !== NULL && !$evaluation->getInitFailed()) {
       $score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $scores);
     }
