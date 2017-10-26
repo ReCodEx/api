@@ -31,18 +31,18 @@ class EvaluationPointsLoader {
 
   /**
    * Set score and points to given evaluation of student submission.
-   * @param SolutionEvaluation $evaluation
+   * @param SolutionEvaluation|null $evaluation
    */
-  public function setStudentScoreAndPoints(SolutionEvaluation $evaluation) {
+  public function setStudentScoreAndPoints(?SolutionEvaluation $evaluation) {
     $this->setStudentScore($evaluation);
     $this->setStudentPoints($evaluation);
   }
 
   /**
    * Set score to evaluation of student submission.
-   * @param SolutionEvaluation $evaluation
+   * @param SolutionEvaluation|null $evaluation
    */
-  private function setStudentScore(SolutionEvaluation $evaluation) {
+  private function setStudentScore(?SolutionEvaluation $evaluation) {
     if ($evaluation === null || $evaluation->getSubmission() === null) {
       // not a student submission
       return;
@@ -70,9 +70,9 @@ class EvaluationPointsLoader {
   /**
    * Set points to evaluation of student submission.
    * @note Score has to be calculated before call of this function.
-   * @param SolutionEvaluation $evaluation
+   * @param SolutionEvaluation|null $evaluation
    */
-  public function setStudentPoints(SolutionEvaluation $evaluation) {
+  public function setStudentPoints(?SolutionEvaluation $evaluation) {
     if ($evaluation === null || $evaluation->getSubmission() === null) {
       // not a student submission
       return;
