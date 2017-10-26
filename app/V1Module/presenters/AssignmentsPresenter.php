@@ -181,24 +181,16 @@ class AssignmentsPresenter extends BasePresenter {
     // old values of some attributes
     $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $oldFirstDeadlinePoints = $assignment->getMaxPointsBeforeFirstDeadline();
     $firstDeadlinePoints = $req->getPost("maxPointsBeforeFirstDeadline");
+    $oldSecondDeadlinePoints = $assignment->getMaxPointsBeforeSecondDeadline();
     $secondDeadlinePoints = $req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
+    $oldThreshold = $assignment->getPointsPercentualThreshold();
     $threshold = $req->getPost("pointsPercentualThreshold") !== NULL ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
+    $oldFirstDeadlineTimestamp = $assignment->getFirstDeadline()->getTimestamp();
     $firstDeadlineTimestamp = $req->getPost("firstDeadline");
+    $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
-
-    // if points, deadline or threshold were changed
-    // go through all submissions and recalculate points
-    if ($assignment->getMaxPointsBeforeFirstDeadline() != $firstDeadlinePoints ||
-        $assignment->getMaxPointsBeforeSecondDeadline() != $secondDeadlinePoints ||
-        $assignment->getPointsPercentualThreshold() != $threshold ||
-        $assignment->getFirstDeadline()->getTimestamp() !== $firstDeadlineTimestamp ||
-        $assignment->getSecondDeadline()->getTimestamp() !== $secondDeadlineTimestamp) {
-      foreach ($assignment->getSubmissions() as $submission) {
-        $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
-      }
-      $this->solutionEvaluations->flush();
-    }
 
     $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
@@ -214,6 +206,19 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setPointsPercentualThreshold($threshold);
+
+    // if points, deadline or threshold were changed
+    // go through all submissions and recalculate points
+    if ($oldFirstDeadlinePoints != $firstDeadlinePoints ||
+        $oldSecondDeadlinePoints != $secondDeadlinePoints ||
+        $oldThreshold != $threshold ||
+        $oldFirstDeadlineTimestamp !== $firstDeadlineTimestamp ||
+        $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp) {
+      foreach ($assignment->getSubmissions() as $submission) {
+        $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+      }
+      $this->solutionEvaluations->flush();
+    }
 
     if ($wasPublic === false && $isPublic === true) {
       // assignment is moving from non-public to public, send notification to students
