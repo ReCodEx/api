@@ -206,6 +206,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
         "exerciseAssignmentId" => $this->assignment->getId(),
         "submittedAt" => $this->submittedAt->getTimestamp(),
         "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
+        "isCorrect" => $this->isCorrect(),
         "evaluation" => $evaluation,
         "files" => $this->solution->getFiles()->getValues(),
         "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
@@ -265,15 +266,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $entity;
     }
 
-  function isValid(): bool {
-    return $this->evaluation && $this->evaluation->isValid();
-  }
-
   function isFailed(): bool {
     return $this->failures->count() > 0 ;
   }
 
   function isCorrect(): bool {
-    return  $this->evaluation && $this->evaluation->isCorrect();
+    return  $this->evaluation && $this->evaluation->getPoints() > 0;
   }
 }
