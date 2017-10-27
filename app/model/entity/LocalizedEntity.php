@@ -2,6 +2,7 @@
 namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Kdyby\Doctrine\Entities\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass
@@ -11,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 abstract class LocalizedEntity
 {
+  use MagicAccessors;
+
   /**
    * @ORM\Id
    * @ORM\Column(type="guid")
