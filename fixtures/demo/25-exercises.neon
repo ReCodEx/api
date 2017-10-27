@@ -1,12 +1,36 @@
+App\Model\Entity\LocalizedExercise:
+    demoExerciseText:
+        __construct:
+            - en
+            - "Convex hull"
+            - ""
+            - ""
+    "sampleExerciseText":
+        __construct:
+            - en
+            - An exercise
+            - ""
+            - ""
+    privateAdminExerciseText:
+        __construct:
+            - en
+            - "Another exercise"
+            - ""
+            - ""
+    publicSupervisor2ExerciseText:
+        __construct:
+            - en
+            - "group supervisor alalal"
+            - ""
+            - ""
 App\Model\Entity\Exercise:
     demoExercise:
         __construct:
             create:
                 - @demoAdmin
         difficulty: "moderate"
-        name: "Convex hull"
         addLocalizedText:
-            - @demoLocalizedText
+            - @demoExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
@@ -26,9 +50,8 @@ App\Model\Entity\Exercise:
             create:
                 - @demoAdmin
         difficulty: "easy"
-        name: "<current()> exercise"
         addLocalizedText:
-            - @demoLocalizedText
+            - @sampleExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
@@ -48,9 +71,8 @@ App\Model\Entity\Exercise:
             create:
                 - @demoAdmin
         difficulty: "moderate"
-        name: "alalal"
         addLocalizedText:
-            - @demoLocalizedText
+            - @privateAdminExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
@@ -71,9 +93,8 @@ App\Model\Entity\Exercise:
                 - @demoGroupSupervisor2
                 - @demoGroup
         difficulty: "moderate"
-        name: "group supervisor alalal"
         addLocalizedText:
-            - @demoLocalizedText
+            - @publicSupervisor2ExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime

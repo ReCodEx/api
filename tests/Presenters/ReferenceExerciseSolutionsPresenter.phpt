@@ -73,7 +73,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Exercise $exercise */
-    $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
+    $exercise = $this->exercises->searchByName("Convex hull")[0];
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
       'action' => 'exercise',
@@ -139,7 +139,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Exercise $exercise */
-    $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
+    $exercise = $this->exercises->searchByName("Convex hull")[0];
     $solution = $exercise->getReferenceSolutions()->first();
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'DELETE', [
@@ -164,7 +164,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Exercise $exercise */
-    $exercise = $this->exercises->findOneBy(["name" => "Convex hull"]);
+    $exercise = $this->exercises->searchByName("Convex hull")[0];
     $environment = $exercise->getRuntimeEnvironments()->first();
     $user = current($this->presenter->users->findAll());
 

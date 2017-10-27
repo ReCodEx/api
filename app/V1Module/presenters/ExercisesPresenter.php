@@ -101,9 +101,7 @@ class ExercisesPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @Param(type="post", name="name", validation="string:2..", description="Name of exercise")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
-   * @Param(type="post", name="description", validation="string:1..", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
@@ -131,12 +129,10 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     // make changes to newly created exercise
-    $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
     $exercise->setIsPublic($isPublic);
     $exercise->setUpdatedAt(new \DateTime);
     $exercise->incrementVersion();
-    $exercise->setDescription($description);
     $exercise->setLocked($isLocked);
 
     // retrieve localizations and prepare some temp variables
@@ -158,9 +154,10 @@ class ExercisesPresenter extends BasePresenter {
 
       // create all new localized texts
       $localized = new LocalizedExercise(
-        $localization["text"],
         $lang,
-        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
+        $localization["name"],
+        $localization["text"],
+        $localization["description"],
         $exercise->getLocalizedTextByLocale($lang)
       );
 
@@ -234,7 +231,12 @@ class ExercisesPresenter extends BasePresenter {
 
     // create exercise and fill some predefined details
     $exercise = Exercise::create($user, $group);
-    $exercise->setName("Exercise by " . $user->getName());
+    $localizedExercise = new LocalizedExercise(
+      $user->getSettings()->getDefaultLanguage(),
+      "Exercise by " . $user->getName(), "", ""
+    );
+    $this->exercises->persist($localizedExercise, FALSE);
+    $exercise->addLocalizedText($localizedExercise);
 
     // create and store basic exercise configuration
     $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);

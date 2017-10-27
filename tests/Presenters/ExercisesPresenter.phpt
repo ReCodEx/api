@@ -2,6 +2,8 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
 use App\V1Module\Presenters\ExercisesPresenter;
 use Tester\Assert;
@@ -97,7 +99,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'al']);
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'An']);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -110,7 +112,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin);
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'al']);
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'An']);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -146,15 +148,15 @@ class TestExercisesPresenter extends Tester\TestCase
       'POST',
       ['action' => 'updateDetail', 'id' => $exercise->id],
       [
-        'name' => 'new name',
         'version' => 1,
         'difficulty' => 'super hard',
         'isPublic' => FALSE,
-        'description' => 'some neaty description',
         'localizedTexts' => [
           [
-            'locale' => 'cs-CZ',
+            'locale' => 'cs',
             'text' => 'new descr',
+            'name' => 'new name',
+            'description' => 'some neaty description'
           ]
         ]
       ]
@@ -164,10 +166,8 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal('new name', $result['payload']->name);
     Assert::equal('super hard', $result['payload']->difficulty);
     Assert::equal(FALSE, $result['payload']->isPublic);
-    Assert::equal('some neaty description', $result['payload']->description);
 
     $updatedLocalizedTexts = $result['payload']->localizedTexts;
     Assert::count(count($exercise->localizedTexts), $updatedLocalizedTexts);
@@ -175,9 +175,9 @@ class TestExercisesPresenter extends Tester\TestCase
     foreach ($exercise->localizedTexts as $localized) {
       Assert::true($updatedLocalizedTexts->contains($localized));
     }
-    Assert::true($updatedLocalizedTexts->exists(function ($key, $localized) {
-      if ($localized->locale == "cs-CZ"
-          && $localized->text == "new descr") {
+    Assert::true($updatedLocalizedTexts->exists(function ($key, LocalizedExercise $localized) {
+      if ($localized->getLocale() == "cs"
+          && $localized->getAssignmentText() == "new descr") {
         return TRUE;
       }
 
@@ -217,11 +217,15 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+
+    /** @var Exercise $payload */
     $payload = $result['payload'];
 
     Assert::type(\App\Model\Entity\Exercise::class, $payload);
-    Assert::equal($this->adminLogin, $payload->getAuthor()->email);
-    Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $payload->getName());
+    Assert::equal($this->adminLogin, $payload->getAuthor()->getEmail());
+    Assert::count(1, $payload->getLocalizedTexts());
+    $firstLocalizedText = $payload->getLocalizedTexts()->first();
+    Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $firstLocalizedText->getName());
     Assert::notEqual(null, $payload->getExerciseConfig());
   }
 
@@ -291,9 +295,12 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
+    /** @var Exercise $forked */
     $forked = $result['payload'];
     Assert::type(\App\Model\Entity\Exercise::class, $forked);
-    Assert::equal($exercise->getName(), $forked->getName());
+    Assert::true($forked->getLocalizedTexts()->forAll(function ($i, $text) use ($exercise) {
+      return $exercise->getLocalizedTexts()->contains($text);
+    }));
     Assert::equal(1, $forked->getVersion());
     Assert::equal($user, $forked->getAuthor());
   }

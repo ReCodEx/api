@@ -8,32 +8,42 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ * @method string getName()
+ * @method string getDescription()
+ * @method string getAssignmentText()
  */
 class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
-
   public function __construct(
-    string $text,
     string $locale,
-    ?string $shortText = NULL,
-    $createdFrom = NULL
+    string $name,
+    string $assignmentText,
+    string $description = "",
+    LocalizedExercise $createdFrom = NULL
   ) {
     parent::__construct($locale);
-    $this->text = $text;
-    $this->shortText = $shortText;
+    $this->assignmentText = $assignmentText;
+    $this->name = $name;
+    $this->description = $description;
     $this->createdFrom = $createdFrom;
   }
 
   /**
-   * @ORM\Column(type="string", nullable=TRUE)
+   * @ORM\Column(type="string")
    */
-  protected $shortText;
+  protected $name;
 
   /**
+   * A short description of the exercise (for teachers)
    * @ORM\Column(type="text")
    */
-  protected $text;
+  protected $description;
+
+  /**
+   * Text of the assignment (for students)
+   * @ORM\Column(type="text")
+   */
+  protected $assignmentText;
 
   /**
    * @ORM\ManyToOne(targetEntity="LocalizedExercise")
@@ -42,7 +52,10 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
   protected $createdFrom;
 
   public function equals(LocalizedEntity $other): bool {
-    return $other instanceof LocalizedExercise && $this->text === $other->text && $this->shortText === $other->shortText;
+    return $other instanceof LocalizedExercise
+      && $this->description === $other->description
+      && $this->assignmentText === $other->assignmentText
+      && $this->name === $other->name;
   }
 
   public function setCreatedFrom(LocalizedEntity $entity) {
@@ -53,8 +66,10 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
     return [
       "id" => $this->id,
       "locale" => $this->locale,
-      "shortText" => $this->shortText,
-      "text" => $this->text,
+      "name" => $this->name,
+      "shortText" => $this->name, # BC
+      "text" => $this->assignmentText,
+      "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
       "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];

@@ -127,7 +127,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Update details of an assignment
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
@@ -161,7 +160,6 @@ class AssignmentsPresenter extends BasePresenter {
     $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
-    $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
     $assignment->setUpdatedAt(new \DateTime);
     $assignment->setIsPublic($isPublic);
@@ -201,9 +199,10 @@ class AssignmentsPresenter extends BasePresenter {
 
       // create all new localized texts
       $localized = new LocalizedExercise(
-        $localization["text"],
         $lang,
-        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
+        $localization["name"],
+        $localization["text"],
+        "",
         $assignment->getLocalizedTextByLocale($lang)
       );
 

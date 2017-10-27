@@ -16,14 +16,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
- * @method string getName()
  * @method Collection getRuntimeEnvironments()
  * @method Collection getHardwareGroups()
  * @method Collection getLocalizedTexts()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
  * @method Collection getSupplementaryEvaluationFiles()
- * @method setName(string $name)
  * @method removeLocalizedText(LocalizedExercise $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
@@ -33,12 +31,13 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
- * @method void setDescription(string $description)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  */
 class Exercise implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
+
+  public const PRIMARY_LOCALE = "cs";
 
   /**
    * @ORM\Id
@@ -46,11 +45,6 @@ class Exercise implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
 
   /**
    * @ORM\Column(type="integer")
@@ -80,7 +74,7 @@ class Exercise implements JsonSerializable
   protected $deletedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedExercise")
+   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
    * @var Collection|Selectable
    */
   protected $localizedTexts;
@@ -162,11 +156,6 @@ class Exercise implements JsonSerializable
   }
 
   /**
-   * @ORM\Column(type="text")
-   */
-  protected $description;
-
-  /**
    * @ORM\ManyToMany(targetEntity="Group", inversedBy="exercises")
    */
   protected $groups;
@@ -228,15 +217,14 @@ class Exercise implements JsonSerializable
    * @param string $description
    * @param bool $isLocked
    */
-  private function __construct(string $name, $version, $difficulty,
+  private function __construct($version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
       Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
-      string $description = "", bool $isLocked = true) {
-    $this->name = $name;
+      bool $isLocked = true) {
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
@@ -248,7 +236,6 @@ class Exercise implements JsonSerializable
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
     $this->isLocked = $isLocked;
-    $this->description = $description;
     $this->groups = $groups;
     $this->additionalFiles = $additionalFiles;
     $this->exerciseLimits = $exerciseLimits;
@@ -266,7 +253,6 @@ class Exercise implements JsonSerializable
     }
 
     return new self(
-      "",
       1,
       "",
       new ArrayCollection,
@@ -286,7 +272,6 @@ class Exercise implements JsonSerializable
 
   public static function forkFrom(Exercise $exercise, User $user) {
     return new self(
-      $exercise->name,
       1,
       $exercise->difficulty,
       $exercise->localizedTexts,
@@ -301,8 +286,7 @@ class Exercise implements JsonSerializable
       $exercise,
       $exercise->exerciseConfig,
       $user,
-      $exercise->isPublic,
-      $exercise->description
+      $exercise->isPublic
     );
   }
 
@@ -466,24 +450,28 @@ class Exercise implements JsonSerializable
       })->getValues();
   }
 
-  protected function getSerializedLocalizedTexts() {
-    return array_map(function (LocalizedExercise $text) {
-      $data = $text->jsonSerialize();
-      if ($data["shortText"] === NULL) {
-        $data["shortText"] = $this->name;
+  /**
+   * @return LocalizedExercise
+   */
+  protected function getPrimaryLocalization(): LocalizedExercise {
+    /** @var LocalizedExercise $text */
+    foreach ($this->localizedTexts as $text) {
+      if ($text->getLocale() === self::PRIMARY_LOCALE) {
+        return $text;
       }
-      return $data;
-    }, $this->localizedTexts->getValues());
+    }
+
+    return $this->localizedTexts->first();
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "name" => $this->name,
+      "name" => $this->getPrimaryLocalization()->getName(), # BC
       "version" => $this->version,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->getSerializedLocalizedTexts(),
+      "localizedTexts" => $this->localizedTexts,
       "difficulty" => $this->difficulty,
       "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
       "hardwareGroups" => $this->hardwareGroups->getValues(),
@@ -492,7 +480,7 @@ class Exercise implements JsonSerializable
       "groupsIds" => $this->getGroupsIds(),
       "isPublic" => $this->isPublic,
       "isLocked" => $this->isLocked,
-      "description" => $this->description,
+      "description" => $this->getPrimaryLocalization()->getDescription(), # BC
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];

@@ -41,7 +41,7 @@ class AssignmentEmailsSender {
    * @return boolean
    */
   public function assignmentCreated(Assignment $assignment): bool {
-    $subject = $this->newAssignmentPrefix . $assignment->getName();
+    $subject = $this->newAssignmentPrefix . $assignment->getLocalizedTexts()->first()->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
@@ -74,7 +74,7 @@ class AssignmentEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
-      "assignment" => $assignment->getName(),
+      "assignment" => $assignment->getLocalizedTexts()->first()->getName(),
       "group" => $assignment->getGroup()->getName(),
       "dueDate" => $assignment->getFirstDeadline(),
       "attempts" => $assignment->getSubmissionsCountLimit(),
@@ -89,7 +89,7 @@ class AssignmentEmailsSender {
    * @return bool
    */
   public function assignmentDeadline(Assignment $assignment): bool {
-    $subject = $this->assignmentDeadlinePrefix . $assignment->getName();
+    $subject = $this->assignmentDeadlinePrefix . $assignment->getLocalizedTexts()->first()->getName();
 
     $recipients = array();
 
@@ -128,7 +128,7 @@ class AssignmentEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
-      "assignment" => $assignment->getName(),
+      "assignment" => $assignment->getLocalizedTexts()->first()->getName(),
       "group" => $assignment->getGroup()->getName(),
       "firstDeadline" => $assignment->getFirstDeadline(),
       "secondDeadline" => $assignment->getSecondDeadline()
