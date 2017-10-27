@@ -28,12 +28,6 @@ interface IEvaluable {
   function canBeEvaluated(): bool;
 
   /**
-   * Return true if the evaluation was finished successfully
-   * @return bool
-   */
-  function isValid(): bool;
-
-  /**
    * Return true if the evaluation failed
    * @return bool
    */

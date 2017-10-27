@@ -56,11 +56,6 @@ class SolutionEvaluation implements JsonSerializable
    */
   protected $score;
 
-  public function isCorrect() {
-    // If the number of points is less than the threshold, it is set to zero -> this only returns true for solutions over the threshold
-    return $this->points > 0;
-  }
-
   /**
    * @ORM\Column(type="integer")
    */
@@ -73,16 +68,6 @@ class SolutionEvaluation implements JsonSerializable
 
   public function getTotalPoints() {
     return $this->points + $this->bonusPoints;
-  }
-
-  /**
-   * Manualy set error in evaluation.
-   * @ORM\Column(type="boolean")
-   */
-  protected $isValid;
-
-  public function isValid() {
-    return $this->isValid;
   }
 
   /**
@@ -120,8 +105,6 @@ class SolutionEvaluation implements JsonSerializable
       "points" => $this->points,
       "bonusPoints" => $this->bonusPoints,
       "initFailed" => $this->initFailed,
-      "isValid" => $this->isValid,
-      "isCorrect" => $this->isCorrect(),
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
@@ -139,7 +122,6 @@ class SolutionEvaluation implements JsonSerializable
    */
   public function __construct(EvaluationResults $results, Submission $submission = NULL) {
     $this->evaluatedAt = new \DateTime;
-    $this->isValid = TRUE;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
     $this->score = 0;
