@@ -17,9 +17,9 @@ interface IEvaluable {
 
   /**
    * Get the evaluation
-   * @return SolutionEvaluation The evaluation
+   * @return SolutionEvaluation|null The evaluation
    */
-  function getEvaluation(): SolutionEvaluation;
+  function getEvaluation(): ?SolutionEvaluation;
 
   /**
    * Query if evaluation is possible (it might not be possible e.g. if the backend rejected the request)

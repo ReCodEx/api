@@ -147,7 +147,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
     /**
      * @var SolutionEvaluation
-     * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="submission", cascade={"persist", "remove"})
      */
     protected $evaluation;
 
@@ -155,7 +155,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return $this->evaluation !== NULL;
     }
 
-    public function getEvaluation(): SolutionEvaluation {
+    public function getEvaluation(): ?SolutionEvaluation {
       return $this->evaluation;
     }
 

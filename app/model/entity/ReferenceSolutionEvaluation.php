@@ -72,7 +72,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     return $this->evaluation !== NULL;
   }
 
-  public function getEvaluation(): SolutionEvaluation {
+  public function getEvaluation(): ?SolutionEvaluation {
     return $this->evaluation;
   }
 
