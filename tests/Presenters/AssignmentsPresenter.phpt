@@ -10,6 +10,7 @@ use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Model\Repository\SolutionEvaluations;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -112,6 +113,10 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
     $mockAssignmentEmailsSender->shouldReceive("assignmentCreated")->with($assignment)->andReturn(true)->once();
     $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+
+    $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
+    $mockEvaluations->shouldReceive("flush")->once();
+    $this->presenter->solutionEvaluations = $mockEvaluations;
 
     $name = "newAssignmentName";
     $isPublic = true;

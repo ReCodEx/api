@@ -23,8 +23,11 @@ use JsonSerializable;
  * @method int getPoints()
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
+ * @method setPoints(int $points)
  * @method setScore(float $score)
  * @method Collection getTestResults()
+ * @method Submission getSubmission()
+ * @method bool getInitFailed()
  */
 class SolutionEvaluation implements JsonSerializable
 {
@@ -53,11 +56,6 @@ class SolutionEvaluation implements JsonSerializable
    */
   protected $score;
 
-  public function isCorrect() {
-    // If the number of points is less than the threshold, it is set to zero -> this only returns true for solutions over the threshold
-    return $this->points > 0;
-  }
-
   /**
    * @ORM\Column(type="integer")
    */
@@ -70,16 +68,6 @@ class SolutionEvaluation implements JsonSerializable
 
   public function getTotalPoints() {
     return $this->points + $this->bonusPoints;
-  }
-
-  /**
-   * Manualy set error in evaluation.
-   * @ORM\Column(type="boolean")
-   */
-  protected $isValid;
-
-  public function isValid() {
-    return $this->isValid;
   }
 
   /**
@@ -97,17 +85,11 @@ class SolutionEvaluation implements JsonSerializable
    */
   protected $testResults;
 
-  /** @var array */
-  private $scores;
+  /**
+   * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
+   */
+  protected $submission;
 
-  public function setTestResults(array $testResults) {
-    $this->scores = [];
-    foreach ($testResults as $result) {
-      $testResult = new TestResult($this, $result);
-      $this->testResults->add($testResult);
-      $this->scores[$testResult->getTestName()] = $testResult->getScore();
-    }
-  }
 
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
     $testResults = $this->testResults->map(
@@ -123,8 +105,6 @@ class SolutionEvaluation implements JsonSerializable
       "points" => $this->points,
       "bonusPoints" => $this->bonusPoints,
       "initFailed" => $this->initFailed,
-      "isValid" => $this->isValid,
-      "isCorrect" => $this->isCorrect(),
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
@@ -136,43 +116,29 @@ class SolutionEvaluation implements JsonSerializable
 
   /**
    * Loads and processes the results of the submission.
-   * TODO for the sake of design purity, the parts that use the Submission should be moved to another class (even better, let's not calculate score in an entity class)
    * @param  EvaluationResults $results The interpreted results
    * @param  Submission $submission|NULL The submission. It can be null in case we're handling a reference solution evaluation
-   * @param  IScoreCalculator $calculator Calculates the score from given test results
    * @throws SubmissionEvaluationFailedException
    */
-  public function __construct(EvaluationResults $results, Submission $submission = NULL, IScoreCalculator $calculator = NULL) {
+  public function __construct(EvaluationResults $results, Submission $submission = NULL) {
     $this->evaluatedAt = new \DateTime;
-    $this->isValid = TRUE;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
     $this->score = 0;
-    $maxPoints = 0;
+    $this->bonusPoints = 0;
+    $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
+    $this->submission = $submission;
 
     if ($submission !== NULL) {
       $submission->setEvaluation($this);
-      $maxPoints = $submission->getMaxPoints();
     }
 
-    // calculate percentual score of submission
-    $this->setTestResults($results->getTestsResults());
-    if ($submission !== NULL && $calculator !== NULL && !$this->initFailed) {
-      $this->score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $this->scores);
-    }
-
-    // calculate points from the score
-    $this->bonusPoints = 0;
-    $this->points = floor($this->score * $maxPoints);
-
-    // if the submission does not meet point threshold, it does not deserve any points
-    if ($submission !== NULL) {
-      $threshold = $submission->getPointsThreshold();
-      if ($this->points < $threshold) {
-        $this->points = 0;
-      }
+    // set test results
+    foreach ($results->getTestsResults() as $result) {
+      $testResult = new TestResult($this, $result);
+      $this->testResults->add($testResult);
     }
   }
 

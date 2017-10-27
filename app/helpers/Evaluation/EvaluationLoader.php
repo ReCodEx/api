@@ -22,22 +22,23 @@ class EvaluationLoader {
   /** @var FileServerProxy Authorized instance providing operations with file server */
   private $fileServer;
 
-  /** @var ScoreCalculatorAccessor */
-  private $calculators;
-
   /** @var JobConfigStorage */
   private $jobConfigStorage;
+
+  /** @var EvaluationPointsLoader */
+  private $pointsLoader;
 
   /**
    * Constructor
    * @param FileServerProxy $fsp Configured class instance providing access to remote file server
-   * @param ScoreCalculatorAccessor $calculators
    * @param JobConfigStorage $storage
+   * @param EvaluationPointsLoader $pointsLoader
    */
-  public function __construct(FileServerProxy $fsp, ScoreCalculatorAccessor $calculators, JobConfigStorage $storage) {
+  public function __construct(FileServerProxy $fsp, JobConfigStorage $storage,
+      EvaluationPointsLoader $pointsLoader) {
     $this->fileServer = $fsp;
-    $this->calculators = $calculators;
     $this->jobConfigStorage = $storage;
+    $this->pointsLoader = $pointsLoader;
   }
 
   /**
@@ -51,13 +52,10 @@ class EvaluationLoader {
     if (!$results) {
       return NULL;
     }
-    $assignmentScoreCalculator = $submission->getAssignment()->getScoreCalculator();
-    if ($assignmentScoreCalculator) {
-      $calculator = $this->calculators->getCalculator($assignmentScoreCalculator);
-    } else {
-      $calculator = $this->calculators->getDefaultCalculator();
-    }
-    return new SolutionEvaluation($results, $submission, $calculator);
+
+    $evaluation = new SolutionEvaluation($results, $submission);
+    $this->pointsLoader->setStudentScoreAndPoints($evaluation);
+    return $evaluation;
   }
 
   /**
@@ -98,15 +96,8 @@ class EvaluationLoader {
       return NULL;
     }
 
-    $evaluation = new SolutionEvaluation($results, NULL, NULL);
-
-    // set evaluation score as a mean of all score values
-    $score = 0;
-    foreach ($results->getTestsResults() as $testResult) {
-      $score += $testResult->getScore();
-    }
-    $evaluation->setScore($score / count($results->getTestsResults()));
-
+    $evaluation = new SolutionEvaluation($results, NULL);
+    $this->pointsLoader->setReferenceScore($evaluation);
     return $evaluation;
   }
 

@@ -260,6 +260,7 @@ services:
   - App\Helpers\SubmissionHelper
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
+  - App\Helpers\EvaluationPointsLoader
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
   - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%, %jobConfig.humanReadable%)
   - App\Helpers\JobConfig\Loader

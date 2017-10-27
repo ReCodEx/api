@@ -17,21 +17,15 @@ interface IEvaluable {
 
   /**
    * Get the evaluation
-   * @return SolutionEvaluation The evaluation
+   * @return SolutionEvaluation|null The evaluation
    */
-  function getEvaluation(): SolutionEvaluation;
+  function getEvaluation(): ?SolutionEvaluation;
 
   /**
    * Query if evaluation is possible (it might not be possible e.g. if the backend rejected the request)
    * @return boolean The result
    */
   function canBeEvaluated(): bool;
-
-  /**
-   * Return true if the evaluation was finished successfully
-   * @return bool
-   */
-  function isValid(): bool;
 
   /**
    * Return true if the evaluation failed
