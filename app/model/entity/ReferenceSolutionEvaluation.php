@@ -72,7 +72,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     return $this->evaluation !== NULL;
   }
 
-  public function getEvaluation(): SolutionEvaluation {
+  public function getEvaluation(): ?SolutionEvaluation {
     return $this->evaluation;
   }
 
@@ -90,6 +90,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
       "id" => $this->id,
       "referenceSolutionId" => $this->referenceSolution->getId(),
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
+      "isCorrect" => $this->isCorrect(),
       "evaluation" => $evaluationData
     ];
   }
@@ -99,10 +100,6 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     $this->hwGroup = $hwGroup;
     $this->jobConfigPath = $jobConfigPath;
     $this->failures = new ArrayCollection();
-  }
-
-  function isValid(): bool {
-    return $this->evaluation && $this->evaluation->isValid();
   }
 
   function isFailed(): bool {

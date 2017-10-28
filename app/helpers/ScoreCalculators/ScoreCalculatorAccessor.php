@@ -25,9 +25,13 @@ class ScoreCalculatorAccessor extends Nette\Object
     $this->calculators = $calculators;
   }
 
-  public function getCalculator(string $name): IScoreCalculator
+  /**
+   * @param null|string $name
+   * @return IScoreCalculator
+   */
+  public function getCalculator(?string $name): IScoreCalculator
   {
-    if (!$name) {
+    if (empty($name)) {
       return $this->getDefaultCalculator();
     }
 

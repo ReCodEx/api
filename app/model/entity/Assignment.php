@@ -38,6 +38,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
+ * @method int getMaxPointsBeforeSecondDeadline()
+ * @method int getVersion()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setUpdatedAt(DateTime $date)
@@ -362,22 +364,25 @@ class Assignment implements JsonSerializable
 
   /**
    * @param User $user
-   * @return Submission[]
+   * @return Collection
    */
   public function getValidSubmissions(User $user) {
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
     $validSubmissions = function (Submission $submission) {
-      if (!$submission->hasEvaluation()) {
-        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
-        // -> otherwise the user would be able to submit many solutions before they are evaluated
-        return TRUE;
+      if ($submission->isFailed()) {
+        return false;
       }
 
-      // keep only solutions, which are marked as valid (both manual and automatic way)
-      $evaluation = $submission->getEvaluation();
-      return $evaluation->isValid();
+      if (!$submission->hasEvaluation()) {
+        // Condition sustained for readability
+        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
+        // -> otherwise the user would be able to submit many solutions before they are evaluated
+        return true;
+      }
+
+      return true;
     };
 
     return $this->submissions
@@ -386,7 +391,7 @@ class Assignment implements JsonSerializable
   }
 
   public function hasReachedSubmissionsCountLimit(User $user) {
-    return count($this->getValidSubmissions($user)) >= $this->submissionsCountLimit;
+    return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
   }
 
   /**

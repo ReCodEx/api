@@ -240,6 +240,16 @@ class Group implements JsonSerializable
   }
 
   /**
+   * True if user is admin of this particular group.
+   * @param User $user
+   * @return bool
+   */
+  public function isPrimaryAdminOf(User $user) {
+    $admins = $this->getPrimaryAdminsIds();
+    return array_search($user->getId(), $admins, TRUE) !== FALSE;
+  }
+
+  /**
    * @param User $user
    */
   public function addPrimaryAdmin(User $user) {
