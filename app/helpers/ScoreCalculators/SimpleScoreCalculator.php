@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -12,11 +11,12 @@ use Symfony\Component\Yaml\Exception\ParseException;
  *  testWeights:
  *    A: 200
  *    B: 800
- * The meaning is, that for test with ID "A" will be assigned 20% of exercise points,
- * test "B" will be assigned 80% of all points. Total sum of test weights should be 1000,
- * but every value will work correctly.
+ * The meaning is, that for test with ID "A" will be assigned 20% of exercise
+ * points, test "B" will be assigned 80% of all points. Total sum of test
+ * weights can be arbitrary, what matters are ratios.
  */
 class SimpleScoreCalculator implements IScoreCalculator {
+
   /**
    * Function that computes the resulting score from simple YML config and test results score
    * @param string $scoreConfig
@@ -32,15 +32,10 @@ class SimpleScoreCalculator implements IScoreCalculator {
     $config = Yaml::parse($scoreConfig);
     $weights = $config['testWeights'];
 
-    $weightsCount = count($weights);
-    $testResultsCount = count($testResults);
-    if ($weightsCount != $testResultsCount) {
-      throw new \InvalidArgumentException("Score config has different number of test weights (${weightsCount}) than the number of test results (${testResultsCount}).");
-    }
-
+    // assign zero ratio to all tests which does not have specified value
     foreach ($testResults as $name => $score) {
       if (!array_key_exists($name, $weights)) {
-        throw new \InvalidArgumentException("There is no weight for a test with name '$name' in score config.");
+        $weights[$name] = 0;
       }
     }
 
@@ -57,7 +52,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
   }
 
   /**
-   * @param string  $scoreConfig     YAML configuration of the weights
+   * @param string $scoreConfig YAML configuration of the weights
    * @return bool If the configuration is valid or not
    */
   public function isScoreConfigValid(string $scoreConfig): bool {
@@ -87,10 +82,13 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @return string Default configuration for given tests
    */
   public function getDefaultConfig(array $tests): string {
-    $config = "testWeights:\n";
+    $weights = [];
     foreach ($tests as $test) {
-      $config .= "  \"$test\": 100\n";
+      $weights[$test] = 100;
     }
-    return $config;
+    $config = [];
+    $config["testWeights"] = $weights;
+
+    return Yaml::dump($config);
   }
 }

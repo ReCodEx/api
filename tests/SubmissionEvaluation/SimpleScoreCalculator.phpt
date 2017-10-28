@@ -48,9 +48,9 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   }
 
   public function testScoreConfigDifferentWeightCount() {
-    $cfg = "testWeights:\n  a: 1";
     $calc = new SimpleScoreCalculator();
-    Assert::exception(function() use ($calc) { $calc->computeScore($this->scoreConfig, [ "a" => 0.5, "b" => 1 ]); }, \InvalidArgumentException::CLASS);
+    $score = $calc->computeScore($this->scoreConfig, [ "a" => 0.5, "b" => 1 ]);
+    Assert::equal(0.7, $score);
   }
 
   public function testScoreConfigWrongTestName() {
@@ -72,6 +72,22 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
   public function testScoreConfigValid() {
     Assert::true($this->getCalc()->isScoreConfigValid($this->scoreConfig));
+  }
+
+  public function testDefaultConfig() {
+    $config = $this->getCalc()->getDefaultConfig(["A test", "B", "test C", "Test D"]);
+    Assert::equal("testWeights:\n    'A test': 100\n    B: 100\n    'test C': 100\n    'Test D': 100\n", $config);
+  }
+
+  public function testEmptyDefaultConfig() {
+    $config = $this->getCalc()->getDefaultConfig([]);
+    Assert::equal("testWeights: {  }\n", $config);
+  }
+
+  public function testValidateEmptyWeights() {
+    $calc = $this->getCalc();
+    $config = $calc->getDefaultConfig([]);
+    Assert::true($calc->isScoreConfigValid($config));
   }
 }
 

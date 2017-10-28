@@ -452,7 +452,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n", $payload);
+    Assert::equal("testWeights:\n    'Test 1': 100\n    'Test 2': 100\n", $payload);
   }
 
   public function testSetScoreConfig()
