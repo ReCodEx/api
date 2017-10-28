@@ -19,3 +19,4 @@ coverage.xml
 coverage.html
 /fixtures/generated/*
 /run_server.bat
+/*.bat

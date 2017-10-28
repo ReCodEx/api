@@ -17,6 +17,7 @@ use App\Security\Authorizator;
 use App\Model\Repository\Users;
 use App\Model\Repository\UserActions;
 use App\Helpers\Validators;
+use App\Helpers\IResponseDecorator;
 //use Nette\Utils\Validators;
 
 use Nette\Application\Application;
@@ -62,6 +63,13 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @inject
    */
   public $logger;
+
+
+  /**
+   * @var IResponseDecorator
+   * @inject
+   */
+  public $responseDecorator = null;
 
   /** @var object Processed parameters from annotations */
   protected $parameters;
@@ -192,6 +200,9 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       unset($params[self::ACTION_KEY]);
       $this->userActions->log($this->getAction(TRUE), $params, $code);
     }
+
+    if ($this->responseDecorator)
+      $payload = $this->responseDecorator->decorate($payload);
 
     $resp = $this->getHttpResponse();
     $resp->setCode($code);
