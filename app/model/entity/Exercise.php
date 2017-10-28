@@ -453,7 +453,7 @@ class Exercise implements JsonSerializable
   /**
    * @return LocalizedExercise
    */
-  protected function getPrimaryLocalization(): LocalizedExercise {
+  protected function getPrimaryLocalization(): ?LocalizedExercise {
     /** @var LocalizedExercise $text */
     foreach ($this->localizedTexts as $text) {
       if ($text->getLocale() === self::PRIMARY_LOCALE) {
@@ -461,13 +461,14 @@ class Exercise implements JsonSerializable
       }
     }
 
-    return $this->localizedTexts->first();
+    return !$this->localizedTexts->isEmpty() ? $this->localizedTexts->first() : NULL;
   }
 
   public function jsonSerialize() {
+    $primaryLocalization = $this->getPrimaryLocalization();
     return [
       "id" => $this->id,
-      "name" => $this->getPrimaryLocalization()->getName(), # BC
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "version" => $this->version,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
@@ -480,7 +481,7 @@ class Exercise implements JsonSerializable
       "groupsIds" => $this->getGroupsIds(),
       "isPublic" => $this->isPublic,
       "isLocked" => $this->isLocked,
-      "description" => $this->getPrimaryLocalization()->getDescription(), # BC
+      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
     ];

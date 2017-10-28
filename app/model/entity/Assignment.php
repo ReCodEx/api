@@ -494,9 +494,10 @@ class Assignment implements JsonSerializable
         return $this->getExercise()->getHardwareGroups()->contains($group);
       });
 
+    $primaryLocalization = $this->getPrimaryLocalization();
     return [
       "id" => $this->id,
-      "name" => $this->getPrimaryLocalization()->getName(),
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "version" => $this->version,
       "isPublic" => $this->isPublic,
       "createdAt" => $this->createdAt->getTimestamp(),
