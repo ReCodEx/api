@@ -25,8 +25,9 @@ class PermissionsResponseDecorator implements IResponseDecorator
   public function decorate($payload)
   {
     // This might not be necessary, but just in case ...
-    if ($payload instanceof Doctrine\Common\Collections\Collection)
+    if ($payload instanceof \Doctrine\Common\Collections\Collection) {
       $payload = $payload->getValues();
+    }
 
     if (is_array($payload)) {
       return array_map([$this, 'decorate'], $payload);

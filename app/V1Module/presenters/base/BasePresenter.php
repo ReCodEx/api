@@ -201,8 +201,9 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       $this->userActions->log($this->getAction(TRUE), $params, $code);
     }
 
-    if ($this->responseDecorator)
+    if ($this->responseDecorator) {
       $payload = $this->responseDecorator->decorate($payload);
+    }
 
     $resp = $this->getHttpResponse();
     $resp->setCode($code);
