@@ -51,6 +51,9 @@ class Version20171028123047 extends AbstractMigration {
     // The interesting part - moving name and description to localized entities
     $this->addSql('ALTER TABLE localized_exercise ADD description LONGTEXT NOT NULL DEFAULT "", CHANGE short_text `name` VARCHAR(255) NOT NULL DEFAULT "", CHANGE text assignment_text LONGTEXT NOT NULL');
 
+    // NOTE: It would me more correct to create empty localizations for entities that don't have any, but this is only
+    // the case for exercises that were created and never updated, so we don't bother
+
     // Copy description from most recently updated related exercise (there cannot be any because we just added the column)
     $this->addSql('CREATE TEMPORARY TABLE src_ex AS (
                     SELECT el.localized_exercise_id AS join_id, e.description, e.name, e.updated_at 
