@@ -37,8 +37,10 @@ class PermissionsResponseDecorator implements IResponseDecorator
     // The flags-permissions mapping will be in neon configuration file.
     if ($payload instanceof ReferenceExerciseSolution) {
       $json = $payload->jsonSerialize();
-      $json['canDelete'] = $this->exerciseAcl->canDeleteReferenceSolution($payload->getExercise(), $payload);
-      $json['canEvaluate'] = $this->exerciseAcl->canEvaluateReferenceSolution($payload->getExercise(), $payload);
+      $json['permissionHints'] = [
+        'delete' => $this->exerciseAcl->canDeleteReferenceSolution($payload->getExercise(), $payload),
+        'evaluate' => $this->exerciseAcl->canEvaluateReferenceSolution($payload->getExercise(), $payload),
+      ];
       return $json;
     }
 
