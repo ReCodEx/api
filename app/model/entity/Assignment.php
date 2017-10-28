@@ -28,8 +28,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getSubmissions()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
- * @method Collection getLocalizedTexts()
- * @method removeLocalizedText(LocalizedExercise $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
@@ -544,5 +542,9 @@ class Assignment implements JsonSerializable
         ]
       ]
     ];
+  }
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
   }
 }

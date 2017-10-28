@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
 use App\Helpers\EvaluationPointsLoader;
+use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
@@ -233,20 +234,26 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
+      $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
       $localized = new LocalizedExercise(
         $lang,
         $localization["name"],
         $localization["text"],
-        "",
-        $assignment->getLocalizedTextByLocale($lang)
+        $localizedExercise ? $localizedExercise->getDescription() : ""
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->assignments->replaceLocalizedTexts($assignment, $localizations, FALSE);
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
+
+    foreach ($assignment->getLocalizedTexts() as $localizedText) {
+      $this->assignments->persist($localizedText, FALSE);
+    }
+
     $this->assignments->flush();
+
     $this->sendSuccessResponse($assignment);
   }
 

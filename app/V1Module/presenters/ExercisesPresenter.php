@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\Localizations;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
@@ -157,16 +158,21 @@ class ExercisesPresenter extends BasePresenter {
         $lang,
         $localization["name"],
         $localization["text"],
-        $localization["description"],
-        $exercise->getLocalizedTextByLocale($lang)
+        $localization["description"]
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->exercises->replaceLocalizedTexts($exercise, array_values($localizations), FALSE);
+    Localizations::updateCollection($exercise->getLocalizedTexts(), $localizations);
+
+    foreach ($exercise->getLocalizedTexts() as $localizedText) {
+      $this->exercises->persist($localizedText, FALSE);
+    }
+
     $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise);
   }
 

@@ -18,11 +18,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method Collection getRuntimeEnvironments()
  * @method Collection getHardwareGroups()
- * @method Collection getLocalizedTexts()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
  * @method Collection getSupplementaryEvaluationFiles()
- * @method removeLocalizedText(LocalizedExercise $assignment)
  * @method \DateTime getDeletedAt()
  * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
@@ -493,5 +491,9 @@ class Exercise implements JsonSerializable
 
   public function clearExerciseLimits() {
     $this->exerciseLimits->clear();
+  }
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
   }
 }
