@@ -47,6 +47,7 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="LocalizedExercise")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    * @var LocalizedExercise
    */
   protected $createdFrom;
