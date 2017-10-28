@@ -309,7 +309,6 @@ permissions:
       actions:
           - viewDetail
           - viewLimits
-          - fork
           - addReferenceSolution
           - viewPipelines
       conditions:
@@ -328,7 +327,6 @@ permissions:
       resource: exercise
       actions:
           - viewDetail
-          - fork
       conditions:
           - exercise.isPublic
 
