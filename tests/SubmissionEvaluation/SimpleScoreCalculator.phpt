@@ -37,29 +37,25 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     return $scores;
   }
 
-  private function isScoreConfigValid($scoreConfig) {
-    return SimpleScoreCalculator::isScoreConfigValid($scoreConfig);
-  }
-
   public function testInvalidYamlScoreConfig() {
     $cfg = "\"asd";
-    Assert::false(SimpleScoreCalculator::isScoreConfigValid($cfg));
+    Assert::false($this->getCalc()->isScoreConfigValid($cfg));
   }
 
   public function testScoreConfigNonIntegerWeights() {
     $cfg = "testWeights:\n  a: a";
-    Assert::false(SimpleScoreCalculator::isScoreConfigValid($cfg));
+    Assert::false($this->getCalc()->isScoreConfigValid($cfg));
   }
 
   public function testScoreConfigDifferentWeightCount() {
     $cfg = "testWeights:\n  a: 1";
-    $calc = new SimpleScoreCalculator($cfg);
+    $calc = new SimpleScoreCalculator();
     Assert::exception(function() use ($calc) { $calc->computeScore($this->scoreConfig, [ "a" => 0.5, "b" => 1 ]); }, \InvalidArgumentException::CLASS);
   }
 
   public function testScoreConfigWrongTestName() {
     $cfg = "testWeights:\n  b: 1";
-    Assert::true(SimpleScoreCalculator::isScoreConfigValid($cfg));
+    Assert::true($this->getCalc()->isScoreConfigValid($cfg));
   }
 
   public function testAllPassed() {
@@ -75,7 +71,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   }
 
   public function testScoreConfigValid() {
-    Assert::true(SimpleScoreCalculator::isScoreConfigValid($this->scoreConfig));
+    Assert::true($this->getCalc()->isScoreConfigValid($this->scoreConfig));
   }
 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -24,7 +25,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @throws SubmissionEvaluationFailedException
    */
   public function computeScore(string $scoreConfig, array $testResults): float {
-    if (!self::isScoreConfigValid($scoreConfig)) {
+    if (!$this->isScoreConfigValid($scoreConfig)) {
       throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
     }
 
@@ -59,26 +60,24 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @param string  $scoreConfig     YAML configuration of the weights
    * @return bool If the configuration is valid or not
    */
-  public static function isScoreConfigValid(string $scoreConfig): bool {
+  public function isScoreConfigValid(string $scoreConfig): bool {
     try {
       $config = Yaml::parse($scoreConfig);
 
       if (isset($config['testWeights']) && is_array($config['testWeights'])) {
         foreach ($config['testWeights'] as $value) {
           if (!is_integer($value)) {
-            // throw new \InvalidArgumentException("Test weights must be integers.");
-            return FALSE;
+            return false;
           }
         }
       } else {
-        throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
+        return false;
       }
     } catch (ParseException $e) {
-      // throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");
-      return FALSE;
+      return false;
     }
 
-    return TRUE;
+    return true;
   }
 
   /**
@@ -87,7 +86,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @param array $tests of string names of tests
    * @return string Default configuration for given tests
    */
-  public static function getDefaultConfig(array $tests): string {
+  public function getDefaultConfig(array $tests): string {
     $config = "testWeights:\n";
     foreach ($tests as $test) {
       $config .= "  \"$test\": 100\n";

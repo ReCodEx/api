@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigStorageException;
@@ -11,6 +12,7 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
 use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
@@ -90,6 +92,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseAcl;
+
+  /**
+   * @var ScoreCalculatorAccessor
+   * @inject
+   */
+  public $calculators;
 
 
   /**
@@ -523,6 +531,59 @@ class ExercisesConfigPresenter extends BasePresenter {
     $this->exercises->flush();
 
     $this->sendSuccessResponse("OK");
+  }
+
+  /**
+   * Get score configuration for exercise based on given identification.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetScoreConfig(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewScoreConfig($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to view score config for this exercise.");
+    }
+
+    // there is no score configuration in exercise... make one
+    if (empty($exercise->getScoreConfig())) {
+      $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+      $tests = array_keys($exerciseConfig->getTests());
+      $config = $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
+
+      $exercise->setScoreConfig($config);
+      $this->exercises->flush();
+    }
+
+    $this->sendSuccessResponse($exercise->getScoreConfig());
+  }
+
+  /**
+   * Set score configuration for exercise.
+   * @POST
+   * @Param(type="post", name="scoreConfig", validation="string", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
+   * @param string $id Identifier of the exercise
+   * @throws ExerciseConfigException
+   * @throws ForbiddenRequestException
+   */
+  public function actionSetScoreConfig(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canSetScoreConfig($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to set score config for this exercise.");
+    }
+
+    $req = $this->getRequest();
+    $config = $req->getPost("scoreConfig");
+
+    // validate score configuration
+    $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
+    if (!$calculator->isScoreConfigValid($config)) {
+      throw new ExerciseConfigException("Exercise score configuration is not valid");
+    }
+
+    $exercise->setScoreConfig($config);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($exercise->getScoreConfig());
   }
 
 }
