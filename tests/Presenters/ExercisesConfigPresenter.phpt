@@ -437,7 +437,6 @@ class TestExercisesConfigPresenter extends Tester\TestCase
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $exercise = current($this->exercises->findAll());
-    $exercise->setScoreConfig(""); // reset score config and let api generate new one
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
       [
@@ -452,7 +451,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::equal("testWeights:\n    'Test 1': 100\n    'Test 2': 100\n", $payload);
+    Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100", $payload);
   }
 
   public function testSetScoreConfig()

@@ -545,16 +545,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to view score config for this exercise.");
     }
 
-    // there is no score configuration in exercise... make one
-    if (empty($exercise->getScoreConfig())) {
-      $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-      $tests = array_keys($exerciseConfig->getTests());
-      $config = $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
-
-      $exercise->setScoreConfig($config);
-      $this->exercises->flush();
-    }
-
+    // yes... it is just easy as that
     $this->sendSuccessResponse($exercise->getScoreConfig());
   }
 
