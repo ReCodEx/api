@@ -291,6 +291,8 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver
   - App\Helpers\ExerciseConfig\Helper
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
+  - App\Helpers\PermissionsResponseDecorator
+  - App\Helpers\UserActions
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -310,7 +312,6 @@ services:
   - App\Model\Repository\Users
   - App\Model\Repository\RuntimeEnvironments
   - App\Model\Repository\Solutions
-  - App\Model\Repository\UserActions
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\SupplementaryExerciseFiles

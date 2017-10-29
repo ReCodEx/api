@@ -115,6 +115,10 @@ class DoctrineFixtures extends Command {
 
     foreach ($this->dbConnection->getSchemaManager()->listTables() as $table) {
       $tableName = $table->getName();
+      if ($tableName === "doctrine_migrations") {
+        // do not clear migrations table... it is crucial
+        continue;
+      }
 
       if ($platform === 'mysql') {
         if (!Strings::startsWith($tableName, '``')) {
