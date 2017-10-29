@@ -36,7 +36,7 @@ class SubmissionEmailsSender {
    * @return bool
    */
   public function submissionEvaluated(Submission $submission): bool {
-    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getName();
+    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
 
     $user = $submission->getUser();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
@@ -61,7 +61,7 @@ class SubmissionEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
-      "assignment" => $submission->getAssignment()->getName(),
+      "assignment" => $submission->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
       "group" => $submission->getAssignment()->getGroup()->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",

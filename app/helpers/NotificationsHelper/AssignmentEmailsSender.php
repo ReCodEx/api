@@ -74,7 +74,7 @@ class AssignmentEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
-      "assignment" => $assignment->getLocalizedTexts()->first()->getName(),
+      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
       "group" => $assignment->getGroup()->getName(),
       "dueDate" => $assignment->getFirstDeadline(),
       "attempts" => $assignment->getSubmissionsCountLimit(),
@@ -128,7 +128,7 @@ class AssignmentEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
-      "assignment" => $assignment->getLocalizedTexts()->first()->getName(),
+      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
       "group" => $assignment->getGroup()->getName(),
       "firstDeadline" => $assignment->getFirstDeadline(),
       "secondDeadline" => $assignment->getSecondDeadline()

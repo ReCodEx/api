@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use InvalidArgumentException;
 use JsonSerializable;
 
 /**
@@ -60,7 +61,11 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
   }
 
   public function setCreatedFrom(LocalizedEntity $entity) {
-    $this->createdFrom = $entity;
+    if ($entity instanceof LocalizedExercise) {
+      $this->createdFrom = $entity;
+    } else {
+      throw new InvalidArgumentException("Wrong type of entity supplied");
+    }
   }
 
   public function jsonSerialize() {
