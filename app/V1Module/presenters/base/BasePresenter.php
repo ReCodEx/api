@@ -15,7 +15,7 @@ use App\Exceptions\InternalServerErrorException;
 use App\Security\AccessManager;
 use App\Security\Authorizator;
 use App\Model\Repository\Users;
-use App\Model\Repository\UserActions;
+use App\Helpers\UserActions;
 use App\Helpers\Validators;
 use App\Helpers\IResponseDecorator;
 //use Nette\Utils\Validators;
@@ -25,6 +25,7 @@ use Nette\Http\IResponse;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
 use Tracy\ILogger;
+
 
 class BasePresenter extends \App\Presenters\BasePresenter {
 
