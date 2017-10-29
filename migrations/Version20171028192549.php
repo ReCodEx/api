@@ -4,6 +4,8 @@ namespace Migrations;
 
 use Doctrine\DBAL\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
+use Symfony\Component\Yaml\Yaml;
+
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -20,6 +22,35 @@ class Version20171028192549 extends AbstractMigration
 
         $this->addSql('ALTER TABLE assignment CHANGE score_config score_config LONGTEXT NOT NULL');
         $this->addSql('ALTER TABLE exercise ADD score_calculator VARCHAR(255) DEFAULT NULL, ADD score_config LONGTEXT NOT NULL');
+    }
+
+    public function postUp(Schema $schema)
+    {
+      // Fix each exercise ...
+      $exercises = $this->connection->executeQuery("SELECT e.id, ec.config FROM exercise AS e JOIN exercise_config AS ec ON e.exercise_config_id = ec.id");
+      foreach ($exercises as $exercise) {
+        if (empty($exercise["config"])) {
+          continue;
+        }
+        $id = $exercise["id"];
+
+        // Get the exercise config ...
+        $config = Yaml::parse($exercise["config"]);
+        if (!empty($config["tests"])) {
+          // Prepare test weights ...
+          $tests = $config["tests"];
+          foreach ($tests as &$value) {
+            $value = 100;
+          }
+        }
+        else {
+          $tests = [];
+        }
+
+        // Fill back newly initialized score configs.
+        $res = Yaml::dump([ "testWeights" => $tests ]);
+        $this->connection->executeQuery("UPDATE exercise SET score_config = :res WHERE id = :id", [ 'res' => $res, 'id' => $id ]);
+      }
     }
 
     /**
