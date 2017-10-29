@@ -105,7 +105,7 @@ class UploadedFilesPresenter extends BasePresenter {
     $fixedContent = Encoding::toUTF8($content);
 
     $this->sendSuccessResponse([
-      "content" => $content,
+      "content" => $fixedContent,
       "malformedCharacters" => $fixedContent !== $content
     ]);
   }
