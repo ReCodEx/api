@@ -33,7 +33,7 @@ class CleanupLocalizedTexts extends Command {
   }
 
   protected function configure() {
-    $this->setName('localized-texts:cleanup')->setDescription('Remove unused localized texts.');
+    $this->setName('localized-texts:cleanup')->setDescription('Remove unused localized texts that are older than 14 days.');
   }
 
   protected function execute(InputInterface $input, OutputInterface $output) {
@@ -59,12 +59,12 @@ class CleanupLocalizedTexts extends Command {
 
     $deleteQuery = $this->entityManager->createQuery('
       DELETE FROM App\Model\Entity\LocalizedExercise l
-      WHERE l.id NOT IN (:ids)
+      WHERE l.createdAt <= :date AND l.id NOT IN (:ids)
     ');
 
     $limit = clone $now;
-    $limit->modify("-1 day");
-    // $deleteQuery->setParameter(":date", $limit);
+    $limit->modify("-14 days");
+    $deleteQuery->setParameter(":date", $limit);
 
     $deleteQuery->setParameter("ids", $usedTexts, Connection::PARAM_STR_ARRAY);
 
