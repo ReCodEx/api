@@ -49,14 +49,14 @@ class UserActions {
 
     // construct content for logger
     $content = [
-      $identity->getUserData()->getId(),
+      $identity->getUserData() !== null ? $identity->getUserData()->getId() : "null",
       (new DateTime)->getTimestamp(),
       $action,
       Json::encode($params),
       $code,
       Json::encode($data)
     ];
-    
+
     // write content as csv to file
     $log = fopen(Debugger::$logDirectory . '/' . self::USER_ACTIONS_LOG, 'a');
     $putResult = fputcsv($log, $content, self::COLUMNS_GLUE);
