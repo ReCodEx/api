@@ -14,6 +14,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * A console command that removes localized texts that are not associated with any entity and were created before more
+ * than a given amount of days
+ */
 class CleanupLocalizedTexts extends Command {
 
   /** @var Exercises */
