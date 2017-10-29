@@ -2,11 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\UnauthorizedException;
-use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ApiException;
-use App\Exceptions as AE;
-use App\Model\Repository\UserActions;
+use App\Helpers\UserActions;
 
 use Exception;
 use Nette\Http\IResponse;
@@ -15,6 +12,7 @@ use Nette\Application\BadRequestException;
 use Doctrine\DBAL\Exception\ConnectionException;
 
 use Tracy\ILogger;
+
 
 /**
  * The error presenter for the API module - all responses are served as JSONs with a fixed format.
