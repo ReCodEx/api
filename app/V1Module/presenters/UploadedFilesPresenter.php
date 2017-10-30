@@ -101,12 +101,14 @@ class UploadedFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
 
-    $content = $file->getContent();
+    $sizeLimit = 65536; // TODO - find a better place to set this constant (configuration?).
+    $content = $file->getContent($sizeLimit);
     $fixedContent = Encoding::toUTF8($content);
 
     $this->sendSuccessResponse([
       "content" => $fixedContent,
-      "malformedCharacters" => $fixedContent !== $content
+      "malformedCharacters" => $fixedContent !== $content,
+      "tooLarge" => $file->getFileSize() > $sizeLimit,
     ]);
   }
 
