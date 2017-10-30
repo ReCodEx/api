@@ -223,6 +223,9 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($this->adminLogin, $payload->getAuthor()->email);
     Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $payload->getName());
     Assert::notEqual(null, $payload->getExerciseConfig());
+
+    // check score config
+    Assert::equal("testWeights: {  }\n", $payload->getScoreConfig());
   }
 
   public function testRemove()

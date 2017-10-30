@@ -35,7 +35,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Exercise getExercise()
  * @method string getScoreConfig()
  * @method ExerciseConfig getExerciseConfig()
- * @method void setScoreConfig(string $scoreConfig)
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
@@ -93,7 +92,8 @@ class Assignment implements JsonSerializable
     $this->exerciseEnvironmentConfigs = new ArrayCollection($exercise->getExerciseEnvironmentConfigs()->toArray());
     $this->exerciseConfig = $exercise->getExerciseConfig();
     $this->submissionsCountLimit = $submissionsCountLimit;
-    $this->scoreConfig = "";
+    $this->scoreConfig = $exercise->getScoreConfig();
+    $this->scoreCalculator = $exercise->getScoreCalculator();
     $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
     $this->canViewLimitRatios = $canViewLimitRatios;
     $this->version = 1;
@@ -261,7 +261,7 @@ class Assignment implements JsonSerializable
   protected $scoreCalculator;
 
   /**
-   * @ORM\Column(type="text", nullable=true)
+   * @ORM\Column(type="text")
    */
   protected $scoreConfig;
 
@@ -447,7 +447,7 @@ class Assignment implements JsonSerializable
   }
 
   public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
+    return $this->runtimeEnvironments->map(function(RuntimeEnvironment $env) { return $env->getId(); })->getValues();
   }
 
   protected function getSerializedLocalizedTexts() {
@@ -474,6 +474,8 @@ class Assignment implements JsonSerializable
     }
 
     $this->exerciseConfig = $exercise->getExerciseConfig();
+    $this->scoreConfig = $exercise->getScoreConfig();
+    $this->scoreCalculator = $exercise->getScoreCalculator();
 
     $this->exerciseEnvironmentConfigs->clear();
     foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
@@ -524,6 +526,12 @@ class Assignment implements JsonSerializable
       "exerciseSynchronizationInfo" => [
         "exerciseConfig" => [
           "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),
+        ],
+        "scoreConfig" => [
+          "upToDate" => $this->getScoreConfig() === $this->getExercise()->getScoreConfig(),
+        ],
+        "scoreCalculator" => [
+          "upToDate" => $this->getScoreCalculator() === $this->getExercise()->getScoreCalculator(),
         ],
         "exerciseEnvironmentConfigs" => [
           "upToDate" => $envConfigsInSync
