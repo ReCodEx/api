@@ -124,6 +124,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getHardwareGroupLimits");
     $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setHardwareGroupLimits");
     $router[] = new DeleteRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:removeHardwareGroupLimits");
+    $router[] = new GetRoute("$prefix/<id>/score-config", "ExercisesConfig:getScoreConfig");
+    $router[] = new PostRoute("$prefix/<id>/score-config", "ExercisesConfig:setScoreConfig");
 
     return $router;
   }

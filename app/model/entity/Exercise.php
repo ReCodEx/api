@@ -30,6 +30,9 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method User getAuthor()
  * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
  * @method int getVersion()
+ * @method string getScoreCalculator()
+ * @method string getScoreConfig()
+ * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
@@ -89,6 +92,16 @@ class Exercise implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $difficulty;
+
+  /**
+   * @ORM\Column(type="string", nullable=true)
+   */
+  protected $scoreCalculator;
+
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $scoreConfig;
 
   /**
    * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
@@ -227,6 +240,8 @@ class Exercise implements JsonSerializable
    * @param bool $isPublic
    * @param string $description
    * @param bool $isLocked
+   * @param string|null $scoreCalculator
+   * @param string $scoreConfig
    */
   private function __construct(string $name, $version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
@@ -235,7 +250,8 @@ class Exercise implements JsonSerializable
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
       Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
-      string $description = "", bool $isLocked = true) {
+      string $description = "", bool $isLocked = true,
+      string $scoreCalculator = null, string $scoreConfig = "") {
     $this->name = $name;
     $this->version = $version;
     $this->createdAt = new DateTime;
@@ -257,6 +273,8 @@ class Exercise implements JsonSerializable
     $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
     $this->pipelines = $pipelines;
     $this->referenceSolutions = new ArrayCollection();
+    $this->scoreCalculator = $scoreCalculator;
+    $this->scoreConfig = $scoreConfig;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -302,7 +320,10 @@ class Exercise implements JsonSerializable
       $exercise->exerciseConfig,
       $user,
       $exercise->isPublic,
-      $exercise->description
+      $exercise->description,
+      true,
+      $exercise->scoreCalculator,
+      $exercise->scoreConfig
     );
   }
 

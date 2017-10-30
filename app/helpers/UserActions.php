@@ -37,6 +37,11 @@ class UserActions {
    * @return bool if writing to file was alright
    */
   public function log(string $action, array $params, int $code, $data = null): bool {
+    if (!Debugger::isEnabled()) {
+      // debugger is not enabled, this means log directory is not accessible
+      return false;
+    }
+
     if (!is_dir(Debugger::$logDirectory)) {
       throw new \RuntimeException("Logging directory '" . Debugger::$logDirectory . "' not found");
     }

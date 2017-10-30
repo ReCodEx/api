@@ -433,6 +433,52 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::false($exercise->getHardwareGroups()->contains($hwGroup));
   }
 
+  public function testGetScoreConfig()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+      [
+        'action' => 'getScoreConfig',
+        'id' => $exercise->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100", $payload);
+  }
+
+  public function testSetScoreConfig()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->exercises->findAll());
+
+    // prepare score config
+    $config = "testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100";
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setScoreConfig',
+        'id' => $exercise->getId()
+      ],
+      ['scoreConfig' => $config]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100", $payload);
+  }
+
 }
 
 $testCase = new TestExercisesConfigPresenter();

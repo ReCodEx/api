@@ -11,11 +11,12 @@ use Symfony\Component\Yaml\Exception\ParseException;
  *  testWeights:
  *    A: 200
  *    B: 800
- * The meaning is, that for test with ID "A" will be assigned 20% of exercise points,
- * test "B" will be assigned 80% of all points. Total sum of test weights should be 1000,
- * but every value will work correctly.
+ * The meaning is, that for test with ID "A" will be assigned 20% of exercise
+ * points, test "B" will be assigned 80% of all points. Total sum of test
+ * weights can be arbitrary, what matters are ratios.
  */
 class SimpleScoreCalculator implements IScoreCalculator {
+
   /**
    * Function that computes the resulting score from simple YML config and test results score
    * @param string $scoreConfig
@@ -24,22 +25,17 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @throws SubmissionEvaluationFailedException
    */
   public function computeScore(string $scoreConfig, array $testResults): float {
-    if (!self::isScoreConfigValid($scoreConfig)) {
+    if (!$this->isScoreConfigValid($scoreConfig)) {
       throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
     }
 
     $config = Yaml::parse($scoreConfig);
     $weights = $config['testWeights'];
 
-    $weightsCount = count($weights);
-    $testResultsCount = count($testResults);
-    if ($weightsCount != $testResultsCount) {
-      throw new \InvalidArgumentException("Score config has different number of test weights (${weightsCount}) than the number of test results (${testResultsCount}).");
-    }
-
+    // assign zero ratio to all tests which does not have specified value
     foreach ($testResults as $name => $score) {
       if (!array_key_exists($name, $weights)) {
-        throw new \InvalidArgumentException("There is no weight for a test with name '$name' in score config.");
+        $weights[$name] = 0;
       }
     }
 
@@ -56,29 +52,27 @@ class SimpleScoreCalculator implements IScoreCalculator {
   }
 
   /**
-   * @param string  $scoreConfig     YAML configuration of the weights
+   * @param string $scoreConfig YAML configuration of the weights
    * @return bool If the configuration is valid or not
    */
-  public static function isScoreConfigValid(string $scoreConfig): bool {
+  public function isScoreConfigValid(string $scoreConfig): bool {
     try {
       $config = Yaml::parse($scoreConfig);
 
       if (isset($config['testWeights']) && is_array($config['testWeights'])) {
         foreach ($config['testWeights'] as $value) {
           if (!is_integer($value)) {
-            // throw new \InvalidArgumentException("Test weights must be integers.");
-            return FALSE;
+            return false;
           }
         }
       } else {
-        throw new \InvalidArgumentException("Score config is missing 'testWeights' array parameter.");
+        return false;
       }
     } catch (ParseException $e) {
-      // throw new \InvalidArgumentException("Supplied score config is not a valid YAML.");
-      return FALSE;
+      return false;
     }
 
-    return TRUE;
+    return true;
   }
 
   /**
@@ -87,11 +81,14 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @param array $tests of string names of tests
    * @return string Default configuration for given tests
    */
-  public static function getDefaultConfig(array $tests): string {
-    $config = "testWeights:\n";
+  public function getDefaultConfig(array $tests): string {
+    $weights = [];
     foreach ($tests as $test) {
-      $config .= "  \"$test\": 100\n";
+      $weights[$test] = 100;
     }
-    return $config;
+    $config = [];
+    $config["testWeights"] = $weights;
+
+    return Yaml::dump($config);
   }
 }
