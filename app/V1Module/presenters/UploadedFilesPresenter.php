@@ -10,6 +10,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
+use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
@@ -59,6 +60,11 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   public $fileServerProxy;
 
+  /**
+   * @var UploadsConfig
+   * @inject
+   */
+  public $uploadsConfig;
 
   /**
    * Get details of a file
@@ -101,8 +107,7 @@ class UploadedFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
 
-    $sizeLimit = 65536; // TODO - find a better place to set this constant (configuration?).
-
+    $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
     $content = $file->getContent($sizeLimit);
 
     // Remove UTF BOM prefix...
