@@ -18,6 +18,7 @@ use App\Responses\GuzzleResponse;
 use App\Security\ACL\IUploadedFilePermissions;
 use ForceUTF8\Encoding;
 use Nette\Application\Responses\FileResponse;
+use Nette\Utils\Strings;
 
 /**
  * Endpoints for management of uploaded files
@@ -111,10 +112,10 @@ class UploadedFilesPresenter extends BasePresenter {
     $content = $file->getContent($sizeLimit);
 
     // Remove UTF BOM prefix...
-    $utf8bom = "\\xef\\xbb\\xbf";
-    $content = trim($content, $utf8bom);
+    $utf8bom = "\xef\xbb\xbf";
+    $fixedContent = Strings::replace($content, "~^$utf8bom~");
 
-    $fixedContent = Encoding::toUTF8($content);
+    $fixedContent = Encoding::toUTF8($fixedContent);
 
     $this->sendSuccessResponse([
       "content" => $fixedContent,
