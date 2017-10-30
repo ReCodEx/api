@@ -500,7 +500,7 @@ class Assignment implements JsonSerializable
       "isPublic" => $this->isPublic,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts,
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeadline" => $this->secondDeadline->getTimestamp(),

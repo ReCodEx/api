@@ -470,7 +470,7 @@ class Exercise implements JsonSerializable
       "version" => $this->version,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts,
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "difficulty" => $this->difficulty,
       "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
       "hardwareGroups" => $this->hardwareGroups->getValues(),
