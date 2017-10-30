@@ -516,7 +516,6 @@ class Assignment implements JsonSerializable
       "allowSecondDeadline" => $this->allowSecondDeadline,
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
-      "scoreConfig" => $this->scoreConfig,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
