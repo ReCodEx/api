@@ -237,8 +237,8 @@ class Exercise implements JsonSerializable
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
       Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
-      string $description = "", bool $isLocked = true,
-      string $scoreCalculator = null, string $scoreConfig = "") {
+      bool $isLocked = true, string $scoreCalculator = null,
+      string $scoreConfig = "") {
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
