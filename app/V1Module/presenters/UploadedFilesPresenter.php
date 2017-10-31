@@ -15,6 +15,7 @@ use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IUploadedFilePermissions;
+use ForceUTF8\Encoding;
 use Nette\Application\Responses\FileResponse;
 
 /**
@@ -99,7 +100,22 @@ class UploadedFilesPresenter extends BasePresenter {
     if (!$this->uploadedFileAcl->canDownload($file)) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
-    $this->sendSuccessResponse($file->getContent());
+
+    $sizeLimit = 65536; // TODO - find a better place to set this constant (configuration?).
+
+    $content = $file->getContent($sizeLimit);
+
+    // Remove UTF BOM prefix...
+    $utf8bom = "\\xef\\xbb\\xbf";
+    $content = trim($content, $utf8bom);
+
+    $fixedContent = Encoding::toUTF8($content);
+
+    $this->sendSuccessResponse([
+      "content" => $fixedContent,
+      "malformedCharacters" => $fixedContent !== $content,
+      "tooLarge" => $file->getFileSize() > $sizeLimit,
+    ]);
   }
 
 

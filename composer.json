@@ -42,7 +42,8 @@
 		"zenify/doctrine-fixtures": "^4.0",
 		"doctrine/orm": "2.5.6",
 		"gedmo/doctrine-extensions": "@stable",
-		"doctrine/migrations": "^1.5"
+		"doctrine/migrations": "^1.5",
+		"neitanod/forceutf8": "^2.0"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
