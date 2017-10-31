@@ -10,12 +10,15 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
+use App\Helpers\UploadsConfig;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\UploadedFiles;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IUploadedFilePermissions;
+use ForceUTF8\Encoding;
 use Nette\Application\Responses\FileResponse;
+use Nette\Utils\Strings;
 
 /**
  * Endpoints for management of uploaded files
@@ -58,6 +61,11 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   public $fileServerProxy;
 
+  /**
+   * @var UploadsConfig
+   * @inject
+   */
+  public $uploadsConfig;
 
   /**
    * Get details of a file
@@ -99,7 +107,21 @@ class UploadedFilesPresenter extends BasePresenter {
     if (!$this->uploadedFileAcl->canDownload($file)) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
-    $this->sendSuccessResponse($file->getContent());
+
+    $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
+    $content = $file->getContent($sizeLimit);
+
+    // Remove UTF BOM prefix...
+    $utf8bom = "\xef\xbb\xbf";
+    $fixedContent = Strings::replace($content, "~^$utf8bom~");
+
+    $fixedContent = Encoding::toUTF8($fixedContent);
+
+    $this->sendSuccessResponse([
+      "content" => $fixedContent,
+      "malformedCharacters" => $fixedContent !== $content,
+      "tooLarge" => $file->getFileSize() > $sizeLimit,
+    ]);
   }
 
 
