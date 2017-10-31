@@ -121,7 +121,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $name = "newAssignmentName";
     $isPublic = true;
     $localizedTexts = [
-      [ "locale" => "locA", "text" => "descA" ]
+      [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
     ];
     $firstDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeFirstDeadline = 123;
@@ -136,7 +136,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'updateDetail', 'id' => $assignment->getId()],
       [
-        'name' => $name,
         'isPublic' => $isPublic,
         'version' => 1,
         'localizedTexts' => $localizedTexts,
@@ -158,9 +157,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     // check updated assignment
+    /** @var Assignment $updatedAssignment */
     $updatedAssignment = $result['payload'];
     Assert::type(\App\Model\Entity\Assignment::class, $updatedAssignment);
-    Assert::equal($name, $updatedAssignment->getName());
     Assert::equal($isPublic, $updatedAssignment->getIsPublic());
     Assert::equal($firstDeadline, $updatedAssignment->getFirstDeadline()->getTimestamp());
     Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment->getMaxPointsBeforeFirstDeadline());
@@ -177,7 +176,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $localized = current($localizedTexts);
     $updatedLocalized = $updatedAssignment->getLocalizedTexts()->first();
     Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
-    Assert::equal($updatedLocalized->getText(), $localized["text"]);
+    Assert::equal($updatedLocalized->getAssignmentText(), $localized["text"]);
   }
 
   public function testCreateAssignment()

@@ -9,12 +9,13 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
 use App\Helpers\EvaluationPointsLoader;
+use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\LocalizedText;
+use App\Model\Entity\LocalizedExercise;
 
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -142,7 +143,6 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Update details of an assignment
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
@@ -192,7 +192,6 @@ class AssignmentsPresenter extends BasePresenter {
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
 
-    $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
     $assignment->setUpdatedAt(new \DateTime);
     $assignment->setIsPublic($isPublic);
@@ -234,19 +233,26 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localized = new LocalizedText(
-        $localization["text"],
+      $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
+      $localized = new LocalizedExercise(
         $lang,
-        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
-        $assignment->getLocalizedTextByLocale($lang)
+        $localization["name"],
+        $localization["text"],
+        $localizedExercise ? $localizedExercise->getDescription() : ""
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->assignments->replaceLocalizedTexts($assignment, $localizations, FALSE);
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
+
+    foreach ($assignment->getLocalizedTexts() as $localizedText) {
+      $this->assignments->persist($localizedText, FALSE);
+    }
+
     $this->assignments->flush();
+
     $this->sendSuccessResponse($assignment);
   }
 

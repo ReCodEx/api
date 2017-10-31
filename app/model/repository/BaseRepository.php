@@ -76,9 +76,9 @@ class BaseRepository extends Nette\Object {
    * Internal simple search of repository based on given string.
    * @param array $columns
    * @param string|null $search
-   * @return Collection
+   * @return array
    */
-  protected function search(array $columns, string $search = null): Collection {
+  protected function search(array $columns, string $search = null): array {
     $filter = Criteria::create();
 
     if ($search !== null && !empty($search)) {
@@ -87,7 +87,7 @@ class BaseRepository extends Nette\Object {
       }
     }
 
-    return $this->matching($filter);
+    return $this->matching($filter)->toArray();
   }
 
   /**
@@ -96,14 +96,20 @@ class BaseRepository extends Nette\Object {
    * @param null|string $search
    * @return array
    */
-  public function searchBy(array $columns, string $search = null): array {
-    $filtered = $this->search($columns, $search);
-    if ($filtered->count() > 0) {
-      return $filtered->toArray();
+  protected function searchBy(array $columns, string $search = null): array {
+    return $this->searchHelper($search, function ($search) use ($columns) {
+      return $this->search($columns, $search);
+    });
+  }
+
+  protected function searchHelper(?string $search, $searchFunction) {
+    /** @var array $filtered */
+    $filtered = $searchFunction($search);
+
+    if (count($filtered) > 0) {
+      return $filtered;
     }
 
-    // weaker filter - the strict one did not match anything
-    $filtered = array();
     foreach (explode(" ", $search) as $part) {
       // skip empty parts
       $part = trim($part);
@@ -111,8 +117,9 @@ class BaseRepository extends Nette\Object {
         continue;
       }
 
-      $weaker = $this->search($columns, $part);
-      $filtered = array_merge($filtered, $weaker->toArray());
+      /** @var array $weaker */
+      $weaker = $searchFunction($part);
+      $filtered = array_merge($filtered, $weaker);
     }
 
     return $filtered;

@@ -5,12 +5,13 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\Localizations;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\LocalizedText;
+use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
@@ -109,9 +110,7 @@ class ExercisesPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @Param(type="post", name="name", validation="string:2..", description="Name of exercise")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
-   * @Param(type="post", name="description", validation="string:1..", description="Some brief description of this exercise for supervisors")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
@@ -139,12 +138,10 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     // make changes to newly created exercise
-    $exercise->setName($name);
     $exercise->setDifficulty($difficulty);
     $exercise->setIsPublic($isPublic);
     $exercise->setUpdatedAt(new \DateTime);
     $exercise->incrementVersion();
-    $exercise->setDescription($description);
     $exercise->setLocked($isLocked);
 
     // retrieve localizations and prepare some temp variables
@@ -165,19 +162,25 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localized = new LocalizedText(
-        $localization["text"],
+      $localized = new LocalizedExercise(
         $lang,
-        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
-        $exercise->getLocalizedTextByLocale($lang)
+        $localization["name"],
+        $localization["text"],
+        $localization["description"]
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->exercises->replaceLocalizedTexts($exercise, array_values($localizations), FALSE);
+    Localizations::updateCollection($exercise->getLocalizedTexts(), $localizations);
+
+    foreach ($exercise->getLocalizedTexts() as $localizedText) {
+      $this->exercises->persist($localizedText, FALSE);
+    }
+
     $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise);
   }
 
@@ -242,7 +245,12 @@ class ExercisesPresenter extends BasePresenter {
 
     // create exercise and fill some predefined details
     $exercise = Exercise::create($user, $group);
-    $exercise->setName("Exercise by " . $user->getName());
+    $localizedExercise = new LocalizedExercise(
+      $user->getSettings()->getDefaultLanguage(),
+      "Exercise by " . $user->getName(), "", ""
+    );
+    $this->exercises->persist($localizedExercise, FALSE);
+    $exercise->addLocalizedText($localizedExercise);
 
     // create and store basic exercise configuration
     $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);

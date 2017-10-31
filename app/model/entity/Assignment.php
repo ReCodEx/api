@@ -19,7 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method string getName()
  * @method DateTime getDeletedAt()
  * @method string getScoreCalculator()
  * @method Collection getRuntimeEnvironments()
@@ -29,8 +28,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getSubmissions()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
- * @method Collection getLocalizedTexts()
- * @method removeLocalizedText(LocalizedText $assignment)
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method string getScoreConfig()
@@ -40,7 +37,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
  * @method int getVersion()
- * @method setName(string $name)
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setUpdatedAt(DateTime $date)
@@ -58,7 +54,6 @@ class Assignment implements JsonSerializable
   use MagicAccessors;
 
   private function __construct(
-    string $name,
     DateTime $firstDeadline,
     int $maxPointsBeforeFirstDeadline,
     Exercise $exercise,
@@ -76,7 +71,6 @@ class Assignment implements JsonSerializable
       $secondDeadline = $firstDeadline;
     }
 
-    $this->name = $name;
     $this->exercise = $exercise;
     $this->group = $group;
     $this->firstDeadline = $firstDeadline;
@@ -113,7 +107,6 @@ class Assignment implements JsonSerializable
     }
 
     $assignment = new self(
-      $exercise->getName(),
       new DateTime,
       0,
       $exercise,
@@ -134,11 +127,6 @@ class Assignment implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
 
   /**
    * @ORM\Column(type="integer")
@@ -330,12 +318,12 @@ class Assignment implements JsonSerializable
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedText", inversedBy="assignments")
+   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
    * @var Collection|Selectable
    */
   protected $localizedTexts;
 
-  public function addLocalizedText(LocalizedText $assignment) {
+  public function addLocalizedText(LocalizedExercise $assignment) {
     $this->localizedTexts->add($assignment);
   }
 
@@ -450,16 +438,6 @@ class Assignment implements JsonSerializable
     return $this->runtimeEnvironments->map(function(RuntimeEnvironment $env) { return $env->getId(); })->getValues();
   }
 
-  protected function getSerializedLocalizedTexts() {
-    return array_map(function (LocalizedText $text) {
-      $data = $text->jsonSerialize();
-      if ($data["shortText"] === NULL) {
-        $data["shortText"] = $this->name;
-      }
-      return $data;
-    }, $this->localizedTexts->getValues());
-  }
-
   public function syncWithExercise() {
     $exercise = $this->getExercise();
 
@@ -488,6 +466,20 @@ class Assignment implements JsonSerializable
     }
   }
 
+  /**
+   * @return LocalizedExercise
+   */
+  protected function getPrimaryLocalization(): LocalizedExercise {
+    /** @var LocalizedExercise $text */
+    foreach ($this->localizedTexts as $text) {
+      if ($text->getLocale() === Exercise::PRIMARY_LOCALE) {
+        return $text;
+      }
+    }
+
+    return $this->localizedTexts->first();
+  }
+
   public function jsonSerialize() {
     $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(
       function ($key, RuntimeEnvironment $env) {
@@ -502,14 +494,15 @@ class Assignment implements JsonSerializable
         return $this->getExercise()->getHardwareGroups()->contains($group);
       });
 
+    $primaryLocalization = $this->getPrimaryLocalization();
     return [
       "id" => $this->id,
-      "name" => $this->name,
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "version" => $this->version,
       "isPublic" => $this->isPublic,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->getSerializedLocalizedTexts(),
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeadline" => $this->secondDeadline->getTimestamp(),
@@ -540,7 +533,7 @@ class Assignment implements JsonSerializable
         ],
         "localizedTexts" => [
           "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
-              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedText $ours) {
+              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
             $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
             return $theirs === NULL || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
           })
@@ -556,5 +549,9 @@ class Assignment implements JsonSerializable
         ]
       ]
     ];
+  }
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
   }
 }
