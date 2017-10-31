@@ -8,6 +8,7 @@ use App\Model\Repository\Logins;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\UploadedFileStorage;
 use Doctrine\ORM\EntityManager;
+use Nette\Utils\Json;
 use Tester\Assert;
 use org\bovigo\vfs\vfsStream;
 
@@ -157,7 +158,74 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($content, $result['payload']);
+    Assert::equal($content, $result['payload']['content']);
+    Assert::false($result['payload']['malformedCharacters']);
+    Assert::false($result['payload']['tooLarge']);
+  }
+
+  public function testContentWeirdChars()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+    // create virtual filesystem setup
+    $filename = "file.ext";
+    $content = iconv("UTF-8", "Windows-1250",  "Žluťoučké kobylky");
+    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfsFile = $vfs->getChild($filename);
+
+    // create new file upload
+    $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
+    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $this->presenter->uploadedFiles->persist($uploadedFile);
+    $this->presenter->uploadedFiles->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'content', 'id' => $uploadedFile->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::true($result['payload']['malformedCharacters']);
+    Assert::false($result['payload']['tooLarge']);
+    Assert::noError(function () use ($result) {
+      Json::encode($result);
+    });
+  }
+
+  public function testContentBom()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+    // create virtual filesystem setup
+    $filename = "file.ext";
+    $content = chr(0xef) . chr(0xbb) . chr(0xbf) . "Hello";
+    $vfs = vfsStream::setup("root", NULL, [$filename => ""]);
+    $vfsFile = $vfs->getChild($filename);
+
+    $f = fopen($vfsFile->url(), "wb");
+    fwrite($f, $content);
+    fclose($f);
+
+    // create new file upload
+    $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
+    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $this->presenter->uploadedFiles->persist($uploadedFile);
+    $this->presenter->uploadedFiles->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'content', 'id' => $uploadedFile->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("Hello", $result['payload']['content']);
+    Assert::true($result['payload']['malformedCharacters']);
+    Assert::false($result['payload']['tooLarge']);
+    Assert::noError(function () use ($result) {
+      Json::encode($result);
+    });
   }
 
   public function testNoFilesUpload()

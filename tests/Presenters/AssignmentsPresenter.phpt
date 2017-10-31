@@ -126,7 +126,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $firstDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeFirstDeadline = 123;
     $submissionsCountLimit = 321;
-    $scoreConfig = "scoreConfiguration in yaml";
     $allowSecondDeadline = true;
     $canViewLimitRatios = false;
     $secondDeadline = (new \DateTime)->getTimestamp();
@@ -143,7 +142,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'firstDeadline' => $firstDeadline,
         'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
         'submissionsCountLimit' => $submissionsCountLimit,
-        'scoreConfig' => $scoreConfig,
         'allowSecondDeadline' => $allowSecondDeadline,
         'canViewLimitRatios' => $canViewLimitRatios,
         'secondDeadline' => $secondDeadline,
@@ -166,7 +164,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($firstDeadline, $updatedAssignment->getFirstDeadline()->getTimestamp());
     Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment->getMaxPointsBeforeFirstDeadline());
     Assert::equal($submissionsCountLimit, $updatedAssignment->getSubmissionsCountLimit());
-    Assert::equal($scoreConfig, $updatedAssignment->getScoreConfig());
     Assert::equal($allowSecondDeadline, $updatedAssignment->getAllowSecondDeadline());
     Assert::equal($canViewLimitRatios, $updatedAssignment->getCanViewLimitRatios());
     Assert::equal($secondDeadline, $updatedAssignment->getSecondDeadline()->getTimestamp());
@@ -226,7 +223,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, App\Exceptions\InvalidArgumentException::class);
+    }, App\Exceptions\BadRequestException::class);
   }
 
   public function testSyncWithExercise()

@@ -73,6 +73,7 @@ class BrokerProxy {
       $poll = new ZMQPoll();
       $poll->add($queue, ZMQ::POLL_IN);
     } catch (ZMQPollException $e) {
+      $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Cannot create ZMQ poll.");
     }
 
@@ -94,23 +95,28 @@ class BrokerProxy {
       $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
       $queue->sendmulti($message);
     } catch (ZMQSocketException $e) {
+      $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
     }
 
     $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
     if ($ack === NULL) {
+      $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }
 
     if ($ack[0] !== self::EXPECTED_ACK) {
+      $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Broker did not send correct acknowledgement message, expected '" . self::EXPECTED_ACK . "', but received '$ack' instead.");
     }
 
     $response = $this->pollReadWorkaround($queue, $this->resultTimeout);
     if ($response === null) {
+      $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Receiving response from the broker failed.");
     }
 
+    $queue->disconnect($this->brokerAddress);
     return $response[0] === self::EXPECTED_RESULT;
   }
 

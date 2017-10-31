@@ -227,6 +227,9 @@ class TestExercisesPresenter extends Tester\TestCase
     $firstLocalizedText = $payload->getLocalizedTexts()->first();
     Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $firstLocalizedText->getName());
     Assert::notEqual(null, $payload->getExerciseConfig());
+
+    // check score config
+    Assert::equal("testWeights: {  }\n", $payload->getScoreConfig());
   }
 
   public function testRemove()

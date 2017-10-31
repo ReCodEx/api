@@ -37,6 +37,11 @@ class UserActions {
    * @return bool if writing to file was alright
    */
   public function log(string $action, array $params, int $code, $data = null): bool {
+    if (!Debugger::isEnabled()) {
+      // debugger is not enabled, this means log directory is not accessible
+      return false;
+    }
+
     if (!is_dir(Debugger::$logDirectory)) {
       throw new \RuntimeException("Logging directory '" . Debugger::$logDirectory . "' not found");
     }
@@ -49,14 +54,14 @@ class UserActions {
 
     // construct content for logger
     $content = [
-      $identity->getUserData()->getId(),
+      $identity->getUserData() !== null ? $identity->getUserData()->getId() : "null",
       (new DateTime)->getTimestamp(),
       $action,
       Json::encode($params),
       $code,
       Json::encode($data)
     ];
-    
+
     // write content as csv to file
     $log = fopen(Debugger::$logDirectory . '/' . self::USER_ACTIONS_LOG, 'a');
     $putResult = fputcsv($log, $content, self::COLUMNS_GLUE);

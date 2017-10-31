@@ -42,8 +42,14 @@ class UploadedFile implements JsonSerializable
    */
   protected $localFilePath;
 
-  public function getContent() {
-    return $this->localFilePath !== NULL ? file_get_contents($this->localFilePath) : NULL;
+  public function getContent($sizeLimit = null) {
+    if ($this->localFilePath === null) {
+      return null;
+    }
+
+    return ($sizeLimit === null)
+      ? file_get_contents($this->localFilePath)
+      : file_get_contents($this->localFilePath, false, null, 0, $sizeLimit);
   }
 
   /**

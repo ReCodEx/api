@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\Localizations;
+use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
@@ -60,6 +61,13 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $pipelineAcl;
+
+  /**
+   * @var ScoreCalculatorAccessor
+   * @inject
+   */
+  public $calculators;
+
 
   /**
    * Get a list of exercises with an optional filter
@@ -247,6 +255,10 @@ class ExercisesPresenter extends BasePresenter {
     // create and store basic exercise configuration
     $exerciseConfig = new ExerciseConfig((string) new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);
     $exercise->setExerciseConfig($exerciseConfig);
+
+    // create default score configuration without tests
+    $scoreConfig = $this->calculators->getDefaultCalculator()->getDefaultConfig([]);
+    $exercise->setScoreConfig($scoreConfig);
 
     // set all hardware groups from the system to exercise
     // TODO: not quite good solution, automatically assign hwgroups, but sufficient for now

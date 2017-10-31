@@ -45,6 +45,11 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
+        scoreConfig: '''
+        testWeights:
+          "Test 1": 100
+          "Test 2": 100
+        '''
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
@@ -66,6 +71,11 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
+        scoreConfig: '''
+        testWeights:
+          "Test 1": 100
+          "Test 2": 100
+        '''
     privateAdminExercise:
         __construct:
             create:
@@ -109,6 +119,11 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
+        scoreConfig: '''
+        testWeights:
+          "Test 1": 100
+          "Test 2": 100
+        '''
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:
