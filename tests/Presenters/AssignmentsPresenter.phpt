@@ -121,12 +121,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $name = "newAssignmentName";
     $isPublic = true;
     $localizedTexts = [
-      [ "locale" => "locA", "text" => "descA" ]
+      [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
     ];
     $firstDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeFirstDeadline = 123;
     $submissionsCountLimit = 321;
-    $scoreConfig = "scoreConfiguration in yaml";
     $allowSecondDeadline = true;
     $canViewLimitRatios = false;
     $secondDeadline = (new \DateTime)->getTimestamp();
@@ -137,14 +136,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'updateDetail', 'id' => $assignment->getId()],
       [
-        'name' => $name,
         'isPublic' => $isPublic,
         'version' => 1,
         'localizedTexts' => $localizedTexts,
         'firstDeadline' => $firstDeadline,
         'maxPointsBeforeFirstDeadline' => $maxPointsBeforeFirstDeadline,
         'submissionsCountLimit' => $submissionsCountLimit,
-        'scoreConfig' => $scoreConfig,
         'allowSecondDeadline' => $allowSecondDeadline,
         'canViewLimitRatios' => $canViewLimitRatios,
         'secondDeadline' => $secondDeadline,
@@ -160,14 +157,13 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     // check updated assignment
+    /** @var Assignment $updatedAssignment */
     $updatedAssignment = $result['payload'];
     Assert::type(\App\Model\Entity\Assignment::class, $updatedAssignment);
-    Assert::equal($name, $updatedAssignment->getName());
     Assert::equal($isPublic, $updatedAssignment->getIsPublic());
     Assert::equal($firstDeadline, $updatedAssignment->getFirstDeadline()->getTimestamp());
     Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment->getMaxPointsBeforeFirstDeadline());
     Assert::equal($submissionsCountLimit, $updatedAssignment->getSubmissionsCountLimit());
-    Assert::equal($scoreConfig, $updatedAssignment->getScoreConfig());
     Assert::equal($allowSecondDeadline, $updatedAssignment->getAllowSecondDeadline());
     Assert::equal($canViewLimitRatios, $updatedAssignment->getCanViewLimitRatios());
     Assert::equal($secondDeadline, $updatedAssignment->getSecondDeadline()->getTimestamp());
@@ -180,7 +176,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $localized = current($localizedTexts);
     $updatedLocalized = $updatedAssignment->getLocalizedTexts()->first();
     Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
-    Assert::equal($updatedLocalized->getText(), $localized["text"]);
+    Assert::equal($updatedLocalized->getAssignmentText(), $localized["text"]);
   }
 
   public function testCreateAssignment()
@@ -227,7 +223,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, App\Exceptions\InvalidArgumentException::class);
+    }, App\Exceptions\BadRequestException::class);
   }
 
   public function testSyncWithExercise()

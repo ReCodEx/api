@@ -22,7 +22,7 @@ interface IScoreCalculator {
    * @param string $scoreConfig Configuration of score loaded from database
    * @return bool If the config is valid or not
    */
-  public static function isScoreConfigValid(string $scoreConfig): bool;
+  public function isScoreConfigValid(string $scoreConfig): bool;
 
   /**
    * Make default configuration for array of test names. Each test will
@@ -30,5 +30,5 @@ interface IScoreCalculator {
    * @param array $tests List of string names of tests
    * @return string Default configuration for given tests
    */
-  public static function getDefaultConfig(array $tests): string;
+  public function getDefaultConfig(array $tests): string;
 }

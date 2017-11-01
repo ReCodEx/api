@@ -183,9 +183,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
     // prepare files into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
-    $exercise = $this->presenter->exercises->findOneBy([
-      "name" => "aloha exercise"
-    ]);
+    $exercise = $this->presenter->exercises->searchByName("An exercise")[0];
     $expectedFile1 = new AdditionalExerciseFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
     $expectedFile2 = new AdditionalExerciseFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
     $this->additionalFiles->persist($expectedFile1, FALSE);

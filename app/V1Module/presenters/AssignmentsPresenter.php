@@ -3,17 +3,19 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 
 use App\Helpers\EvaluationPointsLoader;
+use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Submission;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\LocalizedText;
+use App\Model\Entity\LocalizedExercise;
 
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -66,12 +68,6 @@ class AssignmentsPresenter extends BasePresenter {
   public $solutionEvaluations;
 
   /**
-   * @var ScoreCalculatorAccessor
-   * @inject
-   */
-  public $calculators;
-
-  /**
    * @var IAssignmentPermissions
    * @inject
    */
@@ -107,6 +103,12 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $evaluationPointsLoader;
 
+  /**
+   * @var ScoreCalculatorAccessor
+   * @inject
+   */
+  public $calculators;
+
 
   /**
    * Get a list of all assignments
@@ -141,14 +143,12 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Update details of an assignment
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", description="Name of the assignment")
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="numericint", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
-   * @Param(type="post", name="scoreConfig", validation="string", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
    * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
    * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can user view ratio of his solution memory and time usages and assignment limits?")
    * @Param(type="post", name="secondDeadline", validation="numericint", required=false, description="A second deadline for submission of the assignment (with different point award)")
@@ -192,7 +192,6 @@ class AssignmentsPresenter extends BasePresenter {
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
 
-    $assignment->setName($req->getPost("name"));
     $assignment->incrementVersion();
     $assignment->setUpdatedAt(new \DateTime);
     $assignment->setIsPublic($isPublic);
@@ -201,7 +200,6 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setMaxPointsBeforeFirstDeadline($firstDeadlinePoints);
     $assignment->setMaxPointsBeforeSecondDeadline($secondDeadlinePoints);
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
-    $assignment->setScoreConfig($req->getPost("scoreConfig"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
@@ -235,19 +233,26 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localized = new LocalizedText(
-        $localization["text"],
+      $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
+      $localized = new LocalizedExercise(
         $lang,
-        isset($localization["shortText"]) ? $localization["shortText"] : NULL,
-        $assignment->getLocalizedTextByLocale($lang)
+        $localization["name"],
+        $localization["text"],
+        $localizedExercise ? $localizedExercise->getDescription() : ""
       );
 
       $localizations[$lang] = $localized;
     }
 
     // make changes to database
-    $this->assignments->replaceLocalizedTexts($assignment, $localizations, FALSE);
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
+
+    foreach ($assignment->getLocalizedTexts() as $localizedText) {
+      $this->assignments->persist($localizedText, FALSE);
+    }
+
     $this->assignments->flush();
+
     $this->sendSuccessResponse($assignment);
   }
 
@@ -291,29 +296,24 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     if ($exercise->isLocked()) {
-      throw new InvalidArgumentException("Exercise '$exerciseId' is locked");
+      throw new BadRequestException("Exercise '$exerciseId' is locked");
     }
 
     if ($exercise->getReferenceSolutions()->isEmpty()) {
-      throw new InvalidArgumentException("Exercise '$exerciseId' does not have any reference solutions");
+      throw new BadRequestException("Exercise '$exerciseId' does not have any reference solutions");
+    }
+
+    // validate score configuration
+    $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
+    if (!$calculator->isScoreConfigValid($exercise->getScoreConfig())) {
+      throw new BadRequestException("Exercise '$exerciseId' does not have valid score configuration");
     }
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
-    $assignment->setScoreConfig($this->getDefaultScoreConfig($assignment));
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
-  }
-
-  private function getDefaultScoreConfig(Assignment $assignment): string {
-    if (count($assignment->getRuntimeEnvironments()) === 0) {
-      throw new InvalidStateException("Assignment has no runtime configurations");
-    }
-
-    $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($assignment->getExerciseConfig()->getParsedConfig());
-    $tests = array_keys($exerciseConfig->getTests());
-    return $this->calculators->getDefaultCalculator()->getDefaultConfig($tests);
   }
 
   /**
