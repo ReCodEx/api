@@ -2,12 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Model\Entity\Submission;
 use App\Model\Entity\SolutionEvaluation;
-use App\Model\Entity\ReferenceSolutionEvaluation;
-use App\Helpers\JobConfig\Storage as JobConfigStorage;
-use App\Helpers\EvaluationResults\EvaluationResults;
-use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
 
 
 /**
@@ -97,6 +92,41 @@ class EvaluationPointsLoader {
     // ... and set results
     $evaluation->setPoints($points);
   }
+
+
+  /**
+   * Determine if student submission is correct.
+   * @param SolutionEvaluation|null $evaluation
+   * @return bool
+   */
+  public static function isStudentCorrect(?SolutionEvaluation $evaluation): bool {
+    if ($evaluation === null || $evaluation->getSubmission() === null) {
+      // not a student submission
+      return false;
+    }
+
+    $submission = $evaluation->getSubmission();
+    $assignment = $submission->getAssignment();
+    if ($assignment->hasAssignedPoints()) {
+      return $evaluation->getPoints() > 0;
+    }
+
+    // points for assignment are all zeroes, this means simple checking of
+    // evaluation points is not sufficient, so lets get craaazy
+
+    if ($submission->isAfterDeadline()) {
+      // submitted after deadline -> automatically incorrect
+      return false;
+    }
+
+    if ($evaluation->getScore() == 0) {
+      // none of the tests was correct -> whole solution incorrect
+      return false;
+    }
+
+    return true;
+  }
+
 
   /**
    * Evaluation score as a mean of all score values.
