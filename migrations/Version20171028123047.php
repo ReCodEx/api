@@ -49,38 +49,39 @@ class Version20171028123047 extends AbstractMigration {
     $this->addSql('ALTER TABLE assignment_localized_exercise ADD CONSTRAINT FK_9C8F78CD19302F8 FOREIGN KEY (assignment_id) REFERENCES assignment (id) ON DELETE CASCADE');
 
     // The interesting part - moving name and description to localized entities
-    $this->addSql('ALTER TABLE localized_exercise ADD description LONGTEXT NOT NULL DEFAULT "", CHANGE short_text `name` VARCHAR(255) NOT NULL DEFAULT "", CHANGE text assignment_text LONGTEXT NOT NULL');
+    $this->addSql("UPDATE localized_exercise SET short_text='' WHERE short_text IS NULL");  // we need to fix NULL values fisrt
+    $this->addSql('ALTER TABLE localized_exercise ADD description LONGTEXT NOT NULL, CHANGE short_text `name` VARCHAR(255) NOT NULL, CHANGE text assignment_text LONGTEXT NOT NULL');
 
     // NOTE: It would me more correct to create empty localizations for entities that don't have any, but this is only
     // the case for exercises that were created and never updated, so we don't bother
 
     // Copy description from most recently updated related exercise (there cannot be any because we just added the column)
     $this->addSql('CREATE TEMPORARY TABLE src_ex AS (
-                    SELECT el.localized_exercise_id AS join_id, e.description, e.name, e.updated_at 
-                    FROM exercise e INNER JOIN exercise_localized_exercise el 
+                    SELECT el.localized_exercise_id AS join_id, e.description, e.name, e.updated_at
+                    FROM exercise e INNER JOIN exercise_localized_exercise el
                     ON el.exercise_id = e.id)
     ');
 
-    $this->addSql('UPDATE localized_exercise l SET description = (
-                    SELECT description FROM src_ex WHERE l.id = src_ex.join_id ORDER BY src_ex.updated_at DESC LIMIT 1)
+    $this->addSql('UPDATE localized_exercise l SET description = COALESCE(
+      (SELECT description FROM src_ex WHERE l.id = src_ex.join_id ORDER BY src_ex.updated_at DESC LIMIT 1), "")
     ');
 
     // Copy name from most recently updated related exercise if there is no name yet
-    $this->addSql('UPDATE localized_exercise l SET `name` = (
-                    SELECT `name` FROM src_ex WHERE l.id = src_ex.join_id ORDER BY src_ex.updated_at DESC LIMIT 1)
+    $this->addSql('UPDATE localized_exercise l SET `name` = COALESCE(
+                    (SELECT `name` FROM src_ex WHERE l.id = src_ex.join_id ORDER BY src_ex.updated_at DESC LIMIT 1), "")
                     WHERE `name` = ""
     ');
 
     // Copy name from most recently updated related assignment if there is no name yet (the condition won't hold if we managed to copy something from an exercise).
     // A downside of this is that there might be a chance we lose some changed name. What a shame...
     $this->addSql('CREATE TEMPORARY TABLE src_as AS (
-                    SELECT el.localized_exercise_id AS join_id, a.name, a.updated_at 
-                    FROM assignment a INNER JOIN exercise_localized_exercise el 
+                    SELECT el.localized_exercise_id AS join_id, a.name, a.updated_at
+                    FROM assignment a INNER JOIN exercise_localized_exercise el
                     ON el.exercise_id = a.id)
     ');
 
-    $this->addSql('UPDATE localized_exercise l SET `name` = (
-                    SELECT `name` FROM src_as WHERE l.id = src_as.join_id ORDER BY src_as.updated_at DESC LIMIT 1)
+    $this->addSql('UPDATE localized_exercise l SET `name` = COALESCE(
+                    (SELECT `name` FROM src_as WHERE l.id = src_as.join_id ORDER BY src_as.updated_at DESC LIMIT 1), "")
                     WHERE `name` = ""
     ');
 
