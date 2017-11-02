@@ -469,7 +469,7 @@ class Assignment implements JsonSerializable
   /**
    * @return LocalizedExercise
    */
-  protected function getPrimaryLocalization(): LocalizedExercise {
+  protected function getPrimaryLocalization(): ?LocalizedExercise {
     /** @var LocalizedExercise $text */
     foreach ($this->localizedTexts as $text) {
       if ($text->getLocale() === Exercise::PRIMARY_LOCALE) {
@@ -477,7 +477,7 @@ class Assignment implements JsonSerializable
       }
     }
 
-    return $this->localizedTexts->first();
+    return !$this->localizedTexts->isEmpty() ? $this->localizedTexts->first() : NULL;
   }
 
   public function jsonSerialize() {

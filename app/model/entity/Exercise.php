@@ -209,7 +209,6 @@ class Exercise implements JsonSerializable
 
   /**
    * Constructor
-   * @param string $name
    * @param $version
    * @param $difficulty
    * @param Collection $localizedTexts
@@ -225,7 +224,6 @@ class Exercise implements JsonSerializable
    * @param ExerciseConfig|null $exerciseConfig
    * @param User $user
    * @param bool $isPublic
-   * @param string $description
    * @param bool $isLocked
    * @param string|null $scoreCalculator
    * @param string $scoreConfig
