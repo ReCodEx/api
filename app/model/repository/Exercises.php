@@ -53,11 +53,14 @@ class Exercises extends BaseSoftDeleteRepository {
       $textIds = array_column($idsQueryBuilder->getQuery()->getScalarResult(), "id");
 
       $exercisesQueryBuilder = $this->em->createQueryBuilder()->addSelect("e")->from(Exercise::class, "e");
+      $exercisesQueryBuilder->where($exercisesQueryBuilder->expr()->isNull("e.deletedAt"));
 
+      $criteria = [];
       foreach ($textIds as $i => $textId) {
-        $exercisesQueryBuilder->orWhere($exercisesQueryBuilder->expr()->isMemberOf("?" . $i, "e.localizedTexts"));
+        $criteria[] = $exercisesQueryBuilder->expr()->isMemberOf("?" . $i, "e.localizedTexts");
         $exercisesQueryBuilder->setParameter($i, $textId);
       }
+      $exercisesQueryBuilder->andWhere($exercisesQueryBuilder->expr()->orX(...$criteria));
 
       return $exercisesQueryBuilder->getQuery()->getResult();
     });
