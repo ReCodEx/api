@@ -268,11 +268,15 @@ class Assignment implements JsonSerializable
    */
   protected $secondDeadline;
 
-  public function isAfterDeadline() {
+  public function isAfterDeadline(\DateTime $now = null) {
+    if ($now === null) {
+      $now = new \DateTime;
+    }
+
     if ($this->allowSecondDeadline) {
-      return $this->secondDeadline < new \DateTime;
+      return $this->secondDeadline < $now;
     } else {
-      return $this->firstDeadline < new \DateTime;
+      return $this->firstDeadline < $now;
     }
   }
 
@@ -294,6 +298,14 @@ class Assignment implements JsonSerializable
     } else {
       return 0;
     }
+  }
+
+  /**
+   * True if assignment has any points assigned, eq. some is non-zero.
+   * @return bool
+   */
+  public function hasAssignedPoints(): bool {
+    return $this->maxPointsBeforeFirstDeadline !== 0 || $this->maxPointsBeforeSecondDeadline !== 0;
   }
 
 

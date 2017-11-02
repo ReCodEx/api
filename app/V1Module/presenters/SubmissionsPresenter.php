@@ -200,7 +200,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, $id . '.zip'));
+    $this->sendResponse(new GuzzleResponse($stream, $id . '.zip', "application/zip"));
   }
 
 }
