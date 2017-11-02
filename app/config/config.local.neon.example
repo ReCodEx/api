@@ -1,17 +1,11 @@
 parameters:
   api:
     address: https://recodex.projekty.ms.mff.cuni.cz:4000
-    name: "ReCodEx API"
-    description: "ReCodEx Code Examiner"
 
   accessManager:
-    leeway: 60
     issuer: https://recodex.projekty.ms.mff.cuni.cz
     audience: https://recodex.projekty.ms.mff.cuni.cz
     expiration: 86400  # 24 hours in seconds
-    usedAlgorithm: HS256
-    allowedAlgorithms:
-      - HS256
     verificationKey: "recodex-123"
 
   fileServer:
@@ -19,34 +13,22 @@ parameters:
     auth:
       username: "user"
       password: "pass"
-    timeouts:
-      connection: 500  # milliseconds
 
   broker:
     address: tcp://127.0.0.1:9658
     auth:
       username: "user"
       password: "pass"
-    timeouts:  # in milliseconds
-      ack: 100
-      send: 5000
-      result: 1000
 
   monitor:
     address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws
 
   CAS:
-    serviceId: "cas-uk"
-    ldapConnection:
-      hostname: "ldap.cuni.cz"
-      base_dn: "ou=people,dc=cuni,dc=cz"
-      port: 389
-      security: SSL
-      bindName: "cunipersonalid"
-    fields:
-      email: "mail"
-      firstName: "givenName"
-      lastName: "sn"
+    options:
+      ldap:
+        hostname: "ldap.cuni.cz"
+      oauth:
+        baseUri: "https://idp.cuni.cz/cas/"
 
   sis:
     apiBase: https://sis.university.tld/is/
@@ -56,43 +38,19 @@ parameters:
   emails:
     apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
     footerUrl: https://recodex.projekty.ms.mff.cuni.cz
-    siteName: "ReCodEx"
-    githubUrl: https://github.com/ReCodEx
     from: "ReCodEx <noreply@example.com>"
 
   failures:
     emails:
       to: "Administrator <admin@example.com>"
-      from: %emails.from%
-      subjectPrefix: "ReCodEx Failure Report - "
-
-  assignmentNotifications:
-    emails:
-      from: %emails.from%
-      newAssignmentPrefix: "ReCodEx New Assignment Notification - "
-      assignmentDeadlinePrefix: "ReCodEx Assignment Deadline Is Behind the Corner - "
-
-  submissionNotifications:
-    emails:
-      from: %emails.from%
-      submissionEvaluatedPrefix: "ReCodEx Submission Evaluated Notification - "
 
   forgottenPassword:
     redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/forgotten-password/change"
-    tokenExpiration: 600 # 10 minues
-    emails:
-      from: %emails.from%
-      subjectPrefix: "ReCodEx Forgotten Password Request - "
 
   emailVerification:
     redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/email-verification"
-    tokenExpiration: 600 # 10 minues
-    emails:
-      from: %emails.from%
-      subjectPrefix: "ReCodEx Email Verification Request - "
 
   mail:
-    smtp: true
     host: "smtp.ps.stdin.cz"
     clientHost: recodex.projekty.ms.mff.cuni.cz
     port: 587

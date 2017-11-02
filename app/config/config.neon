@@ -13,7 +13,7 @@ parameters:
     address: https://recodex.projekty.ms.mff.cuni.cz:4000
     name: "ReCodEx API"
     description: "ReCodEx Code Examiner - API Server"
-    version: "1.0.0"
+    version: "1.1.1"
 
   accessManager:
     leeway: 60
@@ -47,7 +47,8 @@ parameters:
     address: wss://recodex.projekty.ms.mff.cuni.cz:4443/ws
 
   uploads:
-      removalThreshold: "1 day"
+    removalThreshold: "1 day"
+    maxPreviewSize: 65536
 
   CAS:
     serviceId: "cas-uk"
@@ -89,7 +90,7 @@ parameters:
 
   failures:
     emails:
-      to: "Šimon Rozsíval <simon@rozsival.com>"
+      to: "Administrator <admin@example.com>"
       from: %emails.from%
       subjectPrefix: "ReCodEx Failure Report - "
 
