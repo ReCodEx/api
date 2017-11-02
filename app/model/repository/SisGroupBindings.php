@@ -31,4 +31,14 @@ class SisGroupBindings extends BaseRepository {
       'group' => $group
     ]);
   }
+
+  /**
+   * @param Group $group
+   * @return SisGroupBinding[]
+   */
+  public function findByGroup(Group $group) {
+    return $this->findBy([
+      "group" => $group
+    ]);
+  }
 }

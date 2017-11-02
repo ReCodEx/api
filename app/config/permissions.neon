@@ -491,3 +491,11 @@ permissions:
       conditions:
         - group.isSupervisor
         - course.isSupervisor
+
+    - allow: true
+      resource: group
+      actions: addStudent
+      conditions:
+        - group.isInSameInstance
+        - student.isSameUser
+        - group.isSisStudent
