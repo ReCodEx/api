@@ -36,4 +36,8 @@ class SisGroupBinding {
   public function getGroup() {
     return $this->group;
   }
+
+  public function getCode() {
+    return $this->code;
+  }
 }
