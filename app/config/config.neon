@@ -181,6 +181,7 @@ acl:
     sis: App\Security\Policies\SisPermissionPolicy
     course: App\Security\Policies\SisCoursePermissionPolicy
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
+    sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension

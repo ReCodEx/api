@@ -338,6 +338,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, $evaluationId . '.zip'));
+    $this->sendResponse(new GuzzleResponse($stream, $evaluationId . '.zip', "application/zip"));
   }
 }

@@ -239,7 +239,9 @@ class ExercisesPresenter extends BasePresenter {
       $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
     }
 
-    if (!$this->exerciseAcl->canCreate() || ($group && !$this->groupAcl->canCreateExercise($group))) {
+    if ($group && !$this->groupAcl->canCreateExercise($group)) {
+      throw new ForbiddenRequestException();
+    } else if (!$group && !$this->exerciseAcl->canCreate()) {
       throw new ForbiddenRequestException();
     }
 

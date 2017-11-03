@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\EvaluationPointsLoader;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -26,202 +27,211 @@ use App\Helpers\EvaluationStatus as ES;
  * @method setResultsUrl(string $url)
  * @method setAccepted(bool $accepted)
  * @method string getJobConfigPath()
+ * @method \DateTime getSubmittedAt()
  */
 class Submission implements JsonSerializable, ES\IEvaluable
 {
-    use MagicAccessors;
+  use MagicAccessors;
 
-    const JOB_TYPE = "student";
+  const JOB_TYPE = "student";
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="guid")
-     * @ORM\GeneratedValue(strategy="UUID")
-     */
-    protected $id;
+  /**
+   * @ORM\Id
+   * @ORM\Column(type="guid")
+   * @ORM\GeneratedValue(strategy="UUID")
+   */
+  protected $id;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected $submittedAt;
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $submittedAt;
 
-    /**
-     * @ORM\Column(type="text")
-     */
-    protected $note;
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $note;
 
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $resultsUrl;
+  /**
+   * @ORM\Column(type="string", nullable=true)
+   */
+  protected $resultsUrl;
 
   /**
    * @ORM\Column(type="string")
    */
   protected $jobConfigPath;
 
-    public function canBeEvaluated(): bool {
-      return $this->resultsUrl !== NULL;
-    }
+  public function canBeEvaluated(): bool {
+    return $this->resultsUrl !== NULL;
+  }
 
-    /**
-     * @var Assignment
-     * @ORM\ManyToOne(targetEntity="Assignment")
-     */
-    protected $assignment;
+  /**
+   * @var Assignment
+   * @ORM\ManyToOne(targetEntity="Assignment")
+   */
+  protected $assignment;
 
   /**
    * @var Submission
    * @ORM\ManyToOne(targetEntity="Submission")
    */
-    protected $originalSubmission;
+  protected $originalSubmission;
 
   /**
    * True if submission is resubmit of another one.
    * @return bool
    */
-    public function isResubmit() {
-      return $this->originalSubmission !== null;
-    }
+  public function isResubmit() {
+    return $this->originalSubmission !== null;
+  }
 
-    public function getMaxPoints() {
-      return $this->assignment->getMaxPoints($this->submittedAt);
-    }
+  /**
+   * Determine if submission was made after deadline.
+   * @return bool
+   */
+  public function isAfterDeadline() {
+    return $this->assignment->isAfterDeadline($this->submittedAt);
+  }
 
-    /**
-     * Get actual points treshold in points.
-     * @return int minimal points which submission has to gain
-     */
-    public function getPointsThreshold(): int {
-      $threshold = $this->assignment->getPointsPercentualThreshold();
-      return floor($this->getMaxPoints() * $threshold);
-    }
+  public function getMaxPoints() {
+    return $this->assignment->getMaxPoints($this->submittedAt);
+  }
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $private = FALSE;
+  /**
+   * Get actual points treshold in points.
+   * @return int minimal points which submission has to gain
+   */
+  public function getPointsThreshold(): int {
+    $threshold = $this->assignment->getPointsPercentualThreshold();
+    return floor($this->getMaxPoints() * $threshold);
+  }
 
-    public function isPrivate() {
-      return $this->private;
-    }
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $private = FALSE;
 
-    public function isPublic() {
-      return !$this->private;
-    }
+  public function isPrivate() {
+    return $this->private;
+  }
 
-    public function setPrivate($private = TRUE) {
-      $this->private = $private;
-    }
+  public function isPublic() {
+    return !$this->private;
+  }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
-    protected $user;
+  public function setPrivate($private = TRUE) {
+    $this->private = $private;
+  }
 
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
-    protected $submittedBy;
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $user;
 
-    /**
-     * @var Solution
-     * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
-     */
-    protected $solution;
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $submittedBy;
+
+  /**
+   * @var Solution
+   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
+   */
+  protected $solution;
 
   /**
    * @var Collection
    * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="submission")
    */
-    protected $failures;
+  protected $failures;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    protected $accepted;
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $accepted;
 
-    public function isAccepted(): bool {
-      return $this->accepted;
+  public function isAccepted(): bool {
+    return $this->accepted;
+  }
+
+  /**
+   * @var SolutionEvaluation
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="submission", cascade={"persist", "remove"})
+   */
+  protected $evaluation;
+
+  public function hasEvaluation(): bool {
+    return $this->evaluation !== NULL;
+  }
+
+  public function getEvaluation(): ?SolutionEvaluation {
+    return $this->evaluation;
+  }
+
+  public function getEvaluationStatus(): string {
+    return ES\EvaluationStatus::getStatus($this);
+  }
+
+  public function setEvaluation(SolutionEvaluation $evaluation) {
+    $this->evaluation = $evaluation;
+    $this->solution->setEvaluated(TRUE);
+  }
+
+  public function getEvaluationSummary() {
+    $summary = [
+      "id" => $this->id,
+      "evaluationStatus" => $this->getEvaluationStatus()
+    ];
+
+    if ($this->evaluation) {
+      $summary = array_merge($summary, [
+        "score" => $this->evaluation->getScore(),
+        "points" => $this->evaluation->getPoints(),
+        "bonusPoints" => $this->evaluation->getBonusPoints()
+      ]);
     }
 
-    /**
-     * @var SolutionEvaluation
-     * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="submission", cascade={"persist", "remove"})
-     */
-    protected $evaluation;
+    return $summary;
+  }
 
-    public function hasEvaluation(): bool {
-      return $this->evaluation !== NULL;
+  public function getTotalPoints() {
+    if ($this->evaluation === NULL) {
+      return 0;
     }
 
-    public function getEvaluation(): ?SolutionEvaluation {
-      return $this->evaluation;
-    }
+    return $this->evaluation->getTotalPoints();
+  }
 
-    public function getEvaluationStatus(): string {
-      return ES\EvaluationStatus::getStatus($this);
-    }
+  public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
+    $evaluation = $this->hasEvaluation()
+      ? $this->getEvaluation()->getData($canViewRatios, $canViewValues)
+      : NULL;
 
-    public function setEvaluation(SolutionEvaluation $evaluation) {
-      $this->evaluation = $evaluation;
-      $this->solution->setEvaluated(TRUE);
-    }
+    return [
+      "id" => $this->id,
+      "userId" => $this->user->getId(),
+      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : NULL,
+      "note" => $this->note,
+      "exerciseAssignmentId" => $this->assignment->getId(),
+      "submittedAt" => $this->submittedAt->getTimestamp(),
+      "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
+      "isCorrect" => $this->isCorrect(),
+      "evaluation" => $evaluation,
+      "files" => $this->solution->getFiles()->getValues(),
+      "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
+      "maxPoints" => $this->getMaxPoints(),
+      "accepted" => $this->accepted,
+      "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
+    ];
+  }
 
-    public function getEvaluationSummary() {
-      $summary = [
-        "id" => $this->id,
-        "evaluationStatus" => $this->getEvaluationStatus()
-      ];
-
-      if ($this->evaluation) {
-        $summary = array_merge($summary, [
-          "score" => $this->evaluation->getScore(),
-          "points" => $this->evaluation->getPoints(),
-          "bonusPoints" => $this->evaluation->getBonusPoints()
-        ]);
-      }
-
-      return $summary;
-    }
-
-    public function getTotalPoints() {
-      if ($this->evaluation === NULL) {
-        return 0;
-      }
-
-      return $this->evaluation->getTotalPoints();
-    }
-
-    public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
-      $evaluation = $this->hasEvaluation()
-        ? $this->getEvaluation()->getData($canViewRatios, $canViewValues)
-        : NULL;
-
-      return [
-        "id" => $this->id,
-        "userId" => $this->user->getId(),
-        "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : NULL,
-        "note" => $this->note,
-        "exerciseAssignmentId" => $this->assignment->getId(),
-        "submittedAt" => $this->submittedAt->getTimestamp(),
-        "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-        "isCorrect" => $this->isCorrect(),
-        "evaluation" => $evaluation,
-        "files" => $this->solution->getFiles()->getValues(),
-        "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
-        "maxPoints" => $this->getMaxPoints(),
-        "accepted" => $this->accepted,
-        "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
-      ];
-    }
-
-    /**
-     * @return array
-     */
-    public function jsonSerialize() {
-      return $this->getData($this->assignment->getCanViewLimitRatios());
-    }
+  /**
+   * @return array
+   */
+  public function jsonSerialize() {
+    return $this->getData($this->assignment->getCanViewLimitRatios());
+  }
 
   /**
    * The name of the user
@@ -235,42 +245,42 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @return Submission
    * @throws ForbiddenRequestException
    */
-    public static function createSubmission(
-      string $note,
-      Assignment $assignment,
-      User $author,
-      User $submitter,
-      Solution $solution,
-      string $jobConfigPath,
-      ?Submission $originalSubmission = NULL
-    ) {
-      // the author must be a student and the submitter must be either this student, or a supervisor of their group
-      if ($assignment->getGroup()->hasValidLicence() === FALSE) {
-        throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
-          IResponse::S402_PAYMENT_REQUIRED);
-      }
-
-      // now that the conditions for submission are validated, here comes the easy part:
-      $entity = new Submission;
-      $entity->assignment = $assignment;
-      $entity->user = $author;
-      $entity->note = $note;
-      $entity->submittedAt = new \DateTime;
-      $entity->submittedBy = $submitter;
-      $entity->solution = $solution;
-      $entity->accepted = false;
-      $entity->originalSubmission = $originalSubmission;
-      $entity->jobConfigPath = $jobConfigPath;
-      $entity->failures = new ArrayCollection();
-
-      return $entity;
+  public static function createSubmission(
+    string $note,
+    Assignment $assignment,
+    User $author,
+    User $submitter,
+    Solution $solution,
+    string $jobConfigPath,
+    ?Submission $originalSubmission = NULL
+  ) {
+    // the author must be a student and the submitter must be either this student, or a supervisor of their group
+    if ($assignment->getGroup()->hasValidLicence() === FALSE) {
+      throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
+        IResponse::S402_PAYMENT_REQUIRED);
     }
+
+    // now that the conditions for submission are validated, here comes the easy part:
+    $entity = new Submission;
+    $entity->assignment = $assignment;
+    $entity->user = $author;
+    $entity->note = $note;
+    $entity->submittedAt = new \DateTime;
+    $entity->submittedBy = $submitter;
+    $entity->solution = $solution;
+    $entity->accepted = false;
+    $entity->originalSubmission = $originalSubmission;
+    $entity->jobConfigPath = $jobConfigPath;
+    $entity->failures = new ArrayCollection();
+
+    return $entity;
+  }
 
   function isFailed(): bool {
     return $this->failures->count() > 0 ;
   }
 
   function isCorrect(): bool {
-    return  $this->evaluation && $this->evaluation->getPoints() > 0;
+    return  EvaluationPointsLoader::isStudentCorrect($this->evaluation);
   }
 }
