@@ -88,8 +88,6 @@ class BoxesCompiler {
         $current->addTaskId($taskId);
         $task->setId($taskId);
 
-        // set global order/priority
-        $task->setPriority($order);
         // construct and set dependencies
         $task->setDependencies($dependencies);
 

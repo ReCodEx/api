@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -43,6 +44,7 @@ abstract class ExecutionBox extends Box
    */
   protected function compileBaseTask(CompilationParams $params): Task {
     $task = new Task();
+    $task->setPriority(Priorities::$EXECUTION);
     $task->setType(TaskType::$EXECUTION);
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
