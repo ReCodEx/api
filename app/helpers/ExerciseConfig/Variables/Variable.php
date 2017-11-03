@@ -23,6 +23,8 @@ class Variable implements JsonSerializable
   const TYPE_KEY = "type";
   /** Name of the value key */
   const VALUE_KEY = "value";
+  /** Name of the additional data key */
+  const ADDITIONAL_DATA_KEY = "additional-data";
 
   /**
    * Variable name.
@@ -43,6 +45,12 @@ class Variable implements JsonSerializable
   protected $value = null;
 
   /**
+   * Additional data value.
+   * @var mixed
+   */
+  protected $additionalData = null;
+
+  /**
    * Prefix of variable.
    * @var string
    */
@@ -60,11 +68,13 @@ class Variable implements JsonSerializable
    * @param string $type
    * @param string|null $name
    * @param string|array $value
+   * @param null $data
    */
-  public function __construct(string $type, string $name = null, $value = null) {
+  public function __construct(string $type, string $name = null, $value = null, $data = null) {
     $this->type = $type;
     $this->name = $name;
     $this->value = $value;
+    $this->additionalData = $data;
     $this->validateType();
     $this->validateValue();
   }
@@ -300,6 +310,24 @@ class Variable implements JsonSerializable
     return is_scalar($val) && Strings::startsWith($val, self::$REFERENCE_KEY);
   }
 
+  /**
+   * Get additional data of this variable.
+   * @return mixed
+   */
+  public function getAdditionalData() {
+    return $this->additionalData;
+  }
+
+  /**
+   * Set additional data of this variable.
+   * @param $data
+   * @return Variable
+   */
+  public function setAdditionalData($data): Variable {
+    $this->additionalData = $data;
+    return $this;
+  }
+
 
   /**
    * Creates and returns properly structured array representing this object.
@@ -311,6 +339,7 @@ class Variable implements JsonSerializable
     $data[self::NAME_KEY] = $this->name;
     $data[self::TYPE_KEY] = $this->type;
     if ($this->value !== null) { $data[self::VALUE_KEY] = $this->value; }
+    if ($this->additionalData) { $data[self::ADDITIONAL_DATA_KEY] = $this->additionalData; }
 
     return $data;
   }
