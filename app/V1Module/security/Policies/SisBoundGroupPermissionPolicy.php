@@ -41,7 +41,7 @@ class SisBoundGroupPermissionPolicy implements IPermissionPolicy {
       'authService' => 'cas-uk'
     ]);
 
-    if ($user === null) {
+    if ($login === null) {
       return false;
     }
 
