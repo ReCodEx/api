@@ -284,7 +284,7 @@ class Exercise implements JsonSerializable
     );
   }
 
-  public static function forkFrom(Exercise $exercise, User $user) {
+  public static function forkFrom(Exercise $exercise, User $user, ?Group $group) {
     return new self(
       1,
       $exercise->difficulty,
@@ -296,7 +296,7 @@ class Exercise implements JsonSerializable
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
       $exercise->pipelines,
-      $exercise->groups,
+      $group ? new ArrayCollection([$group]) : new ArrayCollection,
       $exercise,
       $exercise->exerciseConfig,
       $user,
