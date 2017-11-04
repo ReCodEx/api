@@ -294,17 +294,25 @@ class ExercisesPresenter extends BasePresenter {
    * Fork exercise from given one into the completely new one.
    * @POST
    * @param string $id Identifier of the exercise
+   * @Param(type="post", name="groupId", required=FALSE, description="Identifier of the group to which exercise will be forked")
    * @throws ForbiddenRequestException
    */
   public function actionForkFrom(string $id) {
     $user = $this->getCurrentUser();
     $forkFrom = $this->exercises->findOrThrow($id);
 
-    if (!$this->exerciseAcl->canFork($forkFrom)) {
-      throw new ForbiddenRequestException("Exercise cannot be forked by you");
+    $group = null;
+    if ($this->getRequest()->getPost("groupId")) {
+      $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
     }
 
-    $exercise = Exercise::forkFrom($forkFrom, $user);
+    if (!$this->exerciseAcl->canFork($forkFrom) ||
+        ($group && !$this->groupAcl->canCreateExercise($group)) ||
+        (!$group && !$this->exerciseAcl->canCreate())) {
+      throw new ForbiddenRequestException("Exercise cannot be forked");
+    }
+
+    $exercise = Exercise::forkFrom($forkFrom, $user, $group);
     $this->exercises->persist($exercise);
     $this->sendSuccessResponse($exercise);
   }

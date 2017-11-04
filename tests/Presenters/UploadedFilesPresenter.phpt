@@ -221,7 +221,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("Hello", $result['payload']['content']);
-    Assert::true($result['payload']['malformedCharacters']);
+    Assert::false($result['payload']['malformedCharacters']);
     Assert::false($result['payload']['tooLarge']);
     Assert::noError(function () use ($result) {
       Json::encode($result);

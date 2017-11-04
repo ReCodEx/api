@@ -275,7 +275,7 @@ class Task {
   public function toArray(): array {
     $data = $this->data;
     $data[self::TASK_ID_KEY] = $this->id;
-    $data[self::PRIORITY_KEY] = $this->priority;
+    if ($this->priority) { $data[self::PRIORITY_KEY] = $this->priority; }
     $data[self::FATAL_FAILURE_KEY] = $this->fatalFailure;
     $data[self::CMD_KEY] = [];
     $data[self::CMD_KEY][self::CMD_BIN_KEY] = $this->commandBinary;
