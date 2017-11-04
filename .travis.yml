@@ -22,7 +22,7 @@ install:
   - travis_retry wget -O /tmp/coveralls.phar https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
 
 script:
-  - ./vendor/bin/tester -c test.ini tests --coverage ./coverage.xml --coverage-src ./app
+  - ./vendor/bin/tester -j 4 -c test.ini tests --coverage ./coverage.xml --coverage-src ./app
   - ./phpstan/run.php analyse -l 4 -c phpstan/phpstan.neon app
 
 after_script:

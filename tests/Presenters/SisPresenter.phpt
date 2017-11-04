@@ -50,7 +50,7 @@ class TestSisPresenter extends TestCase {
   public function __construct() {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(Nette\Security\User::class);
     $this->bindings = $container->getByType(SisGroupBindings::class);
     $this->terms = $container->getByType(SisValidTerms::class);

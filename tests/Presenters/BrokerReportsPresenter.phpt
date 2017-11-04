@@ -37,7 +37,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
 
     // Rig HTTP authentication credentials
     $brokerConfig = current($this->container->findByType(BrokerConfig::class));

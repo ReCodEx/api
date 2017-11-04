@@ -35,7 +35,7 @@ class TestUsersPresenter extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->users = $container->getByType(Users::class);
   }

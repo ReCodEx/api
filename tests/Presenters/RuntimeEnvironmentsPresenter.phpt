@@ -35,7 +35,7 @@ class TestRuntimeEnvironmentsPresenter extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
   }
