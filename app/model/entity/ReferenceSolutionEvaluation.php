@@ -63,7 +63,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionEvaluation", cascade={"persist", "remove"})
    * @var SolutionEvaluation
    */
   protected $evaluation;

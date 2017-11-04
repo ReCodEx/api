@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Evaluation\IExercise;
 use \DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -26,15 +27,13 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method User getAuthor()
  * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
  * @method int getVersion()
- * @method string getScoreCalculator()
- * @method string getScoreConfig()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  */
-class Exercise implements JsonSerializable
+class Exercise implements JsonSerializable, IExercise
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -90,10 +89,18 @@ class Exercise implements JsonSerializable
    */
   protected $scoreCalculator;
 
+  public function getScoreCalculator(): ?string {
+    return $this->scoreCalculator;
+  }
+
   /**
    * @ORM\Column(type="text")
    */
   protected $scoreConfig;
+
+  public function getScoreConfig(): string {
+    return $this->scoreConfig;
+  }
 
   /**
    * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")

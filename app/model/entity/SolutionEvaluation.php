@@ -27,6 +27,7 @@ use JsonSerializable;
  * @method setScore(float $score)
  * @method Collection getTestResults()
  * @method Submission getSubmission()
+ * @method ReferenceSolutionEvaluation getReferenceSolutionEvaluation()
  * @method bool getInitFailed()
  */
 class SolutionEvaluation implements JsonSerializable
@@ -89,6 +90,11 @@ class SolutionEvaluation implements JsonSerializable
    * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
    */
   protected $submission;
+
+  /**
+   * @ORM\OneToOne(targetEntity="ReferenceSolutionEvaluation", mappedBy="evaluation")
+   */
+  protected $referenceSolutionEvaluation;
 
 
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
