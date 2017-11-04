@@ -290,7 +290,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $exercise = current($this->presenter->exercises->findAll());
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET',
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
       ['action' => 'forkFrom', 'id' => $exercise->getId()]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -306,6 +306,35 @@ class TestExercisesPresenter extends Tester\TestCase
     }));
     Assert::equal(1, $forked->getVersion());
     Assert::equal($user, $forked->getAuthor());
+  }
+
+  public function testForkFromToGroup()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = current($this->presenter->exercises->findAll());
+    $group = current($this->presenter->groups->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'forkFrom', 'id' => $exercise->getId()],
+      ['groupId' => $group->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    /** @var Exercise $forked */
+    $forked = $result['payload'];
+    Assert::type(\App\Model\Entity\Exercise::class, $forked);
+    Assert::true($forked->getLocalizedTexts()->forAll(function ($i, $text) use ($exercise) {
+      return $exercise->getLocalizedTexts()->contains($text);
+    }));
+    Assert::equal(1, $forked->getVersion());
+    Assert::equal($user, $forked->getAuthor());
+    Assert::equal(1, $forked->getGroups()->count());
+    Assert::equal($group->getId(), $forked->getGroups()->first()->getId());
   }
 
 }

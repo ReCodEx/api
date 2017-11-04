@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -97,6 +98,7 @@ class JavacCompilationBox extends Box
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();
+    $task->setPriority(Priorities::$INITIATION);
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
     $task->setCommandBinary(self::$JAVAC_BINARY);

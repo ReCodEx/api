@@ -81,40 +81,45 @@ class TestDirectoriesResolver {
   /**
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
-   * @param Node[] $firstNodesOfTests indexed with testId
+   * @param Node[][] $testNodes indexed with testId
    * @param CompilationParams $params
    * @return RootedTree
    */
-  private function addDirectories(RootedTree $tree, array $firstNodesOfTests,
+  private function addDirectories(RootedTree $tree, array $testNodes,
       CompilationParams $params): RootedTree {
-    if (count($firstNodesOfTests) === 0) {
+    if (count($testNodes) === 0) {
       return $tree;
     }
 
     // go through all tests
     $lastMkdirNode = null;
     $result = new RootedTree();
-    foreach ($firstNodesOfTests as $testId => $firstTestNode) {
+    foreach ($testNodes as $testId => $nodes) {
       if ($lastMkdirNode === null) {
         $lastMkdirNode = $this->createMkdirNode($testId);
         $result->addRootNode($lastMkdirNode);
-        $firstTestNode->addDependency($lastMkdirNode);
       } else {
         $mkdirNode = $this->createMkdirNode($testId);
         $mkdirNode->addParent($lastMkdirNode);
         $lastMkdirNode->addChild($mkdirNode);
-        // set dependency for the first proper task of test
-        $firstTestNode->addDependency($mkdirNode);
         $lastMkdirNode = $mkdirNode;
+      }
+
+      // set dependencies for all nodes in test
+      foreach ($nodes as $node) {
+        $node->addDependency($lastMkdirNode);
       }
 
       if ($params->isDebug()) {
         $resultMkdirNode = $this->createResultMkdirNode($testId);
         $resultMkdirNode->addParent($lastMkdirNode);
         $lastMkdirNode->addChild($resultMkdirNode);
-        // set dependency for the first proper task of test
-        $firstTestNode->addDependency($resultMkdirNode);
         $lastMkdirNode = $resultMkdirNode;
+
+        // set dependencies for all nodes in test
+        foreach ($nodes as $node) {
+          $node->addDependency($lastMkdirNode);
+        }
       }
     }
 
@@ -134,17 +139,18 @@ class TestDirectoriesResolver {
    * @return RootedTree
    */
   public function resolve(RootedTree $tree, CompilationParams $params): RootedTree {
-    $firstNodesOfTests = [];
+    $testNodes = [];
     $stack = array_reverse($tree->getRootNodes());
     while (!empty($stack)) {
       $current = array_pop($stack);
       $testId = $current->getTestId();
       if ($testId !== null) {
-        // first nodes of each tests are saved and further dependencies
+        // all nodes of each tests are saved and further dependencies
         // on mkdir tasks are set on them
-        if (!array_key_exists($testId, $firstNodesOfTests)) {
-          $firstNodesOfTests[$testId] = $current;
+        if (!array_key_exists($testId, $testNodes)) {
+          $testNodes[$testId] = [];
         }
+        $testNodes[$testId][] = $current;
       }
 
       // process current node
@@ -156,7 +162,7 @@ class TestDirectoriesResolver {
       }
     }
 
-    return $this->addDirectories($tree, $firstNodesOfTests, $params);
+    return $this->addDirectories($tree, $testNodes, $params);
   }
 
 }
