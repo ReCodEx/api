@@ -49,7 +49,7 @@ class TestDeadlineNotifications extends Tester\TestCase
 
   public function __construct(Nette\DI\Container $container) {
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->users = $this->container->getByType(Users::class);
   }
 

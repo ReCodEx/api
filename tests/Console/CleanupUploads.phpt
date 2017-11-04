@@ -32,7 +32,7 @@ class TestCleanupUploads extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->users = $container->getByType(Users::class);
     $this->uploadedFiles = $container->getByType(UploadedFiles::class);
   }

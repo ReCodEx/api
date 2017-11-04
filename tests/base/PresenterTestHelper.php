@@ -2,6 +2,12 @@
 
 use App\Model\Entity\User;
 use Nette\DI\Container;
+use Nette\Utils\FileSystem;
+use Kdyby\Doctrine\EntityManager;
+use Kdyby\Doctrine\Configuration;
+use Doctrine\Common\EventManager;
+use Nette\Utils\Random;
+use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
 {
@@ -11,30 +17,73 @@ class PresenterTestHelper
   const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
   const STUDENT_GROUP_MEMBER_PASSWORD = "";
 
-  public static function prepareDatabase(Container $container): Kdyby\Doctrine\EntityManager
-  {
-    $em = $container->getByType(Kdyby\Doctrine\EntityManager::class);
+  private static function createEntityManager(string $dbPath, Configuration $configuration, EventManager $eventManager): EntityManager {
+    return EntityManager::create(
+      ["driver" => "pdo_sqlite", "path" => $dbPath],
+      $configuration,
+      $eventManager
+    );
+  }
 
-    $schemaTool = new Doctrine\ORM\Tools\SchemaTool($em);
-    $schemaTool->dropDatabase();
-    $schemaTool->createSchema($em->getMetadataFactory()->getAllMetadata());
+  private static function registerEntityManager(Container $container, EntityManager $entityManager) {
+    $emServiceName = $container->findByType(EntityManager::class)[0];
+    $container->removeService($emServiceName);
+    $container->addService($emServiceName, $entityManager);
+  }
 
+  public static function getEntityManager(Container $container): EntityManager {
+    /** @var EntityManager $em */
+    $em = $container->getByType(EntityManager::class);
     return $em;
   }
 
   public static function fillDatabase(Container $container, string $group = "demo")
   {
-    $command = $container->getByType(App\Console\DoctrineFixtures::class);
+    $tmpDir = $container->getParameters()["tempDir"] . DIRECTORY_SEPARATOR . "testDB";
+    if (is_dir("/tmp")) { // Creating a sqlite db in tmpfs is much faster than on a regular file system
+      $tmpDir = "/tmp/ReCodEx" . DIRECTORY_SEPARATOR . "testDB";
+    }
 
-    $input = new Symfony\Component\Console\Input\ArgvInput(["index.php", "-test", "base", $group]);
-    $output = new Symfony\Component\Console\Output\NullOutput();
+    FileSystem::createDir($tmpDir);
 
-    $command->run($input, $output);
+    $dbPath = $tmpDir . DIRECTORY_SEPARATOR . "database_" . $group . ".db";
+    $dumpPath = $tmpDir . DIRECTORY_SEPARATOR . "database_" . $group . ".sql";
+    $originalEm = static::getEntityManager($container);
 
-    // destroy EntityManager to safely save all work and start with new one on demand
-    $container->getByType(Kdyby\Doctrine\EntityManager::class)->clear();
+    $lockHandle = fopen($dbPath . ".lock", "c+");
+    flock($lockHandle, LOCK_EX);
 
-    return;
+    if (!is_file($dbPath) || !is_file($dumpPath) || filesize($dumpPath) === 0) {
+      // Create a new entity manager connected to a temporary sqlite database
+      $schemaEm = static::createEntityManager($dbPath, $originalEm->getConfiguration(),
+        $originalEm->getEventManager());
+      static::registerEntityManager($container, $schemaEm);
+
+      $schemaTool = new Doctrine\ORM\Tools\SchemaTool($schemaEm);
+      $schemaTool->dropSchema($schemaEm->getMetadataFactory()->getAllMetadata());
+      $schemaTool->createSchema($schemaEm->getMetadataFactory()->getAllMetadata());
+
+      $command = $container->getByType(App\Console\DoctrineFixtures::class);
+
+      $input = new Symfony\Component\Console\Input\ArgvInput(["index.php", "-test", "base", $group]);
+      $output = new Symfony\Component\Console\Output\NullOutput();
+
+      $command->run($input, $output);
+      $originalEm->flush();
+      $originalEm->clear();
+
+      $sqliteProcess = new Process("sqlite3 --bail $dbPath");
+      $sqliteProcess->setInput(".dump");
+      $sqliteProcess->run();
+      file_put_contents($dumpPath, $sqliteProcess->getOutput());
+
+      // Replace the temporary entity manager with the original one
+      static::registerEntityManager($container, $originalEm);
+    }
+
+    flock($lockHandle, LOCK_UN);
+    $originalEm->getConnection()->exec(file_get_contents($dumpPath));
+    $originalEm->clear();
   }
 
   public static function createPresenter(Nette\DI\Container $container, string $class): Nette\Application\UI\Presenter

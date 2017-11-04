@@ -34,7 +34,7 @@ class TestExerciseLimitsValidator extends Tester\TestCase
 
   public function __construct(Container $container) {
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
   }
 
   private static $config = [

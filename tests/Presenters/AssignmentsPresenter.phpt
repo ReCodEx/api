@@ -47,7 +47,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
     $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);

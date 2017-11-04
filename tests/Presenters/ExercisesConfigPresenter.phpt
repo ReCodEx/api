@@ -34,7 +34,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
   {
     global $container;
     $this->container = $container;
-    $this->em = PresenterTestHelper::prepareDatabase($container);
+    $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
     $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
