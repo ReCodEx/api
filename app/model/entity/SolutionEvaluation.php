@@ -122,11 +122,13 @@ class SolutionEvaluation implements JsonSerializable
 
   /**
    * Loads and processes the results of the submission.
-   * @param  EvaluationResults $results The interpreted results
-   * @param  Submission $submission|NULL The submission. It can be null in case we're handling a reference solution evaluation
-   * @throws SubmissionEvaluationFailedException
+   * @param EvaluationResults $results The interpreted results
+   * @param Submission|null $submission The submission. It can be null in case we're handling a reference solution evaluation
+   * @param ReferenceSolutionEvaluation|null $evaluation
    */
-  public function __construct(EvaluationResults $results, Submission $submission = NULL) {
+  public function __construct(EvaluationResults $results,
+      Submission $submission = null,
+      ReferenceSolutionEvaluation $evaluation = null) {
     $this->evaluatedAt = new \DateTime;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
@@ -136,9 +138,12 @@ class SolutionEvaluation implements JsonSerializable
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
     $this->submission = $submission;
+    $this->referenceSolutionEvaluation = $evaluation;
 
-    if ($submission !== NULL) {
+    if ($submission !== null) {
       $submission->setEvaluation($this);
+    } else if ($evaluation !== null) {
+      $evaluation->setEvaluation($this);
     }
 
     // set test results

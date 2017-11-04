@@ -96,7 +96,7 @@ class EvaluationLoader {
       return NULL;
     }
 
-    $evaluation = new SolutionEvaluation($results, NULL);
+    $evaluation = new SolutionEvaluation($results, null, $referenceSolution);
     $this->pointsLoader->setReferenceScore($evaluation);
     return $evaluation;
   }
