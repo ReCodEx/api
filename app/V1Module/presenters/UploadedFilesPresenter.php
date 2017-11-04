@@ -113,9 +113,9 @@ class UploadedFilesPresenter extends BasePresenter {
 
     // Remove UTF BOM prefix...
     $utf8bom = "\xef\xbb\xbf";
-    $fixedContent = Strings::replace($content, "~^$utf8bom~");
+    $content = Strings::replace($content, "~^$utf8bom~");
 
-    $fixedContent = Encoding::toUTF8($fixedContent);
+    $fixedContent = Encoding::toUTF8($content);
 
     $this->sendSuccessResponse([
       "content" => $fixedContent,
