@@ -59,7 +59,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
   }
 
 
-  public function isInGroupUserSupervises(Identity $identity, UploadedFile $file)
+  public function isSupplementaryInGroupUserSupervises(Identity $identity, UploadedFile $file)
   {
     if (!($file instanceof SupplementaryExerciseFile)) {
       return false;

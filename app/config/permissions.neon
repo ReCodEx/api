@@ -423,7 +423,7 @@ permissions:
           - viewDetail
           - downloadSupplementaryFile
       conditions:
-          - file.isInGroupUserSupervises
+          - file.isSupplementaryInGroupUserSupervises
 
     #####################################
     # Runtime environments permisssions #
