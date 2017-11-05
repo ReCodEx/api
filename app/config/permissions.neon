@@ -416,6 +416,15 @@ permissions:
       conditions:
           - file.isAuthorOfSupplementaryFileExercises
 
+    - allow: true
+      role: supervisor
+      resource: uploadedFile
+      actions:
+          - viewDetail
+          - downloadSupplementaryFile
+      conditions:
+          - file.isSupplementaryInGroupUserSupervises
+
     #####################################
     # Runtime environments permisssions #
     #####################################

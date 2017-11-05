@@ -58,6 +58,30 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     return FALSE;
   }
 
+
+  public function isSupplementaryInGroupUserSupervises(Identity $identity, UploadedFile $file)
+  {
+    if (!($file instanceof SupplementaryExerciseFile)) {
+      return false;
+    }
+
+    $user = $identity->getUserData();
+    if ($user === null) {
+      return false;
+    }
+
+    foreach ($file->getExercises() as $exercise) {
+      foreach ($exercise->getGroups() as $group) {
+        if ($group->isAdminOrSupervisorOfSubgroup($user)) {
+          return true;  // The user can assign one of the corresponding exercises in hir group.
+        }
+      }
+    }
+
+    return false;
+  }
+
+
   public function isOwner(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === NULL) {
