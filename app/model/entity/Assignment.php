@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Evaluation\IExercise;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
@@ -20,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method DateTime getDeletedAt()
- * @method string getScoreCalculator()
  * @method Collection getRuntimeEnvironments()
  * @method Collection getHardwareGroups()
  * @method int getPointsPercentualThreshold()
@@ -30,7 +30,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Group getGroup()
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
- * @method string getScoreConfig()
  * @method ExerciseConfig getExerciseConfig()
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
@@ -49,7 +48,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setIsBonus(bool $bonus)
  * @method setPointsPercentualThreshold(float $threshold)
  */
-class Assignment implements JsonSerializable
+class Assignment implements JsonSerializable, IExercise
 {
   use MagicAccessors;
 
@@ -248,10 +247,18 @@ class Assignment implements JsonSerializable
    */
   protected $scoreCalculator;
 
+  public function getScoreCalculator(): ?string {
+    return $this->scoreCalculator;
+  }
+
   /**
    * @ORM\Column(type="text")
    */
   protected $scoreConfig;
+
+  public function getScoreConfig(): string {
+    return $this->scoreConfig;
+  }
 
   /**
    * @ORM\Column(type="datetime")

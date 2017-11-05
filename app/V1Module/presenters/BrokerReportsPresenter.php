@@ -177,7 +177,6 @@ class BrokerReportsPresenter extends BasePresenter {
       return FALSE;
     }
 
-    $submission->setEvaluation($evaluation);
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
 
@@ -197,7 +196,6 @@ class BrokerReportsPresenter extends BasePresenter {
       return;
     }
 
-    $referenceSolutionEvaluation->setEvaluation($solutionEvaluation);
     $this->evaluations->persist($solutionEvaluation);
     $this->referenceSolutionEvaluations->persist($referenceSolutionEvaluation);
   }

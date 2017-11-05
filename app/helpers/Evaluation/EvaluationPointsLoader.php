@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Helpers\Evaluation\IExercise;
 use App\Model\Entity\SolutionEvaluation;
 
 
@@ -43,24 +44,8 @@ class EvaluationPointsLoader {
       return;
     }
 
-    // setup
-    $score = 0;
-
-    // calculate scores for all tests
-    $scores = [];
-    foreach ($evaluation->getTestResults() as $testResult) {
-      $scores[$testResult->getTestName()] = $testResult->getScore();
-    }
-
-    // calculate percentual score of whole submission
     $submission = $evaluation->getSubmission();
-    $calculator = $this->calculators->getCalculator($submission->getAssignment()->getScoreCalculator());
-    if ($calculator !== NULL && !$evaluation->getInitFailed()) {
-      $score = $calculator->computeScore($submission->getAssignment()->getScoreConfig(), $scores);
-    }
-
-    // ... and set results
-    $evaluation->setScore($score);
+    $this->setScore($evaluation, $submission->getAssignment());
   }
 
   /**
@@ -129,22 +114,44 @@ class EvaluationPointsLoader {
 
 
   /**
-   * Evaluation score as a mean of all score values.
+   * Evaluation score calculated with exercise calculator.
    * @param SolutionEvaluation $evaluation
    */
   public function setReferenceScore(SolutionEvaluation $evaluation) {
-    $testsCount = $evaluation->getTestResults()->count();
-    if ($testsCount === 0) {
+    if ($evaluation === null || $evaluation->getReferenceSolutionEvaluation() === null) {
+      // not a reference submission
       return;
     }
 
+    $referenceSolution = $evaluation->getReferenceSolutionEvaluation()->getReferenceSolution();
+    $this->setScore($evaluation, $referenceSolution->getExercise());
+  }
+
+
+  /**
+   * Helper function which handle the same score setting functionality for
+   * student and reference solution.
+   * @param SolutionEvaluation $evaluation
+   * @param IExercise $exercise
+   */
+  private function setScore(SolutionEvaluation $evaluation, IExercise $exercise) {
+    // setup
     $score = 0;
+
+    // calculate scores for all tests
+    $scores = [];
     foreach ($evaluation->getTestResults() as $testResult) {
-      $score += $testResult->getScore();
+      $scores[$testResult->getTestName()] = $testResult->getScore();
+    }
+
+    // calculate percentual score of whole solution
+    $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
+    if ($calculator !== NULL && !$evaluation->getInitFailed()) {
+      $score = $calculator->computeScore($exercise->getScoreConfig(), $scores);
     }
 
     // ... and set results
-    $evaluation->setScore($score / $testsCount);
+    $evaluation->setScore($score);
   }
 
 }
