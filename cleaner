@@ -1,4 +1,4 @@
 #!/bin/sh
 
 # Clean api cache folder
-rm -fr temp/cache/ temp/proxies/ temp/security temp/helpers*
+rm -fr temp/cache/ temp/proxies/ temp/security temp/helpers* temp/testDB

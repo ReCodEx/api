@@ -175,6 +175,7 @@ class TestBaseCompiler extends Tester\TestCase
         "type" => "judge",
         "portsIn" => [
           "judge-type" => [ "type" => "string", "value" => "" ],
+          "custom-judge" => ['type' => 'file', 'value' => ""],
           "actual-output" => [ "type" => "file", "value" => "actual_output" ],
           "expected-output" => [ "type" => "file", "value" => "expected_output" ]
         ],

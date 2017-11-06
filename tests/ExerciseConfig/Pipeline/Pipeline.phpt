@@ -35,6 +35,7 @@ class TestPipeline extends Tester\TestCase
         "type" => "judge",
         "portsIn" => [
           "judge-type" => ['type' => 'string', 'value' => ""],
+          "custom-judge" => ['type' => 'file', 'value' => ""],
           "expected-output" => ['type' => 'file', 'value' => "test_in_file"],
           "actual-output" => ['type' => 'file', 'value' => "out_exec_file"]
         ],
@@ -113,7 +114,7 @@ class TestPipeline extends Tester\TestCase
     Assert::equal("evaluation", $pipeline->get("evaluation")->getName());
 
     Assert::count(0, $pipeline->get("file")->getInputPorts());
-    Assert::count(3, $pipeline->get("evaluation")->getInputPorts());
+    Assert::count(4, $pipeline->get("evaluation")->getInputPorts());
 
     Assert::count(1, $pipeline->get("file")->getOutputPorts());
 

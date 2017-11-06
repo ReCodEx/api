@@ -106,6 +106,9 @@ App\Model\Entity\PipelineConfig:
                     judge-type:
                       type: string
                       value: ""
+                    custom-judge:
+                      type: file
+                      value: ""
                     actual-output:
                       type: file
                       value: actual-output
