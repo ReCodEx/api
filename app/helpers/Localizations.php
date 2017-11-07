@@ -8,6 +8,8 @@ use Nette\StaticClassException;
 use Nette;
 
 class Localizations extends Nette\Object {
+  public const PRIMARY_LOCALE = "cs";
+
   public function __construct() {
     throw new StaticClassException();
   }
@@ -52,5 +54,16 @@ class Localizations extends Nette\Object {
     foreach ($toRemove as $entity) {
       $collection->removeElement($entity);
     }
+  }
+
+  public static function getPrimaryLocalization(Collection $collection): ?LocalizedEntity {
+    /** @var LocalizedEntity $text */
+    foreach ($collection as $text) {
+      if ($text->getLocale() === self::PRIMARY_LOCALE) {
+        return $text;
+      }
+    }
+
+    return !$collection->isEmpty() ? $$collection->first() : NULL;
   }
 }
