@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\SisGroupBinding;
 use App\Model\Entity\SisValidTerm;
 use App\Model\Entity\User;
@@ -213,18 +214,15 @@ class SisPresenter extends BasePresenter {
     }
     $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
 
-    $group = new Group(
-      $caption,
-      $remoteCourse->getCourseId(),
-      $remoteCourse->getAnnotation($language),
-      $parentGroup->getInstance(),
-      $user,
-      $parentGroup
-    );
-    $this->groups->persist($group, FALSE);
+    $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
+    $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
+    $group->getLocalizedTexts()->add($localization);
+
+    $this->groups->persist($localization, false);
+    $this->groups->persist($group, false);
 
     $binding = new SisGroupBinding($group, $remoteCourse->getCode());
-    $this->sisGroupBindings->persist($binding, TRUE);
+    $this->sisGroupBindings->persist($binding, true);
 
     $this->sendSuccessResponse($group);
   }

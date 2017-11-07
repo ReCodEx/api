@@ -6,6 +6,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
@@ -83,7 +84,7 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..", description="Name of the group")
    * @Param(type="post", name="description", required=FALSE, description="Description of the group")
    * @Param(type="post", name="instanceId", validation="string:36", description="An identifier of the instance where the group should be created")
-   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
+   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable identifier of the group")
    * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE, description="Identifier of the parent group (if none is given, a top-level group is created)")
    * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
@@ -113,9 +114,14 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
     }
 
-    $group = new Group($name, $externalId, $description, $instance, $user, $parentGroup, $publicStats, $isPublic);
-    $this->groups->persist($group);
+    $group = new Group($externalId, $instance, $user, $parentGroup, $publicStats, $isPublic);
+    $localization = new LocalizedGroup($user->getSettings()->getDefaultLanguage(), $name, $description);
+    $group->getLocalizedTexts()->add($localization);
+
+    $this->groups->persist($group, false);
+    $this->groups->persist($localization, false);
     $this->groups->flush();
+
     $this->sendSuccessResponse($group);
   }
 
