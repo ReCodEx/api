@@ -22,12 +22,13 @@ use App\Helpers\EvaluationStatus as ES;
  * @method Solution getSolution()
  * @method Assignment getAssignment()
  * @method string getResultsUrl()
- * @method User getUser()
  * @method bool getAccepted()
  * @method setResultsUrl(string $url)
  * @method setAccepted(bool $accepted)
  * @method string getJobConfigPath()
  * @method \DateTime getSubmittedAt()
+ * @method int getBonusPoints()
+ * @method setBonusPoints(int $points)
  */
 class Submission implements JsonSerializable, ES\IEvaluable
 {
@@ -45,7 +46,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
   /**
    * @ORM\Column(type="datetime")
    */
-  protected $submittedAt;
+  protected $submittedAt; // TODO: have to be deleted, after Submission have its own evaluation entity
 
   /**
    * @ORM\Column(type="text")
@@ -127,11 +128,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
   /**
    * @ORM\ManyToOne(targetEntity="User")
    */
-  protected $user;
-
-  /**
-   * @ORM\ManyToOne(targetEntity="User")
-   */
   protected $submittedBy;
 
   /**
@@ -154,6 +150,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
   public function isAccepted(): bool {
     return $this->accepted;
   }
+
+  /**
+   * @ORM\Column(type="integer")
+   */
+  protected $bonusPoints;
 
   /**
    * @var SolutionEvaluation
@@ -188,7 +189,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       $summary = array_merge($summary, [
         "score" => $this->evaluation->getScore(),
         "points" => $this->evaluation->getPoints(),
-        "bonusPoints" => $this->evaluation->getBonusPoints()
+        "bonusPoints" => $this->bonusPoints
       ]);
     }
 
@@ -200,7 +201,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
       return 0;
     }
 
-    return $this->evaluation->getTotalPoints();
+    return $this->evaluation->getPoints() + $this->bonusPoints;
   }
 
   public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
@@ -210,7 +211,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
     return [
       "id" => $this->id,
-      "userId" => $this->user->getId(),
       "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : NULL,
       "note" => $this->note,
       "exerciseAssignmentId" => $this->assignment->getId(),
@@ -218,10 +218,11 @@ class Submission implements JsonSerializable, ES\IEvaluable
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "isCorrect" => $this->isCorrect(),
       "evaluation" => $evaluation,
-      "files" => $this->solution->getFiles()->getValues(),
+      "solution" => $this->solution,
       "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
       "maxPoints" => $this->getMaxPoints(),
       "accepted" => $this->accepted,
+      "bonusPoints" => $this->bonusPoints,
       "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
     ];
   }
@@ -237,7 +238,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * The name of the user
    * @param string $note
    * @param Assignment $assignment
-   * @param User $author The author of the solution
    * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
    * @param string $jobConfigPath
@@ -248,7 +248,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
   public static function createSubmission(
     string $note,
     Assignment $assignment,
-    User $author,
     User $submitter,
     Solution $solution,
     string $jobConfigPath,
@@ -263,12 +262,12 @@ class Submission implements JsonSerializable, ES\IEvaluable
     // now that the conditions for submission are validated, here comes the easy part:
     $entity = new Submission;
     $entity->assignment = $assignment;
-    $entity->user = $author;
     $entity->note = $note;
     $entity->submittedAt = new \DateTime;
     $entity->submittedBy = $submitter;
     $entity->solution = $solution;
     $entity->accepted = false;
+    $entity->bonusPoints = 0;
     $entity->originalSubmission = $originalSubmission;
     $entity->jobConfigPath = $jobConfigPath;
     $entity->failures = new ArrayCollection();

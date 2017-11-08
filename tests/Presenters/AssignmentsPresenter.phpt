@@ -305,7 +305,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $submission = current($this->presenter->submissions->findAll());
-    $user = $submission->getUser();
+    $user = $submission->getSolution()->getAuthor();
     $assignment = $submission->getAssignment();
     $submissions = $this->presenter->submissions->findSubmissions($assignment, $user->getId());
     $submissions = array_map(function ($submission) {
@@ -329,7 +329,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignment = current($this->presenter->assignments->findAll());
-    $user = $assignment->getSubmissions()->first()->getUser();
+    $user = $assignment->getSubmissions()->first()->getSolution()->getAuthor();
     $submission = $assignment->getBestSolution($user);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',

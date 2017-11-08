@@ -33,7 +33,7 @@ class SubmissionPermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    return $user === $submission->getUser();
+    return $user === $submission->getSolution()->getAuthor();
   }
 
   public function areEvaluationDetailsPublic(Identity $identity, Submission $submission) {

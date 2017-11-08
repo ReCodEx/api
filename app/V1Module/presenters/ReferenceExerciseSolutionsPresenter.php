@@ -288,7 +288,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);
+      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath, $this->getCurrentUser());
       $this->referenceEvaluations->persist($evaluation);
 
       try {

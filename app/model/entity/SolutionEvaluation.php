@@ -21,8 +21,6 @@ use JsonSerializable;
  * @method bool getEvaluationFailed()
  * @method float getScore()
  * @method int getPoints()
- * @method int getBonusPoints()
- * @method setBonusPoints(int $points)
  * @method setPoints(int $points)
  * @method setScore(float $score)
  * @method Collection getTestResults()
@@ -63,15 +61,6 @@ class SolutionEvaluation implements JsonSerializable
   protected $points;
 
   /**
-   * @ORM\Column(type="integer", nullable=true)
-   */
-  protected $bonusPoints;
-
-  public function getTotalPoints() {
-    return $this->points + $this->bonusPoints;
-  }
-
-  /**
    * @ORM\Column(type="text")
    */
   protected $resultYml;
@@ -109,7 +98,6 @@ class SolutionEvaluation implements JsonSerializable
       "evaluatedAt" => $this->evaluatedAt->getTimestamp(),
       "score" => $this->score,
       "points" => $this->points,
-      "bonusPoints" => $this->bonusPoints,
       "initFailed" => $this->initFailed,
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
@@ -133,7 +121,6 @@ class SolutionEvaluation implements JsonSerializable
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
     $this->score = 0;
-    $this->bonusPoints = 0;
     $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();

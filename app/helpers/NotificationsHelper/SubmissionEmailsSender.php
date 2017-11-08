@@ -38,7 +38,7 @@ class SubmissionEmailsSender {
   public function submissionEvaluated(Submission $submission): bool {
     $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
 
-    $user = $submission->getUser();
+    $user = $submission->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
       return true;
     }
@@ -65,7 +65,7 @@ class SubmissionEmailsSender {
       "group" => $submission->getAssignment()->getGroup()->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
-      "points" => $submission->getEvaluation()->getTotalPoints(),
+      "points" => $submission->getEvaluation()->getPoints(),
       "maxPoints" => $submission->getAssignment()->getMaxPoints($submission->getEvaluation()->getEvaluatedAt())
     ]);
   }

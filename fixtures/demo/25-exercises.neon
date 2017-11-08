@@ -149,6 +149,7 @@ App\Model\Entity\ReferenceSolutionEvaluation:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
             - "jobConfigPath"
+            - @demoAdmin
         evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
         resultsUrl: "chacha cheche chichi chocho"
 

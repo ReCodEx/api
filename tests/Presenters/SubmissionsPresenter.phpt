@@ -114,7 +114,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     Assert::equal("OK", $result['payload']);
 
     $submission = $this->presenter->submissions->get($submission->id);
-    Assert::equal(4, $submission->getEvaluation()->getBonusPoints());
+    Assert::equal(4, $submission->getBonusPoints());
   }
 
   public function testSetAcceptedSubmission()
@@ -126,7 +126,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
     $user = $assignment->getGroup()->getSupervisors()->filter(
       function (User $user) use ($submission) {
-        return $submission->getUser() !== $user && $user->getRole() !== 'superadmin';
+        return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
       })->first();
 
     Assert::notSame(NULL, $user);
@@ -159,7 +159,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
     $user = $assignment->getGroup()->getSupervisors()->filter(
       function (User $user) use ($submission) {
-        return $submission->getUser() !== $user && $user->getRole() !== 'superadmin';
+        return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
       })->first();
     Assert::notSame(NULL, $user);
 

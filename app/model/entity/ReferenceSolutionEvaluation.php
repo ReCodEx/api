@@ -33,6 +33,16 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $id;
 
   /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $submittedAt;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $submittedBy;
+
+  /**
    * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="evaluations")
    */
   protected $referenceSolution;
@@ -91,15 +101,20 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
       "referenceSolutionId" => $this->referenceSolution->getId(),
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "isCorrect" => $this->isCorrect(),
-      "evaluation" => $evaluationData
+      "evaluation" => $evaluationData,
+      "submittedAt" => $this->submittedAt->getTimestamp(),
+      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, HardwareGroup $hwGroup, string $jobConfigPath) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution,
+      HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
     $this->jobConfigPath = $jobConfigPath;
     $this->failures = new ArrayCollection();
+    $this->submittedAt = new DateTime;
+    $this->submittedBy = $submittedBy;
   }
 
   function isFailed(): bool {

@@ -185,7 +185,7 @@ class SubmitPresenter extends BasePresenter {
 
     // create and persist submission in the database
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $user, $loggedInUser, $solution, $jobConfigPath);
+    $submission = Submission::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath);
     $this->submissions->persist($submission);
 
     $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
@@ -270,7 +270,7 @@ class SubmitPresenter extends BasePresenter {
         $compilationParams);
 
     $submission = Submission::createSubmission(
-      $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
+      $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
       $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
     );
 
@@ -303,7 +303,7 @@ class SubmitPresenter extends BasePresenter {
     /** @var Submission $oldSubmission */
     foreach ($assignment->getSubmissions() as $oldSubmission) {
       $submission = Submission::createSubmission(
-        $oldSubmission->getNote(), $oldSubmission->getAssignment(), $oldSubmission->getUser(), $user,
+        $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
         $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), $oldSubmission
       );
 

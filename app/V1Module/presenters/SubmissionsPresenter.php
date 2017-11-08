@@ -112,14 +112,13 @@ class SubmissionsPresenter extends BasePresenter {
   public function actionSetBonusPoints(string $id) {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
     $submission = $this->submissions->findOrThrow($id);
-    $evaluation = $submission->getEvaluation();
 
     if (!$this->submissionAcl->canSetBonusPoints($submission)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }
 
-    $evaluation->setBonusPoints($newBonusPoints);
-    $this->evaluations->persist($evaluation);
+    $submission->setBonusPoints($newBonusPoints);
+    $this->submissions->flush();
 
     $this->sendSuccessResponse("OK");
   }
@@ -142,7 +141,7 @@ class SubmissionsPresenter extends BasePresenter {
     }
 
     // accepted flag has to be set to false for all other submissions
-    $assignmentSubmissions = $submission->getAssignment()->getValidSubmissions($submission->getUser());
+    $assignmentSubmissions = $submission->getAssignment()->getValidSubmissions($submission->getSolution()->getAuthor());
     foreach ($assignmentSubmissions as $assignmentSubmission) {
       $assignmentSubmission->setAccepted(false);
     }
@@ -153,7 +152,7 @@ class SubmissionsPresenter extends BasePresenter {
 
     /** @var Group $groupOfSubmission */
     $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getUser()->getId());
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getSolution()->getAuthor()->getId());
   }
 
   /**
@@ -174,7 +173,7 @@ class SubmissionsPresenter extends BasePresenter {
 
     /** @var Group $groupOfSubmission */
     $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getUser()->getId());
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getSolution()->getAuthor()->getId());
   }
 
   /**
