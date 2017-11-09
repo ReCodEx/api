@@ -64,6 +64,6 @@ class Localizations extends Nette\Object {
       }
     }
 
-    return !$collection->isEmpty() ? $$collection->first() : NULL;
+    return !$collection->isEmpty() ? $collection->first() : NULL;
   }
 }
