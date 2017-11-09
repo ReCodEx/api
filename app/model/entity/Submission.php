@@ -109,23 +109,6 @@ class Submission implements JsonSerializable, ES\IEvaluable
   }
 
   /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $private = FALSE;
-
-  public function isPrivate() {
-    return $this->private;
-  }
-
-  public function isPublic() {
-    return !$this->private;
-  }
-
-  public function setPrivate($private = TRUE) {
-    $this->private = $private;
-  }
-
-  /**
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $submittedBy;

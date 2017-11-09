@@ -245,7 +245,6 @@ class SubmitPresenter extends BasePresenter {
    * Resubmit a submission (for example in case of broker failure)
    * @POST
    * @param string $id Identifier of the submission
-   * @Param(type="post", name="private", validation="bool", "Flag the submission as private (not visible to students)")
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
    * @throws ForbiddenRequestException
    */
@@ -253,7 +252,6 @@ class SubmitPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
-    $isPrivate = filter_var($req->getPost("private"), FILTER_VALIDATE_BOOLEAN);
 
     /** @var Submission $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
@@ -273,8 +271,6 @@ class SubmitPresenter extends BasePresenter {
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
       $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
     );
-
-    $submission->setPrivate($isPrivate);
 
     // persist all the data in the database - this will also assign the UUID to the submission
     $this->submissions->persist($submission);

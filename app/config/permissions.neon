@@ -237,7 +237,6 @@ permissions:
           - viewDetail
           - viewEvaluation
       conditions:
-          - submission.isPublic
           - submission.isAuthor
 
     - allow: true
@@ -248,7 +247,6 @@ permissions:
       conditions:
           - submission.areEvaluationDetailsPublic
           - submission.isAuthor
-          - submission.isPublic
 
     - allow: true
       resource: submission

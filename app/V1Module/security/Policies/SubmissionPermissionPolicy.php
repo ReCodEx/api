@@ -10,10 +10,6 @@ class SubmissionPermissionPolicy implements IPermissionPolicy {
     return Submission::class;
   }
 
-  public function isPublic(Identity $identity, Submission $submission) {
-    return $submission->isPublic();
-  }
-
   public function isSupervisor(Identity $identity, Submission $submission) {
     $assignment = $submission->getAssignment();
     $group = $assignment->getGroup();
