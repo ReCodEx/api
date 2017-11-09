@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Localizations;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -15,7 +16,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method Group getRootGroup()
- * @method string getName()
  * @method setAdmin(User $admin)
  */
 class Instance implements JsonSerializable
@@ -28,16 +28,6 @@ class Instance implements JsonSerializable
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
-
-  /**
-   * @ORM\Column(type="text", nullable=true)
-   */
-  protected $description;
 
   /**
    * @ORM\Column(type="boolean")
@@ -76,6 +66,7 @@ class Instance implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", cascade={"persist"})
+   * @var Group
    */
   protected $rootGroup;
 
@@ -175,10 +166,13 @@ class Instance implements JsonSerializable
   }
 
   public function getData(User $user = NULL) {
+    /** @var LocalizedGroup $localizedRootGroup */
+    $localizedRootGroup = Localizations::getPrimaryLocalization($this->rootGroup->getLocalizedTexts());
+
     return [
       "id" => $this->id,
-      "name" => $this->name,
-      "description" => $this->description,
+      "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "",
+      "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "",
       "hasValidLicence" => $this->hasValidLicence(),
       "isOpen" => $this->isOpen,
       "isAllowed" => $this->isAllowed,
@@ -200,10 +194,14 @@ class Instance implements JsonSerializable
     $this->members = new ArrayCollection();
   }
 
-  public static function createInstance(string $name, bool $isOpen, User $admin = NULL, string $description = NULL) {
+  public function getName() {
+    /** @var LocalizedGroup $localizedRootGroup */
+    $localizedRootGroup = Localizations::getPrimaryLocalization($this->rootGroup->getLocalizedTexts());
+    return $localizedRootGroup->getName();
+  }
+
+  public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = NULL) {
     $instance = new Instance;
-    $instance->name = $name;
-    $instance->description = $description;
     $instance->isOpen = $isOpen;
     $instance->isAllowed = TRUE; //@todo - find out who should set this and how
     $instance->needsLicence = TRUE;
@@ -222,6 +220,10 @@ class Instance implements JsonSerializable
       FALSE,
       TRUE
     );
+
+    foreach ($localizedTexts as $text) {
+      $instance->rootGroup->addLocalizedText($text);
+    }
 
     return $instance;
   }
