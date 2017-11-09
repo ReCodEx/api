@@ -25,7 +25,7 @@ App\Model\Entity\SolutionFile:
             - "some/file/path/filename.ext"
             - "@demoSolution<current()>"
 
-App\Model\Entity\Submission:
+App\Model\Entity\AssignmentSolution:
     "submission{1..2}":
         __construct:
             createSubmission:

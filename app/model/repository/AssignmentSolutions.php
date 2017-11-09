@@ -6,16 +6,16 @@ use Nette;
 use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 
 /**
- * @method Submission findOrThrow($id)
+ * @method AssignmentSolution findOrThrow($id)
  */
-class Submissions extends BaseRepository {
+class AssignmentSolutions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, Submission::class);
+    parent::__construct($em, AssignmentSolution::class);
   }
 
   public function findSubmissions(Assignment $assignment, string $userId) {

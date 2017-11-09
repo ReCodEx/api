@@ -13,7 +13,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
 
@@ -24,7 +24,7 @@ use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\SolutionEvaluations;
-use App\Model\Repository\Submissions;
+use App\Model\Repository\AssignmentSolutions;
 
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -56,7 +56,7 @@ class AssignmentsPresenter extends BasePresenter {
   public $assignments;
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutions
    * @inject
    */
   public $submissions;
@@ -212,7 +212,7 @@ class AssignmentsPresenter extends BasePresenter {
         $oldThreshold != $threshold ||
         $oldFirstDeadlineTimestamp !== $firstDeadlineTimestamp ||
         $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp) {
-      foreach ($assignment->getSubmissions() as $submission) {
+      foreach ($assignment->getAssignmentSolutions() as $submission) {
         $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
       }
       $this->solutionEvaluations->flush();
@@ -367,10 +367,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (Submission $submission) {
+    $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (AssignmentSolution $submission) {
       return $this->submissionAcl->canViewDetail($submission);
     });
-    $submissions = array_map(function (Submission $submission) {
+    $submissions = array_map(function (AssignmentSolution $submission) {
       $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
       $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
       return $submission->getData($canViewDetails, $canViewValues);

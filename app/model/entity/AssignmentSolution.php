@@ -30,7 +30,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  */
-class Submission implements JsonSerializable, ES\IEvaluable
+class AssignmentSolution implements JsonSerializable, ES\IEvaluable
 {
   use MagicAccessors;
 
@@ -74,8 +74,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
   protected $assignment;
 
   /**
-   * @var Submission
-   * @ORM\ManyToOne(targetEntity="Submission")
+   * @var AssignmentSolution
+   * @ORM\ManyToOne(targetEntity="AssignmentSolution")
    */
   protected $originalSubmission;
 
@@ -121,7 +121,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="submission")
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolution")
    */
   protected $failures;
 
@@ -141,7 +141,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
 
   /**
    * @var SolutionEvaluation
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="submission", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="assignmentSolution", cascade={"persist", "remove"})
    */
   protected $evaluation;
 
@@ -224,8 +224,8 @@ class Submission implements JsonSerializable, ES\IEvaluable
    * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
    * @param string $jobConfigPath
-   * @param Submission $originalSubmission
-   * @return Submission
+   * @param AssignmentSolution $originalSubmission
+   * @return AssignmentSolution
    * @throws ForbiddenRequestException
    */
   public static function createSubmission(
@@ -234,7 +234,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     User $submitter,
     Solution $solution,
     string $jobConfigPath,
-    ?Submission $originalSubmission = NULL
+    ?AssignmentSolution $originalSubmission = NULL
   ) {
     // the author must be a student and the submitter must be either this student, or a supervisor of their group
     if ($assignment->getGroup()->hasValidLicence() === FALSE) {
@@ -243,7 +243,7 @@ class Submission implements JsonSerializable, ES\IEvaluable
     }
 
     // now that the conditions for submission are validated, here comes the easy part:
-    $entity = new Submission;
+    $entity = new AssignmentSolution;
     $entity->assignment = $assignment;
     $entity->note = $note;
     $entity->submittedAt = new \DateTime;

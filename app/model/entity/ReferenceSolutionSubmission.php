@@ -19,7 +19,7 @@ use App\Helpers\EvaluationResults as ER;
  * @method string setResultsUrl(string $url)
  * @method string getJobConfigPath()
  */
-class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
+class ReferenceSolutionSubmission implements JsonSerializable, ES\IEvaluable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
@@ -43,7 +43,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $submittedBy;
 
   /**
-   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="evaluations")
+   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
    */
   protected $referenceSolution;
 
@@ -64,7 +64,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionEvaluation")
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission")
    */
   protected $failures;
 
@@ -73,7 +73,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   }
 
   /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionEvaluation", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionSubmission", cascade={"persist", "remove"})
    * @var SolutionEvaluation
    */
   protected $evaluation;

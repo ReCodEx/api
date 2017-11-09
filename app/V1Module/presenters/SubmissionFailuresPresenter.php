@@ -2,10 +2,10 @@
 namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\Submissions;
+use App\Model\Repository\AssignmentSolutions;
 use App\Security\ACL\ISubmissionFailurePermissions;
 use DateTime;
 
@@ -22,7 +22,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
   public $submissionFailures;
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutions
    * @inject
    */
   public $submissions;
@@ -65,7 +65,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionListBySubmission(string $submissionId) {
-    /** @var Submission $submission */
+    /** @var AssignmentSolution $submission */
     $submission = $this->submissions->get($submissionId);
     if (!$this->submissionFailureAcl->canViewForSubmission($submission)) {
       throw new ForbiddenRequestException();

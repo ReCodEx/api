@@ -6,11 +6,11 @@ use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ReferenceExerciseSolutions;
-use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\V1Module\Presenters\ReferenceExerciseSolutionsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -36,7 +36,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
   /** @var ReferenceExerciseSolutions */
   private $referenceSolutions;
 
-  /** @var ReferenceSolutionEvaluations */
+  /** @var ReferenceSolutionSubmissions */
   private $referenceSolutionEvaluations;
 
   /** @var Exercises */
@@ -49,7 +49,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->referenceSolutions = $container->getByType(ReferenceExerciseSolutions::class);
-    $this->referenceSolutionEvaluations = $container->getByType(ReferenceSolutionEvaluations::class);
+    $this->referenceSolutionEvaluations = $container->getByType(ReferenceSolutionSubmissions::class);
     $this->exercises = $container->getByType(Exercises::class);
   }
 
@@ -108,7 +108,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     $payload = $result['payload'];
     Assert::equal(1, count($payload));
-    Assert::type(ReferenceSolutionEvaluation::class, $payload[0]);
+    Assert::type(ReferenceSolutionSubmission::class, $payload[0]);
   }
 
   public function testGetSolutionEvaluation()
@@ -129,7 +129,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::type(ReferenceSolutionEvaluation::class, $payload);
+    Assert::type(ReferenceSolutionSubmission::class, $payload);
     Assert::equal($evaluation->getId(), $payload->getId());
     Assert::same($evaluation, $payload);
   }
@@ -212,7 +212,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
     $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->times(2)
-      ->shouldReceive("setType")->withArgs([ReferenceSolutionEvaluation::JOB_TYPE])->andReturn($mockSubmissionHeader)->times(2);
+      ->shouldReceive("setType")->withArgs([ReferenceSolutionSubmission::JOB_TYPE])->andReturn($mockSubmissionHeader)->times(2);
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);

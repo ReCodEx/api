@@ -9,12 +9,12 @@ use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Repository\Assignments;
-use App\Model\Repository\Submissions;
+use App\Model\Repository\AssignmentSolutions;
 use App\V1Module\Presenters\SubmitPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Model\Entity\UploadedFile;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 
 
 /**
@@ -110,7 +110,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
     $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
-      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
@@ -154,7 +154,7 @@ class TestSubmitPresenter extends Tester\TestCase
     Assert::count(2, $result['payload']);
 
     $submission = $result['payload']['submission'];
-    Assert::type(Submission::class, $submission);
+    Assert::type(AssignmentSolution::class, $submission);
     Assert::equal($assignment->getId(), $submission->getAssignment()->getId());
 
     $webSocketChannel = $result['payload']['webSocketChannel'];
@@ -192,7 +192,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
     $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
-      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
@@ -241,8 +241,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
   public function testResubmit()
   {
-    /** @var Submissions $submissions */
-    $submissions = $this->container->getByType(Submissions::class);
+    /** @var AssignmentSolutions $submissions */
+    $submissions = $this->container->getByType(AssignmentSolutions::class);
 
     $submission = current($submissions->findAll());
     $submissionCount = count($submissions->findAll());
@@ -260,7 +260,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
     $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->once()
-      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
+      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->once();
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
@@ -310,8 +310,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
   public function testResubmitAll()
   {
-    /** @var Submissions $submissions */
-    $submissions = $this->container->getByType(Submissions::class);
+    /** @var AssignmentSolutions $submissions */
+    $submissions = $this->container->getByType(AssignmentSolutions::class);
 
     /** @var Assignments $assignments */
     $assignments = $this->container->getByType(Assignments::class);
@@ -323,7 +323,7 @@ class TestSubmitPresenter extends Tester\TestCase
     // Find an assignment with desired amount of submissions
     /** @var Assignment $candidate */
     foreach ($assignments->findAll() as $candidate) {
-      if (count($candidate->getSubmissions()) == $submissionCount) {
+      if (count($candidate->getAssignmentSolutions()) == $submissionCount) {
         $assignment = $candidate;
         break;
       }
@@ -343,7 +343,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
     $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->times($submissionCount)
-      ->shouldReceive("setType")->withArgs([Submission::JOB_TYPE])->andReturn($mockSubmissionHeader)->times($submissionCount);
+      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->times($submissionCount);
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);

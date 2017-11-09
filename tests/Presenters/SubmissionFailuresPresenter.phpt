@@ -87,7 +87,7 @@ class TestSubmissionFailures extends Tester\TestCase
     /** @var SubmissionFailure $item */
     foreach ($result["payload"] as $item) {
       Assert::type(SubmissionFailure::class, $item);
-      Assert::same($submission, $item->submission);
+      Assert::same($submission, $item->assignmentSolution);
     }
   }
 

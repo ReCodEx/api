@@ -329,7 +329,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignment = current($this->presenter->assignments->findAll());
-    $user = $assignment->getSubmissions()->first()->getSolution()->getAuthor();
+    $user = $assignment->getAssignmentSolutions()->first()->getSolution()->getAuthor();
     $submission = $assignment->getBestSolution($user);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',

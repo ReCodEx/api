@@ -17,7 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getDescription()
  * @method Solution getSolution()
  * @method Exercise getExercise()
- * @method Collection getEvaluations()
+ * @method Collection getSubmissions()
  * @method DateTime getDeletedAt()
  */
 class ReferenceExerciseSolution implements JsonSerializable
@@ -52,9 +52,9 @@ class ReferenceExerciseSolution implements JsonSerializable
   protected $solution;
 
   /**
-   * @ORM\OneToMany(targetEntity="ReferenceSolutionEvaluation", mappedBy="referenceSolution")
+   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution")
    */
-  protected $evaluations;
+  protected $submissions;
 
   public function getFiles() {
     return $this->solution->getFiles();
@@ -66,8 +66,8 @@ class ReferenceExerciseSolution implements JsonSerializable
       "description" => $this->description,
       "solution" => $this->solution,
       "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
-      "evaluations" => $this->evaluations->map(
-        function (ReferenceSolutionEvaluation $evaluation) {
+      "evaluations" => $this->submissions->map(
+        function (ReferenceSolutionSubmission $evaluation) {
           return $evaluation->getId();
         }
       )->getValues()
@@ -78,7 +78,7 @@ class ReferenceExerciseSolution implements JsonSerializable
     $this->exercise = $exercise;
     $this->description = $description;
     $this->solution = new Solution($user, $runtime);
-    $this->evaluations = new ArrayCollection;
+    $this->submissions = new ArrayCollection;
   }
 
   public function getRuntimeEnvironment() {

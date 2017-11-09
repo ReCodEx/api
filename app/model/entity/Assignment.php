@@ -25,7 +25,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getHardwareGroups()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
- * @method Collection getSubmissions()
+ * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
  * @method DateTime getCreatedAt()
@@ -77,7 +77,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->allowSecondDeadline = $allowSecondDeadline;
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
-    $this->submissions = new ArrayCollection;
+    $this->assignmentSolutions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
     $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
@@ -374,10 +374,10 @@ class Assignment implements JsonSerializable, IExercise
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Submission", mappedBy="assignment")
+   * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
    * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
-  protected $submissions;
+  protected $assignmentSolutions;
 
   /**
    * @param User $user
@@ -387,7 +387,7 @@ class Assignment implements JsonSerializable, IExercise
     $fromThatUser = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user))
       ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
-    $validSubmissions = function (Submission $submission) {
+    $validSubmissions = function (AssignmentSolution $submission) {
       if ($submission->isFailed()) {
         return false;
       }
@@ -402,7 +402,7 @@ class Assignment implements JsonSerializable, IExercise
       return true;
     };
 
-    return $this->submissions
+    return $this->assignmentSolutions
       ->matching($fromThatUser)
       ->filter($validSubmissions);
   }
@@ -413,17 +413,17 @@ class Assignment implements JsonSerializable, IExercise
 
   /**
    * @param User $user
-   * @return Submission
+   * @return AssignmentSolution
    */
   public function getLastSolution(User $user) {
     $usersSolutions = Criteria::create()
       ->where(Criteria::expr()->eq("user", $user));
-    return $this->submissions->matching($usersSolutions)->first();
+    return $this->assignmentSolutions->matching($usersSolutions)->first();
   }
 
   /**
    * @param User $user
-   * @return Submission|NULL
+   * @return AssignmentSolution|NULL
    */
   public function getBestSolution(User $user) {
     $usersSolutions = Criteria::create()
@@ -431,8 +431,8 @@ class Assignment implements JsonSerializable, IExercise
       ->andWhere(Criteria::expr()->neq("evaluation", NULL));
 
     return array_reduce(
-      $this->submissions->matching($usersSolutions)->getValues(),
-      function (?Submission $best, Submission $submission) {
+      $this->assignmentSolutions->matching($usersSolutions)->getValues(),
+      function (?AssignmentSolution $best, AssignmentSolution $submission) {
         if ($best === NULL) {
           return $submission;
         }

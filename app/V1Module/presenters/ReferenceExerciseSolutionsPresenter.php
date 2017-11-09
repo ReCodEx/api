@@ -15,11 +15,11 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
-use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
@@ -50,7 +50,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $referenceSolutions;
 
   /**
-   * @var ReferenceSolutionEvaluations
+   * @var ReferenceSolutionSubmissions
    * @inject
    */
   public $referenceEvaluations;
@@ -137,7 +137,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
     }
 
-    $this->sendSuccessResponse($solution->getEvaluations()->getValues());
+    $this->sendSuccessResponse($solution->getSubmissions()->getValues());
   }
 
   /**
@@ -288,7 +288,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath, $this->getCurrentUser());
+      $evaluation = new ReferenceSolutionSubmission($referenceSolution, $hwGroup, $jobConfigPath, $this->getCurrentUser());
       $this->referenceEvaluations->persist($evaluation);
 
       try {
@@ -321,7 +321,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotReadyException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
-    /** @var ReferenceSolutionEvaluation $evaluation */
+    /** @var ReferenceSolutionSubmission $evaluation */
     $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
     $refSolution = $evaluation->getReferenceSolution();
 

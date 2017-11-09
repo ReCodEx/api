@@ -4,7 +4,7 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\HardwareGroup;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\RuntimeEnvironment;
 
 use Kdyby\Doctrine\EntityManager;
@@ -14,10 +14,10 @@ use Doctrine\Common\Collections\Criteria;
 use Nette;
 use DateTime;
 
-class ReferenceSolutionEvaluations extends BaseRepository {
+class ReferenceSolutionSubmissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
-    parent::__construct($em, ReferenceSolutionEvaluation::class);
+    parent::__construct($em, ReferenceSolutionSubmission::class);
   }
 
 }

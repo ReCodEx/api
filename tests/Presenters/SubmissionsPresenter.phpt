@@ -1,7 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\SubmissionsPresenter;
 use Tester\Assert;
@@ -120,7 +120,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testSetAcceptedSubmission()
   {
     $allSubmissions = $this->presenter->submissions->findAll();
-    /** @var Submission $submission */
+    /** @var AssignmentSolution $submission */
     $submission = array_pop($allSubmissions);
     $assignment = $submission->getAssignment();
 
@@ -148,7 +148,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testUnsetAcceptedSubmission()
   {
     $allSubmissions = $this->presenter->submissions->findAll();
-    /** @var Submission $submission */
+    /** @var AssignmentSolution $submission */
     $submission = array_pop($allSubmissions);
     $assignment = $submission->getAssignment();
 

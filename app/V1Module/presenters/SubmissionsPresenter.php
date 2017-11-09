@@ -6,8 +6,8 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\Group;
-use App\Model\Entity\Submission;
-use App\Model\Repository\Submissions;
+use App\Model\Entity\AssignmentSolution;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
@@ -21,7 +21,7 @@ use App\Security\ACL\ISubmissionPermissions;
 class SubmissionsPresenter extends BasePresenter {
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutions
    * @inject
    */
   public $submissions;
@@ -65,7 +65,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->submissions->findAll(), (function (Submission $submission) {
+    $submissions = array_filter($this->submissions->findAll(), (function (AssignmentSolution $submission) {
       return $this->submissionAcl->canViewDetail($submission);
     }));
 
@@ -79,7 +79,7 @@ class SubmissionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $id) {
-    /** @var Submission $submission */
+    /** @var AssignmentSolution $submission */
     $submission = $this->submissions->findOrThrow($id);
 
     if (!$this->submissionAcl->canViewEvaluation($submission)) {

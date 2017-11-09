@@ -4,7 +4,7 @@ namespace App\Helpers\Notifications;
 
 use Latte;
 use App\Helpers\EmailHelper;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use Nette\Utils\Arrays;
 
 /**
@@ -32,10 +32,10 @@ class SubmissionEmailsSender {
 
   /**
    * Submission was evaluated and we have to let the user know it.
-   * @param Submission $submission
+   * @param AssignmentSolution $submission
    * @return bool
    */
-  public function submissionEvaluated(Submission $submission): bool {
+  public function submissionEvaluated(AssignmentSolution $submission): bool {
     $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
 
     $user = $submission->getSolution()->getAuthor();
@@ -54,10 +54,10 @@ class SubmissionEmailsSender {
 
   /**
    * Prepare and format body of the mail
-   * @param Submission $submission
+   * @param AssignmentSolution $submission
    * @return string Formatted mail body to be sent
    */
-  private function createSubmissionEvaluatedBody(Submission $submission): string {
+  private function createSubmissionEvaluatedBody(AssignmentSolution $submission): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [

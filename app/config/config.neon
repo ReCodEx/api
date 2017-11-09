@@ -306,8 +306,8 @@ services:
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
   - App\Model\Repository\ReferenceExerciseSolutions
-  - App\Model\Repository\ReferenceSolutionEvaluations
-  - App\Model\Repository\Submissions
+  - App\Model\Repository\ReferenceSolutionSubmissions
+  - App\Model\Repository\AssignmentSolutions
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles

@@ -2,15 +2,15 @@
 namespace App\Security\Policies;
 
 
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Security\Identity;
 
 class SubmissionPermissionPolicy implements IPermissionPolicy {
   public function getAssociatedClass() {
-    return Submission::class;
+    return AssignmentSolution::class;
   }
 
-  public function isSupervisor(Identity $identity, Submission $submission) {
+  public function isSupervisor(Identity $identity, AssignmentSolution $submission) {
     $assignment = $submission->getAssignment();
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
@@ -22,7 +22,7 @@ class SubmissionPermissionPolicy implements IPermissionPolicy {
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
-  public function isAuthor(Identity $identity, Submission $submission) {
+  public function isAuthor(Identity $identity, AssignmentSolution $submission) {
     $user = $identity->getUserData();
 
     if ($user === NULL) {
@@ -32,7 +32,7 @@ class SubmissionPermissionPolicy implements IPermissionPolicy {
     return $user === $submission->getSolution()->getAuthor();
   }
 
-  public function areEvaluationDetailsPublic(Identity $identity, Submission $submission) {
+  public function areEvaluationDetailsPublic(Identity $identity, AssignmentSolution $submission) {
     return $submission->getAssignment()->getCanViewLimitRatios();
   }
 }

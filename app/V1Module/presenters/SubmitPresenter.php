@@ -12,7 +12,7 @@ use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
@@ -20,7 +20,7 @@ use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\Submissions;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
@@ -40,7 +40,7 @@ class SubmitPresenter extends BasePresenter {
   public $assignments;
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutions
    * @inject
    */
   public $submissions;
@@ -185,13 +185,13 @@ class SubmitPresenter extends BasePresenter {
 
     // create and persist submission in the database
     $note = $req->getPost("note");
-    $submission = Submission::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath);
+    $submission = AssignmentSolution::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath);
     $this->submissions->persist($submission);
 
     $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
   }
 
-  private function submissionFailed(Submission $submission, string $message) {
+  private function submissionFailed(AssignmentSolution $submission, string $message) {
     $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
     throw new SubmissionFailedException($message);
@@ -199,12 +199,12 @@ class SubmitPresenter extends BasePresenter {
 
   /**
    * Take a complete submission entity and submit it to the backend
-   * @param Submission $submission a persisted submission entity
+   * @param AssignmentSolution $submission a persisted submission entity
    * @param JobConfig\JobConfig|null $jobConfig
    * @return array The response that can be sent to the client
    * @throws InvalidArgumentException
    */
-  private function finishSubmission(Submission $submission, JobConfig\JobConfig $jobConfig = null) {
+  private function finishSubmission(AssignmentSolution $submission, JobConfig\JobConfig $jobConfig = null) {
     if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
@@ -253,7 +253,7 @@ class SubmitPresenter extends BasePresenter {
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
 
-    /** @var Submission $oldSubmission */
+    /** @var AssignmentSolution $oldSubmission */
     $oldSubmission = $this->submissions->findOrThrow($id);
     if (!$this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
@@ -267,7 +267,7 @@ class SubmitPresenter extends BasePresenter {
         $oldSubmission->getSolution()->getRuntimeEnvironment(),
         $compilationParams);
 
-    $submission = Submission::createSubmission(
+    $submission = AssignmentSolution::createSubmission(
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
       $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
     );
@@ -296,9 +296,9 @@ class SubmitPresenter extends BasePresenter {
 
     $result = [];
 
-    /** @var Submission $oldSubmission */
-    foreach ($assignment->getSubmissions() as $oldSubmission) {
-      $submission = Submission::createSubmission(
+    /** @var AssignmentSolution $oldSubmission */
+    foreach ($assignment->getAssignmentSolutions() as $oldSubmission) {
+      $submission = AssignmentSolution::createSubmission(
         $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
         $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), $oldSubmission
       );

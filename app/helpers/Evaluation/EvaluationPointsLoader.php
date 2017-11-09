@@ -39,12 +39,12 @@ class EvaluationPointsLoader {
    * @param SolutionEvaluation|null $evaluation
    */
   private function setStudentScore(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getSubmission() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
       // not a student submission
       return;
     }
 
-    $submission = $evaluation->getSubmission();
+    $submission = $evaluation->getAssignmentSolution();
     $this->setScore($evaluation, $submission->getAssignment());
   }
 
@@ -54,13 +54,13 @@ class EvaluationPointsLoader {
    * @param SolutionEvaluation|null $evaluation
    */
   public function setStudentPoints(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getSubmission() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
       // not a student submission
       return;
     }
 
     // setup
-    $submission = $evaluation->getSubmission();
+    $submission = $evaluation->getAssignmentSolution();
     $maxPoints = $submission->getMaxPoints();
 
     // calculate points from the score
@@ -85,12 +85,12 @@ class EvaluationPointsLoader {
    * @return bool
    */
   public static function isStudentCorrect(?SolutionEvaluation $evaluation): bool {
-    if ($evaluation === null || $evaluation->getSubmission() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
       // not a student submission
       return false;
     }
 
-    $submission = $evaluation->getSubmission();
+    $submission = $evaluation->getAssignmentSolution();
     $assignment = $submission->getAssignment();
     if ($assignment->hasAssignedPoints()) {
       return $evaluation->getPoints() > 0;
@@ -118,12 +118,12 @@ class EvaluationPointsLoader {
    * @param SolutionEvaluation $evaluation
    */
   public function setReferenceScore(SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getReferenceSolutionEvaluation() === null) {
+    if ($evaluation === null || $evaluation->getReferenceSolutionSubmission() === null) {
       // not a reference submission
       return;
     }
 
-    $referenceSolution = $evaluation->getReferenceSolutionEvaluation()->getReferenceSolution();
+    $referenceSolution = $evaluation->getReferenceSolutionSubmission()->getReferenceSolution();
     $this->setScore($evaluation, $referenceSolution->getExercise());
   }
 

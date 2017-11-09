@@ -1,7 +1,7 @@
 <?php
 use App\Helpers\BrokerConfig;
-use App\Model\Entity\ReferenceSolutionEvaluation;
-use App\Model\Entity\Submission;
+use App\Model\Entity\ReferenceSolutionSubmission;
+use App\Model\Entity\AssignmentSolution;
 use App\V1Module\Presenters\BrokerReportsPresenter;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
@@ -81,7 +81,7 @@ class TestBrokerReportsPresenter extends Tester\TestCase
 
     $request = new Request("V1:BrokerReports", "POST", [
         "action" => "jobStatus",
-        "jobId" => Submission::JOB_TYPE . '_' . $submission->id
+        "jobId" => AssignmentSolution::JOB_TYPE . '_' . $submission->id
       ], [
         "status" => "FAILED",
         "message" => "whatever"
@@ -102,12 +102,12 @@ class TestBrokerReportsPresenter extends Tester\TestCase
   public function testReferenceEvaluationFailed()
   {
     $referenceSolution = current($this->presenter->referenceSolutions->findAll());
-    $evaluation = $referenceSolution->getEvaluations()->first();
+    $evaluation = $referenceSolution->getSubmissions()->first();
     $failureCount = count($this->presenter->submissionFailures->findByReferenceSolutionEvaluation($evaluation));
 
     $request = new Request("V1:BrokerReports", "POST", [
       "action" => "jobStatus",
-      "jobId" => ReferenceSolutionEvaluation::JOB_TYPE . '_' . $evaluation->id
+      "jobId" => ReferenceSolutionSubmission::JOB_TYPE . '_' . $evaluation->id
     ], [
         "status" => "FAILED",
         "message" => "whatever"

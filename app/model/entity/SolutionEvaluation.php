@@ -24,8 +24,8 @@ use JsonSerializable;
  * @method setPoints(int $points)
  * @method setScore(float $score)
  * @method Collection getTestResults()
- * @method Submission getSubmission()
- * @method ReferenceSolutionEvaluation getReferenceSolutionEvaluation()
+ * @method AssignmentSolution getAssignmentSolution()
+ * @method ReferenceSolutionSubmission getReferenceSolutionSubmission()
  * @method bool getInitFailed()
  */
 class SolutionEvaluation implements JsonSerializable
@@ -76,14 +76,14 @@ class SolutionEvaluation implements JsonSerializable
   protected $testResults;
 
   /**
-   * @ORM\OneToOne(targetEntity="Submission", mappedBy="evaluation")
+   * @ORM\OneToOne(targetEntity="AssignmentSolution", mappedBy="evaluation")
    */
-  protected $submission;
+  protected $assignmentSolution;
 
   /**
-   * @ORM\OneToOne(targetEntity="ReferenceSolutionEvaluation", mappedBy="evaluation")
+   * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", mappedBy="evaluation")
    */
-  protected $referenceSolutionEvaluation;
+  protected $referenceSolutionSubmission;
 
 
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
@@ -111,12 +111,12 @@ class SolutionEvaluation implements JsonSerializable
   /**
    * Loads and processes the results of the submission.
    * @param EvaluationResults $results The interpreted results
-   * @param Submission|null $submission The submission. It can be null in case we're handling a reference solution evaluation
-   * @param ReferenceSolutionEvaluation|null $evaluation
+   * @param AssignmentSolution|null $submission The submission. It can be null in case we're handling a reference solution evaluation
+   * @param ReferenceSolutionSubmission|null $evaluation
    */
   public function __construct(EvaluationResults $results,
-      Submission $submission = null,
-      ReferenceSolutionEvaluation $evaluation = null) {
+      AssignmentSolution $submission = null,
+      ReferenceSolutionSubmission $evaluation = null) {
     $this->evaluatedAt = new \DateTime;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
@@ -124,14 +124,8 @@ class SolutionEvaluation implements JsonSerializable
     $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
-    $this->submission = $submission;
-    $this->referenceSolutionEvaluation = $evaluation;
-
-    if ($submission !== null) {
-      $submission->setEvaluation($this);
-    } else if ($evaluation !== null) {
-      $evaluation->setEvaluation($this);
-    }
+    $this->assignmentSolution = $submission;
+    $this->referenceSolutionSubmission = $evaluation;
 
     // set test results
     foreach ($results->getTestsResults() as $result) {
