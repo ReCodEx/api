@@ -132,9 +132,9 @@ class TestSisPresenter extends TestCase {
     $group = $result['payload'];
 
     Assert::type(Group::class, $group);
-    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $group->getName());
+    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $group->getLocalizedTexts()->first()->getName());
     Assert::same("NSWI153", $group->getExternalId());
-    Assert::same("The Lorem ipsum", $group->getDescription());
+    Assert::same("The Lorem ipsum", $group->getLocalizedTexts()->first()->getDescription());
 
     Assert::notSame(NULL, $this->bindings->findByGroupAndCode($group, $courseId));
   }

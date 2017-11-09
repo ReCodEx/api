@@ -216,7 +216,7 @@ class SisPresenter extends BasePresenter {
 
     $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
     $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
-    $group->getLocalizedTexts()->add($localization);
+    $group->addLocalizedText($localization);
 
     $this->groups->persist($localization, false);
     $this->groups->persist($group, false);

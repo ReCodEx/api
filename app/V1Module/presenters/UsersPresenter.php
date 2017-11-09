@@ -291,9 +291,11 @@ class UsersPresenter extends BasePresenter {
       "stats" => $user->getGroupsAsStudent()->map(
         function (Group $group) use ($user) {
           $stats = $group->getStudentsStats($user);
+          $localizedGroup = $group->getLocalizedTextByLocale($this->getCurrentUser()->getSettings()->getDefaultLanguage());
+
           return array_merge([
             "id" => $group->getId(),
-            "name" => $group->getName()
+            "name" => $localizedGroup ? $localizedGroup->getName() : ""
           ], $stats);
         }
       )->getValues()
