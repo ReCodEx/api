@@ -24,8 +24,8 @@ use JsonSerializable;
  * @method Group getParentGroup()
  * @method string getExternalId()
  * @method string getDescription()
+ * @method float getThreshold()
  * @method Instance getInstance()
- * @method Collection getLocalizedTexts()
  */
 class Group implements JsonSerializable
 {
@@ -379,6 +379,20 @@ class Group implements JsonSerializable
       },
       0
     );
+  }
+
+  public function getLocalizedTextByLocale(string $locale): ?LocalizedGroup {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+    $first = $this->localizedTexts->matching($criteria)->first();
+    return $first === false ? null : $first;
+  }
+
+  public function addLocalizedText(LocalizedGroup $group) {
+    $this->localizedTexts->add($group);
+  }
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
   }
 
   /**
