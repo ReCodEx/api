@@ -1,29 +1,45 @@
+App\Model\Entity\LocalizedGroup:
+    demoGroupText:
+        __construct:
+            - "en"
+            - Demo group
+            - A group meant solely for the purpose of demonstration
+    demoChildGroupText:
+        __construct:
+            - "en"
+            - Demo child group
+            - A group meant solely for the purpose of demonstration of child groups
+    demoPrivateGroupText:
+        __construct:
+            - "en"
+            - Private group
+            - A group meant solely for the purpose of demonstration of private groups
 App\Model\Entity\Group:
     demoGroup:
         __construct:
-            - Demo group
             - NPRG031
-            - A group meant solely for the purpose of demonstration
             - @demoInstance
             - @demoAdmin
+        addLocalizedText:
+            - @demoGroupText
     demoChildGroup:
         __construct:
-            - Demo child group
             - NPRG031
-            - A group meant solely for the purpose of demonstration of child groups
             - @demoInstance
             - @demoAdmin
             - @demoGroup
+        addLocalizedText:
+            - @demoChildGroupText
     demoPrivateGroup:
         __construct:
-            - Private group
             - NPRG031
-            - A group meant solely for the purpose of demonstration of private groups
             - @demoInstance
             - @demoAdmin
             - NULL
             - TRUE
             - FALSE
+        addLocalizedText:
+            - @demoPrivateGroupText
 
 App\Model\Entity\User:
     'demoGroupMember{1..10}':
