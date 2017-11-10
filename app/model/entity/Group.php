@@ -350,7 +350,7 @@ class Group implements JsonSerializable
   public function getBestSolutions(User $user): array {
     return $this->getAssignments()->map(
       function (Assignment $assignment) use ($user) {
-        return $assignment->getBestSolution($user);
+        return $assignment->getBestSolution($user); // TODO: getBestSolution deleted
       }
     )->getValues();
   }
@@ -358,7 +358,7 @@ class Group implements JsonSerializable
   public function getCompletedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
       function(Assignment $assignment) use ($student) {
-        return $assignment->getBestSolution($student) !== NULL;
+        return $assignment->getBestSolution($student) !== NULL; // TODO: getBestSolution deleted
       }
     );
   }
@@ -366,7 +366,7 @@ class Group implements JsonSerializable
   public function getMissedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
       function(Assignment $assignment) use ($student) {
-        return $assignment->isAfterDeadline() && $assignment->getBestSolution($student) === NULL;
+        return $assignment->isAfterDeadline() && $assignment->getBestSolution($student) === NULL; // TODO: getBestSolution deleted
       }
     );
   }
@@ -375,7 +375,7 @@ class Group implements JsonSerializable
     return array_reduce(
       $this->getCompletedAssignmentsByStudent($student)->getValues(),
       function ($carry, Assignment $assignment) use ($student) {
-        $best = $assignment->getBestSolution($student);
+        $best = $assignment->getBestSolution($student); // TODO: getBestSolution deleted
         if ($best !== NULL) {
           $carry += $best->getTotalPoints();
         }
@@ -401,8 +401,8 @@ class Group implements JsonSerializable
     $statuses = [];
     /** @var Assignment $assignment */
     foreach ($this->getAssignments() as $assignment) {
-      $best = $assignment->getBestSolution($student);
-      $solution = $best ? $best : $assignment->getLastSolution($student);
+      $best = $assignment->getBestSolution($student); // TODO: getBestSolution deleted
+      $solution = $best ? $best : $assignment->getLastSolution($student); // TODO: getLastSolution deleted
       $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL; // TODO: getEvaluationStatus deleted
     }
 

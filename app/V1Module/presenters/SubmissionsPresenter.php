@@ -8,6 +8,7 @@ use App\Helpers\FileServerProxy;
 use App\Model\Entity\Group;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
@@ -24,7 +25,13 @@ class SubmissionsPresenter extends BasePresenter {
    * @var AssignmentSolutions
    * @inject
    */
-  public $submissions;
+  public $assignmentSolutions;
+
+  /**
+   * @var AssignmentSolutionSubmissions
+   * @inject
+   */
+  public $assignmentSolutionSubmissions;
 
   /**
    * @var SolutionEvaluations
@@ -65,7 +72,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->submissions->findAll(), (function (AssignmentSolution $submission) {
+    $submissions = array_filter($this->assignmentSolutions->findAll(), (function (AssignmentSolution $submission) {
       return $this->submissionAcl->canViewDetail($submission);
     }));
 
@@ -79,32 +86,29 @@ class SubmissionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $id) {
-    /** @var AssignmentSolution $submission */
-    $submission = $this->submissions->findOrThrow($id);
-
-    if (!$this->submissionAcl->canViewEvaluation($submission)) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+    if (!$this->submissionAcl->canViewEvaluation($submission)) { // TODO
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
-    // TODO: hasEvaluation deleted
     if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
       $evaluation = $this->evaluationLoader->load($submission);
       if ($evaluation !== NULL) {
         $this->evaluations->persist($evaluation);
-        $this->submissions->persist($submission);
+        $this->assignmentSolutions->persist($submission);
       } else {
         // the evaluation is probably not ready yet
         // - display partial information about the submission, do not throw an error
       }
     }
 
-    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
+    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission); // TODO
+    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission); // TODO
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
   /**
-   * Set new amount of bonus points for a submission
+   * Set new amount of bonus points for a solution
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
    * @param string $id Identifier of the submission
@@ -112,69 +116,64 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionSetBonusPoints(string $id) {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
-    $submission = $this->submissions->findOrThrow($id);
+    $solution = $this->assignmentSolutions->findOrThrow($id);
 
-    if (!$this->submissionAcl->canSetBonusPoints($submission)) {
+    if (!$this->submissionAcl->canSetBonusPoints($solution)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }
 
-    $submission->setBonusPoints($newBonusPoints);
-    $this->submissions->flush();
+    $solution->setBonusPoints($newBonusPoints);
+    $this->assignmentSolutions->flush();
 
     $this->sendSuccessResponse("OK");
   }
 
   /**
-   * Set submission of student as accepted, this submission will be then presented as the best one.
+   * Set solution of student as accepted, this solution will be then presented as the best one.
    * @POST
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
    */
   public function actionSetAcceptedSubmission(string $id) {
-    $submission = $this->submissions->findOrThrow($id);
-
-    if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
-      throw new ForbiddenRequestException("Submission does not have evaluation yet");
-    }
-
-    if (!$this->submissionAcl->canSetAccepted($submission)) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->submissionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
 
     // accepted flag has to be set to false for all other submissions
-    $assignmentSubmissions = $submission->getAssignment()->getValidSubmissions($submission->getSolution()->getAuthor());
+    $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
     foreach ($assignmentSubmissions as $assignmentSubmission) {
       $assignmentSubmission->setAccepted(false);
     }
 
     // finally set the right submission as accepted
-    $submission->setAccepted(true);
-    $this->submissions->flush();
+    $solution->setAccepted(true);
+    $this->assignmentSolutions->flush();
 
-    /** @var Group $groupOfSubmission */
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getSolution()->getAuthor()->getId());
+    // forward to student statistics of group
+    $groupOfSubmission = $solution->getAssignment()->getGroup();
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
   /**
-   * Set submission of student as unaccepted if it was.
+   * Set solution of student as unaccepted if it was.
    * @DELETE
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
    */
   public function actionUnsetAcceptedSubmission(string $id) {
-    $submission = $this->submissions->findOrThrow($id);
-    if (!$this->submissionAcl->canSetAccepted($submission)) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->submissionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
 
     // set accepted flag as false even if it was false
-    $submission->setAccepted(false);
-    $this->submissions->flush();
+    $solution->setAccepted(false);
+    $this->assignmentSolutions->flush();
 
-    /** @var Group $groupOfSubmission */
-    $groupOfSubmission = $submission->getAssignment()->getGroup();
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $submission->getSolution()->getAuthor()->getId());
+    // forward to student statistics of group
+    $groupOfSubmission = $solution->getAssignment()->getGroup();
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
   /**
@@ -185,13 +184,12 @@ class SubmissionsPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionDownloadResultArchive(string $id) {
-    $submission = $this->submissions->findOrThrow($id);
-
-    if (!$this->submissionAcl->canDownloadResultArchive($submission)) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+    if (!$this->submissionAcl->canDownloadResultArchive($submission)) { // TODO
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 
-    if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
+    if (!$submission->hasEvaluation()) {
       throw new ForbiddenRequestException("Submission is not evaluated yet");
     }
 

@@ -10,6 +10,8 @@ use App\Exceptions\SubmissionEvaluationFailedException;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\MonitorConfig;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\AssignmentSolution;
@@ -18,7 +20,9 @@ use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
+use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Solutions;
@@ -44,7 +48,13 @@ class SubmitPresenter extends BasePresenter {
    * @var AssignmentSolutions
    * @inject
    */
-  public $submissions;
+  public $assignmentSolutions;
+
+  /**
+   * @var AssignmentSolutionSubmissions
+   * @inject
+   */
+  public $assignmentSubmissions;
 
   /**
    * @var Solutions
@@ -102,6 +112,20 @@ class SubmitPresenter extends BasePresenter {
 
 
   /**
+   * Determine if given user can submit solutions to assignment.
+   * @param Assignment $assignment
+   * @param User|NULL $user
+   * @return bool
+   */
+  public function canReceiveSubmissions(Assignment $assignment, User $user = null) {
+    return $assignment->isPublic() &&
+      $assignment->getGroup()->hasValidLicence() &&
+      ($user !== null &&
+        count($this->assignmentSolutions->findValidSolutions($assignment, $user))
+        <= $assignment->getSubmissionsCountLimit());
+  }
+
+  /**
    * Check if the current user can submit solutions to the assignment
    * @GET
    * @param string $id Identifier of the assignment
@@ -115,7 +139,7 @@ class SubmitPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this assignment.");
     }
 
-    $this->sendSuccessResponse($assignment->canReceiveSubmissions($user));
+    $this->sendSuccessResponse($this->canReceiveSubmissions($assignment, $user));
   }
 
   /**
@@ -143,7 +167,7 @@ class SubmitPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    if (!$assignment->canReceiveSubmissions($loggedInUser)) {
+    if (!$this->canReceiveSubmissions($assignment, $loggedInUser)) {
       throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
     }
 
@@ -175,24 +199,17 @@ class SubmitPresenter extends BasePresenter {
       $this->files->remove($file, FALSE);
     }
 
-    // persist the new solution and flush all the changes to the files
-    $this->solutions->persist($solution);
-
-    // generate job configuration
-    $compilationParams = CompilationParams::create($submittedFiles, false);
-    list($jobConfigPath, $jobConfig) =
-      $this->jobConfigGenerator->generateJobConfig($loggedInUser, $assignment,
-        $runtimeEnvironment, $compilationParams);
-
-    // create and persist submission in the database
+    // create and fill assignment solution
     $note = $req->getPost("note");
-    $submission = AssignmentSolution::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath); // TODO: method changed
-    $this->submissions->persist($submission);
+    $assignmentSolution = AssignmentSolution::createSolution($note, $assignment, $solution);
 
-    $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
+    // persist all changes and send response
+    $this->assignmentSolutions->persist($assignmentSolution);
+    $this->solutions->persist($solution);
+    $this->sendSuccessResponse($this->finishSubmission($assignmentSolution));
   }
 
-  private function submissionFailed(AssignmentSolution $submission, string $message) {
+  private function submissionFailed(AssignmentSolutionSubmission $submission, string $message) {
     $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
     throw new SubmissionFailedException($message);
@@ -200,36 +217,43 @@ class SubmitPresenter extends BasePresenter {
 
   /**
    * Take a complete submission entity and submit it to the backend
-   * @param AssignmentSolution $submission a persisted submission entity
-   * @param JobConfig\JobConfig|null $jobConfig
+   * @param AssignmentSolution $solution a persisted submission entity
+   * @param bool $isDebug
    * @return array The response that can be sent to the client
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
-  private function finishSubmission(AssignmentSolution $submission, JobConfig\JobConfig $jobConfig = null) {
-    if ($submission->getId() === NULL) {
+  private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false) {
+    if ($solution->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 
-    // the author must be a student and the submitter must be either this student, or a supervisor of their group
-    $assignment = $submission->getAssignment();
+    // check for the license of instance of user
+    $assignment = $solution->getAssignment();
     if ($assignment->getGroup()->hasValidLicence() === FALSE) {
       throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
         IResponse::S402_PAYMENT_REQUIRED);
     }
 
-    // load job configuration
-    if (!$jobConfig) {
-      $jobConfig = $this->jobConfigs->get($submission->getJobConfigPath());
-    }
+    // generate job configuration
+    $compilationParams = CompilationParams::create($solution->getSolution()->getFileNames(), $isDebug);
+    list($jobConfigPath, $jobConfig) =
+      $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(),
+        $solution->getAssignment(),
+        $solution->getSolution()->getRuntimeEnvironment(),
+        $compilationParams);
+
+    // create submission entity
+    $submission = new AssignmentSolutionSubmission($solution, $jobConfigPath, $this->getCurrentUser());
+    $this->assignmentSubmissions->persist($submission);
 
     // initiate submission
     $resultsUrl = null;
     try {
       $resultsUrl = $this->submissionHelper->submit(
         $submission->getId(),
-        $submission->getSolution()->getRuntimeEnvironment()->getId(),
-        $submission->getSolution()->getFiles()->getValues(),
+        $solution->getSolution()->getRuntimeEnvironment()->getId(),
+        $solution->getSolution()->getFiles()->getValues(),
         $jobConfig
       );
     } catch (\Exception $e) {
@@ -238,10 +262,10 @@ class SubmitPresenter extends BasePresenter {
 
     // If the submission was accepted we now have the URL where to look for the results later -> persist it
     $submission->setResultsUrl($resultsUrl);
-    $this->submissions->persist($submission);
+    $this->assignmentSubmissions->persist($submission);
 
     return [
-      "submission" => $submission,
+      "submission" => $solution,
       "webSocketChannel" => [
         "id" => $jobConfig->getJobId(),
         "monitorUrl" => $this->monitorConfig->getAddress(),
@@ -258,33 +282,15 @@ class SubmitPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionResubmit(string $id) {
-    $user = $this->getCurrentUser();
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
 
-    /** @var AssignmentSolution $oldSubmission */
-    $oldSubmission = $this->submissions->findOrThrow($id);
-    if (!$this->assignmentAcl->canResubmitSubmissions($oldSubmission->getAssignment())) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentAcl->canResubmitSubmissions($solution->getAssignment())) {
       throw new ForbiddenRequestException("You cannot resubmit this submission");
     }
 
-    // generate job configuration
-    $compilationParams = CompilationParams::create($oldSubmission->getSolution()->getFileNames(), $isDebug);
-    list($jobConfigPath, $jobConfig) =
-      $this->jobConfigGenerator->generateJobConfig($user,
-        $oldSubmission->getAssignment(),
-        $oldSubmission->getSolution()->getRuntimeEnvironment(),
-        $compilationParams);
-
-    $submission = AssignmentSolution::createSubmission( // TODO: method changed
-      $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
-      $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
-    );
-
-    // persist all the data in the database - this will also assign the UUID to the submission
-    $this->submissions->persist($submission);
-
-    $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
+    $this->sendSuccessResponse($this->finishSubmission($solution, $isDebug));
   }
 
   /**
@@ -294,28 +300,15 @@ class SubmitPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionResubmitAll(string $id) {
-    $user = $this->getCurrentUser();
-
-    /** @var Assignment $assignment */
     $assignment = $this->assignments->findOrThrow($id);
-
     if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
       throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
     }
 
+    /** @var AssignmentSolution $solution */
     $result = [];
-
-    /** @var AssignmentSolution $oldSubmission */
-    foreach ($assignment->getAssignmentSolutions() as $oldSubmission) {
-      $submission = AssignmentSolution::createSubmission( // TODO: method changed
-        $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
-        $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), $oldSubmission
-      );
-
-      // persist all the data in the database - this will also assign the UUID to the submission
-      $this->submissions->persist($submission);
-
-      $result[] = $this->finishSubmission($submission);
+    foreach ($assignment->getAssignmentSolutions() as $solution) {
+      $result[] = $this->finishSubmission($solution, false); // TODO: job config generated for all solutions... performance much?
     }
 
     $this->sendSuccessResponse($result); // TODO better response format

@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
@@ -43,29 +44,29 @@ class EvaluationLoader {
 
   /**
    * Downloads and processes the results for the given submission.
-   * @param AssignmentSolution $submission The submission
+   * @param AssignmentSolutionSubmission $submission The submission
    * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
-  public function load(AssignmentSolution $submission) {
+  public function load(AssignmentSolutionSubmission $submission) {
     $results = $this->getResults($submission);
     if (!$results) {
       return NULL;
     }
 
     $evaluation = new SolutionEvaluation($results, $submission);
-    $submission->setEvaluation($evaluation); // TODO: setEvaluation deleted
+    $submission->setEvaluation($evaluation);
     $this->pointsLoader->setStudentScoreAndPoints($evaluation);
     return $evaluation;
   }
 
   /**
    * Downloads and parses the results report from the server.
-   * @param AssignmentSolution $submission The submission
+   * @param AssignmentSolutionSubmission $submission The submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
    */
-  private function getResults(AssignmentSolution $submission) {
+  private function getResults(AssignmentSolutionSubmission $submission) {
     if (!$submission->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }

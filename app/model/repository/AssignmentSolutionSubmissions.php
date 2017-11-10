@@ -6,6 +6,9 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 use Kdyby\Doctrine\EntityManager;
 
 
+/**
+ * @method AssignmentSolutionSubmission findOrThrow($id)
+ */
 class AssignmentSolutionSubmissions extends BaseRepository {
 
   public function __construct(EntityManager $em) {

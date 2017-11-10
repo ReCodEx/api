@@ -8,6 +8,8 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
 
 /**
  * @ORM\Entity
+ *
+ * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
  */
 class SubmissionFailure implements JsonSerializable {
 
@@ -68,8 +70,18 @@ class SubmissionFailure implements JsonSerializable {
    */
   protected $resolutionNote;
 
-  // TODO: signature changed
-  public function __construct(string $type, string $description, AssignmentSolutionSubmission $submission = NULL, ReferenceSolutionSubmission $referenceSolutionSubmission = NULL, DateTime $createdAt = NULL) {
+  /**
+   * SubmissionFailure constructor.
+   * @param string $type
+   * @param string $description
+   * @param AssignmentSolutionSubmission|NULL $submission
+   * @param ReferenceSolutionSubmission|NULL $referenceSolutionSubmission
+   * @param DateTime|NULL $createdAt
+   */
+  private function __construct(string $type, string $description,
+      AssignmentSolutionSubmission $submission = NULL,
+      ReferenceSolutionSubmission $referenceSolutionSubmission = NULL,
+      DateTime $createdAt = NULL) {
     $this->type = $type;
     $this->description = $description;
     $this->assignmentSolutionSubmission = $submission;
@@ -77,11 +89,11 @@ class SubmissionFailure implements JsonSerializable {
     $this->createdAt = $createdAt ?: new DateTime();
   }
 
-  public static function forSubmission(string $type, string $description, AssignmentSolution $submission, DateTime $createdAt = NULL) {
+  public static function forSubmission(string $type, string $description, AssignmentSolutionSubmission $submission, DateTime $createdAt = NULL) {
     return new static($type, $description, $submission, NULL, $createdAt);
   }
 
-  public static function forReferenceSolution(string $type, string $description, ReferenceSolutionSubmission $evaluation, DateTime $createdAt = NULL) {
+  public static function forReferenceSubmission(string $type, string $description, ReferenceSolutionSubmission $evaluation, DateTime $createdAt = NULL) {
     return new static($type, $description, NULL, $evaluation, $createdAt);
   }
 

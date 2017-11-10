@@ -212,8 +212,10 @@ class AssignmentsPresenter extends BasePresenter {
         $oldThreshold != $threshold ||
         $oldFirstDeadlineTimestamp !== $firstDeadlineTimestamp ||
         $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp) {
-      foreach ($assignment->getAssignmentSolutions() as $submission) {
-        $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+      foreach ($assignment->getAssignmentSolutions() as $solution) {
+        foreach ($solution->getSubmissions() as $submission) {
+          $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+        }
       }
       $this->solutionEvaluations->flush();
     }
@@ -367,7 +369,7 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (AssignmentSolution $submission) {
+    $submissions = array_filter($this->submissions->findSolutions($assignment, $user), function (AssignmentSolution $submission) {
       return $this->submissionAcl->canViewDetail($submission);
     });
     $submissions = array_map(function (AssignmentSolution $submission) {
@@ -389,7 +391,7 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionBestSubmission(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
-    $submission = $assignment->getBestSolution($user);
+    $submission = $assignment->getBestSolution($user); // TODO: getBestSolution deleted
 
     if ($submission == NULL) {
       $this->sendSuccessResponse(NULL);
@@ -418,7 +420,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     $bestSubmissions = [];
     foreach ($assignment->getGroup()->getStudents() as $student) {
-      $submission = $assignment->getBestSolution($student);
+      $submission = $assignment->getBestSolution($student); // TODO: getBestSolution deleted
       if ($submission === null) {
         $bestSubmissions[$student->getId()] = null;
         continue;

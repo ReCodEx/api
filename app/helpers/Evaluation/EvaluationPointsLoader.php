@@ -39,13 +39,13 @@ class EvaluationPointsLoader {
    * @param SolutionEvaluation|null $evaluation
    */
   private function setStudentScore(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
       // not a student submission
       return;
     }
 
-    $submission = $evaluation->getAssignmentSolution();
-    $this->setScore($evaluation, $submission->getAssignment());
+    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $this->setScore($evaluation, $submission->getAssignmentSolution()->getAssignment());
   }
 
   /**
@@ -54,21 +54,21 @@ class EvaluationPointsLoader {
    * @param SolutionEvaluation|null $evaluation
    */
   public function setStudentPoints(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
       // not a student submission
       return;
     }
 
     // setup
-    $submission = $evaluation->getAssignmentSolution();
-    $maxPoints = $submission->getMaxPoints();
+    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $maxPoints = $submission->getAssignmentSolution()->getMaxPoints();
 
     // calculate points from the score
     $points = floor($evaluation->getScore() * $maxPoints);
 
     // if the submission does not meet point threshold, it does not deserve any points
     if ($submission !== NULL) {
-      $threshold = $submission->getPointsThreshold();
+      $threshold = $submission->getAssignmentSolution()->getPointsThreshold();
       if ($points < $threshold) {
         $points = 0;
       }
@@ -85,13 +85,13 @@ class EvaluationPointsLoader {
    * @return bool
    */
   public static function isStudentCorrect(?SolutionEvaluation $evaluation): bool {
-    if ($evaluation === null || $evaluation->getAssignmentSolution() === null) {
+    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
       // not a student submission
       return false;
     }
 
-    $submission = $evaluation->getAssignmentSolution();
-    $assignment = $submission->getAssignment();
+    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $assignment = $submission->getAssignmentSolution()->getAssignment();
     if ($assignment->hasAssignedPoints()) {
       return $evaluation->getPoints() > 0;
     }
@@ -99,7 +99,7 @@ class EvaluationPointsLoader {
     // points for assignment are all zeroes, this means simple checking of
     // evaluation points is not sufficient, so lets get craaazy
 
-    if ($submission->isAfterDeadline()) {
+    if ($submission->getAssignmentSolution()->isAfterDeadline()) {
       // submitted after deadline -> automatically incorrect
       return false;
     }

@@ -273,7 +273,7 @@ services:
     simple: @App\Helpers\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
-  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, %assignmentNotifications%)
+  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader

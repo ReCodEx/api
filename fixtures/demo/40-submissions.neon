@@ -26,32 +26,37 @@ App\Model\Entity\SolutionFile:
             - "@demoSolution<current()>"
 
 App\Model\Entity\AssignmentSolution:
-    "submission{1..2}":
+    "solution{1..2}":
         __construct:
-            createSubmission:
+            createSolution:
                 - "Random note"
                 - @demoAssignment
-                - @submitUser1
                 - "@demoSolution<current()>"
-                - "jobConfigPath"
+        bonusPoints: 1
+
+App\Model\Entity\AssignmentSolutionSubmission:
+    "submission{1..2}":
+        __construct:
+            - "@solution<current()>"
+            - "jobConfigPath"
+            - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
-        bonusPoints: 1
 
 App\Model\Entity\SubmissionFailure:
     "resolvedSubmissionFailure{1..2}":
         __construct:
-            - evaluation_failure
-            - Things went south
-            - "@submission<current()>"
-            - NULL
-            - "<dateTime()>"
+            forSubmission:
+                - evaluation_failure
+                - Things went south
+                - "@submission<current()>"
+                - "<dateTime()>"
         resolve:
             - Got it!
     unresolvedSubmissionFailure:
         __construct:
-            - evaluation_failure
-            - Things went south
-            - @submission1
-            - NULL
-            - "<dateTime()>"
+            forSubmission:
+                - evaluation_failure
+                - Things went south
+                - @submission1
+                - "<dateTime()>"

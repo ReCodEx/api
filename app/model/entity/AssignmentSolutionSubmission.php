@@ -51,10 +51,10 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
   protected $failures;
 
 
-  public function jsonSerialize() {
+  public function getData(bool $canViewRatios = false, bool $canViewValues = false) {
     $evaluationData = NULL;
     if ($this->evaluation !== NULL) {
-      $evaluationData = $this->evaluation->getData(TRUE, TRUE);
+      $evaluationData = $this->evaluation->getData($canViewRatios, $canViewValues);
     }
 
     return [
@@ -66,6 +66,10 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
       "submittedAt" => $this->submittedAt->getTimestamp(),
       "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
     ];
+  }
+
+  public function jsonSerialize() {
+    return $this->getData();
   }
 
   public function __construct(AssignmentSolution $assignmentSolution,

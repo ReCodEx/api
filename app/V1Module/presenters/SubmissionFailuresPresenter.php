@@ -1,11 +1,11 @@
 <?php
+
 namespace App\V1Module\Presenters;
+
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\SubmissionFailure;
+use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\AssignmentSolutions;
 use App\Security\ACL\ISubmissionFailurePermissions;
 use DateTime;
 
@@ -15,6 +15,7 @@ use DateTime;
  * @LoggedIn
  */
 class SubmissionFailuresPresenter extends BasePresenter {
+
   /**
    * @var SubmissionFailures
    * @inject
@@ -22,7 +23,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
   public $submissionFailures;
 
   /**
-   * @var AssignmentSolutions
+   * @var AssignmentSolutionSubmissions
    * @inject
    */
   public $submissions;
@@ -65,13 +66,9 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionListBySubmission(string $submissionId) {
-    /** @var AssignmentSolution $submission */
-    $submission = $this->submissions->get($submissionId);
+    $submission = $this->submissions->findOrThrow($submissionId);
     if (!$this->submissionFailureAcl->canViewForSubmission($submission)) {
       throw new ForbiddenRequestException();
-    }
-    if ($submission === NULL) {
-      throw new BadRequestException();
     }
 
     $this->sendSuccessResponse($this->submissionFailures->findBySubmission($submission));
@@ -85,11 +82,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
-    /** @var SubmissionFailure $failure */
-    $failure = $this->submissionFailures->get($id);
-    if ($failure === NULL) {
-      throw new BadRequestException();
-    }
+    $failure = $this->submissionFailures->findOrThrow($id);
     if (!$this->submissionFailureAcl->canView($failure)) {
       throw new ForbiddenRequestException();
     }
@@ -107,12 +100,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionResolve(string $id) {
-    /** @var SubmissionFailure $failure */
-    $failure = $this->submissionFailures->get($id);
-    if ($failure === NULL) {
-      throw new BadRequestException();
-    }
-
+    $failure = $this->submissionFailures->findOrThrow($id);
     if (!$this->submissionFailureAcl->canResolve($failure)) {
       throw new ForbiddenRequestException();
     }

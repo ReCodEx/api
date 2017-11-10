@@ -2,9 +2,7 @@
 
 namespace App\Model\Entity;
 
-use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Helpers\EvaluationResults\EvaluationResults;
-use App\Helpers\IScoreCalculator;
 
 use DateTime;
 use Doctrine\Common\Collections\Collection;
@@ -24,7 +22,7 @@ use JsonSerializable;
  * @method setPoints(int $points)
  * @method setScore(float $score)
  * @method Collection getTestResults()
- * @method AssignmentSolution getAssignmentSolution()
+ * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
  * @method ReferenceSolutionSubmission getReferenceSolutionSubmission()
  * @method bool getInitFailed()
  */

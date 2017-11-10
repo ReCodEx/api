@@ -268,7 +268,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     /** @var Evaluation $evaluation */
-    $evaluation = current($this->presenter->referenceEvaluations->findAll());
+    $evaluation = current($this->presenter->referenceSubmissions->findAll());
 
     // mock everything you can
     $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);

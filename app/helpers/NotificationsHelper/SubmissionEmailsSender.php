@@ -2,9 +2,9 @@
 
 namespace App\Helpers\Notifications;
 
+use App\Model\Entity\AssignmentSolutionSubmission;
 use Latte;
 use App\Helpers\EmailHelper;
-use App\Model\Entity\AssignmentSolution;
 use Nette\Utils\Arrays;
 
 /**
@@ -32,13 +32,13 @@ class SubmissionEmailsSender {
 
   /**
    * Submission was evaluated and we have to let the user know it.
-   * @param AssignmentSolution $submission
+   * @param AssignmentSolutionSubmission $submission
    * @return bool
    */
-  public function submissionEvaluated(AssignmentSolution $submission): bool {
-    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
+  public function submissionEvaluated(AssignmentSolutionSubmission $submission): bool {
+    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignmentSolution()->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
 
-    $user = $submission->getSolution()->getAuthor();
+    $user = $submission->getAssignmentSolution()->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
       return true;
     }
@@ -54,19 +54,21 @@ class SubmissionEmailsSender {
 
   /**
    * Prepare and format body of the mail
-   * @param AssignmentSolution $submission
+   * @param AssignmentSolutionSubmission $submission
    * @return string Formatted mail body to be sent
    */
-  private function createSubmissionEvaluatedBody(AssignmentSolution $submission): string {
+  private function createSubmissionEvaluatedBody(AssignmentSolutionSubmission $submission): string {
+    $assignment = $submission->getAssignmentSolution()->getAssignment();
+
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
-      "assignment" => $submission->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $submission->getAssignment()->getGroup()->getName(),
-      "date" => $submission->getEvaluation()->getEvaluatedAt(), // TODO: getEvaluation deleted
+      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
+      "group" => $assignment->getGroup()->getName(),
+      "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
-      "points" => $submission->getEvaluation()->getPoints(), // TODO: getEvaluation deleted
-      "maxPoints" => $submission->getAssignment()->getMaxPoints($submission->getEvaluation()->getEvaluatedAt()) // TODO: getEvaluation deleted
+      "points" => $submission->getEvaluation()->getPoints(),
+      "maxPoints" => $assignment->getMaxPoints($submission->getEvaluation()->getEvaluatedAt())
     ]);
   }
 

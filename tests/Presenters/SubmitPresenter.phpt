@@ -323,7 +323,7 @@ class TestSubmitPresenter extends Tester\TestCase
     // Find an assignment with desired amount of submissions
     /** @var Assignment $candidate */
     foreach ($assignments->findAll() as $candidate) {
-      if (count($candidate->getAssignmentSolutions()) == $submissionCount) {
+      if ($candidate->getAssignmentSolutions()->count() == $submissionCount) {
         $assignment = $candidate;
         break;
       }

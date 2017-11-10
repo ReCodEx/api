@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
@@ -16,12 +17,8 @@ use App\Exceptions\ForbiddenRequestException;
  * @method string getNote()
  * @method Solution getSolution()
  * @method Assignment getAssignment()
- * @method string getResultsUrl()
  * @method bool getAccepted()
- * @method setResultsUrl(string $url)
  * @method setAccepted(bool $accepted)
- * @method string getJobConfigPath()
- * @method \DateTime getSubmittedAt()
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  */
@@ -54,11 +51,11 @@ class AssignmentSolution implements JsonSerializable
    * @return bool
    */
   public function isAfterDeadline() {
-    return $this->assignment->isAfterDeadline($this->submittedAt);
+    return $this->assignment->isAfterDeadline($this->solution->getCreatedAt());
   }
 
   public function getMaxPoints() {
-    return $this->assignment->getMaxPoints($this->submittedAt);
+    return $this->assignment->getMaxPoints($this->solution->getCreatedAt());
   }
 
   /**
@@ -91,23 +88,52 @@ class AssignmentSolution implements JsonSerializable
   protected $bonusPoints;
 
   /**
-   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution")
+   * Get total points which this solution got. Including bonus points and points
+   * for evaluation.
+   * @return int
    */
-  protected $submissions;
-
   public function getTotalPoints() {
-    if ($this->evaluation === NULL) { // TODO: evaluation deleted
+    $lastSubmission = $this->getLastSubmission();
+    if ($lastSubmission === null) {
       return 0;
     }
 
-    return $this->evaluation->getPoints() + $this->bonusPoints;
+    $evaluation = $lastSubmission->getEvaluation();
+    if ($evaluation === null) {
+      return 0;
+    }
+
+    return $evaluation->getPoints() + $this->bonusPoints;
   }
 
-  public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
-    $evaluation = $this->hasEvaluation() // TODO: hasEvaluation deleted
-      ? $this->getEvaluation()->getData($canViewRatios, $canViewValues) // TODO: getEvaluation deleted
-      : NULL;
+  /**
+   * Note that order by annotation has to be present!
+   *
+   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution")
+   * @ORM\OrderBy({"submittedAt" = "DESC"})
+   */
+  protected $submissions;
 
+  /**
+   * Get last submission for this solution which is taken as the best one.
+   * @return AssignmentSolutionSubmission|null
+   */
+  public function getLastSubmission(): ?AssignmentSolutionSubmission {
+    $result = $this->submissions->first();
+    return $result ? $result : null;
+  }
+
+  /**
+   * @return string[]
+   */
+  public function getSubmissionsIds(): array {
+    return $this->submissions->map(function (AssignmentSolutionSubmission $submission) {
+      return $submission->getId();
+    })->getValues();
+  }
+
+  // TODO: engage canViewResubmissions
+  public function getData($canViewRatios = FALSE, bool $canViewValues = false, bool $canViewResubmissions = false) {
     return [
       "id" => $this->id,
       "note" => $this->note,
@@ -116,7 +142,9 @@ class AssignmentSolution implements JsonSerializable
       "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
       "maxPoints" => $this->getMaxPoints(),
       "accepted" => $this->accepted,
-      "bonusPoints" => $this->bonusPoints
+      "bonusPoints" => $this->bonusPoints,
+      "lastSubmission" => $this->getLastSubmission() ?  $this->getLastSubmission()->getData($canViewRatios, $canViewValues) : null,
+      "submissions" => $canViewResubmissions ? $this->getSubmissionsIds() : []
     ];
   }
 
@@ -128,30 +156,30 @@ class AssignmentSolution implements JsonSerializable
   }
 
   /**
+   * AssignmentSolution constructor.
+   */
+  private function __construct() {
+    $this->accepted = false;
+    $this->bonusPoints = 0;
+    $this->submissions = new ArrayCollection;
+  }
+
+  /**
    * The name of the user
    * @param string $note
    * @param Assignment $assignment
-   * @param User $submitter The logged in user - might be the student or his/her supervisor
    * @param Solution $solution
-   * @param string $jobConfigPath
-   * @param AssignmentSolution $originalSubmission
    * @return AssignmentSolution
-   * @throws ForbiddenRequestException
    */
-  public static function createSubmission(
+  public static function createSolution(
     string $note,
     Assignment $assignment,
-    User $submitter,
-    Solution $solution,
-    string $jobConfigPath,
-    ?AssignmentSolution $originalSubmission = NULL
+    Solution $solution
   ) {
     $entity = new AssignmentSolution;
     $entity->assignment = $assignment;
     $entity->note = $note;
     $entity->solution = $solution;
-    $entity->accepted = false;
-    $entity->bonusPoints = 0;
 
     return $entity;
   }

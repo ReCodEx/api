@@ -77,7 +77,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
 
-    $allSubmissions = $this->presenter->submissions->findAll();
+    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     $submission = array_pop($allSubmissions);
 
     $request = new Nette\Application\Request('V1:Submissions',
@@ -97,7 +97,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
 
-    $allSubmissions = $this->presenter->submissions->findAll();
+    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     $submission = array_pop($allSubmissions);
 
     $request = new Nette\Application\Request('V1:Submissions',
@@ -113,13 +113,13 @@ class TestSubmissionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
 
-    $submission = $this->presenter->submissions->get($submission->id);
+    $submission = $this->presenter->assignmentSolutions->get($submission->id);
     Assert::equal(4, $submission->getBonusPoints());
   }
 
   public function testSetAcceptedSubmission()
   {
-    $allSubmissions = $this->presenter->submissions->findAll();
+    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     /** @var AssignmentSolution $submission */
     $submission = array_pop($allSubmissions);
     $assignment = $submission->getAssignment();
@@ -141,20 +141,20 @@ class TestSubmissionsPresenter extends Tester\TestCase
     Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
     // Check invariants
-    $submission = $this->presenter->submissions->get($submission->getId());
+    $submission = $this->presenter->assignmentSolutions->get($submission->getId());
     Assert::true($submission->isAccepted());
   }
 
   public function testUnsetAcceptedSubmission()
   {
-    $allSubmissions = $this->presenter->submissions->findAll();
+    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     /** @var AssignmentSolution $submission */
     $submission = array_pop($allSubmissions);
     $assignment = $submission->getAssignment();
 
     // set accepted flag
     $submission->setAccepted(true);
-    $this->presenter->submissions->flush();
+    $this->presenter->assignmentSolutions->flush();
     Assert::true($submission->getAccepted());
 
     $user = $assignment->getGroup()->getSupervisors()->filter(
@@ -173,14 +173,14 @@ class TestSubmissionsPresenter extends Tester\TestCase
     Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
 
     // Check invariants
-    $submission = $this->presenter->submissions->get($submission->getId());
+    $submission = $this->presenter->assignmentSolutions->get($submission->getId());
     Assert::false($submission->isAccepted());
   }
 
   public function testDownloadResultArchive()
   {
     PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
-    $submission = current($this->presenter->submissions->findAll());
+    $submission = current($this->presenter->assignmentSolutions->findAll());
 
     // mock everything you can
     $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);

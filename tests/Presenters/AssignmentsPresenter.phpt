@@ -307,7 +307,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $submission = current($this->presenter->submissions->findAll());
     $user = $submission->getSolution()->getAuthor();
     $assignment = $submission->getAssignment();
-    $submissions = $this->presenter->submissions->findSubmissions($assignment, $user->getId());
+    $submissions = $this->presenter->submissions->findSolutions($assignment, $user);
     $submissions = array_map(function ($submission) {
       return $submission->getData(true);
     }, $submissions);

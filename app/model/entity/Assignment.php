@@ -363,95 +363,10 @@ class Assignment implements JsonSerializable, IExercise
   protected $group;
 
   /**
-   * Determine if given user can submit solutions to this assignment.
-   * @param User|NULL $user
-   * @return bool
-   */
-  public function canReceiveSubmissions(User $user = NULL) {
-    return $this->isPublic === TRUE &&
-      $this->group->hasValidLicence() &&
-      ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
-  }
-
-  /**
    * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
-   * @ORM\OrderBy({ "submittedAt" = "DESC" })
    */
   protected $assignmentSolutions;
 
-  /**
-   * @param User $user
-   * @return Collection
-   */
-  public function getValidSubmissions(User $user) {
-    $fromThatUser = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user))
-      ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
-    $validSubmissions = function (AssignmentSolution $submission) {
-      if ($submission->isFailed()) {
-        return false;
-      }
-
-      if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
-        // Condition sustained for readability
-        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
-        // -> otherwise the user would be able to submit many solutions before they are evaluated
-        return true;
-      }
-
-      return true;
-    };
-
-    return $this->assignmentSolutions
-      ->matching($fromThatUser)
-      ->filter($validSubmissions);
-  }
-
-  public function hasReachedSubmissionsCountLimit(User $user) {
-    return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
-  }
-
-  /**
-   * @param User $user
-   * @return AssignmentSolution
-   */
-  public function getLastSolution(User $user) {
-    $usersSolutions = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user));
-    return $this->assignmentSolutions->matching($usersSolutions)->first();
-  }
-
-  /**
-   * @param User $user
-   * @return AssignmentSolution|NULL
-   */
-  public function getBestSolution(User $user) {
-    $usersSolutions = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user))
-      ->andWhere(Criteria::expr()->neq("evaluation", NULL));
-
-    return array_reduce(
-      $this->assignmentSolutions->matching($usersSolutions)->getValues(),
-      function (?AssignmentSolution $best, AssignmentSolution $submission) {
-        if ($best === NULL) {
-          return $submission;
-        }
-
-        if ($best->isAccepted()) {
-          return $best;
-        }
-
-        if ($submission->isAccepted()) {
-          return $submission;
-        }
-
-        return $submission->hasEvaluation() === FALSE || $best->getTotalPoints() > $submission->getTotalPoints() // TODO: hasEvaluation deleted
-          ? $best
-          : $submission;
-      },
-      NULL
-    );
-  }
 
   public function getRuntimeEnvironmentsIds() {
     return $this->runtimeEnvironments->map(function(RuntimeEnvironment $env) { return $env->getId(); })->getValues();
