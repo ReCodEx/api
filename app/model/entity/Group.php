@@ -26,6 +26,10 @@ use JsonSerializable;
  * @method string getDescription()
  * @method float getThreshold()
  * @method Instance getInstance()
+ * @method setExternalId(string $id)
+ * @method setPublicStats(bool $areStatsPublic)
+ * @method setIsPublic(bool $isGroupPublic)
+ * @method setThreshold(float $threshold)
  */
 class Group implements JsonSerializable
 {
