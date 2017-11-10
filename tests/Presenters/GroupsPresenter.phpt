@@ -213,6 +213,7 @@ class TestGroupsPresenter extends Tester\TestCase
       ['action' => 'validateAddGroupData'],
       [
         'name' => 'new name',
+        'locale' => 'en',
         'instanceId' => $instance->getId(),
         'parentGroupId' => NULL,
       ]

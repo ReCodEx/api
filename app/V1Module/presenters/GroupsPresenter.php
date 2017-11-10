@@ -123,12 +123,14 @@ class GroupsPresenter extends BasePresenter {
    * Validate group creation data
    * @POST
    * @Param(name="name", type="post", description="Name of the group")
+   * @Param(name="locale", type="post", description="The locale of the name")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
    * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
    */
   public function actionValidateAddGroupData() {
     $req = $this->getRequest();
     $name = $req->getPost("name");
+    $locale = $req->getPost("locale");
     $parentGroupId = $req->getPost("parentGroupId");
     $instance = $this->instances->findOrThrow($req->getPost("instanceId"));
     $parentGroup = $parentGroupId !== NULL ? $this->groups->findOrThrow($parentGroupId) : $instance->getRootGroup();
@@ -138,7 +140,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "groupNameIsFree" => count($this->groups->findByName($this->getCurrentUserLocale(), $name, $instance, $parentGroup)) === 0
+      "groupNameIsFree" => count($this->groups->findByName($locale, $name, $instance, $parentGroup)) === 0
     ]);
   }
 
