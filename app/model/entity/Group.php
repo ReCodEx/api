@@ -76,7 +76,7 @@ class Group implements JsonSerializable
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedGroup")
-   * @var Collection
+   * @var ArrayCollection
    */
   protected $localizedTexts;
 

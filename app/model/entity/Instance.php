@@ -205,7 +205,6 @@ class Instance implements JsonSerializable
     $instance->isOpen = $isOpen;
     $instance->isAllowed = TRUE; //@todo - find out who should set this and how
     $instance->needsLicence = TRUE;
-    $instance->rootGroup = NULL;
     $now = new \DateTime;
     $instance->createdAt = $now;
     $instance->updatedAt = $now;
