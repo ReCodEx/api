@@ -131,7 +131,7 @@ class BrokerReportsPresenter extends BasePresenter {
             // load the evaluation of the student submission or resubmit
             $result = $this->loadEvaluation($submission);
 
-            if ($submission->isResubmit() && $result === TRUE) {
+            if ($submission->isResubmit() && $result === TRUE) { // TODO: is resubmit deleted
               // the solution is resubmit by supervisor, so send notification to the user
               $this->submissionEmailsSender->submissionEvaluated($submission);
             }

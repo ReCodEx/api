@@ -403,7 +403,7 @@ class Group implements JsonSerializable
     foreach ($this->getAssignments() as $assignment) {
       $best = $assignment->getBestSolution($student);
       $solution = $best ? $best : $assignment->getLastSolution($student);
-      $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL;
+      $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL; // TODO: getEvaluationStatus deleted
     }
 
     return [

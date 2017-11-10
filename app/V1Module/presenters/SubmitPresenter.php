@@ -26,6 +26,7 @@ use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 
 use App\Security\ACL\IAssignmentPermissions;
+use Nette\Http\IResponse;
 
 /**
  * Endpoints for submitting an assignment
@@ -185,7 +186,7 @@ class SubmitPresenter extends BasePresenter {
 
     // create and persist submission in the database
     $note = $req->getPost("note");
-    $submission = AssignmentSolution::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath);
+    $submission = AssignmentSolution::createSubmission($note, $assignment, $loggedInUser, $solution, $jobConfigPath); // TODO: method changed
     $this->submissions->persist($submission);
 
     $this->sendSuccessResponse($this->finishSubmission($submission, $jobConfig));
@@ -202,11 +203,19 @@ class SubmitPresenter extends BasePresenter {
    * @param AssignmentSolution $submission a persisted submission entity
    * @param JobConfig\JobConfig|null $jobConfig
    * @return array The response that can be sent to the client
+   * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
   private function finishSubmission(AssignmentSolution $submission, JobConfig\JobConfig $jobConfig = null) {
     if ($submission->getId() === NULL) {
       throw new InvalidArgumentException("The submission object is missing an id");
+    }
+
+    // the author must be a student and the submitter must be either this student, or a supervisor of their group
+    $assignment = $submission->getAssignment();
+    if ($assignment->getGroup()->hasValidLicence() === FALSE) {
+      throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
+        IResponse::S402_PAYMENT_REQUIRED);
     }
 
     // load job configuration
@@ -267,7 +276,7 @@ class SubmitPresenter extends BasePresenter {
         $oldSubmission->getSolution()->getRuntimeEnvironment(),
         $compilationParams);
 
-    $submission = AssignmentSolution::createSubmission(
+    $submission = AssignmentSolution::createSubmission( // TODO: method changed
       $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
       $oldSubmission->getSolution(), $jobConfigPath, $oldSubmission
     );
@@ -298,7 +307,7 @@ class SubmitPresenter extends BasePresenter {
 
     /** @var AssignmentSolution $oldSubmission */
     foreach ($assignment->getAssignmentSolutions() as $oldSubmission) {
-      $submission = AssignmentSolution::createSubmission(
+      $submission = AssignmentSolution::createSubmission( // TODO: method changed
         $oldSubmission->getNote(), $oldSubmission->getAssignment(), $user,
         $oldSubmission->getSolution(), $oldSubmission->getJobConfigPath(), $oldSubmission
       );

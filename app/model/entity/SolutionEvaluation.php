@@ -76,9 +76,9 @@ class SolutionEvaluation implements JsonSerializable
   protected $testResults;
 
   /**
-   * @ORM\OneToOne(targetEntity="AssignmentSolution", mappedBy="evaluation")
+   * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", mappedBy="evaluation")
    */
-  protected $assignmentSolution;
+  protected $assignmentSolutionSubmission;
 
   /**
    * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", mappedBy="evaluation")
@@ -111,11 +111,11 @@ class SolutionEvaluation implements JsonSerializable
   /**
    * Loads and processes the results of the submission.
    * @param EvaluationResults $results The interpreted results
-   * @param AssignmentSolution|null $submission The submission. It can be null in case we're handling a reference solution evaluation
+   * @param AssignmentSolutionSubmission|null $submission The submission. It can be null in case we're handling a reference solution evaluation
    * @param ReferenceSolutionSubmission|null $evaluation
    */
-  public function __construct(EvaluationResults $results,
-      AssignmentSolution $submission = null,
+  public function __construct(EvaluationResults $results, // TODO: signature changed
+      AssignmentSolutionSubmission $submission = null,
       ReferenceSolutionSubmission $evaluation = null) {
     $this->evaluatedAt = new \DateTime;
     $this->initFailed = !$results->initOK();
@@ -124,7 +124,7 @@ class SolutionEvaluation implements JsonSerializable
     $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
-    $this->assignmentSolution = $submission;
+    $this->assignmentSolutionSubmission = $submission;
     $this->referenceSolutionSubmission = $evaluation;
 
     // set test results

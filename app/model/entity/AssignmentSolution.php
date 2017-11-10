@@ -2,16 +2,11 @@
 
 namespace App\Model\Entity;
 
-use App\Helpers\EvaluationPointsLoader;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
-use Nette\Http\IResponse;
 
 use App\Exceptions\ForbiddenRequestException;
-use App\Helpers\EvaluationStatus as ES;
 
 
 /**
@@ -30,7 +25,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  */
-class AssignmentSolution implements JsonSerializable, ES\IEvaluable
+class AssignmentSolution implements JsonSerializable
 {
   use MagicAccessors;
 
@@ -44,48 +39,15 @@ class AssignmentSolution implements JsonSerializable, ES\IEvaluable
   protected $id;
 
   /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $submittedAt; // TODO: have to be deleted, after Submission have its own evaluation entity
-
-  /**
    * @ORM\Column(type="text")
    */
   protected $note;
-
-  /**
-   * @ORM\Column(type="string", nullable=true)
-   */
-  protected $resultsUrl;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $jobConfigPath;
-
-  public function canBeEvaluated(): bool {
-    return $this->resultsUrl !== NULL;
-  }
 
   /**
    * @var Assignment
    * @ORM\ManyToOne(targetEntity="Assignment")
    */
   protected $assignment;
-
-  /**
-   * @var AssignmentSolution
-   * @ORM\ManyToOne(targetEntity="AssignmentSolution")
-   */
-  protected $originalSubmission;
-
-  /**
-   * True if submission is resubmit of another one.
-   * @return bool
-   */
-  public function isResubmit() {
-    return $this->originalSubmission !== null;
-  }
 
   /**
    * Determine if submission was made after deadline.
@@ -109,21 +71,10 @@ class AssignmentSolution implements JsonSerializable, ES\IEvaluable
   }
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
-   */
-  protected $submittedBy;
-
-  /**
    * @var Solution
    * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
    */
   protected $solution;
-
-  /**
-   * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolution")
-   */
-  protected $failures;
 
   /**
    * @ORM\Column(type="boolean")
@@ -140,47 +91,12 @@ class AssignmentSolution implements JsonSerializable, ES\IEvaluable
   protected $bonusPoints;
 
   /**
-   * @var SolutionEvaluation
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="assignmentSolution", cascade={"persist", "remove"})
+   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution")
    */
-  protected $evaluation;
-
-  public function hasEvaluation(): bool {
-    return $this->evaluation !== NULL;
-  }
-
-  public function getEvaluation(): ?SolutionEvaluation {
-    return $this->evaluation;
-  }
-
-  public function getEvaluationStatus(): string {
-    return ES\EvaluationStatus::getStatus($this);
-  }
-
-  public function setEvaluation(SolutionEvaluation $evaluation) {
-    $this->evaluation = $evaluation;
-    $this->solution->setEvaluated(TRUE);
-  }
-
-  public function getEvaluationSummary() {
-    $summary = [
-      "id" => $this->id,
-      "evaluationStatus" => $this->getEvaluationStatus()
-    ];
-
-    if ($this->evaluation) {
-      $summary = array_merge($summary, [
-        "score" => $this->evaluation->getScore(),
-        "points" => $this->evaluation->getPoints(),
-        "bonusPoints" => $this->bonusPoints
-      ]);
-    }
-
-    return $summary;
-  }
+  protected $submissions;
 
   public function getTotalPoints() {
-    if ($this->evaluation === NULL) {
+    if ($this->evaluation === NULL) { // TODO: evaluation deleted
       return 0;
     }
 
@@ -188,25 +104,19 @@ class AssignmentSolution implements JsonSerializable, ES\IEvaluable
   }
 
   public function getData($canViewRatios = FALSE, bool $canViewValues = false) {
-    $evaluation = $this->hasEvaluation()
-      ? $this->getEvaluation()->getData($canViewRatios, $canViewValues)
+    $evaluation = $this->hasEvaluation() // TODO: hasEvaluation deleted
+      ? $this->getEvaluation()->getData($canViewRatios, $canViewValues) // TODO: getEvaluation deleted
       : NULL;
 
     return [
       "id" => $this->id,
-      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : NULL,
       "note" => $this->note,
       "exerciseAssignmentId" => $this->assignment->getId(),
-      "submittedAt" => $this->submittedAt->getTimestamp(),
-      "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-      "isCorrect" => $this->isCorrect(),
-      "evaluation" => $evaluation,
       "solution" => $this->solution,
       "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
       "maxPoints" => $this->getMaxPoints(),
       "accepted" => $this->accepted,
-      "bonusPoints" => $this->bonusPoints,
-      "originalSubmissionId" => $this->originalSubmission !== NULL ? $this->originalSubmission->getId() : NULL
+      "bonusPoints" => $this->bonusPoints
     ];
   }
 
@@ -236,33 +146,14 @@ class AssignmentSolution implements JsonSerializable, ES\IEvaluable
     string $jobConfigPath,
     ?AssignmentSolution $originalSubmission = NULL
   ) {
-    // the author must be a student and the submitter must be either this student, or a supervisor of their group
-    if ($assignment->getGroup()->hasValidLicence() === FALSE) {
-      throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
-        IResponse::S402_PAYMENT_REQUIRED);
-    }
-
-    // now that the conditions for submission are validated, here comes the easy part:
     $entity = new AssignmentSolution;
     $entity->assignment = $assignment;
     $entity->note = $note;
-    $entity->submittedAt = new \DateTime;
-    $entity->submittedBy = $submitter;
     $entity->solution = $solution;
     $entity->accepted = false;
     $entity->bonusPoints = 0;
-    $entity->originalSubmission = $originalSubmission;
-    $entity->jobConfigPath = $jobConfigPath;
-    $entity->failures = new ArrayCollection();
 
     return $entity;
   }
 
-  function isFailed(): bool {
-    return $this->failures->count() > 0 ;
-  }
-
-  function isCorrect(): bool {
-    return  EvaluationPointsLoader::isStudentCorrect($this->evaluation);
-  }
 }

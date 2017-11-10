@@ -392,7 +392,7 @@ class Assignment implements JsonSerializable, IExercise
         return false;
       }
 
-      if (!$submission->hasEvaluation()) {
+      if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
         // Condition sustained for readability
         // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
         // -> otherwise the user would be able to submit many solutions before they are evaluated
@@ -445,7 +445,7 @@ class Assignment implements JsonSerializable, IExercise
           return $submission;
         }
 
-        return $submission->hasEvaluation() === FALSE || $best->getTotalPoints() > $submission->getTotalPoints()
+        return $submission->hasEvaluation() === FALSE || $best->getTotalPoints() > $submission->getTotalPoints() // TODO: hasEvaluation deleted
           ? $best
           : $submission;
       },

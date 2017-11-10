@@ -54,7 +54,7 @@ class EvaluationLoader {
     }
 
     $evaluation = new SolutionEvaluation($results, $submission);
-    $submission->setEvaluation($evaluation);
+    $submission->setEvaluation($evaluation); // TODO: setEvaluation deleted
     $this->pointsLoader->setStudentScoreAndPoints($evaluation);
     return $evaluation;
   }

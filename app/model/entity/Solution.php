@@ -15,7 +15,7 @@ use DateTime;
  * @method User getAuthor()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
- * @method void setEvaluated(bool)
+ * @method void setEvaluated(bool $evaluated)
  */
 class Solution implements JsonSerializable
 {

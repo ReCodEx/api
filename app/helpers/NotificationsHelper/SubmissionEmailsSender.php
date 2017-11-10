@@ -63,10 +63,10 @@ class SubmissionEmailsSender {
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
       "assignment" => $submission->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
       "group" => $submission->getAssignment()->getGroup()->getName(),
-      "date" => $submission->getEvaluation()->getEvaluatedAt(),
+      "date" => $submission->getEvaluation()->getEvaluatedAt(), // TODO: getEvaluation deleted
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
-      "points" => $submission->getEvaluation()->getPoints(),
-      "maxPoints" => $submission->getAssignment()->getMaxPoints($submission->getEvaluation()->getEvaluatedAt())
+      "points" => $submission->getEvaluation()->getPoints(), // TODO: getEvaluation deleted
+      "maxPoints" => $submission->getAssignment()->getMaxPoints($submission->getEvaluation()->getEvaluatedAt()) // TODO: getEvaluation deleted
     ]);
   }
 

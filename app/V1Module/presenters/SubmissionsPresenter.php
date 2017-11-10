@@ -86,6 +86,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
+    // TODO: hasEvaluation deleted
     if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
       $evaluation = $this->evaluationLoader->load($submission);
       if ($evaluation !== NULL) {
@@ -132,7 +133,7 @@ class SubmissionsPresenter extends BasePresenter {
   public function actionSetAcceptedSubmission(string $id) {
     $submission = $this->submissions->findOrThrow($id);
 
-    if (!$submission->hasEvaluation()) {
+    if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
       throw new ForbiddenRequestException("Submission does not have evaluation yet");
     }
 
@@ -190,7 +191,7 @@ class SubmissionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 
-    if (!$submission->hasEvaluation()) {
+    if (!$submission->hasEvaluation()) { // TODO: hasEvaluation deleted
       throw new ForbiddenRequestException("Submission is not evaluated yet");
     }
 

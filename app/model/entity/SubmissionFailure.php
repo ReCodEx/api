@@ -41,10 +41,10 @@ class SubmissionFailure implements JsonSerializable {
   protected $description;
 
   /**
-   * @ORM\ManyToOne(targetEntity="AssignmentSolution", inversedBy="failures")
+   * @ORM\ManyToOne(targetEntity="AssignmentSolutionSubmission", inversedBy="failures")
    * @ORM\JoinColumn(nullable=true)
    */
-  protected $assignmentSolution;
+  protected $assignmentSolutionSubmission;
 
   /**
    * @ORM\ManyToOne(targetEntity="ReferenceSolutionSubmission", inversedBy="failures")
@@ -68,10 +68,11 @@ class SubmissionFailure implements JsonSerializable {
    */
   protected $resolutionNote;
 
-  public function __construct(string $type, string $description, AssignmentSolution $submission = NULL, ReferenceSolutionSubmission $referenceSolutionSubmission = NULL, DateTime $createdAt = NULL) {
+  // TODO: signature changed
+  public function __construct(string $type, string $description, AssignmentSolutionSubmission $submission = NULL, ReferenceSolutionSubmission $referenceSolutionSubmission = NULL, DateTime $createdAt = NULL) {
     $this->type = $type;
     $this->description = $description;
-    $this->assignmentSolution = $submission;
+    $this->assignmentSolutionSubmission = $submission;
     $this->referenceSolutionSubmission = $referenceSolutionSubmission;
     $this->createdAt = $createdAt ?: new DateTime();
   }
@@ -93,7 +94,6 @@ class SubmissionFailure implements JsonSerializable {
     return [
       "type" => $this->type,
       "description" => $this->description,
-      "submission" => $this->assignmentSolution ? $this->assignmentSolution->getId() : NULL,
       "createdAt" => $this->createdAt->getTimestamp(),
       "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : NULL,
       "resolutionNote" => $this->resolutionNote
