@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
@@ -21,6 +22,7 @@ use App\Exceptions\ForbiddenRequestException;
  * @method setAccepted(bool $accepted)
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
+ * @method Collection getSubmissions()
  */
 class AssignmentSolution implements JsonSerializable
 {

@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\FileServerProxy;
+use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\Group;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Repository\AssignmentSolutions;
@@ -63,18 +64,30 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public $submissionAcl;
 
+
   /**
-   * Get a list of all submissions, ever
+   * Get information about the evaluations of a solution
    * @GET
+   * @param string $id Identifier of the solution
+   * @throws ForbiddenRequestException
    */
-  public function actionDefault() {
-    if (!$this->submissionAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
+  public function actionEvaluations(string $id) { // TODO: test
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->submissionAcl->canViewDetail($solution)) { // TODO
+      throw new ForbiddenRequestException("You cannot access this solution evaluations");
     }
 
-    $submissions = array_filter($this->assignmentSolutions->findAll(), (function (AssignmentSolution $submission) {
-      return $this->submissionAcl->canViewDetail($submission);
-    }));
+    $submissions = array_filter($solution->getSubmissions()->getValues(),
+      function (AssignmentSolutionSubmission $submission) use ($solution) {
+        return $this->submissionAcl->canViewEvaluation($solution, $submission);
+    });
+
+    // display only proper data for logged user
+    $submissions = array_map(function (AssignmentSolutionSubmission $submission) use ($solution) {
+      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
+      return $submission->getData($canViewDetails, $canViewValues);
+    }, $submissions);
 
     $this->sendSuccessResponse($submissions);
   }
@@ -87,7 +100,7 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    if (!$this->submissionAcl->canViewEvaluation($submission)) { // TODO
+    if (!$this->submissionAcl->canViewEvaluation($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
@@ -102,8 +115,9 @@ class SubmissionsPresenter extends BasePresenter {
       }
     }
 
-    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission); // TODO
-    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission); // TODO
+    $solution = $submission->getAssignmentSolution();
+    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
+    $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
@@ -185,7 +199,7 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    if (!$this->submissionAcl->canDownloadResultArchive($submission)) { // TODO
+    if (!$this->submissionAcl->canDownloadResultArchive($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 

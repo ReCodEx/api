@@ -347,14 +347,6 @@ class Group implements JsonSerializable
     );
   }
 
-  public function getBestSolutions(User $user): array {
-    return $this->getAssignments()->map(
-      function (Assignment $assignment) use ($user) {
-        return $assignment->getBestSolution($user); // TODO: getBestSolution deleted
-      }
-    )->getValues();
-  }
-
   public function getCompletedAssignmentsByStudent(User $student) {
     return $this->getAssignments()->filter(
       function(Assignment $assignment) use ($student) {

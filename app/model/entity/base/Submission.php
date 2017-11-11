@@ -13,6 +13,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @method string getResultsUrl()
  * @method string setResultsUrl(string $url)
  * @method string getJobConfigPath()
+ * @method User getSubmittedBy()
  */
 abstract class Submission
 {

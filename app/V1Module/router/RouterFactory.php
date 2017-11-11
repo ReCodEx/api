@@ -142,9 +142,9 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
     $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
     $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
-    $router[] = new GetRoute("$prefix/<id>/best-submissions", "Assignments:bestSubmissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-submission", "Assignments:bestSubmission");
+    $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSubmissions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:submissions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-solution", "Assignments:bestSubmission");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
     $router[] = new PostRoute("$prefix/<id>/sync-exercise", "Assignments:syncWithExercise");
 
@@ -239,12 +239,13 @@ class RouterFactory {
    */
   private static function createSubmissionRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix", "Submissions:");
-    $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<id>", "Submissions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "Submissions:downloadResultArchive");
+
     $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
+    $router[] = new GetRoute("$prefix/<id>/evaluations", "Submissions:evaluations");
     $router[] = new PostRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
     $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "Submissions:unsetAcceptedSubmission");
-    $router[] = new GetRoute("$prefix/<id>/download-result", "Submissions:downloadResultArchive");
 
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
     return $router;

@@ -87,12 +87,6 @@ class SubmitPresenter extends BasePresenter {
   public $monitorConfig;
 
   /**
-   * @var JobConfig\Storage
-   * @inject
-   */
-  public $jobConfigs;
-
-  /**
    * @var RuntimeEnvironments
    * @inject
    */

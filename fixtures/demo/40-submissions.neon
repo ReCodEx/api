@@ -44,12 +44,12 @@ App\Model\Entity\AssignmentSolutionSubmission:
         evaluation: "@evaluation<current()>"
 
 App\Model\Entity\SubmissionFailure:
-    "resolvedSubmissionFailure{1..2}":
+    "resolvedSubmissionFailure":
         __construct:
             forSubmission:
                 - evaluation_failure
                 - Things went south
-                - "@submission<current()>"
+                - @submission1
                 - "<dateTime()>"
         resolve:
             - Got it!

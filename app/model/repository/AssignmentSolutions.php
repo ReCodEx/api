@@ -71,7 +71,7 @@ class AssignmentSolutions extends BaseRepository {
     return array_reduce(
       $this->findValidSolutions($assignment, $user),
       function (?AssignmentSolution $best, AssignmentSolution $solution) {
-        if ($best === NULL) {
+        if ($best === null) {
           return $solution;
         }
 

@@ -39,13 +39,6 @@ class TestSubmissionsPresenter extends Tester\TestCase
   {
     PresenterTestHelper::fillDatabase($this->container);
     $this->presenter = PresenterTestHelper::createPresenter($this->container, SubmissionsPresenter::class);
-    /*$this->presenter->evaluations = Mockery::mock('App\Model\Repository\SolutionEvaluations')
-        ->shouldReceive('persist')->with(Mockery::any())->getMock();*/
-    /*$this->presenter->evaluationLoader = Mockery::mock('App\Helpers\EvaluationLoader')
-        ->shouldReceive('load')
-        ->withAnyArgs()
-        ->andReturn(Mockery::mock('App\Model\Entity\SolutionEvaluation'))
-        ->getMock();*/
   }
 
   protected function tearDown()
@@ -57,27 +50,12 @@ class TestSubmissionsPresenter extends Tester\TestCase
     }
   }
 
-  public function testGetAllSubmissions()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-
-    $request = new Nette\Application\Request('V1:Submissions', 'GET', ['action' => 'default']);
-    $response = $this->presenter->run($request);
-    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    $allResults = $result['payload'];
-    Assert::equal(2, count($allResults));
-    $theResult = array_pop($allResults);
-    Assert::equal('Random note', $theResult->note);
-  }
 
   public function testGetEvaluation()
   {
     $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
 
-    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
+    $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
     $submission = array_pop($allSubmissions);
 
     $request = new Nette\Application\Request('V1:Submissions',
@@ -180,7 +158,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   public function testDownloadResultArchive()
   {
     PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
-    $submission = current($this->presenter->assignmentSolutions->findAll());
+    $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
 
     // mock everything you can
     $mockGuzzleStream = Mockery::mock(Psr\Http\Message\StreamInterface::class);

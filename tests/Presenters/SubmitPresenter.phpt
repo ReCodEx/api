@@ -241,12 +241,13 @@ class TestSubmitPresenter extends Tester\TestCase
 
   public function testResubmit()
   {
-    /** @var AssignmentSolutions $submissions */
-    $submissions = $this->container->getByType(AssignmentSolutions::class);
+    /** @var AssignmentSolutions $solutions */
+    $solutions = $this->container->getByType(AssignmentSolutions::class);
+    $solution = current($solutions->findAll());
+    $solutionCount = count($solutions->findAll());
+    $submissionCount = $solution->getSubmissions()->count();
 
-    $submission = current($submissions->findAll());
-    $submissionCount = count($submissions->findAll());
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // prepare return variables for mocked objects
     $jobId = 'jobId';
@@ -295,7 +296,7 @@ class TestSubmitPresenter extends Tester\TestCase
     $this->presenter->monitorConfig = $monitorConfig;
 
     $request = new Nette\Application\Request('V1:Submit', 'POST',
-      ['action' => 'resubmit', 'id' => $submission->getId()],
+      ['action' => 'resubmit', 'id' => $solution->getId()],
       ['private' => 0]
     );
 
@@ -304,26 +305,26 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    $payload = $result["payload"];
-    Assert::equal($submissionCount + 1, count($submissions->findAll()));
+    Assert::equal($solutionCount, count($solutions->findAll()));
+    Assert::equal($submissionCount, $solution->getSubmissions()->count());
   }
 
   public function testResubmitAll()
   {
-    /** @var AssignmentSolutions $submissions */
-    $submissions = $this->container->getByType(AssignmentSolutions::class);
+    /** @var AssignmentSolutions $solutions */
+    $solutions = $this->container->getByType(AssignmentSolutions::class);
 
     /** @var Assignments $assignments */
     $assignments = $this->container->getByType(Assignments::class);
 
     $assignment = NULL;
-    $totalSubmissionCount = count($submissions->findAll());
-    $submissionCount = 2;
+    $totalSubmissionCount = count($this->presenter->assignmentSubmissions->findAll());
+    $solutionCount = 2;
 
     // Find an assignment with desired amount of submissions
     /** @var Assignment $candidate */
     foreach ($assignments->findAll() as $candidate) {
-      if ($candidate->getAssignmentSolutions()->count() == $submissionCount) {
+      if ($candidate->getAssignmentSolutions()->count() == $solutionCount) {
         $assignment = $candidate;
         break;
       }
@@ -342,32 +343,33 @@ class TestSubmitPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
-    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->times($submissionCount)
-      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->times($submissionCount);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->times($solutionCount)
+      ->shouldReceive("setType")->withArgs([AssignmentSolution::JOB_TYPE])->andReturn($mockSubmissionHeader)->times($solutionCount);
 
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
-    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast($submissionCount)
-      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->times($submissionCount)
-      ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->atLeast($submissionCount)
-      ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast($submissionCount)
-      ->shouldReceive("setFileCollector")->with($fileserverUrl)->times($submissionCount);
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast($solutionCount)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)->times($solutionCount)
+      ->shouldReceive("getTasksCount")->withAnyArgs()->andReturn($tasksCount)->atLeast($solutionCount)
+      ->shouldReceive("getHardwareGroups")->andReturn($hwGroups)->atLeast($solutionCount)
+      ->shouldReceive("setFileCollector")->with($fileserverUrl)->times($solutionCount);
 
-    /** @var Mockery\Mock | JobConfig\Storage $mockStorage */
-    $mockStorage = Mockery::mock(JobConfig\Storage::class);
-    $mockStorage->shouldReceive("get")->withAnyArgs()->andReturn($mockJobConfig)->times($submissionCount);
-    $this->presenter->jobConfigs = $mockStorage;
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
+      ->andReturn(["jobConfigPath", $mockJobConfig])->times($solutionCount);
+    $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
     /** @var Mockery\Mock | FileServerProxy $mockFileserverProxy */
     $mockFileserverProxy = Mockery::mock(FileServerProxy::class);
-    $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->times($submissionCount)
+    $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)->times($solutionCount)
       ->shouldReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-      ->andReturn([$archiveUrl, $resultsUrl])->times($submissionCount);
+      ->andReturn([$archiveUrl, $resultsUrl])->times($solutionCount);
     /** @var Mockery\Mock | BrokerProxy $mockBrokerProxy */
     $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
-      ->andReturn($evaluationStarted = TRUE)->times($submissionCount);
+      ->andReturn($evaluationStarted = TRUE)->times($solutionCount);
     $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy));
 
     // fake monitor configuration
@@ -386,8 +388,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    $payload = $result["payload"];
-    Assert::equal($totalSubmissionCount + $submissionCount, count($submissions->findAll()));
+    Assert::equal($totalSubmissionCount + $solutionCount, count($this->presenter->assignmentSubmissions->findAll()));
   }
 }
 
