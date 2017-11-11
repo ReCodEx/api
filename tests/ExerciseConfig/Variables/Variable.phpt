@@ -15,7 +15,8 @@ class TestVariable extends Tester\TestCase
   static $config = [
     "name" => "varName",
     "type" => "string",
-    "value" => "varValue"
+    "value" => "varValue",
+    "additional-data" => "text"
   ];
 
   static $configArray = [
@@ -131,6 +132,11 @@ class TestVariable extends Tester\TestCase
     Assert::equal('$reference', $variable->getValue());
   }
 
+  public function testArraySerialization() {
+    $deserialized = Yaml::parse((string)$this->loader->loadVariable(self::$configArray));
+    Assert::equal(self::$configArray, $deserialized);
+  }
+
   public function testSerialization() {
     $deserialized = Yaml::parse((string)$this->loader->loadVariable(self::$config));
     Assert::equal(self::$config, $deserialized);
@@ -169,6 +175,7 @@ class TestVariable extends Tester\TestCase
     Assert::equal(["hehe", "haha"], $variable->getValueAsArray());
     Assert::equal("nice_prefix/hehe", $variable->getPrefixedValue()[0]);
     Assert::equal("nice_prefix/haha", $variable->getPrefixedValue()[1]);
+    Assert::equal(null, $variable->getAdditionalData());
   }
 
   public function testCorrect() {
@@ -178,6 +185,7 @@ class TestVariable extends Tester\TestCase
     Assert::equal("varValue", $variable->getValue());
     Assert::equal(["varValue"], $variable->getValueAsArray());
     Assert::equal("nice_prefix/varValue", $variable->getPrefixedValue());
+    Assert::equal("text", $variable->getAdditionalData());
   }
 
 }

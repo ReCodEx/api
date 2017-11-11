@@ -54,6 +54,10 @@ class Loader {
       $variable->setValue($data[Variable::VALUE_KEY]);
     }
 
+    if (isset($data[Variable::ADDITIONAL_DATA_KEY])) {
+      $variable->setAdditionalData($data[Variable::ADDITIONAL_DATA_KEY]);
+    }
+
     return $variable;
   }
 
