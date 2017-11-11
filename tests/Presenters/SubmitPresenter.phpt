@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\BrokerProxy;
 use App\Helpers\FileServerProxy;
+use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\MonitorConfig;
 use App\Helpers\BackendSubmitHelper;
 use App\Helpers\SubmissionHelper;
@@ -123,7 +124,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
     $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-      ->andReturn(["jobConfigPath", $mockJobConfig])->once();
+      ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
@@ -205,7 +206,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
     $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-      ->andReturn(["jobConfigPath", $mockJobConfig])->once();
+      ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
@@ -274,7 +275,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
     $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-      ->andReturn(["jobConfigPath", $mockJobConfig])->once();
+      ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->once();
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
@@ -357,7 +358,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
     $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-      ->andReturn(["jobConfigPath", $mockJobConfig])->times($solutionCount);
+      ->andReturn(new GeneratorResult("jobConfigPath", $mockJobConfig))->times($solutionCount);
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies

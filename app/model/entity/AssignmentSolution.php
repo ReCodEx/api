@@ -134,7 +134,13 @@ class AssignmentSolution implements JsonSerializable
     })->getValues();
   }
 
-  // TODO: engage canViewResubmissions
+  /**
+   * Parametrized view.
+   * @param bool $canViewRatios
+   * @param bool $canViewValues
+   * @param bool $canViewResubmissions
+   * @return array
+   */
   public function getData($canViewRatios = FALSE, bool $canViewValues = false, bool $canViewResubmissions = false) {
     return [
       "id" => $this->id,

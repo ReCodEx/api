@@ -378,7 +378,8 @@ class AssignmentsPresenter extends BasePresenter {
       $submission = $solution->getLastSubmission();
       $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
       $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-      return $solution->getData($canViewDetails, $canViewValues);
+      $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+      return $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }, $submissions);
 
     $this->sendSuccessResponse($submissions);
@@ -407,7 +408,8 @@ class AssignmentsPresenter extends BasePresenter {
     $submission = $solution->getLastSubmission();
     $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
     $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues));
+    $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
   }
 
   /**
@@ -438,7 +440,8 @@ class AssignmentsPresenter extends BasePresenter {
       $submission = $solution->getLastSubmission();
       $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
       $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-      $bestSubmissions[$student->getId()] = $solution->getData($canViewDetails, $canViewValues);
+      $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+      $bestSubmissions[$student->getId()] = $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }
 
     $this->sendSuccessResponse($bestSubmissions);

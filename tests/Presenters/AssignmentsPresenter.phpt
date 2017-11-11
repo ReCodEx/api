@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\Group;
@@ -302,14 +303,14 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
   public function testSolutions()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $submission = current($this->presenter->assignmentSolutions->findAll());
     $user = $submission->getSolution()->getAuthor();
     $assignment = $submission->getAssignment();
     $submissions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
-    $submissions = array_map(function ($submission) {
-      return $submission->getData(true);
+    $submissions = array_map(function (AssignmentSolution $submission) {
+      return $submission->getData(true, true, true);
     }, $submissions);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',

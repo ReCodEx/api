@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
 use App\Helpers\BackendSubmitHelper;
+use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\SubmissionHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ReferenceExerciseSolution;
@@ -221,7 +222,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
-    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()->andReturn(array("", $mockJobConfig))->once();
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
+      ->andReturn(new GeneratorResult("", $mockJobConfig))->once();
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     /** @var Mockery\Mock | BackendSubmitHelper $mockBackendSubmitHelper */

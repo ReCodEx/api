@@ -10,6 +10,7 @@ interface ISubmissionPermissions {
   function canViewDetail(AssignmentSolution $submission): bool;
   function canSetBonusPoints(AssignmentSolution $submission): bool;
   function canSetAccepted(AssignmentSolution $submission): bool;
+  function canViewResubmissions(AssignmentSolution $submission): bool;
 
   function canViewEvaluation(AssignmentSolution $submission, AssignmentSolutionSubmission $solutionSubmission): bool;
   function canViewEvaluationDetails(AssignmentSolution $submission, AssignmentSolutionSubmission $solutionSubmission): bool;

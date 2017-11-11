@@ -283,12 +283,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
     $compilationParams = CompilationParams::create($submittedFiles, $isDebug);
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator
+    $generatorResults = $this->jobConfigGenerator
       ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionSubmission($referenceSolution, $hwGroup, $jobConfigPath, $this->getCurrentUser());
+      $evaluation = new ReferenceSolutionSubmission($referenceSolution, $hwGroup,
+        $generatorResults->getJobConfigPath(), $this->getCurrentUser());
       $this->referenceSubmissions->persist($evaluation);
 
       try {
@@ -297,7 +298,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
           $runtimeEnvironment->getId(),
           $hwGroup->getId(),
           $referenceSolution->getFiles()->getValues(),
-          $jobConfig
+          $generatorResults->getJobConfig()
         );
 
         $evaluation->setResultsUrl($resultsUrl);

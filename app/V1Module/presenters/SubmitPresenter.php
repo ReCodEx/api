@@ -9,6 +9,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
@@ -231,14 +232,15 @@ class SubmitPresenter extends BasePresenter {
 
     // generate job configuration
     $compilationParams = CompilationParams::create($solution->getSolution()->getFileNames(), $isDebug);
-    list($jobConfigPath, $jobConfig) =
+    $generatorResult =
       $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(),
         $solution->getAssignment(),
         $solution->getSolution()->getRuntimeEnvironment(),
         $compilationParams);
 
     // create submission entity
-    $submission = new AssignmentSolutionSubmission($solution, $jobConfigPath, $this->getCurrentUser());
+    $submission = new AssignmentSolutionSubmission($solution,
+      $generatorResult->getJobConfigPath(), $this->getCurrentUser());
     $this->assignmentSubmissions->persist($submission);
 
     // initiate submission
@@ -248,7 +250,7 @@ class SubmitPresenter extends BasePresenter {
         $submission->getId(),
         $solution->getSolution()->getRuntimeEnvironment()->getId(),
         $solution->getSolution()->getFiles()->getValues(),
-        $jobConfig
+        $generatorResult->getJobConfig()
       );
     } catch (\Exception $e) {
       $this->submissionFailed($submission, $e->getMessage());
@@ -261,9 +263,9 @@ class SubmitPresenter extends BasePresenter {
     return [
       "submission" => $solution,
       "webSocketChannel" => [
-        "id" => $jobConfig->getJobId(),
+        "id" => $generatorResult->getJobConfig()->getJobId(),
         "monitorUrl" => $this->monitorConfig->getAddress(),
-        "expectedTasksCount" => $jobConfig->getTasksCount()
+        "expectedTasksCount" => $generatorResult->getJobConfig()->getTasksCount()
       ]
     ];
   }
@@ -302,9 +304,9 @@ class SubmitPresenter extends BasePresenter {
     /** @var AssignmentSolution $solution */
     $result = [];
     foreach ($assignment->getAssignmentSolutions() as $solution) {
-      $result[] = $this->finishSubmission($solution, false); // TODO: job config generated for all solutions... performance much?
+      $result[] = $this->finishSubmission($solution, false);
     }
 
-    $this->sendSuccessResponse($result); // TODO better response format
+    $this->sendSuccessResponse($result);
   }
 }
