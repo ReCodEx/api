@@ -618,10 +618,18 @@ class GroupsPresenter extends BasePresenter {
         $localizations[$lang] = new LocalizedGroup($lang, $item["name"], $item["description"]);
       }
 
+      /** @var LocalizedGroup $text */
+      foreach ($group->getLocalizedTexts() as $text) {
+        // Localizations::updateCollection only updates the inverse side of the relationship - Doctrine needs us to
+        // update the owning side manually. We set it to null for all potentially removed localizations first.
+        $text->setGroup(null);
+      }
+
       Localizations::updateCollection($group->getLocalizedTexts(), $localizations);
 
-      foreach ($group->getLocalizedTexts() as $localizedText) {
-        $this->groups->persist($localizedText, false);
+      foreach ($group->getLocalizedTexts() as $text) {
+        $text->setGroup($group);
+        $this->groups->persist($text, false);
       }
     }
   }

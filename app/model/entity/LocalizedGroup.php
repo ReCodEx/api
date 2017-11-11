@@ -25,6 +25,12 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable {
    */
   protected $createdFrom;
 
+  /**
+   * @ORM\ManyToOne(targetEntity="Group", inversedBy="localizedTexts")
+   * @ORM\JoinColumn(nullable=true)
+   */
+  protected $group;
+
   public function __construct($locale, $name, $description, ?LocalizedGroup $createdFrom = NULL) {
     parent::__construct($locale);
     $this->name = $name;
@@ -42,6 +48,14 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable {
   public function setCreatedFrom(LocalizedEntity $entity) {
     if ($entity instanceof LocalizedGroup) {
       $this->createdFrom = $entity;
+    }
+  }
+
+  public function setGroup(?Group $group = null) {
+    $this->group = $group;
+
+    if ($group !== null && !$group->getLocalizedTexts()->contains($this)) {
+      $group->getLocalizedTexts()->add($this);
     }
   }
 

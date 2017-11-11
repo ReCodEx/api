@@ -220,6 +220,7 @@ class Instance implements JsonSerializable
       TRUE
     );
 
+    /** @var LocalizedGroup $text */
     foreach ($localizedTexts as $text) {
       $instance->rootGroup->addLocalizedText($text);
     }

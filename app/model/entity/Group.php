@@ -79,7 +79,7 @@ class Group implements JsonSerializable
   protected $externalId;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedGroup")
+   * @ORM\OneToMany(targetEntity="LocalizedGroup", mappedBy="group")
    * @var ArrayCollection
    */
   protected $localizedTexts;
@@ -393,6 +393,7 @@ class Group implements JsonSerializable
 
   public function addLocalizedText(LocalizedGroup $group) {
     $this->localizedTexts->add($group);
+    $group->setGroup($this);
   }
 
   public function getLocalizedTexts(): Collection {
