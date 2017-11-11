@@ -517,6 +517,7 @@ class Group implements JsonSerializable
     return [
       "id" => $this->id,
       "externalId" => $this->externalId,
+      "localizedTexts" => $this->localizedTexts->getValues(),
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "admins" => $this->getPrimaryAdmins()->map(function (User $user) {
         return $user->getPublicData();
