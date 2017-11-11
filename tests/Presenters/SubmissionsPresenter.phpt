@@ -51,6 +51,26 @@ class TestSubmissionsPresenter extends Tester\TestCase
   }
 
 
+  public function testGetEvaluations()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+
+    $request = new Nette\Application\Request('V1:Submissions',
+      'GET',
+      ['action' => 'evaluations', 'id' => $solution->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    // Check invariants
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count($solution->getSubmissions()->count(), $payload);
+  }
+
   public function testGetEvaluation()
   {
     $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
@@ -157,7 +177,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
   public function testDownloadResultArchive()
   {
-    PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $submission = current($this->presenter->assignmentSolutionSubmissions->findAll());
 
     // mock everything you can

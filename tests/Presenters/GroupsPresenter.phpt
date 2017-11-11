@@ -54,6 +54,24 @@ class TestGroupsPresenter extends Tester\TestCase
     }
   }
 
+
+  /**
+   * Helper which returns group with non-zero number of students
+   * @return Group
+   */
+  private function getGroupWithStudents(): Group {
+    $groups = $this->presenter->groups->findAll();
+    $group = null;
+    foreach ($groups as $grp) {
+      if ($grp->getStudents()->count() > 0) {
+        $group = $grp;
+        break;
+      }
+    }
+    Assert::notEqual(null, $group);
+    return $group;
+  }
+
   public function testUserCannotListAllGroups()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
@@ -438,6 +456,51 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     Assert::equal($group->getExercises()->toArray(), $payload); // admin can access everything
+  }
+
+  public function testStats()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $group = $this->getGroupWithStudents();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'stats', 'id' => $group->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::count(11, $payload);
+  }
+
+  public function testStudentsStats()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $group = $this->getGroupWithStudents();
+    $user = $group->getStudents()->first();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'GET',
+      ['action' => 'studentsStats', 'id' => $group->getId(), 'userId' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+
+    Assert::true(array_key_exists("userId", $payload));
+    Assert::true(array_key_exists("groupId", $payload));
+    Assert::true(array_key_exists("assignments", $payload));
+    Assert::true(array_key_exists("points", $payload));
+    Assert::true(array_key_exists("statuses", $payload));
+    Assert::true(array_key_exists("hasLimit", $payload));
+    Assert::true(array_key_exists("passesLimit", $payload));
   }
 
   public function testAddSupervisor()

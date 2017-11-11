@@ -12,6 +12,7 @@ use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -63,6 +64,12 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentAcl;
+
+  /**
+   * @var GroupViewFactory
+   * @inject
+   */
+  public $groupViewFactory;
 
   /**
    * Get a list of all groups
@@ -373,7 +380,8 @@ class GroupsPresenter extends BasePresenter {
     if (!$this->groupAcl->canViewStats($group)) {
       $user = $this->getCurrentUser();
       if ($this->groupAcl->canViewStudentStats($group, $user) && $group->isStudentOf($user)) {
-        $this->sendSuccessResponse([$group->getStudentsStats($user)]);
+        $stats = $this->groupViewFactory->getStudentsStats($group, $user);
+        $this->sendSuccessResponse([$stats]);
       }
 
       throw new ForbiddenRequestException();
@@ -382,7 +390,7 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       array_map(
         function ($student) use ($group) {
-          return $group->getStudentsStats($student);
+          return $this->groupViewFactory->getStudentsStats($group, $student);
         },
         $group->getStudents()->getValues()
       )
@@ -409,7 +417,7 @@ class GroupsPresenter extends BasePresenter {
       throw new BadRequestException("User $userId is not student of $id");
     }
 
-    $this->sendSuccessResponse($group->getStudentsStats($user));
+    $this->sendSuccessResponse($this->groupViewFactory->getStudentsStats($group, $user));
   }
 
   /**

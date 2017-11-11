@@ -24,6 +24,7 @@ use JsonSerializable;
  * @method string getExternalId()
  * @method string getDescription()
  * @method Instance getInstance()
+ * @method float getThreshold()
  */
 class Group implements JsonSerializable
 {
@@ -333,6 +334,9 @@ class Group implements JsonSerializable
     })->getValues();
   }
 
+  /**
+   * @return Collection
+   */
   public function getAssignments() {
     return $this->assignments->filter(function (Assignment $assignment) {
       return $assignment->getDeletedAt() === NULL;
@@ -345,75 +349,6 @@ class Group implements JsonSerializable
       function ($carry, Assignment $assignment) { return $carry + $assignment->getGroupPoints(); },
       0
     );
-  }
-
-  public function getCompletedAssignmentsByStudent(User $student) {
-    return $this->getAssignments()->filter(
-      function(Assignment $assignment) use ($student) {
-        return $assignment->getBestSolution($student) !== NULL; // TODO: getBestSolution deleted
-      }
-    );
-  }
-
-  public function getMissedAssignmentsByStudent(User $student) {
-    return $this->getAssignments()->filter(
-      function(Assignment $assignment) use ($student) {
-        return $assignment->isAfterDeadline() && $assignment->getBestSolution($student) === NULL; // TODO: getBestSolution deleted
-      }
-    );
-  }
-
-  public function getPointsGainedByStudent(User $student) {
-    return array_reduce(
-      $this->getCompletedAssignmentsByStudent($student)->getValues(),
-      function ($carry, Assignment $assignment) use ($student) {
-        $best = $assignment->getBestSolution($student); // TODO: getBestSolution deleted
-        if ($best !== NULL) {
-          $carry += $best->getTotalPoints();
-        }
-
-        return $carry;
-      },
-      0
-    );
-  }
-
-  /**
-   * Get the statistics of an individual student.
-   * @param User $student   Student of this group
-   * @return array          Students statistics
-   */
-  public function getStudentsStats(User $student) {
-    $total = $this->getAssignments()->count();
-    $completed = $this->getCompletedAssignmentsByStudent($student);
-    $missed = $this->getMissedAssignmentsByStudent($student);
-    $maxPoints = $this->getMaxPoints();
-    $gainedPoints = $this->getPointsGainedByStudent($student);
-
-    $statuses = [];
-    /** @var Assignment $assignment */
-    foreach ($this->getAssignments() as $assignment) {
-      $best = $assignment->getBestSolution($student); // TODO: getBestSolution deleted
-      $solution = $best ? $best : $assignment->getLastSolution($student); // TODO: getLastSolution deleted
-      $statuses[$assignment->getId()] = $solution ? $solution->getEvaluationStatus() : NULL; // TODO: getEvaluationStatus deleted
-    }
-
-    return [
-      "userId" => $student->getId(),
-      "groupId" => $this->id,
-      "assignments" => [
-        "total" => $total,
-        "completed" => $completed->count(),
-        "missed" => $missed->count()
-      ],
-      "points" => [
-        "total" => $maxPoints,
-        "gained" => $gainedPoints
-      ],
-      "statuses" => $statuses,
-      "hasLimit" => $this->threshold !== NULL && $this->threshold > 0,
-      "passesLimit" => $this->threshold === NULL ? TRUE : $gainedPoints >= $maxPoints * $this->threshold
-    ];
   }
 
   /**

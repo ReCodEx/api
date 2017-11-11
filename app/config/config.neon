@@ -323,6 +323,9 @@ services:
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
 
+  # views factories
+  - App\Model\View\GroupViewFactory
+
 doctrine:
   user: 'root'
   password: ''

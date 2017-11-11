@@ -112,7 +112,7 @@ class SolutionEvaluation implements JsonSerializable
    * @param AssignmentSolutionSubmission|null $submission The submission. It can be null in case we're handling a reference solution evaluation
    * @param ReferenceSolutionSubmission|null $evaluation
    */
-  public function __construct(EvaluationResults $results, // TODO: signature changed
+  public function __construct(EvaluationResults $results,
       AssignmentSolutionSubmission $submission = null,
       ReferenceSolutionSubmission $evaluation = null) {
     $this->evaluatedAt = new \DateTime;

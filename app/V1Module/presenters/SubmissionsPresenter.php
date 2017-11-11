@@ -71,9 +71,9 @@ class SubmissionsPresenter extends BasePresenter {
    * @param string $id Identifier of the solution
    * @throws ForbiddenRequestException
    */
-  public function actionEvaluations(string $id) { // TODO: test
+  public function actionEvaluations(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->submissionAcl->canViewDetail($solution)) { // TODO
+    if (!$this->submissionAcl->canViewDetail($solution)) {
       throw new ForbiddenRequestException("You cannot access this solution evaluations");
     }
 
