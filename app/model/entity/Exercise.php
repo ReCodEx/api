@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\Localizations;
 use \DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
@@ -36,8 +37,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Exercise implements JsonSerializable, IExercise
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
-
-  public const PRIMARY_LOCALE = "cs";
 
   /**
    * @ORM\Id
@@ -474,22 +473,10 @@ class Exercise implements JsonSerializable, IExercise
       })->getValues();
   }
 
-  /**
-   * @return LocalizedExercise
-   */
-  protected function getPrimaryLocalization(): ?LocalizedExercise {
-    /** @var LocalizedExercise $text */
-    foreach ($this->localizedTexts as $text) {
-      if ($text->getLocale() === self::PRIMARY_LOCALE) {
-        return $text;
-      }
-    }
-
-    return !$this->localizedTexts->isEmpty() ? $this->localizedTexts->first() : NULL;
-  }
-
   public function jsonSerialize() {
-    $primaryLocalization = $this->getPrimaryLocalization();
+    /** @var LocalizedExercise $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
+
     return [
       "id" => $this->id,
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC

@@ -107,6 +107,10 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     return $identity->getUserData();
   }
 
+  protected function getCurrentUserLocale(): string {
+    return $this->getCurrentUser()->getSettings()->getDefaultLanguage();
+  }
+
   /**
    * Is current user in the given scope?
    * @param string $scope Scope ID

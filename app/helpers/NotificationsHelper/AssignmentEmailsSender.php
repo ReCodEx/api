@@ -127,9 +127,10 @@ class AssignmentEmailsSender {
   private function createAssignmentDeadlineBody(Assignment $assignment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
+    $localizedGroup = $assignment->getGroup()->getLocalizedTexts()->first();
     return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
       "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $assignment->getGroup()->getName(),
+      "group" => $localizedGroup ? $localizedGroup->getName() : "", // TODO
       "firstDeadline" => $assignment->getFirstDeadline(),
       "secondDeadline" => $assignment->getSecondDeadline()
     ]);

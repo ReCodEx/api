@@ -1,12 +1,12 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\Localizations;
 use App\Model\Entity\Group;
+use App\Model\Entity\Instance;
+use App\Model\Entity\LocalizedGroup;
 use App\V1Module\Presenters\InstancesPresenter;
-use Nette\Utils\Arrays;
-use Nette\Utils\Json;
 use Tester\Assert;
-use App\Helpers\JobConfig;
 use App\Model\Entity\Licence;
 
 /**
@@ -118,15 +118,17 @@ class TestInstancesPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:Instances',
         'POST',
         ['action' => 'updateInstance', 'id' => $instance->id],
-        ['name' => 'Frankenstein UNI', 'description' => 'Edited intence', 'isOpen' => 'true']
+        ['isOpen' => 'false']
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+
+    /** @var Instance $instance */
     $instance = $result['payload'];
-    Assert::equal("Frankenstein UNI", $instance['name']);
+    Assert::equal(false, $instance["isOpen"]);
   }
 
   public function testDeleteInstance()
@@ -175,7 +177,11 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(4, count($groups));
     Assert::equal(
       ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
-      array_map(function (Group $group) { return $group->name; }, $groups)
+      array_map(function (Group $group) {
+        /** @var LocalizedGroup $localizedEntity */
+        $localizedEntity = Localizations::getPrimaryLocalization($group->getLocalizedTexts());
+        return $localizedEntity ? $localizedEntity->getName() : "NO NAME";
+      }, $groups)
     );
   }
 

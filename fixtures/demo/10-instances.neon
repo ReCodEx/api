@@ -1,11 +1,16 @@
+App\Model\Entity\LocalizedGroup:
+    demoInstanceLocalization:
+        __construct:
+            - en
+            - "Frankenstein University, Atlantida" # name
+            - "First underwater IT university for fish and shrimps." # description
 App\Model\Entity\Instance:
     demoInstance:
         __construct:
             createInstance:
-                - "Frankenstein University, Atlantida" # name
+                - [@demoInstanceLocalization]
                 - true # isOpen
                 - null # admin
-                - "First underwater IT university for fish and shrimps." # description
         needsLicence: true
 
 App\Model\Entity\User:
