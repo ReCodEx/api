@@ -28,7 +28,7 @@ class Groups extends BaseSoftDeleteRepository  {
   /**
    * Check if the name of the group is free within group and instance.
    */
-  public function findByName($locale, $name, Instance $instance, ?Group $parentGroup = NULL) {
+  public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup) {
     $textsQb = $this->em->createQueryBuilder();
     $textsQb->addSelect("l")->from(LocalizedGroup::class, "l");
     $textsQb->where($textsQb->expr()->eq("l.name", ":name"));
@@ -49,23 +49,30 @@ class Groups extends BaseSoftDeleteRepository  {
     $groupsQb->addSelect("g")->from(Group::class, "g")
       ->innerJoin("g.instance", "i")
       ->leftJoin("g.parentGroup", "p");
+
     $criteria = [];
+    $parameters = [
+      "instanceId" => $instance->getId()
+    ];
 
     /** @var LocalizedGroup $text */
     foreach ($texts as $i => $text) {
-      $criteria[] = $groupsQb->expr()->isMemberOf($text, "g.localizedTexts");
+      $criteria[] = $groupsQb->expr()->isMemberOf(":text_" . $i, "g.localizedTexts");
+      $parameters["text_" . $i] = $text->getId();
     }
 
     $groupsQb->andWhere($groupsQb->expr()->eq("i.id", ":instanceId"));
     $groupsQb->andWhere($groupsQb->expr()->orX(...$criteria));
 
-    $parameters = [
-      "instanceId" => $instance->getId()
-    ];
-
     if ($parentGroup) {
-      $groupsQb->andWhere($groupsQb->expr()->eq("p.id", ":parentGroupId"));
+      $criteria = [$groupsQb->expr()->eq("p.id", ":parentGroupId")];
       $parameters["parentGroupId"] = $parentGroup->getId();
+
+      if ($parentGroup === $instance->getRootGroup()) {
+        $criteria[] = $groupsQb->expr()->isNull("p.id");
+      }
+
+      $groupsQb->andWhere($groupsQb->expr()->orX(...$criteria));
     } else {
       $groupsQb->andWhere($groupsQb->expr()->isNull("p.id"));
     }

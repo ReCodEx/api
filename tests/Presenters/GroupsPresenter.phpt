@@ -227,6 +227,48 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(TRUE, $payload['groupNameIsFree']);
   }
 
+  public function testValidateAddGroupDataNameExists()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    /** @var Instance $instance */
+    $instance = null;
+
+    /** @var Group $group */
+    $group = null;
+
+    foreach ($this->presenter->instances->findAll() as $instance) {
+      /** @var Group $candidate */
+      foreach ($instance->getGroups() as $candidate) {
+        if ($candidate->getParentGroup() === $instance->getRootGroup()) {
+          $group = $candidate;
+          break;
+        }
+      }
+    }
+
+    Assert::notSame(null, $instance);
+    Assert::notSame(null, $group);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'validateAddGroupData'],
+      [
+        'name' => $group->getLocalizedTextByLocale("en")->getName(),
+        'locale' => 'en',
+        'instanceId' => $instance->getId(),
+        'parentGroupId' => NULL,
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal(false, $payload['groupNameIsFree']);
+  }
+
   public function testUpdateGroup()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);

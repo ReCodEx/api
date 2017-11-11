@@ -21,7 +21,6 @@ use JsonSerializable;
  * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
- * @method Group getParentGroup()
  * @method string getExternalId()
  * @method string getDescription()
  * @method float getThreshold()
@@ -568,5 +567,17 @@ class Group implements JsonSerializable
     return $this->childGroups->filter(function (Group $group) {
       return $group->getDeletedAt() === NULL;
     });
+  }
+
+  public function getParentGroup(): ?Group {
+    if ($this->parentGroup !== NULL) {
+      return $this->parentGroup;
+    }
+
+    if ($this->instance->getRootGroup() !== $this) {
+      return $this->instance->getRootGroup();
+    }
+
+    return null;
   }
 }
