@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\Localizations;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
@@ -400,20 +401,6 @@ class Assignment implements JsonSerializable, IExercise
     }
   }
 
-  /**
-   * @return LocalizedExercise
-   */
-  protected function getPrimaryLocalization(): ?LocalizedExercise {
-    /** @var LocalizedExercise $text */
-    foreach ($this->localizedTexts as $text) {
-      if ($text->getLocale() === Exercise::PRIMARY_LOCALE) {
-        return $text;
-      }
-    }
-
-    return !$this->localizedTexts->isEmpty() ? $this->localizedTexts->first() : NULL;
-  }
-
   public function jsonSerialize() {
     $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(
       function ($key, RuntimeEnvironment $env) {
@@ -428,7 +415,9 @@ class Assignment implements JsonSerializable, IExercise
         return $this->getExercise()->getHardwareGroups()->contains($group);
       });
 
-    $primaryLocalization = $this->getPrimaryLocalization();
+    /** @var LocalizedExercise $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
+
     return [
       "id" => $this->id,
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC

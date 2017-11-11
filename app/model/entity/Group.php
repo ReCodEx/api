@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Localizations;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -20,28 +21,27 @@ use JsonSerializable;
  * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
- * @method Group getParentGroup()
  * @method string getExternalId()
  * @method string getDescription()
- * @method Instance getInstance()
  * @method float getThreshold()
+ * @method Instance getInstance()
+ * @method setExternalId(string $id)
+ * @method setPublicStats(bool $areStatsPublic)
+ * @method setIsPublic(bool $isGroupPublic)
+ * @method setThreshold(float $threshold)
  */
 class Group implements JsonSerializable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
   public function __construct(
-      string $name,
       string $externalId,
-      string $description,
       Instance $instance,
       User $admin = NULL,
       Group $parentGroup = NULL,
       bool $publicStats = TRUE,
       bool $isPublic = TRUE) {
-    $this->name = $name;
     $this->externalId = $externalId;
-    $this->description = $description;
     $this->memberships = new ArrayCollection;
     $this->primaryAdmins = new ArrayCollection;
     $this->instance = $instance;
@@ -50,6 +50,7 @@ class Group implements JsonSerializable
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
     $this->exercises = new ArrayCollection;
+    $this->localizedTexts = new ArrayCollection();
 
     if ($admin !== NULL) {
       $this->primaryAdmins->add($admin);
@@ -72,19 +73,15 @@ class Group implements JsonSerializable
   protected $id;
 
   /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
-
-  /**
    * @ORM\Column(type="string", nullable=true)
    */
   protected $externalId;
 
   /**
-   * @ORM\Column(type="text")
+   * @ORM\OneToMany(targetEntity="LocalizedGroup", mappedBy="group")
+   * @var ArrayCollection
    */
-  protected $description;
+  protected $localizedTexts;
 
   /**
    * @ORM\Column(type="float", nullable=true)
@@ -351,6 +348,21 @@ class Group implements JsonSerializable
     );
   }
 
+  public function getLocalizedTextByLocale(string $locale): ?LocalizedGroup {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+    $first = $this->localizedTexts->matching($criteria)->first();
+    return $first === false ? null : $first;
+  }
+
+  public function addLocalizedText(LocalizedGroup $group) {
+    $this->localizedTexts->add($group);
+    $group->setGroup($this);
+  }
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
+  }
+
   /**
    * Student can view only public assignments.
    */
@@ -424,10 +436,14 @@ class Group implements JsonSerializable
    * @return array
    */
   public function getPublicData(bool $canView): array {
+    /** @var LocalizedGroup $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
+
     return [
       "id" => $this->id,
       "externalId" => $this->externalId,
-      "name" => $this->name,
+      "localizedTexts" => $this->localizedTexts->getValues(),
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "admins" => $this->getPrimaryAdmins()->map(function (User $user) {
         return $user->getPublicData();
       })->getValues(),
@@ -441,11 +457,16 @@ class Group implements JsonSerializable
 
   public function jsonSerialize() {
     $instance = $this->getInstance();
+
+    /** @var LocalizedGroup $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
+
     return [
       "id" => $this->id,
       "externalId" => $this->externalId,
-      "name" => $this->name,
-      "description" => $this->description,
+      "localizedTexts" => $this->localizedTexts->getValues(),
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
+      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
       "primaryAdminsIds" => $this->getPrimaryAdminsIds(),
       "admins" => $this->getAdminsIds(),
       "supervisors" => $this->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
@@ -472,5 +493,17 @@ class Group implements JsonSerializable
     return $this->childGroups->filter(function (Group $group) {
       return $group->getDeletedAt() === NULL;
     });
+  }
+
+  public function getParentGroup(): ?Group {
+    if ($this->parentGroup !== NULL) {
+      return $this->parentGroup;
+    }
+
+    if ($this->instance->getRootGroup() !== $this) {
+      return $this->instance->getRootGroup();
+    }
+
+    return null;
   }
 }

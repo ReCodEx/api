@@ -2,10 +2,13 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\InvalidArgumentException;
+use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
@@ -16,6 +19,7 @@ use App\Model\View\GroupViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use Nette\Application\Request;
 
 /**
  * Endpoints for group manipulation
@@ -87,13 +91,12 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Create a new group
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", description="Name of the group")
-   * @Param(type="post", name="description", required=FALSE, description="Description of the group")
    * @Param(type="post", name="instanceId", validation="string:36", description="An identifier of the instance where the group should be created")
-   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
+   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable identifier of the group")
    * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE, description="Identifier of the parent group (if none is given, a top-level group is created)")
    * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
+   * @Param(type="post", name="localizedTexts", validation="array", required=FALSE, description="Localized names and descriptions")
    */
   public function actionAddGroup() {
     $req = $this->getRequest();
@@ -110,19 +113,16 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
 
-    $name = $req->getPost("name");
     $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
-    $description = $req->getPost("description") === NULL ? "" : $req->getPost("description");
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
-    if (!$this->groups->nameIsFree($name, $instance->getId(), $parentGroup !== NULL ? $parentGroup->getId() : NULL)) {
-      throw new ForbiddenRequestException("There is already a group of this name, please choose a different one.");
-    }
+    $group = new Group($externalId, $instance, $user, $parentGroup, $publicStats, $isPublic);
+    $this->updateLocalizations($req, $group);
 
-    $group = new Group($name, $externalId, $description, $instance, $user, $parentGroup, $publicStats, $isPublic);
-    $this->groups->persist($group);
+    $this->groups->persist($group, false);
     $this->groups->flush();
+
     $this->sendSuccessResponse($group);
   }
 
@@ -130,42 +130,38 @@ class GroupsPresenter extends BasePresenter {
    * Validate group creation data
    * @POST
    * @Param(name="name", type="post", description="Name of the group")
+   * @Param(name="locale", type="post", description="The locale of the name")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
    * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
    */
   public function actionValidateAddGroupData() {
     $req = $this->getRequest();
     $name = $req->getPost("name");
-    $instanceId = $req->getPost("instanceId");
+    $locale = $req->getPost("locale");
     $parentGroupId = $req->getPost("parentGroupId");
-
-    if ($parentGroupId === NULL) {
-      $instance = $this->instances->get($instanceId);
-      $parentGroupId = $instance->getRootGroup() !== NULL ? $instance->getRootGroup()->getId() : NULL;
-    }
-
-    $parentGroup = $this->groups->findOrThrow($parentGroupId);
+    $instance = $this->instances->findOrThrow($req->getPost("instanceId"));
+    $parentGroup = $parentGroupId !== NULL ? $this->groups->findOrThrow($parentGroupId) : $instance->getRootGroup();
 
     if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
       throw new ForbiddenRequestException();
     }
 
     $this->sendSuccessResponse([
-      "groupNameIsFree" => $this->groups->nameIsFree($name, $instanceId, $parentGroupId)
+      "groupNameIsFree" => count($this->groups->findByName($locale, $name, $instance, $parentGroup)) === 0
     ]);
   }
 
   /**
    * Update group info
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", description="Name of the group")
-   * @Param(type="post", name="description", required=FALSE, description="Description of the group")
    * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
    * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
    * @Param(type="post", name="threshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to pass the course")
+   * @Param(type="post", name="localizedTexts", validation="array", required=FALSE, description="Localized names and descriptions")
    * @param string $id An identifier of the updated group
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionUpdateGroup(string $id) {
     $req = $this->getRequest();
@@ -179,12 +175,12 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $group->setExternalId($req->getPost("externalId"));
-    $group->setName($req->getPost("name"));
-    $group->setDescription($req->getPost("description"));
     $group->setPublicStats($publicStats);
     $group->setIsPublic($isPublic);
-    $treshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
-    $group->setThreshold($treshold);
+    $threshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
+    $group->setThreshold($threshold);
+
+    $this->updateLocalizations($req, $group);
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($group);
@@ -599,6 +595,51 @@ class GroupsPresenter extends BasePresenter {
     $group->removePrimaryAdmin($user);
     $this->groups->flush();
     $this->sendSuccessResponse($group);
+  }
+
+  /**
+   * @param $req
+   * @param $group
+   * @throws InvalidArgumentException
+   */
+  private function updateLocalizations(Request $req, Group $group): void
+  {
+    $localizedTexts = $req->getPost("localizedTexts");
+
+    if (count($localizedTexts) > 0) {
+      $localizations = [];
+
+      foreach ($localizedTexts as $item) {
+        $lang = $item["locale"];
+        $otherGroups = $this->groups->findByName($lang, $item["name"], $group->getInstance(), $group->getParentGroup());
+
+        foreach ($otherGroups as $otherGroup) {
+          if ($otherGroup !== $group) {
+            throw new InvalidArgumentException("There is already a group of this name, please choose a different one.");
+          }
+        }
+
+        if (array_key_exists($lang, $localizations)) {
+          throw new InvalidArgumentException(sprintf("Duplicate entry for locale %s", $lang));
+        }
+
+        $localizations[$lang] = new LocalizedGroup($lang, $item["name"], $item["description"]);
+      }
+
+      /** @var LocalizedGroup $text */
+      foreach ($group->getLocalizedTexts() as $text) {
+        // Localizations::updateCollection only updates the inverse side of the relationship - Doctrine needs us to
+        // update the owning side manually. We set it to null for all potentially removed localizations first.
+        $text->setGroup(null);
+      }
+
+      Localizations::updateCollection($group->getLocalizedTexts(), $localizations);
+
+      foreach ($group->getLocalizedTexts() as $text) {
+        $text->setGroup($group);
+        $this->groups->persist($text, false);
+      }
+    }
   }
 
 }

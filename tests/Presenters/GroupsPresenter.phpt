@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Model\Entity\Group;
+use App\Model\Entity\Instance;
 use App\V1Module\Presenters\GroupsPresenter;
 use Tester\Assert;
 
@@ -177,6 +178,7 @@ class TestGroupsPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
+    /** @var Instance $instance */
     $instance = $this->presenter->instances->findAll()[0];
     $allGroupsCount = count($this->presenter->groups->findAll());
 
@@ -184,8 +186,11 @@ class TestGroupsPresenter extends Tester\TestCase
       'POST',
       ['action' => 'addGroup'],
       [
-        'name' => 'new name',
-        'description' => 'some neaty description',
+        'localizedTexts' => [[
+          'locale' => 'en',
+          'name' => 'new name',
+          'description' => 'some neaty description'
+        ]],
         'instanceId' => $instance->getId(),
         'externalId' => 'external identification of exercise',
         'parentGroupId' => NULL,
@@ -197,16 +202,22 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
+    /** @var Group $payload */
     $payload = $result['payload'];
+
+    Assert::count(1, $payload->getLocalizedTexts());
+    $localizedGroup = $payload->getLocalizedTextByLocale("en");
+    Assert::notSame(null, $localizedGroup);
+
     Assert::equal(200, $result['code']);
     Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
-    Assert::equal('new name', $payload->name);
-    Assert::equal('some neaty description', $payload->description);
-    Assert::equal($instance->getId(), $payload->instance->id);
-    Assert::equal('external identification of exercise', $payload->externalId);
-    Assert::equal($instance->rootGroup, $payload->parentGroup);
-    Assert::equal(TRUE, $payload->publicStats);
-    Assert::equal(TRUE, $payload->isPublic);
+    Assert::equal('new name', $localizedGroup->getName());
+    Assert::equal('some neaty description', $localizedGroup->getDescription());
+    Assert::equal($instance->getId(), $payload->getInstance()->getId());
+    Assert::equal('external identification of exercise', $payload->getExternalId());
+    Assert::equal($instance->getRootGroup(), $payload->getParentGroup());
+    Assert::equal(TRUE, $payload->statsArePublic());
+    Assert::equal(TRUE, $payload->isPublic());
   }
 
   public function testValidateAddGroupData()
@@ -220,6 +231,7 @@ class TestGroupsPresenter extends Tester\TestCase
       ['action' => 'validateAddGroupData'],
       [
         'name' => 'new name',
+        'locale' => 'en',
         'instanceId' => $instance->getId(),
         'parentGroupId' => NULL,
       ]
@@ -233,6 +245,48 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(TRUE, $payload['groupNameIsFree']);
   }
 
+  public function testValidateAddGroupDataNameExists()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    /** @var Instance $instance */
+    $instance = null;
+
+    /** @var Group $group */
+    $group = null;
+
+    foreach ($this->presenter->instances->findAll() as $instance) {
+      /** @var Group $candidate */
+      foreach ($instance->getGroups() as $candidate) {
+        if ($candidate->getParentGroup() === $instance->getRootGroup()) {
+          $group = $candidate;
+          break;
+        }
+      }
+    }
+
+    Assert::notSame(null, $instance);
+    Assert::notSame(null, $group);
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'validateAddGroupData'],
+      [
+        'name' => $group->getLocalizedTextByLocale("en")->getName(),
+        'locale' => 'en',
+        'instanceId' => $instance->getId(),
+        'parentGroupId' => NULL,
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    Assert::equal(200, $result['code']);
+    Assert::equal(false, $payload['groupNameIsFree']);
+  }
+
   public function testUpdateGroup()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -244,8 +298,11 @@ class TestGroupsPresenter extends Tester\TestCase
       'POST',
       ['action' => 'updateGroup', 'id' => $group->getId()],
       [
-        'name' => 'new name',
-        'description' => 'some neaty description',
+        'localizedTexts' => [[
+          'locale' => 'en',
+          'name' => 'new name',
+          'description' => 'some neaty description',
+        ]],
         'externalId' => 'external identification of exercise',
         'publicStats' => TRUE,
         'isPublic' => TRUE,
@@ -256,16 +313,20 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
+    /** @var Group $payload */
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
 
     Assert::equal($group->getId(), $payload->getId());
-    Assert::equal('new name', $payload->name);
-    Assert::equal('some neaty description', $payload->description);
-    Assert::equal('external identification of exercise', $payload->externalId);
-    Assert::equal(TRUE, $payload->publicStats);
-    Assert::equal(TRUE, $payload->isPublic);
-    Assert::equal(0.8, $payload->threshold);
+    Assert::count(1, $payload->getLocalizedTexts());
+    $localizedGroup = $payload->getLocalizedTextByLocale("en");
+    Assert::notSame(null, $localizedGroup);
+    Assert::equal('new name', $localizedGroup->getName());
+    Assert::equal('some neaty description', $localizedGroup->getDescription());
+    Assert::equal('external identification of exercise', $payload->getExternalId());
+    Assert::equal(TRUE, $payload->statsArePublic());
+    Assert::equal(TRUE, $payload->isPublic());
+    Assert::equal(0.8, $payload->getThreshold());
   }
 
   public function testRemoveGroup()
