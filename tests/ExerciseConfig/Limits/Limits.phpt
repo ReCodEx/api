@@ -7,6 +7,9 @@ use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @testCase
+ */
 class TestLimits extends Tester\TestCase
 {
   static $sample = [
