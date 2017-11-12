@@ -13,8 +13,21 @@ class Version20171110162823 extends AbstractMigration
   private $assignmentSolutionsToBeDeleted = [];
 
   public function preUp(Schema $schema) {
-    $result = $this->connection->executeQuery('SELECT id FROM assignment_solution WHERE original_submission_id IS NOT NULL');
+    $result = $this->connection->executeQuery('SELECT id, original_submission_id FROM assignment_solution WHERE original_submission_id IS NOT NULL');
     foreach ($result as $row) {
+      $originalId = null;
+      $parentId = $row["original_submission_id"];
+      while (true) {
+        $parentResult = $this->connection->executeQuery("SELECT * FROM assignment_solution WHERE id = '{$parentId}'");
+        $parent = $parentResult->fetch();
+        $originalId = $parent["id"];
+        $parentId = $parent["original_submission_id"];
+        if (empty($parentId)) {
+          break;
+        }
+      }
+
+      $this->connection->executeQuery("UPDATE `assignment_solution_submission` SET `assignment_solution_id`='$originalId' WHERE `assignment_solution_id`='{$row["id"]}'");
       $this->assignmentSolutionsToBeDeleted[] = $row["id"];
     }
   }

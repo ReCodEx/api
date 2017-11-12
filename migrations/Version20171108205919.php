@@ -44,10 +44,10 @@ class Version20171108205919 extends AbstractMigration
     }
 
     // move bonus points to submission
-    $result = $this->connection->executeQuery("SELECT submission.id, solution_evaluation.bonus_points FROM " .
+    $result = $this->connection->executeQuery("SELECT submission.id AS id, solution_evaluation.bonus_points AS bonus_points FROM " .
       "solution_evaluation INNER JOIN submission ON submission.evaluation_id = solution_evaluation.id");
     foreach ($result as $row) {
-      $this->connection->executeQuery("UPDATE submission SET bonus_points = '{$row['solution_evaluation.bonus_points']}' WHERE id = '{$row['submission.id']}'");
+      $this->connection->executeQuery("UPDATE submission SET bonus_points = '{$row['bonus_points']}' WHERE id = '{$row['id']}'");
     }
 
     $this->connection->commit();
