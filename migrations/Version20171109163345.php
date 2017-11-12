@@ -33,16 +33,18 @@ class Version20171109163345 extends AbstractMigration
     // copy all data from assignment solution entities to assignment solution submission
     $result = $this->connection->executeQuery('SELECT * FROM assignment_solution');
     foreach ($result as $row) {
+      $evaluation = $row["evaluation_id"] ? "'{$row["evaluation_id"]}'" : "NULL";
+
       $this->connection->executeQuery("INSERT INTO assignment_solution_submission " .
-        "(id, evaluation_id, assignment_solution_id, submitted_at, submitted_by, results_url, job_config_path) " .
-        "VALUES (UUID(), '{$row["evaluation_id"]}', '{$row["id"]}', '{$row["submitted_at"]}', '{$row["submitted_by"]}', '{$row["results_url"]}, '{$row["job_config_path"]})");
+        "(id, evaluation_id, assignment_solution_id, submitted_at, submitted_by_id, results_url, job_config_path) " .
+        "VALUES (UUID(), {$evaluation}, '{$row["id"]}', '{$row["submitted_at"]}', '{$row["submitted_by_id"]}', '{$row["results_url"]}', '{$row["job_config_path"]}')");
     }
 
     // move submission failures
     $result = $this->connection->executeQuery('SELECT * FROM submission_failure WHERE assignment_solution_id IS NOT NULL');
     foreach ($result as $row) {
       $submissionId = $this->connection->executeQuery("SELECT * FROM assignment_solution_submission WHERE assignment_solution_id = '{$row["assignment_solution_id"]}'")->fetchColumn(0);
-      $this->connection->executeQuery("UPDATE submission_failure SET assignment_solution_submission = '{$submissionId}', assignment_solution_id = NULL WHERE assignment_solution_id = '{$row['assignment_solution_id']}'");
+      $this->connection->executeQuery("UPDATE submission_failure SET assignment_solution_submission_id = '{$submissionId}', assignment_solution_id = NULL WHERE assignment_solution_id = '{$row['assignment_solution_id']}'");
     }
 
     $this->connection->commit();
