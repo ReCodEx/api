@@ -142,9 +142,9 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
     $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
     $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
-    $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSubmissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:submissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-solution", "Assignments:bestSubmission");
+    $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSolutions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:solutions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-solution", "Assignments:bestSolution");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
     $router[] = new PostRoute("$prefix/<id>/sync-exercise", "Assignments:syncWithExercise");
 
