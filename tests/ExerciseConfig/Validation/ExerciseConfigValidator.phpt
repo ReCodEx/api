@@ -100,38 +100,14 @@ class TestExerciseConfigValidator extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testMissingDefaultPipeline() {
-    $pipelineVars = new PipelineVars();
-    $pipelineVars->setName("not existing pipeline");
-
-    $test = new Test();
-    $test->addPipeline($pipelineVars);
-
-    $exerciseConfig = new ExerciseConfig();
-    $exercise = $this->createExerciseWithSingleEnvironment();
-    $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("testA", $test);
-
-    // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(NULL);
-
-    // missing in defaults
-    Assert::exception(function () use ($exerciseConfig, $exercise) {
-      $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class);
-  }
-
   public function testMissingEnvironmentPipeline() {
-    $existing = new PipelineVars();
     $notExisting = new PipelineVars();
-    $existing->setName("existing pipeline");
     $notExisting->setName("not existing pipeline");
 
     $environment = new Environment();
     $environment->addPipeline($notExisting);
 
     $test = new Test();
-    $test->addPipeline($existing);
     $test->addEnvironment("envA", $environment);
 
     $exerciseConfig = new ExerciseConfig();
@@ -169,7 +145,6 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $environment->addPipeline($existing);
 
     $test = new Test();
-    $test->addPipeline($existing);
     $test->addEnvironment("envA", $environment);
 
     $exerciseConfig = new ExerciseConfig();

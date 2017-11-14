@@ -25,19 +25,6 @@ class TestTest extends Tester\TestCase
 
   protected function setUp() {
     self::$config = [
-      "pipelines" => [ [
-          "name" => "hello",
-          "variables" => [
-            [ "name" => "hello", "type" => "string", "value" => "world" ],
-            [ "name" => "world", "type" => "file", "value" => "hello" ]
-          ],
-        ],
-        [
-          "name" => "world",
-          "variables" => []
-        ]
-      ],
-
       "environments" => [
         "envA" => [
           "pipelines" => [ [
@@ -74,33 +61,11 @@ class TestTest extends Tester\TestCase
     }, ExerciseConfigException::class);
   }
 
-  public function testMissingPipelines() {
-    unset(self::$config[Test::PIPELINES_KEY]);
-    Assert::exception(function () {
-      $this->loader->loadTest(self::$config);
-    }, ExerciseConfigException::class);
-  }
-
   public function testMissingEnvironments() {
     unset(self::$config[Test::ENVIRONMENTS_KEY]);
     Assert::exception(function () {
       $this->loader->loadTest(self::$config);
     }, ExerciseConfigException::class);
-  }
-
-  public function testPipelinesOperations() {
-    $test = new Test;
-    $pipeline = new PipelineVars;
-    $pipeline->setName("pipelineA");
-
-    $test->addPipeline($pipeline);
-    Assert::type(PipelineVars::class, $test->getPipeline("pipelineA"));
-
-    $test->removePipeline("non-existant");
-    Assert::count(1, $test->getPipelines());
-
-    $test->removePipeline("pipelineA");
-    Assert::count(0, $test->getPipelines());
   }
 
   public function testEnvironmentsOperations() {
@@ -119,10 +84,6 @@ class TestTest extends Tester\TestCase
 
   public function testCorrect() {
     $test = $this->loader->loadTest(self::$config);
-
-    Assert::count(2, $test->getPipelines());
-    Assert::type(PipelineVars::class, $test->getPipeline("hello"));
-    Assert::type(PipelineVars::class, $test->getPipeline("world"));
 
     Assert::count(2, $test->getEnvironments());
     Assert::type(Environment::class, $test->getEnvironment("envA"));
