@@ -6,7 +6,8 @@ use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Security\Identity;
 
-class SubmissionPermissionPolicy implements IPermissionPolicy {
+class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
+
   public function getAssociatedClass() {
     return AssignmentSolution::class;
   }

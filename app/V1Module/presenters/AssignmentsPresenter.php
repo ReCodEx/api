@@ -28,7 +28,7 @@ use App\Model\Repository\AssignmentSolutions;
 
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
-use App\Security\ACL\ISubmissionPermissions;
+use App\Security\ACL\IAssignmentSolutionPermissions;
 use DateTime;
 
 /**
@@ -80,10 +80,10 @@ class AssignmentsPresenter extends BasePresenter {
   public $groupAcl;
 
   /**
-   * @var ISubmissionPermissions
+   * @var IAssignmentSolutionPermissions
    * @inject
    */
-  public $submissionAcl;
+  public $assignmentSolutionAcl;
 
   /**
    * @var ExerciseConfigLoader
@@ -372,13 +372,13 @@ class AssignmentsPresenter extends BasePresenter {
 
     $submissions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
       function (AssignmentSolution $solution) {
-        return $this->submissionAcl->canViewDetail($solution);
+        return $this->assignmentSolutionAcl->canViewDetail($solution);
     });
     $submissions = array_map(function (AssignmentSolution $solution) {
       $submission = $solution->getLastSubmission();
-      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-      $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
       return $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }, $submissions);
 
@@ -401,14 +401,14 @@ class AssignmentsPresenter extends BasePresenter {
       $this->sendSuccessResponse(NULL);
     }
     if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
-        !$this->submissionAcl->canViewDetail($solution)) {
+        !$this->assignmentSolutionAcl->canViewDetail($solution)) {
       throw new ForbiddenRequestException();
     }
 
     $submission = $solution->getLastSubmission();
-    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
-    $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-    $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
     $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
   }
 
@@ -433,14 +433,14 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       if (!$this->assignmentAcl->canViewSubmissions($assignment, $student) ||
-          !$this->submissionAcl->canViewDetail($solution)) {
+          !$this->assignmentSolutionAcl->canViewDetail($solution)) {
         continue;
       }
 
       $submission = $solution->getLastSubmission();
-      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
-      $canViewResubmissions = $this->submissionAcl->canViewResubmissions($solution);
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
       $bestSubmissions[$student->getId()] = $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }
 

@@ -14,7 +14,7 @@ use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
-use App\Security\ACL\ISubmissionPermissions;
+use App\Security\ACL\IAssignmentSolutionPermissions;
 
 /**
  * Endpoints for manipulation of solution submissions
@@ -59,10 +59,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public $fileServerProxy;
 
   /**
-   * @var ISubmissionPermissions
+   * @var IAssignmentSolutionPermissions
    * @inject
    */
-  public $submissionAcl;
+  public $assignmentSolutionAcl;
 
 
   /**
@@ -91,13 +91,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionEvaluations(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->submissionAcl->canViewDetail($solution)) {
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
       throw new ForbiddenRequestException("You cannot access this solution evaluations");
     }
 
     $submissions = array_filter($solution->getSubmissions()->getValues(),
       function (AssignmentSolutionSubmission $submission) use ($solution) {
-        return $this->submissionAcl->canViewEvaluation($solution, $submission);
+        return $this->assignmentSolutionAcl->canViewEvaluation($solution, $submission);
     });
 
     // display only data that the current user can view
@@ -105,8 +105,8 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       // try to load evaluation if not present
       $this->getEvaluationIfNotPresent($submission);
 
-      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
       return $submission->getData($canViewDetails, $canViewValues);
     }, $submissions);
 
@@ -122,15 +122,15 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
     $solution = $submission->getAssignmentSolution();
-    if (!$this->submissionAcl->canViewEvaluation($submission->getAssignmentSolution(), $submission)) {
+    if (!$this->assignmentSolutionAcl->canViewEvaluation($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
     // try to load evaluation if not present
     $this->getEvaluationIfNotPresent($submission);
 
-    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
-    $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
@@ -145,7 +145,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
     $solution = $this->assignmentSolutions->findOrThrow($id);
 
-    if (!$this->submissionAcl->canSetBonusPoints($solution)) {
+    if (!$this->assignmentSolutionAcl->canSetBonusPoints($solution)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }
 
@@ -163,7 +163,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionSetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->submissionAcl->canSetAccepted($solution)) {
+    if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
 
@@ -190,7 +190,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionUnsetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->submissionAcl->canSetAccepted($solution)) {
+    if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
 
@@ -212,7 +212,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    if (!$this->submissionAcl->canDownloadResultArchive($submission->getAssignmentSolution(), $submission)) {
+    if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 
