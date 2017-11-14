@@ -51,6 +51,24 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
   }
 
 
+  public function testGetSolution()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
+      'GET',
+      ['action' => 'solution', 'id' => $solution->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+
+    // Check invariants
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::same($solution->getId(), $result['payload']['id']);
+  }
+
   public function testGetEvaluations()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);

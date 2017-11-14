@@ -12,8 +12,8 @@ interface IAssignmentSolutionPermissions {
   function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
   function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;
 
-  function canViewEvaluation(AssignmentSolution $assignmentSolution, AssignmentSolutionSubmission $submission): bool;
-  function canViewEvaluationDetails(AssignmentSolution $assignmentSolution, AssignmentSolutionSubmission $submission): bool;
-  function canViewEvaluationValues(AssignmentSolution $assignmentSolution, AssignmentSolutionSubmission $submission): bool;
-  function canDownloadResultArchive(AssignmentSolution $assignmentSolution, AssignmentSolutionSubmission $submission): bool;
+  function canViewEvaluation(AssignmentSolution $assignmentSolution, ?AssignmentSolutionSubmission $submission): bool;
+  function canViewEvaluationDetails(AssignmentSolution $assignmentSolution, ?AssignmentSolutionSubmission $submission): bool;
+  function canViewEvaluationValues(AssignmentSolution $assignmentSolution, ?AssignmentSolutionSubmission $submission): bool;
+  function canDownloadResultArchive(AssignmentSolution $assignmentSolution, ?AssignmentSolutionSubmission $submission): bool;
 }

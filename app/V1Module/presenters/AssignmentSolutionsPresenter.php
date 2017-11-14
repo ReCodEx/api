@@ -66,7 +66,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
 
   /**
-   * Try to get evaluation of given submission. If found, then evaluated it and
+   * Try to get evaluation of given submission. If found, then evaluate it and
    * save results into database.
    * @param AssignmentSolutionSubmission $submission
    */
@@ -81,6 +81,31 @@ class AssignmentSolutionsPresenter extends BasePresenter {
         // - display partial information about the submission, do not throw an error
       }
     }
+  }
+
+  /**
+   * Get information about solutions.
+   * @GET
+   * @param string $id Identifier of the solution
+   * @throws ForbiddenRequestException
+   */
+  public function actionSolution(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
+    }
+
+    // if there is submission, try to evaluate it
+    $submission = $solution->getLastSubmission();
+    if ($submission) {
+      $this->getEvaluationIfNotPresent($submission);
+    }
+
+    // fetch data
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
+    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
   }
 
   /**
