@@ -62,7 +62,7 @@ class SubmissionEmailsSender {
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
       "assignment" => $submission->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $submission->getAssignment()->getGroup()->getName(),
+      "group" => $submission->getAssignment()->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
       "points" => $submission->getEvaluation()->getTotalPoints(),
