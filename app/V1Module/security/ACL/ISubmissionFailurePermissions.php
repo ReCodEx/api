@@ -9,5 +9,5 @@ interface ISubmissionFailurePermissions {
   function canViewAll(): bool;
   function canView(SubmissionFailure $failure): bool;
   function canResolve(SubmissionFailure $failure): bool;
-  function canViewForSubmission(AssignmentSolutionSubmission $submission): bool;
+  function canViewForAssignmentSolutionSubmission(AssignmentSolutionSubmission $submission): bool;
 }

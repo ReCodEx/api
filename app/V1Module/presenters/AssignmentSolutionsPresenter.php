@@ -20,7 +20,7 @@ use App\Security\ACL\ISubmissionPermissions;
  * Endpoints for manipulation of solution submissions
  * @LoggedIn
  */
-class SubmissionsPresenter extends BasePresenter {
+class AssignmentSolutionsPresenter extends BasePresenter {
 
   /**
    * @var AssignmentSolutions
@@ -66,6 +66,24 @@ class SubmissionsPresenter extends BasePresenter {
 
 
   /**
+   * Try to get evaluation of given submission. If found, then evaluated it and
+   * save results into database.
+   * @param AssignmentSolutionSubmission $submission
+   */
+  private function getEvaluationIfNotPresent(AssignmentSolutionSubmission $submission) {
+    if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
+      $evaluation = $this->evaluationLoader->load($submission);
+      if ($evaluation !== NULL) {
+        $this->evaluations->persist($evaluation);
+        $this->assignmentSolutions->persist($submission);
+      } else {
+        // the evaluation is probably not ready yet
+        // - display partial information about the submission, do not throw an error
+      }
+    }
+  }
+
+  /**
    * Get information about the evaluations of a solution
    * @GET
    * @param string $id Identifier of the solution
@@ -82,8 +100,11 @@ class SubmissionsPresenter extends BasePresenter {
         return $this->submissionAcl->canViewEvaluation($solution, $submission);
     });
 
-    // display only proper data for logged user
+    // display only data that the current user can view
     $submissions = array_map(function (AssignmentSolutionSubmission $submission) use ($solution) {
+      // try to load evaluation if not present
+      $this->getEvaluationIfNotPresent($submission);
+
       $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
       $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
       return $submission->getData($canViewDetails, $canViewValues);
@@ -100,22 +121,14 @@ class SubmissionsPresenter extends BasePresenter {
    */
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+    $solution = $submission->getAssignmentSolution();
     if (!$this->submissionAcl->canViewEvaluation($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
-    if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
-      $evaluation = $this->evaluationLoader->load($submission);
-      if ($evaluation !== NULL) {
-        $this->evaluations->persist($evaluation);
-        $this->assignmentSolutions->persist($submission);
-      } else {
-        // the evaluation is probably not ready yet
-        // - display partial information about the submission, do not throw an error
-      }
-    }
+    // try to load evaluation if not present
+    $this->getEvaluationIfNotPresent($submission);
 
-    $solution = $submission->getAssignmentSolution();
     $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($solution, $submission);
     $canViewValues = $this->submissionAcl->canViewEvaluationValues($solution, $submission);
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));

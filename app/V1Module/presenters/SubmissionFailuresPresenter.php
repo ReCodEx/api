@@ -67,7 +67,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
    */
   public function actionListBySubmission(string $submissionId) {
     $submission = $this->submissions->findOrThrow($submissionId);
-    if (!$this->submissionFailureAcl->canViewForSubmission($submission)) {
+    if (!$this->submissionFailureAcl->canViewForAssignmentSolutionSubmission($submission)) {
       throw new ForbiddenRequestException();
     }
 

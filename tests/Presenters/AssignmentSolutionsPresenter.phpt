@@ -3,19 +3,19 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
-use App\V1Module\Presenters\SubmissionsPresenter;
+use App\V1Module\Presenters\AssignmentSolutionsPresenter;
 use Tester\Assert;
 
 
 /**
  * @testCase
  */
-class TestSubmissionsPresenter extends Tester\TestCase
+class TestAssignmentSolutionsPresenter extends Tester\TestCase
 {
   private $adminLogin = "admin@admin.com";
   private $adminPassword = "admin";
 
-  /** @var SubmissionsPresenter */
+  /** @var AssignmentSolutionsPresenter */
   protected $presenter;
 
   /** @var Kdyby\Doctrine\EntityManager */
@@ -38,7 +38,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
   protected function setUp()
   {
     PresenterTestHelper::fillDatabase($this->container);
-    $this->presenter = PresenterTestHelper::createPresenter($this->container, SubmissionsPresenter::class);
+    $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentSolutionsPresenter::class);
   }
 
   protected function tearDown()
@@ -56,7 +56,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'GET',
       ['action' => 'evaluations', 'id' => $solution->getId()]
     );
@@ -78,7 +78,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
     $submission = array_pop($allSubmissions);
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
         'GET',
         ['action' => 'evaluation', 'id' => $submission->id]
     );
@@ -98,7 +98,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     $submission = array_pop($allSubmissions);
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',
       ['action' => 'setBonusPoints', 'id' => $submission->id],
       ['bonusPoints' => 4]
@@ -131,7 +131,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
     PresenterTestHelper::login($this->container, $user->getEmail());
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',
       ['action' => 'setAcceptedSubmission', 'id' => $submission->getId()]
     );
@@ -163,7 +163,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
     PresenterTestHelper::login($this->container, $user->getEmail());
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'DELETE',
       ['action' => 'unsetAcceptedSubmission', 'id' => $submission->getId()]
     );
@@ -189,7 +189,7 @@ class TestSubmissionsPresenter extends Tester\TestCase
     $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
     $this->presenter->fileServerProxy = $mockProxy;
 
-    $request = new Nette\Application\Request('V1:Submissions',
+    $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'GET',
       ['action' => 'downloadResultArchive', 'id' => $submission->id]
     );
@@ -202,5 +202,5 @@ class TestSubmissionsPresenter extends Tester\TestCase
 
 }
 
-$testCase = new TestSubmissionsPresenter();
+$testCase = new TestAssignmentSolutionsPresenter();
 $testCase->run();

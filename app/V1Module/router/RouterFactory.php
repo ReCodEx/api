@@ -37,7 +37,7 @@ class RouterFactory {
     $router[] = self::createGroupsRoutes("$prefix/groups");
     $router[] = self::createInstancesRoutes("$prefix/instances");
     $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
-    $router[] = self::createSubmissionRoutes("$prefix/submissions");
+    $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
     $router[] = self::createSubmissionFailuresRoutes("$prefix/submission-failures");
     $router[] = self::createUploadedFilesRoutes("$prefix/uploaded-files");
     $router[] = self::createUsersRoutes("$prefix/users");
@@ -233,19 +233,19 @@ class RouterFactory {
   }
 
   /**
-   * Adds all Submission endpoints to given router.
+   * Adds all AssignmentSolution endpoints to given router.
    * @param string $prefix Route prefix
    * @return RouteList All endpoint routes
    */
-  private static function createSubmissionRoutes(string $prefix): RouteList {
+  private static function createAssignmentSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix/evaluation/<id>", "Submissions:evaluation");
-    $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "Submissions:downloadResultArchive");
+    $router[] = new GetRoute("$prefix/evaluation/<id>", "AssignmentSolutions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "AssignmentSolutions:downloadResultArchive");
 
-    $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
-    $router[] = new GetRoute("$prefix/<id>/evaluations", "Submissions:evaluations");
-    $router[] = new PostRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
-    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "Submissions:unsetAcceptedSubmission");
+    $router[] = new PostRoute("$prefix/<id>", "AssignmentSolutions:setBonusPoints");
+    $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
+    $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAcceptedSubmission");
+    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAcceptedSubmission");
 
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
     return $router;

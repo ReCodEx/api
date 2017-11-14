@@ -112,7 +112,7 @@ class SubmitPresenter extends BasePresenter {
    * @param User|NULL $user
    * @return bool
    */
-  public function canReceiveSubmissions(Assignment $assignment, User $user = null) {
+  private function canReceiveSubmissions(Assignment $assignment, User $user = null) {
     return $assignment->isPublic() &&
       $assignment->getGroup()->hasValidLicence() &&
       ($user !== null &&
@@ -163,7 +163,7 @@ class SubmitPresenter extends BasePresenter {
     }
 
     if (!$this->canReceiveSubmissions($assignment, $loggedInUser)) {
-      throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this exercise any more.");
+      throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this assignment anymore.");
     }
 
     // retrieve and check uploaded files
