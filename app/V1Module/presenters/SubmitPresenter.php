@@ -226,7 +226,7 @@ class SubmitPresenter extends BasePresenter {
     // check for the license of instance of user
     $assignment = $solution->getAssignment();
     if ($assignment->getGroup()->hasValidLicence() === FALSE) {
-      throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getName()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getName()}'. Contact your supervisor for assistance.",
+      throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getId()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
         IResponse::S402_PAYMENT_REQUIRED);
     }
 

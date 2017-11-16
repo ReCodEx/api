@@ -78,20 +78,18 @@ class TestPipelinesMerger extends Tester\TestCase
       "environments" => [ "envA", "envB" ],
       "tests" => [
         "testA" => [
-          "pipelines" => [
-            [ "name" => "compilationPipeline", "variables" => [] ],
-            [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
-          ],
           "environments" => [
-            "envA" => [ "pipelines" => [] ],
-            "envB" => [ "pipelines" => [] ]
+            "envA" => [ "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+            ] ],
+            "envB" => [ "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+            ] ]
           ]
         ],
         "testB" => [
-          "pipelines" => [
-            [ "name" => "compilationPipeline", "variables" => [] ],
-            [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
-          ],
           "environments" => [
             "envA" => [
               "pipelines" => [
@@ -99,7 +97,10 @@ class TestPipelinesMerger extends Tester\TestCase
               ]
             ],
             "envB" => [
-              "pipelines" => []
+              "pipelines" => [
+                [ "name" => "compilationPipeline", "variables" => [] ],
+                [ "name" => "testPipeline", "variables" => [ [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ] ] ]
+              ]
             ]
           ]
         ]

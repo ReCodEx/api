@@ -17,7 +17,6 @@ use JsonSerializable;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method string getName()
  * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
@@ -385,21 +384,6 @@ class Group implements JsonSerializable
     }
 
     return array_values(array_reverse($parents));
-  }
-
-  /**
-   * Get names of parent groups in descending order.
-   * @return string[]
-   */
-  public function getParentGroupsNames(): array {
-    $group = $this->getParentGroup();
-    $parentsNames = [];
-    while ($group !== NULL) {
-      $parentsNames[] = $group->getName();
-      $group = $group->getParentGroup();
-    }
-
-    return array_values(array_reverse($parentsNames));
   }
 
   /**

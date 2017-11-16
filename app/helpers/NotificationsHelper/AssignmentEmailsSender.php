@@ -80,7 +80,7 @@ class AssignmentEmailsSender {
     $latte = new Latte\Engine;
     return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
       "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $assignment->getGroup()->getName(),
+      "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
       "dueDate" => $assignment->getFirstDeadline(),
       "attempts" => $assignment->getSubmissionsCountLimit(),
       "points" => $assignment->getMaxPointsBeforeFirstDeadline()
