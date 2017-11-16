@@ -52,26 +52,24 @@ class TestBaseCompiler extends Tester\TestCase
     "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
-        "pipelines" => [
-          [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [
-            [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
-            [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
-          ] ]
-        ],
         "environments" => [
-          "envA" => [ "pipelines" => [] ],
-          "envB" => [ "pipelines" => [] ]
+          "envA" => [ "pipelines" => [
+            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "testPipeline", "variables" => [
+              [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
+              [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
+            ] ]
+          ] ],
+          "envB" => [ "pipelines" => [
+            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "testPipeline", "variables" => [
+              [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
+              [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
+            ] ]
+          ] ]
         ]
       ],
       "testB" => [
-        "pipelines" => [
-          [ "name" => "compilationPipeline", "variables" => [] ],
-          [ "name" => "testPipeline", "variables" => [
-            [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ,
-            [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
-          ] ]
-        ],
         "environments" => [
           "envA" => [
             "pipelines" => [
@@ -79,7 +77,13 @@ class TestBaseCompiler extends Tester\TestCase
             ]
           ],
           "envB" => [
-            "pipelines" => []
+            "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [
+                [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ,
+                [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
+              ] ]
+            ]
           ]
         ]
       ]

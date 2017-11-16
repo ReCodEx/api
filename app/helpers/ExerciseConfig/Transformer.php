@@ -56,21 +56,6 @@ class Transformer {
   public function fromExerciseConfig(ExerciseConfig $exerciseConfig): array {
     $config = array();
 
-    // prepare defaults
-    $defaultEnv = array();
-    $defaultEnv["name"] = "default";
-    $defaultEnv["tests"] = array();
-    foreach ($exerciseConfig->getTests() as $testId => $test) {
-      // initialize defaults for each test
-      $testArr = array();
-      $testArr["name"] = $testId;
-      $testArr["pipelines"] = $this->fromPipelines($test->getPipelines());
-
-      // do not forget to add constructed test to the default
-      $defaultEnv["tests"][] = $testArr;
-    }
-    $config[] = $defaultEnv;
-
     // initialize all possible environments which can be present in tests
     foreach ($exerciseConfig->getEnvironments() as $environmentId) {
       $environmentArr = array();
@@ -132,50 +117,27 @@ class Transformer {
     $testIds = array();
     $testsCount = 0;
     $environments = array();
-    $defaultFound = false;
 
     // parse config from format given by web-app to internal structure
     $parsedConfig = array();
     $tests = array();
 
-    // find and retrieve defaults for tests
-    foreach ($data as $envIndex => $environment) {
-      if ($environment["name"] !== "default") {
-        continue;
-      }
-
-      $defaultFound = true;
-
-      foreach ($environment["tests"] as $test) {
-        $testId = $test["name"];
-
-        $testArr = array();
-        $testArr[Test::PIPELINES_KEY] = array();
-
-        foreach ($test["pipelines"] as $pipeline) {
-          $testArr[Test::PIPELINES_KEY][] = $this->toPipeline($pipeline);
-        }
-
-        $testArr[Test::ENVIRONMENTS_KEY] = array();
-
-        $tests[$testId] = $testArr;
-        $testIds[] = $testId;
-        $testsCount++;
-      }
-
-      // unset default environment
-      unset($data[$envIndex]);
-      break;
-    }
-    $parsedConfig[ExerciseConfig::TESTS_KEY] = $tests;
-
-    // additional checks
-    if (!$defaultFound) {
-      throw new ExerciseConfigException("Defaults was not specified");
-    }
+    // check for emptiness
     if (count($data) == 0) {
       throw new ExerciseConfigException("No environments specified");
     }
+
+    // find and retrieve defaults for tests
+    $environment = current($data);
+    foreach ($environment["tests"] as $test) {
+      $testId = $test["name"];
+
+      $tests[$testId] = [];
+      $tests[$testId][Test::ENVIRONMENTS_KEY] = [];
+      $testIds[] = $testId;
+      $testsCount++;
+    }
+    $parsedConfig[ExerciseConfig::TESTS_KEY] = $tests;
 
     // iterate through all environments
     foreach ($data as $environment) {
@@ -187,7 +149,7 @@ class Transformer {
         $testId = $test["name"];
 
         if (!in_array($testId, $testIds)) {
-          throw new ExerciseConfigException("Test '$testId' was not specified in defaults");
+          throw new ExerciseConfigException("Test '$testId' in environment '$environmentId' was not specified in other environments");
         }
 
         $environmentConfig = array();
@@ -196,18 +158,13 @@ class Transformer {
           $environmentConfig[Environment::PIPELINES_KEY][] = $this->toPipeline($pipeline);
         }
 
-        // pipelines are the same as the defaults
-        if ($tests[$testId][Test::PIPELINES_KEY] === $environmentConfig[Environment::PIPELINES_KEY]) {
-          $environmentConfig[Environment::PIPELINES_KEY] = array();
-        }
-
         // collected environment has to be added to config
         $parsedConfig[ExerciseConfig::TESTS_KEY][$testId][Test::ENVIRONMENTS_KEY][$environmentId] = $environmentConfig;
         $envTestsCount++;
       }
 
       if ($testsCount !== $envTestsCount) {
-        throw new ExerciseConfigException("Tests differs from defaults in environment '$environmentId'");
+        throw new ExerciseConfigException("Tests count differs from other environments in environment '$environmentId'");
       }
     }
 
