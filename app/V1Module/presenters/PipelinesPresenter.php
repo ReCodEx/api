@@ -215,6 +215,7 @@ class PipelinesPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited pipeline")
    * @Param(type="post", name="description", description="Human readable description of pipeline")
    * @Param(type="post", name="pipeline", description="Pipeline configuration")
+   * @Param(type="post", name="parameters", validation="array", description="A set of parameters", required=false)
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws BadRequestException
@@ -253,6 +254,9 @@ class PipelinesPresenter extends BasePresenter {
     $newConfig = new PipelineConfig((string) $pipelineConfig, $this->getCurrentUser(), $oldConfig);
     $pipeline->setPipelineConfig($newConfig);
     $this->pipelines->flush();
+
+    $parameters = $this->request->getPost("parameters") ?? [];
+    $pipeline->setParameters($parameters);
 
     $this->sendSuccessResponse($pipeline);
   }

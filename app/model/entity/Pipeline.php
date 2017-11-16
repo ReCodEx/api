@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Exceptions\InvalidArgumentException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -100,6 +101,21 @@ class Pipeline implements JsonSerializable
   protected $supplementaryEvaluationFiles;
 
   /**
+   * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name", cascade={"persist"}, orphanRemoval=true)
+   * @var Collection
+   */
+  protected $parameters;
+
+  public const DEFAULT_PARAMETERS = [
+    "isCompilationPipeline" => false,
+    "isExecutionPipeline" => false,
+    "acceptsStdin" => false,
+    "acceptsFile" => false,
+    "producesStdout" => false,
+    "producesFiles" => false,
+  ];
+
+  /**
    * Pipeline constructor.
    * @param string $name
    * @param int $version
@@ -124,6 +140,7 @@ class Pipeline implements JsonSerializable
     $this->createdFrom = $createdFrom;
     $this->exercise = $exercise;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
+    $this->parameters = new ArrayCollection();
   }
 
   /**
@@ -186,6 +203,42 @@ class Pipeline implements JsonSerializable
     );
   }
 
+  public function setParameters($parameters) {
+    foreach ($parameters as $name => $value) {
+      if (!array_key_exists($name, static::DEFAULT_PARAMETERS)) {
+        throw new InvalidArgumentException(sprintf("Unknown parameter %s", $name));
+      }
+
+      if ($this->parameters->containsKey($name)) {
+        $parameter = $this->parameters->get($name);
+      } else {
+        $default = static::DEFAULT_PARAMETERS[$name];
+
+        if (is_bool($default)) {
+          $parameter = new BooleanPipelineParameter($this, $name);
+        } else if (is_string($default)) {
+          $parameter = new StringPipelineParameter($this, $name);
+        } else {
+          throw new InvalidArgumentException(sprintf("Unsupported value type for parameter %s", $name));
+        }
+
+        $this->parameters[$name] = $parameter;
+      }
+
+      if ($value !== static::DEFAULT_PARAMETERS[$name]) {
+        $parameter->setValue($value);
+      } else {
+        $this->parameters->remove($name);
+      }
+    }
+
+    foreach ($this->parameters->getKeys() as $key) {
+      if (!array_key_exists($key, $parameters)) {
+        unset($this->parameters[$key]);
+      }
+    }
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -197,7 +250,8 @@ class Pipeline implements JsonSerializable
       "author" => $this->author->getId(),
       "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "pipeline" => $this->pipelineConfig->getParsedPipeline()
+      "pipeline" => $this->pipelineConfig->getParsedPipeline(),
+      "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray())
     ];
   }
 }

@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
@@ -9,6 +10,7 @@ use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\Id\UuidGenerator;
+use Nette\Utils\Json;
 use Tester\Assert;
 
 
@@ -180,12 +182,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testUpdatePipeline()
-  {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $pipeline = current($this->presenter->pipelines->findAll());
-    $pipelineConfig = [
+  private const PIPELINE_CONFIG = [
       "variables" => [
         [
           "name" => "in_data_file",
@@ -213,6 +210,12 @@ class TestPipelinesPresenter extends Tester\TestCase
       ]
     ];
 
+  public function testUpdatePipeline()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $pipeline = current($this->presenter->pipelines->findAll());
+
     $request = new Nette\Application\Request('V1:Pipelines',
       'POST',
       ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
@@ -220,7 +223,7 @@ class TestPipelinesPresenter extends Tester\TestCase
         'name' => 'new pipeline name',
         'version' => 1,
         'description' => 'description of pipeline',
-        'pipeline' => $pipelineConfig
+        'pipeline' => static::PIPELINE_CONFIG
       ]
     );
     $response = $this->presenter->run($request);
@@ -233,13 +236,67 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal('new pipeline name', $payload->getName());
     Assert::equal(2, $payload->getVersion());
     Assert::equal('description of pipeline', $payload->getDescription());
-    Assert::equal($pipelineConfig, $payload->getPipelineConfig()->getParsedPipeline());
+    Assert::equal(static::PIPELINE_CONFIG, $payload->getPipelineConfig()->getParsedPipeline());
 
     $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();
     Assert::equal("infile", $parsedPipeline["boxes"][0]["name"]);
     Assert::equal("judgement", $parsedPipeline["boxes"][1]["name"]);
     Assert::equal("file-in", $parsedPipeline["boxes"][0]["type"]);
     Assert::equal("judge", $parsedPipeline["boxes"][1]["type"]);
+  }
+
+  public function testUpdatePipelineWithParameters()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    $request = new Nette\Application\Request('V1:Pipelines',
+      'POST',
+      ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
+      [
+        'name' => 'new pipeline name',
+        'version' => 1,
+        'description' => 'description of pipeline',
+        'pipeline' => static::PIPELINE_CONFIG,
+        'parameters' => [
+          "isCompilationPipeline" => "true"
+        ]
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    $payload = $result['payload'];
+    $serializedResult = PresenterTestHelper::jsonResponse($payload);
+
+    Assert::true(array_key_exists("isCompilationPipeline", $serializedResult["parameters"]));
+    Assert::true($serializedResult["parameters"]["isCompilationPipeline"]);
+  }
+
+  public function testUpdatePipelineUnknownParameter()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    $request = new Nette\Application\Request('V1:Pipelines',
+      'POST',
+      ['action' => 'updatePipeline', 'id' => $pipeline->getId()],
+      [
+        'name' => 'new pipeline name',
+        'version' => 1,
+        'description' => 'description of pipeline',
+        'pipeline' => static::PIPELINE_CONFIG,
+        'parameters' => [
+          "whateverIDontKnow" => "true"
+        ]
+      ]
+    );
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, InvalidArgumentException::class);
   }
 
   public function testValidatePipeline()
