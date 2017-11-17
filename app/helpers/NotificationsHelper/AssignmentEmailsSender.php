@@ -5,6 +5,7 @@ namespace App\Helpers\Notifications;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\User;
+use App\Model\Repository\AssignmentSolutions;
 use Latte;
 use Nette\Utils\Arrays;
 
@@ -21,14 +22,18 @@ class AssignmentEmailsSender {
   private $newAssignmentPrefix;
   /** @var string */
   private $assignmentDeadlinePrefix;
+  /** @var AssignmentSolutions */
+  private $assignmentSolutions;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
+   * @param AssignmentSolutions $assignmentSolutions
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, AssignmentSolutions $assignmentSolutions, array $params) {
     $this->emailHelper = $emailHelper;
+    $this->assignmentSolutions = $assignmentSolutions;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "ReCodEx New Assignment Notification - ");
     $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline is Near - ");
@@ -95,7 +100,7 @@ class AssignmentEmailsSender {
 
     /** @var User $student */
     foreach ($assignment->getGroup()->getStudents() as $student) {
-      if ($assignment->getLastSolution($student) ||
+      if (count($this->assignmentSolutions->findSolutions($assignment, $student)) > 0 ||
           !$student->getSettings()->getAssignmentDeadlineEmails()) {
         // student already submitted solution to this assignment or
         // disabled sending emails

@@ -163,7 +163,7 @@ acl:
     hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
     runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
-    submission: App\Security\ACL\ISubmissionPermissions
+    assignmentSolution: App\Security\ACL\IAssignmentSolutionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
     pipeline: App\Security\ACL\IPipelinePermissions
     sis: App\Security\ACL\ISisPermissions
@@ -175,7 +175,7 @@ acl:
     comment: App\Security\Policies\CommentPermissionPolicy
     exercise: App\Security\Policies\ExercisePermissionPolicy
     referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
-    submission: App\Security\Policies\SubmissionPermissionPolicy
+    assignmentSolution: App\Security\Policies\AssignmentSolutionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
     sis: App\Security\Policies\SisPermissionPolicy
@@ -273,7 +273,7 @@ services:
     simple: @App\Helpers\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
-  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, %assignmentNotifications%)
+  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
@@ -306,8 +306,9 @@ services:
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
   - App\Model\Repository\ReferenceExerciseSolutions
-  - App\Model\Repository\ReferenceSolutionEvaluations
-  - App\Model\Repository\Submissions
+  - App\Model\Repository\ReferenceSolutionSubmissions
+  - App\Model\Repository\AssignmentSolutions
+  - App\Model\Repository\AssignmentSolutionSubmissions
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
@@ -321,6 +322,9 @@ services:
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
+
+  # views factories
+  - App\Model\View\GroupViewFactory
 
 doctrine:
   user: 'root'

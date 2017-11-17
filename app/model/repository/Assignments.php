@@ -13,6 +13,7 @@ use App\Model\Entity\Assignment;
  * @method Assignment findOrThrow($id)
  */
 class Assignments extends BaseSoftDeleteRepository {
+
   public function __construct(EntityManager $em) {
     parent::__construct($em, Assignment::class);
   }
@@ -60,4 +61,5 @@ class Assignments extends BaseSoftDeleteRepository {
 
     return $qb->getQuery()->getResult();
   }
+
 }

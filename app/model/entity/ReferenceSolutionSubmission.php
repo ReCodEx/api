@@ -6,34 +6,22 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use DateTime;
 use App\Helpers\EvaluationStatus as ES;
 use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
  *
- * @method string getId()
- * @method string getResultsUrl()
  * @method ReferenceExerciseSolution getReferenceSolution()
- * @method string setResultsUrl(string $url)
- * @method string getJobConfigPath()
  */
-class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
+class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
 
   const JOB_TYPE = "reference";
 
   /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
-
-  /**
-   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="evaluations")
+   * @ORM\ManyToOne(targetEntity="ReferenceExerciseSolution", inversedBy="submissions")
    */
   protected $referenceSolution;
 
@@ -43,27 +31,7 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
   protected $hwGroup;
 
   /**
-   * @ORM\Column(type="string", nullable=true)
-   */
-  protected $resultsUrl;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $jobConfigPath;
-
-  /**
-   * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionEvaluation")
-   */
-  protected $failures;
-
-  public function canBeEvaluated(): bool {
-    return $this->resultsUrl !== NULL;
-  }
-
-  /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionEvaluation", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionSubmission", cascade={"persist", "remove"})
    * @var SolutionEvaluation
    */
   protected $evaluation;
@@ -80,6 +48,13 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
     $this->evaluation = $evaluation;
   }
 
+  /**
+   * @var Collection
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission")
+   */
+  protected $failures;
+
+
   public function jsonSerialize() {
     $evaluationData = NULL;
     if ($this->evaluation !== NULL) {
@@ -91,14 +66,17 @@ class ReferenceSolutionEvaluation implements JsonSerializable, ES\IEvaluable
       "referenceSolutionId" => $this->referenceSolution->getId(),
       "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
       "isCorrect" => $this->isCorrect(),
-      "evaluation" => $evaluationData
+      "evaluation" => $evaluationData,
+      "submittedAt" => $this->submittedAt->getTimestamp(),
+      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
     ];
   }
 
-  public function __construct(ReferenceExerciseSolution $referenceSolution, HardwareGroup $hwGroup, string $jobConfigPath) {
+  public function __construct(ReferenceExerciseSolution $referenceSolution,
+      HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
+    parent::__construct($submittedBy, $jobConfigPath);
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
-    $this->jobConfigPath = $jobConfigPath;
     $this->failures = new ArrayCollection();
   }
 

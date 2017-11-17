@@ -20,7 +20,7 @@ use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
-use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -82,7 +82,7 @@ class ExercisesConfigPresenter extends BasePresenter {
   public $hardwareGroups;
 
   /**
-   * @var ReferenceSolutionEvaluations
+   * @var ReferenceSolutionSubmissions
    * @inject
    */
   public $referenceSolutionEvaluations;

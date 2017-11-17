@@ -7,14 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Kdyby\Doctrine\Entities\MagicAccessors;
+use DateTime;
 
 /**
  * @ORM\Entity
  * @method string getId()
- * @method User getUser()
+ * @method User getAuthor()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
- * @method void setEvaluated(bool)
+ * @method DateTime getCreatedAt()
+ * @method void setEvaluated(bool $evaluated)
  */
 class Solution implements JsonSerializable
 {
@@ -29,9 +31,13 @@ class Solution implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
-   * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
    */
-  protected $user;
+  protected $author;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $createdAt;
 
   /**
    * @ORM\OneToMany(targetEntity="SolutionFile", mappedBy="solution")
@@ -55,20 +61,22 @@ class Solution implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "userId" => $this->user->getId(),
+      "userId" => $this->author->getId(),
+      "createdAt" => $this->createdAt->getTimestamp(),
       "files" => $this->files->getValues()
     ];
   }
 
   /**
    * Constructor
-   * @param User $user The user who submits the solution
+   * @param User $author The user who submits the solution
    * @param RuntimeEnvironment $runtimeEnvironment
    */
-  public function __construct(User $user, RuntimeEnvironment $runtimeEnvironment) {
-    $this->user = $user;
+  public function __construct(User $author, RuntimeEnvironment $runtimeEnvironment) {
+    $this->author = $author;
     $this->files = new ArrayCollection;
-    $this->evaluated = FALSE;
+    $this->evaluated = false;
+    $this->createdAt = new DateTime;
     $this->runtimeEnvironment = $runtimeEnvironment;
   }
 

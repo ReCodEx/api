@@ -8,6 +8,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Repository\Assignments;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
@@ -22,6 +23,9 @@ class TestDeadlineNotifications extends Tester\TestCase
 {
   /** @var Assignments */
   private $assignments;
+
+  /** @var AssignmentSolutions */
+  private $assignmentSolutions;
 
   /** @var SendAssignmentDeadlineNotification */
   protected $command;
@@ -65,8 +69,9 @@ class TestDeadlineNotifications extends Tester\TestCase
     }
 
     $this->emailHelperMock = Mockery::mock(EmailHelper::class);
-    $this->sender = new AssignmentEmailsSender($this->emailHelperMock, []);
     $this->assignments = $this->container->getByType(Assignments::class);
+    $this->assignmentSolutions = $this->container->getByType(AssignmentSolutions::class);
+    $this->sender = new AssignmentEmailsSender($this->emailHelperMock, $this->assignmentSolutions, []);
     $this->command = new SendAssignmentDeadlineNotification(
       "1 day",
       $this->assignments,

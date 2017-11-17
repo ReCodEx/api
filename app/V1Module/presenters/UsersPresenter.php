@@ -287,18 +287,7 @@ class UsersPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
-      "student" => $user->getGroupsAsStudent()->getValues(),
-      "stats" => $user->getGroupsAsStudent()->map(
-        function (Group $group) use ($user) {
-          $stats = $group->getStudentsStats($user);
-          $localizedGroup = $group->getLocalizedTextByLocale($this->getCurrentUser()->getSettings()->getDefaultLanguage());
-
-          return array_merge([
-            "id" => $group->getId(),
-            "name" => $localizedGroup ? $localizedGroup->getName() : ""
-          ], $stats);
-        }
-      )->getValues()
+      "student" => $user->getGroupsAsStudent()->getValues()
     ]);
   }
 

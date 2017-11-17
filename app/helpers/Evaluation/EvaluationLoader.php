@@ -2,9 +2,10 @@
 
 namespace App\Helpers;
 
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Helpers\JobConfig\Storage as JobConfigStorage;
 use App\Helpers\EvaluationResults\EvaluationResults;
 use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
@@ -43,28 +44,29 @@ class EvaluationLoader {
 
   /**
    * Downloads and processes the results for the given submission.
-   * @param Submission $submission The submission
+   * @param AssignmentSolutionSubmission $submission The submission
    * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
-  public function load(Submission $submission) {
+  public function load(AssignmentSolutionSubmission $submission) {
     $results = $this->getResults($submission);
     if (!$results) {
       return NULL;
     }
 
     $evaluation = new SolutionEvaluation($results, $submission);
+    $submission->setEvaluation($evaluation);
     $this->pointsLoader->setStudentScoreAndPoints($evaluation);
     return $evaluation;
   }
 
   /**
    * Downloads and parses the results report from the server.
-   * @param Submission $submission The submission
+   * @param AssignmentSolutionSubmission $submission The submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
    */
-  private function getResults(Submission $submission) {
+  private function getResults(AssignmentSolutionSubmission $submission) {
     if (!$submission->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
@@ -72,7 +74,7 @@ class EvaluationLoader {
     $jobConfigPath = $submission->getJobConfigPath();
     try {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
-      $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(Submission::JOB_TYPE);
+      $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(AssignmentSolution::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
       return $resultsYml === NULL
         ? NULL
@@ -86,28 +88,29 @@ class EvaluationLoader {
 
   /**
    * Downloads and processes the results for the given submission.
-   * @param ReferenceSolutionEvaluation $referenceSolution The reference solution submission
+   * @param ReferenceSolutionSubmission $referenceSolution The reference solution submission
    * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
-  public function loadReference(ReferenceSolutionEvaluation $referenceSolution) {
+  public function loadReference(ReferenceSolutionSubmission $referenceSolution) {
     $results = $this->getReferenceResults($referenceSolution);
     if (!$results) {
       return NULL;
     }
 
     $evaluation = new SolutionEvaluation($results, null, $referenceSolution);
+    $referenceSolution->setEvaluation($evaluation);
     $this->pointsLoader->setReferenceScore($evaluation);
     return $evaluation;
   }
 
   /**
    * Downloads and parses the results report from the server.
-   * @param ReferenceSolutionEvaluation $evaluation The reference solution submission
+   * @param ReferenceSolutionSubmission $evaluation The reference solution submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
    */
-  private function getReferenceResults(ReferenceSolutionEvaluation $evaluation) {
+  private function getReferenceResults(ReferenceSolutionSubmission $evaluation) {
     if (!$evaluation->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
@@ -115,7 +118,7 @@ class EvaluationLoader {
     $jobConfigPath = $evaluation->getJobConfigPath();
     try {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
-      $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionEvaluation::JOB_TYPE);
+      $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionSubmission::JOB_TYPE);
       $resultsYml = $this->fileServer->downloadResults($evaluation->getResultsUrl());
       return $resultsYml === NULL
         ? NULL

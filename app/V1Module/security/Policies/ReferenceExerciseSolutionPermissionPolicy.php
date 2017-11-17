@@ -21,6 +21,6 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    return $user === $referenceExerciseSolution->getSolution()->getUser();
+    return $user === $referenceExerciseSolution->getSolution()->getAuthor();
   }
 }

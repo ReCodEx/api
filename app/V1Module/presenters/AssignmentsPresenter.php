@@ -13,7 +13,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
 
@@ -24,11 +24,11 @@ use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\SolutionEvaluations;
-use App\Model\Repository\Submissions;
+use App\Model\Repository\AssignmentSolutions;
 
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
-use App\Security\ACL\ISubmissionPermissions;
+use App\Security\ACL\IAssignmentSolutionPermissions;
 use DateTime;
 
 /**
@@ -56,10 +56,10 @@ class AssignmentsPresenter extends BasePresenter {
   public $assignments;
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutions
    * @inject
    */
-  public $submissions;
+  public $assignmentSolutions;
 
   /**
    * @var SolutionEvaluations
@@ -80,10 +80,10 @@ class AssignmentsPresenter extends BasePresenter {
   public $groupAcl;
 
   /**
-   * @var ISubmissionPermissions
+   * @var IAssignmentSolutionPermissions
    * @inject
    */
-  public $submissionAcl;
+  public $assignmentSolutionAcl;
 
   /**
    * @var ExerciseConfigLoader
@@ -169,7 +169,8 @@ class AssignmentsPresenter extends BasePresenter {
     $req = $this->getRequest();
     $version = intval($req->getPost("version"));
     if ($version !== $assignment->getVersion()) {
-      throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}."); // @todo better exception
+      throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}.");
+      // @todo better exception
     }
 
     // localized texts cannot be empty
@@ -212,8 +213,10 @@ class AssignmentsPresenter extends BasePresenter {
         $oldThreshold != $threshold ||
         $oldFirstDeadlineTimestamp !== $firstDeadlineTimestamp ||
         $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp) {
-      foreach ($assignment->getSubmissions() as $submission) {
-        $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+      foreach ($assignment->getAssignmentSolutions() as $solution) {
+        foreach ($solution->getSubmissions() as $submission) {
+          $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+        }
       }
       $this->solutionEvaluations->flush();
     }
@@ -353,13 +356,13 @@ class AssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of solutions submitted by a user of an assignment
+   * Get a list of solutions created by a user of an assignment
    * @GET
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
    */
-  public function actionSubmissions(string $id, string $userId) {
+  public function actionSolutions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
 
@@ -367,13 +370,16 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->submissions->findSubmissions($assignment, $userId), function (Submission $submission) {
-      return $this->submissionAcl->canViewDetail($submission);
+    $submissions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
+      function (AssignmentSolution $solution) {
+        return $this->assignmentSolutionAcl->canViewDetail($solution);
     });
-    $submissions = array_map(function (Submission $submission) {
-      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-      $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
-      return $submission->getData($canViewDetails, $canViewValues);
+    $submissions = array_map(function (AssignmentSolution $solution) {
+      $submission = $solution->getLastSubmission();
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
+      return $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }, $submissions);
 
     $this->sendSuccessResponse($submissions);
@@ -386,22 +392,24 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $userId Identifier of the user
    * @throws ForbiddenRequestException
    */
-  public function actionBestSubmission(string $id, string $userId) {
+  public function actionBestSolution(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
-    $submission = $assignment->getBestSolution($user);
+    $solution = $this->assignmentSolutions->findBestSolution($assignment, $user);
 
-    if ($submission == NULL) {
+    if ($solution == NULL) {
       $this->sendSuccessResponse(NULL);
     }
     if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
-        !$this->submissionAcl->canViewDetail($submission)) {
+        !$this->assignmentSolutionAcl->canViewDetail($solution)) {
       throw new ForbiddenRequestException();
     }
 
-    $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-    $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
-    $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
+    $submission = $solution->getLastSubmission();
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
+    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
   }
 
   /**
@@ -410,7 +418,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    */
-  public function actionBestSubmissions(string $id) {
+  public function actionBestSolutions(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     if (!$this->assignmentAcl->canViewDetail($assignment)) {
       throw new ForbiddenRequestException();
@@ -418,20 +426,22 @@ class AssignmentsPresenter extends BasePresenter {
 
     $bestSubmissions = [];
     foreach ($assignment->getGroup()->getStudents() as $student) {
-      $submission = $assignment->getBestSolution($student);
-      if ($submission === null) {
+      $solution = $this->assignmentSolutions->findBestSolution($assignment, $student);
+      if ($solution === null) {
         $bestSubmissions[$student->getId()] = null;
         continue;
       }
 
       if (!$this->assignmentAcl->canViewSubmissions($assignment, $student) ||
-          !$this->submissionAcl->canViewDetail($submission)) {
+          !$this->assignmentSolutionAcl->canViewDetail($solution)) {
         continue;
       }
 
-      $canViewDetails = $this->submissionAcl->canViewEvaluationDetails($submission);
-      $canViewValues = $this->submissionAcl->canViewEvaluationValues($submission);
-      $bestSubmissions[$student->getId()] = $submission->getData($canViewDetails, $canViewValues);
+      $submission = $solution->getLastSubmission();
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
+      $bestSubmissions[$student->getId()] = $solution->getData($canViewDetails, $canViewValues, $canViewResubmissions);
     }
 
     $this->sendSuccessResponse($bestSubmissions);
