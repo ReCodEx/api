@@ -194,6 +194,7 @@ class JobConfig {
    * @param string $hwGroupId Hardware group for new limits
    * @param array $limits Map of task-id (key) and limits as array (value)
    * @return $this
+   * @throws ForbiddenRequestException
    */
   public function setLimits(string $hwGroupId, array $limits) {
     foreach ($this->tasks as $task) {

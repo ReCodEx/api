@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\Localizations;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,7 +26,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getHardwareGroups()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
- * @method Collection getSubmissions()
+ * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
  * @method Group getGroup()
  * @method DateTime getCreatedAt()
@@ -77,7 +78,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->allowSecondDeadline = $allowSecondDeadline;
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
-    $this->submissions = new ArrayCollection;
+    $this->assignmentSolutions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
     $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
@@ -363,95 +364,10 @@ class Assignment implements JsonSerializable, IExercise
   protected $group;
 
   /**
-   * Determine if given user can submit solutions to this assignment.
-   * @param User|NULL $user
-   * @return bool
+   * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
    */
-  public function canReceiveSubmissions(User $user = NULL) {
-    return $this->isPublic === TRUE &&
-      $this->group->hasValidLicence() &&
-      ($user !== NULL && !$this->hasReachedSubmissionsCountLimit($user));
-  }
+  protected $assignmentSolutions;
 
-  /**
-   * @ORM\OneToMany(targetEntity="Submission", mappedBy="assignment")
-   * @ORM\OrderBy({ "submittedAt" = "DESC" })
-   */
-  protected $submissions;
-
-  /**
-   * @param User $user
-   * @return Collection
-   */
-  public function getValidSubmissions(User $user) {
-    $fromThatUser = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user))
-      ->andWhere(Criteria::expr()->neq("resultsUrl", NULL));
-    $validSubmissions = function (Submission $submission) {
-      if ($submission->isFailed()) {
-        return false;
-      }
-
-      if (!$submission->hasEvaluation()) {
-        // Condition sustained for readability
-        // the submission is not evaluated yet - suppose it will be evaluated in the future (or marked as invalid)
-        // -> otherwise the user would be able to submit many solutions before they are evaluated
-        return true;
-      }
-
-      return true;
-    };
-
-    return $this->submissions
-      ->matching($fromThatUser)
-      ->filter($validSubmissions);
-  }
-
-  public function hasReachedSubmissionsCountLimit(User $user) {
-    return $this->getValidSubmissions($user)->count() >= $this->submissionsCountLimit;
-  }
-
-  /**
-   * @param User $user
-   * @return Submission
-   */
-  public function getLastSolution(User $user) {
-    $usersSolutions = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user));
-    return $this->submissions->matching($usersSolutions)->first();
-  }
-
-  /**
-   * @param User $user
-   * @return Submission|NULL
-   */
-  public function getBestSolution(User $user) {
-    $usersSolutions = Criteria::create()
-      ->where(Criteria::expr()->eq("user", $user))
-      ->andWhere(Criteria::expr()->neq("evaluation", NULL));
-
-    return array_reduce(
-      $this->submissions->matching($usersSolutions)->getValues(),
-      function (?Submission $best, Submission $submission) {
-        if ($best === NULL) {
-          return $submission;
-        }
-
-        if ($best->isAccepted()) {
-          return $best;
-        }
-
-        if ($submission->isAccepted()) {
-          return $submission;
-        }
-
-        return $submission->hasEvaluation() === FALSE || $best->getTotalPoints() > $submission->getTotalPoints()
-          ? $best
-          : $submission;
-      },
-      NULL
-    );
-  }
 
   public function getRuntimeEnvironmentsIds() {
     return $this->runtimeEnvironments->map(function(RuntimeEnvironment $env) { return $env->getId(); })->getValues();
@@ -485,20 +401,6 @@ class Assignment implements JsonSerializable, IExercise
     }
   }
 
-  /**
-   * @return LocalizedExercise
-   */
-  protected function getPrimaryLocalization(): ?LocalizedExercise {
-    /** @var LocalizedExercise $text */
-    foreach ($this->localizedTexts as $text) {
-      if ($text->getLocale() === Exercise::PRIMARY_LOCALE) {
-        return $text;
-      }
-    }
-
-    return !$this->localizedTexts->isEmpty() ? $this->localizedTexts->first() : NULL;
-  }
-
   public function jsonSerialize() {
     $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(
       function ($key, RuntimeEnvironment $env) {
@@ -513,7 +415,9 @@ class Assignment implements JsonSerializable, IExercise
         return $this->getExercise()->getHardwareGroups()->contains($group);
       });
 
-    $primaryLocalization = $this->getPrimaryLocalization();
+    /** @var LocalizedExercise $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
+
     return [
       "id" => $this->id,
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC

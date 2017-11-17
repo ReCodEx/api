@@ -185,19 +185,6 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     // prepare config array
     $config = [
       [
-        "name" => "default",
-        "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
-            ["name" => "source-files", "type" => "file[]", "value" => []]
-          ]]]],
-          ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input-file", "type" => "file", "value" => "defValB"],
-            ["name" => "binary-file", "type" => "file", "value" => "defValB"],
-            ["name" => "expected-output", "type" => "file", "value" => "defValB"]
-          ]]]]
-        ]
-      ],
-      [
         "name" => "c-gcc-linux",
         "tests" => [
           ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
@@ -240,10 +227,14 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(2, $exerciseConfig->getTests());
     Assert::type(Test::class, $exerciseConfig->getTest('testA'));
     Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')->getPipeline($compilationPipeline->getId()));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')->getPipeline($testPipeline->getId()));
-    Assert::equal([], $exerciseConfig->getTest('testA')->getPipeline($compilationPipeline->getId())->getVariablesTable()->get('source-files')->getValue());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary-file')->getValue());
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')
+      ->getEnvironment("c-gcc-linux")->getPipeline($compilationPipeline->getId()));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')
+      ->getEnvironment("c-gcc-linux")->getPipeline($testPipeline->getId()));
+    Assert::equal([], $exerciseConfig->getTest('testA')->getEnvironment("c-gcc-linux")
+      ->getPipeline($compilationPipeline->getId())->getVariablesTable()->toArray());
+    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getEnvironment("c-gcc-linux")
+      ->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary-file')->getValue());
   }
 
   public function testGetVariablesForExerciseConfig()

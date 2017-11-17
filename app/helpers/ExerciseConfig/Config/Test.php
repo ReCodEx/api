@@ -10,16 +10,8 @@ use JsonSerializable;
  */
 class Test implements JsonSerializable {
 
-  /** Name of the pipelines key */
-  const PIPELINES_KEY = "pipelines";
   /** Name of the environments key */
   const ENVIRONMENTS_KEY = "environments";
-
-  /**
-   * Array of default pipelines indexed by pipeline name.
-   * @var array
-   */
-  protected $pipelines = array();
 
   /**
    * Array of environments with their specific settings.
@@ -27,47 +19,6 @@ class Test implements JsonSerializable {
    */
   protected $environments = array();
 
-
-  /**
-   * Get default pipelines for this test.
-   * @return PipelineVars[]
-   */
-  public function getPipelines(): array {
-    return $this->pipelines;
-  }
-
-  /**
-   * Get pipeline for the given name.
-   * @param string $name
-   * @return PipelineVars|null
-   */
-  public function getPipeline(string $name): ?PipelineVars {
-    if (!array_key_exists($name, $this->pipelines)) {
-      return null;
-    }
-
-    return $this->pipelines[$name];
-  }
-
-  /**
-   * Add default pipeline to this test.
-   * @param PipelineVars $pipeline
-   * @return Test
-   */
-  public function addPipeline(PipelineVars $pipeline): Test {
-    $this->pipelines[$pipeline->getName()] = $pipeline;
-    return $this;
-  }
-
-  /**
-   * Remove pipeline with given identification.
-   * @param string $id
-   * @return $this
-   */
-  public function removePipeline(string $id): Test {
-    unset($this->pipelines[$id]);
-    return $this;
-  }
 
   /**
    * Get associative array of environments.
@@ -119,10 +70,6 @@ class Test implements JsonSerializable {
   public function toArray(): array {
     $data = [];
 
-    $data[self::PIPELINES_KEY] = array();
-    foreach ($this->pipelines as $pipeline) {
-      $data[self::PIPELINES_KEY][] = $pipeline->toArray();
-    }
     $data[self::ENVIRONMENTS_KEY] = array();
     foreach ($this->environments as $key => $environment) {
       $data[self::ENVIRONMENTS_KEY][$key] = $environment->toArray();

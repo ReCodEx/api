@@ -137,13 +137,6 @@ class Loader {
 
     $test = new Test;
 
-    if (!isset($data[Test::PIPELINES_KEY]) || !is_array($data[Test::PIPELINES_KEY])) {
-      throw new ExerciseConfigException("Exercise test does not have any defined pipelines");
-    }
-    foreach ($data[Test::PIPELINES_KEY] as $pipeline) {
-      $test->addPipeline($this->loadPipelineVars($pipeline));
-    }
-
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
       throw new ExerciseConfigException("Exercise test does not have any defined environments");
     }

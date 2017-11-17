@@ -12,15 +12,14 @@ use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
 use App\Helpers\Notifications\SubmissionEmailsSender;
-use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\Submission;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
-use App\Model\Repository\ReferenceExerciseSolutions;
+use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\Submissions;
 use App\Model\Repository\SolutionEvaluations;
-use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionSubmissions;
 
 /**
  * Endpoints used by the backend to notify the frontend of errors and changes in job status
@@ -49,7 +48,7 @@ class BrokerReportsPresenter extends BasePresenter {
   public $evaluationLoader;
 
   /**
-   * @var Submissions
+   * @var AssignmentSolutionSubmissions
    * @inject
    */
   public $submissions;
@@ -67,16 +66,10 @@ class BrokerReportsPresenter extends BasePresenter {
   public $evaluations;
 
   /**
-   * @var ReferenceExerciseSolutions
+   * @var ReferenceSolutionSubmissions
    * @inject
    */
-  public $referenceSolutions;
-
-  /**
-   * @var ReferenceSolutionEvaluations
-   * @inject
-   */
-  public $referenceSolutionEvaluations;
+  public $referenceSolutionSubmissions;
 
   /**
    * @var BrokerConfig
@@ -121,20 +114,15 @@ class BrokerReportsPresenter extends BasePresenter {
     switch ($status) {
       case self::STATUS_OK:
         switch ($job->getType()) {
-          case ReferenceSolutionEvaluation::JOB_TYPE:
+          case ReferenceSolutionSubmission::JOB_TYPE:
             // load the evaluation of the reference solution now
-            $referenceSolutionEvaluation = $this->referenceSolutionEvaluations->findOrThrow($job->getId());
+            $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
             $this->loadReferenceEvaluation($referenceSolutionEvaluation);
             break;
-          case Submission::JOB_TYPE:
+          case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
             // load the evaluation of the student submission or resubmit
-            $result = $this->loadEvaluation($submission);
-
-            if ($submission->isResubmit() && $result === TRUE) {
-              // the solution is resubmit by supervisor, so send notification to the user
-              $this->submissionEmailsSender->submissionEvaluated($submission);
-            }
+            $this->loadEvaluation($submission);
             break;
         }
         break;
@@ -146,14 +134,14 @@ class BrokerReportsPresenter extends BasePresenter {
         );
 
         switch ($job->getType()) {
-          case Submission::JOB_TYPE:
+          case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
             $failureReport = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
             $this->submissionFailures->persist($failureReport);
             break;
-          case ReferenceSolutionEvaluation::JOB_TYPE:
-            $referenceSolutionEvaluation = $this->referenceSolutionEvaluations->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forReferenceSolution(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolutionEvaluation);
+          case ReferenceSolutionSubmission::JOB_TYPE:
+            $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
+            $failureReport = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolutionEvaluation);
             $this->submissionFailures->persist($failureReport);
             break;
         }
@@ -164,7 +152,7 @@ class BrokerReportsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  private function loadEvaluation(Submission $submission) {
+  private function loadEvaluation(AssignmentSolutionSubmission $submission) {
     try {
       $evaluation = $this->evaluationLoader->load($submission);
     } catch (SubmissionEvaluationFailedException $e) {
@@ -179,11 +167,9 @@ class BrokerReportsPresenter extends BasePresenter {
 
     $this->evaluations->persist($evaluation);
     $this->submissions->persist($submission);
-
-    return TRUE;
   }
 
-  private function loadReferenceEvaluation(ReferenceSolutionEvaluation $referenceSolutionEvaluation) {
+  private function loadReferenceEvaluation(ReferenceSolutionSubmission $referenceSolutionEvaluation) {
     $referenceSolution = $referenceSolutionEvaluation->getReferenceSolution();
     try {
       $solutionEvaluation = $this->evaluationLoader->loadReference($referenceSolutionEvaluation);
@@ -197,7 +183,7 @@ class BrokerReportsPresenter extends BasePresenter {
     }
 
     $this->evaluations->persist($solutionEvaluation);
-    $this->referenceSolutionEvaluations->persist($referenceSolutionEvaluation);
+    $this->referenceSolutionSubmissions->persist($referenceSolutionEvaluation);
   }
 
   /**

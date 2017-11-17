@@ -37,7 +37,7 @@ class RouterFactory {
     $router[] = self::createGroupsRoutes("$prefix/groups");
     $router[] = self::createInstancesRoutes("$prefix/instances");
     $router[] = self::createReferenceSolutionsRoutes("$prefix/reference-solutions");
-    $router[] = self::createSubmissionRoutes("$prefix/submissions");
+    $router[] = self::createAssignmentSolutionsRoutes("$prefix/assignment-solutions");
     $router[] = self::createSubmissionFailuresRoutes("$prefix/submission-failures");
     $router[] = self::createUploadedFilesRoutes("$prefix/uploaded-files");
     $router[] = self::createUsersRoutes("$prefix/users");
@@ -142,9 +142,9 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
     $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
     $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
-    $router[] = new GetRoute("$prefix/<id>/best-submissions", "Assignments:bestSubmissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/submissions", "Assignments:submissions");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-submission", "Assignments:bestSubmission");
+    $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSolutions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:solutions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-solution", "Assignments:bestSolution");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
     $router[] = new PostRoute("$prefix/<id>/sync-exercise", "Assignments:syncWithExercise");
 
@@ -233,18 +233,20 @@ class RouterFactory {
   }
 
   /**
-   * Adds all Submission endpoints to given router.
+   * Adds all AssignmentSolution endpoints to given router.
    * @param string $prefix Route prefix
    * @return RouteList All endpoint routes
    */
-  private static function createSubmissionRoutes(string $prefix): RouteList {
+  private static function createAssignmentSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix", "Submissions:");
-    $router[] = new GetRoute("$prefix/<id>", "Submissions:evaluation");
-    $router[] = new PostRoute("$prefix/<id>", "Submissions:setBonusPoints");
-    $router[] = new PostRoute("$prefix/<id>/set-accepted", "Submissions:setAcceptedSubmission");
-    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "Submissions:unsetAcceptedSubmission");
-    $router[] = new GetRoute("$prefix/<id>/download-result", "Submissions:downloadResultArchive");
+    $router[] = new GetRoute("$prefix/evaluation/<id>", "AssignmentSolutions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "AssignmentSolutions:downloadResultArchive");
+
+    $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
+    $router[] = new PostRoute("$prefix/<id>/bonus-points", "AssignmentSolutions:setBonusPoints");
+    $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
+    $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAcceptedSubmission");
+    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAcceptedSubmission");
 
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
     return $router;

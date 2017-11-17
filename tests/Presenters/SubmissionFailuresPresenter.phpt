@@ -52,7 +52,7 @@ class TestSubmissionFailures extends Tester\TestCase
     $response = $this->presenter->run($request);
     Assert::type(JsonResponse::class, $response);
     $result = $response->getPayload();
-    Assert::count(3, $result["payload"]);
+    Assert::count(2, $result["payload"]);
   }
 
   public function testListUnresolved()
@@ -87,7 +87,7 @@ class TestSubmissionFailures extends Tester\TestCase
     /** @var SubmissionFailure $item */
     foreach ($result["payload"] as $item) {
       Assert::type(SubmissionFailure::class, $item);
-      Assert::same($submission, $item->submission);
+      Assert::same($submission, $item->getAssignmentSolutionSubmission());
     }
   }
 

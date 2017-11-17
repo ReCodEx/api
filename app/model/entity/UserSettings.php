@@ -11,7 +11,7 @@ use JsonSerializable;
  * @method bool getDarkTheme()
  * @method bool getVimMode()
  * @method bool getOpenedSidebar()
- * @method bool getDefaultLanguage()
+ * @method string getDefaultLanguage()
  * @method bool getNewAssignmentEmails()
  * @method bool getAssignmentDeadlineEmails()
  * @method bool getSubmissionEvaluatedEmails()

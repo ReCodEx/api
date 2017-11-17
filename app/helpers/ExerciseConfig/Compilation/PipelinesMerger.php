@@ -298,13 +298,9 @@ class PipelinesMerger {
       VariablesTable $environmentConfigVariables,
       string $runtimeEnvironmentId, CompilationParams $params): MergeTree {
 
-    // get pipelines either for specific environment or defaults for the test
+    // get pipelines either for specific environment
     $environment = $test->getEnvironment($runtimeEnvironmentId);
-    if ($environment && count($environment->getPipelines()) > 0) {
-      $testPipelines = $environment->getPipelines();
-    } else {
-      $testPipelines = $test->getPipelines();
-    }
+    $testPipelines = $environment->getPipelines();
 
     // check if there are any pipelines in specified environment
     if (count($testPipelines) === 0) {
