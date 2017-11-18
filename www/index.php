@@ -10,7 +10,7 @@ header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS");
 unset($acReqHeaders);  // Make sure we do not leave any mess at global scope
 
 // The OPTIONS request should have been stopped at Apache configuration level, but if it was not ...
-if (strtoupper($_SERVER['REQUEST_METHOD']) == 'OPTIONS') exit;
+if (!empty($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD']) == 'OPTIONS') exit;
 
 
 // Uncomment this line if you must temporarily take down your site for maintenance.

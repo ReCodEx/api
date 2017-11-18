@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\SisGroupBinding;
 use App\Model\Entity\SisValidTerm;
 use App\Model\Entity\User;
@@ -189,7 +190,6 @@ class SisPresenter extends BasePresenter {
    * @param $courseId
    * @throws BadRequestException
    * @Param(name="parentGroupId", type="post")
-   * @Param(name="language", type="post", required=FALSE)
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
@@ -197,7 +197,6 @@ class SisPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $sisUserId = $this->getSisUserIdOrThrow($user);
     $request = $this->getRequest();
-    $language = $request->getPost("language") ?: "en";
     $parentGroupId = $request->getPost("parentGroupId");
     $parentGroup = $this->groups->findOrThrow($parentGroupId);
 
@@ -207,24 +206,25 @@ class SisPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
-    if ($remoteCourse->isFortnightly()) {
-      $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
-    }
-    $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
+    $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
 
-    $group = new Group(
-      $caption,
-      $remoteCourse->getCourseId(),
-      $remoteCourse->getAnnotation($language),
-      $parentGroup->getInstance(),
-      $user,
-      $parentGroup
-    );
-    $this->groups->persist($group, FALSE);
+    foreach (["en", "cs"] as $language) {
+      $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
+      if ($remoteCourse->isFortnightly()) {
+        $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
+      }
+      $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
+
+      $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
+      $group->addLocalizedText($localization);
+
+      $this->groups->persist($localization, false);
+    }
+
+    $this->groups->persist($group, false);
 
     $binding = new SisGroupBinding($group, $remoteCourse->getCode());
-    $this->sisGroupBindings->persist($binding, TRUE);
+    $this->sisGroupBindings->persist($binding, true);
 
     $this->sendSuccessResponse($group);
   }

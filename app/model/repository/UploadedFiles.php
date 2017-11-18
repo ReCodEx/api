@@ -36,7 +36,7 @@ class UploadedFiles extends BaseRepository {
 
     $query = $this->em->createQuery("
       SELECT sub
-      FROM App\Model\Entity\Submission sub
+      FROM App\Model\Entity\AssignmentSolution sub
       WHERE IDENTITY(sub.solution) = :solutionId
     ");
 

@@ -64,6 +64,8 @@ class BrokerProxy {
 
     try {
       $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $jobId);
+      // Configure socket to not wait at close time
+      $queue->setsockopt(ZMQ::SOCKOPT_LINGER, 0);
       $queue->connect($this->brokerAddress);
     } catch (ZMQSocketException $e) {
       throw new SubmissionFailedException("Cannot connect to the Broker.");

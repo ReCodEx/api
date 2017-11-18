@@ -120,8 +120,7 @@ class TestSisPresenter extends TestCase {
       'action' => 'createGroup',
       'courseId' => $courseId
     ], [
-      'parentGroupId' => $this->groups->findAll()[0]->getId(),
-      'language' => 'en'
+      'parentGroupId' => $this->groups->findAll()[0]->getId()
     ]));
     Assert::type(JsonResponse::class, $response);
 
@@ -130,13 +129,23 @@ class TestSisPresenter extends TestCase {
 
     /** @var Group $group */
     $group = $result['payload'];
-
     Assert::type(Group::class, $group);
-    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $group->getName());
     Assert::same("NSWI153", $group->getExternalId());
-    Assert::same("The Lorem ipsum", $group->getDescription());
 
-    Assert::notSame(NULL, $this->bindings->findByGroupAndCode($group, $courseId));
+    $localizedTexts = $group->getLocalizedTexts();
+    Assert::count(2, $localizedTexts);
+
+    $en = $group->getLocalizedTextByLocale("en");
+    Assert::notSame(null, $en);
+    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $en->getName());
+    Assert::same("The Lorem ipsum", $en->getDescription());
+
+    $cs = $group->getLocalizedTextByLocale("cs");
+    Assert::notSame(null, $cs);
+    Assert::same("Pokrocile technologie webovych aplikaci (St, 15:40, Sudé týdny)", $cs->getName());
+    Assert::same("Lorem ipsum", $cs->getDescription());
+
+    Assert::notSame(null, $this->bindings->findByGroupAndCode($group, $courseId));
   }
 
   public function testStatus() {

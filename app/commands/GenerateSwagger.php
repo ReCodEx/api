@@ -155,8 +155,8 @@ class GenerateSwagger extends Command
 
       // TODO hack - we need a better way of getting module names from nested RouteList objects
       $module = "V1:" . self::getPropertyValue($parentRoute, "module");
-      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module, $defaultSecurity, function ($text) use ($output) {
-        $output->writeln("<error>$text</error>");
+      $this->fillPathEntry($metadata, $paths[$mask][strtolower($method)], $module, $defaultSecurity, function ($text) use ($output, $method, $mask) {
+        $output->writeln("<error>Endpoint $method $mask: $text</error>");
       });
       $this->makePresenterTag($metadata, $module, $tags, $paths[$mask][strtolower($method)]);
     }
@@ -185,6 +185,10 @@ class GenerateSwagger extends Command
       $warning = function ($text) {};
     }
 
+    if (count($entry["tags"]) > 1) {
+      $warning("Multiple tags");
+    }
+
     $presenterName = $module . $metadata[Route::PRESENTER_KEY]["value"];
     $action = $metadata["action"]["value"] ?: "default";
 
@@ -204,6 +208,12 @@ class GenerateSwagger extends Command
     $this->setArrayDefault($entry, "parameters", []);
     $this->setArrayDefault($entry, "responses", []);
 
+    $existingParams = [];
+
+    foreach ($entry["parameters"] as $paramEntry) {
+      $existingParams[$paramEntry["name"]] = false;
+    }
+
     foreach (Arrays::get($annotations, "Param", []) as $annotation) {
       if ($annotation instanceof ArrayHash) {
         $annotation = get_object_vars($annotation);
@@ -214,6 +224,8 @@ class GenerateSwagger extends Command
       $in = $annotation["type"] === "post" ? "formData" : "query";
       $description = Arrays::get($annotation, "description", "");
       $this->fillParamEntry($entry, $annotation["name"], $in, $required, $validation, $description);
+
+      $existingParams[$annotation["name"]] = true;
     }
 
     $parameterAnnotations = Arrays::get($annotations, "param", []);
@@ -222,6 +234,7 @@ class GenerateSwagger extends Command
       $in = $methodParameter->isOptional() ? "query" : "path";
       $description = "";
       $validation = "string";
+      $existingParams[$methodParameter->getName()] = true;
 
       foreach ($parameterAnnotations as $annotation) {
         $annotationParts = explode(" ", $annotation, 3);
@@ -240,6 +253,12 @@ class GenerateSwagger extends Command
       }
 
       $this->fillParamEntry($entry, $methodParameter->getName(), $in, !$methodParameter->isOptional(), $validation ?? "", $description);
+    }
+
+    foreach ($existingParams as $param => $exists) {
+      if (!$exists) {
+        $warning("Unknown parameter $param");
+      }
     }
 
     $this->setArrayDefault($entry["responses"], "200", []);

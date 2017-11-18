@@ -10,15 +10,15 @@ parameters:
     humanReadable: true
 
   api:
-    address: https://recodex.projekty.ms.mff.cuni.cz:4000
+    address: https://recodex.mff.cuni.cz:4000
     name: "ReCodEx API"
     description: "ReCodEx Code Examiner - API Server"
     version: "1.1.1"
 
   accessManager:
     leeway: 60
-    issuer: https://recodex.projekty.ms.mff.cuni.cz
-    audience: https://recodex.projekty.ms.mff.cuni.cz
+    issuer: https://recodex.mff.cuni.cz
+    audience: https://recodex.mff.cuni.cz
     expiration: 86400
     usedAlgorithm: HS256
     allowedAlgorithms:
@@ -82,8 +82,8 @@ parameters:
     secret: SECRET_TOKEN
 
   emails:
-    apiUrl: https://recodex.projekty.ms.mff.cuni.cz:4000
-    footerUrl: https://recodex.projekty.ms.mff.cuni.cz
+    apiUrl: https://recodex.mff.cuni.cz:4000
+    footerUrl: https://recodex.mff.cuni.cz
     siteName: "ReCodEx"
     githubUrl: https://github.com/ReCodEx
     from: "ReCodEx <noreply@recodex.org>"
@@ -107,14 +107,14 @@ parameters:
       submissionEvaluatedPrefix: "ReCodEx Submission Evaluated Notification - "
 
   forgottenPassword:
-    redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/forgotten-password/change"
+    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"
     tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
       subjectPrefix: "ReCodEx Forgotten Password Request - "
 
   emailVerification:
-    redirectUrl: "https://recodex.projekty.ms.mff.cuni.cz/en/email-verification"
+    redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"
     tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
@@ -163,7 +163,7 @@ acl:
     hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
     runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
-    submission: App\Security\ACL\ISubmissionPermissions
+    assignmentSolution: App\Security\ACL\IAssignmentSolutionPermissions
     uploadedFile: App\Security\ACL\IUploadedFilePermissions
     pipeline: App\Security\ACL\IPipelinePermissions
     sis: App\Security\ACL\ISisPermissions
@@ -175,7 +175,7 @@ acl:
     comment: App\Security\Policies\CommentPermissionPolicy
     exercise: App\Security\Policies\ExercisePermissionPolicy
     referenceExerciseSolution: App\Security\Policies\ReferenceExerciseSolutionPermissionPolicy
-    submission: App\Security\Policies\SubmissionPermissionPolicy
+    assignmentSolution: App\Security\Policies\AssignmentSolutionPermissionPolicy
     uploadedFile: App\Security\Policies\UploadedFilePermissionPolicy
     pipeline: App\Security\Policies\PipelinePermissionPolicy
     sis: App\Security\Policies\SisPermissionPolicy
@@ -273,7 +273,7 @@ services:
     simple: @App\Helpers\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
-  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, %assignmentNotifications%)
+  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
@@ -306,8 +306,9 @@ services:
   - App\Model\Repository\Licences
   - App\Model\Repository\Logins
   - App\Model\Repository\ReferenceExerciseSolutions
-  - App\Model\Repository\ReferenceSolutionEvaluations
-  - App\Model\Repository\Submissions
+  - App\Model\Repository\ReferenceSolutionSubmissions
+  - App\Model\Repository\AssignmentSolutions
+  - App\Model\Repository\AssignmentSolutionSubmissions
   - App\Model\Repository\SubmissionFailures
   - App\Model\Repository\SolutionEvaluations
   - App\Model\Repository\UploadedFiles
@@ -321,6 +322,9 @@ services:
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
+
+  # views factories
+  - App\Model\View\GroupViewFactory
 
 doctrine:
   user: 'root'

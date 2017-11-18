@@ -5,8 +5,8 @@ namespace App\Helpers;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Storage;
-use App\Model\Entity\ReferenceSolutionEvaluation;
-use App\Model\Entity\Submission;
+use App\Model\Entity\ReferenceSolutionSubmission;
+use App\Model\Entity\AssignmentSolution;
 
 /**
  * Class which should create submission, generate job configuration,
@@ -69,7 +69,7 @@ class SubmissionHelper {
    */
   public function submit(string $jobId, string $environment, array $files,
       JobConfig $jobConfig): string {
-    return $this->internalSubmit($jobId, Submission::JOB_TYPE, $environment, $files, $jobConfig);
+    return $this->internalSubmit($jobId, AssignmentSolution::JOB_TYPE, $environment, $files, $jobConfig);
   }
 
   /**
@@ -83,7 +83,7 @@ class SubmissionHelper {
    */
   public function submitReference(string $jobId, string $environment,
       ?string $hwgroup, array $files, JobConfig $jobConfig): string {
-    return $this->internalSubmit($jobId, ReferenceSolutionEvaluation::JOB_TYPE, $environment, $files, $jobConfig, $hwgroup);
+    return $this->internalSubmit($jobId, ReferenceSolutionSubmission::JOB_TYPE, $environment, $files, $jobConfig, $hwgroup);
   }
 
 }

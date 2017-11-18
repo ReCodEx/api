@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IInstancePermissions;
@@ -87,12 +88,16 @@ class InstancesPresenter extends BasePresenter {
 
     $params = $this->parameters;
     $user = $this->getCurrentUser();
+
+    $localizedRootGroup = new LocalizedGroup($this->getCurrentUserLocale(), $params->name, $params->description);
     $instance = Instance::createInstance(
-      $params->name,
+      [$localizedRootGroup],
       $params->isOpen,
-      $user,
-      $params->description
+      $user
     );
+
+    $this->instances->persist($instance->getRootGroup(), false);
+    $this->instances->persist($localizedRootGroup, false);
     $this->instances->persist($instance);
     $this->sendSuccessResponse($instance->getData($this->getCurrentUser()), IResponse::S201_CREATED);
   }
@@ -100,8 +105,6 @@ class InstancesPresenter extends BasePresenter {
   /**
    * Update an instance
    * @POST
-   * @Param(type="post", name="name", validation="string:2..", required=FALSE, description="Name of the instance")
-   * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
    * @Param(type="post", name="isOpen", validation="bool", required=FALSE, description="Should the instance be open for registration?")
    * @param string $id An identifier of the updated instance
    * @throws ForbiddenRequestException
@@ -114,12 +117,6 @@ class InstancesPresenter extends BasePresenter {
     }
 
     $params = $this->parameters;
-    if (isset($params->name)) {
-      $instance->name = $params->name;
-    }
-    if (isset($params->description)) {
-      $instance->description = $params->description;
-    }
     if (isset($params->isOpen)) {
       $instance->isOpen = $params->isOpen;
     }

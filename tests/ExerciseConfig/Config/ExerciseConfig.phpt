@@ -18,36 +18,42 @@ class TestExerciseConfig extends Tester\TestCase
     "environments" => [ "envA", "envB" ],
     "tests" => [
       "testA" => [
-          "pipelines" => [ [
-              "name" => "hello",
-              "variables" => [
-                [ "name" => "world", "type" => "string", "value" => "hello" ]
-              ]
-            ]
-          ],
           "environments" => [
             "envA" => [
-              "pipelines" => []
+              "pipelines" => [ [
+                "name" => "hello",
+                "variables" => [
+                  [ "name" => "world", "type" => "string", "value" => "hello" ]
+                ]
+              ] ]
             ],
             "envB" => [
-              "pipelines" => []
+              "pipelines" => [ [
+                "name" => "hello",
+                "variables" => [
+                  [ "name" => "world", "type" => "string", "value" => "hello" ]
+                ]
+              ] ]
             ]
           ]
       ],
       "testB" => [
-        "pipelines" => [ [
-            "name" => "world",
-            "variables" => [
-              [ "name" => "hello", "type" => "string", "value" => "world" ]
-            ]
-          ]
-        ],
         "environments" => [
           "envA" => [
-            "pipelines" => []
-          ],
+            "pipelines" => [ [
+              "name" => "world",
+              "variables" => [
+                [ "name" => "hello", "type" => "string", "value" => "world" ]
+              ]
+            ] ]
+            ],
           "envB" => [
-            "pipelines" => []
+            "pipelines" => [ [
+              "name" => "world",
+              "variables" => [
+                [ "name" => "hello", "type" => "string", "value" => "world" ]
+              ]
+            ] ]
           ]
         ]
       ]
@@ -116,8 +122,10 @@ class TestExerciseConfig extends Tester\TestCase
     Assert::type(Test::class, $conf->getTest("testA"));
     Assert::type(Test::class, $conf->getTest("testB"));
 
-    Assert::type(PipelineVars::class, $conf->getTest("testA")->getPipeline("hello"));
-    Assert::type(PipelineVars::class, $conf->getTest("testB")->getPipeline("world"));
+    Assert::type(PipelineVars::class, $conf->getTest("testA")->getEnvironment("envA")->getPipeline("hello"));
+    Assert::type(PipelineVars::class, $conf->getTest("testA")->getEnvironment("envB")->getPipeline("hello"));
+    Assert::type(PipelineVars::class, $conf->getTest("testB")->getEnvironment("envA")->getPipeline("world"));
+    Assert::type(PipelineVars::class, $conf->getTest("testB")->getEnvironment("envB")->getPipeline("world"));
   }
 
 }

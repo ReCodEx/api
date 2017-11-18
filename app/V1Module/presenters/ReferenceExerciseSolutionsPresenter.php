@@ -15,11 +15,11 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\ReferenceSolutionEvaluation;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
-use App\Model\Repository\ReferenceSolutionEvaluations;
+use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
@@ -50,10 +50,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $referenceSolutions;
 
   /**
-   * @var ReferenceSolutionEvaluations
+   * @var ReferenceSolutionSubmissions
    * @inject
    */
-  public $referenceEvaluations;
+  public $referenceSubmissions;
 
   /**
    * @var SubmissionHelper
@@ -137,7 +137,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
     }
 
-    $this->sendSuccessResponse($solution->getEvaluations()->getValues());
+    $this->sendSuccessResponse($solution->getSubmissions()->getValues());
   }
 
   /**
@@ -147,7 +147,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionEvaluation(string $evaluationId) {
-    $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+    $evaluation = $this->referenceSubmissions->findOrThrow($evaluationId);
     $exercise = $evaluation->getReferenceSolution()->getExercise();
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
@@ -283,13 +283,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
     $compilationParams = CompilationParams::create($submittedFiles, $isDebug);
-    list($jobConfigPath, $jobConfig) = $this->jobConfigGenerator
+    $generatorResults = $this->jobConfigGenerator
       ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionEvaluation($referenceSolution, $hwGroup, $jobConfigPath);
-      $this->referenceEvaluations->persist($evaluation);
+      $evaluation = new ReferenceSolutionSubmission($referenceSolution, $hwGroup,
+        $generatorResults->getJobConfigPath(), $this->getCurrentUser());
+      $this->referenceSubmissions->persist($evaluation);
 
       try {
         $resultsUrl = $this->submissionHelper->submitReference(
@@ -297,11 +298,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
           $runtimeEnvironment->getId(),
           $hwGroup->getId(),
           $referenceSolution->getFiles()->getValues(),
-          $jobConfig
+          $generatorResults->getJobConfig()
         );
 
         $evaluation->setResultsUrl($resultsUrl);
-        $this->referenceEvaluations->flush();
+        $this->referenceSubmissions->flush();
         $evaluations[] = $evaluation;
       } catch (SubmissionFailedException $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
@@ -321,8 +322,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotReadyException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
-    /** @var ReferenceSolutionEvaluation $evaluation */
-    $evaluation = $this->referenceEvaluations->findOrThrow($evaluationId);
+    /** @var ReferenceSolutionSubmission $evaluation */
+    $evaluation = $this->referenceSubmissions->findOrThrow($evaluationId);
     $refSolution = $evaluation->getReferenceSolution();
 
     if (!$this->exerciseAcl->canEvaluateReferenceSolution($refSolution->getExercise(), $refSolution)) {

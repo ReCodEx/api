@@ -287,16 +287,7 @@ class UsersPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
-      "student" => $user->getGroupsAsStudent()->getValues(),
-      "stats" => $user->getGroupsAsStudent()->map(
-        function (Group $group) use ($user) {
-          $stats = $group->getStudentsStats($user);
-          return array_merge([
-            "id" => $group->getId(),
-            "name" => $group->getName()
-          ], $stats);
-        }
-      )->getValues()
+      "student" => $user->getGroupsAsStudent()->getValues()
     ]);
   }
 

@@ -1,12 +1,15 @@
 <?php
 namespace App\Model\Repository;
 
-use App\Model\Entity\ReferenceExerciseSolution;
-use App\Model\Entity\ReferenceSolutionEvaluation;
-use App\Model\Entity\Submission;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
 use Kdyby\Doctrine\EntityManager;
 
+
+/**
+ * @method SubmissionFailure findOrThrow($id)
+ */
 class SubmissionFailures extends BaseRepository {
   public function __construct(EntityManager $em) {
     parent::__construct($em, SubmissionFailure::class);
@@ -18,15 +21,15 @@ class SubmissionFailures extends BaseRepository {
     ]);
   }
 
-  public function findBySubmission(Submission $submission) {
+  public function findBySubmission(AssignmentSolutionSubmission $submission) {
     return $this->findBy([
-      "submission" => $submission
+      "assignmentSolutionSubmission" => $submission
     ]);
   }
 
-  public function findByReferenceSolutionEvaluation(ReferenceSolutionEvaluation $evaluation) {
+  public function findByReferenceSolutionEvaluation(ReferenceSolutionSubmission $evaluation) {
     return $this->findBy([
-      "referenceSolutionEvaluation" => $evaluation
+      "referenceSolutionSubmission" => $evaluation
     ]);
   }
 }

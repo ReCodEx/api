@@ -81,9 +81,6 @@ class ExerciseConfigValidator {
    */
   private function checkPipelines(ExerciseConfig $config, Exercise $exercise) {
     foreach ($config->getTests() as $test) {
-      // check default pipelines
-      $this->checkPipelinesSection($test->getPipelines(), new VariablesTable());
-
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {
         // check pipelines in environment

@@ -7,6 +7,9 @@ use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\UndefinedLimits;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @testCase
+ */
 class TestLimits extends Tester\TestCase
 {
   static $sample = [
@@ -48,7 +51,10 @@ class TestLimits extends Tester\TestCase
   public function testSerialization() {
     $cfg = [ "hw-group-id" => "A", "memory" => 123, "time" => 456, "somethingElse" => 124578 ];
     $deserialized = Yaml::parse((string) $this->builder->loadLimits($cfg));
-    Assert::isEqual($cfg, $deserialized);
+    Assert::equal($cfg["hw-group-id"], $deserialized["hw-group-id"]);
+    Assert::equal($cfg["memory"], $deserialized["memory"]);
+    Assert::equal($cfg["time"], intval($deserialized["time"]));
+    Assert::equal($cfg["somethingElse"], $deserialized["somethingElse"]);
   }
 
   public function testMissingHWGroupId() {

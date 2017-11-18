@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\Group;
@@ -300,20 +301,20 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testSubmissions()
+  public function testSolutions()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $submission = current($this->presenter->submissions->findAll());
-    $user = $submission->getUser();
+    $submission = current($this->presenter->assignmentSolutions->findAll());
+    $user = $submission->getSolution()->getAuthor();
     $assignment = $submission->getAssignment();
-    $submissions = $this->presenter->submissions->findSubmissions($assignment, $user->getId());
-    $submissions = array_map(function ($submission) {
-      return $submission->getData(true);
+    $submissions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
+    $submissions = array_map(function (AssignmentSolution $submission) {
+      return $submission->getData(true, true, true);
     }, $submissions);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'submissions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+      ['action' => 'solutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -324,16 +325,16 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::same($submissions, $result['payload']);
   }
 
-  public function testBestSubmission()
+  public function testBestSolution()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignment = current($this->presenter->assignments->findAll());
-    $user = $assignment->getSubmissions()->first()->getUser();
-    $submission = $assignment->getBestSolution($user);
+    $user = $assignment->getAssignmentSolutions()->first()->getSolution()->getAuthor();
+    $submission = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'bestSubmission', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+      ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -345,7 +346,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($submission->getId(), $payload['id']);
   }
 
-  public function testBestSubmissions()
+  public function testBestSolutions()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -353,7 +354,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $users = $assignment->getGroup()->getStudents();
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'bestSubmissions', 'id' => $assignment->getId()]
+      ['action' => 'bestSolutions', 'id' => $assignment->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

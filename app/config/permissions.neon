@@ -226,42 +226,41 @@ permissions:
       conditions:
           - student.isSameUser
 
-    ##########################
-    # Submission permissions #
-    ##########################
+    ###################################
+    # Assignment Solution permissions #
+    ###################################
 
     - allow: true
       role: student
-      resource: submission
+      resource: assignmentSolution
       actions:
           - viewDetail
           - viewEvaluation
       conditions:
-          - submission.isPublic
-          - submission.isAuthor
+          - assignmentSolution.isAuthor
 
     - allow: true
       role: student
-      resource: submission
+      resource: assignmentSolution
       actions:
           - viewEvaluationDetails
       conditions:
-          - submission.areEvaluationDetailsPublic
-          - submission.isAuthor
-          - submission.isPublic
+          - assignmentSolution.areEvaluationDetailsPublic
+          - assignmentSolution.isAuthor
 
     - allow: true
-      resource: submission
+      resource: assignmentSolution
       actions:
           - viewDetail
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
+          - viewResubmissions
           - setBonusPoints
           - setAccepted
           - downloadResultArchive
       conditions:
-          - submission.isSupervisor
+          - assignmentSolution.isSupervisor
 
     #######################
     # Comment permissions #
