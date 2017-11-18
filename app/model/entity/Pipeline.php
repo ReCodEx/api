@@ -26,6 +26,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
  * @method void setUpdatedAt(DateTime $date)
+ * @method setRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
  */
 class Pipeline implements JsonSerializable
 {
@@ -106,6 +107,11 @@ class Pipeline implements JsonSerializable
    */
   protected $parameters;
 
+  /**
+   * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
+   */
+  protected $runtimeEnvironment;
+
   public const DEFAULT_PARAMETERS = [
     "isCompilationPipeline" => false,
     "isExecutionPipeline" => false,
@@ -125,10 +131,11 @@ class Pipeline implements JsonSerializable
    * @param User $author
    * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise
+   * @param RuntimeEnvironment|null $environment
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, Pipeline $createdFrom = null, Exercise $exercise = null) {
+      User $author, Pipeline $createdFrom = null, Exercise $exercise = null, RuntimeEnvironment $environment = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -141,6 +148,7 @@ class Pipeline implements JsonSerializable
     $this->exercise = $exercise;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->parameters = new ArrayCollection();
+    $this->runtimeEnvironment = $environment;
   }
 
   /**
@@ -251,7 +259,8 @@ class Pipeline implements JsonSerializable
       "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline(),
-      "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray())
+      "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),
+      "runtimeEnvironmentId" => $this->runtimeEnvironment ? $this->runtimeEnvironment->getId() : null
     ];
   }
 }
