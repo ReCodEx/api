@@ -16,7 +16,8 @@ class SisGroupBindings extends BaseRepository {
    */
   public function findByCode($code) {
     return $this->findBy([
-      'code' => $code
+      'code' => $code,
+      'group.deletedAt' => null
     ]);
   }
 
