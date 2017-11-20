@@ -623,7 +623,9 @@ class GroupsPresenter extends BasePresenter {
           throw new InvalidArgumentException(sprintf("Duplicate entry for locale %s", $lang));
         }
 
-        $localizations[$lang] = new LocalizedGroup($lang, $item["name"], $item["description"]);
+        $name = $item["name"] ?: "";
+        $description = $item["description"] ?: "";
+        $localizations[$lang] = new LocalizedGroup($lang, $name, $description);
       }
 
       /** @var LocalizedGroup $text */

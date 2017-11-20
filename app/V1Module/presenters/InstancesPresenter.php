@@ -86,13 +86,15 @@ class InstancesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $params = $this->parameters;
+    $req = $this->getRequest();
     $user = $this->getCurrentUser();
+    $name = $req->getPost("name");
+    $description = $req->getPost("description") ?: "";
 
-    $localizedRootGroup = new LocalizedGroup($this->getCurrentUserLocale(), $params->name, $params->description);
+    $localizedRootGroup = new LocalizedGroup($this->getCurrentUserLocale(), $name, $description);
     $instance = Instance::createInstance(
       [$localizedRootGroup],
-      $params->isOpen,
+      $req->getPost("isOpen"),
       $user
     );
 
