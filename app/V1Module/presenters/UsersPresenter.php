@@ -11,6 +11,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Model\View\GroupViewFactory;
 use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
 
@@ -30,6 +31,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $emailVerificationHelper;
+
+  /**
+   * @var GroupViewFactory
+   * @inject
+   */
+  public $groupViewFactory;
 
   /**
    * @var IUserPermissions
@@ -287,7 +294,12 @@ class UsersPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
-      "student" => $user->getGroupsAsStudent()->getValues()
+      "student" => $user->getGroupsAsStudent()->getValues(),
+      "stats" => $user->getGroupsAsStudent()->map(
+        function (Group $group) use ($user) {
+          return $this->groupViewFactory->getStudentsStats($group, $user);
+        }
+      )->getValues()
     ]);
   }
 

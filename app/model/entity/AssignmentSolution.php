@@ -141,7 +141,7 @@ class AssignmentSolution implements JsonSerializable
    * @param bool $canViewResubmissions
    * @return array
    */
-  public function getData($canViewRatios = FALSE, bool $canViewValues = false, bool $canViewResubmissions = false) {
+  public function getData($canViewRatios = false, bool $canViewValues = false, bool $canViewResubmissions = false) {
     $lastSubmissionId = $this->getLastSubmission() ? $this->getLastSubmission()->getId() : null;
     $lastSubmissionIdArray = $lastSubmissionId ? [ $lastSubmissionId ] : [];
     $submissions = $canViewResubmissions ? $this->getSubmissionsIds() : $lastSubmissionIdArray;
