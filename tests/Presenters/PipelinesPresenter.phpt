@@ -205,6 +205,7 @@ class TestPipelinesPresenter extends Tester\TestCase
           'type' => 'judge',
           'portsIn' => [
             'judge-type' => ['type' => 'string', 'value' => ''],
+            "args" => ['type' => 'string[]', 'value' => ''],
             "custom-judge" => ['type' => 'file', 'value' => ""],
             'expected-output' => ['type' => 'file', 'value' => 'in_data_file'],
             'actual-output' => ['type' => 'file', 'value' => 'in_data_file']
