@@ -20,6 +20,7 @@ class Version20171118220217 extends AbstractMigration
   const STDIN_STDOUT_PIPE = "stdin-stdout";
   const FILES_FILE_PIPE = "files-file";
   const FILES_STDOUT_PIPE = "files-stdout";
+  const ACTUAL_INPUTS_VAR = "actual-inputs";
   const ACTUAL_INPUTS_REF = "\$actual-inputs";
 
   /**
@@ -121,6 +122,13 @@ class Version20171118220217 extends AbstractMigration
             $pipelineVars[] = [
               "name" => self::INPUT_FILES_VAR,
               "type" => "remote-file[]",
+              "value" => []
+            ];
+
+            // add actual-inputs variable
+            $pipelineVars[] = [
+              "name" => self::ACTUAL_INPUTS_VAR,
+              "type" => "file[]",
               "value" => []
             ];
           }
