@@ -1,7 +1,7 @@
 App\Model\Entity\PipelineConfig:
 	pipelineConfig1:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: source-file, type: file, value: main.py }\r\n    - { name: input-file, type: file, value: '' }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-file, type: file, value: main.py }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig2:
@@ -11,7 +11,7 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig3:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: assembly, type: file, value: program.exe }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig4:
@@ -26,85 +26,45 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig6:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: $actual-output }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: assembly, type: file, value: program.exe }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-file, type: file, value: main.py }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig7:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: source-file, type: file, value: main.py }\r\n    - { name: input-file, type: file, value: '' }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: binary-file, type: file, value: a.out }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig8:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: binary-file, type: file, value: a.out }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: binary-file, type: file, value: a.out }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig9:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: binary-file, type: file, value: a.out }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig10:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\r\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: runner-file, type: file, value: javarun.class }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: classes, type: 'file[]', value: '' }\r\n"
+			- "boxes:\r\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\r\n    - { name: compilation, type: gcc, portsIn: { args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\r\n    - { name: binary, type: file-out, portsIn: { output: { type: 'file', value: binary-file } }, portsOut: { } }\r\nvariables:\r\n    - { name: args, type: 'string[]', value: [\"-std=gnu11\", \"-O3\", \"-lm\"] }\r\n    - { name: source-files, type: 'file[]', value: [] }\r\n    - { name: binary-file, type: 'file', value: \"a.out\" }"
 			- @demoAdmin
 
 	pipelineConfig11:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: binary-file, type: file, value: a.out }\r\n"
+			- "boxes:\r\n    - { name: output, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: compile, type: fpc, portsIn: { args: { type: 'string[]', value: args }, source-file: { type: file, value: source-file } }, portsOut: { binary-file: { type: file, value: binary-file } } }\r\nvariables:\r\n    - { name: args, type: string[], value: [\"-O2\", \"-Sg\", \"-Ci\", \"-Cr\", \"-Ct\"] }\r\n    - { name: binary-file, type: file, value: a.out }\r\n    - { name: source-file, type: file, value: '' }\r\n"
 			- @demoAdmin
 
 	pipelineConfig12:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: binary-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: elf-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, binary-file: { type: file, value: binary-file } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: $actual-output }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: binary-file, type: file, value: a.out }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig13:
 		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: assembly, type: file, value: program.exe }\r\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n"
 			- @demoAdmin
 
 	pipelineConfig14:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: assembly, type: file, value: program.exe }\r\n"
-			- @demoAdmin
-
-	pipelineConfig15:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: source-file, type: file, value: main.py }\r\n"
-			- @demoAdmin
-
-	pipelineConfig16:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: python3, portsIn: { source-file: { type: file, value: source-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: $actual-output }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: source-file, type: file, value: main.py }\r\n"
-			- @demoAdmin
-
-	pipelineConfig17:
-		__construct:
-			- "boxes:\r\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\r\n    - { name: compilation, type: gcc, portsIn: { args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\r\n    - { name: binary, type: file-out, portsIn: { output: { type: 'file', value: binary-file } }, portsOut: { } }\r\nvariables:\r\n    - { name: args, type: 'string[]', value: [\"-std=gnu11\", \"-O3\", \"-lm\"] }\r\n    - { name: source-files, type: 'file[]', value: [] }\r\n    - { name: binary-file, type: 'file', value: \"a.out\" }"
-			- @demoAdmin
-
-	pipelineConfig18:
-		__construct:
-			- "boxes:\r\n    - { name: output, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\r\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\r\n    - { name: compile, type: fpc, portsIn: { args: { type: 'string[]', value: args }, source-file: { type: file, value: source-file } }, portsOut: { binary-file: { type: file, value: binary-file } } }\r\nvariables:\r\n    - { name: args, type: string[], value: [\"-O2\", \"-Sg\", \"-Ci\", \"-Cr\", \"-Ct\"] }\r\n    - { name: binary-file, type: file, value: a.out }\r\n    - { name: source-file, type: file, value: '' }\r\n"
-			- @demoAdmin
-
-	pipelineConfig19:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\r\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: runner-file, type: file, value: javarun.class }\r\n    - { name: run-args, type: 'string[]', value: $run-args }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: classes, type: 'file[]', value: '' }\r\n"
-			- @demoAdmin
-
-	pipelineConfig20:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\r\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\r\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: '' }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: run-args, type: string[], value: $run-args }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\r\n    - { name: actual-output, type: file, value: $actual-output }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: runner-file, type: file, value: javarun.class }\r\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\r\n    - { name: classes, type: 'file[]', value: '' }\r\n"
-			- @demoAdmin
-
-	pipelineConfig21:
-		__construct:
-			- "boxes:\r\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: input-file } } }\r\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\r\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\r\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\r\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output } }, portsOut: {  } }\r\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: input-file }, input-files: { type: 'file[]', value: '' }, class-files: { type: 'file[]', value: classes } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\r\n    - { name: debug-output, type: file-out, portsIn: { output: { type: file, value: actual-output } }, portsOut: {  } }\r\nvariables:\r\n    - { name: remote-runner, type: remote-file, value: 9f01ed9ff2f6e7a1e2d607e3e07b8d159be9b49b }\r\n    - { name: judge-type, type: string, value: $judge-type }\r\n    - { name: actual-output, type: file, value: '' }\r\n    - { name: expected-output, type: file, value: expected.out }\r\n    - { name: runner-file, type: file, value: javarun.class }\r\n    - { name: run-args, type: 'string[]', value: $run-args }\r\n    - { name: input-file, type: file, value: '' }\r\n    - { name: classes, type: 'file[]', value: '' }\r\n"
-			- @demoAdmin
-
-	pipelineConfig22:
 		__construct:
 			- "boxes:\r\n    - { name: source-in, type: file-in, portsIn: {  }, portsOut: { input: { type: 'file', value: source-file } } }\r\n    - { name: source-out, type: file-out, portsIn: { output: { type: 'file', value: source-file } }, portsOut: { } }\r\nvariables:\r\n    - { name: source-file, type: 'file', value: \"main.py\" }\r\n"
 			- @demoAdmin
@@ -115,7 +75,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Python stdin-stdout execution & evaluation
+		name: "Python execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig1
 
 	pipeline2:
@@ -131,7 +91,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Mono stdin-file execution & evaluation
+		name: "Mono execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig3
 
 	pipeline4:
@@ -155,7 +115,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Mono files-file execution & evaluation
+		name: "Python execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig6
 
 	pipeline7:
@@ -163,7 +123,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Python stdin-file execution & evaluation
+		name: "ELF execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig7
 
 	pipeline8:
@@ -171,7 +131,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: ELF files-stdout execution & evaluation
+		name: "ELF execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig8
 
 	pipeline9:
@@ -179,7 +139,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: ELF stdin-stdout execution & evaluation
+		name: "Mono execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig9
 
 	pipeline10:
@@ -187,7 +147,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Java files-stdout execution & evaluation
+		name: GCC Compilation
 		pipelineConfig: @pipelineConfig10
 
 	pipeline11:
@@ -195,7 +155,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: ELF stdin-file execution & evaluation
+		name: FreePascal Compilation
 		pipelineConfig: @pipelineConfig11
 
 	pipeline12:
@@ -203,7 +163,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: ELF files-file execution & evaluation
+		name: "Java execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig12
 
 	pipeline13:
@@ -211,7 +171,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Mono files-stdout execution & evaluation
+		name: "Java execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig13
 
 	pipeline14:
@@ -219,70 +179,6 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Mono stdin-stdout execution & evaluation
-		pipelineConfig: @pipelineConfig14
-
-	pipeline15:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: Python files-stdout execution & evaluation
-		pipelineConfig: @pipelineConfig15
-
-	pipeline16:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: Python files-file execution & evaluation
-		pipelineConfig: @pipelineConfig16
-
-	pipeline17:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: GCC Compilation
-		pipelineConfig: @pipelineConfig17
-
-	pipeline18:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: FreePascal Compilation
-		pipelineConfig: @pipelineConfig18
-
-	pipeline19:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: Java stdin-file execution & evaluation
-		pipelineConfig: @pipelineConfig19
-
-	pipeline20:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: Java files-file execution & evaluation
-		pipelineConfig: @pipelineConfig20
-
-	pipeline21:
-		__construct:
-			create:
-				- @demoAdmin
-
-		name: Java stdin-stdout execution & evaluation
-		pipelineConfig: @pipelineConfig21
-
-	pipeline22:
-		__construct:
-			create:
-				- @demoAdmin
-
 		name: Python pass-through compilation
-		pipelineConfig: @pipelineConfig22
+		pipelineConfig: @pipelineConfig14
 
