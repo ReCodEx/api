@@ -78,7 +78,7 @@ class BoxesCompiler {
       // construct dependencies
       $dependencies = array();
       foreach ($current->getDependencies() as $dependency) {
-        $dependencies = array_merge($dependencies, $dependency->getTaskIds());
+        $dependencies = array_unique(array_merge($dependencies, $dependency->getTaskIds()));
       }
 
       // set additional attributes to the tasks

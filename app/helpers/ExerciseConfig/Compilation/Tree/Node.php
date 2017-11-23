@@ -125,19 +125,18 @@ class Node {
 
   /**
    * Return task identifications associated with this node.
-   * If there is none, ask parents for their task identifications.
+   * If there is none, ask dependencies for their task identifications.
    * @return string[]
    */
   public function getTaskIds(): array {
-    if (empty($this->taskIds)) {
-      $taskIds = array();
-      foreach ($this->parents as $parent) {
-        $taskIds = array_merge($taskIds, $parent->getTaskIds());
+    $taskIds = $this->taskIds;
+    if (empty($taskIds)) {
+      foreach ($this->dependencies as $dependency) {
+        $taskIds = array_merge($taskIds, $dependency->getTaskIds());
       }
-      return $taskIds;
     }
 
-    return $this->taskIds;
+    return array_unique($taskIds);
   }
 
   /**
