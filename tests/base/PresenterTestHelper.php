@@ -6,6 +6,7 @@ use Nette\Utils\FileSystem;
 use Kdyby\Doctrine\EntityManager;
 use Kdyby\Doctrine\Configuration;
 use Doctrine\Common\EventManager;
+use Nette\Utils\Json;
 use Nette\Utils\Random;
 use Symfony\Component\Process\Process;
 
@@ -123,5 +124,9 @@ class PresenterTestHelper
   public static function getUser(Container $container, $login = NULL): User {
     $login = $login ?? self::ADMIN_LOGIN;
     return $container->getByType(\App\Model\Repository\Users::class)->getByEmail($login);
+  }
+
+  public static function jsonResponse($payload) {
+    return Json::decode(Json::encode($payload), Json::FORCE_ARRAY);
   }
 }

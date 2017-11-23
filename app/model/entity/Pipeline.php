@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Exceptions\InvalidArgumentException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -25,6 +26,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
  * @method void setUpdatedAt(DateTime $date)
+ * @method setRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
  */
 class Pipeline implements JsonSerializable
 {
@@ -100,6 +102,26 @@ class Pipeline implements JsonSerializable
   protected $supplementaryEvaluationFiles;
 
   /**
+   * @ORM\OneToMany(targetEntity="PipelineParameter", mappedBy="pipeline", indexBy="name", cascade={"persist"}, orphanRemoval=true)
+   * @var Collection
+   */
+  protected $parameters;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
+   */
+  protected $runtimeEnvironment;
+
+  public const DEFAULT_PARAMETERS = [
+    "isCompilationPipeline" => false,
+    "isExecutionPipeline" => false,
+    "acceptsStdin" => false,
+    "acceptsFile" => false,
+    "producesStdout" => false,
+    "producesFiles" => false,
+  ];
+
+  /**
    * Pipeline constructor.
    * @param string $name
    * @param int $version
@@ -109,10 +131,11 @@ class Pipeline implements JsonSerializable
    * @param User $author
    * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise
+   * @param RuntimeEnvironment|null $environment
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, Pipeline $createdFrom = null, Exercise $exercise = null) {
+      User $author, Pipeline $createdFrom = null, Exercise $exercise = null, RuntimeEnvironment $environment = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -124,6 +147,8 @@ class Pipeline implements JsonSerializable
     $this->createdFrom = $createdFrom;
     $this->exercise = $exercise;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
+    $this->parameters = new ArrayCollection();
+    $this->runtimeEnvironment = $environment;
   }
 
   /**
@@ -186,6 +211,42 @@ class Pipeline implements JsonSerializable
     );
   }
 
+  public function setParameters($parameters) {
+    foreach ($parameters as $name => $value) {
+      if (!array_key_exists($name, static::DEFAULT_PARAMETERS)) {
+        throw new InvalidArgumentException(sprintf("Unknown parameter %s", $name));
+      }
+
+      if ($this->parameters->containsKey($name)) {
+        $parameter = $this->parameters->get($name);
+      } else {
+        $default = static::DEFAULT_PARAMETERS[$name];
+
+        if (is_bool($default)) {
+          $parameter = new BooleanPipelineParameter($this, $name);
+        } else if (is_string($default)) {
+          $parameter = new StringPipelineParameter($this, $name);
+        } else {
+          throw new InvalidArgumentException(sprintf("Unsupported value type for parameter %s", $name));
+        }
+
+        $this->parameters[$name] = $parameter;
+      }
+
+      if ($value !== static::DEFAULT_PARAMETERS[$name]) {
+        $parameter->setValue($value);
+      } else {
+        $this->parameters->remove($name);
+      }
+    }
+
+    foreach ($this->parameters->getKeys() as $key) {
+      if (!array_key_exists($key, $parameters)) {
+        unset($this->parameters[$key]);
+      }
+    }
+  }
+
   public function jsonSerialize() {
     return [
       "id" => $this->id,
@@ -197,7 +258,9 @@ class Pipeline implements JsonSerializable
       "author" => $this->author->getId(),
       "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "pipeline" => $this->pipelineConfig->getParsedPipeline()
+      "pipeline" => $this->pipelineConfig->getParsedPipeline(),
+      "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),
+      "runtimeEnvironmentId" => $this->runtimeEnvironment ? $this->runtimeEnvironment->getId() : null
     ];
   }
 }
