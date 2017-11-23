@@ -10,6 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
+use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -17,12 +18,14 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 
 
@@ -70,6 +73,12 @@ class ExercisesConfigPresenter extends BasePresenter {
   public $exerciseConfigTransformer;
 
   /**
+   * @var Updater
+   * @inject
+   */
+  public $exerciseConfigUpdater;
+
+  /**
    * @var RuntimeEnvironments
    * @inject
    */
@@ -99,45 +108,6 @@ class ExercisesConfigPresenter extends BasePresenter {
    */
   public $calculators;
 
-
-  /**
-   * Needed change of ExerciseConfig after update of environment configurations.
-   * Flush of the database is not performed!
-   * @param Exercise $exercise
-   */
-  private function updateEnvironmentsInExerciseConfig(Exercise $exercise) {
-    $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
-    $exerciseConfig = $this->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-
-    // go through new environments config and add potentially new environment to ExerciseConfig
-    foreach ($exerciseEnvironments as $environmentId) {
-      if (in_array($environmentId, $exerciseConfig->getEnvironments())) {
-        continue;
-      }
-
-      // environment can be added only at the top level, in the tests there
-      // should be assigned default pipeline values during transformation
-      $exerciseConfig->addEnvironment($environmentId);
-    }
-
-    // delete unused environments from ExerciseConfig
-    foreach ($exerciseConfig->getEnvironments() as $environmentId) {
-      if (in_array($environmentId, $exerciseEnvironments)) {
-        continue;
-      }
-
-      // environment needs to be deleted from top level, but also all tests
-      // have to be run through and optionally environments should be deleted
-      $exerciseConfig->removeEnvironment($environmentId);
-      foreach ($exerciseConfig->getTests() as $test) {
-        $test->removeEnvironment($environmentId);
-      }
-    }
-
-    // finally write changes into exercise entity
-    $configEntity = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $exercise->getExerciseConfig());
-    $exercise->setExerciseConfig($configEntity);
-  }
 
   /**
    * Get runtime configurations for exercise.
@@ -223,7 +193,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // make changes and updates to database entity
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
     $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
-    $this->updateEnvironmentsInExerciseConfig($exercise);
+    $this->exerciseConfigUpdater->updateEnvironmentsInExerciseConfig($exercise, $this->getCurrentUser());
 
     // flush database changes and return successful response
     $this->exercises->flush();
@@ -575,6 +545,71 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setScoreConfig($config);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise->getScoreConfig());
+  }
+
+  /**
+   * Get tests for exercise based on given identification.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetTests(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to view tests for this exercise.");
+    }
+
+    // Get to da responsa!
+    $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
+  }
+
+  /**
+   * Set tests for exercise based on given identification.
+   * @POST
+   * @param string $id Identifier of the exercise
+   * @Param(type="post", name="tests", validation="array", description="An array of tests which will belong to exercise")
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException*
+   */
+  public function actionSetTests(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to set tests for this exercise.");
+    }
+
+    $req = $this->getRequest();
+    $tests = $req->getPost("tests");
+
+    $newTests = [];
+    foreach ($tests as $test) {
+      if (!array_key_exists("name", $test)) {
+        throw new InvalidArgumentException("tests");
+      }
+
+      $name = $test["name"];
+      $description = $test["description"] ?: "";
+
+      $testEntity = $exercise->getExerciseTestByName($name);
+      if ($testEntity === null) {
+        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser(), $exercise);
+      } else {
+        // update of existing exercise test with all appropriate fields
+        $testEntity->setDescription($description);
+        $testEntity->setUpdatedAt(new DateTime);
+      }
+
+      $newTests[$name] = $testEntity;
+    }
+
+    // clear old tests and set new ones
+    $exercise->getExerciseTests()->clear();
+    $exercise->setExerciseTests(new ArrayCollection($newTests));
+
+    // update exercise configuration and test in here
+    $this->exerciseConfigUpdater->updateTestsInExerciseConfig($exercise, $this->getCurrentUser());
+    $this->exercises->flush();
+
+    $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
   }
 
 }

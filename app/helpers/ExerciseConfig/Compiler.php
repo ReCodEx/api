@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\JobConfig\JobConfig;
@@ -41,13 +42,13 @@ class Compiler {
 
   /**
    * Generate job configuration from given exercise configuration.
-   * @param Exercise|Assignment $exerciseAssignment
+   * @param IExercise $exercise
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param CompilationParams $params
    * @return JobConfig
    * @throws ExerciseConfigException
    */
-  public function compile($exerciseAssignment,
+  public function compile(IExercise $exercise,
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
 
@@ -57,13 +58,13 @@ class Compiler {
       throw new ExerciseConfigException("Submitted files contains two or more files with the same name.");
     }
 
-    $exerciseConfig = $this->loader->loadExerciseConfig($exerciseAssignment->getExerciseConfig()->getParsedConfig());
-    $environmentConfig = $exerciseAssignment->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
+    $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
     $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
     $limits = array();
-    foreach ($exerciseAssignment->getHardwareGroups()->getValues() as $hwGroup) {
-      $limitsConfig = $exerciseAssignment->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
+    foreach ($exercise->getHardwareGroups()->getValues() as $hwGroup) {
+      $limitsConfig = $exercise->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
       if ($limitsConfig) {
         $parsedLimits = $limitsConfig->getParsedLimits();
       } else {

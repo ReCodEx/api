@@ -470,6 +470,14 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100", $payload);
   }
 
+  public function testGetTests() {
+    Assert::true(false);
+  }
+
+  public function testSetTests() {
+    Assert::true(false);
+  }
+
 }
 
 $testCase = new TestExercisesConfigPresenter();

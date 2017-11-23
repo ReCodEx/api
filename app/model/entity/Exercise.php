@@ -19,12 +19,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  * @method string getId()
  * @method Collection getRuntimeEnvironments()
- * @method Collection getHardwareGroups()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
  * @method Collection getSupplementaryEvaluationFiles()
  * @method \DateTime getDeletedAt()
- * @method ExerciseConfig getExerciseConfig()
  * @method User getAuthor()
  * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
  * @method int getVersion()
@@ -33,6 +31,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
+ * @method void setExerciseTests(Collection $exerciseTests)
  */
 class Exercise implements JsonSerializable, IExercise
 {
@@ -110,6 +109,10 @@ class Exercise implements JsonSerializable, IExercise
    * @ORM\ManyToMany(targetEntity="HardwareGroup")
    */
   protected $hardwareGroups;
+
+  public function getHardwareGroups(): Collection {
+    return $this->hardwareGroups;
+  }
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -202,6 +205,10 @@ class Exercise implements JsonSerializable, IExercise
    */
   protected $exerciseConfig;
 
+  public function getExerciseConfig(): ExerciseConfig {
+    return $this->exerciseConfig;
+  }
+
   /**
    * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
    */
@@ -211,6 +218,16 @@ class Exercise implements JsonSerializable, IExercise
     return $this->pipelines->filter(function (Pipeline $pipeline) {
       return $pipeline->getDeletedAt() === NULL;
     });
+  }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="ExerciseTest", inversedBy="exercises", cascade={"persist"})
+   * @var Collection|Selectable
+   */
+  protected $exerciseTests;
+
+  public function getExerciseTests(): Collection {
+    return $this->exerciseTests;
   }
 
   /**
@@ -225,6 +242,7 @@ class Exercise implements JsonSerializable, IExercise
    * @param Collection $exerciseLimits
    * @param Collection $exerciseEnvironmentConfigs
    * @param Collection $pipelines
+   * @param Collection $exerciseTests
    * @param Collection $groups
    * @param Exercise|null $exercise
    * @param ExerciseConfig|null $exerciseConfig
@@ -239,7 +257,7 @@ class Exercise implements JsonSerializable, IExercise
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $additionalFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
-      Collection $groups = null, ?Exercise $exercise,
+      Collection $exerciseTests, Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
       bool $isLocked = true, string $scoreCalculator = null,
       string $scoreConfig = "") {
@@ -260,6 +278,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
     $this->exerciseEnvironmentConfigs = $exerciseEnvironmentConfigs;
+    $this->exerciseTests = $exerciseTests;
     $this->pipelines = $pipelines;
     $this->referenceSolutions = new ArrayCollection();
     $this->scoreCalculator = $scoreCalculator;
@@ -275,6 +294,7 @@ class Exercise implements JsonSerializable, IExercise
     return new self(
       1,
       "",
+      new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
@@ -302,6 +322,7 @@ class Exercise implements JsonSerializable, IExercise
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
       $exercise->pipelines,
+      $exercise->exerciseTests,
       $group ? new ArrayCollection([$group]) : new ArrayCollection,
       $exercise,
       $exercise->exerciseConfig,
@@ -389,7 +410,7 @@ class Exercise implements JsonSerializable, IExercise
    * @param RuntimeEnvironment $environment
    * @return ExerciseEnvironmentConfig|NULL
    */
-  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
     $first = $this->exerciseEnvironmentConfigs->filter(
       function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
@@ -471,6 +492,17 @@ class Exercise implements JsonSerializable, IExercise
       function(AdditionalExerciseFile $file) {
         return $file->getId();
       })->getValues();
+  }
+
+  /**
+   * Get exercise tests based on given test name.
+   * @param string $name
+   * @return ExerciseTest|null
+   */
+  public function getExerciseTestByName(string $name): ?ExerciseTest {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("name", $name));
+    $first = $this->exerciseTests->matching($criteria)->first();
+    return $first === false ? null : $first;
   }
 
   public function jsonSerialize() {
