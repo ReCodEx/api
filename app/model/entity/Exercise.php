@@ -31,6 +31,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
+ * @method string getConfigurationType()
+ * @method setConfigurationType($type)
  */
 class Exercise implements JsonSerializable, IExercise
 {
@@ -118,6 +120,11 @@ class Exercise implements JsonSerializable, IExercise
    * @ORM\JoinColumn(name="exercise_id", referencedColumnName="id")
    */
   protected $exercise;
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $configurationType;
 
   public function getForkedFrom() {
       return $this->exercise;
@@ -250,6 +257,7 @@ class Exercise implements JsonSerializable, IExercise
    * @param bool $isLocked
    * @param string|null $scoreCalculator
    * @param string $scoreConfig
+   * @param string $configurationType
    */
   private function __construct($version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
@@ -259,7 +267,7 @@ class Exercise implements JsonSerializable, IExercise
       Collection $exerciseTests, Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
       bool $isLocked = true, string $scoreCalculator = null,
-      string $scoreConfig = "") {
+      string $scoreConfig = "", string $configurationType = "") {
     $this->version = $version;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
@@ -282,6 +290,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->referenceSolutions = new ArrayCollection();
     $this->scoreCalculator = $scoreCalculator;
     $this->scoreConfig = $scoreConfig;
+    $this->configurationType = $configurationType;
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
@@ -533,7 +542,8 @@ class Exercise implements JsonSerializable, IExercise
       "isLocked" => $this->isLocked,
       "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds()
+      "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds(),
+      "configurationType" => $this->configurationType
     ];
   }
 
