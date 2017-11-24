@@ -91,6 +91,10 @@ class Updater {
    */
   public function updateTestsInExerciseConfig(Exercise $exercise, User $user, bool $flush = false) {
     // TODO
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
   }
 
 }

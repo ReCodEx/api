@@ -591,7 +591,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
       $testEntity = $exercise->getExerciseTestByName($name);
       if ($testEntity === null) {
-        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser(), $exercise);
+        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
       } else {
         // update of existing exercise test with all appropriate fields
         $testEntity->setDescription($description);

@@ -80,6 +80,8 @@ class ExerciseConfigValidator {
    * @param Exercise $exercise
    */
   private function checkPipelines(ExerciseConfig $config, Exercise $exercise) {
+    // TODO: validate against ExerciseTest entities
+
     foreach ($config->getTests() as $test) {
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {

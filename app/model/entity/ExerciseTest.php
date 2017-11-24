@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
@@ -56,24 +57,23 @@ class ExerciseTest implements JsonSerializable
   /**
    * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseTests")
    */
-  protected $exercise;
+  protected $exercises;
 
   /**
    * ExerciseTest constructor.
    * @param string $name
    * @param string $description
    * @param User $author
-   * @param Exercise $exercise
+   * @param Exercise|null $exercise
    */
-  public function __construct(string $name, string $description, User $author,
-      Exercise $exercise) {
+  public function __construct(string $name, string $description, User $author) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
     $this->name = $name;
     $this->description = $description;
     $this->author = $author;
-    $this->exercise = $exercise;
+    $this->exercises = new ArrayCollection;
   }
 
   public function jsonSerialize() {

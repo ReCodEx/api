@@ -42,6 +42,9 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+        exerciseTests:
+            - @demoExerciseTest1
+            - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
@@ -68,6 +71,9 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+        exerciseTests:
+            - @demoExerciseTest1
+            - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
@@ -94,6 +100,9 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+        exerciseTests:
+            - @demoExerciseTest1
+            - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: false
@@ -116,6 +125,9 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+        exerciseTests:
+            - @demoExerciseTest1
+            - @demoExerciseTest2
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true

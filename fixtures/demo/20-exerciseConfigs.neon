@@ -18,6 +18,17 @@ App\Model\Entity\ExerciseEnvironmentConfig:
               '''
             - @demoAdmin
 
+App\Model\Entity\ExerciseTest:
+    demoExerciseTest1:
+        __construct:
+            - "Test 1"
+            - "Description of Test 1"
+            - @demoAdmin
+    demoExerciseTest2:
+        __construct:
+            - "Test 2"
+            - "Description of Test 2"
+            - @demoAdmin
 
 App\Model\Entity\ExerciseConfig:
     demoExerciseConfig:
