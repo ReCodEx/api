@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\User;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\ExerciseConfig as ExerciseConfigEntity;
@@ -90,7 +91,28 @@ class Updater {
    * @param bool $flush
    */
   public function updateTestsInExerciseConfig(Exercise $exercise, User $user, bool $flush = false) {
-    // TODO
+    $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    $testNames = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
+      return $test->getName();
+    })->getValues();
+
+    // if new tests were added, add them also to configuration
+    foreach ($testNames as $name) {
+      if ($exerciseConfig->getTest($name) === null) {
+        $exerciseConfig->addTest($name, new Test);
+      }
+    }
+
+    // go through current tests and find the ones which were deleted
+    foreach ($exerciseConfig->getTests() as $name => $test) {
+      if (array_search($name, $testNames) === false) {
+        $exerciseConfig->removeTest($name);
+      }
+    }
+
+    // finally write changes into exercise entity
+    $configEntity = new ExerciseConfigEntity((string) $exerciseConfig, $user, $exercise->getExerciseConfig());
+    $exercise->setExerciseConfig($configEntity);
 
     if ($flush) {
       $this->exercises->flush();
