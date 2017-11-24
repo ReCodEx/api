@@ -27,6 +27,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Nette\Utils\Arrays;
 
 
 /**
@@ -587,7 +588,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       }
 
       $name = $test["name"];
-      $description = $test["description"] ?: "";
+      $description = Arrays::get($test, "description", "");
 
       $testEntity = $exercise->getExerciseTestByName($name);
       if ($testEntity === null) {

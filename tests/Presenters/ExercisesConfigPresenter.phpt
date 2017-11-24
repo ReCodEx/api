@@ -471,11 +471,67 @@ class TestExercisesConfigPresenter extends Tester\TestCase
   }
 
   public function testGetTests() {
-    Assert::true(false);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'GET',
+      [
+        'action' => 'getTests',
+        'id' => $exercise->getId()
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count(2, $payload);
+    Assert::equal("Test 2", $payload[0]->getName());
+    Assert::equal("Test 1", $payload[1]->getName());
   }
 
   public function testSetTests() {
-    Assert::true(false);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->exercises->findAll());
+
+    // prepare tests
+    $tests = [
+      [
+        "name" => "Test 1",
+        "description" => "desc"
+      ],
+      [
+        "name" => "Test 2",
+        "description" => "second desc"
+      ],
+      [
+        "name" => "Test 3",
+      ]
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setTests',
+        'id' => $exercise->getId()
+      ],
+      ['tests' => $tests]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count(3, $payload);
+    Assert::equal("Test 1", $payload[0]->getName());
+    Assert::equal("desc", $payload[0]->getDescription());
+    Assert::equal("Test 2", $payload[1]->getName());
+    Assert::equal("second desc", $payload[1]->getDescription());
+    Assert::equal("Test 3", $payload[2]->getName());
+    Assert::equal("", $payload[2]->getDescription());
   }
 
 }

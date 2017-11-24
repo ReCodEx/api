@@ -31,7 +31,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
- * @method void setExerciseTests(Collection $exerciseTests)
  */
 class Exercise implements JsonSerializable, IExercise
 {
@@ -340,6 +339,14 @@ class Exercise implements JsonSerializable, IExercise
 
   public function addRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment) {
     $this->runtimeEnvironments->add($runtimeEnvironment);
+  }
+
+  public function setExerciseTests(Collection $exerciseTests) {
+    $this->exerciseTests = $exerciseTests;
+  }
+
+  public function addExerciseTest(ExerciseTest $test) {
+    $this->exerciseTests->add($test);
   }
 
   public function addHardwareGroup(HardwareGroup $hardwareGroup) {

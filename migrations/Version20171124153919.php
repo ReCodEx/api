@@ -28,8 +28,37 @@ class Version20171124153919 extends AbstractMigration
     $this->addSql('ALTER TABLE exercise_test ADD CONSTRAINT FK_815A1CBEF675F31B FOREIGN KEY (author_id) REFERENCES user (id)');
   }
 
+  /**
+   * Go through exercises and assignments and assign ExerciseTest entities to
+   * them based on exercise config data
+   * @param $exercise
+   * @param string $type
+   */
+  private function createTest($exercise, string $type) {
+    $exerciseConfig = $this->connection->executeQuery("SELECT * FROM exercise_config WHERE id = '{$exercise["exercise_config_id"]}'")->fetch();
+    $authorId = $exerciseConfig["author_id"];
+    $config = $exerciseConfig["config"];
+
+    foreach ($config["tests"] as $name => $test) {
+      $this->connection->executeQuery("INSERT INTO exercise_test (id, author_id, name, description, created_at, updated_at) " .
+        "VALUES (UUID(), :author, :name, :description, NOW(), NOW())",
+        ["author" => $authorId, "name" => $name, "description" => ""]);
+      $testId = $this->connection->lastInsertId();
+      $this->connection->executeQuery("INSERT INTO {$type}_exercise_test ({$type}_id, exercise_test_id) " .
+        "VALUES (:exercise, :testId)", ["exercise" => $exercise["id"], "testId" => $testId]);
+    }
+  }
+
   public function postUp(Schema $schema) {
-    // TODO: go through exercises and assignments and assign ExerciseTest entities to them based on exercise config data
+    $exercisesResult = $this->connection->executeQuery("SELECT * FROM exercise");
+    foreach ($exercisesResult as $exercise) {
+      $this->createTest($exercise, "exercise");
+    }
+
+    $assignmentsResult = $this->connection->executeQuery("SELECT * FROM assignment");
+    foreach ($assignmentsResult as $assignment) {
+      $this->createTest($assignment, "assignment");
+    }
   }
 
   /**
