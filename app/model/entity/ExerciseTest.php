@@ -10,7 +10,7 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method string getId()
+ * @method int getId()
  * @method string getName()
  * @method string getDescription()
  * @method User getAuthor()
@@ -24,8 +24,8 @@ class ExerciseTest implements JsonSerializable
 
   /**
    * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
+   * @ORM\Column(type="integer")
+   * @ORM\GeneratedValue(strategy="AUTO")
    */
   protected $id;
 
