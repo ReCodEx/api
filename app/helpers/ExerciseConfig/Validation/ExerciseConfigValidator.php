@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Repository\Pipelines;
 
 
@@ -78,9 +79,21 @@ class ExerciseConfigValidator {
   /**
    * @param ExerciseConfig $config
    * @param Exercise $exercise
+   * @throws ExerciseConfigException
    */
   private function checkPipelines(ExerciseConfig $config, Exercise $exercise) {
-    foreach ($config->getTests() as $test) {
+    $exerciseTests = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
+      return $test->getName();
+    })->getValues();
+    if (count($exerciseTests) !== count($config->getTests())) {
+      throw new ExerciseConfigException("Number of tests in configuration do not correspond to the ones in exercise");
+    }
+
+    foreach ($config->getTests() as $testName => $test) {
+      if (array_search($testName, $exerciseTests) === false) {
+        throw new ExerciseConfigException("Test '{$testName}' not found in exercise tests");
+      }
+
       // go through all environments in test
       foreach ($test->getEnvironments() as $envId => $environment) {
         // check pipelines in environment

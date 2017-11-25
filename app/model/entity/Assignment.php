@@ -23,7 +23,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method DateTime getDeletedAt()
  * @method Collection getRuntimeEnvironments()
- * @method Collection getHardwareGroups()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
@@ -31,7 +30,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Group getGroup()
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
- * @method ExerciseConfig getExerciseConfig()
  * @method DateTime getFirstDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
@@ -82,6 +80,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
     $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
+    $this->exerciseTests = new ArrayCollection($exercise->getExerciseTests()->toArray());
     $this->exerciseLimits = new ArrayCollection($exercise->getExerciseLimits()->toArray());
     $this->exerciseEnvironmentConfigs = new ArrayCollection($exercise->getExerciseEnvironmentConfigs()->toArray());
     $this->exerciseConfig = $exercise->getExerciseConfig();
@@ -191,6 +190,10 @@ class Assignment implements JsonSerializable, IExercise
    */
   protected $hardwareGroups;
 
+  public function getHardwareGroups(): Collection {
+    return $this->hardwareGroups;
+  }
+
   /**
    * Get IDs of all defined hardware groups.
    * @return string[]
@@ -230,7 +233,7 @@ class Assignment implements JsonSerializable, IExercise
    * @param RuntimeEnvironment $environment
    * @return ExerciseEnvironmentConfig|NULL
    */
-  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
     $first = $this->exerciseEnvironmentConfigs->filter(
       function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
@@ -242,6 +245,21 @@ class Assignment implements JsonSerializable, IExercise
    * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises")
    */
   protected $exerciseConfig;
+
+  public function getExerciseConfig(): ExerciseConfig {
+    return $this->exerciseConfig;
+  }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="ExerciseTest", inversedBy="exercises", cascade={"persist"})
+   * @ORM\OrderBy({"name" = "DESC"})
+   * @var Collection|Selectable
+   */
+  protected $exerciseTests;
+
+  public function getExerciseTests(): Collection {
+    return $this->exerciseTests;
+  }
 
   /**
    * @ORM\Column(type="string", nullable=true)
@@ -399,6 +417,11 @@ class Assignment implements JsonSerializable, IExercise
     foreach ($exercise->getExerciseLimits() as $limits) {
       $this->exerciseLimits->add($limits);
     }
+
+    $this->exerciseTests->clear();
+    foreach ($exercise->getExerciseTests() as $test) {
+      $this->exerciseTests->add($test);
+    }
   }
 
   public function jsonSerialize() {
@@ -469,6 +492,12 @@ class Assignment implements JsonSerializable, IExercise
               return $ours === $theirs;
             });
           })
+        ],
+        "exerciseTests" => [
+          "upToDate" => $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
+            && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
+              return $this->getExercise()->getExerciseTests()->contains($test);
+            })
         ]
       ]
     ];

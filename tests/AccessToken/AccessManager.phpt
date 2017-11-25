@@ -98,8 +98,8 @@ class TestAccessManager extends Tester\TestCase
     Assert::equal("X", $payload->iss);
     Assert::equal("Y", $payload->aud);
     Assert::true((time() + 123) >= $payload->exp);
-    Assert::equal(time(), $payload->nbf);
-    Assert::equal(time(), $payload->iat);
+    Assert::true(time() >= $payload->nbf);
+    Assert::true(time() >= $payload->iat);
     Assert::equal([], $payload->scopes);
   }
 

@@ -114,6 +114,8 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/additional-files", "ExerciseFiles:uploadAdditionalFiles");
     $router[] = new DeleteRoute("$prefix/<id>/additional-files/<fileId>", "ExerciseFiles:deleteAdditionalFile");
 
+    $router[] = new GetRoute("$prefix/<id>/tests", "ExercisesConfig:getTests");
+    $router[] = new PostRoute("$prefix/<id>/tests", "ExercisesConfig:setTests");
     $router[] = new GetRoute("$prefix/<id>/environment-configs", "ExercisesConfig:getEnvironmentConfigs");
     $router[] = new PostRoute("$prefix/<id>/environment-configs", "ExercisesConfig:updateEnvironmentConfigs");
     $router[] = new GetRoute("$prefix/<id>/config", "ExercisesConfig:getConfiguration");
