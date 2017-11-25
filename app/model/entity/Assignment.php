@@ -417,6 +417,11 @@ class Assignment implements JsonSerializable, IExercise
     foreach ($exercise->getExerciseLimits() as $limits) {
       $this->exerciseLimits->add($limits);
     }
+
+    $this->exerciseTests->clear();
+    foreach ($exercise->getExerciseTests() as $test) {
+      $this->exerciseTests->add($test);
+    }
   }
 
   public function jsonSerialize() {
@@ -487,6 +492,12 @@ class Assignment implements JsonSerializable, IExercise
               return $ours === $theirs;
             });
           })
+        ],
+        "exerciseTests" => [
+          "upToDate" => $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
+            && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
+              return $this->getExercise()->getExerciseTests()->contains($test);
+            })
         ]
       ]
     ];
