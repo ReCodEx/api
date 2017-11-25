@@ -90,20 +90,42 @@ class UploadedFiles extends BaseRepository {
    */
   public function findUnused(DateTime $now, $threshold)
   {
-    $query = $this->em->createQuery("
+    $thresholdDate = clone $now;
+    $thresholdDate->modify("-" . $threshold);
+
+    $plainFilesQuery = $this->em->createQuery("
       SELECT f
       FROM App\Model\Entity\UploadedFile f
       WHERE f INSTANCE OF App\Model\Entity\UploadedFile
       AND f.uploadedAt < :threshold
     ");
 
-    $thresholdDate = clone $now;
-    $thresholdDate->modify("-" . $threshold);
-
-    $query->setParameters([
+    $plainFilesQuery->setParameters([
       "threshold" => $thresholdDate
     ]);
 
-    return $query->getResult();
+    $supplementaryFilesQuery = $this->em->createQuery("
+      SELECT f
+      FROM App\Model\Entity\SupplementaryExerciseFile f
+      WHERE f.exercises IS EMPTY
+      AND f.uploadedAt < :threshold
+    ");
+
+    $supplementaryFilesQuery->setParameters([
+      "threshold" => $thresholdDate
+    ]);
+
+    $additionalFilesQuery = $this->em->createQuery("
+      SELECT f
+      FROM App\Model\Entity\AdditionalExerciseFile f
+      WHERE f.exercises IS EMPTY
+      AND f.uploadedAt < :threshold
+    ");
+
+    $additionalFilesQuery->setParameters([
+      "threshold" => $thresholdDate
+    ]);
+
+    return $plainFilesQuery->getResult() + $supplementaryFilesQuery->getResult() + $additionalFilesQuery->getResult();
   }
 }

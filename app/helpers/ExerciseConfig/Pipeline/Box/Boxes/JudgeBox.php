@@ -22,7 +22,9 @@ class JudgeBox extends Box
 {
   /** Type key */
   public static $JUDGE_TYPE = "judge";
+  public static $ARGS_PORT_KEY = "args";
   public static $JUDGE_TYPE_PORT_KEY = "judge-type";
+  public static $CUSTOM_JUDGE_PORT_KEY = "custom-judge";
   public static $ACTUAL_OUTPUT_PORT_KEY = "actual-output";
   public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
   public static $DEFAULT_NAME = "ReCodEx Judge";
@@ -46,7 +48,9 @@ class JudgeBox extends Box
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$JUDGE_TYPE_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
         new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$CUSTOM_JUDGE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array();
     }
@@ -101,6 +105,12 @@ class JudgeBox extends Box
    * @throws ExerciseConfigException
    */
   private function getJudgeBinaryAndArgs(): array {
+    if ($this->hasInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY) &&
+        !$this->getInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY)->isEmpty()) {
+      // custom judge was provided
+      return [$this->getInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY)->getValue(), []];
+    }
+
     $judgeType = null;
     if ($this->hasInputPortValue(self::$JUDGE_TYPE_PORT_KEY)) {
       $judgeType = $this->getInputPortValue(self::$JUDGE_TYPE_PORT_KEY)->getValue();
@@ -130,6 +140,12 @@ class JudgeBox extends Box
 
     list($binary, $args) = $this->getJudgeBinaryAndArgs();
     $task->setCommandBinary($binary);
+
+    // custom args
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
+    }
+    // classical args: expected actual
     $task->setCommandArguments(
       array_merge(
         $args,
