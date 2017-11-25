@@ -55,11 +55,6 @@ class ExerciseTest implements JsonSerializable
   protected $updatedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseTests")
-   */
-  protected $exercises;
-
-  /**
    * ExerciseTest constructor.
    * @param string $name
    * @param string $description
@@ -73,7 +68,6 @@ class ExerciseTest implements JsonSerializable
     $this->name = $name;
     $this->description = $description;
     $this->author = $author;
-    $this->exercises = new ArrayCollection;
   }
 
   public function jsonSerialize() {

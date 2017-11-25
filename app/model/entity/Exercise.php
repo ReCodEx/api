@@ -37,6 +37,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Exercise implements JsonSerializable, IExercise
 {
   use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use ExerciseData;
 
   /**
    * @ORM\Id
@@ -73,12 +74,6 @@ class Exercise implements JsonSerializable, IExercise
   protected $deletedAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
-   * @var Collection|Selectable
-   */
-  protected $localizedTexts;
-
-  /**
    * @ORM\Column(type="string")
    */
   protected $difficulty;
@@ -105,15 +100,6 @@ class Exercise implements JsonSerializable, IExercise
    * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    */
   protected $runtimeEnvironments;
-
-  /**
-   * @ORM\ManyToMany(targetEntity="HardwareGroup")
-   */
-  protected $hardwareGroups;
-
-  public function getHardwareGroups(): Collection {
-    return $this->hardwareGroups;
-  }
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise")
@@ -196,26 +182,6 @@ class Exercise implements JsonSerializable, IExercise
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
-   */
-  protected $exerciseLimits;
-
-  /**
-   * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", inversedBy="exercises", cascade={"persist"})
-   * @var Collection|Selectable
-   */
-  protected $exerciseEnvironmentConfigs;
-
-  /**
-   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises", cascade={"persist"})
-   */
-  protected $exerciseConfig;
-
-  public function getExerciseConfig(): ExerciseConfig {
-    return $this->exerciseConfig;
-  }
-
-  /**
    * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
    */
   protected $pipelines;
@@ -224,16 +190,6 @@ class Exercise implements JsonSerializable, IExercise
     return $this->pipelines->filter(function (Pipeline $pipeline) {
       return $pipeline->getDeletedAt() === NULL;
     });
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="ExerciseTest", inversedBy="exercises", cascade={"persist"})
-   * @var Collection|Selectable
-   */
-  protected $exerciseTests;
-
-  public function getExerciseTests(): Collection {
-    return $this->exerciseTests;
   }
 
   /**
@@ -366,10 +322,6 @@ class Exercise implements JsonSerializable, IExercise
     $this->hardwareGroups->removeElement($hardwareGroup);
   }
 
-  public function addLocalizedText(LocalizedExercise $localizedText) {
-    $this->localizedTexts->add($localizedText);
-  }
-
   public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
     $this->supplementaryEvaluationFiles->add($exerciseFile);
   }
@@ -411,74 +363,6 @@ class Exercise implements JsonSerializable, IExercise
   }
 
   /**
-   * Get localized text based on given locale.
-   * @param string $locale
-   * @return LocalizedExercise|NULL
-   */
-  public function getLocalizedTextByLocale(string $locale) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === false ? null : $first;
-  }
-
-  /**
-   * Get runtime configuration based on environment identification.
-   * @param RuntimeEnvironment $environment
-   * @return ExerciseEnvironmentConfig|NULL
-   */
-  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
-    $first = $this->exerciseEnvironmentConfigs->filter(
-      function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
-        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
-      })->first();
-    return $first === false ? null : $first;
-  }
-
-  /**
-   * Get exercise limits based on environment.
-   * @param RuntimeEnvironment $environment
-   * @return ExerciseLimits[]
-   */
-  public function getLimitsByEnvironment(RuntimeEnvironment $environment): array {
-    $result = $this->exerciseLimits->filter(
-      function (ExerciseLimits $exerciseLimits) use ($environment) {
-        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId();
-      });
-    return $result->getValues();
-  }
-
-  /**
-   * Get exercise limits based on environment and hardware group.
-   * @param RuntimeEnvironment $environment
-   * @param HardwareGroup $hwGroup
-   * @return ExerciseLimits|NULL
-   */
-  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
-    $first = $this->exerciseLimits->filter(
-      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
-        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
-          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
-      })->first();
-    return $first === FALSE ? NULL : $first;
-  }
-
-  /**
-   * Get IDs of all available runtime environments
-   * @return array
-   */
-  public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
-  }
-
-  /**
-   * Get IDs of all defined hardware groups.
-   * @return string[]
-   */
-  public function getHardwareGroupsIds() {
-    return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
-  }
-
-  /**
    * Get IDs of all assigned groups.
    * @return string[]
    */
@@ -508,17 +392,6 @@ class Exercise implements JsonSerializable, IExercise
       function(AdditionalExerciseFile $file) {
         return $file->getId();
       })->getValues();
-  }
-
-  /**
-   * Get exercise tests based on given test name.
-   * @param string $name
-   * @return ExerciseTest|null
-   */
-  public function getExerciseTestByName(string $name): ?ExerciseTest {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("name", $name));
-    $first = $this->exerciseTests->matching($criteria)->first();
-    return $first === false ? null : $first;
   }
 
   public function jsonSerialize() {
@@ -553,9 +426,5 @@ class Exercise implements JsonSerializable, IExercise
 
   public function clearExerciseLimits() {
     $this->exerciseLimits->clear();
-  }
-
-  public function getLocalizedTexts(): Collection {
-    return $this->localizedTexts;
   }
 }

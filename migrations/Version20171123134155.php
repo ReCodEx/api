@@ -19,6 +19,7 @@ class Version20171123134155 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE exercise ADD configuration_type VARCHAR(255) NOT NULL');
+        $this->addSql('ALTER TABLE assignment ADD configuration_type VARCHAR(255) NOT NULL');
     }
 
     /**
@@ -29,6 +30,7 @@ class Version20171123134155 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
+        $this->addSql('ALTER TABLE assignment DROP configuration_type');
         $this->addSql('ALTER TABLE exercise DROP configuration_type');
     }
 }

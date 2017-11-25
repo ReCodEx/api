@@ -50,11 +50,6 @@ class ExerciseLimits implements JsonSerializable
   protected $author;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exerciseLimits")
-   */
-  protected $exercises;
-
-  /**
    * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
    */
   protected $runtimeEnvironment;
@@ -75,7 +70,6 @@ class ExerciseLimits implements JsonSerializable
   public function __construct(RuntimeEnvironment $runtimeEnvironment,
       HardwareGroup $hardwareGroup, string $limits, User $author,
       ExerciseLimits $createdFrom = NULL) {
-    $this->exercises = new ArrayCollection();
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->hardwareGroup = $hardwareGroup;
     $this->limits = $limits;

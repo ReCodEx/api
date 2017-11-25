@@ -37,11 +37,6 @@ class ExerciseEnvironmentConfig
   protected $variablesTable;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="exercisesEnvironmentConfigs")
-   */
-  protected $exercises;
-
-  /**
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
@@ -75,7 +70,6 @@ class ExerciseEnvironmentConfig
     $this->variablesTable = $variablesTable;
     $this->createdFrom = $createdFrom;
     $this->createdAt = new \DateTime;
-    $this->exercises = new ArrayCollection;
     $this->author = $author;
   }
 
