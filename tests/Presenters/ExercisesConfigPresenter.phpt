@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
@@ -187,9 +188,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "c-gcc-linux",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
+          ["name" => "Test 1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
-          ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
+          ["name" => "Test 2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
             ["name" => "input-file", "type" => "file", "value" => "defValB"],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValB"]
@@ -199,9 +200,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "java",
         "tests" => [
-          ["name" => "testA", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
+          ["name" => "Test 1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
-          ["name" => "testB", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
+          ["name" => "Test 2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
             ["name" => "input-file", "type" => "file", "value" => "defValB"],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValC"]
@@ -225,15 +226,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     Assert::count(2, $exerciseConfig->getTests());
-    Assert::type(Test::class, $exerciseConfig->getTest('testA'));
-    Assert::type(Test::class, $exerciseConfig->getTest('testB'));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testA')
+    Assert::type(Test::class, $exerciseConfig->getTest('Test 1'));
+    Assert::type(Test::class, $exerciseConfig->getTest('Test 2'));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('Test 1')
       ->getEnvironment("c-gcc-linux")->getPipeline($compilationPipeline->getId()));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('testB')
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('Test 2')
       ->getEnvironment("c-gcc-linux")->getPipeline($testPipeline->getId()));
-    Assert::equal([], $exerciseConfig->getTest('testA')->getEnvironment("c-gcc-linux")
+    Assert::equal([], $exerciseConfig->getTest('Test 1')->getEnvironment("c-gcc-linux")
       ->getPipeline($compilationPipeline->getId())->getVariablesTable()->toArray());
-    Assert::equal("defValB", $exerciseConfig->getTest('testB')->getEnvironment("c-gcc-linux")
+    Assert::equal("defValB", $exerciseConfig->getTest('Test 2')->getEnvironment("c-gcc-linux")
       ->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary-file')->getValue());
   }
 
@@ -488,8 +489,12 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $payload = $result['payload'];
     Assert::count(2, $payload);
-    Assert::equal("Test 2", $payload[0]->getName());
-    Assert::equal("Test 1", $payload[1]->getName());
+
+    $tests = array_map(function (ExerciseTest $test) {
+      return $test->getName();
+    }, $payload);
+    Assert::true(array_search("Test 1", $tests) !== false);
+    Assert::true(array_search("Test 2", $tests) !== false);
   }
 
   public function testSetTests() {

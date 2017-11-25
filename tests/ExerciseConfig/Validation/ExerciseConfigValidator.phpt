@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\Instance;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
@@ -66,7 +67,9 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testMissingEnvironment() {
     $exerciseConfig = new ExerciseConfig();
-    $exercise = $this->createExerciseWithTwoEnvironments();
+    $exercise = $this->createExercise();
+    $this->addTwoEnvironmentsToExercise($exercise);
+    $this->addTwoTestsToExercise($exercise);
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
@@ -75,11 +78,13 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testDifferentEnvironments() {
     $exerciseConfig = new ExerciseConfig();
-    $user = $this->getDummyUser();
     $exerciseConfig->addEnvironment("envA");
     $exerciseConfig->addEnvironment("envB");
 
-    $exercise = Exercise::create($user);
+    $exercise = $this->createExercise();
+    $user = $exercise->getAuthor();
+    $this->addTwoTestsToExercise($exercise);
+
     $envC = new RuntimeEnvironment("envC", "Env C", "C", ".c", "", "");
     $envD = new RuntimeEnvironment("envD", "Env D", "D", ".d", "", "");
     $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envC, "",  $user, NULL));
@@ -92,7 +97,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testDifferentNumberOfEnvironments() {
     $exerciseConfig = new ExerciseConfig();
-    $exercise = $this->createExerciseWithTwoEnvironments();
+    $exercise = $this->createExercise();
+    $this->addTwoEnvironmentsToExercise($exercise);
     $exerciseConfig->addEnvironment("envA");
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
@@ -112,8 +118,12 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("testA", $test);
-    $exercise = $this->createExerciseWithSingleEnvironment();
+    $exerciseConfig->addTest("Test A", $test);
+    $exerciseConfig->addTest("Test B", $test);
+
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+    $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
     $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(NULL);
@@ -123,6 +133,59 @@ class TestExerciseConfigValidator extends Tester\TestCase
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
     }, ExerciseConfigException::class);
+  }
+
+  public function testDifferentNumberOfTests() {
+    $existing = new PipelineVars();
+    $existing->setName("existing pipeline");
+
+    $environment = new Environment();
+    $environment->addPipeline($existing);
+
+    $test = new Test();
+    $test->addEnvironment("envA", $environment);
+
+    $exerciseConfig = new ExerciseConfig();
+    $exerciseConfig->addEnvironment("envA");
+    $exerciseConfig->addTest("Test A", $test);
+
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+    $this->addSingleEnvironmentToExercise($exercise);
+
+    // setup mock pipelines
+    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
+    }, ExerciseConfigException::class, "Exercise configuration error - Number of tests in configuration do not correspond to the ones in exercise");
+  }
+
+  public function testDifferentTestNames() {
+    $existing = new PipelineVars();
+    $existing->setName("existing pipeline");
+
+    $environment = new Environment();
+    $environment->addPipeline($existing);
+
+    $test = new Test();
+    $test->addEnvironment("envA", $environment);
+
+    $exerciseConfig = new ExerciseConfig();
+    $exerciseConfig->addEnvironment("envA");
+    $exerciseConfig->addTest("Test 1", $test);
+    $exerciseConfig->addTest("Test 2", $test);
+
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+    $this->addSingleEnvironmentToExercise($exercise);
+
+    // setup mock pipelines
+    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+
+    Assert::exception(function () use ($exerciseConfig, $exercise) {
+      $this->validator->validate($exerciseConfig, $exercise);
+    }, ExerciseConfigException::class, "Exercise configuration error - Test 'Test 1' not found in exercise tests");
   }
 
   public function testEmpty() {
@@ -149,9 +212,12 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("testA", $test);
+    $exerciseConfig->addTest("Test A", $test);
+    $exerciseConfig->addTest("Test B", $test);
 
-    $exercise = $this->createExerciseWithSingleEnvironment();
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+    $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
     $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
@@ -166,10 +232,19 @@ class TestExerciseConfigValidator extends Tester\TestCase
   /**
    * @return Exercise
    */
-  private function createExerciseWithTwoEnvironments(): Exercise
-  {
+  private function createExercise(): Exercise {
     $user = $this->getDummyUser();
     $exercise = Exercise::create($user);
+    return $exercise;
+  }
+
+  /**
+   * @param Exercise $exercise
+   * @return Exercise
+   */
+  private function addTwoEnvironmentsToExercise(Exercise $exercise): Exercise
+  {
+    $user = $exercise->getAuthor();
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
     $envB = new RuntimeEnvironment("envB", "Env B", "B", ".b", "", "");
     $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
@@ -178,12 +253,25 @@ class TestExerciseConfigValidator extends Tester\TestCase
   }
 
   /**
+   * @param Exercise $exercise
    * @return Exercise
    */
-  private function createExerciseWithSingleEnvironment(): Exercise
+  private function addTwoTestsToExercise(Exercise $exercise): Exercise {
+    $user = $exercise->getAuthor();
+    $testA = new ExerciseTest("Test A", "descA", $user);
+    $testB = new ExerciseTest("Test B", "descB", $user);
+    $exercise->addExerciseTest($testA);
+    $exercise->addExerciseTest($testB);
+    return $exercise;
+  }
+
+  /**
+   * @param Exercise $exercise
+   * @return Exercise
+   */
+  private function addSingleEnvironmentToExercise(Exercise $exercise): Exercise
   {
-    $user = $this->getDummyUser();
-    $exercise = Exercise::create($user);
+    $user = $exercise->getAuthor();
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
     $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
     return $exercise;
