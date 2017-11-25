@@ -62,4 +62,9 @@ interface IExercise {
    */
   function getScoreConfig(): string;
 
+  /**
+   * Get an identifier of the configuration type (used by the compiler)
+   * @return string
+   */
+  function getConfigurationType(): string;
 }

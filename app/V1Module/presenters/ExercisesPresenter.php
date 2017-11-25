@@ -148,7 +148,7 @@ class ExercisesPresenter extends BasePresenter {
 
     $configurationType = $req->getPost("configurationType");
     if ($configurationType) {
-      if (!in_array($configurationType, Compiler::EXERCISE_CONFIG_TYPES)) {
+      if (!Compiler::checkConfigurationType($configurationType)) {
         throw new InvalidArgumentException("Invalid configuration type '{$configurationType}'");
       }
       $exercise->setConfigurationType($configurationType);
