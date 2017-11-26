@@ -31,7 +31,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
- * @method string getConfigurationType()
  * @method setConfigurationType($type)
  */
 class Exercise implements JsonSerializable, IExercise

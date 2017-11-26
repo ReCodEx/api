@@ -11,6 +11,10 @@ trait ExerciseData {
    */
   protected $configurationType;
 
+  public function getConfigurationType(): string {
+    return $this->configurationType;
+  }
+
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
    * @var Collection|Selectable
@@ -112,7 +116,7 @@ trait ExerciseData {
    * @param RuntimeEnvironment $environment
    * @return ExerciseEnvironmentConfig|NULL
    */
-  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment) {
+  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
     $first = $this->exerciseEnvironmentConfigs->filter(
       function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
         return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
@@ -121,11 +125,11 @@ trait ExerciseData {
   }
 
   /**
-   * @ORM\ManyToOne(targetEntity="ExerciseConfig")
+   * @ORM\ManyToOne(targetEntity="ExerciseConfig", cascade={"persist"})
    */
   protected $exerciseConfig;
 
-  public function getExerciseConfig() {
+  public function getExerciseConfig(): ExerciseConfig {
     return $this->exerciseConfig;
   }
 

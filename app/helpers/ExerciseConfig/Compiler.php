@@ -54,7 +54,7 @@ class Compiler {
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
 
-    if (!$this->checkConfigurationType($exercise->getConfigurationType())) {
+    if (static::checkConfigurationType($exercise->getConfigurationType())) {
       throw new ExerciseConfigException("Unsupported configuration type");
     }
 
@@ -69,6 +69,8 @@ class Compiler {
     $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
     $limits = array();
+
+    /** @var HardwareGroup $hwGroup */
     foreach ($exercise->getHardwareGroups()->getValues() as $hwGroup) {
       $limitsConfig = $exercise->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
       if ($limitsConfig) {

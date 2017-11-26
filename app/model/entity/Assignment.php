@@ -95,6 +95,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
     $this->createdAt = new \DateTime;
     $this->updatedAt = new \DateTime;
+    $this->configurationType = $exercise->getConfigurationType();
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
