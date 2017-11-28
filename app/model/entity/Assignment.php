@@ -285,6 +285,7 @@ class Assignment implements JsonSerializable, IExercise
     }
 
     $this->exerciseConfig = $exercise->getExerciseConfig();
+    $this->configurationType = $exercise->getConfigurationType();
     $this->scoreConfig = $exercise->getScoreConfig();
     $this->scoreCalculator = $exercise->getScoreCalculator();
 
