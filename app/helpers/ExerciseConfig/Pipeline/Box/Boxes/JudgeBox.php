@@ -143,8 +143,9 @@ class JudgeBox extends Box
 
     // custom args
     if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
-      array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
+      $args = array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
+
     // classical args: expected actual
     $task->setCommandArguments(
       array_merge(
