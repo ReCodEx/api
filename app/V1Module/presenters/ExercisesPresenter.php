@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\Localizations;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\ExerciseConfig;
@@ -115,6 +116,7 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
    * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
    * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=FALSE)
+   * @Param(type="post", name="configurationType", description="Identifies the way the evaluation of the exercise is configured", validation="string", required=FALSE)
    * @throws BadRequestException
    * @throws InvalidArgumentException
    */
@@ -143,6 +145,14 @@ class ExercisesPresenter extends BasePresenter {
     $exercise->setUpdatedAt(new \DateTime);
     $exercise->incrementVersion();
     $exercise->setLocked($isLocked);
+
+    $configurationType = $req->getPost("configurationType");
+    if ($configurationType) {
+      if (!Compiler::checkConfigurationType($configurationType)) {
+        throw new InvalidArgumentException("Invalid configuration type '{$configurationType}'");
+      }
+      $exercise->setConfigurationType($configurationType);
+    }
 
     // retrieve localizations and prepare some temp variables
     $localizedTexts = $req->getPost("localizedTexts");

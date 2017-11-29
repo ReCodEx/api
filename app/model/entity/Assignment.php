@@ -50,6 +50,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Assignment implements JsonSerializable, IExercise
 {
   use MagicAccessors;
+  use ExerciseData;
 
   private function __construct(
     DateTime $firstDeadline,
@@ -94,6 +95,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
     $this->createdAt = new \DateTime;
     $this->updatedAt = new \DateTime;
+    $this->configurationType = $exercise->getConfigurationType();
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
@@ -179,107 +181,6 @@ class Assignment implements JsonSerializable, IExercise
   protected $submissionsCountLimit;
 
   /**
-   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
-   * @var Collection
-   */
-  protected $runtimeEnvironments;
-
-  /**
-   * @ORM\ManyToMany(targetEntity="HardwareGroup")
-   * @var Collection
-   */
-  protected $hardwareGroups;
-
-  public function getHardwareGroups(): Collection {
-    return $this->hardwareGroups;
-  }
-
-  /**
-   * Get IDs of all defined hardware groups.
-   * @return string[]
-   */
-  public function getHardwareGroupsIds() {
-    return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="ExerciseLimits", inversedBy="exercises", cascade={"persist"})
-   */
-  protected $exerciseLimits;
-
-  /**
-   * Get exercise limits based on environment and hardware group.
-   * @param RuntimeEnvironment $environment
-   * @param HardwareGroup $hwGroup
-   * @return ExerciseLimits|NULL
-   */
-  public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
-    $first = $this->exerciseLimits->filter(
-      function (ExerciseLimits $exerciseLimits) use ($environment, $hwGroup) {
-        return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
-          && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
-      })->first();
-    return $first === FALSE ? NULL : $first;
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="ExerciseEnvironmentConfig", inversedBy="exercises", cascade={"persist"})
-   * @var Collection|Selectable
-   */
-  protected $exerciseEnvironmentConfigs;
-
-  /**
-   * Get runtime configuration based on environment identification.
-   * @param RuntimeEnvironment $environment
-   * @return ExerciseEnvironmentConfig|NULL
-   */
-  public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
-    $first = $this->exerciseEnvironmentConfigs->filter(
-      function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
-        return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
-      })->first();
-    return $first === false ? null : $first;
-  }
-
-  /**
-   * @ORM\ManyToOne(targetEntity="ExerciseConfig", inversedBy="exercises")
-   */
-  protected $exerciseConfig;
-
-  public function getExerciseConfig(): ExerciseConfig {
-    return $this->exerciseConfig;
-  }
-
-  /**
-   * @ORM\ManyToMany(targetEntity="ExerciseTest", inversedBy="exercises", cascade={"persist"})
-   * @ORM\OrderBy({"name" = "DESC"})
-   * @var Collection|Selectable
-   */
-  protected $exerciseTests;
-
-  public function getExerciseTests(): Collection {
-    return $this->exerciseTests;
-  }
-
-  /**
-   * @ORM\Column(type="string", nullable=true)
-   */
-  protected $scoreCalculator;
-
-  public function getScoreCalculator(): ?string {
-    return $this->scoreCalculator;
-  }
-
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $scoreConfig;
-
-  public function getScoreConfig(): string {
-    return $this->scoreConfig;
-  }
-
-  /**
    * @ORM\Column(type="datetime")
    */
   protected $firstDeadline;
@@ -356,22 +257,6 @@ class Assignment implements JsonSerializable, IExercise
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
-   * @var Collection|Selectable
-   */
-  protected $localizedTexts;
-
-  public function addLocalizedText(LocalizedExercise $assignment) {
-    $this->localizedTexts->add($assignment);
-  }
-
-  public function getLocalizedTextByLocale($locale) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === FALSE ? NULL : $first;
-  }
-
-  /**
    * @ORM\ManyToOne(targetEntity="Exercise")
    */
   protected $exercise;
@@ -385,11 +270,6 @@ class Assignment implements JsonSerializable, IExercise
    * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
    */
   protected $assignmentSolutions;
-
-
-  public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeEnvironments->map(function(RuntimeEnvironment $env) { return $env->getId(); })->getValues();
-  }
 
   public function syncWithExercise() {
     $exercise = $this->getExercise();
@@ -405,6 +285,7 @@ class Assignment implements JsonSerializable, IExercise
     }
 
     $this->exerciseConfig = $exercise->getExerciseConfig();
+    $this->configurationType = $exercise->getConfigurationType();
     $this->scoreConfig = $exercise->getScoreConfig();
     $this->scoreCalculator = $exercise->getScoreCalculator();
 
@@ -456,7 +337,7 @@ class Assignment implements JsonSerializable, IExercise
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information
+      "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information TODO why is it still here then?
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $this->canViewLimitRatios,
       "isBonus" => $this->isBonus,
@@ -464,6 +345,9 @@ class Assignment implements JsonSerializable, IExercise
       "exerciseSynchronizationInfo" => [
         "exerciseConfig" => [
           "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),
+        ],
+        "configurationType" => [
+          "upToDate" => $this->configurationType === $this->getExercise()->getConfigurationType()
         ],
         "scoreConfig" => [
           "upToDate" => $this->getScoreConfig() === $this->getExercise()->getScoreConfig(),
@@ -501,9 +385,5 @@ class Assignment implements JsonSerializable, IExercise
         ]
       ]
     ];
-  }
-
-  public function getLocalizedTexts(): Collection {
-    return $this->localizedTexts;
   }
 }

@@ -19,6 +19,8 @@ use App\Model\Entity\RuntimeEnvironment;
  */
 class Compiler {
 
+  public const EXERCISE_CONFIG_TYPES = ["simpleExerciseConfig", "advancedExerciseConfig"];
+
   /**
    * @var BaseCompiler
    */
@@ -52,6 +54,10 @@ class Compiler {
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
 
+    if (static::checkConfigurationType($exercise->getConfigurationType())) {
+      throw new ExerciseConfigException("Unsupported configuration type");
+    }
+
     // check submitted files if they are unique
     $uniqueFiles = array_unique($params->getFiles());
     if (count($params->getFiles()) !== count($uniqueFiles)) {
@@ -63,6 +69,8 @@ class Compiler {
     $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
     $limits = array();
+
+    /** @var HardwareGroup $hwGroup */
     foreach ($exercise->getHardwareGroups()->getValues() as $hwGroup) {
       $limitsConfig = $exercise->getLimitsByEnvironmentAndHwGroup($runtimeEnvironment, $hwGroup);
       if ($limitsConfig) {
@@ -76,5 +84,13 @@ class Compiler {
     return $this->baseCompiler->compile($exerciseConfig,
       $environmentConfigVariables, $limits, $runtimeEnvironment->getId(),
       $params);
+  }
+
+  /**
+   * Check if given configuration type is supported
+   * @return bool
+   */
+  public static function checkConfigurationType(string $configurationType): bool {
+    return in_array($configurationType, static::EXERCISE_CONFIG_TYPES);
   }
 }

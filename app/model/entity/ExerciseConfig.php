@@ -46,11 +46,6 @@ class ExerciseConfig
   protected $author;
 
   /**
-   * @ORM\OneToMany(targetEntity="Exercise", mappedBy="exerciseConfig")
-   */
-  protected $exercises;
-
-  /**
    * Constructor
    * @param string $config
    * @param User $author
@@ -58,7 +53,6 @@ class ExerciseConfig
    */
   public function __construct(string $config, User $author,
       ExerciseConfig $createdFrom = NULL) {
-    $this->exercises = new ArrayCollection();
     $this->createdAt = new DateTime;
 
     $this->config = $config;
