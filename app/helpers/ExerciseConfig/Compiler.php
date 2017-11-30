@@ -54,7 +54,7 @@ class Compiler {
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
 
-    if (static::checkConfigurationType($exercise->getConfigurationType())) {
+    if (!static::checkConfigurationType($exercise->getConfigurationType())) {
       throw new ExerciseConfigException("Unsupported configuration type");
     }
 
