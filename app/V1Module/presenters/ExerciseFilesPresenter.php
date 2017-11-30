@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
+use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\AdditionalExerciseFile;
 use App\Model\Repository\AdditionalExerciseFiles;
@@ -83,8 +84,14 @@ class ExerciseFilesPresenter extends BasePresenter {
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $supplementaryFiles = [];
+    $newSupplementaryFiles = [];
     $deletedFiles = [];
+    $currentSupplementaryFiles = [];
+
+    /** @var SupplementaryExerciseFile $file */
+    foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+      $currentSupplementaryFiles[$file->getName()] = $file;
+    }
 
     /** @var UploadedFile $file */
     foreach ($files as $file) {
@@ -92,7 +99,12 @@ class ExerciseFilesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      $supplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
+      if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
+        $currentFile = $currentSupplementaryFiles[$file->getName()];
+        $exercise->getSupplementaryEvaluationFiles()->removeElement($currentFile);
+      }
+
+      $newSupplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
       $deletedFiles[] = $file;
@@ -109,7 +121,7 @@ class ExerciseFilesPresenter extends BasePresenter {
       }
     }
 
-    $this->sendSuccessResponse($supplementaryFiles);
+    $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
   }
 
   /**
@@ -162,7 +174,13 @@ class ExerciseFilesPresenter extends BasePresenter {
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $additionalFiles = [];
+    $newAdditionalFiles = [];
+    $currentAdditionalFiles = [];
+
+    /** @var AdditionalExerciseFile $file */
+    foreach ($exercise->getAdditionalFiles() as $file) {
+      $currentAdditionalFiles[$file->getName()] = $file;
+    }
 
     /** @var UploadedFile $file */
     foreach ($files as $file) {
@@ -170,13 +188,18 @@ class ExerciseFilesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      $additionalFiles[] = $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      if (array_key_exists($file->getName(), $currentAdditionalFiles)) {
+        $currentFile = $currentAdditionalFiles[$file->getName()];
+        $exercise->getAdditionalFiles()->removeElement($currentFile);
+      }
+
+      $newAdditionalFiles[] = $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
     }
 
     $this->uploadedFiles->flush();
-    $this->sendSuccessResponse($additionalFiles);
+    $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
   }
 
   /**
