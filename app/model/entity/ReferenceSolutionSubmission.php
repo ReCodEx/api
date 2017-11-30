@@ -30,19 +30,6 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
    */
   protected $hwGroup;
 
-  /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="referenceSolutionSubmission", cascade={"persist", "remove"})
-   * @var SolutionEvaluation
-   */
-  protected $evaluation;
-
-  public function hasEvaluation(): bool {
-    return $this->evaluation !== NULL;
-  }
-
-  public function getEvaluation(): ?SolutionEvaluation {
-    return $this->evaluation;
-  }
 
   public function setEvaluation(SolutionEvaluation $evaluation) {
     $this->evaluation = $evaluation;
@@ -89,6 +76,10 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       $diff = abs($testResult->getScore() - ER\TestResult::SCORE_MAX);
       return $diff < 0.001; // Safe float comparison
     });
+  }
+
+  public function getJobType(): string {
+    return static::JOB_TYPE;
   }
 
 }

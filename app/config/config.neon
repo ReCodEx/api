@@ -255,6 +255,7 @@ services:
   - App\Helpers\UploadsConfig(%uploads%)
 
   # helpers
+  - App\Helpers\EvaluationLoadingHelper
   - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)

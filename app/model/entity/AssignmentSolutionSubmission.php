@@ -27,24 +27,6 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
   protected $assignmentSolution;
 
   /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", inversedBy="assignmentSolutionSubmission", cascade={"persist", "remove"})
-   * @var SolutionEvaluation
-   */
-  protected $evaluation;
-
-  public function hasEvaluation(): bool {
-    return $this->evaluation !== NULL;
-  }
-
-  public function getEvaluation(): ?SolutionEvaluation {
-    return $this->evaluation;
-  }
-
-  public function setEvaluation(SolutionEvaluation $evaluation) {
-    $this->evaluation = $evaluation;
-  }
-
-  /**
    * @var Collection
    * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolutionSubmission")
    */
@@ -84,7 +66,10 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
   }
 
   function isCorrect(): bool {
-    return  EvaluationPointsLoader::isStudentCorrect($this->evaluation);
+    return EvaluationPointsLoader::isStudentCorrect($this);
   }
 
+  public function getJobType(): string {
+    return static::JOB_TYPE;
+  }
 }

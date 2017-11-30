@@ -22,7 +22,6 @@ use JsonSerializable;
  * @method setPoints(int $points)
  * @method setScore(float $score)
  * @method Collection getTestResults()
- * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
  * @method ReferenceSolutionSubmission getReferenceSolutionSubmission()
  * @method bool getInitFailed()
  */
@@ -73,17 +72,6 @@ class SolutionEvaluation implements JsonSerializable
    */
   protected $testResults;
 
-  /**
-   * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", mappedBy="evaluation")
-   */
-  protected $assignmentSolutionSubmission;
-
-  /**
-   * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", mappedBy="evaluation")
-   */
-  protected $referenceSolutionSubmission;
-
-
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
     $testResults = $this->testResults->map(
       function (TestResult $res) use ($canViewRatios, $canViewValues) {
@@ -109,12 +97,8 @@ class SolutionEvaluation implements JsonSerializable
   /**
    * Loads and processes the results of the submission.
    * @param EvaluationResults $results The interpreted results
-   * @param AssignmentSolutionSubmission|null $submission The submission. It can be null in case we're handling a reference solution evaluation
-   * @param ReferenceSolutionSubmission|null $evaluation
    */
-  public function __construct(EvaluationResults $results,
-      AssignmentSolutionSubmission $submission = null,
-      ReferenceSolutionSubmission $evaluation = null) {
+  public function __construct(EvaluationResults $results) {
     $this->evaluatedAt = new \DateTime;
     $this->initFailed = !$results->initOK();
     $this->resultYml = (string) $results;
@@ -122,8 +106,6 @@ class SolutionEvaluation implements JsonSerializable
     $this->points = 0;
     $this->testResults = new ArrayCollection;
     $this->initiationOutputs = $results->getInitiationOutputs();
-    $this->assignmentSolutionSubmission = $submission;
-    $this->referenceSolutionSubmission = $evaluation;
 
     // set test results
     foreach ($results->getTestsResults() as $result) {

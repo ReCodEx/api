@@ -2,15 +2,21 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Helpers\EvaluationLoader;
+use App\Helpers\EvaluationLoadingHelper;
+use App\Helpers\FailureHelper;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\Group;
 use App\Model\Entity\AssignmentSolution;
+use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SolutionEvaluations;
+use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
@@ -64,30 +70,30 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public $assignmentSolutionAcl;
 
+  /**
+   * @var SubmissionFailures
+   * @inject
+   */
+  public $submissionFailures;
 
   /**
-   * Try to get evaluation of given submission. If found, then evaluate it and
-   * save results into database.
-   * @param AssignmentSolutionSubmission $submission
+   * @var FailureHelper
+   * @inject
    */
-  private function getEvaluationIfNotPresent(AssignmentSolutionSubmission $submission) {
-    if (!$submission->hasEvaluation()) { // the evaluation must be loaded first
-      $evaluation = $this->evaluationLoader->load($submission);
-      if ($evaluation !== NULL) {
-        $this->evaluations->persist($evaluation);
-        $this->assignmentSolutions->persist($submission);
-      } else {
-        // the evaluation is probably not ready yet
-        // - display partial information about the submission, do not throw an error
-      }
-    }
-  }
+  public $failureHelper;
+
+  /**
+   * @var EvaluationLoadingHelper
+   * @inject
+   */
+  public $evaluationLoadingHelper;
 
   /**
    * Get information about solutions.
    * @GET
    * @param string $id Identifier of the solution
    * @throws ForbiddenRequestException
+   * @throws InternalServerErrorException
    */
   public function actionSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -98,7 +104,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     // if there is submission, try to evaluate it
     $submission = $solution->getLastSubmission();
     if ($submission) {
-      $this->getEvaluationIfNotPresent($submission);
+      $this->evaluationLoadingHelper->loadEvaluation($submission);
     }
 
     // fetch data
@@ -128,7 +134,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     // display only data that the current user can view
     $submissions = array_map(function (AssignmentSolutionSubmission $submission) use ($solution) {
       // try to load evaluation if not present
-      $this->getEvaluationIfNotPresent($submission);
+      $this->evaluationLoadingHelper->loadEvaluation($submission);
 
       $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
       $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
@@ -143,6 +149,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $id Identifier of the submission
    * @throws ForbiddenRequestException
+   * @throws InternalServerErrorException
    */
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
@@ -152,7 +159,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     }
 
     // try to load evaluation if not present
-    $this->getEvaluationIfNotPresent($submission);
+    $this->evaluationLoadingHelper->loadEvaluation($submission);
 
     $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
     $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
@@ -234,12 +241,15 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @param string $id
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws InternalServerErrorException
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution(), $submission)) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
+
+    $this->evaluationLoadingHelper->loadEvaluation($submission);
 
     if (!$submission->hasEvaluation()) {
       throw new ForbiddenRequestException("Submission is not evaluated yet");

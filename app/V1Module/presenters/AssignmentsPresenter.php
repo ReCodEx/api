@@ -215,7 +215,7 @@ class AssignmentsPresenter extends BasePresenter {
         $oldSecondDeadlineTimestamp !== $secondDeadlineTimestamp) {
       foreach ($assignment->getAssignmentSolutions() as $solution) {
         foreach ($solution->getSubmissions() as $submission) {
-          $this->evaluationPointsLoader->setStudentPoints($submission->getEvaluation());
+          $this->evaluationPointsLoader->setStudentPoints($submission);
         }
       }
       $this->solutionEvaluations->flush();

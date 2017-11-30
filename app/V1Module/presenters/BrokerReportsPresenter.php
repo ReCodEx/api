@@ -3,16 +3,16 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
-use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
 use App\Helpers\EmailsConfig;
+use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
 use App\Helpers\Notifications\SubmissionEmailsSender;
-use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
@@ -36,18 +36,6 @@ class BrokerReportsPresenter extends BasePresenter {
   public $failureHelper;
 
   /**
-   * @var SubmissionEmailsSender
-   * @inject
-   */
-  public $submissionEmailsSender;
-
-  /**
-   * @var EvaluationLoader
-   * @inject
-   */
-  public $evaluationLoader;
-
-  /**
    * @var AssignmentSolutionSubmissions
    * @inject
    */
@@ -58,12 +46,6 @@ class BrokerReportsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionFailures;
-
-  /**
-   * @var SolutionEvaluations
-   * @inject
-   */
-  public $evaluations;
 
   /**
    * @var ReferenceSolutionSubmissions
@@ -78,10 +60,10 @@ class BrokerReportsPresenter extends BasePresenter {
   public $brokerConfig;
 
   /**
-   * @var EmailsConfig
+   * @var EvaluationLoadingHelper
    * @inject
    */
-  public $emailsConfig;
+  public $evaluationLoadingHelper;
 
   /**
    * The actions of this presenter have specific
@@ -106,6 +88,8 @@ class BrokerReportsPresenter extends BasePresenter {
    * @Param(name="status", type="post", description="The new status of the job")
    * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
    * @param string $jobId Identifier of the job whose status is being reported
+   * @throws InternalServerErrorException
+   * @throws NotFoundException
    */
   public function actionJobStatus($jobId) {
     $status = $this->getRequest()->getPost("status");
@@ -117,32 +101,31 @@ class BrokerReportsPresenter extends BasePresenter {
           case ReferenceSolutionSubmission::JOB_TYPE:
             // load the evaluation of the reference solution now
             $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
-            $this->loadReferenceEvaluation($referenceSolutionEvaluation);
+            $this->evaluationLoadingHelper->loadEvaluation($referenceSolutionEvaluation);
             break;
           case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
-            // load the evaluation of the student submission or resubmit
-            $this->loadEvaluation($submission);
+            // load the evaluation of the student submission (or a resubmission of a student submission)
+            $this->evaluationLoadingHelper->loadEvaluation($submission);
             break;
         }
         break;
       case self::STATUS_FAILED:
         $message = $this->getRequest()->getPost("message") ?: "";
-        $this->failureHelper->report(
-          FailureHelper::TYPE_BACKEND_ERROR,
-          "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message"
-        );
+        $reportMessage = "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message";
 
         switch ($job->getType()) {
           case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $submission);
+            $failureReport = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage, $submission);
             $this->submissionFailures->persist($failureReport);
+            $this->failureHelper->reportSubmissionFailure($failureReport, FailureHelper::TYPE_BACKEND_ERROR);
             break;
           case ReferenceSolutionSubmission::JOB_TYPE:
             $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $message, $referenceSolutionEvaluation);
+            $failureReport = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage, $referenceSolutionEvaluation);
             $this->submissionFailures->persist($failureReport);
+            $this->failureHelper->reportSubmissionFailure($failureReport, FailureHelper::TYPE_BACKEND_ERROR);
             break;
         }
 
@@ -152,44 +135,11 @@ class BrokerReportsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  private function loadEvaluation(AssignmentSolutionSubmission $submission) {
-    try {
-      $evaluation = $this->evaluationLoader->load($submission);
-    } catch (SubmissionEvaluationFailedException $e) {
-      // the result cannot be loaded even though the result MUST be ready at this point
-      $this->failureHelper->report(
-        FailureHelper::TYPE_API_ERROR,
-        "Evaluation results of the job with ID '{$submission->getId()}' could not be processed. {$e->getMessage()}"
-      );
-
-      return FALSE;
-    }
-
-    $this->evaluations->persist($evaluation);
-    $this->submissions->persist($submission);
-  }
-
-  private function loadReferenceEvaluation(ReferenceSolutionSubmission $referenceSolutionEvaluation) {
-    $referenceSolution = $referenceSolutionEvaluation->getReferenceSolution();
-    try {
-      $solutionEvaluation = $this->evaluationLoader->loadReference($referenceSolutionEvaluation);
-    } catch (SubmissionEvaluationFailedException $e) {
-      // the result cannot be loaded even though the result MUST be ready at this point
-      $this->failureHelper->report(
-        FailureHelper::TYPE_API_ERROR,
-        "Evaluation results of the job with ID '{$referenceSolution->getId()}' could not be processed. {$e->getMessage()}"
-      );
-      return;
-    }
-
-    $this->evaluations->persist($solutionEvaluation);
-    $this->referenceSolutionSubmissions->persist($referenceSolutionEvaluation);
-  }
-
   /**
    * Announce a backend error that is not related to any job (meant to be called by the backend)
    * @POST
    * @Param(name="message", type="post", description="A textual description of the error")
+   * @throws InternalServerErrorException
    */
   public function actionError() {
     $req = $this->getRequest();
