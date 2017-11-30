@@ -96,6 +96,8 @@ class Assignment implements JsonSerializable, IExercise
     $this->createdAt = new \DateTime;
     $this->updatedAt = new \DateTime;
     $this->configurationType = $exercise->getConfigurationType();
+    $this->supplementaryEvaluationFiles = $exercise->getSupplementaryEvaluationFiles();
+    $this->attachmentFiles = $exercise->getAttachmentFiles();
   }
 
   public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {

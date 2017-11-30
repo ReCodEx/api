@@ -72,8 +72,6 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of exercise
-   * @throws BadRequestException
-   * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
    */
   public function actionUploadSupplementaryFiles(string $id) {
@@ -147,7 +145,7 @@ class ExerciseFilesPresenter extends BasePresenter {
   }
 
   /**
-   * Associate additional exercise files with an exercise
+   * Associate attachment exercise files with an exercise
    * @POST
    * @Param(type="post", name="files", description="Identifiers of additional files")
    * @param string $id identification of exercise
@@ -178,7 +176,7 @@ class ExerciseFilesPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of all additional files for an exercise
+   * Get a list of all attachment files for an exercise
    * @GET
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
@@ -194,7 +192,7 @@ class ExerciseFilesPresenter extends BasePresenter {
   }
 
   /**
-   * Delete additional exercise file with given id
+   * Delete attachment exercise file with given id
    * @DELETE
    * @param string $id identification of exercise
    * @param string $fileId identification of file

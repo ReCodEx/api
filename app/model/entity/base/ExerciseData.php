@@ -171,4 +171,69 @@ trait ExerciseData {
     $first = $this->exerciseTests->matching($criteria)->first();
     return $first === false ? null : $first;
   }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile")
+   */
+  protected $supplementaryEvaluationFiles;
+
+  public function getSupplementaryEvaluationFiles(): Collection {
+    return $this->supplementaryEvaluationFiles;
+  }
+
+  public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
+    $this->supplementaryEvaluationFiles->add($exerciseFile);
+  }
+
+  /**
+   * @param SupplementaryExerciseFile $file
+   * @return bool
+   */
+  public function removeSupplementaryEvaluationFile(SupplementaryExerciseFile $file) {
+    return $this->supplementaryEvaluationFiles->removeElement($file);
+  }
+
+  /**
+   * Get identifications of supplementary evaluation files.
+   * @return array
+   */
+  public function getSupplementaryFilesIds() {
+    return $this->supplementaryEvaluationFiles->map(
+      function(SupplementaryExerciseFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
+  /**
+   * @ORM\ManyToMany(targetEntity="AttachmentFile")
+   */
+  protected $attachmentFiles;
+
+  public function getAttachmentFiles(): Collection {
+    return $this->attachmentFiles;
+  }
+
+  public function addAttachmentFile(AttachmentFile $exerciseFile) {
+    $this->attachmentFiles->add($exerciseFile);
+  }
+
+  /**
+   * @param AttachmentFile $file
+   * @return bool
+   */
+  public function removeAttachmentFile(AttachmentFile $file) {
+    return $this->attachmentFiles->removeElement($file);
+  }
+
+  /**
+   * Get identifications of additional exercise files.
+   * @return array
+   */
+  public function getAttachmentFilesIds() {
+    return $this->attachmentFiles->map(
+      function(AttachmentFile $file) {
+        return $file->getId();
+      })->getValues();
+  }
+
 }

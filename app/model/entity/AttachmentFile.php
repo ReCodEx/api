@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @method ArrayCollection getExercises()
+ * @method ArrayCollection getAssignments()
  * @ORM\Entity
  */
 class AttachmentFile extends UploadedFile implements JsonSerializable
@@ -18,10 +19,17 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
    */
   protected $exercises;
 
+  /**
+   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="attachmentFiles")
+   */
+  protected $assignments;
+
   public function __construct($name, DateTime $uploadedAt, $fileSize, $filePath, User $user, Exercise $exercise)
   {
     parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath, TRUE);
     $this->exercises = new ArrayCollection;
+    $this->assignments = new ArrayCollection;
+
     $this->exercises->add($exercise);
     $exercise->addAttachmentFile($this);
   }

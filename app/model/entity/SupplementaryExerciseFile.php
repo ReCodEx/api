@@ -31,6 +31,11 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
   protected $exercises;
 
   /**
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
+   */
+  protected $assignments;
+
+  /**
    * @return Collection
    */
   public function getExercises() {
@@ -71,6 +76,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     $this->fileServerPath = $fileServerPath;
 
     $this->exercises = new ArrayCollection;
+    $this->assignments = new ArrayCollection;
     $this->pipelines = new ArrayCollection;
 
     if ($exercise) {
