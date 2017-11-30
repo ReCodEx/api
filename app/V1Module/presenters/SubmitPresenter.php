@@ -9,6 +9,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\FailureHelper;
 use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -80,6 +81,12 @@ class SubmitPresenter extends BasePresenter {
    * @inject
    */
   public $submissionHelper;
+
+  /**
+   * @var FailureHelper
+   * @inject
+   */
+  public $failureHelper;
 
   /**
    * @var MonitorConfig
@@ -207,6 +214,7 @@ class SubmitPresenter extends BasePresenter {
   private function submissionFailed(AssignmentSolutionSubmission $submission, string $message) {
     $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
+    $this->failureHelper->report(FailureHelper::TYPE_BACKEND_ERROR, "Failed to send submission {$submission->getId()} to the broker");
     throw new SubmissionFailedException($message);
   }
 

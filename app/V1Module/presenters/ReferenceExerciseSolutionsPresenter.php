@@ -2,11 +2,13 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\FileServerProxy;
 use App\Helpers\SubmissionHelper;
@@ -92,6 +94,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   public $jobConfigGenerator;
 
   /**
+   * @var EvaluationLoadingHelper
+   * @inject
+   */
+  public $evaluationLoadingHelper;
+
+  /**
    * Get reference solutions for an exercise
    * @GET
    * @param string $exerciseId Identifier of the exercise
@@ -129,12 +137,18 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $solutionId identifier of the reference exercise solution
    * @throws ForbiddenRequestException
+   * @throws InternalServerErrorException
    */
   public function actionEvaluations(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
     $exercise = $solution->getExercise();
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
+    }
+
+    /** @var ReferenceSolutionSubmission $submission */
+    foreach ($solution->getSubmissions() as $submission) {
+      $this->evaluationLoadingHelper->loadEvaluation($submission);
     }
 
     $this->sendSuccessResponse($solution->getSubmissions()->getValues());
@@ -145,15 +159,20 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $evaluationId identifier of the reference exercise evaluation
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws InternalServerErrorException
    */
   public function actionEvaluation(string $evaluationId) {
-    $evaluation = $this->referenceSubmissions->findOrThrow($evaluationId);
-    $exercise = $evaluation->getReferenceSolution()->getExercise();
+    $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+
+    $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+    $exercise = $submission->getReferenceSolution()->getExercise();
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise evaluations");
     }
 
-    $this->sendSuccessResponse($evaluation);
+    $this->sendSuccessResponse($submission);
   }
 
   /**
@@ -320,21 +339,24 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws NotReadyException
+   * @throws InternalServerErrorException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
-    /** @var ReferenceSolutionSubmission $evaluation */
-    $evaluation = $this->referenceSubmissions->findOrThrow($evaluationId);
-    $refSolution = $evaluation->getReferenceSolution();
+    /** @var ReferenceSolutionSubmission $submission */
+    $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+    $refSolution = $submission->getReferenceSolution();
 
     if (!$this->exerciseAcl->canEvaluateReferenceSolution($refSolution->getExercise(), $refSolution)) {
       throw new ForbiddenRequestException();
     }
 
-    if (!$evaluation->hasEvaluation()) {
+    $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+    if (!$submission->hasEvaluation()) {
       throw new NotReadyException("Submission is not evaluated yet");
     }
 
-    $stream = $this->fileServerProxy->getResultArchiveStream($evaluation->getResultsUrl());
+    $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
     if ($stream === null) {
       throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
     }

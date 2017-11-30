@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Model\Entity\SubmissionFailure;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Utils\Arrays;
@@ -63,7 +64,7 @@ class FailureHelper {
     // Save the report to the database
     $entry = new ReportedErrors($type, $recipients, $subject, $message);
     $this->em->persist($entry);
-    $this->em->flush();
+    $this->em->flush($entry);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -72,6 +73,16 @@ class FailureHelper {
       $subject,
       $this->formatBody($message)
     );
+  }
+
+  public function reportSubmissionFailure(SubmissionFailure $failure, string $type) {
+    $submission = $failure->getSubmission();
+    $this->report($type, sprintf(
+      "Failure of submission with ID '%s' and type '%s': %s",
+      $submission->getId(),
+      $submission->getJobType(),
+      $failure->getDescription()
+    ));
   }
 
   /**

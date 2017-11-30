@@ -13,6 +13,7 @@ use App\Helpers\EvaluationResults\Loader as EvaluationResultsLoader;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Model\Entity\Submission;
 
 /**
  * Load evaluation for given submission. This may require connecting to the file server,
@@ -44,29 +45,33 @@ class EvaluationLoader {
 
   /**
    * Downloads and processes the results for the given submission.
-   * @param AssignmentSolutionSubmission $submission The submission
+   * @param Submission $submission The submission
    * @return SolutionEvaluation|NULL  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
-  public function load(AssignmentSolutionSubmission $submission) {
+  public function load(Submission $submission) {
     $results = $this->getResults($submission);
     if (!$results) {
       return NULL;
     }
 
-    $evaluation = new SolutionEvaluation($results, $submission);
+    $evaluation = new SolutionEvaluation($results);
     $submission->setEvaluation($evaluation);
-    $this->pointsLoader->setStudentScoreAndPoints($evaluation);
+    if ($submission instanceof AssignmentSolutionSubmission) {
+      $this->pointsLoader->setStudentScoreAndPoints($submission);
+    } else if ($submission instanceof ReferenceSolutionSubmission) {
+      $this->pointsLoader->setReferenceScore($submission);
+    }
     return $evaluation;
   }
 
   /**
    * Downloads and parses the results report from the server.
-   * @param AssignmentSolutionSubmission $submission The submission
+   * @param Submission $submission The submission
    * @return EvaluationResults Parsed submission results
    * @throws SubmissionEvaluationFailedException
    */
-  private function getResults(AssignmentSolutionSubmission $submission) {
+  private function getResults(Submission $submission) {
     if (!$submission->getResultsUrl()) {
       throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
     }
@@ -74,7 +79,7 @@ class EvaluationLoader {
     $jobConfigPath = $submission->getJobConfigPath();
     try {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
-      $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType(AssignmentSolution::JOB_TYPE);
+      $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType($submission->getJobType());
       $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
       return $resultsYml === NULL
         ? NULL
@@ -85,49 +90,4 @@ class EvaluationLoader {
       throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");
     }
   }
-
-  /**
-   * Downloads and processes the results for the given submission.
-   * @param ReferenceSolutionSubmission $referenceSolution The reference solution submission
-   * @return SolutionEvaluation|NULL  Evaluated results for given submission
-   * @throws SubmissionEvaluationFailedException
-   */
-  public function loadReference(ReferenceSolutionSubmission $referenceSolution) {
-    $results = $this->getReferenceResults($referenceSolution);
-    if (!$results) {
-      return NULL;
-    }
-
-    $evaluation = new SolutionEvaluation($results, null, $referenceSolution);
-    $referenceSolution->setEvaluation($evaluation);
-    $this->pointsLoader->setReferenceScore($evaluation);
-    return $evaluation;
-  }
-
-  /**
-   * Downloads and parses the results report from the server.
-   * @param ReferenceSolutionSubmission $evaluation The reference solution submission
-   * @return EvaluationResults Parsed submission results
-   * @throws SubmissionEvaluationFailedException
-   */
-  private function getReferenceResults(ReferenceSolutionSubmission $evaluation) {
-    if (!$evaluation->getResultsUrl()) {
-      throw new SubmissionEvaluationFailedException("Results location is not known - evaluation cannot proceed.");
-    }
-
-    $jobConfigPath = $evaluation->getJobConfigPath();
-    try {
-      $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
-      $jobConfig->getSubmissionHeader()->setId($evaluation->getId())->setType(ReferenceSolutionSubmission::JOB_TYPE);
-      $resultsYml = $this->fileServer->downloadResults($evaluation->getResultsUrl());
-      return $resultsYml === NULL
-        ? NULL
-        : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
-    } catch (ResultsLoadingException $e) {
-      throw new SubmissionEvaluationFailedException("Cannot load results.");
-    } catch (JobConfigLoadingException $e) {
-      throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");
-    }
-  }
-
 }
