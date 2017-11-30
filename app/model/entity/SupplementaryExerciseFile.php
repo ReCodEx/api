@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 /**
  * @ORM\Entity
  *
+ * @method string getHashName()
  * @method string getFileServerPath()
  */
 class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
@@ -31,11 +32,6 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
   protected $exercises;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
-   */
-  protected $assignments;
-
-  /**
    * @return Collection
    */
   public function getExercises() {
@@ -44,7 +40,21 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     });
   }
 
-    /**
+  /**
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
+   */
+  protected $assignments;
+
+  /**
+   * @return Collection
+   */
+  public function getAssignments() {
+    return $this->assignments->filter(function (Assignment $assignment) {
+      return $assignment->getDeletedAt() === null;
+    });
+  }
+
+  /**
    * @ORM\ManyToMany(targetEntity="Pipeline", mappedBy="supplementaryEvaluationFiles")
    */
   protected $pipelines;

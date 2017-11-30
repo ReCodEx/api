@@ -404,7 +404,7 @@ permissions:
           - viewDetail
       conditions:
           - file.isAttachmentFile
-          - file.isExercisePublic
+          - file.isExerciseOrAssignmentPublic
 
     - allow: true
       role: supervisor

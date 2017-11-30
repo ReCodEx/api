@@ -74,6 +74,7 @@ trait ExerciseData {
 
   /**
    * @ORM\ManyToMany(targetEntity="ExerciseLimits", cascade={"persist"})
+   * @var Collection
    */
   protected $exerciseLimits;
 
@@ -174,6 +175,7 @@ trait ExerciseData {
 
   /**
    * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile")
+   * @var Collection
    */
   protected $supplementaryEvaluationFiles;
 
@@ -204,8 +206,18 @@ trait ExerciseData {
       })->getValues();
   }
 
+  public function getHashedSupplementaryFiles(): array {
+    $files = [];
+    /** @var SupplementaryExerciseFile $file */
+    foreach ($this->supplementaryEvaluationFiles as $file) {
+      $files[$file->getName()] = $file->getHashName();
+    }
+    return $files;
+  }
+
   /**
    * @ORM\ManyToMany(targetEntity="AttachmentFile")
+   * @var Collection
    */
   protected $attachmentFiles;
 
