@@ -11,10 +11,10 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @method ArrayCollection getExercises()
  * @ORM\Entity
  */
-class AdditionalExerciseFile extends UploadedFile implements JsonSerializable
+class AttachmentFile extends UploadedFile implements JsonSerializable
 {
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="additionalFiles")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="attachmentFiles")
    */
   protected $exercises;
 
@@ -23,7 +23,7 @@ class AdditionalExerciseFile extends UploadedFile implements JsonSerializable
     parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath, TRUE);
     $this->exercises = new ArrayCollection;
     $this->exercises->add($exercise);
-    $exercise->addAdditionalFile($this);
+    $exercise->addAttachmentFile($this);
   }
 
   public static function fromUploadedFile(UploadedFile $file, Exercise $exercise)

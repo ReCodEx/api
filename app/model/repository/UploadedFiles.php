@@ -115,17 +115,17 @@ class UploadedFiles extends BaseRepository {
       "threshold" => $thresholdDate
     ]);
 
-    $additionalFilesQuery = $this->em->createQuery("
+    $attachmentFilesQuery = $this->em->createQuery("
       SELECT f
-      FROM App\Model\Entity\AdditionalExerciseFile f
+      FROM App\Model\Entity\AttachmentFile f
       WHERE f.exercises IS EMPTY
       AND f.uploadedAt < :threshold
     ");
 
-    $additionalFilesQuery->setParameters([
+    $attachmentFilesQuery->setParameters([
       "threshold" => $thresholdDate
     ]);
 
-    return $plainFilesQuery->getResult() + $supplementaryFilesQuery->getResult() + $additionalFilesQuery->getResult();
+    return $plainFilesQuery->getResult() + $supplementaryFilesQuery->getResult() + $attachmentFilesQuery->getResult();
   }
 }

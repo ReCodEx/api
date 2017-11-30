@@ -24,7 +24,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getSupplementaryEvaluationFiles()
  * @method \DateTime getDeletedAt()
  * @method User getAuthor()
- * @method Doctrine\Common\Collections\Collection getAdditionalFiles()
+ * @method Doctrine\Common\Collections\Collection getAttachmentFiles()
  * @method int getVersion()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
@@ -135,9 +135,9 @@ class Exercise implements JsonSerializable, IExercise
   protected $supplementaryEvaluationFiles;
 
   /**
-   * @ORM\ManyToMany(targetEntity="AdditionalExerciseFile", inversedBy="exercises")
+   * @ORM\ManyToMany(targetEntity="AttachmentFile", inversedBy="exercises")
    */
-  protected $additionalFiles;
+  protected $attachmentFiles;
 
   /**
    * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
@@ -199,7 +199,7 @@ class Exercise implements JsonSerializable, IExercise
    * @param Collection $runtimeEnvironments
    * @param Collection $hardwareGroups
    * @param Collection $supplementaryEvaluationFiles
-   * @param Collection $additionalFiles
+   * @param Collection $attachmentFiles
    * @param Collection $exerciseLimits
    * @param Collection $exerciseEnvironmentConfigs
    * @param Collection $pipelines
@@ -217,7 +217,7 @@ class Exercise implements JsonSerializable, IExercise
   private function __construct($version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
-      Collection $additionalFiles, Collection $exerciseLimits,
+      Collection $attachmentFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
       Collection $exerciseTests, Collection $groups = null, ?Exercise $exercise,
       ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
@@ -235,7 +235,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->isPublic = $isPublic;
     $this->isLocked = $isLocked;
     $this->groups = $groups;
-    $this->additionalFiles = $additionalFiles;
+    $this->attachmentFiles = $attachmentFiles;
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
     $this->hardwareGroups = $hardwareGroups;
@@ -281,7 +281,7 @@ class Exercise implements JsonSerializable, IExercise
       $exercise->runtimeEnvironments,
       $exercise->hardwareGroups,
       $exercise->supplementaryEvaluationFiles,
-      $exercise->additionalFiles,
+      $exercise->attachmentFiles,
       $exercise->exerciseLimits,
       $exercise->exerciseEnvironmentConfigs,
       $exercise->pipelines,
@@ -325,8 +325,8 @@ class Exercise implements JsonSerializable, IExercise
     $this->supplementaryEvaluationFiles->add($exerciseFile);
   }
 
-  public function addAdditionalFile(AdditionalExerciseFile $exerciseFile) {
-    $this->additionalFiles->add($exerciseFile);
+  public function addAttachmentFile(AttachmentFile $exerciseFile) {
+    $this->attachmentFiles->add($exerciseFile);
   }
 
   public function addExerciseLimits(ExerciseLimits $exerciseLimits) {
@@ -354,11 +354,11 @@ class Exercise implements JsonSerializable, IExercise
   }
 
   /**
-   * @param AdditionalExerciseFile $file
+   * @param AttachmentFile $file
    * @return bool
    */
-  public function removeAdditionalFile(AdditionalExerciseFile $file) {
-    return $this->additionalFiles->removeElement($file);
+  public function removeAttachmentFile(AttachmentFile $file) {
+    return $this->attachmentFiles->removeElement($file);
   }
 
   /**
@@ -386,9 +386,9 @@ class Exercise implements JsonSerializable, IExercise
    * Get identifications of additional exercise files.
    * @return array
    */
-  public function getAdditionalExerciseFilesIds() {
-    return $this->additionalFiles->map(
-      function(AdditionalExerciseFile $file) {
+  public function getAttachmentFilesIds() {
+    return $this->attachmentFiles->map(
+      function(AttachmentFile $file) {
         return $file->getId();
       })->getValues();
   }
@@ -414,7 +414,7 @@ class Exercise implements JsonSerializable, IExercise
       "isLocked" => $this->isLocked,
       "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "additionalExerciseFilesIds" => $this->getAdditionalExerciseFilesIds(),
+      "attachmentFilesIds" => $this->getAttachmentFilesIds(),
       "configurationType" => $this->configurationType
     ];
   }

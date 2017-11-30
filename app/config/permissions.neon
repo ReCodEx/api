@@ -403,7 +403,7 @@ permissions:
           - download
           - viewDetail
       conditions:
-          - file.isAdditionalExerciseFile
+          - file.isAttachmentFile
           - file.isExercisePublic
 
     - allow: true

@@ -319,7 +319,7 @@ services:
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\SupplementaryExerciseFiles
-  - App\Model\Repository\AdditionalExerciseFiles
+  - App\Model\Repository\AttachmentFiles
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms

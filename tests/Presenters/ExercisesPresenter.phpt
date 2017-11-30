@@ -47,8 +47,8 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Pipelines */
   protected $pipelines;
 
-  /** @var App\Model\Repository\AdditionalExerciseFiles */
-  protected $additionalFiles;
+  /** @var App\Model\Repository\AttachmentFiles */
+  protected $attachmentFiles;
 
   public function __construct()
   {
@@ -61,7 +61,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
-    $this->additionalFiles = $container->getByType(\App\Model\Repository\AdditionalExerciseFiles::class);
+    $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
     $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
   }
 

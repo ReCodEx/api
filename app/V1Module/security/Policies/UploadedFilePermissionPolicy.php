@@ -1,7 +1,7 @@
 <?php
 namespace App\Security\Policies;
 
-use App\Model\Entity\AdditionalExerciseFile;
+use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -29,12 +29,12 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     return $file->isPublic();
   }
 
-  public function isAdditionalExerciseFile(Identity $identity, UploadedFile $file) {
-    return $file instanceof AdditionalExerciseFile;
+  public function isAttachmentFile(Identity $identity, UploadedFile $file) {
+    return $file instanceof AttachmentFile;
   }
 
   public function isExercisePublic(Identity $identity, UploadedFile $file) {
-    return $file instanceof AdditionalExerciseFile && $file->getExercises()->exists(function ($i, Exercise $exercise) {
+    return $file instanceof AttachmentFile && $file->getExercises()->exists(function ($i, Exercise $exercise) {
       return $exercise->isPublic();
     });
   }
@@ -123,7 +123,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
-    if ($file instanceof AdditionalExerciseFile) {
+    if ($file instanceof AttachmentFile) {
       foreach ($file->getExercises() as $exercise) {
         foreach ($user->getGroups() as $group) {
           if ($this->assignments->isAssignedToGroup($exercise, $group)) {
