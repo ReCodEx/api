@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\EvaluationStatus\IEvaluable;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Kdyby\Doctrine\Entities\MagicAccessors;
@@ -15,7 +16,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @method string getJobConfigPath()
  * @method User getSubmittedBy()
  */
-abstract class Submission
+abstract class Submission implements IEvaluable
 {
   use MagicAccessors;
 
@@ -46,6 +47,12 @@ abstract class Submission
    */
   protected $jobConfigPath;
 
+  /**
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+   * @var SolutionEvaluation
+   */
+  protected $evaluation;
+
   public function canBeEvaluated(): bool {
     return $this->resultsUrl !== NULL;
   }
@@ -56,5 +63,19 @@ abstract class Submission
     $this->submittedBy = $submittedBy;
     $this->jobConfigPath = $jobConfigPath;
   }
+
+  public function hasEvaluation(): bool {
+    return $this->evaluation !== NULL;
+  }
+
+  public function getEvaluation(): ?SolutionEvaluation {
+    return $this->evaluation;
+  }
+
+  public function setEvaluation(SolutionEvaluation $evaluation) {
+    $this->evaluation = $evaluation;
+  }
+
+  public abstract function getJobType(): string;
 
 }

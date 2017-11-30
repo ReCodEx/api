@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use App\Helpers\Evaluation\IExercise;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;
 
 
@@ -27,40 +29,38 @@ class EvaluationPointsLoader {
 
   /**
    * Set score and points to given evaluation of student submission.
-   * @param SolutionEvaluation|null $evaluation
+   * @throws \App\Exceptions\SubmissionEvaluationFailedException
    */
-  public function setStudentScoreAndPoints(?SolutionEvaluation $evaluation) {
-    $this->setStudentScore($evaluation);
-    $this->setStudentPoints($evaluation);
+  public function setStudentScoreAndPoints(?AssignmentSolutionSubmission $submission) {
+    $this->setStudentScore($submission);
+    $this->setStudentPoints($submission);
   }
 
   /**
    * Set score to evaluation of student submission.
    * @param SolutionEvaluation|null $evaluation
+   * @throws \App\Exceptions\SubmissionEvaluationFailedException
    */
-  private function setStudentScore(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
-      // not a student submission
+  private function setStudentScore(?AssignmentSolutionSubmission $submission) {
+    if ($submission === null || !$submission->hasEvaluation()) {
       return;
     }
 
-    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $evaluation = $submission->getEvaluation();
     $this->setScore($evaluation, $submission->getAssignmentSolution()->getAssignment());
   }
 
   /**
    * Set points to evaluation of student submission.
    * @note Score has to be calculated before call of this function.
-   * @param SolutionEvaluation|null $evaluation
    */
-  public function setStudentPoints(?SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
-      // not a student submission
+  public function setStudentPoints(?AssignmentSolutionSubmission $submission) {
+    if ($submission === null || !$submission->hasEvaluation()) {
       return;
     }
 
     // setup
-    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $evaluation = $submission->getEvaluation();
     $maxPoints = $submission->getAssignmentSolution()->getMaxPoints();
 
     // calculate points from the score
@@ -81,16 +81,14 @@ class EvaluationPointsLoader {
 
   /**
    * Determine if student submission is correct.
-   * @param SolutionEvaluation|null $evaluation
-   * @return bool
    */
-  public static function isStudentCorrect(?SolutionEvaluation $evaluation): bool {
-    if ($evaluation === null || $evaluation->getAssignmentSolutionSubmission() === null) {
+  public static function isStudentCorrect(?AssignmentSolutionSubmission $submission): bool {
+    if ($submission === null || !$submission->hasEvaluation()) {
       // not a student submission
       return false;
     }
 
-    $submission = $evaluation->getAssignmentSolutionSubmission();
+    $evaluation = $submission->getEvaluation();
     $assignment = $submission->getAssignmentSolution()->getAssignment();
     if ($assignment->hasAssignedPoints()) {
       return $evaluation->getPoints() > 0;
@@ -115,15 +113,16 @@ class EvaluationPointsLoader {
 
   /**
    * Evaluation score calculated with exercise calculator.
-   * @param SolutionEvaluation $evaluation
+   * @throws \App\Exceptions\SubmissionEvaluationFailedException
    */
-  public function setReferenceScore(SolutionEvaluation $evaluation) {
-    if ($evaluation === null || $evaluation->getReferenceSolutionSubmission() === null) {
+  public function setReferenceScore(?ReferenceSolutionSubmission $submission) {
+    if ($submission === null || !$submission->hasEvaluation()) {
       // not a reference submission
       return;
     }
 
-    $referenceSolution = $evaluation->getReferenceSolutionSubmission()->getReferenceSolution();
+    $evaluation = $submission->getEvaluation();
+    $referenceSolution = $submission->getReferenceSolution();
     $this->setScore($evaluation, $referenceSolution->getExercise());
   }
 
@@ -133,6 +132,7 @@ class EvaluationPointsLoader {
    * student and reference solution.
    * @param SolutionEvaluation $evaluation
    * @param IExercise $exercise
+   * @throws \App\Exceptions\SubmissionEvaluationFailedException
    */
   private function setScore(SolutionEvaluation $evaluation, IExercise $exercise) {
     // setup

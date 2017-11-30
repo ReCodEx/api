@@ -10,6 +10,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @ORM\Entity
  *
  * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
+ * @method string getDescription()
  */
 class SubmissionFailure implements JsonSerializable {
 
@@ -24,6 +25,11 @@ class SubmissionFailure implements JsonSerializable {
    * Evaluation failed after the job has been accepted.
    */
   const TYPE_EVALUATION_FAILURE = "evaluation_failure";
+
+  /**
+   * Evaluation finished, but its results could not be loaded
+   */
+  const TYPE_LOADING_FAILURE = "loading_failure";
 
   /**
    * @ORM\Id
@@ -100,6 +106,10 @@ class SubmissionFailure implements JsonSerializable {
   public function resolve(string $note, DateTime $resolvedAt = NULL) {
     $this->resolvedAt = $resolvedAt ?: new DateTime();
     $this->resolutionNote = $note;
+  }
+
+  public function getSubmission(): Submission {
+    return $this->assignmentSolutionSubmission ?? $this->referenceSolutionSubmission;
   }
 
   function jsonSerialize() {
