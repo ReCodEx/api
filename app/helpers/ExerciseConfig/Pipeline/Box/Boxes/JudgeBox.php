@@ -127,7 +127,6 @@ class JudgeBox extends Box
       ];
     }
 
-
     // judge type decision logic
     if (empty($judgeType)) {
       return reset($judgeTypes);
