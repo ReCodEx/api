@@ -6,19 +6,15 @@ use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
-use App\Helpers\EmailsConfig;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FailureHelper;
-use App\Helpers\EvaluationLoader;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
-use App\Helpers\Notifications\SubmissionEmailsSender;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
-use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 
 /**

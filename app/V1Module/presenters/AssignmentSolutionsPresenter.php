@@ -4,18 +4,11 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\SubmissionEvaluationFailedException;
-use App\Helpers\EvaluationLoader;
 use App\Helpers\EvaluationLoadingHelper;
-use App\Helpers\FailureHelper;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AssignmentSolutionSubmission;
-use App\Model\Entity\Group;
-use App\Model\Entity\AssignmentSolution;
-use App\Model\Entity\SubmissionFailure;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
-use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
 use App\Exceptions\ForbiddenRequestException;
@@ -41,18 +34,6 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public $assignmentSolutionSubmissions;
 
   /**
-   * @var SolutionEvaluations
-   * @inject
-   */
-  public $evaluations;
-
-  /**
-   * @var EvaluationLoader
-   * @inject
-   */
-  public $evaluationLoader;
-
-  /**
    * @var Users
    * @inject
    */
@@ -75,12 +56,6 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $submissionFailures;
-
-  /**
-   * @var FailureHelper
-   * @inject
-   */
-  public $failureHelper;
 
   /**
    * @var EvaluationLoadingHelper
