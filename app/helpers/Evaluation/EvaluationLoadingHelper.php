@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Helpers;
+
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -9,6 +11,7 @@ use App\Model\Entity\SubmissionFailure;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
 use Nette;
+
 
 class EvaluationLoadingHelper extends Nette\Object {
   /** @var EvaluationLoader */
@@ -55,7 +58,7 @@ class EvaluationLoadingHelper extends Nette\Object {
 
         if ($evaluation !== null) { // If null is returned and no exception was thrown, the evaluation is not ready yet
           $this->entityManager->persist($evaluation);
-          $this->entityManager->flush($evaluation);
+          $this->entityManager->flush($submission);
         }
       } catch (SubmissionEvaluationFailedException $e) {
         // the result cannot be loaded even though the result MUST be ready at this point
