@@ -84,7 +84,6 @@ class ExerciseFilesPresenter extends BasePresenter {
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $newSupplementaryFiles = [];
     $deletedFiles = [];
     $currentSupplementaryFiles = [];
 
@@ -104,7 +103,7 @@ class ExerciseFilesPresenter extends BasePresenter {
         $exercise->getSupplementaryEvaluationFiles()->removeElement($currentFile);
       }
 
-      $newSupplementaryFiles[] = $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
+      $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
       $deletedFiles[] = $file;
@@ -174,7 +173,6 @@ class ExerciseFilesPresenter extends BasePresenter {
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $newAdditionalFiles = [];
     $currentAdditionalFiles = [];
 
     /** @var AdditionalExerciseFile $file */
@@ -193,7 +191,7 @@ class ExerciseFilesPresenter extends BasePresenter {
         $exercise->getAdditionalFiles()->removeElement($currentFile);
       }
 
-      $newAdditionalFiles[] = $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
     }
