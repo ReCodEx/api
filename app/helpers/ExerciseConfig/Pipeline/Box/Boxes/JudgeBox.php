@@ -29,12 +29,6 @@ class JudgeBox extends Box
   public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
   public static $DEFAULT_NAME = "ReCodEx Judge";
 
-  /* TYPES OF JUDGES */
-  public static $RECODEX_NORMAL_TYPE = "recodex-judge-normal";
-  public static $RECODEX_SHUFFLE_TYPE = "recodex-judge-shuffle";
-  public static $DIFF_TYPE = "diff";
-  public static $DIFF_BINARY = "/usr/bin/diff";
-
   private static $initialized = false;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
@@ -113,19 +107,33 @@ class JudgeBox extends Box
 
     $judgeType = null;
     if ($this->hasInputPortValue(self::$JUDGE_TYPE_PORT_KEY)) {
-      $judgeType = $this->getInputPortValue(self::$JUDGE_TYPE_PORT_KEY)->getValue();
+      $judgeType = strtolower($this->getInputPortValue(self::$JUDGE_TYPE_PORT_KEY)->getValue());
+    }
+
+  // Translation of judge type to command and args. The first item is the default.
+  static $judgeTypes = null;
+    if ($judgeTypes === null) {
+      $judgeTypes = [
+        'recodex-judge-normal' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', []],               // default token judge (respecting newlines)
+        'recodex-judge-float' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', ['-r']],            // judge comparing float values with some margin of error
+        'recodex-judge-normal-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', ['-n']],   // default token judge (which treats \n as normal whitespace)
+        'recodex-judge-float-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', ['-rn']],   // judge comparing float values (which treats \n as normal whitespace)
+        'recodex-judge-shuffle' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i']],         // judge ignoring order of tokens on a line
+        'recodex-judge-shuffle-rows' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-r']],    // judge ignoring order of rows
+        'recodex-judge-shuffle-all' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i','-r']],// judge ignoring order of tokens on a each line and order of rows
+        'recodex-judge-shuffle-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i','-n']], // judge ignoring order of tokens (which treats \n ...)
+        'diff' => ["/usr/bin/diff", []],                                                               // diff (binary-safe) judge
+      ];
     }
 
     // judge type decision logic
-    if (empty($judgeType) || strtolower($judgeType) === self::$RECODEX_NORMAL_TYPE) {
-      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_NORMAL_TYPE, []];
-    } else if (strtolower($judgeType) === self::$RECODEX_SHUFFLE_TYPE) {
-      return [ConfigParams::$JUDGES_DIR . self::$RECODEX_SHUFFLE_TYPE, []];
-    } else if (strtolower($judgeType) === self::$DIFF_TYPE) {
-      return [self::$DIFF_BINARY, []];
+    if (empty($judgeType)) {
+      return reset($judgeTypes);
+    } else if (!empty($judgeTypes[$judgeType])) {
+      return $judgeTypes[$judgeType];
+    } else {
+      throw new ExerciseConfigException("Unknown judge type");
     }
-
-    throw new ExerciseConfigException("Unknown judge type");
   }
 
   /**
