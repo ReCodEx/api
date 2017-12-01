@@ -29,8 +29,6 @@ class JudgeBox extends Box
   public static $EXPECTED_OUTPUT_PORT_KEY = "expected-output";
   public static $DEFAULT_NAME = "ReCodEx Judge";
 
-  /** Translation of judge type to command and args. The first item is the default. */
-
   private static $initialized = false;
   private static $defaultInputPorts;
   private static $defaultOutputPorts;
@@ -112,7 +110,8 @@ class JudgeBox extends Box
       $judgeType = strtolower($this->getInputPortValue(self::$JUDGE_TYPE_PORT_KEY)->getValue());
     }
 
-    static $judgeTypes = null;
+  // Translation of judge type to command and args. The first item is the default.
+  static $judgeTypes = null;
     if ($judgeTypes === null) {
       $judgeTypes = [
         'recodex-judge-normal' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', []],               // default token judge (respecting newlines)
