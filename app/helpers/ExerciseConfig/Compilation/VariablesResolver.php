@@ -59,6 +59,46 @@ class VariablesResolver {
   }
 
   /**
+   * For given array of values try to find corresponding indices in given files
+   * array and return appropriate values from files array.
+   * @param array $values
+   * @param array $files
+   * @return array resolved files
+   * @throws ExerciseConfigException
+   */
+  private function resolveRemoteFileHashValue(array $values, array $files): array {
+    $newValues = [];
+    foreach ($values as $value) {
+      if (!array_key_exists($value, $files)) {
+        throw new ExerciseConfigException("File '{$value}' does not exist in exercise or pipeline.");
+      }
+
+      $newValues[] = $files[$value];
+    }
+
+    return $newValues;
+  }
+
+  /**
+   * If variable is of type remote-file resolve value which contains file name and replace it with hashes.
+   * @param Variable|null $variable
+   * @param array $files indexed by file names, containing file hashes
+   * @throws ExerciseConfigException
+   */
+  private function resolveRemoteFileHash(?Variable $variable, array $files) {
+    if (!$variable || $variable->isEmpty() || !$variable->isRemoteFile()) {
+      // unfitting variable
+      return;
+    }
+
+    if ($variable->isValueArray()) {
+      $variable->setValue($this->resolveRemoteFileHashValue($variable->getValue(), $files));
+    } else {
+      $variable->setValue(current($this->resolveRemoteFileHashValue($variable->getValueAsArray(), $files)));
+    }
+  }
+
+  /**
    * Input boxes has to be treated differently. Variables can be loaded from
    * external configuration - environment config or exercise config.
    * @note Has to be called before @ref resolveForOtherNodes()
@@ -67,11 +107,13 @@ class VariablesResolver {
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
    * @param string[] $submittedFiles
+   * @param array $exerciseFiles
    * @throws ExerciseConfigException
    */
   public function resolveForInputNodes(MergeTree $mergeTree,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables, array $submittedFiles) {
+      VariablesTable $pipelineVariables, array $submittedFiles,
+      array $exerciseFiles) {
     foreach ($mergeTree->getInputNodes() as $node) {
 
       /** @var DataInBox $inputBox */
@@ -107,6 +149,9 @@ class VariablesResolver {
       } else if ($exerciseVariable) {
         $inputVariable = $exerciseVariable;
       }
+
+      // resolve name of the file to the hash if variable is remote file
+      $this->resolveRemoteFileHash($inputVariable, $exerciseFiles);
 
       // assign variable to both nodes
       $inputBox->setInputVariable($inputVariable);
@@ -153,12 +198,13 @@ class VariablesResolver {
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
+   * @param array $pipelineFiles
    * @throws ExerciseConfigException
    */
   private function resolveForVariable(?PortNode $parent, PortNode $child,
       string $inPortName, ?string $outPortName,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables) {
+      VariablesTable $pipelineVariables, array $pipelineFiles) {
 
     // init
     $inPort = $child->getBox()->getInputPort($inPortName);
@@ -196,6 +242,9 @@ class VariablesResolver {
     // variable is reference, try to find its value in external variables tables
     $variable = $this->findReferenceIfAny($variable, $environmentVariables, $exerciseVariables);
 
+    // resolve name of the file to the hash if variable is remote file
+    $this->resolveRemoteFileHash($variable, $pipelineFiles);
+
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
     if ($outPort !== null) { $outPort->setVariableValue($variable); }
@@ -209,11 +258,12 @@ class VariablesResolver {
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
+   * @param array $pipelineFiles
    * @throws ExerciseConfigException
    */
   public function resolveForOtherNodes(MergeTree $mergeTree,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables) {
+      VariablesTable $pipelineVariables, array $pipelineFiles) {
     foreach ($mergeTree->getOtherNodes() as $node) {
       foreach ($node->getBox()->getInputPorts() as $inPortName => $inputPort) {
         $parent = $node->getParent($inPortName);
@@ -223,7 +273,7 @@ class VariablesResolver {
           throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
         }
 
-        $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables);
+        $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables, $pipelineFiles);
       }
 
       foreach ($node->getChildrenByPort() as $outPortName => $children) {
@@ -234,7 +284,7 @@ class VariablesResolver {
             throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
           }
 
-          $this->resolveForVariable($node, $child, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables);
+          $this->resolveForVariable($node, $child, $inPortName, $outPortName, $environmentVariables, $exerciseVariables, $pipelineVariables, $pipelineFiles);
         }
       }
     }
@@ -247,12 +297,17 @@ class VariablesResolver {
    * @param VariablesTable $exerciseVariables
    * @param VariablesTable $pipelineVariables
    * @param string[] $submittedFiles
+   * @param array $exerciseFiles indexed by file names, contains file hashes
+   * @param array $pipelineFiles indexed by file names, contains file hashes
+   * @throws ExerciseConfigException
    */
   public function resolve(MergeTree $mergeTree,
       VariablesTable $environmentVariables, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables, array $submittedFiles) {
-    $this->resolveForInputNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables, $submittedFiles);
-    $this->resolveForOtherNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables);
+      VariablesTable $pipelineVariables, array $submittedFiles, array $exerciseFiles, array $pipelineFiles) {
+    $this->resolveForInputNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables,
+      $submittedFiles, $exerciseFiles);
+    $this->resolveForOtherNodes($mergeTree, $environmentVariables, $exerciseVariables, $pipelineVariables,
+      $pipelineFiles);
   }
 
 }
