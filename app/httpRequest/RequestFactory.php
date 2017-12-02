@@ -10,7 +10,7 @@ use App\Exceptions\InternalServerErrorException;
 
 /**
  * Main router factory which is used to create all possible routes.
- * @return Request
+ * @return Nette\Http\Request
  */
 class RequestFactory extends Nette\Http\RequestFactory
 {

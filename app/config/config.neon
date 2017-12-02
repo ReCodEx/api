@@ -199,6 +199,7 @@ decorator:
       - setMigrationConfiguration(@migrations.configuration)
 
 services:
+  http.requestFactory: App\RequestFactory
   router: App\RouterFactory::createRouter
   - Nette\Mail\SmtpMailer(%mail%)
 
