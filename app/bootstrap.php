@@ -19,6 +19,10 @@ if (file_exists(__DIR__ . '/config/config.local.neon')) {
   $configurator->addConfig(__DIR__ . '/config/config.local.neon');
 }
 
+$requestFactory = new App\RequestFactory();
+$configurator->addServices(['httpRequest' => $requestFactory->createHttpRequest()]);
+
 $container = $configurator->createContainer();
+
 
 return $container;
