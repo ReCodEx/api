@@ -3,10 +3,9 @@
 namespace App;
 
 use Nette;
-
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\InternalServerErrorException;
 
 /**
  * Main router factory which is used to create all possible routes.
@@ -26,9 +25,15 @@ class RequestFactory extends Nette\Http\RequestFactory
     if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST'
       && strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false) {
       $body = file_get_contents('php://input');
-      $json = json_decode($body, true); // true = use assoc arrays instead of objects
-      if ($json === null) {
-        throw new BadRequestException("Parsing of the JSON body failed: " . json_last_error());
+      try {
+        $json = Json::decode($body, Json::FORCE_ARRAY);
+      }
+      catch (JsonException $e) {
+        throw new BadRequestException("Parsing of the JSON body failed: " . $e->getMessage());
+      }
+
+      if (!is_array($json)) {
+        throw new BadRequestException("A collection is expected as JSON body. Scalar value was given instead.");
       }
 
       $_POST = $json;
