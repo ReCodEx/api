@@ -22,8 +22,8 @@ class RequestFactory extends Nette\Http\RequestFactory
      * A patch which will take JSON bodies passed in POST requests and fill them into $_POST array,
      * so they are parsed by create HTTP request method.
      */
-    if (strtoupper($_SERVER['REQUEST_METHOD']) == 'POST'
-      && strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false) {
+    if (!empty($_SERVER['REQUEST_METHOD']) && strtoupper($_SERVER['REQUEST_METHOD']) == 'POST'
+      && !empty($_SERVER['CONTENT_TYPE'])) && strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false) {
       $body = file_get_contents('php://input');
       try {
         $json = Json::decode($body, Json::FORCE_ARRAY);
