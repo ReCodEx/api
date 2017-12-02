@@ -108,7 +108,7 @@ class FilesInBox extends DataInBox
 
     // input variable is not array
     if ($inputVariable && !$inputVariable->isValueArray()) {
-      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", self::$FILES_IN_TYPE));
+      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", $this->getName()));
     }
 
     // compilation

@@ -43,7 +43,7 @@ class VariablesResolver {
 
     if (empty($matches)) {
       // there were no matches, but variable value cannot be empty!
-      throw new ExerciseConfigException("Regular expression in variable '{$variable->getName()}' could not be resolved against submitted files");
+      throw new ExerciseConfigException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
     }
 
     // construct resulting variable from given variable info
