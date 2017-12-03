@@ -189,11 +189,11 @@ class ExercisesConfigPresenter extends BasePresenter {
         $exercise->getExerciseEnvironmentConfigByEnvironment($environment)
       );
 
+      // validation of newly create environment config
+      $this->configValidator->validateEnvironmentConfig($exercise, $variablesTable);
+
       $configs[$environmentId] = $config;
     }
-
-    // validation of newly create environment config
-    // TODO
 
     // make changes and updates to database entity
     $exercise->setRuntimeEnvironments($runtimeEnvironments);

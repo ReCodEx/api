@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
 use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
@@ -41,18 +42,26 @@ class Validator {
   private $exerciseLimitsValidator;
 
   /**
+   * @var EnvironmentConfigValidator
+   */
+  private $environmentConfigValidator;
+
+  /**
    * Validator constructor.
    * @param Loader $loader
    * @param ExerciseConfigValidator $exerciseConfigValidator
    * @param PipelineValidator $pipelineValidator
    * @param ExerciseLimitsValidator $exerciseLimitsValidator
+   * @param EnvironmentConfigValidator $environmentConfigValidator
    */
   public function __construct(Loader $loader, ExerciseConfigValidator $exerciseConfigValidator,
-      PipelineValidator $pipelineValidator, ExerciseLimitsValidator $exerciseLimitsValidator) {
+      PipelineValidator $pipelineValidator, ExerciseLimitsValidator $exerciseLimitsValidator,
+      EnvironmentConfigValidator $environmentConfigValidator) {
     $this->loader = $loader;
     $this->exerciseConfigValidator = $exerciseConfigValidator;
     $this->pipelineValidator = $pipelineValidator;
     $this->exerciseLimitsValidator = $exerciseLimitsValidator;
+    $this->environmentConfigValidator = $environmentConfigValidator;
   }
 
 
@@ -77,6 +86,17 @@ class Validator {
   }
 
   /**
+   * Validation of exercise environment configuration. Presence of exercise
+   * files is checked in all remote-file variables.
+   * @param Exercise $exercise
+   * @param VariablesTable $table
+   * @throws ExerciseConfigException
+   */
+  public function validateEnvironmentConfig(Exercise $exercise, VariablesTable $table) {
+    $this->environmentConfigValidator->validate($exercise, $table);
+  }
+
+  /**
    * Validation of exercise configuration against environment configurations,
    * that means mainly runtime environment identification. Another checks are
    * made against pipeline, again identification of pipeline is checked,
@@ -97,7 +117,6 @@ class Validator {
    * existing.
    * @param Exercise $exercise
    * @param ExerciseLimits $limits
-   * @param string $environmentId
    * @throws ExerciseConfigException
    */
   public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {

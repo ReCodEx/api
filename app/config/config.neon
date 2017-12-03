@@ -285,6 +285,7 @@ services:
   - App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator
   - App\Helpers\ExerciseConfig\Validation\PipelineValidator
   - App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator
+  - App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator
   - App\Helpers\ExerciseConfig\Compilation\BaseCompiler
   - App\Helpers\ExerciseConfig\Compilation\PipelinesMerger
   - App\Helpers\ExerciseConfig\Compilation\BoxesSorter
