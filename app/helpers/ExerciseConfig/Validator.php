@@ -7,6 +7,7 @@ use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
 use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Pipeline as PipelineEntity;
 
 
 /**
@@ -65,12 +66,14 @@ class Validator {
    * ones. There is possibility to have variable which is only aimed to input
    * port, in that case this variables has to be present in variables table of
    * pipeline. Variables whose only reference is in output port are not
-   * supported.
-   * @param Pipeline $pipeline
+   * supported. Validation also checks remote files presence in pipeline
+   * database entity.
+   * @param PipelineEntity $pipeline
+   * @param Pipeline $pipelineConfig
    * @throws ExerciseConfigException
    */
-  public function validatePipeline(Pipeline $pipeline) {
-    $this->pipelineValidator->validate($pipeline);
+  public function validatePipeline(PipelineEntity $pipeline, Pipeline $pipelineConfig) {
+    $this->pipelineValidator->validate($pipeline, $pipelineConfig);
   }
 
   /**
@@ -78,6 +81,7 @@ class Validator {
    * that means mainly runtime environment identification. Another checks are
    * made against pipeline, again identification of pipeline is checked,
    * but in here also variables and if pipeline requires them is checked.
+   * Validation also checks remote files presence in exercise database entity.
    * @param Exercise $exercise
    * @param ExerciseConfig $config
    * @throws ExerciseConfigException
@@ -96,9 +100,9 @@ class Validator {
    * @param string $environmentId
    * @throws ExerciseConfigException
    */
-  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits, string $environmentId) {
+  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig, $environmentId);
+    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig);
   }
 
 }

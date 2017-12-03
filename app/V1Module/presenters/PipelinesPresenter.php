@@ -4,7 +4,9 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
@@ -219,6 +221,8 @@ class PipelinesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws BadRequestException
+   * @throws ExerciseConfigException
+   * @throws InvalidArgumentException
    */
   public function actionUpdatePipeline(string $id) {
     /** @var Pipeline $pipeline */
@@ -248,7 +252,7 @@ class PipelinesPresenter extends BasePresenter {
     $oldConfig = $pipeline->getPipelineConfig();
 
     // validate new pipeline configuration
-    $this->configValidator->validatePipeline($pipelineConfig);
+    $this->configValidator->validatePipeline($pipeline, $pipelineConfig);
 
     // create new pipeline configuration based on given data and store it in pipeline entity
     $newConfig = new PipelineConfig((string) $pipelineConfig, $this->getCurrentUser(), $oldConfig);

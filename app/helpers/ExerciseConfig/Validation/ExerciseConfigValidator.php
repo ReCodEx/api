@@ -102,19 +102,21 @@ class ExerciseConfigValidator {
             return $envConfig->getRuntimeEnvironment()->getId() === $envId;
           })->first();
         $environmentVariables = $this->loader->loadVariablesTable($environmentEntity->getParsedVariablesTable());
-        $this->checkPipelinesSection($environment->getPipelines(), $environmentVariables, $envId);
+        $this->checkPipelinesSection($exercise, $environment->getPipelines(), $environmentVariables, $envId);
       }
     }
   }
 
   /**
+   * @param Exercise $exercise
    * @param array $pipelines
    * @param VariablesTable $environmentVariables
    * @param string $environment
    * @throws ExerciseConfigException
    */
-  private function checkPipelinesSection(array $pipelines,
+  private function checkPipelinesSection(Exercise $exercise, array $pipelines,
       VariablesTable $environmentVariables, ?string $environment = NULL) {
+    $exerciseFiles = $exercise->getHashedSupplementaryFiles();
 
     // load pipeline configurations from database
     $pipelineConfigs = [];
@@ -139,24 +141,23 @@ class ExerciseConfigValidator {
         return $variable->getName();
       }, $expectedVariables[$pipelineId]);
       $variables = $pipelineVars->getVariablesTable();
-      $variableNames = $variables !== NULL
-        ? array_map(function (Variable $variable) { return $variable->getName(); }, $variables->getAll())
-        : [];
 
-      /** @var Variable $variable */
-      foreach ($variableNames as $variable) {
-        if (!in_array($variable, $expectedVariablesNames)) {
+      foreach ($variables->getAll() as $variable) {
+        if (!in_array($variable->getName(), $expectedVariablesNames)) {
           throw new ExerciseConfigException(sprintf(
             "Variable '%s' is redundant in pipeline %s, environment %s",
-            $variable,
+            $variable->getName(),
             $pipelineId,
             $environment ?? "default"
           ));
         }
 
         $expectedVariablesNames = array_filter($expectedVariablesNames, function (string $name) use ($variable) {
-          return $name !== $variable;
+          return $name !== $variable->getName();
         });
+
+        // check supplementary remote files if exists in exercise entity
+        ValidationUtils::checkRemoteFilePresence($variable, $exerciseFiles, "exercise");
       }
 
       if (count($expectedVariablesNames) > 0) {
@@ -172,8 +173,10 @@ class ExerciseConfigValidator {
 
   /**
    * Validate exercise configuration.
+   * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator
    * @param ExerciseConfig $config
    * @param Exercise $exercise
+   * @throws ExerciseConfigException
    */
   public function validate(ExerciseConfig $config, Exercise $exercise) {
     $this->checkEnvironments($config, $exercise);
