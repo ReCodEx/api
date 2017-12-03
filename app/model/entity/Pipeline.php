@@ -27,6 +27,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setPipelineConfig($config)
  * @method void setUpdatedAt(DateTime $date)
  * @method PipelineParameter[] getParameters()
+ * @method Collection getRuntimeEnvironments()
  */
 class Pipeline implements JsonSerializable
 {
@@ -160,6 +161,10 @@ class Pipeline implements JsonSerializable
    */
   public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
     $this->supplementaryEvaluationFiles->add($exerciseFile);
+  }
+
+  public function addRuntimeEnvironment(RuntimeEnvironment $environment) {
+    $this->runtimeEnvironments->add($environment);
   }
 
   /**
