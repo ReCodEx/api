@@ -26,6 +26,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
  * @method void setUpdatedAt(DateTime $date)
+ * @method PipelineParameter[] getParameters()
  */
 class Pipeline implements JsonSerializable
 {

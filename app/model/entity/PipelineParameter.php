@@ -9,6 +9,7 @@ use Kdyby\Doctrine\Entities\MagicAccessors;
  * @ORM\Entity
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn("discriminator")
+ * @method string getName()
  */
 abstract class PipelineParameter implements JsonSerializable {
   use MagicAccessors;
