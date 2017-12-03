@@ -178,6 +178,19 @@ class Pipeline implements JsonSerializable
       })->getValues();
   }
 
+  /**
+   * Get array containing hashes of files indexed by the name.
+   * @return array
+   */
+  public function getHashedSupplementaryFiles(): array {
+    $files = [];
+    /** @var SupplementaryExerciseFile $file */
+    foreach ($this->supplementaryEvaluationFiles as $file) {
+      $files[$file->getName()] = $file->getHashName();
+    }
+    return $files;
+  }
+
 
   /**
    * Create empty pipeline entity.

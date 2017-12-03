@@ -165,8 +165,8 @@ App\Model\Entity\ReferenceSolutionSubmission:
         evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
         resultsUrl: "chacha cheche chichi chocho"
 
-App\Model\Entity\AdditionalExerciseFile:
-    demoExerciseAdditionalFile:
+App\Model\Entity\AttachmentFile:
+    demoExerciseAttachmentFile:
         __construct:
             - Our additional file
             - "<dateTimeBetween('-3 years', '-1 years')>"

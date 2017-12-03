@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Entity\ExerciseTest;
@@ -73,7 +74,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class);
+    }, ExerciseConfigException::class, "Exercise configuration error - The number of entries in environment-specific configuration differs from the number of allowed environments");
   }
 
   public function testDifferentEnvironments() {
@@ -92,7 +93,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class);
+    }, ExerciseConfigException::class, "Exercise configuration error - Environment envA not found in environment-specific configuration");
   }
 
   public function testDifferentNumberOfEnvironments() {
@@ -103,7 +104,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class);
+    }, ExerciseConfigException::class, "Exercise configuration error - The number of entries in environment-specific configuration differs from the number of allowed environments");
   }
 
   public function testMissingEnvironmentPipeline() {
@@ -132,7 +133,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     // missing in environments
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class);
+    }, ExerciseConfigException::class, "Exercise configuration error - Pipeline 'not existing pipeline' not found");
   }
 
   public function testDifferentNumberOfTests() {
@@ -228,6 +229,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
       }
     );
   }
+
 
   /**
    * @return Exercise

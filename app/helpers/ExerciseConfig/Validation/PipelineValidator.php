@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Validation;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Variable;
+use App\Model\Entity\Pipeline as PipelineEntity;
 
 
 /**
@@ -14,14 +15,17 @@ class PipelineValidator {
 
   /**
    * Validate pipeline.
-   * @param Pipeline $pipeline
+   * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator
+   * @param PipelineEntity $pipeline
+   * @param Pipeline $pipelineConfig
    * @throws ExerciseConfigException
    */
-  public function validate(Pipeline $pipeline) {
-    $variables = $pipeline->getVariablesTable();
+  public function validate(PipelineEntity $pipeline, Pipeline $pipelineConfig) {
+    $variables = $pipelineConfig->getVariablesTable();
+    $pipelineFiles = $pipeline->getHashedSupplementaryFiles();
 
     // Check ports of all boxes
-    foreach ($pipeline->getAll() as $box) {
+    foreach ($pipelineConfig->getAll() as $box) {
       foreach ($box->getPorts() as $port) {
         if ($port->getVariable() === NULL || $port->getVariable() === "") {
           continue; // Empty port - no further validation is necessary
@@ -55,7 +59,7 @@ class PipelineValidator {
       $variableUsedAsOutput = FALSE;
       $variableUsedAsInput = FALSE;
 
-      foreach ($pipeline->getAll() as $box) {
+      foreach ($pipelineConfig->getAll() as $box) {
         foreach ($box->getOutputPorts() as $outputPort) {
           if ($outputPort->getVariable() !== $variableName) {
             continue;
@@ -86,6 +90,10 @@ class PipelineValidator {
       if (!$variableUsedAsInput) {
         throw new ExerciseConfigException(sprintf("No port uses variable %s", $variableName));
       }
+
+      // check supplementary remote files if exists in pipeline entity
+      ValidationUtils::checkRemoteFilePresence($variable, $pipelineFiles, "pipeline");
     }
   }
+
 }

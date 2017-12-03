@@ -60,6 +60,7 @@ class Variable implements JsonSerializable
    * @param string $type
    * @param string|null $name
    * @param string|array $value
+   * @throws ExerciseConfigException
    */
   public function __construct(string $type, string $name = null, $value = null) {
     $this->type = $type;
@@ -252,6 +253,7 @@ class Variable implements JsonSerializable
    * Set value of this variable.
    * @param array|string $value
    * @return Variable
+   * @throws ExerciseConfigException
    */
   public function setValue($value): Variable {
     $this->value = $value;

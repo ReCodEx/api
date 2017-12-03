@@ -8,6 +8,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Pipeline;
 
 /**
+ * @method Pipeline findOrThrow($id)
  * @method Pipeline get($id)
  */
 class Pipelines extends BaseSoftDeleteRepository {

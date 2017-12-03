@@ -3,10 +3,12 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
 use App\Helpers\ExerciseConfig\Validation\PipelineValidator;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Pipeline as PipelineEntity;
 
 
 /**
@@ -40,18 +42,26 @@ class Validator {
   private $exerciseLimitsValidator;
 
   /**
+   * @var EnvironmentConfigValidator
+   */
+  private $environmentConfigValidator;
+
+  /**
    * Validator constructor.
    * @param Loader $loader
    * @param ExerciseConfigValidator $exerciseConfigValidator
    * @param PipelineValidator $pipelineValidator
    * @param ExerciseLimitsValidator $exerciseLimitsValidator
+   * @param EnvironmentConfigValidator $environmentConfigValidator
    */
   public function __construct(Loader $loader, ExerciseConfigValidator $exerciseConfigValidator,
-      PipelineValidator $pipelineValidator, ExerciseLimitsValidator $exerciseLimitsValidator) {
+      PipelineValidator $pipelineValidator, ExerciseLimitsValidator $exerciseLimitsValidator,
+      EnvironmentConfigValidator $environmentConfigValidator) {
     $this->loader = $loader;
     $this->exerciseConfigValidator = $exerciseConfigValidator;
     $this->pipelineValidator = $pipelineValidator;
     $this->exerciseLimitsValidator = $exerciseLimitsValidator;
+    $this->environmentConfigValidator = $environmentConfigValidator;
   }
 
 
@@ -65,12 +75,25 @@ class Validator {
    * ones. There is possibility to have variable which is only aimed to input
    * port, in that case this variables has to be present in variables table of
    * pipeline. Variables whose only reference is in output port are not
-   * supported.
-   * @param Pipeline $pipeline
+   * supported. Validation also checks remote files presence in pipeline
+   * database entity.
+   * @param PipelineEntity $pipeline
+   * @param Pipeline $pipelineConfig
    * @throws ExerciseConfigException
    */
-  public function validatePipeline(Pipeline $pipeline) {
-    $this->pipelineValidator->validate($pipeline);
+  public function validatePipeline(PipelineEntity $pipeline, Pipeline $pipelineConfig) {
+    $this->pipelineValidator->validate($pipeline, $pipelineConfig);
+  }
+
+  /**
+   * Validation of exercise environment configuration. Presence of exercise
+   * files is checked in all remote-file variables.
+   * @param Exercise $exercise
+   * @param VariablesTable $table
+   * @throws ExerciseConfigException
+   */
+  public function validateEnvironmentConfig(Exercise $exercise, VariablesTable $table) {
+    $this->environmentConfigValidator->validate($exercise, $table);
   }
 
   /**
@@ -78,6 +101,7 @@ class Validator {
    * that means mainly runtime environment identification. Another checks are
    * made against pipeline, again identification of pipeline is checked,
    * but in here also variables and if pipeline requires them is checked.
+   * Validation also checks remote files presence in exercise database entity.
    * @param Exercise $exercise
    * @param ExerciseConfig $config
    * @throws ExerciseConfigException
@@ -93,12 +117,11 @@ class Validator {
    * existing.
    * @param Exercise $exercise
    * @param ExerciseLimits $limits
-   * @param string $environmentId
    * @throws ExerciseConfigException
    */
-  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits, string $environmentId) {
+  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig, $environmentId);
+    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig);
   }
 
 }

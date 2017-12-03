@@ -143,7 +143,8 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @Param(type="post", name="environmentConfigs", validation="array", description="Environment configurations for the exercise")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @throws JobConfigStorageException
+   * @throws ExerciseConfigException
+   * @throws NotFoundException
    */
   public function actionUpdateEnvironmentConfigs(string $id) {
     $req = $this->getRequest();
@@ -188,6 +189,9 @@ class ExercisesConfigPresenter extends BasePresenter {
         $exercise->getExerciseEnvironmentConfigByEnvironment($environment)
       );
 
+      // validation of newly create environment config
+      $this->configValidator->validateEnvironmentConfig($exercise, $variablesTable);
+
       $configs[$environmentId] = $config;
     }
 
@@ -207,6 +211,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionGetConfiguration(string $id) {
     /** @var Exercise $exercise */
@@ -234,8 +239,8 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @Param(type="post", name="config", description="A list of basic high level exercise configuration", validation="array")
    * @param string $id Identifier of the exercise
    * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionSetConfiguration(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -276,6 +281,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @Param(type="post", name="pipelinesIds", validation="array", description="Identifiers of selected pipelines for one test")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionGetVariablesForExerciseConfig(string $id) {
     // get request data
@@ -317,6 +323,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $runtimeEnvironmentId
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionGetLimits(string $id, string $runtimeEnvironmentId) {
     /** @var Exercise $exercise */
@@ -350,6 +357,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $runtimeEnvironmentId
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionSetLimits(string $id, string $runtimeEnvironmentId) {
     /** @var Exercise $exercise */
@@ -369,7 +377,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
     // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits, $runtimeEnvironmentId);
+    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
 
     foreach ($this->hardwareGroups->findAll() as $hwGroup) {
       // new limits were provided, so construct new database entity
@@ -396,6 +404,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $hwGroupId
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionGetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */
@@ -434,6 +443,7 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws NotFoundException
+   * @throws ExerciseConfigException
    */
   public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */
@@ -454,7 +464,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
     // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits, $runtimeEnvironmentId);
+    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
 
     // new limits were provided, so construct new database entity
     $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);

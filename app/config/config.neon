@@ -287,6 +287,7 @@ services:
   - App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator
   - App\Helpers\ExerciseConfig\Validation\PipelineValidator
   - App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator
+  - App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator
   - App\Helpers\ExerciseConfig\Compilation\BaseCompiler
   - App\Helpers\ExerciseConfig\Compilation\PipelinesMerger
   - App\Helpers\ExerciseConfig\Compilation\BoxesSorter
@@ -321,7 +322,7 @@ services:
   - App\Model\Repository\GroupMemberships
   - App\Model\Repository\HardwareGroups
   - App\Model\Repository\SupplementaryExerciseFiles
-  - App\Model\Repository\AdditionalExerciseFiles
+  - App\Model\Repository\AttachmentFiles
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms

@@ -403,8 +403,8 @@ permissions:
           - download
           - viewDetail
       conditions:
-          - file.isAdditionalExerciseFile
-          - file.isExercisePublic
+          - file.isAttachmentFile
+          - file.isExerciseOrAssignmentPublic
 
     - allow: true
       role: supervisor

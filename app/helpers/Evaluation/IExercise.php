@@ -67,4 +67,10 @@ interface IExercise {
    * @return string
    */
   function getConfigurationType(): string;
+
+  /**
+   * Returns array indexed by the name of the file which contains hash of file.
+   * @return array
+   */
+  function getHashedSupplementaryFiles(): array;
 }

@@ -1,7 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Model\Entity\AdditionalExerciseFile;
+use App\Model\Entity\AttachmentFile;
 use App\V1Module\Presenters\UploadedFilesPresenter;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\Logins;
@@ -283,7 +283,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
   }
 
-  public function testGroupMemberCanAccessAdditionalFiles()
+  public function testGroupMemberCanAccessAttachmentFiles()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
@@ -294,7 +294,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     /** @var EntityManager $em */
     $em = $this->container->getByType(EntityManager::class);
 
-    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+    $file = current($em->getRepository(AttachmentFile::class)->findAll());
     $file->localFilePath = $vfs->getChild($filename)->url();
     $this->em->flush();
 
@@ -307,7 +307,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\FileResponse::class, $response);
   }
 
-  public function testOutsiderCannotAccessAdditionalFiles()
+  public function testOutsiderCannotAccessAttachmentFiles()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
 
@@ -318,7 +318,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     /** @var EntityManager $em */
     $em = $this->container->getByType(EntityManager::class);
 
-    $file = current($em->getRepository(AdditionalExerciseFile::class)->findAll());
+    $file = current($em->getRepository(AttachmentFile::class)->findAll());
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET', [
       'action' => 'download',

@@ -82,7 +82,8 @@ class Compiler {
     }
 
     return $this->baseCompiler->compile($exerciseConfig,
-      $environmentConfigVariables, $limits, $runtimeEnvironment->getId(),
+      $environmentConfigVariables, $limits,
+      $exercise->getHashedSupplementaryFiles(), $runtimeEnvironment->getId(),
       $params);
   }
 

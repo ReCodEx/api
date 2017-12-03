@@ -202,6 +202,13 @@ class TestBaseCompiler extends Tester\TestCase
       ]
     ]
   ];
+  private static $pipelineFiles = [];
+  private static $exerciseFiles = [
+    "expected.A.out" => "expected.A.out.hash",
+    "expected.A.in" => "expected.A.in.hash",
+    "expected.B.out" => "expected.B.out.hash",
+    "expected.B.in" => "expected.B.in.hash"
+  ];
 
 
   /**
@@ -213,9 +220,11 @@ class TestBaseCompiler extends Tester\TestCase
     $this->mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
     $this->mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
     $this->mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockCompilationPipelineConfig);
+    $this->mockCompilationPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
     $this->mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
     $this->mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
     $this->mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockTestPipelineConfig);
+    $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
 
     $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
     $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
@@ -245,7 +254,7 @@ class TestBaseCompiler extends Tester\TestCase
     ];
 
     $jobConfig = $this->compiler->compile($exerciseConfig,
-      $environmentConfigVariables, $limits, self::$environment,
+      $environmentConfigVariables, $limits, self::$exerciseFiles, self::$environment,
       CompilationParams::create([], true));
 
     // check general properties
@@ -302,7 +311,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(2, $testAInputTask->getDependencies());
     Assert::equal([$testAMkdir->getId(), $resultTestAMkdir->getId()], $testAInputTask->getDependencies());
     Assert::equal("fetch", $testAInputTask->getCommandBinary());
-    Assert::equal(["expected.A.in", ConfigParams::$SOURCE_DIR . "testA/expected.A.in"], $testAInputTask->getCommandArguments());
+    Assert::equal(["expected.A.in.hash", ConfigParams::$SOURCE_DIR . "testA/expected.A.in.hash"], $testAInputTask->getCommandArguments());
     Assert::null($testAInputTask->getType());
     Assert::equal("testA", $testAInputTask->getTestId());
     Assert::null($testAInputTask->getSandboxConfig());
@@ -313,7 +322,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(2, $testATestTask->getDependencies());
     Assert::equal([$testAMkdir->getId(), $resultTestAMkdir->getId()], $testATestTask->getDependencies());
     Assert::equal("fetch", $testATestTask->getCommandBinary());
-    Assert::equal(["expected.A.out", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
+    Assert::equal(["expected.A.out.hash", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
     Assert::null($testATestTask->getType());
     Assert::equal("testA", $testATestTask->getTestId());
     Assert::null($testATestTask->getSandboxConfig());
@@ -356,7 +365,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
     Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testARunTask->getSandboxConfig()->getChdir());
     Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
-    Assert::equal(ConfigParams::$EVAL_DIR . "testA/expected.A.in", $testARunTask->getSandboxConfig()->getStdin());
+    Assert::equal(ConfigParams::$EVAL_DIR . "testA/expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
     Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());

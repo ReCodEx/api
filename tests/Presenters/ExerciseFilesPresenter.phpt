@@ -4,7 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\FileServerProxy;
-use App\Model\Entity\AdditionalExerciseFile;
+use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\ExerciseFilesPresenter;
 use App\Model\Entity\SupplementaryExerciseFile;
@@ -37,8 +37,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Exercises */
   protected $exercises;
 
-  /** @var App\Model\Repository\AdditionalExerciseFiles */
-  protected $additionalFiles;
+  /** @var App\Model\Repository\AttachmentFiles */
+  protected $attachmentFiles;
 
   public function __construct()
   {
@@ -49,7 +49,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
-    $this->additionalFiles = $container->getByType(\App\Model\Repository\AdditionalExerciseFiles::class);
+    $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
   }
 
   protected function setUp()
@@ -178,20 +178,20 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Assert::count($filesCount, $exercise->getSupplementaryEvaluationFiles());
   }
 
-  public function testGetAdditionalFiles() {
+  public function testGetAttachmentFiles() {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // prepare files into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $exercise = $this->presenter->exercises->searchByName("An exercise")[0];
-    $expectedFile1 = new AdditionalExerciseFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
-    $expectedFile2 = new AdditionalExerciseFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
-    $this->additionalFiles->persist($expectedFile1, FALSE);
-    $this->additionalFiles->persist($expectedFile2, FALSE);
-    $this->additionalFiles->flush();
+    $expectedFile1 = new AttachmentFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
+    $expectedFile2 = new AttachmentFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
+    $this->attachmentFiles->persist($expectedFile1, FALSE);
+    $this->attachmentFiles->persist($expectedFile2, FALSE);
+    $this->attachmentFiles->flush();
 
     $request = new Nette\Application\Request("V1:ExerciseFiles", 'GET',
-      ['action' => 'getAdditionalFiles', 'id' => $exercise->getId()]);
+      ['action' => 'getAttachmentFiles', 'id' => $exercise->getId()]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -205,19 +205,19 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Assert::equal($expectedFiles, $result['payload']);
   }
 
-  public function testDeleteAdditionalFile() {
+  public function testDeleteAttachmentFile() {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
     $exercise = current($this->presenter->exercises->findAll());
-    $filesCount = $exercise->getAdditionalFiles()->count();
-    $file = new AdditionalExerciseFile("name", new DateTime(), 1, "localPath", $user, $exercise);
-    $this->additionalFiles->persist($file);
-    Assert::count($filesCount + 1, $exercise->getAdditionalFiles());
+    $filesCount = $exercise->getAttachmentFiles()->count();
+    $file = new AttachmentFile("name", new DateTime(), 1, "localPath", $user, $exercise);
+    $this->attachmentFiles->persist($file);
+    Assert::count($filesCount + 1, $exercise->getAttachmentFiles());
 
     $request = new Nette\Application\Request("V1:ExerciseFiles", 'DELETE',
       [
-        'action' => 'deleteAdditionalFile',
+        'action' => 'deleteAttachmentFile',
         'id' => $exercise->getId(),
         'fileId' => $file->getId()
       ]);
@@ -227,7 +227,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
-    Assert::count($filesCount, $exercise->getAdditionalFiles());
+    Assert::count($filesCount, $exercise->getAttachmentFiles());
   }
 
 }

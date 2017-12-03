@@ -8,8 +8,8 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
-use App\Model\Entity\AdditionalExerciseFile;
-use App\Model\Repository\AdditionalExerciseFiles;
+use App\Model\Entity\AttachmentFile;
+use App\Model\Repository\AttachmentFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\Exercise;
 use App\Helpers\ExerciseFileStorage;
@@ -44,10 +44,10 @@ class ExerciseFilesPresenter extends BasePresenter {
   public $supplementaryFiles;
 
   /**
-   * @var AdditionalExerciseFiles
+   * @var AttachmentFiles
    * @inject
    */
-  public $additionalFiles;
+  public $attachmentFiles;
 
   /**
    * @var ExerciseFileStorage
@@ -73,8 +73,6 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of exercise
-   * @throws BadRequestException
-   * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
    */
   public function actionUploadSupplementaryFiles(string $id) {
@@ -158,26 +156,24 @@ class ExerciseFilesPresenter extends BasePresenter {
   }
 
   /**
-   * Associate additional exercise files with an exercise
+   * Associate attachment exercise files with an exercise
    * @POST
-   * @Param(type="post", name="files", description="Identifiers of additional files")
+   * @Param(type="post", name="files", description="Identifiers of attachment files")
    * @param string $id identification of exercise
-   * @throws BadRequestException
-   * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
    */
-  public function actionUploadAdditionalFiles(string $id) {
+  public function actionUploadAttachmentFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You cannot upload files for this exercise.");
     }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
-    $currentAdditionalFiles = [];
+    $currentAttachmentFiles = [];
 
-    /** @var AdditionalExerciseFile $file */
-    foreach ($exercise->getAdditionalFiles() as $file) {
-      $currentAdditionalFiles[$file->getName()] = $file;
+    /** @var AttachmentFile $file */
+    foreach ($exercise->getAttachmentFiles() as $file) {
+      $currentAttachmentFiles[$file->getName()] = $file;
     }
 
     /** @var UploadedFile $file */
@@ -186,51 +182,52 @@ class ExerciseFilesPresenter extends BasePresenter {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
       }
 
-      if (array_key_exists($file->getName(), $currentAdditionalFiles)) {
-        $currentFile = $currentAdditionalFiles[$file->getName()];
-        $exercise->getAdditionalFiles()->removeElement($currentFile);
+      if (array_key_exists($file->getName(), $currentAttachmentFiles)) {
+        $currentFile = $currentAttachmentFiles[$file->getName()];
+        $exercise->getAttachmentFiles()->removeElement($currentFile);
       }
 
-      $exerciseFile = AdditionalExerciseFile::fromUploadedFile($file, $exercise);
+      $exerciseFile = AttachmentFile::fromUploadedFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);
     }
 
     $this->uploadedFiles->flush();
-    $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
+    $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
   }
 
   /**
-   * Get a list of all additional files for an exercise
+   * Get a list of all attachment files for an exercise
    * @GET
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    */
-  public function actionGetAdditionalFiles(string $id) {
+  public function actionGetAttachmentFiles(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot view additional files for this exercise.");
+      throw new ForbiddenRequestException("You cannot view attachment files for this exercise.");
     }
 
-    $this->sendSuccessResponse($exercise->getAdditionalFiles()->getValues());
+    $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
   }
 
   /**
-   * Delete additional exercise file with given id
+   * Delete attachment exercise file with given id
    * @DELETE
    * @param string $id identification of exercise
    * @param string $fileId identification of file
    * @throws ForbiddenRequestException
+   * @throws \App\Exceptions\NotFoundException
    */
-  public function actionDeleteAdditionalFile(string $id, string $fileId) {
+  public function actionDeleteAttachmentFile(string $id, string $fileId) {
     $exercise = $this->exercises->findOrThrow($id);
-    $file = $this->additionalFiles->findOrThrow($fileId);
+    $file = $this->attachmentFiles->findOrThrow($fileId);
     if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot delete additional files for this exercise.");
+      throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
     }
 
-    $exercise->removeAdditionalFile($file);
+    $exercise->removeAttachmentFile($file);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
   }
