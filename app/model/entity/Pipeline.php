@@ -26,7 +26,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
  * @method void setUpdatedAt(DateTime $date)
- * @method setRuntimeEnvironment(RuntimeEnvironment $runtimeEnvironment)
+ * @method PipelineParameter[] getParameters()
+ * @method Collection getRuntimeEnvironments()
  */
 class Pipeline implements JsonSerializable
 {
@@ -108,15 +109,13 @@ class Pipeline implements JsonSerializable
   protected $parameters;
 
   /**
-   * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
+   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
    */
-  protected $runtimeEnvironment;
+  protected $runtimeEnvironments;
 
   public const DEFAULT_PARAMETERS = [
     "isCompilationPipeline" => false,
     "isExecutionPipeline" => false,
-    "acceptsStdin" => false,
-    "acceptsFile" => false,
     "producesStdout" => false,
     "producesFiles" => false,
   ];
@@ -131,11 +130,11 @@ class Pipeline implements JsonSerializable
    * @param User $author
    * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise
-   * @param RuntimeEnvironment|null $environment
+   * @param Collection|null $runtimeEnvironments
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, Pipeline $createdFrom = null, Exercise $exercise = null, RuntimeEnvironment $environment = null) {
+      User $author, ?Pipeline $createdFrom = null, ?Exercise $exercise = null, ?Collection $runtimeEnvironments = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -148,7 +147,12 @@ class Pipeline implements JsonSerializable
     $this->exercise = $exercise;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->parameters = new ArrayCollection();
-    $this->runtimeEnvironment = $environment;
+    $this->runtimeEnvironments = new ArrayCollection();
+    if ($runtimeEnvironments) {
+      foreach ($runtimeEnvironments as $runtimeEnvironment) {
+        $this->runtimeEnvironments->add($runtimeEnvironment);
+      }
+    }
   }
 
   /**
@@ -157,6 +161,10 @@ class Pipeline implements JsonSerializable
    */
   public function addSupplementaryEvaluationFile(SupplementaryExerciseFile $exerciseFile) {
     $this->supplementaryEvaluationFiles->add($exerciseFile);
+  }
+
+  public function addRuntimeEnvironment(RuntimeEnvironment $environment) {
+    $this->runtimeEnvironments->add($environment);
   }
 
   /**
@@ -260,7 +268,9 @@ class Pipeline implements JsonSerializable
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline(),
       "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),
-      "runtimeEnvironmentId" => $this->runtimeEnvironment ? $this->runtimeEnvironment->getId() : null
+      "runtimeEnvironmentIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $env) {
+        return $env->getId();
+      })
     ];
   }
 }

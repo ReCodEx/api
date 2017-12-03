@@ -136,7 +136,22 @@ class ExportDatabase extends Command {
       $pipelineArr["name"] = $pipeline->getName();
       $pipelineArr["pipelineConfig"] = "@" . $configId;
 
+      $pipelineArr["runtimeEnvironments"] = array_map(function (RuntimeEnvironment $env) {
+        return sprintf("@%s", $env->getId());
+      }, $pipeline->getRuntimeEnvironments()->getValues());
+
       $content[Pipeline::class]["pipeline" . $index] = $pipelineArr;
+
+      foreach ($pipeline->getParameters() as $parameter) {
+        $content[get_class($parameter)][sprintf("pipeline%d_%s", $index, $parameter->getName())] = [
+          "__construct" => [
+            "@pipeline" . $index,
+            $parameter->getName(),
+          ],
+          "value" => $parameter->getValue(),
+        ];
+      }
+
     }
 
     FileSystem::write($fixtureDir . "15-pipelines.neon", Neon::encode($content, Encoder::BLOCK));
