@@ -107,7 +107,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: Javac Compilation
+		name: "ELF execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig5
 
 	pipeline6:
@@ -115,7 +115,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: "Python execution & evaluation [outfile]"
+		name: "ELF execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig6
 
 	pipeline7:
@@ -123,7 +123,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: "ELF execution & evaluation [stdout]"
+		name: Javac Compilation
 		pipelineConfig: @pipelineConfig7
 
 	pipeline8:
@@ -131,7 +131,7 @@ App\Model\Entity\Pipeline:
 			create:
 				- @demoAdmin
 
-		name: "ELF execution & evaluation [outfile]"
+		name: "Python execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig8
 
 	pipeline9:
@@ -181,4 +181,159 @@ App\Model\Entity\Pipeline:
 
 		name: Python pass-through compilation
 		pipelineConfig: @pipelineConfig14
+
+App\Model\Entity\BooleanPipelineParameter:
+	pipeline1_isExecutionPipeline:
+		__construct:
+			- @pipeline1
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline1_producesStdout:
+		__construct:
+			- @pipeline1
+			- producesStdout
+
+		value: true
+
+	pipeline2_isCompilationPipeline:
+		__construct:
+			- @pipeline2
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline3_isExecutionPipeline:
+		__construct:
+			- @pipeline3
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline3_producesFiles:
+		__construct:
+			- @pipeline3
+			- producesFiles
+
+		value: true
+
+	pipeline4_isCompilationPipeline:
+		__construct:
+			- @pipeline4
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline5_isExecutionPipeline:
+		__construct:
+			- @pipeline5
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline5_producesStdout:
+		__construct:
+			- @pipeline5
+			- producesStdout
+
+		value: true
+
+	pipeline6_isExecutionPipeline:
+		__construct:
+			- @pipeline6
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline6_producesFiles:
+		__construct:
+			- @pipeline6
+			- producesFiles
+
+		value: true
+
+	pipeline7_isCompilationPipeline:
+		__construct:
+			- @pipeline7
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline8_isExecutionPipeline:
+		__construct:
+			- @pipeline8
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline8_producesFiles:
+		__construct:
+			- @pipeline8
+			- producesFiles
+
+		value: true
+
+	pipeline9_isExecutionPipeline:
+		__construct:
+			- @pipeline9
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline9_producesStdout:
+		__construct:
+			- @pipeline9
+			- producesStdout
+
+		value: true
+
+	pipeline10_isCompilationPipeline:
+		__construct:
+			- @pipeline10
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline11_isCompilationPipeline:
+		__construct:
+			- @pipeline11
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline12_isExecutionPipeline:
+		__construct:
+			- @pipeline12
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline12_producesFiles:
+		__construct:
+			- @pipeline12
+			- producesFiles
+
+		value: true
+
+	pipeline13_isExecutionPipeline:
+		__construct:
+			- @pipeline13
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline13_producesStdout:
+		__construct:
+			- @pipeline13
+			- producesStdout
+
+		value: true
+
+	pipeline14_isCompilationPipeline:
+		__construct:
+			- @pipeline14
+			- isCompilationPipeline
+
+		value: true
 
