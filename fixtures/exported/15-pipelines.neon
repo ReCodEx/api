@@ -77,6 +77,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Python execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig1
+		runtimeEnvironments:
+			- @python3
 
 	pipeline2:
 		__construct:
@@ -85,6 +87,8 @@ App\Model\Entity\Pipeline:
 
 		name: MCS Compilation
 		pipelineConfig: @pipelineConfig2
+		runtimeEnvironments:
+			- @mono
 
 	pipeline3:
 		__construct:
@@ -93,6 +97,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Mono execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig3
+		runtimeEnvironments:
+			- @mono
 
 	pipeline4:
 		__construct:
@@ -101,6 +107,8 @@ App\Model\Entity\Pipeline:
 
 		name: G++ Compilation
 		pipelineConfig: @pipelineConfig4
+		runtimeEnvironments:
+			- @cxx-gcc-linux
 
 	pipeline5:
 		__construct:
@@ -109,6 +117,10 @@ App\Model\Entity\Pipeline:
 
 		name: "ELF execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig5
+		runtimeEnvironments:
+			- @c-gcc-linux
+			- @cxx-gcc-linux
+			- @freepascal-linux
 
 	pipeline6:
 		__construct:
@@ -117,6 +129,10 @@ App\Model\Entity\Pipeline:
 
 		name: "ELF execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig6
+		runtimeEnvironments:
+			- @c-gcc-linux
+			- @cxx-gcc-linux
+			- @freepascal-linux
 
 	pipeline7:
 		__construct:
@@ -125,6 +141,8 @@ App\Model\Entity\Pipeline:
 
 		name: Javac Compilation
 		pipelineConfig: @pipelineConfig7
+		runtimeEnvironments:
+			- @java
 
 	pipeline8:
 		__construct:
@@ -133,6 +151,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Python execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig8
+		runtimeEnvironments:
+			- @python3
 
 	pipeline9:
 		__construct:
@@ -141,6 +161,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Mono execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig9
+		runtimeEnvironments:
+			- @mono
 
 	pipeline10:
 		__construct:
@@ -149,6 +171,8 @@ App\Model\Entity\Pipeline:
 
 		name: GCC Compilation
 		pipelineConfig: @pipelineConfig10
+		runtimeEnvironments:
+			- @c-gcc-linux
 
 	pipeline11:
 		__construct:
@@ -157,6 +181,8 @@ App\Model\Entity\Pipeline:
 
 		name: FreePascal Compilation
 		pipelineConfig: @pipelineConfig11
+		runtimeEnvironments:
+			- @freepascal-linux
 
 	pipeline12:
 		__construct:
@@ -165,6 +191,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Java execution & evaluation [outfile]"
 		pipelineConfig: @pipelineConfig12
+		runtimeEnvironments:
+			- @java
 
 	pipeline13:
 		__construct:
@@ -173,6 +201,8 @@ App\Model\Entity\Pipeline:
 
 		name: "Java execution & evaluation [stdout]"
 		pipelineConfig: @pipelineConfig13
+		runtimeEnvironments:
+			- @java
 
 	pipeline14:
 		__construct:
@@ -181,6 +211,8 @@ App\Model\Entity\Pipeline:
 
 		name: Python pass-through compilation
 		pipelineConfig: @pipelineConfig14
+		runtimeEnvironments:
+			- @python3
 
 App\Model\Entity\BooleanPipelineParameter:
 	pipeline1_isExecutionPipeline:
