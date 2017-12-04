@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
@@ -161,6 +162,7 @@ class SisPresenter extends BasePresenter {
    * @param $term
    * @throws InvalidArgumentException
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionSupervisedCourses($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
@@ -173,6 +175,10 @@ class SisPresenter extends BasePresenter {
     $result = [];
 
     foreach ($this->sisHelper->getCourses($sisUserId, $year, $term) as $course) {
+      if (!$course->isOwnerSupervisor()) {
+        continue;
+      }
+
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
 
       $result[] = [
