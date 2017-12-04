@@ -19,13 +19,15 @@ class Version20171130105034 extends AbstractMigration
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
     $this->addSql("RENAME TABLE exercise_additional_exercise_file TO exercise_attachment_file");
-    $this->addSql('ALTER TABLE exercise_attachment_file CHANGE additional_exercise_file_id attachment_file_id CHAR(36) NOT NULL COMMENT \'(DC2Type:guid)\'');
 
     $this->addSql('ALTER TABLE exercise_attachment_file DROP FOREIGN KEY FK_C0EAC68CE934951A');
     $this->addSql('ALTER TABLE exercise_attachment_file DROP FOREIGN KEY FK_C0EAC68CED6C0B59');
     $this->addSql('DROP INDEX idx_c0eac68ce934951a ON exercise_attachment_file');
-    $this->addSql('CREATE INDEX IDX_24161E21E934951A ON exercise_attachment_file (exercise_id)');
     $this->addSql('DROP INDEX idx_c0eac68ced6c0b59 ON exercise_attachment_file');
+
+    $this->addSql('ALTER TABLE exercise_attachment_file CHANGE additional_exercise_file_id attachment_file_id CHAR(36) NOT NULL COMMENT \'(DC2Type:guid)\'');
+
+    $this->addSql('CREATE INDEX IDX_24161E21E934951A ON exercise_attachment_file (exercise_id)');
     $this->addSql('CREATE INDEX IDX_24161E215B5E2CEA ON exercise_attachment_file (attachment_file_id)');
     $this->addSql('ALTER TABLE exercise_attachment_file ADD CONSTRAINT FK_C0EAC68CE934951A FOREIGN KEY (exercise_id) REFERENCES exercise (id) ON DELETE CASCADE');
     $this->addSql('ALTER TABLE exercise_attachment_file ADD CONSTRAINT FK_C0EAC68CED6C0B59 FOREIGN KEY (attachment_file_id) REFERENCES uploaded_file (id) ON DELETE CASCADE');
