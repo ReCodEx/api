@@ -98,6 +98,35 @@ class TestSisPresenter extends TestCase {
     Assert::count(2, $payload);
   }
 
+  public function testGetSupervisedCoursesHybrid() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var User $user */
+    $user = $this->user->getIdentity()->getUserData();
+    $login = new ExternalLogin($user, "cas-uk", "12345678");
+    $this->em->persist($login);
+    $this->em->flush();
+
+    $this->httpHandler->append(
+      new Response(200, [], file_get_contents(self::DATA_DIR . '/hybrid_simple.json'))
+    );
+
+    /** @var JsonResponse $response */
+    $response = $this->presenter->run(new Request('V1:Sis', 'GET', [
+      'action' => 'supervisedCourses',
+      'userId' => $user->getId(),
+      'year' => 2016,
+      'term' => 2
+    ]));
+    Assert::type(JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::same(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count(2, $payload);
+  }
+
   public function testCreateGroup() {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 

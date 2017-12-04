@@ -1,0 +1,59 @@
+{
+  "ukco": "12345678",
+  "events": [
+    {
+      "id": "16bNPRG042p1",
+      "course": "NPRG042",
+      "type": "P",
+      "affiliation": "teacher",
+      "year": 2016,
+      "semester": 2,
+      "day_of_week": 2,
+      "time": 740,
+      "length": 90,
+      "room": "S4",
+      "caption_cs": "Programovani v paralelnim prostredi",
+      "caption_en": "Programming in Parallel Environment",
+      "fortnight": false,
+      "firstweek": 1,
+      "annotation_cs": "Lorem ipsum",
+      "annotation_en": "The Lorem ipsum"
+    },
+    {
+      "id": "16bNSWI153x01",
+      "course": "NSWI153",
+      "type": "X",
+      "affiliation": "guarantor",
+      "year": 2016,
+      "semester": 2,
+      "day_of_week": 3,
+      "time": 940,
+      "length": 90,
+      "room": "SW1",
+      "caption_cs": "Pokrocile technologie webovych aplikaci",
+      "caption_en": "Advanced Technologies for Web Applications",
+      "fortnight": true,
+      "firstweek": 2,
+      "annotation_cs": "Lorem ipsum",
+      "annotation_en": "The Lorem ipsum"
+    },
+    {
+      "id": "16bNSWI122x01",
+      "course": "NSWI122",
+      "type": "X",
+      "affiliation": "student",
+      "year": 2016,
+      "semester": 2,
+      "day_of_week": 2,
+      "time": 840,
+      "length": 90,
+      "room": "S9",
+      "caption_cs": "Priprava disertacni prace",
+      "caption_en": "Dissertation Thesis Preparation",
+      "fortnight": false,
+      "firstweek": 1,
+      "annotation_cs": "Lorem ipsum",
+      "annotation_en": "The Lorem ipsum"
+    }
+  ]
+}
