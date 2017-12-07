@@ -283,7 +283,7 @@ class Pipeline implements JsonSerializable
       "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),
       "runtimeEnvironmentIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $env) {
         return $env->getId();
-      })
+      })->getValues()
     ];
   }
 }
