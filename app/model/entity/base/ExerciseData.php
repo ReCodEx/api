@@ -163,6 +163,17 @@ trait ExerciseData {
   }
 
   /**
+   * Get exercise tests based on given test identification.
+   * @param int $id
+   * @return ExerciseTest|null
+   */
+  public function getExerciseTestById(int $id): ?ExerciseTest {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $id));
+    $first = $this->exerciseTests->matching($criteria)->first();
+    return $first === false ? null : $first;
+  }
+
+  /**
    * Get exercise tests based on given test name.
    * @param string $name
    * @return ExerciseTest|null

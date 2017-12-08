@@ -504,10 +504,12 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     // prepare tests
     $tests = [
       [
+        "id" => 1,
         "name" => "Test 1",
         "description" => "desc"
       ],
       [
+        "id" => 2,
         "name" => "Test 2",
         "description" => "second desc"
       ],
