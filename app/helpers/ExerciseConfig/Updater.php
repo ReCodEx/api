@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\User;
@@ -40,12 +41,40 @@ class Updater {
 
 
   /**
+   * Environments for exercise were updated. Execute changes in all appropriate
+   * exercise configuration entities.
+   * @param Exercise $exercise
+   * @param User $user
+   * @param bool $flush
+   * @throws ExerciseConfigException
+   */
+  public function environmentsUpdated(Exercise $exercise, User $user, bool $flush = false) {
+    $this->updateEnvironmentsInConfig($exercise, $user, $flush);
+    $this->updateEnvironmentsInLimits($exercise, $user, $flush);
+  }
+
+  /**
+   * Tests in exercise were updated. Apply changes in all appropriate exercise
+   * configuration entities.
+   * @param Exercise $exercise
+   * @param User $user
+   * @param bool $flush
+   * @throws ExerciseConfigException
+   */
+  public function testsUpdated(Exercise $exercise, User $user, bool $flush = false) {
+    $this->updateTestsInConfig($exercise, $user, $flush);
+    $this->updateTestsInLimits($exercise, $user, $flush);
+  }
+
+
+  /**
    * Needed change of ExerciseConfig after update of environment configurations.
    * @param Exercise $exercise
    * @param User $user
    * @param bool $flush
+   * @throws ExerciseConfigException
    */
-  public function updateEnvironmentsInExerciseConfig(Exercise $exercise, User $user, bool $flush = false) {
+  private function updateEnvironmentsInConfig(Exercise $exercise, User $user, bool $flush = false) {
     $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
 
@@ -84,13 +113,41 @@ class Updater {
   }
 
   /**
+   * Needed change of ExerciseLimits after update of environment configurations.
+   * Non-existing limits for environment is not problem. So just delete the ones
+   * which are not currently bound to exercise and be done.
+   * @param Exercise $exercise
+   * @param User $user
+   * @param bool $flush
+   */
+  private function updateEnvironmentsInLimits(Exercise $exercise, User $user, bool $flush = false) {
+    $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
+
+    foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
+      $environmentId = $exerciseLimits->getRuntimeEnvironment()->getId();
+      if (in_array($environmentId, $exerciseEnvironments)) {
+        continue;
+      }
+
+      // environment not found in newly assigned runtime environments
+      // so delete associated limits
+      $exercise->removeExerciseLimits($exerciseLimits);
+    }
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
+  }
+
+  /**
    * Exercise tests were changed, this needs to be propagated into exercise
    * configuration.
    * @param Exercise $exercise
    * @param User $user
    * @param bool $flush
+   * @throws ExerciseConfigException
    */
-  public function updateTestsInExerciseConfig(Exercise $exercise, User $user, bool $flush = false) {
+  private function updateTestsInConfig(Exercise $exercise, User $user, bool $flush = false) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     $testNames = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
       return $test->getName();
@@ -113,6 +170,22 @@ class Updater {
     // finally write changes into exercise entity
     $configEntity = new ExerciseConfigEntity((string) $exerciseConfig, $user, $exercise->getExerciseConfig());
     $exercise->setExerciseConfig($configEntity);
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
+  }
+
+  /**
+   * Exercise tests were changed, this needs to be propagated into exercise
+   * limits configuration.
+   * @param Exercise $exercise
+   * @param User $user
+   * @param bool $flush
+   * @throws ExerciseConfigException
+   */
+  private function updateTestsInLimits(Exercise $exercise, User $user, bool $flush = false) {
+    // TODO
 
     if ($flush) {
       $this->exercises->flush();
