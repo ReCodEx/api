@@ -2,17 +2,17 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\ResultMkdirBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DumpResultsBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use Nette\Utils\Arrays;
 
 
 /**
@@ -46,6 +46,7 @@ class TestDirectoriesResolver {
    * Based on given information create mkdir box and node.
    * @param string $testId
    * @return Node
+   * @throws ExerciseConfigException
    */
   private function createMkdirNode(string $testId): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
@@ -61,18 +62,19 @@ class TestDirectoriesResolver {
   }
 
   /**
-   * Based on given information create test mkdir box and node.
+   * Based on given information create test dump result box and node.
    * @param string $testId
    * @return Node
+   * @throws ExerciseConfigException
    */
-  private function createResultMkdirNode(string $testId): Node {
+  private function createDumpResultsNode(string $testId): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
     $variable->setValue($testId);
 
     $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
 
-    $boxMeta = (new BoxMeta)->setName(MkdirBox::$MKDIR_TYPE);
-    $box = (new ResultMkdirBox($boxMeta))->setInputPort($port);
+    $boxMeta = (new BoxMeta)->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
+    $box = (new DumpResultsBox($boxMeta))->setInputPort($port);
 
     $node = (new Node)->setBox($box)->setTestId($testId);
     return $node;
@@ -84,6 +86,7 @@ class TestDirectoriesResolver {
    * @param Node[][] $testNodes indexed with testId
    * @param CompilationParams $params
    * @return RootedTree
+   * @throws ExerciseConfigException
    */
   private function addDirectories(RootedTree $tree, array $testNodes,
       CompilationParams $params): RootedTree {
@@ -111,15 +114,11 @@ class TestDirectoriesResolver {
       }
 
       if ($params->isDebug()) {
-        $resultMkdirNode = $this->createResultMkdirNode($testId);
-        $resultMkdirNode->addParent($lastMkdirNode);
-        $lastMkdirNode->addChild($resultMkdirNode);
-        $lastMkdirNode = $resultMkdirNode;
-
-        // set dependencies for all nodes in test
-        foreach ($nodes as $node) {
-          $node->addDependency($lastMkdirNode);
-        }
+        $dumpResultsNode = $this->createDumpResultsNode($testId);
+        $dumpResultsNode->addParent($lastMkdirNode);
+        $dumpResultsNode->addDependency($lastMkdirNode);
+        $lastMkdirNode->addChild($dumpResultsNode);
+        $lastMkdirNode = $dumpResultsNode;
       }
     }
 
@@ -137,6 +136,7 @@ class TestDirectoriesResolver {
    * @param RootedTree $tree
    * @param CompilationParams $params
    * @return RootedTree
+   * @throws ExerciseConfigException
    */
   public function resolve(RootedTree $tree, CompilationParams $params): RootedTree {
     $testNodes = [];

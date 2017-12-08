@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -99,6 +100,7 @@ class RenameBox extends Box
     }
 
     $task = new Task();
+    $task->setPriority(Priorities::$DEFAULT);
     $task->setCommandBinary(TaskCommands::$RENAME);
     $task->setCommandArguments([
       $this->getInputPortValue(self::$RENAME_PORT_IN_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR),

@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -12,14 +13,14 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which will create directory in result folder.
+ * Box which will dump given directory into results archive.
  */
-class ResultMkdirBox extends Box
+class DumpResultsBox extends Box
 {
   /** Type key */
-  public static $MKDIR_TYPE = "result-mkdir";
-  public static $MKDIR_PORT_IN_KEY = "in";
-  public static $DEFAULT_NAME = "Make directory in result archive";
+  public static $DUMP_RESULTS_TYPE = "dump-results";
+  public static $DUMP_RESULTS_PORT_IN_KEY = "dir";
+  public static $DEFAULT_NAME = "Dump given directory in result archive";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -32,7 +33,7 @@ class ResultMkdirBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$MKDIR_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$DUMP_RESULTS_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array();
     }
@@ -50,9 +51,9 @@ class ResultMkdirBox extends Box
   /**
    * Set input port of this box.
    * @param Port $port
-   * @return ResultMkdirBox
+   * @return DumpResultsBox
    */
-  public function setInputPort(Port $port): ResultMkdirBox {
+  public function setInputPort(Port $port): DumpResultsBox {
     $this->meta->setInputPorts([$port]);
     return $this;
   }
@@ -63,7 +64,7 @@ class ResultMkdirBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$MKDIR_TYPE;
+    return self::$DUMP_RESULTS_TYPE;
   }
 
   /**
@@ -100,10 +101,16 @@ class ResultMkdirBox extends Box
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();
-    $task->setCommandBinary(TaskCommands::$MKDIR);
+    $task->setPriority(Priorities::$DUMP_RESULTS);
+    $task->setCommandBinary(TaskCommands::$DUMPDIR);
+
+    $port = current($this->getInputPorts());
     $task->setCommandArguments([
-      current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$RESULT_DIR)
+      $port->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $port->getVariableValue()->getPrefixedValue(ConfigParams::$RESULT_DIR),
+      ConfigParams::$DUMPDIR_LIMIT
     ]);
+
     return [$task];
   }
 

@@ -17,4 +17,6 @@ class ConfigParams
   public static $JUDGES_DIR = '${JUDGES_DIR}/';
 
   public static $PATH_DELIM = '/';
+
+  public static $DUMPDIR_LIMIT = 65536;
 }
