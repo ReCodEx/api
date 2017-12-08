@@ -81,7 +81,7 @@ class ExerciseConfigValidator {
    */
   private function checkPipelines(ExerciseConfig $config, Exercise $exercise) {
     $exerciseTests = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
-      return $test->getName();
+      return $test->getId();
     })->getValues();
     if (count($exerciseTests) !== count($config->getTests())) {
       throw new ExerciseConfigException("Number of tests in configuration do not correspond to the ones in exercise");
@@ -89,7 +89,7 @@ class ExerciseConfigValidator {
 
     foreach ($config->getTests() as $testName => $test) {
       if (array_search($testName, $exerciseTests) === false) {
-        throw new ExerciseConfigException("Test '{$testName}' not found in exercise tests");
+        throw new ExerciseConfigException("Test with id '{$testName}' not found in exercise tests");
       }
 
       // go through all environments in test

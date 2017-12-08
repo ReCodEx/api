@@ -102,6 +102,7 @@ class Validator {
    * made against pipeline, again identification of pipeline is checked,
    * but in here also variables and if pipeline requires them is checked.
    * Validation also checks remote files presence in exercise database entity.
+   * Exercise tests are checked against the ones in exercise.
    * @param Exercise $exercise
    * @param ExerciseConfig $config
    * @throws ExerciseConfigException
@@ -111,17 +112,14 @@ class Validator {
   }
 
   /**
-   * Validation of exercise limits, limits are defined for boxes which comes
-   * from pipelines, identification of pipelines is taken from
-   * exercise configuration, after that box identifications are checked if
-   * existing.
+   * Validation of exercise limits, limits are defined for tests which comes
+   * from exercise database entity and are checked if existing.
    * @param Exercise $exercise
    * @param ExerciseLimits $limits
    * @throws ExerciseConfigException
    */
   public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {
-    $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $this->exerciseLimitsValidator->validate($limits, $exerciseConfig);
+    $this->exerciseLimitsValidator->validate($exercise, $limits);
   }
 
 }

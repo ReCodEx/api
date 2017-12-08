@@ -610,13 +610,13 @@ class ExercisesConfigPresenter extends BasePresenter {
           throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
         }
 
-        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
+        $testEntity = new ExerciseTest(trim($name), $description, $this->getCurrentUser());
         $newTestNames[] = $name;
       } else {
         $replacedTestNames[$testEntity->getName()] = $name;
 
         // update of existing exercise test with all appropriate fields
-        $testEntity->setName($name);
+        $testEntity->setName(trim($name));
         $testEntity->setDescription($description);
         $testEntity->setUpdatedAt(new DateTime);
       }
