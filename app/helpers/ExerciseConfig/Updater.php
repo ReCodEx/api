@@ -4,7 +4,7 @@ namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\ExerciseTest;
+use App\Model\Entity\ExerciseLimits as ExerciseLimitsEntity;
 use App\Model\Entity\User;
 use App\Model\Repository\Exercises;
 use App\Model\Entity\ExerciseConfig as ExerciseConfigEntity;
@@ -48,9 +48,13 @@ class Updater {
    * @param bool $flush
    * @throws ExerciseConfigException
    */
-  public function environmentsUpdated(Exercise $exercise, User $user, bool $flush = false) {
-    $this->updateEnvironmentsInConfig($exercise, $user, $flush);
-    $this->updateEnvironmentsInLimits($exercise, $user, $flush);
+  public function environmentsUpdated(Exercise $exercise, User $user, bool $flush = true) {
+    $this->updateEnvironmentsInConfig($exercise, $user);
+    $this->updateEnvironmentsInLimits($exercise, $user);
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
   }
 
   /**
@@ -58,12 +62,19 @@ class Updater {
    * configuration entities.
    * @param Exercise $exercise
    * @param User $user
+   * @param array $newTestNames
+   * @param array $replacedTestNames indexed by old name, containing new name
    * @param bool $flush
    * @throws ExerciseConfigException
    */
-  public function testsUpdated(Exercise $exercise, User $user, bool $flush = false) {
-    $this->updateTestsInConfig($exercise, $user, $flush);
-    $this->updateTestsInLimits($exercise, $user, $flush);
+  public function testsUpdated(Exercise $exercise, User $user,
+      array $newTestNames, array $replacedTestNames, bool $flush = true) {
+    $this->updateTestsInConfig($exercise, $user, $newTestNames, $replacedTestNames);
+    $this->updateTestsInLimits($exercise, $user, $newTestNames, $replacedTestNames);
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
   }
 
 
@@ -71,10 +82,9 @@ class Updater {
    * Needed change of ExerciseConfig after update of environment configurations.
    * @param Exercise $exercise
    * @param User $user
-   * @param bool $flush
    * @throws ExerciseConfigException
    */
-  private function updateEnvironmentsInConfig(Exercise $exercise, User $user, bool $flush = false) {
+  private function updateEnvironmentsInConfig(Exercise $exercise, User $user) {
     $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
 
@@ -106,10 +116,6 @@ class Updater {
     // finally write changes into exercise entity
     $configEntity = new ExerciseConfigEntity((string) $exerciseConfig, $user, $exercise->getExerciseConfig());
     $exercise->setExerciseConfig($configEntity);
-
-    if ($flush) {
-      $this->exercises->flush();
-    }
   }
 
   /**
@@ -118,9 +124,8 @@ class Updater {
    * which are not currently bound to exercise and be done.
    * @param Exercise $exercise
    * @param User $user
-   * @param bool $flush
    */
-  private function updateEnvironmentsInLimits(Exercise $exercise, User $user, bool $flush = false) {
+  private function updateEnvironmentsInLimits(Exercise $exercise, User $user) {
     $exerciseEnvironments = $exercise->getRuntimeEnvironmentsIds();
 
     foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
@@ -133,10 +138,6 @@ class Updater {
       // so delete associated limits
       $exercise->removeExerciseLimits($exerciseLimits);
     }
-
-    if ($flush) {
-      $this->exercises->flush();
-    }
   }
 
   /**
@@ -144,25 +145,35 @@ class Updater {
    * configuration.
    * @param Exercise $exercise
    * @param User $user
-   * @param bool $flush
+   * @param array $newTestNames
+   * @param array $replacedTestNames indexed by old name, containing new name
    * @throws ExerciseConfigException
    */
-  private function updateTestsInConfig(Exercise $exercise, User $user, bool $flush = false) {
+  private function updateTestsInConfig(Exercise $exercise, User $user,
+      array $newTestNames, array $replacedTestNames) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $testNames = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
-      return $test->getName();
-    })->getValues();
+    $testNames = array_merge($newTestNames, $replacedTestNames);
 
-    // if new tests were added, add them also to configuration
-    foreach ($testNames as $name) {
-      if ($exerciseConfig->getTest($name) === null) {
-        $exerciseConfig->addTest($name, new Test);
-      }
+    // add all newly created tests
+    foreach ($newTestNames as $newTestName) {
+      $exerciseConfig->addTest($newTestName, new Test);
     }
 
-    // go through current tests and find the ones which were deleted
+    // replace renamed tests
+    foreach ($replacedTestNames as $originalTestName => $replacedTestName) {
+      $test = $exerciseConfig->getTest($originalTestName);
+      if (!$test) {
+        continue;
+      }
+
+      $exerciseConfig->removeTest($originalTestName);
+      $exerciseConfig->addTest($replacedTestName, $test);
+    }
+
+    // remove old tests
     foreach ($exerciseConfig->getTests() as $name => $test) {
-      if (array_search($name, $testNames) === false) {
+      // test name not found in all newly created or updated tests, terminate it
+      if (!in_array($name, $testNames)) {
         $exerciseConfig->removeTest($name);
       }
     }
@@ -170,10 +181,6 @@ class Updater {
     // finally write changes into exercise entity
     $configEntity = new ExerciseConfigEntity((string) $exerciseConfig, $user, $exercise->getExerciseConfig());
     $exercise->setExerciseConfig($configEntity);
-
-    if ($flush) {
-      $this->exercises->flush();
-    }
   }
 
   /**
@@ -181,14 +188,41 @@ class Updater {
    * limits configuration.
    * @param Exercise $exercise
    * @param User $user
-   * @param bool $flush
+   * @param array $newTestNames
+   * @param array $replacedTestNames indexed by old name, containing new name
    * @throws ExerciseConfigException
    */
-  private function updateTestsInLimits(Exercise $exercise, User $user, bool $flush = false) {
-    // TODO
+  private function updateTestsInLimits(Exercise $exercise, User $user,
+      array $newTestNames, array $replacedTestNames) {
+    $testNames = array_merge($newTestNames, $replacedTestNames);
 
-    if ($flush) {
-      $this->exercises->flush();
+    foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
+      $limits = $this->loader->loadExerciseLimits($exerciseLimits->getParsedLimits());
+
+      // replace renamed tests
+      foreach ($replacedTestNames as $originalTestName => $replacedTestName) {
+        $testLimits = $limits->getLimits($originalTestName);
+        if (!$testLimits) {
+          continue;
+        }
+
+        $limits->removeLimits($originalTestName);
+        $limits->addLimits($replacedTestName, $testLimits);
+      }
+
+      // remove old tests
+      foreach ($limits->getLimitsArray() as $name => $testLimits) {
+        // test name not found in all newly created or updated tests, terminate it
+        if (!in_array($name, $testNames)) {
+          $limits->removeLimits($name);
+        }
+      }
+
+      // finally write changes into limits and array entity
+      $limitsEntity = new ExerciseLimitsEntity($exerciseLimits->getRuntimeEnvironment(),
+        $exerciseLimits->getHardwareGroup(), (string)$limits, $user, $exerciseLimits);
+      $exercise->removeExerciseLimits($exerciseLimits);
+      $exercise->addExerciseLimits($limitsEntity);
     }
   }
 

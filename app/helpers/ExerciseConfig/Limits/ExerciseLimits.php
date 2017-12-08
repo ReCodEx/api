@@ -47,6 +47,16 @@ class ExerciseLimits implements JsonSerializable {
   }
 
   /**
+   * Remove limits for given test identification.
+   * @param string $testId
+   * @return ExerciseLimits
+   */
+  public function removeLimits(string $testId): ExerciseLimits {
+    unset($this->limits[$testId]);
+    return $this;
+  }
+
+  /**
    * Creates and returns properly structured array representing this object.
    * @return array
    */

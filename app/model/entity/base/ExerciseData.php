@@ -164,10 +164,10 @@ trait ExerciseData {
 
   /**
    * Get exercise tests based on given test identification.
-   * @param string $id
+   * @param int $id
    * @return ExerciseTest|null
    */
-  public function getExerciseTestById(string $id): ?ExerciseTest {
+  public function getExerciseTestById(int $id): ?ExerciseTest {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("id", $id));
     $first = $this->exerciseTests->matching($criteria)->first();
     return $first === false ? null : $first;

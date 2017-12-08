@@ -197,8 +197,8 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // make changes and updates to database entity
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
-    $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
-    $this->exerciseConfigUpdater->environmentsUpdated($exercise, $this->getCurrentUser());
+    $this->exercises->replaceEnvironmentConfigs($exercise, $configs, false);
+    $this->exerciseConfigUpdater->environmentsUpdated($exercise, $this->getCurrentUser(), false);
 
     // flush database changes and return successful response
     $this->exercises->flush();
@@ -592,6 +592,8 @@ class ExercisesConfigPresenter extends BasePresenter {
     $tests = $req->getPost("tests");
 
     $newTests = [];
+    $newTestNames = [];
+    $replacedTestNames = [];
     foreach ($tests as $test) {
       if (!array_key_exists("name", $test)) {
         throw new InvalidArgumentException("tests", "name item not found in particular test");
@@ -601,7 +603,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       $id = Arrays::get($test, "id", null);
       $description = Arrays::get($test, "description", "");
 
-      $testEntity = $exercise->getExerciseTestById($id);
+      $testEntity = $id ? $exercise->getExerciseTestById($id) : null;
       if ($testEntity === null) {
         // new exercise test was requested to be created
         if ($exercise->getExerciseTestByName($name)) {
@@ -609,7 +611,10 @@ class ExercisesConfigPresenter extends BasePresenter {
         }
 
         $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
+        $newTestNames[] = $name;
       } else {
+        $replacedTestNames[$testEntity->getName()] = $name;
+
         // update of existing exercise test with all appropriate fields
         $testEntity->setName($name);
         $testEntity->setDescription($description);
@@ -624,7 +629,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseTests(new ArrayCollection($newTests));
 
     // update exercise configuration and test in here
-    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser());
+    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), $newTestNames, $replacedTestNames, false);
     $this->exercises->flush();
 
     $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
