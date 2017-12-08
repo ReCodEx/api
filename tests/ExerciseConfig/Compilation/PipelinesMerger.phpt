@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
@@ -211,8 +212,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
     Assert::exception(function () {
-      $this->merger->merge(new ExerciseConfig(), new VariablesTable(),
-        self::$exerciseFiles, self::$environment, CompilationParams::create());
+      $context = CompilationContext::create(new ExerciseConfig(), new VariablesTable(), [], self::$exerciseFiles, [], self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
@@ -232,8 +233,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
-      $this->merger->merge($config, $envVariablesTable, self::$exerciseFiles,
-        self::$environment, CompilationParams::create());
+      $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, [], self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
@@ -243,8 +244,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->withAnyArgs()->andThrow(NotFoundException::class);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
-      $this->merger->merge($config, $envVariablesTable, self::$exerciseFiles,
-        self::$environment, CompilationParams::create());
+      $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, [], self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
@@ -403,8 +404,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge($config, $envVariablesTable,
-      self::$exerciseFiles, self::$environment, CompilationParams::create());
+    $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, [], self::$environment);
+    $tests = $this->merger->merge($context, CompilationParams::create());
     Assert::count(2, $tests);
 
     $testA = $tests["testA"];

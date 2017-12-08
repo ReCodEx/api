@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\BoxesCompiler;
 use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use App\Helpers\ExerciseConfig\Compilation\BoxesSorter;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
@@ -202,6 +203,7 @@ class TestBaseCompiler extends Tester\TestCase
       ]
     ]
   ];
+  private static $testsNames = []; // TODO
   private static $pipelineFiles = [];
   private static $exerciseFiles = [
     "expected.A.out" => "expected.A.out.hash",
@@ -253,9 +255,9 @@ class TestBaseCompiler extends Tester\TestCase
       "groupB" => $this->loader->loadExerciseLimits(self::$limits[1])
     ];
 
-    $jobConfig = $this->compiler->compile($exerciseConfig,
-      $environmentConfigVariables, $limits, self::$exerciseFiles, self::$environment,
-      CompilationParams::create([], true));
+    $context = CompilationContext::create($exerciseConfig, $environmentConfigVariables, $limits,
+      self::$exerciseFiles, self::$testsNames, self::$environment);
+    $jobConfig = $this->compiler->compile($context, CompilationParams::create([], true));
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());

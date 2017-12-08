@@ -123,20 +123,19 @@ class BoxesCompiler {
   /**
    * Go through given array find boxes and compile them into JobConfig.
    * @param RootedTree $rootedTree
-   * @param ExerciseLimits[] $limits indexed by hwgroup
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return JobConfig
    */
-  public function compile(RootedTree $rootedTree, array $limits,
-      CompilationParams $params): JobConfig {
+  public function compile(RootedTree $rootedTree, CompilationContext $context, CompilationParams $params): JobConfig {
     $jobConfig = new JobConfig();
 
     // loggin of submission is turned on by default
     $jobConfig->getSubmissionHeader()->setLog(true);
     // add hwgroups identifications into job configuration
-    $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
+    $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($context->getLimits()));
     // perform DFS
-    $this->processTree($jobConfig, $rootedTree, $limits, $params);
+    $this->processTree($jobConfig, $rootedTree, $context->getLimits(), $params);
 
     return $jobConfig;
   }

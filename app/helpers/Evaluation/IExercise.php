@@ -70,7 +70,13 @@ interface IExercise {
 
   /**
    * Returns array indexed by the name of the file which contains hash of file.
-   * @return array
+   * @return string[]
    */
   function getHashedSupplementaryFiles(): array;
+
+  /**
+   * Get tests indexed by entity id and containing actual test name.
+   * @return string[]
+   */
+  function getExerciseTestsNames(): array;
 }
