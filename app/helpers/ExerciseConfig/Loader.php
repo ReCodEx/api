@@ -127,18 +127,19 @@ class Loader {
   /**
    * Builds and checks test configuration from given structured data.
    * @param $data
+   * @param string $testId
    * @return Test
    * @throws ExerciseConfigException
    */
-  public function loadTest($data): Test {
+  public function loadTest($data, $testId = ""): Test {
     if (!is_array($data)) {
-      throw new ExerciseConfigException("Exercise test is not array");
+      throw new ExerciseConfigException("Exercise test '$testId' is not array");
     }
 
     $test = new Test;
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
-      throw new ExerciseConfigException("Exercise test does not have any defined environments");
+      throw new ExerciseConfigException("Exercise test '$testId' does not have any defined environments");
     }
     foreach ($data[Test::ENVIRONMENTS_KEY] as $id => $environment) {
       $test->addEnvironment($id, $this->loadEnvironment($environment));

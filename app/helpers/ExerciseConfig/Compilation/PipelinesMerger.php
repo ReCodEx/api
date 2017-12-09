@@ -335,7 +335,14 @@ class PipelinesMerger {
 
     $tests = array();
     foreach ($context->getExerciseConfig()->getTests() as $testId => $test) {
-      $tests[$testId] = $this->processTest($testId, $test, $context, $params);
+      // find test identification in tests names array and retrieve test name
+      if (!array_key_exists($testId, $context->getTestsNames())) {
+        throw new ExerciseConfigException("Test with id '{$testId}' does not exist in exercise.");
+      }
+      $testName = $context->getTestsNames()[$testId];
+
+      // process test
+      $tests[$testName] = $this->processTest($testId, $test, $context, $params);
     }
 
     return $tests;

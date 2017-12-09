@@ -2,10 +2,15 @@
 
 $container = include '../../bootstrap.php';
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Limits;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTest;
+use App\Model\Entity\Instance;
+use App\Model\Entity\User;
 use App\Model\Repository\Pipelines;
 use Kdyby\Doctrine\EntityManager;
 use Nette\DI\Container;
@@ -37,46 +42,6 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     $this->em = PresenterTestHelper::getEntityManager($container);
   }
 
-  private static $config = [
-    "environments" => [ "envA", "envB" ],
-    "tests" => [
-      "testA" => [
-        "pipelines" => [ [
-          "name" => "compilationPipeline",
-          "variables" => [
-            [ "name" => "world", "type" => "string", "value" => "hello" ]
-          ]
-        ]
-        ],
-        "environments" => [
-          "envA" => [
-            "pipelines" => []
-          ],
-          "envB" => [
-            "pipelines" => []
-          ]
-        ]
-      ],
-      "testB" => [
-        "pipelines" => [ [
-          "name" => "compilationPipeline",
-          "variables" => [
-            [ "name" => "hello", "type" => "string", "value" => "world" ]
-          ]
-        ]
-        ],
-        "environments" => [
-          "envA" => [
-            "pipelines" => []
-          ],
-          "envB" => [
-            "pipelines" => []
-          ]
-        ]
-      ]
-    ]
-  ];
-
   protected function setUp() {
     PresenterTestHelper::fillDatabase($this->container);
     $this->validator = $this->container->getByType(ExerciseLimitsValidator::class);
@@ -84,18 +49,65 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     $this->loader = $this->container->getByType(Loader::class);
   }
 
+
+  public function testDifferentTests() {
+    $limits = new ExerciseLimits();
+    $limits->addLimits("3", Limits::create(2.0, 10, 1));
+    $limits->addLimits("4", Limits::create(2.0, 10, 1));
+
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+
+    Assert::exception(function () use ($exercise, $limits) {
+      $this->validator->validate($exercise, $limits);
+    }, ExerciseConfigException::class, "Exercise configuration error - Test with id '3' is not present in the exercise configuration");
+  }
+
   public function testCorrect() {
     $limits = new ExerciseLimits();
-    $limits->addLimits("testA", Limits::create(2.0, 10, 1));
-    $limits->addLimits("testA", Limits::create(2.0, 10, 1));
+    $limits->addLimits("1", Limits::create(2.0, 10, 1));
+    $limits->addLimits("2", Limits::create(2.0, 10, 1));
 
-    $environmentId = "envA";
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
 
-    $config = $this->loader->loadExerciseConfig(static::$config);
-
-    Assert::noError(function () use ($limits, $config, $environmentId) {
-      $this->validator->validate($limits, $config, $environmentId);
+    Assert::noError(function () use ($exercise, $limits) {
+      $this->validator->validate($exercise, $limits);
     });
+  }
+
+
+  /**
+   * @return Exercise
+   */
+  private function createExercise(): Exercise {
+    $user = $this->getDummyUser();
+    $exercise = Exercise::create($user);
+    return $exercise;
+  }
+
+  /**
+   * @param Exercise $exercise
+   * @return Exercise
+   */
+  private function addTwoTestsToExercise(Exercise $exercise): Exercise {
+    $user = $exercise->getAuthor();
+    $testA = new ExerciseTest("Test A", "descA", $user);
+    $testB = new ExerciseTest("Test B", "descB", $user);
+    $testA->setId(1);
+    $testB->setId(2);
+    $exercise->addExerciseTest($testA);
+    $exercise->addExerciseTest($testB);
+    return $exercise;
+  }
+
+  /**
+   * @return User
+   */
+  private function getDummyUser(): User
+  {
+    $user = new User("", "", "", "", "", "", new Instance());
+    return $user;
   }
 
 }

@@ -52,7 +52,7 @@ class TestBaseCompiler extends Tester\TestCase
   private static $exerciseConfig = [
     "environments" => [ "envA", "envB" ],
     "tests" => [
-      "testA" => [
+      "1" => [
         "environments" => [
           "envA" => [ "pipelines" => [
             [ "name" => "compilationPipeline", "variables" => [] ],
@@ -70,7 +70,7 @@ class TestBaseCompiler extends Tester\TestCase
           ] ]
         ]
       ],
-      "testB" => [
+      "2" => [
         "environments" => [
           "envA" => [
             "pipelines" => [
@@ -191,19 +191,22 @@ class TestBaseCompiler extends Tester\TestCase
   ];
   private static $limits = [
     [ // groupA
-      "testA" => [
+      "1" => [
         "memory" => 123,
         "wall-time" => 456.0
       ]
     ],
     [ // groupB
-      "testA" => [
+      "1" => [
         "memory" => 654,
         "wall-time" => 321.0
       ]
     ]
   ];
-  private static $testsNames = []; // TODO
+  private static $testsNames = [
+    "1" => "testA",
+    "2" => "testB"
+  ];
   private static $pipelineFiles = [];
   private static $exerciseFiles = [
     "expected.A.out" => "expected.A.out.hash",

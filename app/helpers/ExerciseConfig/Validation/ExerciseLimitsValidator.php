@@ -45,14 +45,12 @@ class ExerciseLimitsValidator {
    * @throws ExerciseConfigException
    */
   public function validate(Exercise $exercise, ExerciseLimits $exerciseLimits) {
-    $exerciseTests = $exercise->getExerciseTests()->map(function (ExerciseTest $test) {
-      return $test->getId();
-    })->getValues();
+    $exerciseTests = $exercise->getExerciseTestsIds();
 
     foreach ($exerciseLimits->getLimitsArray() as $testId => $firstLevel) {
       if (!in_array($testId, $exerciseTests)) {
         throw new ExerciseConfigException(sprintf(
-          "Test with id %s is not present in the exercise configuration",
+          "Test with id '%s' is not present in the exercise configuration",
           $testId
         ));
       }

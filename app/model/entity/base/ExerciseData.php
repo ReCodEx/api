@@ -201,6 +201,17 @@ trait ExerciseData {
   }
 
   /**
+   * Get identifications of exercise tests.
+   * @return array
+   */
+  public function getExerciseTestsIds() {
+    return $this->exerciseTests->map(
+      function(ExerciseTest $test) {
+        return $test->getId();
+      })->getValues();
+  }
+
+  /**
    * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile")
    * @var Collection
    */

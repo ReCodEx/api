@@ -69,7 +69,7 @@ class BaseCompiler {
     $tests = $this->pipelinesMerger->merge($context, $params);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
-    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $params);
+    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $context, $params);
     $jobConfig = $this->boxesCompiler->compile($testDirectories, $context, $params);
     return $jobConfig;
   }

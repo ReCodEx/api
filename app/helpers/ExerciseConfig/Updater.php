@@ -62,15 +62,12 @@ class Updater {
    * configuration entities.
    * @param Exercise $exercise
    * @param User $user
-   * @param array $newTestNames
-   * @param array $replacedTestNames indexed by old name, containing new name
    * @param bool $flush
    * @throws ExerciseConfigException
    */
-  public function testsUpdated(Exercise $exercise, User $user,
-      array $newTestNames, array $replacedTestNames, bool $flush = true) {
-    $this->updateTestsInConfig($exercise, $user, $newTestNames, $replacedTestNames);
-    $this->updateTestsInLimits($exercise, $user, $newTestNames, $replacedTestNames);
+  public function testsUpdated(Exercise $exercise, User $user, bool $flush = true) {
+    $this->updateTestsInConfig($exercise, $user);
+    $this->updateTestsInLimits($exercise, $user);
 
     if ($flush) {
       $this->exercises->flush();
@@ -145,30 +142,11 @@ class Updater {
    * configuration.
    * @param Exercise $exercise
    * @param User $user
-   * @param array $newTestNames
-   * @param array $replacedTestNames indexed by old name, containing new name
    * @throws ExerciseConfigException
    */
-  private function updateTestsInConfig(Exercise $exercise, User $user,
-      array $newTestNames, array $replacedTestNames) {
+  private function updateTestsInConfig(Exercise $exercise, User $user) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $testNames = array_merge($newTestNames, $replacedTestNames);
-
-    // add all newly created tests
-    foreach ($newTestNames as $newTestName) {
-      $exerciseConfig->addTest($newTestName, new Test);
-    }
-
-    // replace renamed tests
-    foreach ($replacedTestNames as $originalTestName => $replacedTestName) {
-      $test = $exerciseConfig->getTest($originalTestName);
-      if (!$test) {
-        continue;
-      }
-
-      $exerciseConfig->removeTest($originalTestName);
-      $exerciseConfig->addTest($replacedTestName, $test);
-    }
+    $testNames = $exercise->getExerciseTestsIds();
 
     // remove old tests
     foreach ($exerciseConfig->getTests() as $name => $test) {
@@ -188,27 +166,13 @@ class Updater {
    * limits configuration.
    * @param Exercise $exercise
    * @param User $user
-   * @param array $newTestNames
-   * @param array $replacedTestNames indexed by old name, containing new name
    * @throws ExerciseConfigException
    */
-  private function updateTestsInLimits(Exercise $exercise, User $user,
-      array $newTestNames, array $replacedTestNames) {
-    $testNames = array_merge($newTestNames, $replacedTestNames);
+  private function updateTestsInLimits(Exercise $exercise, User $user) {
+    $testNames = $exercise->getExerciseTestsIds();
 
     foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
       $limits = $this->loader->loadExerciseLimits($exerciseLimits->getParsedLimits());
-
-      // replace renamed tests
-      foreach ($replacedTestNames as $originalTestName => $replacedTestName) {
-        $testLimits = $limits->getLimits($originalTestName);
-        if (!$testLimits) {
-          continue;
-        }
-
-        $limits->removeLimits($originalTestName);
-        $limits->addLimits($replacedTestName, $testLimits);
-      }
 
       // remove old tests
       foreach ($limits->getLimitsArray() as $name => $testLimits) {

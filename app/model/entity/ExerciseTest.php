@@ -11,6 +11,7 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @method int getId()
+ * @method setId(int $id)
  * @method string getName()
  * @method string getDescription()
  * @method User getAuthor()

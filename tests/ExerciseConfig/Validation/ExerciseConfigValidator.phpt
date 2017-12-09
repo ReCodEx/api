@@ -11,7 +11,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
-use App\Helpers\ExerciseConfig\Variable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Entity\ExerciseTest;
@@ -119,8 +118,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("Test A", $test);
-    $exerciseConfig->addTest("Test B", $test);
+    $exerciseConfig->addTest("1", $test);
+    $exerciseConfig->addTest("2", $test);
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
@@ -148,7 +147,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("Test A", $test);
+    $exerciseConfig->addTest("1", $test);
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
@@ -162,7 +161,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     }, ExerciseConfigException::class, "Exercise configuration error - Number of tests in configuration do not correspond to the ones in exercise");
   }
 
-  public function testDifferentTestNames() {
+  public function testDifferentTestIds() {
     $existing = new PipelineVars();
     $existing->setName("existing pipeline");
 
@@ -174,8 +173,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("Test 1", $test);
-    $exerciseConfig->addTest("Test 2", $test);
+    $exerciseConfig->addTest("3", $test);
+    $exerciseConfig->addTest("4", $test);
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
@@ -186,7 +185,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
-    }, ExerciseConfigException::class, "Exercise configuration error - Test 'Test 1' not found in exercise tests");
+    }, ExerciseConfigException::class, "Exercise configuration error - Test with id '3' not found in exercise tests");
   }
 
   public function testEmpty() {
@@ -213,8 +212,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig();
     $exerciseConfig->addEnvironment("envA");
-    $exerciseConfig->addTest("Test A", $test);
-    $exerciseConfig->addTest("Test B", $test);
+    $exerciseConfig->addTest("1", $test);
+    $exerciseConfig->addTest("2", $test);
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
@@ -262,6 +261,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $user = $exercise->getAuthor();
     $testA = new ExerciseTest("Test A", "descA", $user);
     $testB = new ExerciseTest("Test B", "descB", $user);
+    $testA->setId(1);
+    $testB->setId(2);
     $exercise->addExerciseTest($testA);
     $exercise->addExerciseTest($testB);
     return $exercise;
