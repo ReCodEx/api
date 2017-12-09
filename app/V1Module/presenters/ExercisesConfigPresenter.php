@@ -343,7 +343,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $result = [];
     $limitsArray = $exercise->getLimitsByEnvironment($environment);
     foreach ($limitsArray as $limits) {
-      $result = array_merge($result, $limits->getParsedLimits());
+      $result = $result + $limits->getParsedLimits();
     }
 
     $this->sendSuccessResponse($result);
@@ -616,6 +616,10 @@ class ExercisesConfigPresenter extends BasePresenter {
         $testEntity->setUpdatedAt(new DateTime);
       }
 
+
+      if (array_key_exists($name, $newTests)) {
+        throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+      }
       $newTests[$name] = $testEntity;
     }
 

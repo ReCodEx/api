@@ -172,7 +172,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise configuration does not have any tests");
     }
     foreach ($data[ExerciseConfig::TESTS_KEY] as $testId => $test) {
-      $config->addTest($testId, $this->loadTest($test));
+      $config->addTest($testId, $this->loadTest($test, $testId));
     }
 
     return $config;

@@ -80,7 +80,6 @@ class PortNode {
    * @param Box $box
    * @param string $pipelineId
    * @param string|null $testId
-   * @param string|null $testName
    */
   public function __construct(Box $box, string $pipelineId = null, string $testId = null) {
     $this->box = $box;
