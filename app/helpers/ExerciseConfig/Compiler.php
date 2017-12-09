@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\JobConfig\JobConfig;
 use App\Model\Entity\Assignment;
@@ -81,10 +82,10 @@ class Compiler {
       $limits[$hwGroup->getId()] = $this->loader->loadExerciseLimits($parsedLimits);
     }
 
-    return $this->baseCompiler->compile($exerciseConfig,
-      $environmentConfigVariables, $limits,
-      $exercise->getHashedSupplementaryFiles(), $runtimeEnvironment->getId(),
-      $params);
+    $context = CompilationContext::create($exerciseConfig, $environmentConfigVariables, $limits,
+      $exercise->getHashedSupplementaryFiles(), $exercise->getExerciseTestsNames(), $runtimeEnvironment->getId());
+
+    return $this->baseCompiler->compile($context, $params);
   }
 
   /**

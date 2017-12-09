@@ -25,10 +25,12 @@ class BoxesCompiler {
    * Helper function which will create identification of task.
    * @param Node $node
    * @param string $postfix
+   * @param CompilationContext $context
    * @return string
    */
-  private function createTaskIdentification(Node $node, string $postfix): string {
-    return $node->getTestId() . self::$ID_DELIM . $node->getPipelineId() .
+  private function createTaskIdentification(Node $node, string $postfix, CompilationContext $context): string {
+    $testName = $context->getTestsNames()[$node->getTestId()];
+    return $testName . self::$ID_DELIM . $node->getPipelineId() .
       self::$ID_DELIM . $node->getBox()->getName() . self::$ID_DELIM . $postfix;
   }
 
@@ -60,11 +62,11 @@ class BoxesCompiler {
    * Perform DFS on the given tree and compile all appropriate boxes.
    * @param JobConfig $jobConfig
    * @param RootedTree $rootedTree
-   * @param array $limits
+   * @param CompilationContext $context
    * @param CompilationParams $params
    */
-  private function processTree(JobConfig $jobConfig,
-      RootedTree $rootedTree, array $limits, CompilationParams $params) {
+  private function processTree(JobConfig $jobConfig, RootedTree $rootedTree,
+      CompilationContext $context, CompilationParams $params) {
     // stack for DFS, better stay in order by reversing original root nodes
     $stack = array_reverse($rootedTree->getRootNodes());
     $order = 65536; // if there is more tasks this will fail spectacularly
@@ -84,7 +86,7 @@ class BoxesCompiler {
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
         // create and set task identification
-        $taskId = $this->createTaskIdentification($current, $order);
+        $taskId = $this->createTaskIdentification($current, $order, $context);
         $current->addTaskId($taskId);
         $task->setId($taskId);
 
@@ -94,17 +96,18 @@ class BoxesCompiler {
         // identification of test is present in node
         if (!empty($current->getTestId())) {
           $testId = $current->getTestId();
+          $testName = $context->getTestsNames()[$testId];
           // set identification of test to task
-          $task->setTestId($testId);
+          $task->setTestId($testName);
           // change evaluation directory to the one which belongs to test
           $sandbox = $task->getSandboxConfig();
           if ($sandbox) {
-            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $testId);
+            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $testName);
           }
         }
 
         // if the task is external then set limits to it
-        $this->setLimits($current, $task, $limits);
+        $this->setLimits($current, $task, $context->getLimits());
 
         // do not forget to add tasks into job configuration
         $jobConfig->addTask($task);
@@ -123,20 +126,19 @@ class BoxesCompiler {
   /**
    * Go through given array find boxes and compile them into JobConfig.
    * @param RootedTree $rootedTree
-   * @param ExerciseLimits[] $limits indexed by hwgroup
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return JobConfig
    */
-  public function compile(RootedTree $rootedTree, array $limits,
-      CompilationParams $params): JobConfig {
+  public function compile(RootedTree $rootedTree, CompilationContext $context, CompilationParams $params): JobConfig {
     $jobConfig = new JobConfig();
 
     // loggin of submission is turned on by default
     $jobConfig->getSubmissionHeader()->setLog(true);
     // add hwgroups identifications into job configuration
-    $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($limits));
+    $jobConfig->getSubmissionHeader()->setHardwareGroups(array_keys($context->getLimits()));
     // perform DFS
-    $this->processTree($jobConfig, $rootedTree, $limits, $params);
+    $this->processTree($jobConfig, $rootedTree, $context, $params);
 
     return $jobConfig;
   }

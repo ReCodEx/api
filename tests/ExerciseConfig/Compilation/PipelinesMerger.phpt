@@ -4,6 +4,7 @@ include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
@@ -52,6 +53,7 @@ class TestPipelinesMerger extends Tester\TestCase
   private static $environment;
   private static $compilationPipeline;
   private static $testPipeline;
+  private static $testsNames;
   private static $exerciseFiles = [];
   private static $pipelineFiles = [];
 
@@ -78,10 +80,14 @@ class TestPipelinesMerger extends Tester\TestCase
   protected function setUp() {
     $this->setUpMocks();
 
+    self::$testsNames = [
+      "1" => "testA",
+      "2" => "testB"
+    ];
     self::$config = [
       "environments" => [ "envA", "envB" ],
       "tests" => [
-        "testA" => [
+        "1" => [
           "environments" => [
             "envA" => [ "pipelines" => [
               [ "name" => "compilationPipeline", "variables" => [] ],
@@ -93,7 +99,7 @@ class TestPipelinesMerger extends Tester\TestCase
             ] ]
           ]
         ],
-        "testB" => [
+        "2" => [
           "environments" => [
             "envA" => [
               "pipelines" => [
@@ -211,17 +217,17 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
     Assert::exception(function () {
-      $this->merger->merge(new ExerciseConfig(), new VariablesTable(),
-        self::$exerciseFiles, self::$environment, CompilationParams::create());
+      $context = CompilationContext::create(new ExerciseConfig(), new VariablesTable(), [], self::$exerciseFiles, self::$testsNames, self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
   public function testEmptyPipelines() {
 
     // configure configuration
-    self::$config["tests"]["testA"]["pipelines"] = [];
-    self::$config["tests"]["testB"]["pipelines"] = [];
-    self::$config["tests"]["testB"]["environments"]["envA"]["pipelines"] = [];
+    self::$config["tests"]["1"]["pipelines"] = [];
+    self::$config["tests"]["2"]["pipelines"] = [];
+    self::$config["tests"]["2"]["environments"]["envA"]["pipelines"] = [];
 
     // create all needed stuff
     $config = $this->loader->loadExerciseConfig(self::$config);
@@ -232,8 +238,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
-      $this->merger->merge($config, $envVariablesTable, self::$exerciseFiles,
-        self::$environment, CompilationParams::create());
+      $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
@@ -243,8 +249,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->withAnyArgs()->andThrow(NotFoundException::class);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
-      $this->merger->merge($config, $envVariablesTable, self::$exerciseFiles,
-        self::$environment, CompilationParams::create());
+      $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
+      $this->merger->merge($context, CompilationParams::create());
     }, ExerciseConfigException::class);
   }
 
@@ -292,12 +298,12 @@ class TestPipelinesMerger extends Tester\TestCase
     $runNode = $otherNodes["run"];
     $judgeNode = $otherNodes["judge"];
 
-    Assert::equal("testA", $sourceNode->getTestId());
-    Assert::equal("testA", $testNode->getTestId());
-    Assert::equal("testA", $compilationNode->getTestId());
-    Assert::equal("testA", $joinNode->getTestId());
-    Assert::equal("testA", $runNode->getTestId());
-    Assert::equal("testA", $judgeNode->getTestId());
+    Assert::equal("1", $sourceNode->getTestId());
+    Assert::equal("1", $testNode->getTestId());
+    Assert::equal("1", $compilationNode->getTestId());
+    Assert::equal("1", $joinNode->getTestId());
+    Assert::equal("1", $runNode->getTestId());
+    Assert::equal("1", $judgeNode->getTestId());
 
     Assert::equal("compilationPipeline", $sourceNode->getPipelineId());
     Assert::equal("testPipeline", $testNode->getPipelineId());
@@ -372,9 +378,9 @@ class TestPipelinesMerger extends Tester\TestCase
     $compilationNode = $otherNodes["compilation"];
     $outputNode = $outputNodes["output"];
 
-    Assert::equal("testB", $sourceNode->getTestId());
-    Assert::equal("testB", $compilationNode->getTestId());
-    Assert::equal("testB", $outputNode->getTestId());
+    Assert::equal("2", $sourceNode->getTestId());
+    Assert::equal("2", $compilationNode->getTestId());
+    Assert::equal("2", $outputNode->getTestId());
 
     Assert::equal("compilationPipeline", $sourceNode->getPipelineId());
     Assert::equal("compilationPipeline", $compilationNode->getPipelineId());
@@ -403,8 +409,8 @@ class TestPipelinesMerger extends Tester\TestCase
     $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
     $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
 
-    $tests = $this->merger->merge($config, $envVariablesTable,
-      self::$exerciseFiles, self::$environment, CompilationParams::create());
+    $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
+    $tests = $this->merger->merge($context, CompilationParams::create());
     Assert::count(2, $tests);
 
     $testA = $tests["testA"];

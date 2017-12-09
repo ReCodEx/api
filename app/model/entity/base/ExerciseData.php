@@ -51,7 +51,9 @@ trait ExerciseData {
    * @return array
    */
   public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeEnvironments->map(function($config) { return $config->getId(); })->getValues();
+    return $this->runtimeEnvironments->map(function(RuntimeEnvironment $environment) {
+      return $environment->getId();
+    })->getValues();
   }
 
   /**
@@ -69,7 +71,9 @@ trait ExerciseData {
    * @return string[]
    */
   public function getHardwareGroupsIds() {
-    return $this->hardwareGroups->map(function($group) { return $group->getId(); })->getValues();
+    return $this->hardwareGroups->map(function(HardwareGroup $group) {
+      return $group->getId();
+    })->getValues();
   }
 
   /**
@@ -182,6 +186,29 @@ trait ExerciseData {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("name", $name));
     $first = $this->exerciseTests->matching($criteria)->first();
     return $first === false ? null : $first;
+  }
+
+  /**
+   * Get tests indexed by entity id and containing actual test name.
+   * @return string[]
+   */
+  public function getExerciseTestsNames(): array {
+    $tests = [];
+    foreach ($this->exerciseTests as $exerciseTest) {
+      $tests[$exerciseTest->getId()] = $exerciseTest->getName();
+    }
+    return $tests;
+  }
+
+  /**
+   * Get identifications of exercise tests.
+   * @return array
+   */
+  public function getExerciseTestsIds() {
+    return $this->exerciseTests->map(
+      function(ExerciseTest $test) {
+        return $test->getId();
+      })->getValues();
   }
 
   /**

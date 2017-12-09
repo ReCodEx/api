@@ -343,7 +343,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $result = [];
     $limitsArray = $exercise->getLimitsByEnvironment($environment);
     foreach ($limitsArray as $limits) {
-      $result = array_merge($result, $limits->getParsedLimits());
+      $result = $result + $limits->getParsedLimits();
     }
 
     $this->sendSuccessResponse($result);
@@ -592,8 +592,6 @@ class ExercisesConfigPresenter extends BasePresenter {
     $tests = $req->getPost("tests");
 
     $newTests = [];
-    $newTestNames = [];
-    $replacedTestNames = [];
     foreach ($tests as $test) {
       if (!array_key_exists("name", $test)) {
         throw new InvalidArgumentException("tests", "name item not found in particular test");
@@ -610,17 +608,18 @@ class ExercisesConfigPresenter extends BasePresenter {
           throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
         }
 
-        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
-        $newTestNames[] = $name;
+        $testEntity = new ExerciseTest(trim($name), $description, $this->getCurrentUser());
       } else {
-        $replacedTestNames[$testEntity->getName()] = $name;
-
         // update of existing exercise test with all appropriate fields
-        $testEntity->setName($name);
+        $testEntity->setName(trim($name));
         $testEntity->setDescription($description);
         $testEntity->setUpdatedAt(new DateTime);
       }
 
+
+      if (array_key_exists($name, $newTests)) {
+        throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+      }
       $newTests[$name] = $testEntity;
     }
 
@@ -629,7 +628,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseTests(new ArrayCollection($newTests));
 
     // update exercise configuration and test in here
-    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), $newTestNames, $replacedTestNames, false);
+    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), false);
     $this->exercises->flush();
 
     $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());

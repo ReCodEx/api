@@ -3,9 +3,12 @@
 include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
+use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -170,16 +173,18 @@ class TestVariablesResolver extends Tester\TestCase
   public function testMissingVariableInInputBoxTables() {
     Assert::exception(function () {
       $this->pipeVarTableB->remove("test-bb-input");
-      $this->resolver->resolve($this->treeArray[1], $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableB, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[1], $this->exerVarTableB, $this->pipeVarTableB, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testMissingReferencedVariable() {
     Assert::exception(function () {
       $this->exerVarTableA->remove("test-a-reference-variable");
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
@@ -188,8 +193,10 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getInputNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
@@ -198,47 +205,54 @@ class TestVariablesResolver extends Tester\TestCase
       $newPort = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getOtherNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testMissingVariableInPipelinesTable() {
     Assert::exception(function () {
       $this->pipeVarTableA->remove("test-a-pre-exec");
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenInputNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesParentNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOutputNodes()[0]->clearParents();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testBadConnectionBetweenNodesChildNotFound() {
     Assert::exception(function () {
       $this->treeArray[0]->getOtherNodes()[1]->clearChildren();
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
   public function testUnknownHashOfFile() {
     Assert::exception(function () {
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, [],
-        [], []);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], [], [], "");
+      $params = CompilationParams::create();
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, [], $context, $params);
     }, ExerciseConfigException::class);
   }
 
@@ -246,8 +260,9 @@ class TestVariablesResolver extends Tester\TestCase
     Assert::throws(function () {
       $files = ["infile"];
       $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("out*"));
-      $this->resolver->resolve($this->treeArray[0], $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA,
-        $files, self::$exerciseFiles, self::$pipelineFiles);
+      $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+      $params = CompilationParams::create($files);
+      $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     }, ExerciseConfigException::class);
   }
 
@@ -255,29 +270,30 @@ class TestVariablesResolver extends Tester\TestCase
     $tree = $this->treeArray[0];
     $box = $tree->getInputNodes()[0]->getBox();
     $boxArray = $tree->getInputNodes()[1]->getBox();
+    $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
 
     $files = ["infile"];
+    $params = CompilationParams::create($files);
     $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
-    $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
+    $this->resolver->resolve($tree, $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     Assert::equal("infile", $box->getInputVariable()->getValue());
 
     $files = ["infile", "invar"];
+    $params = CompilationParams::create($files);
     $this->envVarTableA->set((new Variable("file"))->setName("test-a-input")->setValue("in*"));
-    $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
+    $this->resolver->resolve($tree, $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     Assert::equal("infile", $box->getInputVariable()->getValue());
 
     $files = ["infile", "invar"];
+    $params = CompilationParams::create($files);
     $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
-    $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
+    $this->resolver->resolve($tree, $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     Assert::equal($files, $boxArray->getInputVariable()->getValue());
 
     $files = ["infile", "outvar"];
+    $params = CompilationParams::create($files);
     $this->envVarTableA->set((new Variable("file[]"))->setName("test-a-input-array")->setValue("in*"));
-    $this->resolver->resolve($tree, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
+    $this->resolver->resolve($tree, $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
     Assert::equal(["infile"], $boxArray->getInputVariable()->getValue());
   }
 
@@ -287,10 +303,12 @@ class TestVariablesResolver extends Tester\TestCase
     $treeB = $trees[1];
 
     $files = ["infile"];
-    $this->resolver->resolve($treeA, $this->envVarTableA, $this->exerVarTableA, $this->pipeVarTableA, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
-    $this->resolver->resolve($treeB, $this->envVarTableB, $this->exerVarTableB, $this->pipeVarTableB, $files,
-      self::$exerciseFiles, self::$pipelineFiles);
+    $params = CompilationParams::create($files);
+    $contextA = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
+    $contextB = CompilationContext::create(new ExerciseConfig(), $this->envVarTableB, [], self::$exerciseFiles, [], "");
+
+    $this->resolver->resolve($treeA, $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $contextA, $params);
+    $this->resolver->resolve($treeB, $this->exerVarTableB, $this->pipeVarTableB, self::$pipelineFiles, $contextB, $params);
 
 
     //**************************************************************************

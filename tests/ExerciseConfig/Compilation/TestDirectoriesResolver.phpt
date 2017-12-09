@@ -2,14 +2,17 @@
 
 include '../../bootstrap.php';
 
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
+use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
@@ -32,17 +35,17 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     $varB = new Variable(VariableTypes::$FILE_TYPE, "varB", "valB");
     $portB = (new Port(PortMeta::create("portB", VariableTypes::$FILE_TYPE)))->setVariableValue($varB);
     $B = (new Node)->setBox((new CustomBox("B"))->addOutputPort($portB));
-    $B->setTestId("testA");
+    $B->setTestId("1");
 
     $varC = new Variable(VariableTypes::$FILE_ARRAY_TYPE, "varC", ["valC1", "valC2"]);
     $portC = (new Port(PortMeta::create("portC", VariableTypes::$FILE_ARRAY_TYPE)))->setVariableValue($varC);
     $C = (new Node)->setBox((new CustomBox("C"))->addOutputPort($portC));
-    $C->setTestId("testA");
+    $C->setTestId("1");
 
     $varD = new Variable(VariableTypes::$REMOTE_FILE_TYPE, "varD", "valD");
     $portD = (new Port(PortMeta::create("portD", VariableTypes::$FILE_TYPE)))->setVariableValue($varD);
     $D = (new Node)->setBox((new CustomBox("D"))->addOutputPort($portD));
-    $D->setTestId("testA");
+    $D->setTestId("1");
 
     $varE = new Variable(VariableTypes::$FILE_TYPE, "varE", "valE");
     $portE = (new Port(PortMeta::create("portE", VariableTypes::$FILE_TYPE)))->setVariableValue($varE);
@@ -53,12 +56,12 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     $portF1 = (new Port(PortMeta::create("portF1", VariableTypes::$FILE_TYPE)))->setVariableValue($varF1);
     $portF2 = (new Port(PortMeta::create("portF2", VariableTypes::$FILE_TYPE)))->setVariableValue($varF2);
     $F = (new Node)->setBox((new CustomBox("F"))->addOutputPort($portF1)->addOutputPort($portF2));
-    $F->setTestId("testB");
+    $F->setTestId("2");
 
     $varG = new Variable(VariableTypes::$STRING_TYPE, "varG", "valG");
     $portG = (new Port(PortMeta::create("portG", VariableTypes::$STRING_TYPE)))->setVariableValue($varG);
     $G = (new Node)->setBox((new CustomBox("G"))->addOutputPort($portG));
-    $G->setTestId("testB");
+    $G->setTestId("2");
 
     /*
      *    B - C - D
@@ -84,16 +87,22 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     $tree = new RootedTree();
     $tree->addRootNode($A);
 
+    $testsNames = [
+      "1" => "testA",
+      "2" => "testB"
+    ];
+
     // execute and assert
+    $context = CompilationContext::create(new ExerciseConfig(), new VariablesTable(), [], [], $testsNames, "");
     $params = CompilationParams::create();
-    $result = $this->resolver->resolve($tree, $params);
+    $result = $this->resolver->resolve($tree, $context, $params);
     Assert::count(1, $result->getRootNodes());
 
     $mkdirA = $result->getRootNodes()[0];
     Assert::count(0, $mkdirA->getParents());
     Assert::count(1, $mkdirA->getChildren());
     Assert::count(0, $mkdirA->getDependencies());
-    Assert::equal("testA", $mkdirA->getTestId());
+    Assert::equal("1", $mkdirA->getTestId());
     Assert::equal("mkdir", $mkdirA->getBox()->getType());
     Assert::count(1, $mkdirA->getBox()->getInputPorts());
     Assert::equal("testA", current($mkdirA->getBox()->getInputPorts())->getVariableValue()->getValue());
@@ -104,7 +113,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(1, $mkdirB->getChildren());
     Assert::equal([$A], $mkdirB->getChildren());
     Assert::count(0, $mkdirB->getDependencies());
-    Assert::equal("testB", $mkdirB->getTestId());
+    Assert::equal("2", $mkdirB->getTestId());
     Assert::equal("mkdir", $mkdirB->getBox()->getType());
     Assert::count(1, $mkdirB->getBox()->getInputPorts());
     Assert::equal("testB", current($mkdirB->getBox()->getInputPorts())->getVariableValue()->getValue());
@@ -125,7 +134,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$C], $B->getChildren());
     Assert::count(1, $B->getDependencies());
     Assert::equal([$mkdirA], $B->getDependencies());
-    Assert::equal("testA", $B->getTestId());
+    Assert::equal("1", $B->getTestId());
     Assert::equal("B", $B->getBox()->getName());
     Assert::count(1, $B->getBox()->getOutputPorts());
     Assert::equal("testA/valB", current($B->getBox()->getOutputPorts())->getVariableValue()->getPrefixedValue());
@@ -136,7 +145,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$D, $E], $C->getChildren());
     Assert::count(1, $C->getDependencies());
     Assert::equal([$mkdirA], $C->getDependencies());
-    Assert::equal("testA", $C->getTestId());
+    Assert::equal("1", $C->getTestId());
     Assert::equal("C", $C->getBox()->getName());
     Assert::count(1, $C->getBox()->getOutputPorts());
     Assert::equal(["testA/valC1", "testA/valC2"], current($C->getBox()->getOutputPorts())->getVariableValue()->getPrefixedValue());
@@ -146,7 +155,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(0, $D->getChildren());
     Assert::count(1, $D->getDependencies());
     Assert::equal([$mkdirA], $D->getDependencies());
-    Assert::equal("testA", $D->getTestId());
+    Assert::equal("1", $D->getTestId());
     Assert::equal("D", $D->getBox()->getName());
     Assert::count(1, $D->getBox()->getOutputPorts());
     Assert::equal("valD", current($D->getBox()->getOutputPorts())->getVariableValue()->getPrefixedValue());
@@ -166,7 +175,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$G], $F->getChildren());
     Assert::count(1, $F->getDependencies());
     Assert::equal([$mkdirB], $F->getDependencies());
-    Assert::equal("testB", $F->getTestId());
+    Assert::equal("2", $F->getTestId());
     Assert::equal("F", $F->getBox()->getName());
     Assert::count(2, $F->getBox()->getOutputPorts());
     Assert::equal("testB/valF1", $F->getBox()->getOutputPorts()["portF1"]->getVariableValue()->getPrefixedValue());
@@ -177,7 +186,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::count(0, $G->getChildren());
     Assert::count(1, $G->getDependencies());
     Assert::equal([$mkdirB], $G->getDependencies());
-    Assert::equal("testB", $G->getTestId());
+    Assert::equal("2", $G->getTestId());
     Assert::equal("G", $G->getBox()->getName());
     Assert::count(1, $G->getBox()->getOutputPorts());
     Assert::equal("valG", current($G->getBox()->getOutputPorts())->getVariableValue()->getPrefixedValue());

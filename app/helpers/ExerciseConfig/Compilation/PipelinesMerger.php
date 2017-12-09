@@ -256,16 +256,14 @@ class PipelinesMerger {
    * Process pipeline, which means creating its tree.
    * @param string $pipelineId
    * @param string $testId
-   * @param VariablesTable $environmentConfigVariables
    * @param PipelineVars $pipelineVars
-   * @param array $exerciseFiles
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return MergeTree new instance of merge tree
    * @throws ExerciseConfigException
    */
-  private function processPipeline(string $pipelineId, string $testId,
-      VariablesTable $environmentConfigVariables, PipelineVars $pipelineVars,
-      array $exerciseFiles, CompilationParams $params): MergeTree {
+  private function processPipeline(string $pipelineId, string $testId, PipelineVars $pipelineVars,
+      CompilationContext $context, CompilationParams $params): MergeTree {
 
     // get database entity and then structured pipeline configuration
     try {
@@ -280,9 +278,9 @@ class PipelinesMerger {
     $pipelineTree = $this->buildPipelineTree($pipelineId, $testId, $pipelineConfig);
     // resolve all variables in pipeline tree
     $this->variablesResolver->resolve($pipelineTree,
-      $environmentConfigVariables, $pipelineVars->getVariablesTable(),
-      $pipelineConfig->getVariablesTable(), $params->getFiles(),
-      $exerciseFiles, $pipelineFiles);
+      $pipelineVars->getVariablesTable(),
+      $pipelineConfig->getVariablesTable(),
+      $pipelineFiles, $context, $params);
 
     return $pipelineTree;
   }
@@ -291,18 +289,16 @@ class PipelinesMerger {
    * Merge all pipelines in test and return array of boxes.
    * @param string $testId
    * @param Test $test
-   * @param VariablesTable $environmentConfigVariables
-   * @param array $exerciseFiles
-   * @param string $runtimeEnvironmentId
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return MergeTree
    * @throws ExerciseConfigException
    */
-  private function processTest(string $testId, Test $test,
-      VariablesTable $environmentConfigVariables, array $exerciseFiles,
-      string $runtimeEnvironmentId, CompilationParams $params): MergeTree {
+  private function processTest(string $testId, Test $test, CompilationContext $context,
+      CompilationParams $params): MergeTree {
 
     // get pipelines either for specific environment
+    $runtimeEnvironmentId = $context->getRuntimeEnvironmentId();
     $environment = $test->getEnvironment($runtimeEnvironmentId);
     $testPipelines = $environment->getPipelines();
 
@@ -317,8 +313,7 @@ class PipelinesMerger {
     foreach ($testPipelines as $pipelineId => $pipelineVars) {
 
       // process pipeline and merge it to already existing tree
-      $pipelineTree = $this->processPipeline($pipelineId, $testId,
-        $environmentConfigVariables, $pipelineVars, $exerciseFiles, $params);
+      $pipelineTree = $this->processPipeline($pipelineId, $testId, $pipelineVars, $context, $params);
       // merge given tree and currently created pipeline tree
       $tree = $this->mergeTrees($tree, $pipelineTree);
     }
@@ -328,26 +323,26 @@ class PipelinesMerger {
 
   /**
    * For each test merge its pipelines and create array of boxes
-   * @param ExerciseConfig $exerciseConfig
-   * @param VariablesTable $environmentConfigVariables
-   * @param array $exerciseFiles indexed by file names
-   * @param string $runtimeEnvironmentId
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return MergeTree[]
    * @throws ExerciseConfigException
    */
-  public function merge(ExerciseConfig $exerciseConfig,
-      VariablesTable $environmentConfigVariables, array $exerciseFiles,
-      string $runtimeEnvironmentId, CompilationParams $params): array {
-    if (count($exerciseConfig->getTests()) === 0) {
+  public function merge(CompilationContext $context, CompilationParams $params): array {
+    if (count($context->getExerciseConfig()->getTests()) === 0) {
       throw new ExerciseConfigException("Exercise configuration does not specify any tests");
     }
 
     $tests = array();
-    foreach ($exerciseConfig->getTests() as $testId => $test) {
-      $tests[$testId] = $this->processTest($testId, $test,
-        $environmentConfigVariables, $exerciseFiles, $runtimeEnvironmentId,
-        $params);
+    foreach ($context->getExerciseConfig()->getTests() as $testId => $test) {
+      // find test identification in tests names array and retrieve test name
+      if (!array_key_exists($testId, $context->getTestsNames())) {
+        throw new ExerciseConfigException("Test with id '{$testId}' does not exist in exercise.");
+      }
+      $testName = $context->getTestsNames()[$testId];
+
+      // process test
+      $tests[$testName] = $this->processTest($testId, $test, $context, $params);
     }
 
     return $tests;
