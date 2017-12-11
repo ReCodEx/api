@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -100,6 +101,7 @@ class MkdirBox extends Box
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();
+    $task->setPriority(Priorities::$DEFAULT);
     $task->setCommandBinary(TaskCommands::$MKDIR);
     $task->setCommandArguments([
       current($this->getInputPorts())->getVariableValue()->getPrefixedValue(ConfigParams::$SOURCE_DIR)

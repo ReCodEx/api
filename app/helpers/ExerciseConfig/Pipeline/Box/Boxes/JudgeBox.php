@@ -140,6 +140,7 @@ class JudgeBox extends Box
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();

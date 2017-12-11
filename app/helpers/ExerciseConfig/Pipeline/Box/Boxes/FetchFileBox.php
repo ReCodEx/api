@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -94,6 +95,7 @@ class FetchFileBox extends Box
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();
+    $task->setPriority(Priorities::$DEFAULT);
 
     // remote file has to have fetch task
     $task->setCommandBinary(TaskCommands::$FETCH);

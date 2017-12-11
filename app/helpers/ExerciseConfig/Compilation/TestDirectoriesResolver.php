@@ -8,7 +8,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\ResultMkdirBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DumpResultsBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
@@ -65,20 +65,20 @@ class TestDirectoriesResolver {
   }
 
   /**
-   * Based on given information create test mkdir box and node.
+   * Based on given information create test dump result box and node.
    * @param string $testId
    * @param string $testName
    * @return Node
    * @throws ExerciseConfigException
    */
-  private function createResultMkdirNode(string $testId, string $testName): Node {
+  private function createDumpResultsNode(string $testId, string $testName): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
     $variable->setValue($testName);
 
     $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
 
-    $boxMeta = (new BoxMeta)->setName(MkdirBox::$MKDIR_TYPE);
-    $box = (new ResultMkdirBox($boxMeta))->setInputPort($port);
+    $boxMeta = (new BoxMeta)->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
+    $box = (new DumpResultsBox($boxMeta))->setInputPort($port);
 
     $node = (new Node)->setBox($box)->setTestId($testId);
     return $node;
@@ -121,15 +121,11 @@ class TestDirectoriesResolver {
       }
 
       if ($params->isDebug()) {
-        $resultMkdirNode = $this->createResultMkdirNode($testId, $testName);
-        $resultMkdirNode->addParent($lastMkdirNode);
-        $lastMkdirNode->addChild($resultMkdirNode);
-        $lastMkdirNode = $resultMkdirNode;
-
-        // set dependencies for all nodes in test
-        foreach ($nodes as $node) {
-          $node->addDependency($lastMkdirNode);
-        }
+        $dumpResultsNode = $this->createDumpResultsNode($testId, $testName);
+        $dumpResultsNode->addParent($lastMkdirNode);
+        $dumpResultsNode->addDependency($lastMkdirNode);
+        $lastMkdirNode->addChild($dumpResultsNode);
+        $lastMkdirNode = $dumpResultsNode;
       }
     }
 

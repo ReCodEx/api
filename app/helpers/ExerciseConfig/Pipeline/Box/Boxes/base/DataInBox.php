@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -106,6 +107,8 @@ abstract class DataInBox extends Box
    */
   protected function compileTask(bool $isRemote, string $input, string $local): Task {
     $task = new Task();
+    $task->setPriority(Priorities::$DEFAULT);
+
     if ($isRemote) {
       // remote file has to have fetch task
       $task->setCommandBinary(TaskCommands::$FETCH);

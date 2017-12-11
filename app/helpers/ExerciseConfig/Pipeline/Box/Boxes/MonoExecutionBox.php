@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -91,6 +92,7 @@ class MonoExecutionBox extends ExecutionBox
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);

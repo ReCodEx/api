@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
@@ -41,6 +42,7 @@ abstract class ExecutionBox extends Box
    * sandbox configuration. Stdin and stdout are also handled here.
    * @param CompilationParams $params
    * @return Task
+   * @throws ExerciseConfigException
    */
   protected function compileBaseTask(CompilationParams $params): Task {
     $task = new Task();
@@ -55,10 +57,15 @@ abstract class ExecutionBox extends Box
       $stdoutValue = $this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY);
       if ($stdoutValue->isEmpty()) {
         // name of the file is empty, so just make up some appropriate one
-        $stdoutValue->setValue(Random::generate(20));
+        $stdoutValue->setValue(Random::generate(20) . ".stdout");
       }
       $sandbox->setStdout($stdoutValue->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
+    if ($params->isDebug()) {
+      // all stderrs are stored alongside solution in case of debugging submission
+      $sandbox->setStderr(Random::generate(20) . ".stderr");
+    }
+
     $task->setSandboxConfig($sandbox);
 
     return $task;
