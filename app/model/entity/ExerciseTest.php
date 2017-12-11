@@ -11,10 +11,12 @@ use JsonSerializable;
 /**
  * @ORM\Entity
  * @method int getId()
+ * @method setId(int $id)
  * @method string getName()
  * @method string getDescription()
  * @method User getAuthor()
  * @method DateTime getCreatedAt()
+ * @method string setName(string $name)
  * @method string setDescription(string $description)
  * @method void setUpdatedAt(DateTime $date)
  */
@@ -59,7 +61,6 @@ class ExerciseTest implements JsonSerializable
    * @param string $name
    * @param string $description
    * @param User $author
-   * @param Exercise|null $exercise
    */
   public function __construct(string $name, string $description, User $author) {
     $this->createdAt = new DateTime;
@@ -72,8 +73,9 @@ class ExerciseTest implements JsonSerializable
 
   public function jsonSerialize() {
     return [
+      "id" => $this->id,
       "name" => $this->name,
-      "description" => $this->description,
+      "description" => $this->description
     ];
   }
 }

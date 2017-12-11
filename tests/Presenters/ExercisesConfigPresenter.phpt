@@ -188,9 +188,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "c-gcc-linux",
         "tests" => [
-          ["name" => "Test 1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
+          ["name" => "1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
-          ["name" => "Test 2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
+          ["name" => "2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
             ["name" => "input-file", "type" => "file", "value" => "defValB"],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValB"]
@@ -200,9 +200,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
       [
         "name" => "java",
         "tests" => [
-          ["name" => "Test 1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
+          ["name" => "1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
-          ["name" => "Test 2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
+          ["name" => "2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
             ["name" => "input-file", "type" => "file", "value" => "defValB"],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValC"]
@@ -226,15 +226,15 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $exerciseConfig = $this->presenter->exerciseConfigLoader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     Assert::count(2, $exerciseConfig->getTests());
-    Assert::type(Test::class, $exerciseConfig->getTest('Test 1'));
-    Assert::type(Test::class, $exerciseConfig->getTest('Test 2'));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('Test 1')
+    Assert::type(Test::class, $exerciseConfig->getTest('1'));
+    Assert::type(Test::class, $exerciseConfig->getTest('2'));
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('1')
       ->getEnvironment("c-gcc-linux")->getPipeline($compilationPipeline->getId()));
-    Assert::type(PipelineVars::class, $exerciseConfig->getTest('Test 2')
+    Assert::type(PipelineVars::class, $exerciseConfig->getTest('2')
       ->getEnvironment("c-gcc-linux")->getPipeline($testPipeline->getId()));
-    Assert::equal([], $exerciseConfig->getTest('Test 1')->getEnvironment("c-gcc-linux")
+    Assert::equal([], $exerciseConfig->getTest('1')->getEnvironment("c-gcc-linux")
       ->getPipeline($compilationPipeline->getId())->getVariablesTable()->toArray());
-    Assert::equal("defValB", $exerciseConfig->getTest('Test 2')->getEnvironment("c-gcc-linux")
+    Assert::equal("defValB", $exerciseConfig->getTest('2')->getEnvironment("c-gcc-linux")
       ->getPipeline($testPipeline->getId())->getVariablesTable()->get('binary-file')->getValue());
   }
 
@@ -306,8 +306,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      'Test 1' => ['wall-time' => 1.0],
-      'Test 2' => ['wall-time' => 2.0]
+      '1' => ['wall-time' => 1.0],
+      '2' => ['wall-time' => 2.0]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
@@ -369,8 +369,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      'Test 1' => ['wall-time' => 1.0],
-      'Test 2' => ['wall-time' => 2.0]
+      '1' => ['wall-time' => 1.0],
+      '2' => ['wall-time' => 2.0]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
@@ -504,10 +504,12 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     // prepare tests
     $tests = [
       [
+        "id" => 1,
         "name" => "Test 1",
         "description" => "desc"
       ],
       [
+        "id" => 2,
         "name" => "Test 2",
         "description" => "second desc"
       ],

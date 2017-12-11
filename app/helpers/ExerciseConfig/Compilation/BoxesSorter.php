@@ -125,6 +125,7 @@ class BoxesSorter {
    * For each test sort its boxes to order which makes execution sense.
    * @param MergeTree[] $tests
    * @return RootedTree[]
+   * @throws ExerciseConfigException
    */
   public function sort(array $tests): array {
 

@@ -6,6 +6,7 @@ use App\Helpers\ExerciseConfig\Compilation\BoxesCompiler;
 use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use App\Helpers\ExerciseConfig\Compilation\BoxesSorter;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
+use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
 use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
@@ -51,7 +52,7 @@ class TestBaseCompiler extends Tester\TestCase
   private static $exerciseConfig = [
     "environments" => [ "envA", "envB" ],
     "tests" => [
-      "testA" => [
+      "1" => [
         "environments" => [
           "envA" => [ "pipelines" => [
             [ "name" => "compilationPipeline", "variables" => [] ],
@@ -69,7 +70,7 @@ class TestBaseCompiler extends Tester\TestCase
           ] ]
         ]
       ],
-      "testB" => [
+      "2" => [
         "environments" => [
           "envA" => [
             "pipelines" => [
@@ -190,17 +191,21 @@ class TestBaseCompiler extends Tester\TestCase
   ];
   private static $limits = [
     [ // groupA
-      "testA" => [
+      "1" => [
         "memory" => 123,
         "wall-time" => 456.0
       ]
     ],
     [ // groupB
-      "testA" => [
+      "1" => [
         "memory" => 654,
         "wall-time" => 321.0
       ]
     ]
+  ];
+  private static $testsNames = [
+    "1" => "testA",
+    "2" => "testB"
   ];
   private static $pipelineFiles = [];
   private static $exerciseFiles = [
@@ -253,9 +258,9 @@ class TestBaseCompiler extends Tester\TestCase
       "groupB" => $this->loader->loadExerciseLimits(self::$limits[1])
     ];
 
-    $jobConfig = $this->compiler->compile($exerciseConfig,
-      $environmentConfigVariables, $limits, self::$exerciseFiles, self::$environment,
-      CompilationParams::create([], true));
+    $context = CompilationContext::create($exerciseConfig, $environmentConfigVariables, $limits,
+      self::$exerciseFiles, self::$testsNames, self::$environment);
+    $jobConfig = $this->compiler->compile($context, CompilationParams::create([], true));
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());

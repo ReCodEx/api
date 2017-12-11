@@ -60,24 +60,17 @@ class BaseCompiler {
 
   /**
    * Compile ExerciseConfig to JobConfig
-   * @param ExerciseConfig $exerciseConfig
-   * @param VariablesTable $environmentConfigVariables
-   * @param ExerciseLimits[] $limits
-   * @param array $exerciseFiles indexed by files names
-   * @param string $runtimeEnvironmentId
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return JobConfig
    * @throws ExerciseConfigException
    */
-  public function compile(ExerciseConfig $exerciseConfig,
-      VariablesTable $environmentConfigVariables, array $limits, array $exerciseFiles,
-      string $runtimeEnvironmentId, CompilationParams $params): JobConfig {
-    $tests = $this->pipelinesMerger->merge($exerciseConfig, $environmentConfigVariables, $exerciseFiles,
-      $runtimeEnvironmentId, $params);
+  public function compile(CompilationContext $context, CompilationParams $params): JobConfig {
+    $tests = $this->pipelinesMerger->merge($context, $params);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
-    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $params);
-    $jobConfig = $this->boxesCompiler->compile($testDirectories, $limits, $params);
+    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $context, $params);
+    $jobConfig = $this->boxesCompiler->compile($testDirectories, $context, $params);
     return $jobConfig;
   }
 

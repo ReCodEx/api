@@ -28,16 +28,18 @@ class TestDirectoriesResolver {
    * Resolve test directory for a single node. Only output ports are processed
    * in all nodes, because output ports should be files which ones are
    * @param Node $node
+   * @param CompilationContext $context
    */
-  private function processNode(Node $node) {
+  private function processNode(Node $node, CompilationContext $context) {
     if ($node->getTestId() === null) {
       return;
     }
 
+    $testName = $context->getTestsNames()[$node->getTestId()];
     foreach ($node->getBox()->getOutputPorts() as $outputPort) {
       $variableValue = $outputPort->getVariableValue();
       if ($variableValue && $variableValue->isFile()) {
-        $outputPort->getVariableValue()->setValuePrefix($node->getTestId() . ConfigParams::$PATH_DELIM);
+        $outputPort->getVariableValue()->setValuePrefix($testName . ConfigParams::$PATH_DELIM);
       }
     }
   }
@@ -45,12 +47,13 @@ class TestDirectoriesResolver {
   /**
    * Based on given information create mkdir box and node.
    * @param string $testId
+   * @param string $testName
    * @return Node
    * @throws ExerciseConfigException
    */
-  private function createMkdirNode(string $testId): Node {
+  private function createMkdirNode(string $testId, string $testName): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
-    $variable->setValue($testId);
+    $variable->setValue($testName);
 
     $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
 
@@ -64,12 +67,13 @@ class TestDirectoriesResolver {
   /**
    * Based on given information create test dump result box and node.
    * @param string $testId
+   * @param string $testName
    * @return Node
    * @throws ExerciseConfigException
    */
   private function createDumpResultsNode(string $testId): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
-    $variable->setValue($testId);
+    $variable->setValue($testName);
 
     $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
 
@@ -84,12 +88,13 @@ class TestDirectoriesResolver {
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
    * @param Node[][] $testNodes indexed with testId
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return RootedTree
    * @throws ExerciseConfigException
    */
   private function addDirectories(RootedTree $tree, array $testNodes,
-      CompilationParams $params): RootedTree {
+      CompilationContext $context, CompilationParams $params): RootedTree {
     if (count($testNodes) === 0) {
       return $tree;
     }
@@ -98,11 +103,13 @@ class TestDirectoriesResolver {
     $lastMkdirNode = null;
     $result = new RootedTree();
     foreach ($testNodes as $testId => $nodes) {
+      $testName = $context->getTestsNames()[$testId];
+
       if ($lastMkdirNode === null) {
-        $lastMkdirNode = $this->createMkdirNode($testId);
+        $lastMkdirNode = $this->createMkdirNode($testId, $testName);
         $result->addRootNode($lastMkdirNode);
       } else {
-        $mkdirNode = $this->createMkdirNode($testId);
+        $mkdirNode = $this->createMkdirNode($testId, $testName);
         $mkdirNode->addParent($lastMkdirNode);
         $lastMkdirNode->addChild($mkdirNode);
         $lastMkdirNode = $mkdirNode;
@@ -134,11 +141,12 @@ class TestDirectoriesResolver {
   /**
    * Resolve and assign proper directories to particular tests.
    * @param RootedTree $tree
+   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return RootedTree
    * @throws ExerciseConfigException
    */
-  public function resolve(RootedTree $tree, CompilationParams $params): RootedTree {
+  public function resolve(RootedTree $tree, CompilationContext $context, CompilationParams $params): RootedTree {
     $testNodes = [];
     $stack = array_reverse($tree->getRootNodes());
     while (!empty($stack)) {
@@ -154,7 +162,7 @@ class TestDirectoriesResolver {
       }
 
       // process current node
-      $this->processNode($current);
+      $this->processNode($current, $context);
 
       // add children of current node into stack
       foreach (array_reverse($current->getChildren()) as $child) {
@@ -162,7 +170,7 @@ class TestDirectoriesResolver {
       }
     }
 
-    return $this->addDirectories($tree, $testNodes, $params);
+    return $this->addDirectories($tree, $testNodes, $context, $params);
   }
 
 }

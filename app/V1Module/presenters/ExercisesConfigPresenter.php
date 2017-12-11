@@ -197,8 +197,8 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // make changes and updates to database entity
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
-    $this->exercises->replaceEnvironmentConfigs($exercise, $configs, FALSE);
-    $this->exerciseConfigUpdater->updateEnvironmentsInExerciseConfig($exercise, $this->getCurrentUser());
+    $this->exercises->replaceEnvironmentConfigs($exercise, $configs, false);
+    $this->exerciseConfigUpdater->environmentsUpdated($exercise, $this->getCurrentUser(), false);
 
     // flush database changes and return successful response
     $this->exercises->flush();
@@ -343,7 +343,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $result = [];
     $limitsArray = $exercise->getLimitsByEnvironment($environment);
     foreach ($limitsArray as $limits) {
-      $result = array_merge($result, $limits->getParsedLimits());
+      $result = $result + $limits->getParsedLimits();
     }
 
     $this->sendSuccessResponse($result);
@@ -441,7 +441,6 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $runtimeEnvironmentId
    * @param string $hwGroupId
    * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
    * @throws NotFoundException
    * @throws ExerciseConfigException
    */
@@ -580,7 +579,8 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @Param(type="post", name="tests", validation="array", description="An array of tests which will belong to exercise")
    * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException*
+   * @throws InvalidArgumentException
+   * @throws ExerciseConfigException
    */
   public function actionSetTests(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -594,21 +594,32 @@ class ExercisesConfigPresenter extends BasePresenter {
     $newTests = [];
     foreach ($tests as $test) {
       if (!array_key_exists("name", $test)) {
-        throw new InvalidArgumentException("tests");
+        throw new InvalidArgumentException("tests", "name item not found in particular test");
       }
 
       $name = $test["name"];
+      $id = Arrays::get($test, "id", null);
       $description = Arrays::get($test, "description", "");
 
-      $testEntity = $exercise->getExerciseTestByName($name);
+      $testEntity = $id ? $exercise->getExerciseTestById($id) : null;
       if ($testEntity === null) {
-        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
+        // new exercise test was requested to be created
+        if ($exercise->getExerciseTestByName($name)) {
+          throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
+        }
+
+        $testEntity = new ExerciseTest(trim($name), $description, $this->getCurrentUser());
       } else {
         // update of existing exercise test with all appropriate fields
+        $testEntity->setName(trim($name));
         $testEntity->setDescription($description);
         $testEntity->setUpdatedAt(new DateTime);
       }
 
+
+      if (array_key_exists($name, $newTests)) {
+        throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+      }
       $newTests[$name] = $testEntity;
     }
 
@@ -617,7 +628,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->setExerciseTests(new ArrayCollection($newTests));
 
     // update exercise configuration and test in here
-    $this->exerciseConfigUpdater->updateTestsInExerciseConfig($exercise, $this->getCurrentUser());
+    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), false);
     $this->exercises->flush();
 
     $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());

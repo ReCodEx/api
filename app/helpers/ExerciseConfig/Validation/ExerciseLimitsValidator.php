@@ -6,6 +6,8 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTest;
 use App\Model\Repository\Pipelines;
 
 
@@ -38,17 +40,17 @@ class ExerciseLimitsValidator {
   /**
    * Validate exercise limits.
    * For more detailed description look at @ref App\Helpers\ExerciseConfig\Validator
+   * @param Exercise $exercise
    * @param ExerciseLimits $exerciseLimits
-   * @param ExerciseConfig $exerciseConfig
    * @throws ExerciseConfigException
    */
-  public function validate(ExerciseLimits $exerciseLimits, ExerciseConfig $exerciseConfig) {
-    foreach ($exerciseLimits->getLimitsArray() as $testId => $firstLevel) {
-      $test = $exerciseConfig->getTest($testId);
+  public function validate(Exercise $exercise, ExerciseLimits $exerciseLimits) {
+    $exerciseTests = $exercise->getExerciseTestsIds();
 
-      if ($test === NULL) {
+    foreach ($exerciseLimits->getLimitsArray() as $testId => $firstLevel) {
+      if (!in_array($testId, $exerciseTests)) {
         throw new ExerciseConfigException(sprintf(
-          "Test %s is not present in the exercise configuration",
+          "Test with id '%s' is not present in the exercise configuration",
           $testId
         ));
       }

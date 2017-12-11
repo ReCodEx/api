@@ -22,7 +22,7 @@ class BoxesOptimizer {
    */
   public function optimize(array $tests): RootedTree {
     $tree = new RootedTree();
-    foreach ($tests as $testId => $test) {
+    foreach ($tests as $testName => $test) {
       foreach ($test->getRootNodes() as $rootNode) {
         $tree->addRootNode($rootNode);
       }
