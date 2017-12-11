@@ -71,7 +71,7 @@ class TestDirectoriesResolver {
    * @return Node
    * @throws ExerciseConfigException
    */
-  private function createDumpResultsNode(string $testId): Node {
+  private function createDumpResultsNode(string $testId, string $testName): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
     $variable->setValue($testName);
 
@@ -121,7 +121,7 @@ class TestDirectoriesResolver {
       }
 
       if ($params->isDebug()) {
-        $dumpResultsNode = $this->createDumpResultsNode($testId);
+        $dumpResultsNode = $this->createDumpResultsNode($testId, $testName);
         $dumpResultsNode->addParent($lastMkdirNode);
         $dumpResultsNode->addDependency($lastMkdirNode);
         $lastMkdirNode->addChild($dumpResultsNode);
