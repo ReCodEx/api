@@ -335,6 +335,7 @@ doctrine:
   password: ''
   host: localhost
   dbname: 'recodex-api'
+  autoGenerateProxyClasses: 2 # only generate proxies if their files do not exist
   metadata:
     App\Model\Entity: %appDir%/model/entity
   types:
