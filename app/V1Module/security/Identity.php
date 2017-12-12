@@ -3,8 +3,10 @@ namespace App\Security;
 use App\Model\Entity\User;
 use Nette;
 
-class Identity extends Nette\Object implements Nette\Security\IIdentity
+class Identity implements Nette\Security\IIdentity
 {
+  use Nette\SmartObject;
+
   /** @var User */
   private $user;
 

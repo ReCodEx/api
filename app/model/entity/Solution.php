@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use Kdyby\Doctrine\Entities\MagicAccessors;
+use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use DateTime;
 
 /**

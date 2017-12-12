@@ -16,7 +16,7 @@ use App\Helpers\EvaluationResults as ER;
  */
 class TestResult implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public function __construct(
     SolutionEvaluation $evaluation,

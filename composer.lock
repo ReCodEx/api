@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f6f959d6db848168828bc7405939981",
+    "content-hash": "d2b82fb8ba5701d721fa01c09a3d3f51",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -1264,51 +1264,35 @@
         },
         {
             "name": "kdyby/console",
-            "version": "v2.7.0",
+            "version": "v2.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Kdyby/Console.git",
-                "reference": "ec199aaecca2c01beaa354e8d30ed31b05120d0b"
+                "reference": "6e7fa6b2619b768a629fef332217497da36420d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Console/zipball/ec199aaecca2c01beaa354e8d30ed31b05120d0b",
-                "reference": "ec199aaecca2c01beaa354e8d30ed31b05120d0b",
+                "url": "https://api.github.com/repos/Kdyby/Console/zipball/6e7fa6b2619b768a629fef332217497da36420d3",
+                "reference": "6e7fa6b2619b768a629fef332217497da36420d3",
                 "shasum": ""
             },
             "require": {
-                "nette/di": "^2.4@dev",
-                "php": ">=5.4",
-                "symfony/console": "~2.3|^3.0"
-            },
-            "require-dev": {
-                "kdyby/events": "^3.1@dev",
-                "latte/latte": "^2.4@dev",
-                "nette/application": "^2.4@dev",
-                "nette/bootstrap": "^2.4@dev",
-                "nette/caching": "^2.4@dev",
-                "nette/component-model": "^2.3@dev",
-                "nette/database": "^2.4@dev",
-                "nette/deprecated": "^2.4@dev",
-                "nette/di": "^2.4@dev",
-                "nette/finder": "^2.4@dev",
-                "nette/forms": "^2.4@dev",
-                "nette/http": "^2.4@dev",
-                "nette/mail": "^2.4@dev",
-                "nette/neon": "^2.4@dev",
-                "nette/php-generator": "^2.4@dev",
-                "nette/reflection": "^2.4@dev",
-                "nette/robot-loader": "^2.4@dev",
-                "nette/safe-stream": "^2.3@dev",
-                "nette/security": "^2.4@dev",
-                "nette/tester": "~1.7",
-                "nette/tokenizer": "^2.2@dev",
-                "nette/utils": "^2.4@dev",
-                "symfony/event-dispatcher": "~2.3|^3.0",
+                "kdyby/strict-objects": "^1.0",
+                "nette/di": "^2.4.8@dev",
+                "php": "^5.6 || ^7.0",
+                "symfony/console": "~2.3 || ^3.0 || ^4.0",
                 "tracy/tracy": "^2.4@dev"
             },
+            "require-dev": {
+                "kdyby/events": "^3.1.1@dev",
+                "nette/application": "^2.4.9@dev",
+                "nette/bootstrap": "^2.4.5@dev",
+                "nette/caching": "^2.5@dev",
+                "nette/http": "^2.4.7@dev",
+                "nette/tester": "^2.0",
+                "symfony/event-dispatcher": "~2.3 || ^3.0 || ^4.0"
+            },
             "suggest": {
-                "nette/application": "For hooking the extension into the app and enabling running it through www/index.php",
                 "nette/http": "For faking the url of the request in cli"
             },
             "type": "library",
@@ -1346,20 +1330,20 @@
                 "kdyby",
                 "nette"
             ],
-            "time": "2017-05-13T21:42:11+00:00"
+            "time": "2017-12-03T18:35:49+00:00"
         },
         {
             "name": "kdyby/doctrine",
-            "version": "v3.2.1",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Kdyby/Doctrine.git",
-                "reference": "530662e1cc0769736d095578fb9aede502f65e86"
+                "reference": "5952d3cb461ae43c50bfe729387021a83233934a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Doctrine/zipball/530662e1cc0769736d095578fb9aede502f65e86",
-                "reference": "530662e1cc0769736d095578fb9aede502f65e86",
+                "url": "https://api.github.com/repos/Kdyby/Doctrine/zipball/5952d3cb461ae43c50bfe729387021a83233934a",
+                "reference": "5952d3cb461ae43c50bfe729387021a83233934a",
                 "shasum": ""
             },
             "require": {
@@ -1368,25 +1352,37 @@
                 "kdyby/annotations": "^2.4@dev",
                 "kdyby/console": "^2.7@dev",
                 "kdyby/doctrine-cache": "^2.6@dev",
-                "kdyby/events": "^3.1@dev",
+                "kdyby/strict-objects": "^1.0",
                 "nette/di": "^2.4@dev",
+                "nette/reflection": "^2.4@dev",
                 "nette/robot-loader": "^2.4@dev",
                 "nette/utils": "^2.4@dev",
                 "php": "^5.6 || ^7.0"
             },
             "require-dev": {
+                "kdyby/events": "^3.1@dev",
                 "nette/bootstrap": "^2.4@dev",
                 "nette/caching": "^2.4@dev",
                 "nette/http": "^2.4@dev",
                 "nette/tester": "~1.7",
                 "tracy/tracy": "^2.4@dev"
             },
+            "suggest": {
+                "kdyby/doctrine-collections-lazy": "Lazy collection for doctrine/collections",
+                "kdyby/doctrine-collections-readonly": "Read-only collection wrapper for easier work with Doctrine entity collections",
+                "kdyby/doctrine-dbal-batchimport": "Batch import & execute utils for effective processing of SQL Imports from files and strings",
+                "kdyby/doctrine-magic-accessors": "Fast-prototyping magic accessors trait for Doctrine entities"
+            },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0-dev"
+                }
+            },
             "autoload": {
                 "psr-0": {
                     "Kdyby\\Doctrine\\": "src/",
-                    "Kdyby\\Persistence\\": "src/",
-                    "Kdyby\\DibiBridge\\": "src/"
+                    "Kdyby\\Persistence\\": "src/"
                 },
                 "classmap": [
                     "src/Kdyby/Doctrine/exceptions.php"
@@ -1414,31 +1410,34 @@
                 "nette",
                 "orm"
             ],
-            "time": "2017-05-27T17:51:13+00:00"
+            "time": "2017-12-03T11:13:11+00:00"
         },
         {
             "name": "kdyby/doctrine-cache",
-            "version": "v2.6.0",
+            "version": "v2.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Kdyby/DoctrineCache.git",
-                "reference": "58496d4791c86b1a23d693ad1e4c93dc77a46448"
+                "reference": "cb614407146108b817ff888e715981bb4bcf4736"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/DoctrineCache/zipball/58496d4791c86b1a23d693ad1e4c93dc77a46448",
-                "reference": "58496d4791c86b1a23d693ad1e4c93dc77a46448",
+                "url": "https://api.github.com/repos/Kdyby/DoctrineCache/zipball/cb614407146108b817ff888e715981bb4bcf4736",
+                "reference": "cb614407146108b817ff888e715981bb4bcf4736",
                 "shasum": ""
             },
             "require": {
                 "doctrine/cache": "^1.5",
+                "kdyby/strict-objects": "^1.0",
                 "nette/caching": "^2.4@dev",
                 "nette/di": "^2.4@dev",
-                "php": ">=5.6"
+                "php": "^5.6 || ^7.0"
             },
             "require-dev": {
+                "doctrine/orm": "^2.5",
                 "nette/bootstrap": "^2.4@dev",
-                "nette/tester": "^1.7"
+                "nette/tester": "^1.7",
+                "symfony/validator": "^2.5.3 || ^3.0"
             },
             "type": "library",
             "extra": {
@@ -1447,11 +1446,11 @@
                 }
             },
             "autoload": {
-                "psr-0": {
+                "psr-4": {
                     "Kdyby\\DoctrineCache\\": "src/"
                 },
                 "classmap": [
-                    "src/Kdyby/DoctrineCache/exceptions.php"
+                    "src/exceptions.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1475,34 +1474,158 @@
                 "kdyby",
                 "nette"
             ],
-            "time": "2017-05-12T21:51:19+00:00"
+            "time": "2017-05-26T20:33:18+00:00"
         },
         {
-            "name": "kdyby/events",
-            "version": "v3.1.0",
+            "name": "kdyby/doctrine-collections-readonly",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Kdyby/Events.git",
-                "reference": "f63b92eaf75df33d0a449af80de8e9f1d85dd6f6"
+                "url": "https://github.com/Kdyby/DoctrineCollectionsReadonly.git",
+                "reference": "4713400841b8288f80487023c154cc55b7cb4d68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Kdyby/Events/zipball/f63b92eaf75df33d0a449af80de8e9f1d85dd6f6",
-                "reference": "f63b92eaf75df33d0a449af80de8e9f1d85dd6f6",
+                "url": "https://api.github.com/repos/Kdyby/DoctrineCollectionsReadonly/zipball/4713400841b8288f80487023c154cc55b7cb4d68",
+                "reference": "4713400841b8288f80487023c154cc55b7cb4d68",
                 "shasum": ""
             },
             "require": {
-                "nette/di": "^2.4@dev",
+                "doctrine/collections": "~1.1",
+                "php": "^5.6 || ^7.0"
+            },
+            "require-dev": {
+                "nette/tester": "~1.7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kdyby\\Doctrine\\Collections\\Readonly\\": "src/"
+                },
+                "classmap": [
+                    "src/exceptions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Procházka",
+                    "email": "filip@prochazka.su",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Read-only collection wrapper for easier work with Doctrine entity collections",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "Read-Only",
+                "collection",
+                "doctrine",
+                "entity",
+                "kdyby",
+                "orm",
+                "readonly"
+            ],
+            "time": "2017-05-18T20:11:35+00:00"
+        },
+        {
+            "name": "kdyby/doctrine-magic-accessors",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Kdyby/DoctrineMagicAccessors.git",
+                "reference": "e7132d024fa233b02fa0080bd7a13012be79bc42"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Kdyby/DoctrineMagicAccessors/zipball/e7132d024fa233b02fa0080bd7a13012be79bc42",
+                "reference": "e7132d024fa233b02fa0080bd7a13012be79bc42",
+                "shasum": ""
+            },
+            "require": {
+                "kdyby/doctrine-collections-readonly": "^1.0@dev",
+                "php": "^5.6 || ^7.0"
+            },
+            "require-dev": {
+                "nette/tester": "~1.7"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Kdyby\\Doctrine\\MagicAccessors\\": "src/"
+                },
+                "classmap": [
+                    "src/exceptions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Procházka",
+                    "email": "filip@prochazka.su",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Fast-prototyping magic accessors trait for Doctrine entities",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "accessors",
+                "dbal",
+                "doctrine",
+                "kdyby",
+                "magic",
+                "orm"
+            ],
+            "time": "2017-05-18T23:05:24+00:00"
+        },
+        {
+            "name": "kdyby/events",
+            "version": "v3.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Kdyby/Events.git",
+                "reference": "57edd9259ee9ea3e4fed6a5e5102a54548d8ec50"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Kdyby/Events/zipball/57edd9259ee9ea3e4fed6a5e5102a54548d8ec50",
+                "reference": "57edd9259ee9ea3e4fed6a5e5102a54548d8ec50",
+                "shasum": ""
+            },
+            "require": {
+                "kdyby/strict-objects": "^1.0",
+                "nette/di": "^2.4.8@dev",
                 "nette/reflection": "^2.4@dev",
-                "nette/utils": "^2.4@dev"
+                "nette/utils": "^2.4.5@dev",
+                "php": "^5.6 || ^7.0"
             },
             "require-dev": {
                 "nette/application": "^2.4@dev",
                 "nette/bootstrap": "^2.4@dev",
-                "nette/http": "^2.4@dev",
+                "nette/caching": "^2.5@dev",
+                "nette/http": "^2.4.7@dev",
                 "nette/security": "^2.4@dev",
-                "nette/tester": "~1.7",
-                "symfony/event-dispatcher": "^3.0",
+                "nette/tester": "^2.0",
+                "symfony/event-dispatcher": "^3.0 || ^4.0",
                 "tracy/tracy": "^2.4@dev"
             },
             "type": "library",
@@ -1519,7 +1642,8 @@
                     "src/Events/exceptions.php"
                 ],
                 "files": [
-                    "src/Doctrine/compatibility.php"
+                    "src/Doctrine/compatibility.php",
+                    "src/Symfony/compatibility.php"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1541,7 +1665,65 @@
                 "kdyby",
                 "nette"
             ],
-            "time": "2017-05-13T16:08:06+00:00"
+            "time": "2017-12-05T10:14:38+00:00"
+        },
+        {
+            "name": "kdyby/strict-objects",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Kdyby/StrictObjects.git",
+                "reference": "ff6c82b54d8bea0d3f43dc5fce890ebe126e95c7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Kdyby/StrictObjects/zipball/ff6c82b54d8bea0d3f43dc5fce890ebe126e95c7",
+                "reference": "ff6c82b54d8bea0d3f43dc5fce890ebe126e95c7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "nette/tester": "~1.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kdyby\\StrictObjects\\": "src/"
+                },
+                "classmap": [
+                    "src/exceptions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Filip Procházka",
+                    "email": "filip@prochazka.su",
+                    "homepage": "http://filip-prochazka.com"
+                }
+            ],
+            "description": "Simple trait to make your class strict, when calling or accessing undefined member (property or method).",
+            "homepage": "http://kdyby.org",
+            "keywords": [
+                "accessors",
+                "exceptions",
+                "kdyby",
+                "magic",
+                "members",
+                "methods",
+                "object",
+                "properties",
+                "scream",
+                "strict"
+            ],
+            "time": "2016-08-26T06:34:41+00:00"
         },
         {
             "name": "latte/latte",
@@ -3562,21 +3744,21 @@
         },
         {
             "name": "zenify/doctrine-fixtures",
-            "version": "v4.2",
+            "version": "dev-deps-update",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Zenify/DoctrineFixtures.git",
-                "reference": "a18ae07d3bd5c22537e0a06a93db0765d2b8b3c6"
+                "url": "https://github.com/ReCodEx/DoctrineFixtures.git",
+                "reference": "3a73158517aad51411339581cfcbfa276d080f09"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Zenify/DoctrineFixtures/zipball/a18ae07d3bd5c22537e0a06a93db0765d2b8b3c6",
-                "reference": "a18ae07d3bd5c22537e0a06a93db0765d2b8b3c6",
+                "url": "https://api.github.com/repos/ReCodEx/DoctrineFixtures/zipball/3a73158517aad51411339581cfcbfa276d080f09",
+                "reference": "3a73158517aad51411339581cfcbfa276d080f09",
                 "shasum": ""
             },
             "require": {
                 "fzaninotto/faker": "~1.6",
-                "kdyby/doctrine": "~3.1",
+                "kdyby/doctrine": "master@dev",
                 "nelmio/alice": "~2.2",
                 "nette/di": "~2.4",
                 "nette/finder": "~2.4",
@@ -3596,7 +3778,16 @@
                     "Zenify\\DoctrineFixtures\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Zenify\\DoctrineFixtures\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "check-cs": [
+                    "vendor/bin/phpcs src tests -ps --standard=vendor/zenify/coding-standard/src/ZenifyCodingStandard/ruleset.xml"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -3607,8 +3798,10 @@
                 }
             ],
             "description": "Doctrine Fixtures, Faker and Alice integration into Nette",
-            "abandoned": true,
-            "time": "2016-12-28T23:52:28+00:00"
+            "support": {
+                "source": "https://github.com/ReCodEx/DoctrineFixtures/tree/deps-update"
+            },
+            "time": "2017-12-12T12:22:06+00:00"
         }
     ],
     "packages-dev": [
@@ -3986,6 +4179,8 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "nette/mail": 20,
+        "kdyby/doctrine": 20,
+        "zenify/doctrine-fixtures": 20,
         "gedmo/doctrine-extensions": 0,
         "mockery/mockery": 0,
         "mikey179/vfsstream": 0,

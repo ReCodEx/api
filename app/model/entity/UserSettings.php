@@ -25,7 +25,7 @@ use JsonSerializable;
  */
 class UserSettings implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public function __construct(
     bool $darkTheme = TRUE,

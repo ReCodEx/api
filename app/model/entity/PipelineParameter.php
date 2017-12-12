@@ -3,7 +3,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Kdyby\Doctrine\Entities\MagicAccessors;
+use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity

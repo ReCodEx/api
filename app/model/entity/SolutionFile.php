@@ -1,7 +1,7 @@
 <?php
 namespace App\Model\Entity;
 use JsonSerializable;
-use Kdyby\Doctrine\Entities\MagicAccessors;
+use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 

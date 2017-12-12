@@ -19,7 +19,7 @@ use Nette\Utils\Validators;
  */
 class Login
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

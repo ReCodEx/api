@@ -16,7 +16,7 @@ use DateTime;
  */
 class ExerciseConfig
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

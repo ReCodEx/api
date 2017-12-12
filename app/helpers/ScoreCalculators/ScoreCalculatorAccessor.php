@@ -7,8 +7,10 @@ use Nette\Utils\Arrays;
 /**
  * Provides access to different implementations of score calculation
  */
-class ScoreCalculatorAccessor extends Nette\Object
+class ScoreCalculatorAccessor
 {
+  use Nette\SmartObject;
+
   private $calculators;
 
   /**

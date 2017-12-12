@@ -16,7 +16,7 @@ use App\Helpers\EvaluationResults as ER;
  */
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   const JOB_TYPE = "reference";
 

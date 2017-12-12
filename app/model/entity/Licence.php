@@ -12,7 +12,7 @@ use JsonSerializable;
  */
 class Licence implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

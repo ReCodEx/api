@@ -4,8 +4,10 @@ use App\Exceptions\WrongCredentialsException;
 use App\Model\Repository\Logins;
 use Nette;
 
-class CredentialsAuthenticator extends Nette\Object
+class CredentialsAuthenticator
 {
+  use Nette\SmartObject;
+
   /** @var Logins */
   private $logins;
 

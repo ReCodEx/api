@@ -33,7 +33,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Exercise implements JsonSerializable, IExercise
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use ExerciseData;
 
   /**
