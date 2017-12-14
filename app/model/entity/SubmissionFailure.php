@@ -44,7 +44,7 @@ class SubmissionFailure implements JsonSerializable {
   protected $type;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="text")
    */
   protected $description;
 
