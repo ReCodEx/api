@@ -133,6 +133,8 @@ parameters:
         verify_peer_name: false
         allow_self_signed: true
 
+  exerciseRestrictions: {}
+
   migrations:
     table: doctrine_migrations # database table for applied migrations
     column: version # database column for applied migrations
@@ -254,6 +256,7 @@ services:
   - App\Helpers\EmailsConfig(%emails%)
   - App\Helpers\ApiConfig(%api%)
   - App\Helpers\UploadsConfig(%uploads%)
+  - App\Helpers\ExerciseRestrictionsConfig(%exerciseRestrictions%)
 
   # helpers
   - App\Helpers\EvaluationLoadingHelper

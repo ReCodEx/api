@@ -26,10 +26,10 @@ class PresenterTestHelper
     );
   }
 
-  private static function registerEntityManager(Container $container, EntityManager $entityManager) {
-    $emServiceName = $container->findByType(EntityManager::class)[0];
+  public static function replaceService(Container $container, $service) {
+    $emServiceName = $container->findByType(get_class($service))[0];
     $container->removeService($emServiceName);
-    $container->addService($emServiceName, $entityManager);
+    $container->addService($emServiceName, $service);
   }
 
   public static function getEntityManager(Container $container): EntityManager {
@@ -58,7 +58,7 @@ class PresenterTestHelper
       // Create a new entity manager connected to a temporary sqlite database
       $schemaEm = static::createEntityManager($dbPath, $originalEm->getConfiguration(),
         $originalEm->getEventManager());
-      static::registerEntityManager($container, $schemaEm);
+      static::replaceService($container, $schemaEm);
 
       $schemaTool = new Doctrine\ORM\Tools\SchemaTool($schemaEm);
       $schemaTool->dropSchema($schemaEm->getMetadataFactory()->getAllMetadata());
@@ -79,7 +79,7 @@ class PresenterTestHelper
       file_put_contents($dumpPath, $sqliteProcess->getOutput());
 
       // Replace the temporary entity manager with the original one
-      static::registerEntityManager($container, $originalEm);
+      static::replaceService($container, $originalEm);
     }
 
     flock($lockHandle, LOCK_UN);

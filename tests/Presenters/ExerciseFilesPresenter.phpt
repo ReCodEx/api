@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
+use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
@@ -124,6 +125,96 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     foreach ($payload as $item) {
       Assert::type(App\Model\Entity\SupplementaryExerciseFile::class, $item);
     }
+  }
+
+  public function testUploadTooManySupplementaryFiles() {
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $fileLimit = 10;
+
+    $restrictions = new ExerciseRestrictionsConfig([
+      "supplementaryFileCountLimit" => $fileLimit
+    ]);
+
+    $this->presenter->restrictionsConfig = $restrictions;
+
+    $files = [];
+    for ($i = 0; $i < $fileLimit * 2; $i++) {
+      $files[] = $file = new UploadedFile("...", new \DateTime, 0, $user, "...");
+      $this->presenter->uploadedFiles->persist($file);
+    }
+
+
+    /** @var FileServerProxy|Mockery\Mock $fileServerMock */
+    $fileServerMock = Mockery::mock(FileServerProxy::class);
+    $fileServerMock->shouldNotReceive("sendSupplementaryFiles");
+    $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
+
+    // mock file storage
+    $mockFileStorage = Mockery::mock(\App\Helpers\UploadedFileStorage::class);
+    $mockFileStorage->shouldDeferMissing();
+    $mockFileStorage->shouldNotReceive("delete");
+    $this->presenter->uploadedFileStorage = $mockFileStorage;
+
+    // Finally, the test itself
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $files = array_map(function (UploadedFile $file) { return $file->getId(); }, $files);
+
+    /** @var Nette\Application\Responses\JsonResponse $response */
+    Assert::exception(function () use ($exercise, $files) {
+      $this->presenter->run(new Nette\Application\Request("V1:ExerciseFiles", "POST", [
+          "action" => 'uploadSupplementaryFiles',
+          'id' => $exercise->id
+        ], [
+          'files' => $files
+        ]));
+      }, \App\Exceptions\InvalidArgumentException::class);
+  }
+
+  public function testUploadTooBigSupplementaryFiles() {
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $sizeLimit = 5 * 1024;
+
+    $restrictions = new ExerciseRestrictionsConfig([
+      "supplementaryFileSizeLimit" => $sizeLimit
+    ]);
+
+    $this->presenter->restrictionsConfig = $restrictions;
+
+    $files = [];
+    for ($i = 0; $i < 10; $i++) {
+      $files[] = $file = new UploadedFile("...", new \DateTime, 1024, $user, "...");
+      $this->presenter->uploadedFiles->persist($file);
+    }
+
+
+    /** @var FileServerProxy|Mockery\Mock $fileServerMock */
+    $fileServerMock = Mockery::mock(FileServerProxy::class);
+    $fileServerMock->shouldNotReceive("sendSupplementaryFiles");
+    $this->presenter->supplementaryFileStorage = new ExerciseFileStorage($fileServerMock);
+
+    // mock file storage
+    $mockFileStorage = Mockery::mock(\App\Helpers\UploadedFileStorage::class);
+    $mockFileStorage->shouldDeferMissing();
+    $mockFileStorage->shouldNotReceive("delete");
+    $this->presenter->uploadedFileStorage = $mockFileStorage;
+
+    // Finally, the test itself
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $files = array_map(function (UploadedFile $file) { return $file->getId(); }, $files);
+
+    /** @var Nette\Application\Responses\JsonResponse $response */
+    Assert::exception(function () use ($exercise, $files) {
+      $this->presenter->run(new Nette\Application\Request("V1:ExerciseFiles", "POST", [
+        "action" => 'uploadSupplementaryFiles',
+        'id' => $exercise->id
+      ], [
+        'files' => $files
+      ]));
+    }, \App\Exceptions\InvalidArgumentException::class);
   }
 
   public function testGetSupplementaryFiles() {
