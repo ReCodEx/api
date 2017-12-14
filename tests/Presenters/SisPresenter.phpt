@@ -265,16 +265,17 @@ class TestSisPresenter extends TestCase {
     ]));
 
     $result = $response->getPayload();
-    $payload = $result['payload'];
 
     Assert::type(JsonResponse::class, $response);
     Assert::same(200, $result['code']);
 
-    $expected = [$group_2, $group_1];
-    sort($expected);
-    sort($payload);
+    $returnedGroups = array_map(function(array $data) { return $data["id"]; }, $result['payload']);
 
-    Assert::equal($expected, $payload);
+    $expected = [$group_2->getId(), $group_1->getId()];
+    sort($expected);
+    sort($returnedGroups);
+
+    Assert::equal($expected, $returnedGroups);
   }
 }
 
