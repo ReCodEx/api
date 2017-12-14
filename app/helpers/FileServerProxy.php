@@ -118,7 +118,7 @@ class FileServerProxy {
     $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
     file_put_contents($tmpFile, $zipFileContent);
     $zip = new ZipArchive;
-    if (!$zip->open($tmpFile)) {
+    if ($zip->open($tmpFile) !== true) {
       throw new SubmissionEvaluationFailedException("Cannot open results from remote file server.");
     }
 
