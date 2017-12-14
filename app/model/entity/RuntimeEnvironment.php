@@ -21,7 +21,7 @@ use App\Exceptions\ApiException;
  */
 class RuntimeEnvironment implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

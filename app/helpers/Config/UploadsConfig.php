@@ -3,7 +3,9 @@ namespace App\Helpers;
 use Nette;
 use Nette\Utils\Arrays;
 
-class UploadsConfig extends Nette\Object {
+class UploadsConfig {
+  use Nette\SmartObject;
+
   /**
    * @var string The longest time a file can exist without being used
    */

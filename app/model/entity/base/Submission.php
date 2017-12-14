@@ -5,7 +5,7 @@ namespace App\Model\Entity;
 use App\Helpers\EvaluationStatus\IEvaluable;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Kdyby\Doctrine\Entities\MagicAccessors;
+use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass

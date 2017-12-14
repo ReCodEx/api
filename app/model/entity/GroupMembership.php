@@ -20,7 +20,7 @@ use JsonSerializable;
  */
 class GroupMembership implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   const STATUS_REQUESTED = "requested";
   const STATUS_ACTIVE = "active";

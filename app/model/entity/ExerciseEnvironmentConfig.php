@@ -17,7 +17,7 @@ use Symfony\Component\Yaml\Yaml;
  */
 class ExerciseEnvironmentConfig
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

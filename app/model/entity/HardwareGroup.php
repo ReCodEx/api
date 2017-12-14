@@ -14,7 +14,7 @@ use Doctrine\Common\Collections\Criteria;
  */
 class HardwareGroup implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

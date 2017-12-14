@@ -19,7 +19,7 @@ use DateTime;
  */
 class PipelineConfig
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

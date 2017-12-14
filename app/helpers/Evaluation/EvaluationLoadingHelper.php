@@ -13,7 +13,9 @@ use Doctrine\ORM\OptimisticLockException;
 use Nette;
 
 
-class EvaluationLoadingHelper extends Nette\Object {
+class EvaluationLoadingHelper {
+  use Nette\SmartObject;
+
   /** @var EvaluationLoader */
   private $evaluationLoader;
 

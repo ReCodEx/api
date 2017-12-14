@@ -5,8 +5,10 @@ use Nette\Security\IIdentity;
 use Nette\Security\IUserStorage;
 use Nette;
 
-class UserStorage extends Nette\Object implements IUserStorage
+class UserStorage implements IUserStorage
 {
+  use Nette\SmartObject;
+
   const AUTH_HEADER = "Authorization";
 
   /** @var Nette\Http\IRequest */

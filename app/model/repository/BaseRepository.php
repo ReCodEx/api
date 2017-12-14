@@ -9,7 +9,8 @@ use Nette;
 use Kdyby\Doctrine\EntityManager;
 
 
-class BaseRepository extends Nette\Object {
+class BaseRepository {
+  use Nette\SmartObject;
 
   protected $em;
   protected $repository;

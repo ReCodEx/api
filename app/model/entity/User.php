@@ -34,7 +34,7 @@ use forxer\Gravatar\Gravatar;
  */
 class User implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public const STUDENT_ROLE = "student";
   public const SUPERVISOR_ROLE = "supervisor";

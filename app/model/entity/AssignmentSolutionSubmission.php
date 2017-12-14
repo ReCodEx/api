@@ -17,7 +17,7 @@ use App\Helpers\EvaluationStatus as ES;
  */
 class AssignmentSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   const JOB_TYPE = "student";
 

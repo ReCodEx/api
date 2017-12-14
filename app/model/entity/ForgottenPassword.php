@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ForgottenPassword
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public function __construct(
     User $user,

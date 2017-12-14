@@ -31,7 +31,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class Pipeline implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id

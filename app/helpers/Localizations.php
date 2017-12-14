@@ -7,7 +7,9 @@ use Doctrine\Common\Collections\Collection;
 use Nette\StaticClassException;
 use Nette;
 
-class Localizations extends Nette\Object {
+class Localizations {
+  use Nette\SmartObject;
+
   public const PRIMARY_LOCALE = "cs";
 
   public function __construct() {

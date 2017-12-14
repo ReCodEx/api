@@ -11,7 +11,7 @@ use JsonSerializable;
  */
 class TaskResult implements JsonSerializable
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public function __construct(string $taskName, float $usedTime, int $usedMemory,
       string $output, TestResult $result) {

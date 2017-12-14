@@ -12,8 +12,9 @@ use Nette\Http\FileUpload;
 /**
  * Stores uploaded supplementary exercise files on fileserver
  */
-class ExerciseFileStorage extends Nette\Object {
-
+class ExerciseFileStorage {
+  use Nette\SmartObject;
+  
   /**
    * @var FileServerProxy
    */

@@ -7,7 +7,9 @@ use GuzzleHttp;
 use Nette\Utils\Json;
 use Nette\Utils\Strings;
 
-class SisHelper extends Nette\Object {
+class SisHelper {
+  use Nette\SmartObject;
+
   private $apiBase;
 
   private $faculty;

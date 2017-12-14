@@ -14,7 +14,9 @@ use Nette\Utils\Strings;
 /**
  * Stores uploaded files in a configured directory
  */
-class UploadedFileStorage extends Nette\Object {
+class UploadedFileStorage {
+  use Nette\SmartObject;
+
   public const FILENAME_PATTERN = '#^[a-z0-9\- _\.()\[\]!]+$#i';
 
   /** @var string Target directory, where the files will be stored */

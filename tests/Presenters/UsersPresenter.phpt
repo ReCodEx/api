@@ -86,7 +86,6 @@ class TestUsersPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal(1, count($result["payload"]));
 
     Assert::type(\App\Model\Entity\User::class, $result["payload"]);
     Assert::same($user, $result["payload"]);

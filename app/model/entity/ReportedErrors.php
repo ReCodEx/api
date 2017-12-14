@@ -10,7 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 */
 class ReportedErrors
 {
-  use \Kdyby\Doctrine\Entities\MagicAccessors;
+  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   /**
    * @ORM\Id
