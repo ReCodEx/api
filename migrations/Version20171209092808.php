@@ -52,7 +52,7 @@ class Version20171209092808 extends AbstractMigration
     $uuid = Uuid::uuid();
     $this->connection->executeQuery("INSERT INTO exercise_config (id, created_from_id, author_id, config, created_at) " .
         "VALUES (:id, :from, :author, :config, :at)",
-      ["id" => $uuid, "config" => Yaml::dump($config), "from" => $configId, "author" => $exerciseConfig["author_id"], "at" => new \DateTime]);
+      ["id" => $uuid, "config" => Yaml::dump($config), "from" => $configId, "author" => $exerciseConfig["author_id"], "at" => $exerciseConfig["created_at"]]);
     return $uuid;
   }
 
@@ -86,7 +86,7 @@ class Version20171209092808 extends AbstractMigration
         "VALUES (:id, :from, :author, :runtime, :hw, :config, :at)",
         [
           "id" => $uuid, "config" => Yaml::dump($config), "from" => $lim["id"], "author" => $limitConfig["author_id"],
-          "runtime" => $limitConfig["runtime_environment_id"], "hw" => $limitConfig["hardware_group_id"], "at" => new \DateTime
+          "runtime" => $limitConfig["runtime_environment_id"], "hw" => $limitConfig["hardware_group_id"], "at" => $limitConfig["created_at"]
         ]);
       $ids[] = $uuid;
     }
