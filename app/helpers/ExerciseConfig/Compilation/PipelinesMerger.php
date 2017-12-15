@@ -204,9 +204,9 @@ class PipelinesMerger {
         if (empty($varName)) {
           continue; // variable in port is not specified... jump over
         }
-        $parent = $variables[$varName]->output->node;
+        $parent = $variables[$varName]->output ? $variables[$varName]->output->node : null;
         if ($parent === null || $parent->isInTree()) {
-          continue;
+          continue; // parent output port does not have to be present for input ports
         }
         $node->addParent($inPort->getName(), $parent);
         $parent->addChild($variables[$varName]->output->port->getName(), $node);
