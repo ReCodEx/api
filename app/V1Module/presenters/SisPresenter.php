@@ -22,6 +22,7 @@ use App\Security\ACL\ISisPermissions;
 use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
+use Nette\Utils\Json;
 
 /**
  * @LoggedIn
@@ -146,7 +147,11 @@ class SisPresenter extends BasePresenter {
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
       foreach ($bindings as $binding) {
         if ($binding->getGroup() !== NULL) {
-          $groups[] = $binding->getGroup();
+          /** @var Group $group */
+          $group = $binding->getGroup();
+          $serializedGroup = $group->jsonSerialize();
+          $serializedGroup["sisCode"] = $binding->getCode();
+          $groups[] = $serializedGroup;
         }
       }
     }
