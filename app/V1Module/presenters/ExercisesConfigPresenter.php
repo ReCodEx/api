@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\Transformer;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
@@ -108,6 +109,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $calculators;
+
+  /**
+   * @var ExerciseRestrictionsConfig
+   * @inject
+   */
+  public $exerciseRestrictionsConfig;
 
 
   /**
@@ -621,6 +628,14 @@ class ExercisesConfigPresenter extends BasePresenter {
         throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
       }
       $newTests[$name] = $testEntity;
+    }
+
+    $testCountLimit = $this->exerciseRestrictionsConfig->getTestCountLimit();
+    if (count($newTests) > $testCountLimit) {
+      throw new InvalidArgumentException(
+        "tests",
+        "The number of tests exceeds the configured limit ($testCountLimit)"
+      );
     }
 
     // clear old tests and set new ones

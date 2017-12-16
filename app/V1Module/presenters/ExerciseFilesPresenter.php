@@ -5,6 +5,8 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\CannotReceiveUploadedFileException;
+use App\Exceptions\InvalidArgumentException;
+use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -67,6 +69,12 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public $exerciseAcl;
 
+  /**
+   * @var ExerciseRestrictionsConfig
+   * @inject
+   */
+  public $restrictionsConfig;
+
 
   /**
    * Associate supplementary files with an exercise and upload them to remote file server
@@ -74,6 +82,7 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -84,11 +93,15 @@ class ExerciseFilesPresenter extends BasePresenter {
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $deletedFiles = [];
     $currentSupplementaryFiles = [];
+    $totalFileSize = 0;
 
     /** @var SupplementaryExerciseFile $file */
     foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
       $currentSupplementaryFiles[$file->getName()] = $file;
+      $totalFileSize += $file->getFileSize();
     }
+
+    $totalFileCount = count($exercise->getSupplementaryEvaluationFiles());
 
     /** @var UploadedFile $file */
     foreach ($files as $file) {
@@ -97,10 +110,35 @@ class ExerciseFilesPresenter extends BasePresenter {
       }
 
       if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
+        /** @var SupplementaryExerciseFile $currentFile */
         $currentFile = $currentSupplementaryFiles[$file->getName()];
         $exercise->getSupplementaryEvaluationFiles()->removeElement($currentFile);
+        $totalFileSize -= $currentFile->getFileSize();
+      } else {
+        $totalFileCount += 1;
       }
 
+      $totalFileSize += $file->getFileSize();
+    }
+
+    $fileCountLimit = $this->restrictionsConfig->getSupplementaryFileCountLimit();
+    if ($totalFileCount > $fileCountLimit) {
+      throw new InvalidArgumentException(
+        "files",
+        "The number of files would exceed the configured limit ($fileCountLimit)"
+      );
+    }
+
+    $sizeLimit = $this->restrictionsConfig->getSupplementaryFileSizeLimit();
+    if ($totalFileSize > $sizeLimit) {
+      throw new InvalidArgumentException(
+        "files",
+        "The total size of files would exceed the configured limit ($sizeLimit)"
+      );
+    }
+
+    /** @var UploadedFile $file */
+    foreach ($files as $file) {
       $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
       $this->uploadedFiles->persist($exerciseFile, FALSE);
       $this->uploadedFiles->remove($file, FALSE);

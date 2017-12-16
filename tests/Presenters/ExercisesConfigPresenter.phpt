@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
+use App\Helpers\ExerciseRestrictionsConfig;
 use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
@@ -539,6 +540,39 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::equal("second desc", $payload[1]->getDescription());
     Assert::equal("Test 3", $payload[2]->getName());
     Assert::equal("", $payload[2]->getDescription());
+  }
+
+  public function setTestsTooManyTests() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->exercises->findAll());
+
+    $restrictions = new ExerciseRestrictionsConfig([
+      "testLimit" => 10
+    ]);
+
+    $this->presenter->exerciseRestrictionsConfig = $restrictions;
+
+    // prepare tests
+    $tests = [];
+    for ($i = 1; $i <= 20; $i++) {
+      $tests[] = [
+        "id" => $i,
+        "name" => "Test $i",
+        "description" => "desc"
+      ];
+    }
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setTests',
+        'id' => $exercise->getId()
+      ],
+      ['tests' => $tests]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\InvalidArgumentException::class);
   }
 
 }
