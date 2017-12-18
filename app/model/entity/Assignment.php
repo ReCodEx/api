@@ -315,6 +315,11 @@ class Assignment implements JsonSerializable, IExercise
     foreach ($exercise->getAttachmentFiles() as $file) {
       $this->attachmentFiles->add($file);
     }
+    
+    $this->runtimeEnvironments->clear();
+    foreach ($exercise->getRuntimeEnvironments() as $env) {
+      $this->runtimeEnvironments->add($env);
+    }
   }
 
   public function jsonSerialize() {
@@ -405,6 +410,12 @@ class Assignment implements JsonSerializable, IExercise
           "upToDate" => $this->getAttachmentFiles()->count() === $this->getExercise()->getAttachmentFiles()->count()
             && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) {
               return $this->getExercise()->getAttachmentFiles()->contains($file);
+            })
+        ],
+        "runtimeEnvironments" => [
+          "upToDate" => $this->getRuntimeEnvironments()->count() === $this->getExercise()->getRuntimeEnvironments()->count()
+            && $this->getRuntimeEnvironments()->forAll(function ($key, RuntimeEnvironment $env) {
+              return $this->getExercise()->getRuntimeEnvironments()->contains($env);
             })
         ]
       ]
