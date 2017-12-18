@@ -21,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method DateTime getDeletedAt()
  * @method Collection getRuntimeEnvironments()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
@@ -37,7 +36,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getVersion()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
- * @method setUpdatedAt(DateTime $date)
  * @method setIsPublic(bool $public)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
  * @method setMaxPointsBeforeSecondDeadline(int $points)
@@ -51,6 +49,8 @@ class Assignment implements JsonSerializable, IExercise
 {
   use MagicAccessors;
   use ExerciseData;
+  use UpdateableEntity;
+  use DeleteableEntity;
 
   private function __construct(
     DateTime $firstDeadline,
@@ -166,16 +166,6 @@ class Assignment implements JsonSerializable, IExercise
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $updatedAt;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\Column(type="smallint")
@@ -362,7 +352,7 @@ class Assignment implements JsonSerializable, IExercise
       "exerciseSynchronizationInfo" => [
         "updatedAt" => [
           "assignment" => $this->updatedAt->getTimestamp(),
-          "exercise" => $this->getExercise()->updatedAt->getTimestamp(),
+          "exercise" => $this->getExercise()->getUpdatedAt()->getTimestamp(),
         ],
         "exerciseConfig" => [
           "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),

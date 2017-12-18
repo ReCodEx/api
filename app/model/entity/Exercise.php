@@ -17,17 +17,16 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
  * @method string getId()
  * @method Collection getRuntimeEnvironments()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
- * @method \DateTime getDeletedAt()
  * @method User getAuthor()
  * @method int getVersion()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
- * @method void setUpdatedAt(DateTime $date)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  * @method setConfigurationType($type)
  */
@@ -35,6 +34,8 @@ class Exercise implements JsonSerializable, IExercise
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use ExerciseData;
+  use UpdateableEntity;
+  use DeleteableEntity;
 
   /**
    * @ORM\Id
@@ -59,16 +60,6 @@ class Exercise implements JsonSerializable, IExercise
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $updatedAt;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\Column(type="string")

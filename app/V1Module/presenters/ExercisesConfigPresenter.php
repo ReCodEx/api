@@ -203,6 +203,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     // make changes and updates to database entity
+    $exercise->updatedNow();
     $exercise->setRuntimeEnvironments($runtimeEnvironments);
     $this->exercises->replaceEnvironmentConfigs($exercise, $configs, false);
     $this->exerciseConfigUpdater->environmentsUpdated($exercise, $this->getCurrentUser(), false);
@@ -272,6 +273,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $oldConfig);
 
     // set new exercise configuration into exercise and flush changes
+    $exercise->updatedNow();
     $exercise->setExerciseConfig($newConfig);
     $this->exercises->flush();
 
@@ -399,6 +401,8 @@ class ExercisesConfigPresenter extends BasePresenter {
       $exercise->addHardwareGroup($hwGroup);
     }
 
+    // update and return
+    $exercise->updatedNow();
     $this->exercises->flush();
     $this->sendSuccessResponse($exerciseLimits->toArray());
   }
@@ -482,8 +486,10 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->addExerciseLimits($newLimits);
     $exercise->removeHardwareGroup($hwGroup); // if there was one before
     $exercise->addHardwareGroup($hwGroup);
-    $this->exercises->flush();
 
+    // update and return
+    $exercise->updatedNow();
+    $this->exercises->flush();
     $this->sendSuccessResponse($newLimits->getParsedLimits());
   }
 
@@ -515,8 +521,9 @@ class ExercisesConfigPresenter extends BasePresenter {
     // make changes persistent
     $exercise->removeExerciseLimits($limits);
     $exercise->removeHardwareGroup($hwGroup);
-    $this->exercises->flush();
 
+    $exercise->updatedNow();
+    $this->exercises->flush();
     $this->sendSuccessResponse("OK");
   }
 
@@ -559,6 +566,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new ExerciseConfigException("Exercise score configuration is not valid");
     }
 
+    $exercise->updatedNow();
     $exercise->setScoreConfig($config);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise->getScoreConfig());
@@ -620,7 +628,7 @@ class ExercisesConfigPresenter extends BasePresenter {
         // update of existing exercise test with all appropriate fields
         $testEntity->setName(trim($name));
         $testEntity->setDescription($description);
-        $testEntity->setUpdatedAt(new DateTime);
+        $testEntity->updatedNow();
       }
 
 
@@ -644,8 +652,9 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // update exercise configuration and test in here
     $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), false);
-    $this->exercises->flush();
 
+    $exercise->updatedNow();
+    $this->exercises->flush();
     $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
   }
 
