@@ -30,11 +30,11 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
- * @method DateTime getDeletedAt()
  */
 class User implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use DeleteableEntity;
 
   public const STUDENT_ROLE = "student";
   public const SUPERVISOR_ROLE = "supervisor";
@@ -145,11 +145,6 @@ class User implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="members")

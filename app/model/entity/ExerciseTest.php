@@ -18,11 +18,11 @@ use JsonSerializable;
  * @method DateTime getCreatedAt()
  * @method string setName(string $name)
  * @method string setDescription(string $description)
- * @method void setUpdatedAt(DateTime $date)
  */
 class ExerciseTest implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use UpdateableEntity;
 
   /**
    * @ORM\Id
@@ -50,11 +50,6 @@ class ExerciseTest implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $updatedAt;
 
   /**
    * ExerciseTest constructor.

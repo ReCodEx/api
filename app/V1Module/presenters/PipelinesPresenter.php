@@ -242,7 +242,7 @@ class PipelinesPresenter extends BasePresenter {
     $description = $req->getPost("description");
     $pipeline->setName($name);
     $pipeline->setDescription($description);
-    $pipeline->setUpdatedAt(new \DateTime);
+    $pipeline->updatedNow();
     $pipeline->incrementVersion();
 
     // get new configuration from parameters, parse it and check for format errors

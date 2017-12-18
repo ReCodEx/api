@@ -142,7 +142,7 @@ class ExercisesPresenter extends BasePresenter {
     // make changes to newly created exercise
     $exercise->setDifficulty($difficulty);
     $exercise->setIsPublic($isPublic);
-    $exercise->setUpdatedAt(new \DateTime);
+    $exercise->updatedNow();
     $exercise->incrementVersion();
     $exercise->setLocked($isLocked);
 
@@ -240,6 +240,7 @@ class ExercisesPresenter extends BasePresenter {
    * Exercise detail can be then changed in appropriate endpoint.
    * @POST
    * @Param(type="post", name="groupId", required=FALSE, description="Identifier of the group to which exercise belongs to")
+   * @throws ForbiddenRequestException
    */
   public function actionCreate() {
     $user = $this->getCurrentUser();

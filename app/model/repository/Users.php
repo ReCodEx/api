@@ -7,6 +7,10 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\User;
 use App\Exceptions\NotFoundException;
 
+
+/**
+ * @method findOrThrow(string $id)
+ */
 class Users extends BaseSoftDeleteRepository {
   public function __construct(EntityManager $em) {
     parent::__construct($em, User::class);
@@ -16,12 +20,4 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
-  public function findOrThrow($id): User {
-    $user = $this->get($id);
-    if (!$user) {
-      throw new NotFoundException("User '$id' does not exist.");
-    }
-
-    return $user;
-  }
 }

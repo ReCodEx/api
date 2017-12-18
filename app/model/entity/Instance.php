@@ -21,6 +21,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Instance implements JsonSerializable
 {
   use MagicAccessors;
+  use UpdateableEntity;
+  use DeleteableEntity;
 
   /**
    * @ORM\Id
@@ -43,16 +45,6 @@ class Instance implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $updatedAt;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")

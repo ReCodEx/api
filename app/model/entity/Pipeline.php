@@ -13,6 +13,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * @ORM\Entity
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
+ *
  * @method string getId()
  * @method string getName()
  * @method string getDescription()
@@ -20,18 +21,18 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method PipelineConfig getPipelineConfig()
  * @method int getVersion()
  * @method Exercise getExercise()
- * @method DateTime getDeletedAt()
  * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
- * @method void setUpdatedAt(DateTime $date)
  * @method PipelineParameter[] getParameters()
  * @method Collection getRuntimeEnvironments()
  */
 class Pipeline implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use UpdateableEntity;
+  use DeleteableEntity;
 
   /**
    * @ORM\Id
@@ -76,16 +77,6 @@ class Pipeline implements JsonSerializable
    * @ORM\Column(type="datetime")
    */
   protected $createdAt;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $updatedAt;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="Pipeline")

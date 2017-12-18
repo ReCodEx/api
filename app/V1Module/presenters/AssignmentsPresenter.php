@@ -3,29 +3,22 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
-
 use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
-use App\Model\Entity\Exercise;
-use App\Model\Entity\Group;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
-
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
-
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
-
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -113,6 +106,7 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Get a list of all assignments
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
     if (!$this->assignmentAcl->canViewAll()) {
@@ -131,8 +125,6 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->getCurrentUser();
-
     if (!$this->assignmentAcl->canViewDetail($assignment)) {
       throw new ForbiddenRequestException("You cannot view this assignment.");
     }
@@ -194,7 +186,7 @@ class AssignmentsPresenter extends BasePresenter {
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
 
     $assignment->incrementVersion();
-    $assignment->setUpdatedAt(new \DateTime);
+    $assignment->updatedNow();
     $assignment->setIsPublic($isPublic);
     $assignment->setFirstDeadline(DateTime::createFromFormat('U', $firstDeadlineTimestamp));
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $secondDeadlineTimestamp));
@@ -285,6 +277,9 @@ class AssignmentsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="exerciseId", description="Identifier of the exercise")
    * @Param(type="post", name="groupId", description="Identifier of the group")
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   * @throws InvalidStateException
    */
   public function actionCreate() {
     $req = $this->getRequest();
@@ -341,15 +336,14 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise that should be synchronized
    * @POST
    * @throws ForbiddenRequestException
-   * @throws BadRequestException
    */
   public function actionSyncWithExercise($id) {
     $assignment = $this->assignments->findOrThrow($id);
-
     if (!$this->assignmentAcl->canUpdate($assignment)) {
       throw new ForbiddenRequestException("You cannot sync this assignment.");
     }
 
+    $assignment->updatedNow();
     $assignment->syncWithExercise();
     $this->assignments->flush();
     $this->sendSuccessResponse($assignment);

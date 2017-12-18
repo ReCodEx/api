@@ -17,7 +17,6 @@ use JsonSerializable;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method DateTime getDeletedAt()
  * @method addAssignment(Assignment $assignment)
  * @method addChildGroup(Group $group)
  * @method string getExternalId()
@@ -32,6 +31,7 @@ use JsonSerializable;
 class Group implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use DeleteableEntity;
 
   public function __construct(
       string $externalId,
@@ -108,11 +108,6 @@ class Group implements JsonSerializable
   public function statsArePublic(): bool {
     return $this->publicStats;
   }
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="childGroups")

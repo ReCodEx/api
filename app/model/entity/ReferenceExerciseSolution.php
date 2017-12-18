@@ -18,11 +18,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Solution getSolution()
  * @method Exercise getExercise()
  * @method Collection getSubmissions()
- * @method DateTime getDeletedAt()
  */
 class ReferenceExerciseSolution implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use DeleteableEntity;
 
   /**
    * @ORM\Id
@@ -35,11 +35,6 @@ class ReferenceExerciseSolution implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
    */
   protected $exercise;
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $deletedAt;
 
   /**
    * @ORM\Column(type="text")
