@@ -305,6 +305,16 @@ class Assignment implements JsonSerializable, IExercise
     foreach ($exercise->getExerciseTests() as $test) {
       $this->exerciseTests->add($test);
     }
+
+    $this->supplementaryEvaluationFiles->clear();
+    foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+      $this->supplementaryEvaluationFiles->add($file);
+    }
+
+    $this->attachmentFiles->clear();
+    foreach ($exercise->getAttachmentFiles() as $file) {
+      $this->attachmentFiles->add($file);
+    }
   }
 
   public function jsonSerialize() {
@@ -383,6 +393,18 @@ class Assignment implements JsonSerializable, IExercise
           "upToDate" => $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
             && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
               return $this->getExercise()->getExerciseTests()->contains($test);
+            })
+        ],
+        "supplementaryFiles" => [
+          "upToDate" => $this->getSupplementaryEvaluationFiles()->count() === $this->getExercise()->getSupplementaryEvaluationFiles()->count()
+            && $this->getSupplementaryEvaluationFiles()->forAll(function ($key, SupplementaryExerciseFile $file) {
+              return $this->getExercise()->getSupplementaryEvaluationFiles()->contains($file);
+            })
+        ],
+        "attachmentFiles" => [
+          "upToDate" => $this->getAttachmentFiles()->count() === $this->getExercise()->getAttachmentFiles()->count()
+            && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) {
+              return $this->getExercise()->getAttachmentFiles()->contains($file);
             })
         ]
       ]
