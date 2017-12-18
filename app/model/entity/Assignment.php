@@ -315,7 +315,7 @@ class Assignment implements JsonSerializable, IExercise
     foreach ($exercise->getAttachmentFiles() as $file) {
       $this->attachmentFiles->add($file);
     }
-    
+
     $this->runtimeEnvironments->clear();
     foreach ($exercise->getRuntimeEnvironments() as $env) {
       $this->runtimeEnvironments->add($env);
@@ -360,11 +360,15 @@ class Assignment implements JsonSerializable, IExercise
       "isBonus" => $this->isBonus,
       "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
       "exerciseSynchronizationInfo" => [
+        "updatedAt" => [
+          "assignment" => $this->updatedAt->getTimestamp(),
+          "exercise" => $this->getExercise()->updatedAt->getTimestamp(),
+        ],
         "exerciseConfig" => [
           "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),
         ],
         "configurationType" => [
-          "upToDate" => $this->configurationType === $this->getExercise()->getConfigurationType()
+          "upToDate" => $this->configurationType === $this->getExercise()->getConfigurationType(),
         ],
         "scoreConfig" => [
           "upToDate" => $this->getScoreConfig() === $this->getExercise()->getScoreConfig(),
