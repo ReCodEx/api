@@ -79,7 +79,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->assignmentSolutions = new ArrayCollection;
     $this->isPublic = $isPublic;
-    $this->runtimeEnvironments = $exercise->getRuntimeEnvironments();
+    $this->runtimeEnvironments = new ArrayCollection($exercise->getRuntimeEnvironments()->toArray());
     $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
     $this->exerciseTests = new ArrayCollection($exercise->getExerciseTests()->toArray());
     $this->exerciseLimits = new ArrayCollection($exercise->getExerciseLimits()->toArray());
