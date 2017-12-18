@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\SubmissionFailedException;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -14,7 +15,7 @@ use Nette\Http\FileUpload;
  */
 class ExerciseFileStorage {
   use Nette\SmartObject;
-  
+
   /**
    * @var FileServerProxy
    */
@@ -33,7 +34,7 @@ class ExerciseFileStorage {
    * @param UploadedFile|FileUpload $file The file to be stored
    * @param Exercise $exercise
    * @return SupplementaryExerciseFile|NULL If the operation is not successful, NULL is returned
-   * @internal param User $user User, who uploaded the file
+   * @throws SubmissionFailedException
    */
   public function storeExerciseFile(UploadedFile $file, Exercise $exercise) {
     $result = current($this->fileServer->sendSupplementaryFiles([$file]));
@@ -47,7 +48,7 @@ class ExerciseFileStorage {
    * @param UploadedFile|FileUpload $file The file to be stored
    * @param Pipeline $pipeline
    * @return SupplementaryExerciseFile|NULL If the operation is not successful, NULL is returned
-   * @internal param User $user User, who uploaded the file
+   * @throws SubmissionFailedException
    */
   public function storePipelineFile(UploadedFile $file, Pipeline $pipeline) {
     $result = current($this->fileServer->sendSupplementaryFiles([$file]));

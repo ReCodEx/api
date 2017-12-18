@@ -2,10 +2,10 @@
 
 namespace App\V1Module\Presenters;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
-use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
@@ -83,6 +83,7 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @param string $id identification of exercise
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
+   * @throws SubmissionFailedException
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -145,6 +146,8 @@ class ExerciseFilesPresenter extends BasePresenter {
       $deletedFiles[] = $file;
     }
 
+    $exercise->updatedNow();
+    $this->exercises->flush();
     $this->uploadedFiles->flush();
 
     /** @var UploadedFile $file */
@@ -188,6 +191,7 @@ class ExerciseFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot delete supplementary files for this exercise.");
     }
 
+    $exercise->updatedNow();
     $exercise->removeSupplementaryEvaluationFile($file);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
@@ -230,6 +234,8 @@ class ExerciseFilesPresenter extends BasePresenter {
       $this->uploadedFiles->remove($file, FALSE);
     }
 
+    $exercise->updatedNow();
+    $this->exercises->flush();
     $this->uploadedFiles->flush();
     $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
   }
@@ -256,7 +262,7 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @param string $id identification of exercise
    * @param string $fileId identification of file
    * @throws ForbiddenRequestException
-   * @throws \App\Exceptions\NotFoundException
+   * @throws NotFoundException
    */
   public function actionDeleteAttachmentFile(string $id, string $fileId) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -265,6 +271,7 @@ class ExerciseFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
     }
 
+    $exercise->updatedNow();
     $exercise->removeAttachmentFile($file);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
