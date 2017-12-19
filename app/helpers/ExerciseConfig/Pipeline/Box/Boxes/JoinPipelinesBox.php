@@ -139,6 +139,10 @@ class JoinPipelinesBox extends Box
       throw new ExerciseConfigException("Incompatible types of variables in joining box '{$this->getName()}'");
     }
 
+    // better be safe
+    $inputs = array_values($inputs);
+    $outputs = array_values($outputs);
+
     // general foreach for processing both arrays and single elements
     $tasks = [];
     for ($i = 0; $i < count($inputs); ++$i) {
