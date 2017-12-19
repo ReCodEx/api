@@ -81,8 +81,8 @@ abstract class DataInBox extends Box
     }
 
     // prepare arrays which will be processed
-    $inputFiles = $inputVariable->getValueAsArray();
-    $files = $variable->getPrefixedValueAsArray();
+    $inputFiles = array_values($inputVariable->getValueAsArray());
+    $files = array_values($variable->getPrefixedValueAsArray());
 
     // counts are not the same, this is really bad situation, end it now!
     if (count($inputFiles) !== count($files)) {

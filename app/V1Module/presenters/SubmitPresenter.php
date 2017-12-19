@@ -154,6 +154,8 @@ class SubmitPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
+   * @throws NotFoundException
+   * @throws SubmissionFailedException
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
