@@ -29,7 +29,7 @@ abstract class ExecutionBox extends Box
 
 
   /**
-   * ElfExecutionBox constructor.
+   * ExecutionBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {

@@ -17,12 +17,11 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents fpc compilation unit.
  */
-class FpcCompilationBox extends Box
+class FpcCompilationBox extends CompilationBox
 {
   /** Type key */
   public static $FPC_TYPE = "fpc";
   public static $FPC_BINARY = "/usr/bin/fpc";
-  public static $FPC_ARGS_PORT_KEY = "args";
   public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "FreePascal Compilation";
@@ -38,7 +37,7 @@ class FpcCompilationBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$FPC_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -97,15 +96,12 @@ class FpcCompilationBox extends Box
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    $task = new Task();
-    $task->setPriority(Priorities::$INITIATION);
-    $task->setType(TaskType::$INITIATION);
-    $task->setFatalFailure(true);
+    $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$FPC_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$FPC_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$FPC_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
     }
     $args = array_merge($args,
       [
@@ -117,9 +113,11 @@ class FpcCompilationBox extends Box
     );
     $task->setCommandArguments($args);
 
-    $task->setSandboxConfig((new SandboxConfig)
-      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
-    return [$task];
+    // check if file produced by compilation was successfully created
+    $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+    $exists = $this->compileExistsTask([$binary]);
+
+    return [$task, $exists];
   }
 
 }

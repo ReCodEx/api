@@ -16,4 +16,5 @@ class TaskCommands
   public static $EXTRACT = "extract";
   public static $REMOVE = "rm";
   public static $DUMPDIR = "dumpdir";
+  public static $EXISTS = "exists";
 }

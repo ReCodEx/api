@@ -17,12 +17,11 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents mcs compilation unit.
  */
-class McsCompilationBox extends Box
+class McsCompilationBox extends CompilationBox
 {
   /** Type key */
   public static $MCS_TYPE = "mcs";
   public static $MCS_BINARY = "/usr/bin/mcs";
-  public static $MCS_ARGS_PORT_KEY = "args";
   public static $MAIN_CLASS_PORT_KEY = "main-class";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $EXTERNAL_SOURCES_PORT_KEY = "external-sources";
@@ -42,7 +41,7 @@ class McsCompilationBox extends Box
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$MAIN_CLASS_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
         new Port((new PortMeta)->setName(self::$EXTERNAL_SOURCES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$MCS_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -101,15 +100,12 @@ class McsCompilationBox extends Box
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    $task = new Task();
-    $task->setPriority(Priorities::$INITIATION);
-    $task->setType(TaskType::$INITIATION);
-    $task->setFatalFailure(true);
+    $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$MCS_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$MCS_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$MCS_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
     }
     $externalSources = [];
     if ($this->hasInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)) {
@@ -137,9 +133,11 @@ class McsCompilationBox extends Box
       )
     );
 
-    $task->setSandboxConfig((new SandboxConfig)
-      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
-    return [$task];
+    // check if file produced by compilation was successfully created
+    $binary = $this->getOutputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+    $exists = $this->compileExistsTask([$binary]);
+
+    return [$task, $exists];
   }
 
 }

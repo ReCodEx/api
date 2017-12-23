@@ -39,7 +39,7 @@ class TestResult {
 
   /**
    * Constructor
-   * @param TestConfig            $config           Test configuration (contained tasks grupped by types, limits)
+   * @param TestConfig            $config           Test configuration (contained tasks grouped by types, limits)
    * @param array                 $executionResults Results of execution tasks
    * @param TaskResult $evaluationResult Result of the one evaluation task
    * @param string                $hardwareGroupId  Identifier of hardware group on which was the test evaluated
