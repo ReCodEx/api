@@ -156,7 +156,8 @@ class AssignmentSolution implements JsonSerializable
       "accepted" => $this->accepted,
       "bonusPoints" => $this->bonusPoints,
       "lastSubmission" => $this->getLastSubmission() ?  $this->getLastSubmission()->getData($canViewRatios, $canViewValues) : null,
-      "submissions" => $submissions
+      "submissions" => $submissions,
+
     ];
   }
 

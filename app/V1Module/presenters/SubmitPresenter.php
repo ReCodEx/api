@@ -30,6 +30,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Model\View\AssignmentSolutionViewFactory;
 
 use App\Security\ACL\IAssignmentPermissions;
 use Nette\Http\IResponse;
@@ -111,6 +112,12 @@ class SubmitPresenter extends BasePresenter {
    * @inject
    */
   public $jobConfigGenerator;
+
+  /**
+   * @var AssignmentSolutionViewFactory
+   * @inject
+   */
+  public $assignmentSolutionViewFactory;
 
 
   /**
@@ -271,7 +278,7 @@ class SubmitPresenter extends BasePresenter {
     $this->assignmentSubmissions->persist($submission);
 
     return [
-      "submission" => $solution,
+      "submission" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
       "webSocketChannel" => [
         "id" => $generatorResult->getJobConfig()->getJobId(),
         "monitorUrl" => $this->monitorConfig->getAddress(),

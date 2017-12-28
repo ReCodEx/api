@@ -11,6 +11,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
+use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -64,6 +65,12 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public $evaluationLoadingHelper;
 
   /**
+   * @var AssignmentSolutionViewFactory
+   * @inject
+   */
+  public $assignmentSolutionViewFactory;
+
+    /**
    * Get information about solutions.
    * @GET
    * @param string $id Identifier of the solution
@@ -86,7 +93,9 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
     $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
     $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
-    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
+    $this->sendSuccessResponse(
+      $this->assignmentSolutionViewFactory->getSolutionData($solution, $canViewDetails, $canViewValues, $canViewResubmissions)
+    );
   }
 
   /**
