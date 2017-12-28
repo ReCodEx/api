@@ -2,16 +2,10 @@
 
 namespace App\Model\View;
 
-/*
-use App\Helpers\EvaluationStatus\EvaluationStatus;
-use App\Model\Entity\Assignment;
-use App\Model\Entity\Group;
-use App\Model\Entity\User;
-use Doctrine\Common\Collections\Collection;
-*/
 use App\Model\Repository\Comments;
 use App\Model\Entity\AssignmentSolution;
 use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Security\UserStorage;
 
 /**
  * Factory for group views which somehow do not fit into json serialization of
@@ -30,9 +24,15 @@ class AssignmentSolutionViewFactory {
    */
   private $comments;
 
-  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments) {
+  /**
+   * @var UserStorage
+   */
+  private $userStorage;
+
+  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments, UserStorage $userStorage) {
     $this->assignmentSolutionAcl = $assignmentSolutionAcl;
     $this->comments = $comments;
+    $this->userStorage = $userStorage;
   }
 
   /**
@@ -50,6 +50,9 @@ class AssignmentSolutionViewFactory {
     $lastSubmissionIdArray = $lastSubmissionId ? [ $lastSubmissionId ] : [];
     $submissions = $canViewResubmissions ? $solution->getSubmissionsIds() : $lastSubmissionIdArray;
 
+    $thread = $this->comments->getThread($solution->getId());
+    $user = $this->userStorage->getUserData();
+
     return [
       "id" => $solution->getId(),
       "note" => $solution->getNote(),
@@ -61,6 +64,11 @@ class AssignmentSolutionViewFactory {
       "bonusPoints" => $solution->getBonusPoints(),
       "lastSubmission" => $solution->getLastSubmission() ? $solution->getLastSubmission()->getData($canViewDetails, $canViewValues) : null,
       "submissions" => $submissions,
+      "commentsStats" => $thread && $user ? [
+        "count" => $this->comments->getThreadCommentsCount($thread, $user),
+        "mineCount" => $this->comments->getThreadCommentsCount($thread, $user, false),
+        "last" => $this->comments->getThreadLastComment($thread, $user),
+        ] : null,
     ];
   }
 }
