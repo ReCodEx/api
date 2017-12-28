@@ -24,7 +24,7 @@ use App\Exceptions\ForbiddenRequestException;
  * @method setBonusPoints(int $points)
  * @method Collection getSubmissions()
  */
-class AssignmentSolution implements JsonSerializable
+class AssignmentSolution// implements JsonSerializable
 {
   use MagicAccessors;
 
@@ -132,40 +132,6 @@ class AssignmentSolution implements JsonSerializable
     return $this->submissions->map(function (AssignmentSolutionSubmission $submission) {
       return $submission->getId();
     })->getValues();
-  }
-
-  /**
-   * Parametrized view.
-   * @param bool $canViewRatios
-   * @param bool $canViewValues
-   * @param bool $canViewResubmissions
-   * @return array
-   */
-  public function getData($canViewRatios = false, bool $canViewValues = false, bool $canViewResubmissions = false) {
-    $lastSubmissionId = $this->getLastSubmission() ? $this->getLastSubmission()->getId() : null;
-    $lastSubmissionIdArray = $lastSubmissionId ? [ $lastSubmissionId ] : [];
-    $submissions = $canViewResubmissions ? $this->getSubmissionsIds() : $lastSubmissionIdArray;
-
-    return [
-      "id" => $this->id,
-      "note" => $this->note,
-      "exerciseAssignmentId" => $this->assignment->getId(),
-      "solution" => $this->solution,
-      "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
-      "maxPoints" => $this->getMaxPoints(),
-      "accepted" => $this->accepted,
-      "bonusPoints" => $this->bonusPoints,
-      "lastSubmission" => $this->getLastSubmission() ?  $this->getLastSubmission()->getData($canViewRatios, $canViewValues) : null,
-      "submissions" => $submissions,
-
-    ];
-  }
-
-  /**
-   * @return array
-   */
-  public function jsonSerialize() {
-    return $this->getData($this->assignment->getCanViewLimitRatios());
   }
 
   /**

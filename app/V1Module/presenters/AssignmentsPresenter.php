@@ -371,19 +371,16 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submissions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
+    $solutions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
       function (AssignmentSolution $solution) {
         return $this->assignmentSolutionAcl->canViewDetail($solution);
     });
-    $submissions = array_map(function (AssignmentSolution $solution) {
-      $submission = $solution->getLastSubmission();
-      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
-      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
-      return $this->assignmentSolutionViewFactory->getSolutionData($solution, $canViewDetails, $canViewValues, $canViewResubmissions);
-    }, $submissions);
 
-    $this->sendSuccessResponse($submissions);
+    $solutions = array_map(function (AssignmentSolution $solution) {
+      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
+    }, $solutions);
+
+    $this->sendSuccessResponse($solutions);
   }
 
   /**
@@ -406,12 +403,8 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $submission = $solution->getLastSubmission();
-    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
-    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
     $this->sendSuccessResponse(
-      $this->assignmentSolutionViewFactory->getSolutionData($solution, $canViewDetails, $canViewValues, $canViewResubmissions)
+      $this->assignmentSolutionViewFactory->getSolutionData($solution)
     );
   }
 
@@ -440,12 +433,8 @@ class AssignmentsPresenter extends BasePresenter {
         continue;
       }
 
-      $submission = $solution->getLastSubmission();
-      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
-      $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
       $bestSubmissions[$student->getId()] =
-        $this->assignmentSolutionViewFactory->getSolutionData($solution, $canViewDetails, $canViewValues, $canViewResubmissions);
+        $this->assignmentSolutionViewFactory->getSolutionData($solution);
     }
 
     $this->sendSuccessResponse($bestSubmissions);

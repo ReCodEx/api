@@ -155,8 +155,8 @@ class TestSubmitPresenter extends Tester\TestCase
     Assert::count(2, $result['payload']);
 
     $submission = $result['payload']['submission'];
-    Assert::type(AssignmentSolution::class, $submission);
-    Assert::equal($assignment->getId(), $submission->getAssignment()->getId());
+    Assert::type('array', $submission);
+    Assert::equal($assignment->getId(), $submission['exerciseAssignmentId']);
 
     $webSocketChannel = $result['payload']['webSocketChannel'];
     Assert::count(3, $webSocketChannel);

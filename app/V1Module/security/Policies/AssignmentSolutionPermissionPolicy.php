@@ -12,36 +12,24 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
     return AssignmentSolution::class;
   }
 
-  public function isSupervisor(Identity $identity, AssignmentSolution $solution,
-      AssignmentSolutionSubmission $submission = null) {
+  public function isSupervisor(Identity $identity, AssignmentSolution $solution) {
     $assignment = $solution->getAssignment();
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
 
-    if ($user === NULL) {
-      return FALSE;
+    if ($user === null) {
+      return false;
     }
 
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
-  public function isAuthor(Identity $identity, AssignmentSolution $solution,
-      AssignmentSolutionSubmission $submission = null) {
+  public function isAuthor(Identity $identity, AssignmentSolution $solution) {
     $user = $identity->getUserData();
-
-    if ($user === NULL) {
-      return FALSE;
-    }
-
-    if ($submission === null) {
-      return $user === $solution->getSolution()->getAuthor();
-    }
-
-    return $user === $submission->getSubmittedBy();
+    return $user !== null && $user === $solution->getSolution()->getAuthor();
   }
 
-  public function areEvaluationDetailsPublic(Identity $identity, AssignmentSolution $solution,
-      AssignmentSolutionSubmission $submission = null) {
+  public function areEvaluationDetailsPublic(Identity $identity, AssignmentSolution $solution) {
     return $solution->getAssignment()->getCanViewLimitRatios();
   }
 }

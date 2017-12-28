@@ -12,6 +12,7 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
+use App\Model\View\AssignmentSolutionViewFactory;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -44,6 +45,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
   /** @var HardwareGroups */
   private $hardwareGroups;
 
+  /** @var AssignmentSolutionViewFactory */
+  private $assignmentSolutionViewFactory;
+
   public function __construct()
   {
     global $container;
@@ -53,6 +57,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
     $this->runtimeEnvironments = $container->getByType(RuntimeEnvironments::class);
     $this->hardwareGroups = $container->getByType(HardwareGroups::class);
+    $this->assignmentSolutionViewFactory = $container->getByType(AssignmentSolutionViewFactory::class);
   }
 
   protected function setUp()
@@ -305,13 +310,13 @@ class TestAssignmentsPresenter extends Tester\TestCase
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $submission = current($this->presenter->assignmentSolutions->findAll());
-    $user = $submission->getSolution()->getAuthor();
-    $assignment = $submission->getAssignment();
-    $submissions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
-    $submissions = array_map(function (AssignmentSolution $submission) {
-      return $submission->getData(true, true, true);
-    }, $submissions);
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+    $user = $solution->getSolution()->getAuthor();
+    $assignment = $solution->getAssignment();
+    $solutions = $this->presenter->assignmentSolutions->findSolutions($assignment, $user);
+    $solutions = array_map(function (AssignmentSolution $solution) {
+      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
+    }, $solutions);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
       ['action' => 'solutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
@@ -321,8 +326,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(count($submissions), $result['payload']);
-    Assert::same($submissions, $result['payload']);
+    Assert::count(count($solutions), $result['payload']);
+    Assert::same($solutions, $result['payload']);
   }
 
   public function testBestSolution()
