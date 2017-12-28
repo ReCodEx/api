@@ -75,7 +75,12 @@ class PresenterTestHelper
 
       $sqliteProcess = new Process("sqlite3 --bail $dbPath");
       $sqliteProcess->setInput(".dump");
-      $sqliteProcess->run();
+      $rc = $sqliteProcess->run();
+
+      if ($rc !== 0) {
+        throw new RuntimeException('Could not run sqlite export. Make sure "sqlite3" is installed and accessible through $PATH.');
+      }
+
       file_put_contents($dumpPath, $sqliteProcess->getOutput());
 
       // Replace the temporary entity manager with the original one
