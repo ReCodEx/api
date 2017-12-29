@@ -66,7 +66,7 @@ class AssignmentSolutionViewFactory {
       "submissions" => $submissions,
       "commentsStats" => $thread && $user ? [
         "count" => $this->comments->getThreadCommentsCount($thread, $user),
-        "mineCount" => $this->comments->getThreadCommentsCount($thread, $user, false),
+        "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
         "last" => $this->comments->getThreadLastComment($thread, $user),
         ] : null,
     ];

@@ -34,17 +34,15 @@ class Comments extends BaseRepository {
   }
 
   /**
-   * Get the number of visible comments for given user
+   * Get the number of visible comments for given user.
+   * The method requires the user entity, since it does not use ACL mechanism and compares
+   * the authorship of comments directly as a performance optimization (we need only the count, not all entities).
    * @param $threadId Id of the comments thread.
    * @param $userId Id of the viewer or null (if nobody is logged in).
    * @param bool $allVisible True = all coments visible for the user, false = comments made by the user.
    */
-  public function getThreadCommentsCount(CommentThread $thread, ?User $user, bool $allVisible = true)
+  private function getCommentsCount(CommentThread $thread, User $user, bool $allVisible)
   {
-    if (!$user) {
-      return 0; // anonymous users cannot see any comments
-    }
-
     $qb = $this->comments->createQueryBuilder('tc')
       ->select('COUNT(tc.id)')
       ->where('tc.commentThread = :id');
@@ -64,16 +62,34 @@ class Comments extends BaseRepository {
   }
 
   /**
-   * Get the number of visible comments for given user
+   * Get the number of all visible comments for given user.
    * @param $threadId Id of the comments thread.
    * @param $userId Id of the viewer or null (if nobody is logged in).
    */
-  public function getThreadLastComment(CommentThread $thread, ?User $user)
+  public function getThreadCommentsCount(CommentThread $thread, User $user)
   {
-    if (!$user) {
-      return null; // anonymous users cannot see any comments
-    }
+    return $this->getCommentsCount($thread, $user, true);
+  }
 
+  /**
+   * Get the number of comments made directly by given user.
+   * @param $threadId Id of the comments thread.
+   * @param $userId Id of the viewer or null (if nobody is logged in).
+   */
+  public function getAuthoredCommentsCount(CommentThread $thread, User $user)
+  {
+    return $this->getCommentsCount($thread, $user, true);
+  }
+
+  /**
+   * Get the number of visible comments for given user
+   * The method requires the user entity, since it does not use ACL mechanism and compares
+   * the authorship of comments directly as a performance optimization (we need only the last entity, not all entities).
+   * @param $threadId Id of the comments thread.
+   * @param $userId Id of the viewer or null (if nobody is logged in).
+   */
+  public function getThreadLastComment(CommentThread $thread, User $user)
+  {
     return $this->comments->matching(Criteria::create()
       ->where(Criteria::expr()->andX(
         Criteria::expr()->eq('commentThread', $thread),
