@@ -8,8 +8,7 @@ use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\UserStorage;
 
 /**
- * Factory for group views which somehow do not fit into json serialization of
- * entities.
+ * Factory for solution views which somehow do not fit into json serialization of entities.
  */
 class AssignmentSolutionViewFactory {
 
