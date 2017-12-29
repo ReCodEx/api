@@ -80,6 +80,7 @@ class SubmissionHelper {
    * @param array $files
    * @param JobConfig $jobConfig
    * @return string fileserver results URL
+   * @throws SubmissionFailedException
    */
   public function submitReference(string $jobId, string $environment,
       ?string $hwgroup, array $files, JobConfig $jobConfig): string {

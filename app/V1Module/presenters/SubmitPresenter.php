@@ -6,20 +6,16 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\SubmissionEvaluationFailedException;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\FailureHelper;
-use App\Helpers\JobConfig\GeneratorResult;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\AssignmentSolutionSubmission;
-use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\Solution;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Helpers\SubmissionHelper;
-use App\Helpers\JobConfig;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\User;
@@ -33,6 +29,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\AssignmentSolutionViewFactory;
 
 use App\Security\ACL\IAssignmentPermissions;
+use Exception;
 use Nette\Http\IResponse;
 
 /**
@@ -220,6 +217,9 @@ class SubmitPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->finishSubmission($assignmentSolution));
   }
 
+  /**
+   * @throws SubmissionFailedException
+   */
   private function submissionFailed(AssignmentSolutionSubmission $submission, string $message) {
     $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $message, $submission);
     $this->submissionFailures->persist($failure);
@@ -269,7 +269,7 @@ class SubmitPresenter extends BasePresenter {
         $solution->getSolution()->getFiles()->getValues(),
         $generatorResult->getJobConfig()
       );
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
       $this->submissionFailed($submission, $e->getMessage());
     }
 
