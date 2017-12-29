@@ -30,8 +30,9 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
+ * @method Collection getLogins()
  */
-class User implements JsonSerializable
+class User
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use DeleteableEntity;
@@ -276,34 +277,6 @@ class User implements JsonSerializable
    */
   protected $logins;
 
-  public function getPublicData(): array {
-    return [
-      'id' => $this->getId(),
-      'fullName' => $this->getName(),
-      'name' => $this->getNameParts(),
-      'avatarUrl' => $this->getAvatarUrl(),
-      'isVerified' => $this->isVerified()
-    ];
-  }
-
-  public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "email" => $this->email,
-      "fullName" => $this->getName(),
-      "name" => $this->getNameParts(),
-      "instanceId" => $this->instance->getId(),
-      "avatarUrl" => $this->avatarUrl,
-      "isVerified" => $this->isVerified,
-      "role" => $this->role,
-      "groups" => [
-        "studentOf" => $this->getGroupsAsStudent()->map(function (Group $group) { return $group->getId(); })->getValues(),
-        "supervisorOf" => $this->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
-      ],
-      "settings" => $this->settings,
-      "isExternal" => $this->logins->isEmpty()
-    ];
-  }
 
   /**
    * @return array

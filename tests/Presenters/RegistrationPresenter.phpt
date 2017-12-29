@@ -106,17 +106,12 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(User::class, $user);
-    Assert::equal($email, $user->getEmail());
-    Assert::equal($firstName, $user->getFirstName());
-    Assert::equal($lastName, $user->getLastName());
-    Assert::equal($instanceId, $user->getInstance()->getId());
-    Assert::equal($degreesBeforeName, $user->getDegreesBeforeName());
-    Assert::equal($degreesAfterName, $user->getDegreesAfterName());
+    Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $user["fullName"]);
+    Assert::equal($email, $user["privateData"]["email"]);
 
     // check created login
-    $login = $this->logins->findByUserId($user->getId());
-    Assert::same($user, $login->getUser());
+    $login = $this->logins->findByUserId($user["id"]);
+    Assert::equal($user["id"], $login->getUser()->getId());
     Assert::true($login->passwordsMatch($password));
   }
 
@@ -260,13 +255,8 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(User::class, $user);
-    Assert::equal($username, $user->getEmail());
-    Assert::equal($firstname, $user->getFirstName());
-    Assert::equal($lastname, $user->getLastName());
-    Assert::equal($instanceId, $user->getInstance()->getId());
-    Assert::equal($degreesBeforeName, $user->getDegreesBeforeName());
-    Assert::equal($degreesAfterName, $user->getDegreesAfterName());
+    Assert::equal("$degreesBeforeName $firstname $lastname $degreesAfterName", $user["fullName"]);
+    Assert::equal($username, $user["privateData"]["email"]);
   }
 
   public function testLinkExternalAccount()
@@ -321,9 +311,8 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // check created user
     $user = $result["payload"]["user"];
-    Assert::type(User::class, $user);
-    Assert::same($existingUser, $user);
-    Assert::equal($existingUser->getEmail(), $user->getEmail());
+    Assert::equal($existingUser->getId(), $user["id"]);
+    Assert::equal($existingUser->getEmail(), $user["privateData"]["email"]);
   }
 
   public function testValidateRegistrationData()

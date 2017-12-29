@@ -7,6 +7,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
 
 
@@ -21,8 +22,14 @@ class GroupViewFactory {
    */
   private $assignmentSolutions;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions) {
+  /**
+   * @var IGroupPermissions
+   */
+  private $groupAcl;
+
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl) {
     $this->assignmentSolutions = $assignmentSolutions;
+    $this->groupAcl = $groupAcl;
   }
 
 
@@ -112,6 +119,25 @@ class GroupViewFactory {
       "statuses" => $statuses,
       "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
       "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold()
+    ];
+  }
+
+  /**
+   * Get as much group detail info as your permissions grants you.
+   * @param Group $group
+   * @return array
+   */
+  public function getGroup(Group $group): array {
+    $privateData = null;
+    if ($this->groupAcl->canViewDetail($group)) {
+      $privateData = [
+      ];
+    }
+
+    // TODO
+
+    return [
+      'privateData' => $privateData
     ];
   }
 

@@ -6,6 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
+use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
 use App\Security\ACL\IUserPermissions;
@@ -41,6 +42,12 @@ class LoginPresenter extends BasePresenter {
   public $logins;
 
   /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
+
+  /**
    * @var IUserPermissions
    * @inject
    */
@@ -57,7 +64,7 @@ class LoginPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "accessToken" => $token,
-      "user" => $user
+      "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }
 
@@ -118,7 +125,7 @@ class LoginPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]),
-      "user" => $user
+      "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }
 

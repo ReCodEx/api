@@ -12,6 +12,7 @@ use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Model\View\GroupViewFactory;
+use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
 
@@ -39,6 +40,12 @@ class UsersPresenter extends BasePresenter {
   public $groupViewFactory;
 
   /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
+
+  /**
    * @var IUserPermissions
    * @inject
    */
@@ -55,6 +62,9 @@ class UsersPresenter extends BasePresenter {
     }
 
     $users = $this->users->findAll();
+    $users = array_map(function (User $user) {
+      return $this->userViewFactory->getUser($user);
+    }, $users);
     $this->sendSuccessResponse($users);
   }
 
@@ -66,10 +76,11 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
-    if (!$this->userAcl->canViewDetail($user)) {
+    if (!$this->userAcl->canViewPublicData($user)) {
       throw new ForbiddenRequestException();
     }
-    $this->sendSuccessResponse($user);
+
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**
@@ -85,21 +96,6 @@ class UsersPresenter extends BasePresenter {
     }
     $this->users->remove($user);
     $this->sendSuccessResponse("OK");
-  }
-
-  /**
-   * Get public data about user.
-   * @GET
-   * @param string $id
-   * @throws ForbiddenRequestException
-   */
-  public function actionPublicData(string $id) {
-    $user = $this->users->findOrThrow($id);
-    if (!$this->userAcl->canViewPublicData($user)) {
-      throw new ForbiddenRequestException();
-    }
-
-    $this->sendSuccessResponse($user->getPublicData());
   }
 
   /**
@@ -147,7 +143,7 @@ class UsersPresenter extends BasePresenter {
     $this->users->flush();
     $this->logins->flush();
 
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**
@@ -276,7 +272,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
 
     $this->users->persist($user);
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**

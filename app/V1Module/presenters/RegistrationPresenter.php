@@ -10,6 +10,7 @@ use App\Model\Entity\Instance;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Instances;
+use App\Model\View\UserViewFactory;
 use App\Security\AccessManager;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
@@ -57,6 +58,12 @@ class RegistrationPresenter extends BasePresenter {
    * @inject
    */
   public $emailVerificationHelper;
+
+  /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
 
   /**
    * Get an instance by its ID.
@@ -128,7 +135,7 @@ class RegistrationPresenter extends BasePresenter {
 
     // successful!
     $this->sendSuccessResponse([
-      "user" => $user,
+      "user" => $this->userViewFactory->getFullUser($user),
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
   }
@@ -157,7 +164,7 @@ class RegistrationPresenter extends BasePresenter {
 
     // successful!
     $this->sendSuccessResponse([
-      "user" => $user,
+      "user" => $this->userViewFactory->getFullUser($user),
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
   }

@@ -424,7 +424,7 @@ class Group implements JsonSerializable
       "localizedTexts" => $this->localizedTexts->getValues(),
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "admins" => $this->getPrimaryAdmins()->map(function (User $user) {
-        return $user->getPublicData();
+        return $user->getId();
       })->getValues(),
       "childGroups" => [
         "all" => $this->getChildGroupsIds(),

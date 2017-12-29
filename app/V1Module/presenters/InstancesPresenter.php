@@ -6,10 +6,10 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
+use App\Model\View\UserViewFactory;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IInstancePermissions;
 use App\Security\ACL\IUserPermissions;
-use App\Security\Identity;
 use Nette\Http\IResponse;
 
 use App\Exceptions\BadRequestException;
@@ -34,6 +34,12 @@ class InstancesPresenter extends BasePresenter {
    * @inject
    */
   public $licences;
+
+  /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
 
   /**
    * @var IInstancePermissions
@@ -65,13 +71,7 @@ class InstancesPresenter extends BasePresenter {
     $instances = array_filter($this->instances->findAll(),
         function (Instance $instance) { return $instance->isAllowed(); }
     );
-    /** @var Identity $identity */
-    $identity = $this->getUser()->getIdentity();
-    $user = $identity ? $identity->getUserData() : NULL;
-    $instancesData = array_map(function (Instance $instance) use ($user) {
-      return $instance->getData($user);
-    }, $instances);
-    $this->sendSuccessResponse(array_values($instancesData));
+    $this->sendSuccessResponse($instances);
   }
 
   /**
@@ -101,7 +101,7 @@ class InstancesPresenter extends BasePresenter {
     $this->instances->persist($instance->getRootGroup(), false);
     $this->instances->persist($localizedRootGroup, false);
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance->getData($this->getCurrentUser()), IResponse::S201_CREATED);
+    $this->sendSuccessResponse($instance, IResponse::S201_CREATED);
   }
 
   /**
@@ -123,7 +123,7 @@ class InstancesPresenter extends BasePresenter {
       $instance->isOpen = $params->isOpen;
     }
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance->getData($this->getCurrentUser()));
+    $this->sendSuccessResponse($instance);
   }
 
   /**
@@ -160,7 +160,7 @@ class InstancesPresenter extends BasePresenter {
       throw new BadRequestException("This instance is not allowed.");
     }
     $user = $this->getCurrentUser();
-    $this->sendSuccessResponse($instance->getData($user));
+    $this->sendSuccessResponse($instance);
   }
 
   /**
@@ -219,7 +219,7 @@ class InstancesPresenter extends BasePresenter {
       return $this->userAcl->canViewPublicData($user);
     });
     $members = array_map(function (User $user) {
-      return $user->getPublicData();
+      return $this->userViewFactory->getUser($user);
     }, $members);
     $this->sendSuccessResponse(array_values($members));
   }

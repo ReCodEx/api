@@ -157,7 +157,7 @@ class Instance implements JsonSerializable
     return $this->isAllowed;
   }
 
-  public function getData(User $user = NULL) {
+  public function jsonSerialize() {
     /** @var LocalizedGroup $localizedRootGroup */
     $localizedRootGroup = Localizations::getPrimaryLocalization($this->rootGroup->getLocalizedTexts());
 
@@ -174,10 +174,6 @@ class Instance implements JsonSerializable
       "admin" => $this->admin ? $this->admin->getId() : NULL,
       "rootGroupId" => $this->rootGroup !== NULL ? $this->rootGroup->getId() : NULL
     ];
-  }
-
-  public function jsonSerialize() {
-    return $this->getData(NULL);
   }
 
   public function __construct(){
