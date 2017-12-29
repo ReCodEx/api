@@ -290,8 +290,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
-      "student" => $user->getGroupsAsStudent()->getValues(),
+      "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues()),
+      "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues()),
       "stats" => $user->getGroupsAsStudent()->map(
         function (Group $group) use ($user) {
           return $this->groupViewFactory->getStudentsStats($group, $user);

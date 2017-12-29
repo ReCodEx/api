@@ -304,7 +304,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists("supervisor", $result["payload"]));
     $supervisorIn = $result["payload"]["supervisor"];
     $expectedSupervisorIn = $user->getGroupsAsSupervisor()->getValues();
-    Assert::equal($expectedSupervisorIn, $supervisorIn);
+    Assert::equal($this->presenter->groupViewFactory->getGroups($expectedSupervisorIn), $supervisorIn);
   }
 
   public function testStudentGroups()
@@ -325,7 +325,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists("student", $result["payload"]));
     $studentIn = $result["payload"]["student"];
     $expectedStudentIn = $user->getGroupsAsStudent()->getValues();
-    Assert::equal($expectedStudentIn, $studentIn);
+    Assert::equal($this->presenter->groupViewFactory->getGroups($expectedStudentIn), $studentIn);
 
     Assert::true(array_key_exists("stats", $result["payload"]));
     $stats = $result["payload"]["stats"];

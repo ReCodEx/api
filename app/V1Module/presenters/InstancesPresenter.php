@@ -7,6 +7,7 @@ use App\Exceptions\NotFoundException;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
+use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IInstancePermissions;
@@ -41,6 +42,12 @@ class InstancesPresenter extends BasePresenter {
    * @inject
    */
   public $userViewFactory;
+
+  /**
+   * @var GroupViewFactory
+   * @inject
+   */
+  public $groupViewFactory;
 
   /**
    * @var IInstancePermissions
@@ -121,10 +128,10 @@ class InstancesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $params = $this->parameters;
-    if (isset($params->isOpen)) {
-      $instance->isOpen = $params->isOpen;
-    }
+    $req = $this->getRequest();
+    $isOpen = $req->getPost("isOpen") ? filter_var($req->getPost("isOpen"), FILTER_VALIDATE_BOOLEAN) : $instance->isOpen();
+
+    $instance->setIsOpen($isOpen);
     $this->instances->persist($instance);
     $this->sendSuccessResponse($instance);
   }
@@ -162,7 +169,6 @@ class InstancesPresenter extends BasePresenter {
     if (!$instance->getIsAllowed()) {
       throw new BadRequestException("This instance is not allowed.");
     }
-    $user = $this->getCurrentUser();
     $this->sendSuccessResponse($instance);
   }
 
@@ -178,30 +184,11 @@ class InstancesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse(array_values(array_filter($instance->getGroups()->getValues(), function (Group $group) {
-      return $this->groupAcl->canViewDetail($group);
-    })));
-  }
-
-  /**
-   * Get a list of all public groups in an instance.
-   * @GET
-   * @param string $id An identifier of the instance
-   * @throws ForbiddenRequestException
-   */
-  public function actionPublicGroups(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canViewGroups($instance)) {
-      throw new ForbiddenRequestException();
-    }
-
-    $groups = array_filter($instance->getGroups()->getValues(), function (Group $group) {
-      return $this->groupAcl->canViewPublicDetail($group);
-    });
-    $publicGroups = array_map(function (Group $group) {
-      return $group->getPublicData($this->groupAcl->canViewDetail($group));
-    }, $groups);
-    $this->sendSuccessResponse(array_values($publicGroups));
+    $groups = array_filter($instance->getGroups()->getValues(),
+      function (Group $group) {
+        return $this->groupAcl->canViewPublicDetail($group);
+      });
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
   /**
@@ -217,14 +204,10 @@ class InstancesPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $members = $instance->getMembers($search);
-    $members = array_filter($members, function (User $user) {
+    $members = array_filter($instance->getMembers($search), function (User $user) {
       return $this->userAcl->canViewPublicData($user);
     });
-    $members = array_map(function (User $user) {
-      return $this->userViewFactory->getUser($user);
-    }, $members);
-    $this->sendSuccessResponse(array_values($members));
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($members));
   }
 
   /**
@@ -251,15 +234,16 @@ class InstancesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionCreateLicence(string $id) {
-    $params = $this->parameters;
     $instance = $this->instances->findOrThrow($id);
-
     if (!$this->instanceAcl->canAddLicence($instance)) {
       throw new ForbiddenRequestException();
     }
 
-    $validUntil = (new \DateTime())->setTimestamp($params->validUntil);
-    $licence = Licence::createLicence($params->note, $validUntil, $instance);
+    $req = $this->getRequest();
+    $validUntil = (new \DateTime())->setTimestamp($req->getPost("validUntil"));
+    $note = $req->getPost("note");
+
+    $licence = Licence::createLicence($note, $validUntil, $instance);
     $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);
   }
@@ -275,22 +259,18 @@ class InstancesPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionUpdateLicence(string $licenceId) {
-    $params = $this->parameters;
     $licence = $this->licences->findOrThrow($licenceId);
-
     if (!$this->instanceAcl->canUpdateLicence($licence)) {
       throw new ForbiddenRequestException();
     }
 
-    if (isset($params->note)) {
-      $licence->note = $params->note;
-    }
-    if (isset($params->validUntil)) {
-      $licence->validUntil = new \DateTime($params->validUntil);
-    }
-    if (isset($params->isValid)) {
-      $licence->isValid = filter_var($params->isValid, FILTER_VALIDATE_BOOLEAN);
-    }
+    $req = $this->getRequest();
+    $validUntil = $req->getPost("validUntil") ? new \DateTime($req->getPost("validUntil")) : $licence->getValidUntil();
+    $isValid = $req->getPost("isValid") ? filter_var($req->getPost("isValid"), FILTER_VALIDATE_BOOLEAN) : $licence->isValid();
+
+    $licence->setNote($req->getPost("note") ?: $licence->getNote());
+    $licence->setValidUntil($validUntil);
+    $licence->setIsValid($isValid);
 
     $this->licences->persist($licence);
     $this->sendSuccessResponse($licence);

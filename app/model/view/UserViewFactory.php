@@ -72,4 +72,15 @@ class UserViewFactory {
     return $this->getUserData($user, $this->userAcl->canViewDetail($user));
   }
 
+  /**
+   * Get user information about given students.
+   * @param User[] $users
+   * @return array
+   */
+  public function getUsers(array $users): array {
+    return array_map(function (User $user) {
+      return $this->getUser($user);
+    }, $users);
+  }
+
 }

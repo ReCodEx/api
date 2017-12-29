@@ -177,33 +177,11 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(4, count($groups));
     Assert::equal(
       ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
-      array_map(function (Group $group) {
+      array_map(function ($group) {
         /** @var LocalizedGroup $localizedEntity */
-        $localizedEntity = Localizations::getPrimaryLocalization($group->getLocalizedTexts());
+        $localizedEntity = current($group["localizedTexts"]);
         return $localizedEntity ? $localizedEntity->getName() : "NO NAME";
       }, $groups)
-    );
-  }
-
-  public function testGetPublicGroups()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-    $allInstances = $this->presenter->instances->findAll();
-    $instance = array_pop($allInstances);
-
-    $request = new Nette\Application\Request('V1:Instances', 'GET',
-      ['action' => 'publicGroups', 'id' => $instance->id]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    $groups = $result['payload'];
-    Assert::equal(4, count($groups));
-    Assert::equal(
-      ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
-      array_map(function ($group) { return $group["name"]; }, $groups)
     );
   }
 
@@ -341,25 +319,6 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(1, $instance->licences->count());
   }
 
-  public function testUserCannotSeePrivateGroups()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin);
-
-    /** @var App\Model\Entity\User $user */
-    $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
-
-    // Check group list endpoint
-    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'groups', 'id' => $user->instance->id]);
-
-    /** @var \Nette\Application\Responses\JsonResponse $response */
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    /** @var Group $group */
-    foreach ($response->getPayload()["payload"] as $group) {
-      Assert::true($group->isPublic);
-    }
-  }
 }
 
 $testCase = new TestInstancesPresenter();

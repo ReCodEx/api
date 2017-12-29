@@ -9,6 +9,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
+use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
@@ -16,6 +17,7 @@ use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\View\GroupViewFactory;
+use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -76,8 +78,15 @@ class GroupsPresenter extends BasePresenter {
   public $groupViewFactory;
 
   /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
+
+  /**
    * Get a list of all groups
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
     if (!$this->groupAcl->canViewAll()) {
@@ -85,7 +94,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $groups = $this->groups->findAll();
-    $this->sendSuccessResponse($groups);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
   /**
@@ -97,6 +106,8 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
    * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
    * @Param(type="post", name="localizedTexts", validation="array", required=FALSE, description="Localized names and descriptions")
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionAddGroup() {
     $req = $this->getRequest();
@@ -123,7 +134,7 @@ class GroupsPresenter extends BasePresenter {
     $this->groups->persist($group, false);
     $this->groups->flush();
 
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -133,6 +144,7 @@ class GroupsPresenter extends BasePresenter {
    * @Param(name="locale", type="post", description="The locale of the name")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
    * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
+   * @throws ForbiddenRequestException
    */
   public function actionValidateAddGroupData() {
     $req = $this->getRequest();
@@ -183,7 +195,7 @@ class GroupsPresenter extends BasePresenter {
     $this->updateLocalizations($req, $group);
 
     $this->groups->persist($group);
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -219,27 +231,11 @@ class GroupsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $group = $this->groups->findOrThrow($id);
-    if (!$this->groupAcl->canViewDetail($group)) {
-      throw new ForbiddenRequestException();
-    }
-
-    $this->sendSuccessResponse($group);
-  }
-
-  /**
-   * Get public data about group.
-   * @GET
-   * @param string $id
-   * @throws ForbiddenRequestException
-   */
-  public function actionPublicDetail(string $id) {
-    $group = $this->groups->findOrThrow($id);
     if (!$this->groupAcl->canViewPublicDetail($group)) {
       throw new ForbiddenRequestException();
     }
 
-    $groupData = $group->getPublicData($this->groupAcl->canViewDetail($group));
-    $this->sendSuccessResponse($groupData);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -256,16 +252,13 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $subgroups = array_values(
-      array_filter(
-        $group->getAllSubgroups(),
-        function (Group $subgroup) {
-          return $this->groupAcl->canViewDetail($subgroup);
-        }
-      )
-    );
+    $subgroups = array_filter(
+      $group->getAllSubgroups(),
+      function (Group $subgroup) {
+        return $this->groupAcl->canViewPublicDetail($subgroup);
+      });
 
-    $this->sendSuccessResponse($subgroups);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($subgroups));
   }
 
   /**
@@ -282,8 +275,8 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "supervisors" => $group->getSupervisors()->getValues(),
-      "students" => $group->getStudents()->getValues()
+      "supervisors" => $this->userViewFactory->getUsers($group->getSupervisors()->getValues()),
+      "students" => $this->userViewFactory->getUsers($group->getStudents()->getValues())
     ]);
   }
 
@@ -299,7 +292,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse($group->getSupervisors()->getValues());
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getSupervisors()->getValues()));
   }
 
   /**
@@ -314,7 +307,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $this->sendSuccessResponse($group->getStudents()->getValues());
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getStudents()->getValues()));
   }
 
   /**
@@ -438,7 +431,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // join the group
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -465,7 +458,7 @@ class GroupsPresenter extends BasePresenter {
       }
     }
 
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -493,7 +486,7 @@ class GroupsPresenter extends BasePresenter {
       $this->groups->flush();
     }
 
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -530,7 +523,7 @@ class GroupsPresenter extends BasePresenter {
       }
     }
 
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -573,7 +566,7 @@ class GroupsPresenter extends BasePresenter {
     $group->removePrimaryAdmin($user);
     $group->addPrimaryAdmin($user);
     $this->groups->flush();
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -594,7 +587,7 @@ class GroupsPresenter extends BasePresenter {
     // delete admin and flush changes
     $group->removePrimaryAdmin($user);
     $this->groups->flush();
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**

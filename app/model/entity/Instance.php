@@ -3,6 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Helpers\Localizations;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
@@ -16,7 +17,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method Group getRootGroup()
+ * @method bool getIsAllowed()
  * @method setAdmin(User $admin)
+ * @method setIsOpen(bool $isOpen)
+ * @method Collection getLicences()
  */
 class Instance implements JsonSerializable
 {
@@ -35,6 +39,13 @@ class Instance implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isOpen;
+
+  /**
+   * @return bool
+   */
+  public function isOpen(): bool {
+    return $this->isOpen;
+  }
 
   /**
    * @ORM\Column(type="boolean")
@@ -74,7 +85,7 @@ class Instance implements JsonSerializable
   }
 
   public function getValidLicences() {
-    return $this->licences->filter(function ($licence) {
+    return $this->licences->filter(function (Licence $licence) {
       return $licence->isValid();
     });
   }
@@ -147,8 +158,8 @@ class Instance implements JsonSerializable
     $this->groups->add($group);
   }
 
-  public function getGroups() {
-    return $this->groups->filter(function ($group) {
+  public function getGroups(): Collection {
+    return $this->groups->filter(function (Group $group) {
       return $group->getDeletedAt() === NULL;
     });
   }
