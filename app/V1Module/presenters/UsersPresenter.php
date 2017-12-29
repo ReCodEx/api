@@ -113,6 +113,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="oldPassword", required=FALSE, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="New password of current user")
    * @Param(type="post", name="passwordConfirm", required=FALSE, validation="string:1..", description="Confirmation of new password of current user")
+   * @throws WrongCredentialsException
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();

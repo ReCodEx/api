@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ForgottenPasswordHelper;
 use App\Model\Repository\Logins;
 use App\Model\Entity\Login;
@@ -31,6 +32,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
    * Request a password reset (user will receive an e-mail that prompts them to reset their password)
    * @POST
    * @Param(type="post", name="username", validation="string:2..", description="An identifier of the user whose password should be reset")
+   * @throws NotFoundException
    */
   public function actionDefault() {
     $req = $this->getHttpRequest();
@@ -48,6 +50,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="password", validation="string:2..", description="The new password")
    * @LoggedIn
+   * @throws ForbiddenRequestException
    */
   public function actionChange() {
     $req = $this->getHttpRequest();

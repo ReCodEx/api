@@ -299,6 +299,7 @@ class SisPresenter extends BasePresenter {
    * @param $sisUserId
    * @return \App\Helpers\SisCourseRecord|mixed
    * @throws BadRequestException
+   * @throws InvalidArgumentException
    */
   private function findRemoteCourseOrThrow($remoteGroupId, $sisUserId) {
     foreach ($this->sisValidTerms->findAll() as $term) {

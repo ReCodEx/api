@@ -27,6 +27,7 @@ class RuntimeEnvironmentsPresenter extends BasePresenter {
   /**
    * Get a list of all runtime environments
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
     if (!$this->runtimeEnvironmentAcl->canViewAll()) {

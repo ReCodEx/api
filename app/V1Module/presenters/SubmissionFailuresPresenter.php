@@ -37,6 +37,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
   /**
    * List all submission failures, ever
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
     if (!$this->submissionFailureAcl->canViewAll()) {
@@ -49,6 +50,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
   /**
    * List all unresolved submission failures
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionUnresolved() {
     if (!$this->submissionFailureAcl->canViewAll()) {
@@ -62,7 +64,6 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * List all failures of a single submission
    * @GET
    * @param $submissionId string An identifier of the submission
-   * @throws BadRequestException
    * @throws ForbiddenRequestException
    */
   public function actionListBySubmission(string $submissionId) {
@@ -78,7 +79,6 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * Get details of a failure
    * @GET
    * @param $id string An identifier of the failure
-   * @throws BadRequestException
    * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
@@ -96,7 +96,6 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @Param(name="note", type="post", validation="string:0..255", required=false,
    *   description="Brief description of how the failure was resolved")
    * @param $id string An identifier of the failure
-   * @throws BadRequestException
    * @throws ForbiddenRequestException
    */
   public function actionResolve(string $id) {

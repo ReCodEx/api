@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\NotFoundException;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
@@ -62,6 +63,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * Get a list of all instances
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
     if (!$this->instanceAcl->canViewAll()) {
@@ -80,6 +82,7 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="name", validation="string:2..", description="Name of the instance")
    * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
    * @Param(type="post", name="isOpen", validation="bool", description="Should the instance be open for registration?")
+   * @throws ForbiddenRequestException
    */
   public function actionCreateInstance() {
     if (!$this->instanceAcl->canAdd()) {
@@ -269,6 +272,7 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="isValid", validation="bool", required=FALSE, description="Administrator switch to toggle licence validity")
    * @param string $licenceId Identifier of the licence
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionUpdateLicence(string $licenceId) {
     $params = $this->parameters;
@@ -297,6 +301,7 @@ class InstancesPresenter extends BasePresenter {
    * @DELETE
    * @param string $licenceId Identifier of the licence
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionDeleteLicence(string $licenceId) {
     $licence = $this->licences->findOrThrow($licenceId);

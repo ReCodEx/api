@@ -93,6 +93,9 @@ class RegistrationPresenter extends BasePresenter {
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="degreesBeforeName", required=false, validation="string:1..", description="Degrees which is placed before user name")
    * @Param(type="post", name="degreesAfterName", required=false, validation="string:1..", description="Degrees which is placed after user name")
+   * @throws BadRequestException
+   * @throws WrongCredentialsException
+   * @throws InvalidArgumentException
    */
   public function actionCreateAccount() {
     $req = $this->getRequest();
@@ -145,6 +148,8 @@ class RegistrationPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
+   * @throws BadRequestException
+   * @throws WrongCredentialsException
    */
   public function actionCreateAccountExt() {
     $req = $this->getRequest();

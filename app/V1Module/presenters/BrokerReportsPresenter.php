@@ -2,8 +2,10 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\HttpBasicAuthException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\NotImplementedException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\BrokerConfig;
 use App\Helpers\EvaluationLoadingHelper;
@@ -63,6 +65,9 @@ class BrokerReportsPresenter extends BasePresenter {
 
   /**
    * The actions of this presenter have specific
+   * @throws WrongCredentialsException
+   * @throws HttpBasicAuthException
+   * @throws NotImplementedException
    */
   public function startup() {
     $req = $this->getHttpRequest();

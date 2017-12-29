@@ -8,6 +8,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseFileStorage;
@@ -295,6 +296,7 @@ class PipelinesPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
+   * @throws SubmissionFailedException
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
