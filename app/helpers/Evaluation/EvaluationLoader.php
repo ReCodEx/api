@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\MalformedJobConfigException;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;
@@ -14,6 +15,7 @@ use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ResultsLoadingException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Model\Entity\Submission;
+use Mockery\Exception;
 
 /**
  * Load evaluation for given submission. This may require connecting to the file server,
@@ -84,10 +86,10 @@ class EvaluationLoader {
       return $resultsYml === NULL
         ? NULL
         : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
-    } catch (ResultsLoadingException $e) {
-      throw new SubmissionEvaluationFailedException("Cannot load results.");
-    } catch (JobConfigLoadingException $e) {
+    } catch (JobConfigLoadingException | MalformedJobConfigException $e) {
       throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");
+    } catch (Exception $e) {
+      throw new SubmissionEvaluationFailedException("Cannot load results: " . $e->getMessage());
     }
   }
 }

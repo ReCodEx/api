@@ -37,6 +37,16 @@ should be ready to go.
 It is CRITICAL that whole `app/`, `log/` and `temp/` directories are not accessible directly
 via a web browser. See [security warning](https://nette.org/security-warning).
 
+Running tests
+-------------
+
+The tests require `sqlite3` to be installed and accessible through $PATH.
+Run them with the following command (feel free to adjust the path to php.ini):
+
+```
+php vendor/bin/tester -c /etc/php/php.ini tests
+```
+
 Cron setup
 ----------
 
