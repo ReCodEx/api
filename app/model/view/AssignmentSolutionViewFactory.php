@@ -52,6 +52,7 @@ class AssignmentSolutionViewFactory {
 
     $thread = $this->comments->getThread($solution->getId());
     $user = $this->userStorage->getUserData();
+    $threadCommentsCount = ($thread && $user) ? $this->comments->getThreadCommentsCount($thread, $user) : 0;
 
     return [
       "id" => $solution->getId(),
@@ -64,8 +65,8 @@ class AssignmentSolutionViewFactory {
       "bonusPoints" => $solution->getBonusPoints(),
       "lastSubmission" => $solution->getLastSubmission() ? $solution->getLastSubmission()->getData($canViewDetails, $canViewValues) : null,
       "submissions" => $submissions,
-      "commentsStats" => $thread && $user ? [
-        "count" => $this->comments->getThreadCommentsCount($thread, $user),
+      "commentsStats" => $threadCommentsCount ? [
+        "count" => $threadCommentsCount,
         "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
         "last" => $this->comments->getThreadLastComment($thread, $user),
         ] : null,

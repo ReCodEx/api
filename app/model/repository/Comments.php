@@ -58,7 +58,7 @@ class Comments extends BaseRepository {
       'user' => $user->getId(),
     ]);
 
-    return $qb->getQuery()->getSingleScalarResult();
+    return (int)$qb->getQuery()->getSingleScalarResult();
   }
 
   /**
@@ -78,7 +78,7 @@ class Comments extends BaseRepository {
    */
   public function getAuthoredCommentsCount(CommentThread $thread, User $user)
   {
-    return $this->getCommentsCount($thread, $user, true);
+    return $this->getCommentsCount($thread, $user, false);
   }
 
   /**
