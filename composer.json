@@ -54,7 +54,8 @@
 		"gedmo/doctrine-extensions": "@stable",
 		"doctrine/migrations": "^1.5",
 		"neitanod/forceutf8": "^2.0",
-		"symfony/process": "^3.3.0"
+		"symfony/process": "^3.3.0",
+		"limenet/git-version": "^0.1.3"
 	},
 	"require-dev": {
 		"nette/tester": "^1.7",
