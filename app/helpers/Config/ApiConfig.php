@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Helpers;
+
 use limenet\GitVersion\Directory;
 use limenet\GitVersion\Formatters\CustomFormatter;
-use limenet\GitVersion\Formatters\SemverFormatter;
 use Nette;
 use Nette\Utils\Arrays;
 
