@@ -1,5 +1,8 @@
 <?php
 namespace App\Helpers;
+use limenet\GitVersion\Directory;
+use limenet\GitVersion\Formatters\CustomFormatter;
+use limenet\GitVersion\Formatters\SemverFormatter;
 use Nette;
 use Nette\Utils\Arrays;
 
@@ -35,6 +38,12 @@ class ApiConfig
   protected $version;
 
   /**
+   * Format in which version will be displayed
+   * @var string
+   */
+  protected $versionFormat;
+
+  /**
    * Constructs configuration object from given array.
    * @param array $config
    */
@@ -42,7 +51,10 @@ class ApiConfig
     $this->address = Arrays::get($config, ["address"]);
     $this->name = Arrays::get($config, ["name"]);
     $this->description = Arrays::get($config, ["description"]);
-    $this->version = Arrays::get($config, ["version"]);
+    $this->versionFormat = Arrays::get($config, ["versionFormat"], "{tag}");
+
+    // version is constructed from git version tag
+    $this->version = (new Directory(__DIR__))->get(new CustomFormatter($this->versionFormat)) ?: "UNKNOWN";
   }
 
   public function getAddress() {

@@ -13,7 +13,7 @@ parameters:
     address: https://recodex.mff.cuni.cz:4000
     name: "ReCodEx API"
     description: "ReCodEx Code Examiner - API Server"
-    version: "1.1.1"
+    versionFormat: "{tag}"
 
   accessManager:
     leeway: 60
