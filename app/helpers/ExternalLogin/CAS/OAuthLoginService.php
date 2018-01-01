@@ -121,7 +121,7 @@ class OAuthLoginService implements IExternalLoginService {
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
       try {
-        $body = $res->getBody();
+        $body = (string)$res->getBody();
 
         libxml_use_internal_errors(true);
         $xml = simplexml_load_string($body);
@@ -162,7 +162,7 @@ class OAuthLoginService implements IExternalLoginService {
   private function getValidationUrl($ticket, $clientUrl) {
     $service = urlencode($clientUrl);
     $ticket = urlencode($ticket);
-    return "{$this->casHttpBaseUri}serviceValidate?service={$service}&ticket={$ticket}&format=xml";
+    return "{$this->casHttpBaseUri}p3/serviceValidate?service={$service}&ticket={$ticket}&format=xml";
   }
 
   /**
