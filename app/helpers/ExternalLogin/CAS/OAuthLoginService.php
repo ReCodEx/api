@@ -141,7 +141,8 @@ class OAuthLoginService implements IExternalLoginService {
           }
         }
 
-        $data = (array)$xml;
+        // A trick that utilizes JSON serialization of SimpleXML objects to convert the XML into an array.
+        $data = JSON::Decode(JSON::Encode($xml), JSON::FORCE_ARRAY);
       } catch (JsonException $e) {
         throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
       }
