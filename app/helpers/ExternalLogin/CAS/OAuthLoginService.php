@@ -131,7 +131,7 @@ class OAuthLoginService implements IExternalLoginService {
         }
 
         // If namespace selection is required ...
-        $namespaces = $root->getDocNamespaces();
+        $namespaces = $xml->getDocNamespaces();
         if ($namespaces) {
           $namespace = empty($namespaces['cas']) ? reset($namespaces) : $namespaces['cas'];
           $xml = simplexml_load_string($body, "SimpleXMLElement", 0, $namespace);
