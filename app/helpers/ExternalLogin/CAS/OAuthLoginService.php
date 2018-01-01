@@ -121,7 +121,27 @@ class OAuthLoginService implements IExternalLoginService {
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
       try {
-        $data = Json::decode($res->getBody(), Json::FORCE_ARRAY);
+        $body = $res->getBody();
+
+        libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($body);
+        $err = libxml_get_errors();
+        if ($err) {
+          throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+        }
+
+        // If namespace selection is required ...
+        $namespaces = $root->getDocNamespaces();
+        if ($namespaces) {
+          $namespace = empty($namespaces['cas']) ? reset($namespaces) : $namespaces['cas'];
+          $xml = simplexml_load_string($body, "SimpleXMLElement", 0, $namespace);
+          $err = libxml_get_errors();
+          if ($err) {
+            throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+          }
+        }
+
+        $data = (array)$xml;
       } catch (JsonException $e) {
         throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
       }
@@ -141,7 +161,7 @@ class OAuthLoginService implements IExternalLoginService {
   private function getValidationUrl($ticket, $clientUrl) {
     $service = urlencode($clientUrl);
     $ticket = urlencode($ticket);
-    return "{$this->casHttpBaseUri}serviceValidate?service={$service}&ticket={$ticket}&format=json";
+    return "{$this->casHttpBaseUri}serviceValidate?service={$service}&ticket={$ticket}&format=xml";
   }
 
   /**
@@ -154,7 +174,7 @@ class OAuthLoginService implements IExternalLoginService {
    */
   private function getUserData($ticket, $data): UserData {
     try {
-      $info = Arrays::get($data, ["serviceResponse", "authenticationSuccess", "attributes"]);
+      $info = Arrays::get($data, [/*"serviceResponse",*/ "authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
       throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
     }
