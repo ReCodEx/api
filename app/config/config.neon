@@ -59,10 +59,10 @@ parameters:
         #port: 389
         #security: SSL
         bindName: "cunipersonalid"
-      oauth:
+      cas:
         baseUri: "https://idp.cuni.cz/cas/"
     fields:
-      oauth:
+      cas:
         ukco: "cunipersonalid"
         email: "mail"
         firstName: "givenname"
@@ -241,13 +241,13 @@ services:
 
   # external login services
   - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
-  - App\Helpers\ExternalLogin\CAS\OAuthLoginService(%CAS.serviceId%, %CAS.options.oauth%, %CAS.fields.oauth%)
+  - App\Helpers\ExternalLogin\CAS\CASLoginService(%CAS.serviceId%, %CAS.options.cas%, %CAS.fields.cas%)
   - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
     @App\Model\Repository\ExternalLogins,
     @App\Model\Repository\Users,
     @App\Model\Repository\Logins,
     @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
-    @App\Helpers\ExternalLogin\CAS\OAuthLoginService,
+    @App\Helpers\ExternalLogin\CAS\CASLoginService,
   )
 
   # config objects

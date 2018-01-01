@@ -29,7 +29,7 @@ use GuzzleHttp\Client;
  * This is hard to test on a local server, as the CAS will only reveal the sensitive
  * personal information to computers in the CUNI network.
  */
-class OAuthLoginService implements IExternalLoginService {
+class CASLoginService implements IExternalLoginService {
 
   /** @var string Unique identifier of this login service, for example "cas-uk" */
   private $serviceId;
@@ -41,9 +41,9 @@ class OAuthLoginService implements IExternalLoginService {
   public function getServiceId(): string { return $this->serviceId; }
 
   /**
-   * @return string The OAuth authentication
+   * @return string The CAS authentication
    */
-  public function getType(): string { return "oauth"; }
+  public function getType(): string { return "cas"; }
 
   /** @var string Name of JSON field containing user's UKCO */
   private $ukcoField;
