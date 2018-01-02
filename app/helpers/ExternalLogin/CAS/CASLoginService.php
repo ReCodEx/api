@@ -115,12 +115,13 @@ class CASLoginService implements IExternalLoginService {
 
   /**
    * Internal XML parsing routine for ticket response.
+   * @param string $ticket
    * @param string $body String representation of the response body.
    * @param string $namespace XML namespace URI, if detected.
-   * @return SimpleXMLObject representing the response body.
+   * @return \SimpleXMLElement representing the response body.
    * @throws WrongCredentialsException If the XML could not have been parsed.
    */
-  private function parseXMLBody(string $body, string $namespace = '')
+  private function parseXMLBody(string $ticket, string $body, string $namespace = '')
   {
     libxml_use_internal_errors(true);
     $xml = simplexml_load_string($body, 'SimpleXMLElement', 0, $namespace);
@@ -154,15 +155,15 @@ class CASLoginService implements IExternalLoginService {
         $body = (string)$res->getBody();
 
         // Parse XML (twice, if necessary, to get right namespace) ...
-        $xml = $this->parseXMLBody($body);
+        $xml = $this->parseXMLBody($ticket, $body);
         $namespaces = $xml->getDocNamespaces();
         if ($namespaces) {
           $namespace = empty($namespaces['cas']) ? reset($namespaces) : $namespaces['cas'];
-          $xml = $this->parseXMLBody($body, $namespace);
+          $xml = $this->parseXMLBody($ticket, $body, $namespace);
         }
 
         // A trick that utilizes JSON serialization of SimpleXML objects to convert the XML into an array.
-        $data = JSON::Decode(JSON::Encode((array)$xml), JSON::FORCE_ARRAY);
+        $data = JSON::decode(JSON::encode((array)$xml), JSON::FORCE_ARRAY);
       } catch (JsonException $e) {
         throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
       }
