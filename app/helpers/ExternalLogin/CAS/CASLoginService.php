@@ -9,12 +9,13 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
 use App\Model\Entity\User;
-use GuzzleHttp\Psr7\Request;
 use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use Tracy\ILogger;
 
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Client;
 
 
@@ -67,12 +68,17 @@ class CASLoginService implements IExternalLoginService {
   private $casHttpBaseUri;
 
   /**
+   * @var ILogger
+   */
+  private $logger;
+
+  /**
    * Constructor
    * @param string $serviceId Identifier of this login service, must be unique
    * @param array $options
    * @param array $fields
    */
-  public function __construct(string $serviceId, array $options, array $fields) {
+  public function __construct(string $serviceId, array $options, array $fields, ILogger $logger) {
     $this->serviceId = $serviceId;
 
     // The field names of user's information stored in the CAS LDAP
@@ -85,6 +91,7 @@ class CASLoginService implements IExternalLoginService {
 
     // The CAS HTTP validation endpoint
     $this->casHttpBaseUri = Arrays::get($options, "baseUri", "https://idp.cuni.cz/cas/");
+    $this->logger = $logger;
   }
 
   /**
@@ -107,6 +114,29 @@ class CASLoginService implements IExternalLoginService {
   }
 
   /**
+   * Internal XML parsing routine for ticket response.
+   * @param string $body String representation of the response body.
+   * @param string $namespace XML namespace URI, if detected.
+   * @return SimpleXMLObject representing the response body.
+   * @throws WrongCredentialsException If the XML could not have been parsed.
+   */
+  private function parseXMLBody(string $body, string $namespace = '')
+  {
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_string($body, 'SimpleXMLElement', 0, $namespace);
+    $err = libxml_get_errors();
+    if ($err) {
+      $this->logger->log("CAS Ticket validation returned following response:\n$body", ILogger::DEBUG);
+      foreach ($err as $e) {
+        // Internal XML errors are logges as warnings
+        $this->logger->log($e, ILogger::WARNING);
+      }
+      throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+    }
+    return $xml;
+  }
+
+  /**
    * @param string $ticket
    * @param string $clientUrl
    * @return array
@@ -123,22 +153,12 @@ class CASLoginService implements IExternalLoginService {
       try {
         $body = (string)$res->getBody();
 
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($body);
-        $err = libxml_get_errors();
-        if ($err) {
-          throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
-        }
-
-        // If namespace selection is required ...
+        // Parse XML (twice, if necessary, to get right namespace) ...
+        $xml = $this->parseXMLBody($body);
         $namespaces = $xml->getDocNamespaces();
         if ($namespaces) {
           $namespace = empty($namespaces['cas']) ? reset($namespaces) : $namespaces['cas'];
-          $xml = simplexml_load_string($body, "SimpleXMLElement", 0, $namespace);
-          $err = libxml_get_errors();
-          if ($err) {
-            throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
-          }
+          $xml = $this->parseXMLBody($body, $namespace);
         }
 
         // A trick that utilizes JSON serialization of SimpleXML objects to convert the XML into an array.
@@ -175,8 +195,9 @@ class CASLoginService implements IExternalLoginService {
    */
   private function getUserData($ticket, $data): UserData {
     try {
-      $info = Arrays::get($data, [/*"serviceResponse",*/ "authenticationSuccess", "attributes"]);
+      $info = Arrays::get($data, ["authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
+      $this->logger->log("Ticket validation did not return successful response with attributes:\n" . var_export($data, true), ILogger::ERROR);
       throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
     }
 
