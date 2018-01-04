@@ -30,11 +30,28 @@ class SkippedStats implements IStats {
 
   /**
    * Compares the stats to the time limit
-   * @param  int     $secondsLimit Limiting amout of milliseconds
+   * @param float $secondsLimit Limiting amout of milliseconds
    * @return boolean The result
    */
   public function isWallTimeOK(float $secondsLimit): bool {
     return FALSE;
+  }
+
+  /**
+   * Get total amount of consumed cpu time
+   * @return float The cpu time for which the process ran in seconds
+   */
+  public function getUsedCpuTime(): float {
+    return 0;
+  }
+
+  /**
+   * Compares the stats to the cpu time limit
+   * @param float $secondsLimit Limiting amount of milliseconds
+   * @return boolean The result
+   */
+  public function isCpuTimeOK(float $secondsLimit): bool {
+    return false;
   }
 
   /**

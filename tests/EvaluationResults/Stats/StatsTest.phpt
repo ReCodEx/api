@@ -5,6 +5,9 @@ include '../../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\EvaluationResults\Stats;
 
+/**
+ * @testCase
+ */
 class TestStats extends Tester\TestCase
 {
   static $sample = [
@@ -24,10 +27,18 @@ class TestStats extends Tester\TestCase
     Assert::equal(0, $stats->getExitCode());
     Assert::equal(6032, $stats->getUsedMemory());
     Assert::equal(0.092, $stats->getUsedWallTime());
+    Assert::equal(0.037, $stats->getUsedCpuTime());
     Assert::equal("This is a random message", $stats->getMessage());
   }
 
-  public function testTimeLimit() {
+  public function testCpuTimeLimit() {
+    $stats = new Stats(array_merge(self::$sample, [ "time" => 0.5 ]));
+    Assert::equal(0.5, $stats->getUsedCpuTime());
+    Assert::equal(TRUE, $stats->isCpuTimeOK(1));
+    Assert::equal(FALSE, $stats->isCpuTimeOK(0.4));
+  }
+
+  public function testWallTimeLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "wall-time" => 0.5 ]));
     Assert::equal(0.5, $stats->getUsedWallTime());
     Assert::equal(TRUE, $stats->isWallTimeOK(1));
@@ -59,7 +70,13 @@ class TestStats extends Tester\TestCase
     Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'memory' field.");
   }
 
-  public function testMissingTime() {
+  public function testMissingCpuTime() {
+    $data = self::$sample;
+    unset($data["time"]);
+    Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'time' field.");
+  }
+
+  public function testMissingWallTime() {
     $data = self::$sample;
     unset($data["wall-time"]);
     Assert::exception(function () use ($data) { new Stats($data); }, 'App\Exceptions\ResultsLoadingException', "Submission Evaluation Failed - Results loading or parsing failed - Sandbox results do not include the 'wall-time' field.");
