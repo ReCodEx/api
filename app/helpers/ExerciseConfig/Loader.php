@@ -198,12 +198,21 @@ class Loader {
       $limits->setWallTime(floatval($data[Limits::WALL_TIME_KEY]));
     }
 
+    if (isset($data[Limits::CPU_TIME_KEY])) {
+      $limits->setCpuTime(floatval($data[Limits::CPU_TIME_KEY]));
+    }
+
     if (isset($data[Limits::MEMORY_KEY])) {
       $limits->setMemoryLimit(intval($data[Limits::MEMORY_KEY]));
     }
 
     if (isset($data[Limits::PARALLEL_KEY])) {
       $limits->setParallel(intval($data[Limits::PARALLEL_KEY]));
+    }
+
+    // at least one of the time limits has to be defined
+    if (!isset($data[Limits::WALL_TIME_KEY]) && !isset($data[Limits::CPU_TIME_KEY])) {
+      throw new ExerciseConfigException("Test $testId does not define any time limits");
     }
 
     return $limits;

@@ -211,7 +211,7 @@ class TestBaseCompiler extends Tester\TestCase
     [ // groupB
       "1" => [
         "memory" => 654,
-        "wall-time" => 321.0
+        "cpu-time" => 321.0
       ]
     ]
   ];
@@ -412,7 +412,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
-    Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
+    Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getTimeLimit());
 
     $testAJudgeTask = $jobConfig->getTasks()[11];
     Assert::equal("testA.testPipeline.judge.65525", $testAJudgeTask->getId());
