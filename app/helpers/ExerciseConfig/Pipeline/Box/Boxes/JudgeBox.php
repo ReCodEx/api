@@ -120,9 +120,9 @@ class JudgeBox extends Box
         'recodex-judge-float-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-normal', ['-rn']],   // judge comparing float values (which treats \n as normal whitespace)
         'recodex-judge-shuffle' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i']],         // judge ignoring order of tokens on a line
         'recodex-judge-shuffle-rows' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-r']],    // judge ignoring order of rows
-        'recodex-judge-shuffle-all' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i','-r']],// judge ignoring order of tokens on a each line and order of rows
-        'recodex-judge-shuffle-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-i','-n']], // judge ignoring order of tokens (which treats \n ...)
-        'diff' => ["/usr/bin/diff", []],                                                               // diff (binary-safe) judge
+        'recodex-judge-shuffle-all' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-ir']],    // judge ignoring order of tokens on a each line and order of rows
+        'recodex-judge-shuffle-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-in']],// judge ignoring order of tokens (which treats \n ...)
+        'diff' => ["/usr/bin/diff", []],                                                                  // diff (binary-safe) judge
       ];
     }
 
