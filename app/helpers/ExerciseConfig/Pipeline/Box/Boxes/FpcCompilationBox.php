@@ -22,7 +22,7 @@ class FpcCompilationBox extends CompilationBox
   /** Type key */
   public static $FPC_TYPE = "fpc";
   public static $FPC_BINARY = "/usr/bin/fpc";
-  public static $SOURCE_FILE_PORT_KEY = "source-file";
+  public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "FreePascal Compilation";
 
@@ -38,7 +38,7 @@ class FpcCompilationBox extends CompilationBox
       self::$initialized = true;
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
@@ -96,28 +96,36 @@ class FpcCompilationBox extends CompilationBox
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    $task = $this->compileBaseTask($params);
-    $task->setCommandBinary(self::$FPC_BINARY);
+    $tasks = [];
 
-    $args = [];
-    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    foreach ($sourceFiles as $sourceFile) {
+      $task = $this->compileBaseTask($params);
+      $task->setCommandBinary(self::$FPC_BINARY);
+
+      $args = [];
+      if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
+        $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+      }
+      $args = array_merge(
+        $args,
+        [
+          $sourceFile,
+          "-o" . $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
+            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+        ]
+      );
+      $task->setCommandArguments($args);
+
+      // add task to whole lotta of tasks
+      $tasks[] = $task;
     }
-    $args = array_merge($args,
-      [
-        $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)
-          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
-        "-o" . $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
-          ->getPrefixedValue(ConfigParams::$EVAL_DIR)
-      ]
-    );
-    $task->setCommandArguments($args);
 
     // check if file produced by compilation was successfully created
     $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
     $exists = $this->compileExistsTask([$binary]);
 
-    return [$task, $exists];
+    return array_merge($tasks, [$exists]);
   }
 
 }

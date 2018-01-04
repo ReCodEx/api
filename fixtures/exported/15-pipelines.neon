@@ -51,7 +51,7 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig11:
 		__construct:
-			- "boxes:\n    - { name: output, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: source, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: source-file } } }\n    - { name: compile, type: fpc, portsIn: { args: { type: 'string[]', value: args }, source-file: { type: file, value: source-file } }, portsOut: { binary-file: { type: file, value: binary-file } } }\nvariables:\n    - { name: args, type: 'string[]', value: ['-O2', '-Sg', '-Ci', '-Cr', '-Ct'] }\n    - { name: binary-file, type: file, value: a.out }\n    - { name: source-file, type: file, value: '' }\n"
+			- "boxes:\n    - { name: output, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compile, type: fpc, portsIn: { args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\nvariables:\n    - { name: args, type: 'string[]', value: ['-O2', '-Sg', '-Ci', '-Cr', '-Ct'] }\n    - { name: binary-file, type: file, value: a.out }\n    - { name: source-files, type: 'file[]', value: '' }\n"
 			- @demoAdmin
 
 	pipelineConfig12:
