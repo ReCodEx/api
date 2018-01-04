@@ -14,6 +14,9 @@ use App\Helpers\JobConfig\Tasks\ExecutionTaskType;
 use App\Helpers\JobConfig\TestConfig;
 
 
+/**
+ * @testCase
+ */
 class TestTestResult extends Tester\TestCase
 {
 
@@ -39,6 +42,7 @@ class TestTestResult extends Tester\TestCase
         [
           "hw-group-id" => "A",
           "memory" => 8096,
+          "time" => 2.0,
           "wall-time" => 1.0
         ]
       ]
@@ -113,6 +117,8 @@ class TestTestResult extends Tester\TestCase
     Assert::same(6032, $res->getUsedMemory());
     Assert::same(0.092/1.0, $res->getUsedWallTimeRatio());
     Assert::same(0.092, $res->getUsedWallTime());
+    Assert::same(0.037/2.0, $res->getUsedCpuTimeRatio());
+    Assert::same(0.037, $res->getUsedCpuTime());
     Assert::same("This is a random message", $res->getMessage());
   }
 
@@ -120,6 +126,7 @@ class TestTestResult extends Tester\TestCase
     $execCfg = self::$execCfg;
     $execCfg["sandbox"]["limits"][0]["memory"] = 1024;
     $execCfg["sandbox"]["limits"][0]["wall-time"] = 0.01;
+    $execCfg["sandbox"]["limits"][0]["time"] = 0.02;
 
     $cfg = new TestConfig(
       "some ID",
@@ -145,6 +152,8 @@ class TestTestResult extends Tester\TestCase
     Assert::same(6032, $res->getUsedMemory());
     Assert::same(0.092/0.01, $res->getUsedWallTimeRatio());
     Assert::same(0.092, $res->getUsedWallTime());
+    Assert::same(0.037/0.02, $res->getUsedCpuTimeRatio());
+    Assert::same(0.037, $res->getUsedCpuTime());
     Assert::same("This is a random message", $res->getMessage());
   }
 

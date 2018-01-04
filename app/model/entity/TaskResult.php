@@ -13,10 +13,11 @@ class TaskResult implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  public function __construct(string $taskName, float $usedTime, int $usedMemory,
-      string $output, TestResult $result) {
+  public function __construct(string $taskName, float $usedWallTime, float $usedCpuTime,
+                              int $usedMemory, string $output, TestResult $result) {
     $this->taskName = $taskName;
-    $this->usedTime = $usedTime;
+    $this->usedWallTime = $usedWallTime;
+    $this->usedCpuTime = $usedCpuTime;
     $this->usedMemory = $usedMemory;
     $this->output = $output;
     $this->testResult = $result;
@@ -37,7 +38,12 @@ class TaskResult implements JsonSerializable
   /**
    * @ORM\Column(type="float")
    */
-  protected $usedTime;
+  protected $usedWallTime;
+
+  /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedCpuTime;
 
   /**
    * @ORM\Column(type="integer")
@@ -57,8 +63,9 @@ class TaskResult implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->taskName,
-      "usedTime" => $this->usedTime,
-      "usedMemory" => $this->usedMemory,
+      "wallTime" => $this->usedWallTime,
+      "cpuTime" => $this->usedCpuTime,
+      "memory" => $this->usedMemory,
       "output" => $this->output
     ];
   }
