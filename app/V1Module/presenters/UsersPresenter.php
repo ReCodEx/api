@@ -280,6 +280,30 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
+   * If user is registered externally, add local account as another login method.
+   * Created password is empty and has to be changed in order to use it.
+   * @POST
+   * @param string $id
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   * @throws InvalidArgumentException
+   */
+  public function actionCreateLocalAccount(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canCreateLocalAccount($user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    if ($user->hasLocalAccounts()) {
+      throw new BadRequestException("User is already registered locally");
+    }
+
+    Login::createLogin($user, $user->getEmail(), "");
+    $this->users->flush();
+    $this->sendSuccessResponse($user);
+  }
+
+  /**
    * Get a list of groups for a user
    * @GET
    * @param string $id Identifier of the user

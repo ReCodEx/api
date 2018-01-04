@@ -76,6 +76,7 @@ class ExternalServiceAuthenticator {
    * @param array $credentials
    * @return User
    * @throws WrongCredentialsException
+   * @throws InvalidStateException
    */
   public function authenticate(IExternalLoginService $service, ...$credentials) {
     $user = NULL;
@@ -103,6 +104,7 @@ class ExternalServiceAuthenticator {
    * @param array ...$credentials
    * @return User
    * @throws WrongCredentialsException
+   * @throws InvalidStateException
    */
   public function register(IExternalLoginService $service, Instance $instance, ...$credentials): User {
     $userData = $service->getUser(...$credentials); // throws if the user cannot be logged in

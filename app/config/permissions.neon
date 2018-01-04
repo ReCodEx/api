@@ -167,6 +167,7 @@ permissions:
           - viewInstances
           - viewGroups
           - viewDetail
+          - createLocalAccount
       conditions: user.isSameUser
 
     ##########################

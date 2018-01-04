@@ -9,7 +9,7 @@ use App\Exceptions\NotFoundException;
 
 
 /**
- * @method findOrThrow(string $id)
+ * @method User findOrThrow(string $id)
  */
 class Users extends BaseSoftDeleteRepository {
   public function __construct(EntityManager $em) {

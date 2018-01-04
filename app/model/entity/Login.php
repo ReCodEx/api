@@ -78,8 +78,8 @@ class Login
    */
   public function passwordsMatch($password) {
     if (empty($this->passwordHash) && empty($password)) {
-      // quite special situation, but can happen if user register using CAS and
-      // already have existing local account
+      // quite special situation, but can happen if user registered using CAS
+      // and already have existing local account
       return TRUE;
     }
 
@@ -94,6 +94,14 @@ class Login
     return FALSE;
   }
 
+  /**
+   * Factory method.
+   * @param User $user
+   * @param string $email
+   * @param string $password
+   * @return Login
+   * @throws InvalidArgumentException
+   */
   public static function createLogin(User $user, string $email, string $password) {
     if (Validators::isEmail($email) === FALSE) {
       throw new InvalidArgumentException("email", "Username must be a valid email address.");
@@ -103,6 +111,8 @@ class Login
     $login->username = $email;
     $login->passwordHash = self::hashPassword($password);
     $login->user = $user;
+
+    $user->addLogin($login);
     return $login;
   }
 

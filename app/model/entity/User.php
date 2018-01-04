@@ -30,6 +30,7 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
+ * @method Collection getLogins()
  */
 class User implements JsonSerializable
 {
@@ -272,9 +273,18 @@ class User implements JsonSerializable
   protected $role;
 
   /**
-   * @ORM\OneToMany(targetEntity="Login", mappedBy="user")
+   * @ORM\OneToMany(targetEntity="Login", mappedBy="user", cascade={"all"})
    */
   protected $logins;
+
+  /**
+   * Add login to user.
+   * @param Login $login
+   */
+  public function addLogin(Login $login) {
+    $this->logins->add($login);
+  }
+
 
   public function getPublicData(): array {
     return [
@@ -316,4 +326,13 @@ class User implements JsonSerializable
       "degreesAfterName" => $this->degreesAfterName,
     ];
   }
+
+  /**
+   * Returns true if the user entity is associated with a local login entity.
+   * @return bool
+   */
+  public function hasLocalAccounts(): bool {
+    return !$this->logins->isEmpty();
+  }
+
 }
