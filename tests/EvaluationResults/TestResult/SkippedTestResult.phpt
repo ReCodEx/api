@@ -86,7 +86,7 @@ class TestSkippedTestResult extends Tester\TestCase
     Assert::false($res->didExecutionMeetLimits());
     Assert::same(\App\Helpers\EvaluationResults\IStats::EXIT_CODE_UNKNOWN, $res->getExitCode());
     Assert::same(0.0, $res->getUsedMemoryRatio());
-    Assert::same(0.0, $res->getUsedTimeRatio());
+    Assert::same(0.0, $res->getUsedWallTimeRatio());
     Assert::same("", $res->getMessage());
   }
 

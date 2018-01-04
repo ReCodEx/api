@@ -154,12 +154,12 @@ class TestResult {
   }
 
   /**
-   * Checks if the execution time of all tasks meets the limit
+   * Checks if the execution wall time of all tasks meets the limit
    * @return boolean The result
    */
-  public function isTimeOK(): bool {
+  public function isWallTimeOK(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isTimeOK() === FALSE) {
+      if ($interpretation->isWallTimeOK() === FALSE) {
         return FALSE;
       }
     }
@@ -221,28 +221,28 @@ class TestResult {
   }
 
   /**
-   * Get maximum used time ratio of all tasks.
+   * Get maximum used wall time ratio of all tasks.
    * @return float The value in [0.0, 1.0]
    */
-  public function getUsedTimeRatio(): float {
+  public function getUsedWallTimeRatio(): float {
     $maxRatio = 0.0;
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedTimeRatio() > $maxRatio) {
-        $maxRatio = $interpretation->getUsedTimeRatio();
+      if ($interpretation->getUsedWallTimeRatio() > $maxRatio) {
+        $maxRatio = $interpretation->getUsedWallTimeRatio();
       }
     }
     return $maxRatio;
   }
 
   /**
-   * Get maximum used time of all tasks.
+   * Get maximum used wall time of all tasks.
    * @return float in seconds
    */
-  public function getUsedTime(): float {
+  public function getUsedWallTime(): float {
     $maxTime = 0.0;
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedTime() > $maxTime) {
-        $maxTime = $interpretation->getUsedTime();
+      if ($interpretation->getUsedWallTime() > $maxTime) {
+        $maxTime = $interpretation->getUsedWallTime();
       }
     }
     return $maxTime;

@@ -36,9 +36,9 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(TRUE, $interpretation->isTimeOK());
-    Assert::equal(0.092 / 0.1, $interpretation->getUsedTimeRatio());
-    Assert::equal(0.092, $interpretation->getUsedTime());
+    Assert::equal(TRUE, $interpretation->isWallTimeOK());
+    Assert::equal(0.092 / 0.1, $interpretation->getUsedWallTimeRatio());
+    Assert::equal(0.092, $interpretation->getUsedWallTime());
   }
 
   public function testTimeSame() {
@@ -46,9 +46,9 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.1 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(TRUE, $interpretation->isTimeOK());
-    Assert::equal(1.0, $interpretation->getUsedTimeRatio());
-    Assert::equal(0.1, $interpretation->getUsedTime());
+    Assert::equal(TRUE, $interpretation->isWallTimeOK());
+    Assert::equal(1.0, $interpretation->getUsedWallTimeRatio());
+    Assert::equal(0.1, $interpretation->getUsedWallTime());
   }
 
   public function testTimeExceeded() {
@@ -56,9 +56,9 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.037 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isTimeOK());
-    Assert::equal(0.1 / 0.037, $interpretation->getUsedTimeRatio());
-    Assert::equal(0.1, $interpretation->getUsedTime());
+    Assert::equal(FALSE, $interpretation->isWallTimeOK());
+    Assert::equal(0.1 / 0.037, $interpretation->getUsedWallTimeRatio());
+    Assert::equal(0.1, $interpretation->getUsedWallTime());
   }
 
   public function testMemoryUnused() {
