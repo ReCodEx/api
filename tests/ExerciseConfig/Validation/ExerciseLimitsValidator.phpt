@@ -52,8 +52,8 @@ class TestExerciseLimitsValidator extends Tester\TestCase
 
   public function testDifferentTests() {
     $limits = new ExerciseLimits();
-    $limits->addLimits("3", Limits::create(2.0, 10, 1));
-    $limits->addLimits("4", Limits::create(2.0, 10, 1));
+    $limits->addLimits("3", Limits::create(2.0, 3.0, 10, 1));
+    $limits->addLimits("4", Limits::create(2.0, 3.0, 10, 1));
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
@@ -65,8 +65,8 @@ class TestExerciseLimitsValidator extends Tester\TestCase
 
   public function testCorrect() {
     $limits = new ExerciseLimits();
-    $limits->addLimits("1", Limits::create(2.0, 10, 1));
-    $limits->addLimits("2", Limits::create(2.0, 10, 1));
+    $limits->addLimits("1", Limits::create(2.0, 3.0, 10, 1));
+    $limits->addLimits("2", Limits::create(2.0, 3.0, 10, 1));
 
     $exercise = $this->createExercise();
     $this->addTwoTestsToExercise($exercise);
