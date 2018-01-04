@@ -23,15 +23,15 @@ class TestStats extends Tester\TestCase
     $stats = new Stats(self::$sample);
     Assert::equal(0, $stats->getExitCode());
     Assert::equal(6032, $stats->getUsedMemory());
-    Assert::equal(0.092, $stats->getUsedTime());
+    Assert::equal(0.092, $stats->getUsedWallTime());
     Assert::equal("This is a random message", $stats->getMessage());
   }
 
   public function testTimeLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "wall-time" => 0.5 ]));
-    Assert::equal(0.5, $stats->getUsedTime());
-    Assert::equal(TRUE, $stats->isTimeOK(1));
-    Assert::equal(FALSE, $stats->isTimeOK(0.4));
+    Assert::equal(0.5, $stats->getUsedWallTime());
+    Assert::equal(TRUE, $stats->isWallTimeOK(1));
+    Assert::equal(FALSE, $stats->isWallTimeOK(0.4));
   }
 
   public function testMemoryLimit() {

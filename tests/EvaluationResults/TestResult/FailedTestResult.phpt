@@ -95,7 +95,7 @@ class TestFailedTestResult extends Tester\TestCase
     Assert::true($res->didExecutionMeetLimits());
     Assert::same(10, $res->getExitCode());
     Assert::same(0.8, $res->getUsedMemoryRatio());
-    Assert::same(0.092, $res->getUsedTimeRatio());
+    Assert::same(0.092, $res->getUsedWallTimeRatio());
     Assert::same("This is a random message", $res->getMessage());
   }
 

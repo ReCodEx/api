@@ -24,7 +24,7 @@ class SkippedStats implements IStats {
    * Get total amount of consumed time
    * @return float The time for which the process ran in seconds
    */
-  public function getUsedTime(): float {
+  public function getUsedWallTime(): float {
     return 0;
   }
 
@@ -33,7 +33,7 @@ class SkippedStats implements IStats {
    * @param  int     $secondsLimit Limiting amout of milliseconds
    * @return boolean The result
    */
-  public function isTimeOK(float $secondsLimit): bool {
+  public function isWallTimeOK(float $secondsLimit): bool {
     return FALSE;
   }
 

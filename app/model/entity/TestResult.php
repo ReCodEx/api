@@ -30,9 +30,9 @@ class TestResult implements JsonSerializable
     $this->usedMemoryRatio = $result->getUsedMemoryRatio();
     $this->usedMemory = $result->getUsedMemory();
     $this->memoryExceeded = !$result->isMemoryOK();
-    $this->usedTimeRatio = $result->getUsedTimeRatio();
-    $this->usedTime = $result->getUsedTime();
-    $this->timeExceeded = !$result->isTimeOK();
+    $this->usedTimeRatio = $result->getUsedWallTimeRatio();
+    $this->usedTime = $result->getUsedWallTime();
+    $this->timeExceeded = !$result->isWallTimeOK();
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
     $this->stats = implode(",", array_map(function ($stat) { return (string) $stat; }, $result->getStats()));
@@ -40,7 +40,7 @@ class TestResult implements JsonSerializable
     $this->tasks = new ArrayCollection;
     foreach ($result->getExecutionResults() as $executionResult) {
       $stats = $executionResult->getStats();
-      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedTime(),
+      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedWallTime(),
           $stats->getUsedMemory(), $executionResult->getOutput(), $this);
       $this->tasks->add($newTask);
     }

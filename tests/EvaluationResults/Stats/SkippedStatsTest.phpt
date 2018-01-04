@@ -24,12 +24,12 @@ class TestSkippedStats extends Tester\TestCase
     $stats = new SkippedStats();
     Assert::equal(SkippedStats::EXIT_CODE_UNKNOWN, $stats->getExitCode());
     Assert::equal(0, $stats->getUsedMemory());
-    Assert::equal(0.0, $stats->getUsedTime());
+    Assert::equal(0.0, $stats->getUsedWallTime());
     Assert::false($stats->wasKilled());
     Assert::equal("SKIPPED", (string) $stats);
     Assert::false($stats->doesMeetAllCriteria(new Limits([ 'hw-group-id' => 'X', 'time' => 0.0, 'memory' => 0 ])));
     Assert::false($stats->isMemoryOK(0));
-    Assert::false($stats->isTimeOK(0.0));
+    Assert::false($stats->isWallTimeOK(0.0));
   }
 }
 

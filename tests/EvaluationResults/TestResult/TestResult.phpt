@@ -111,8 +111,8 @@ class TestTestResult extends Tester\TestCase
     Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/8096.0, $res->getUsedMemoryRatio());
     Assert::same(6032, $res->getUsedMemory());
-    Assert::same(0.092/1.0, $res->getUsedTimeRatio());
-    Assert::same(0.092, $res->getUsedTime());
+    Assert::same(0.092/1.0, $res->getUsedWallTimeRatio());
+    Assert::same(0.092, $res->getUsedWallTime());
     Assert::same("This is a random message", $res->getMessage());
   }
 
@@ -143,8 +143,8 @@ class TestTestResult extends Tester\TestCase
     Assert::same($execRes[0]->getExitCode(), $res->getExitCode());
     Assert::same(6032.0/1024.0, $res->getUsedMemoryRatio());
     Assert::same(6032, $res->getUsedMemory());
-    Assert::same(0.092/0.01, $res->getUsedTimeRatio());
-    Assert::same(0.092, $res->getUsedTime());
+    Assert::same(0.092/0.01, $res->getUsedWallTimeRatio());
+    Assert::same(0.092, $res->getUsedWallTime());
     Assert::same("This is a random message", $res->getMessage());
   }
 

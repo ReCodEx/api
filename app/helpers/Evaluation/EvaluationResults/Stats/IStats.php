@@ -20,17 +20,17 @@ interface IStats {
   public function doesMeetAllCriteria(Limits $limits): bool;
 
   /**
-   * Get total amount of consumed time
-   * @return float The time for which the process ran in seconds
+   * Get total amount of consumed wall time
+   * @return float The wall time for which the process ran in seconds
    */
-  public function getUsedTime(): float;
+  public function getUsedWallTime(): float;
 
   /**
-   * Compares the stats to the time limit
-   * @param  int     $secondsLimit Limiting amout of milliseconds
+   * Compares the stats to the wall time limit
+   * @param float $secondsLimit Limiting amount of milliseconds
    * @return boolean The result
    */
-  public function isTimeOK(float $secondsLimit): bool;
+  public function isWallTimeOK(float $secondsLimit): bool;
 
   /**
    * Get total amount of consumed memory

@@ -12,7 +12,7 @@ use JsonSerializable;
 class Limits implements JsonSerializable {
   /** Hardware group identification key */
   const HW_GROUP_ID_KEY = "hw-group-id";
-  /** Time limit key */
+  /** Cpu time limit key */
   const TIME_KEY = "time";
   /** Wall time limit key */
   const WALL_TIME_KEY = "wall-time";
@@ -35,7 +35,7 @@ class Limits implements JsonSerializable {
 
   /** @var string ID of the hardware group */
   protected $id = "";
-  /** @var float Time limit */
+  /** @var float Time cpu limit */
   protected $time = 0;
   /** @var float Wall time limit */
   protected $wallTime = 0;
@@ -77,7 +77,7 @@ class Limits implements JsonSerializable {
   }
 
   /**
-   * Returns the time limit in seconds.
+   * Returns the cpu time limit in seconds.
    * @return float Number of seconds
    */
   public function getTimeLimit(): float {
@@ -85,7 +85,7 @@ class Limits implements JsonSerializable {
   }
 
   /**
-   * Set time limit in seconds.
+   * Set cpu time limit in seconds.
    * @param float $time time limit
    * @return $this
    */

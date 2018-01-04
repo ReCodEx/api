@@ -34,11 +34,11 @@ class StatsInterpretation {
   }
 
   /**
-   * Checks if the execution time meets the limit
+   * Checks if the execution wall time meets the limit
    * @return boolean The result
    */
-  public function isTimeOK(): bool {
-    return $this->limits === null || $this->stats->isTimeOK($this->limits->getWallTime());
+  public function isWallTimeOK(): bool {
+    return $this->limits === null || $this->stats->isWallTimeOK($this->limits->getWallTime());
   }
 
   /**
@@ -69,22 +69,22 @@ class StatsInterpretation {
   }
 
   /**
-   * Get percentage of used time
+   * Get percentage of used wall time
    * @return float Ratio between 0.0 and 1.0
    */
-  public function getUsedTimeRatio(): float {
+  public function getUsedWallTimeRatio(): float {
     if ($this->limits === null || $this->limits->getWallTime() === 0.0) {
       return 0;
     }
-    return floatval($this->stats->getUsedTime()) / floatval($this->limits->getWallTime());
+    return floatval($this->stats->getUsedWallTime()) / floatval($this->limits->getWallTime());
   }
 
   /**
-   * Get used time in seconds.
+   * Get used wall time in seconds.
    * @return float
    */
-  public function getUsedTime(): float {
-    return $this->stats->getUsedTime();
+  public function getUsedWallTime(): float {
+    return $this->stats->getUsedWallTime();
   }
 
 }
