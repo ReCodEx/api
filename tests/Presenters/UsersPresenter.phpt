@@ -3,6 +3,9 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Model\Entity\ExternalLogin;
+use App\Model\Entity\User;
+use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Users;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
@@ -28,6 +31,9 @@ class TestUsersPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Users */
   protected $users;
 
+  /** @var App\Model\Repository\ExternalLogins */
+  protected $externalLogins;
+
   /** @var  Nette\DI\Container */
   protected $container;
 
@@ -38,6 +44,7 @@ class TestUsersPresenter extends Tester\TestCase
     $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->users = $container->getByType(Users::class);
+    $this->externalLogins = $container->getByType(ExternalLogins::class);
   }
 
   protected function setUp()
@@ -87,7 +94,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    Assert::type(\App\Model\Entity\User::class, $result["payload"]);
+    Assert::type(User::class, $result["payload"]);
     Assert::same($user, $result["payload"]);
   }
 
@@ -117,7 +124,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::type(User::class, $updatedUser);
     Assert::equal($firstName, $updatedUser->getFirstName());
     Assert::equal($lastName, $updatedUser->getLastName());
     Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
@@ -159,7 +166,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::type(User::class, $updatedUser);
     Assert::equal($firstName, $updatedUser->getFirstName());
     Assert::equal($lastName, $updatedUser->getLastName());
     Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
@@ -203,7 +210,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(\App\Model\Entity\User::class, $updatedUser);
+    Assert::type(User::class, $updatedUser);
     Assert::equal($firstName, $updatedUser->getFirstName());
     Assert::equal($lastName, $updatedUser->getLastName());
     Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
@@ -288,13 +295,41 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $user = $result["payload"];
-    Assert::type(\App\Model\Entity\User::class, $user);
+    Assert::type(User::class, $user);
     Assert::equal($darkTheme, $user->getSettings()->getDarkTheme());
     Assert::equal($vimMode, $user->getSettings()->getVimMode());
     Assert::equal($defaultLanguage, $user->getSettings()->getDefaultLanguage());
     Assert::equal($newAssignmentEmails, $user->getSettings()->getNewAssignmentEmails());
     Assert::equal($assignmentDeadlineEmails, $user->getSettings()->getAssignmentDeadlineEmails());
     Assert::equal($submissionEvaluatedEmails, $user->getSettings()->getSubmissionEvaluatedEmails());
+  }
+
+  public function testCreateLocalAccount()
+  {
+    $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstance();
+    $user = new User("external@external.external", "firstName", "lastName", "", "", "student", $instance);
+    $external = new ExternalLogin($user, "test", $user->getEmail());
+
+    $this->users->persist($user);
+    $this->externalLogins->persist($external);
+
+    PresenterTestHelper::login($this->container, $user->getEmail());
+
+    // pre-test condition
+    Assert::equal(false, $user->hasLocalAccounts());
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createLocalAccount', 'id' => $user->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result["payload"];
+    Assert::equal($user->getId(), $payload->getId());
+    Assert::equal(true, $payload->hasLocalAccounts());
   }
 
   public function testSupervisorGroups()

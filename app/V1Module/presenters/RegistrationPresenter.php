@@ -118,10 +118,9 @@ class RegistrationPresenter extends BasePresenter {
       User::STUDENT_ROLE,
       $instance
     );
-    $login = Login::createLogin($user, $email, $password);
 
+    Login::createLogin($user, $email, $password);
     $this->users->persist($user);
-    $this->logins->persist($login);
 
     // email verification
     $this->emailVerificationHelper->process($user);

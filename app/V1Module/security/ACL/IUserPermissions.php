@@ -14,4 +14,5 @@ interface IUserPermissions {
   function canViewInstances($user): bool;
   function canDelete($user): bool;
   function canTakeOver($user): bool;
+  function canCreateLocalAccount($user): bool;
 }
