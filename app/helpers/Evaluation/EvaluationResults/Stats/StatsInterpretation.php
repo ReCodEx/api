@@ -42,6 +42,14 @@ class StatsInterpretation {
   }
 
   /**
+   * Checks if the execution cpu time meets the limit
+   * @return boolean The result
+   */
+  public function isCpuTimeOK(): bool {
+    return $this->limits === null || $this->stats->isCpuTimeOK($this->limits->getTimeLimit());
+  }
+
+  /**
    * Checks if the allocated time meets the limit
    * @return boolean The result
    */
@@ -85,6 +93,25 @@ class StatsInterpretation {
    */
   public function getUsedWallTime(): float {
     return $this->stats->getUsedWallTime();
+  }
+
+  /**
+   * Get percentage of used cpu time
+   * @return float Ratio between 0.0 and 1.0
+   */
+  public function getUsedCpuTimeRatio(): float {
+    if ($this->limits === null || $this->limits->getTimeLimit() === 0.0) {
+      return 0;
+    }
+    return floatval($this->stats->getUsedCpuTime()) / floatval($this->limits->getTimeLimit());
+  }
+
+  /**
+   * Get used cpu time in seconds.
+   * @return float
+   */
+  public function getUsedCpuTime(): float {
+    return $this->stats->getUsedCpuTime();
   }
 
 }

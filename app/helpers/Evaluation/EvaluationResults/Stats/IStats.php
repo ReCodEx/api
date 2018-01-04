@@ -33,6 +33,19 @@ interface IStats {
   public function isWallTimeOK(float $secondsLimit): bool;
 
   /**
+   * Get total amount of consumed cpu time
+   * @return float The cpu time for which the process ran in seconds
+   */
+  public function getUsedCpuTime(): float;
+
+  /**
+   * Compares the stats to the cpu time limit
+   * @param float $secondsLimit Limiting amount of milliseconds
+   * @return boolean The result
+   */
+  public function isCpuTimeOK(float $secondsLimit): bool;
+
+  /**
    * Get total amount of consumed memory
    * @return int The ammout of memory the process allocated
    */

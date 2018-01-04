@@ -26,6 +26,9 @@ class Stats implements IStats {
   /** @var float Wall time used to complete the task */
   private $wallTime;
 
+  /** @var float Cpu time used to complete the task */
+  private $cpuTime;
+
   /** @var int Memory used by the executable */
   private $memory;
 
@@ -64,6 +67,11 @@ class Stats implements IStats {
     }
     $this->wallTime = $data[self::WALL_TIME_KEY];
 
+    if (!isset($data[self::CPU_TIME_KEY])) {
+      throw new ResultsLoadingException("Sandbox results do not include the '" . self::CPU_TIME_KEY . "' field.");
+    }
+    $this->cpuTime = $data[self::CPU_TIME_KEY];
+
     if (!isset($data[self::MESSAGE_KEY])) {
       throw new ResultsLoadingException("Sandbox results do not include the '" . self::MESSAGE_KEY ."' field.");
     }
@@ -86,7 +94,9 @@ class Stats implements IStats {
    * @return boolean The result
    */
   public function doesMeetAllCriteria(Limits $limits): bool {
-    return $this->isWallTimeOK($limits->getWallTime()) && $this->isMemoryOK($limits->getMemoryLimit());
+    return $this->isWallTimeOK($limits->getWallTime()) &&
+      $this->isCpuTimeOK($limits->getTimeLimit()) &&
+      $this->isMemoryOK($limits->getMemoryLimit());
   }
 
   /**
@@ -107,6 +117,26 @@ class Stats implements IStats {
       return true;
     }
     return $this->getUsedWallTime() <= $secondsLimit;
+  }
+
+  /**
+   * Get cpu time used by the program
+   * @return float The cpu time for which the process ran in seconds
+   */
+  public function getUsedCpuTime(): float {
+    return $this->cpuTime;
+  }
+
+  /**
+   * Compares the stats to the cpu time limit.
+   * @param float|int $secondsLimit Limiting amount of milliseconds
+   * @return bool The result
+   */
+  public function isCpuTimeOK(float $secondsLimit): bool {
+    if ($secondsLimit === 0.0) {
+      return true;
+    }
+    return $this->getUsedCpuTime() <= $secondsLimit;
   }
 
   /**
