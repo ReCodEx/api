@@ -30,9 +30,12 @@ class TestResult implements JsonSerializable
     $this->usedMemoryRatio = $result->getUsedMemoryRatio();
     $this->usedMemory = $result->getUsedMemory();
     $this->memoryExceeded = !$result->isMemoryOK();
-    $this->usedTimeRatio = $result->getUsedWallTimeRatio();
-    $this->usedTime = $result->getUsedWallTime();
-    $this->timeExceeded = !$result->isWallTimeOK();
+    $this->usedWallTimeRatio = $result->getUsedWallTimeRatio();
+    $this->usedWallTime = $result->getUsedWallTime();
+    $this->wallTimeExceeded = !$result->isWallTimeOK();
+    $this->usedCpuTimeRatio = $result->getUsedCpuTimeRatio();
+    $this->usedCpuTime = $result->getUsedCpuTime();
+    $this->cpuTimeExceeded = !$result->isCpuTimeOK();
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
     $this->stats = implode(",", array_map(function ($stat) { return (string) $stat; }, $result->getStats()));
@@ -41,7 +44,7 @@ class TestResult implements JsonSerializable
     foreach ($result->getExecutionResults() as $executionResult) {
       $stats = $executionResult->getStats();
       $newTask = new TaskResult($executionResult->getId(), $stats->getUsedWallTime(),
-          $stats->getUsedMemory(), $executionResult->getOutput(), $this);
+          $stats->getUsedCpuTime(), $stats->getUsedMemory(), $executionResult->getOutput(), $this);
       $this->tasks->add($newTask);
     }
   }
@@ -91,17 +94,32 @@ class TestResult implements JsonSerializable
   /**
     * @ORM\Column(type="boolean")
     */
-  protected $timeExceeded;
+  protected $wallTimeExceeded;
 
   /**
    * @ORM\Column(type="float")
    */
-  protected $usedTimeRatio;
+  protected $usedWallTimeRatio;
 
   /**
    * @ORM\Column(type="float")
    */
-  protected $usedTime;
+  protected $usedWallTime;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $cpuTimeExceeded;
+
+  /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedCpuTimeRatio;
+
+  /**
+   * @ORM\Column(type="float")
+   */
+  protected $usedCpuTime;
 
   /**
     * @ORM\Column(type="integer")
@@ -129,17 +147,21 @@ class TestResult implements JsonSerializable
   protected $tasks;
 
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
-    $time = NULL;
-    $timeRatio = NULL;
+    $wallTime = NULL;
+    $wallTimeRatio = NULL;
+    $cpuTime = NULL;
+    $cpuTimeRatio = NULL;
     $memory = NULL;
     $memoryRatio = NULL;
 
     if ($canViewRatios) {
-      $timeRatio = $this->usedTimeRatio;
+      $wallTimeRatio = $this->usedWallTimeRatio;
+      $cpuTimeRatio = $this->usedCpuTimeRatio;
       $memoryRatio = $this->usedMemoryRatio;
     }
     if ($canViewValues) {
-      $time = $this->usedTime;
+      $wallTime = $this->usedWallTime;
+      $cpuTime = $this->usedCpuTime;
       $memory = $this->usedMemory;
     }
 
@@ -150,12 +172,15 @@ class TestResult implements JsonSerializable
       "status" => $this->status,
       "score" => $this->score,
       "memoryExceeded" => $this->memoryExceeded,
-      "timeExceeded" => $this->timeExceeded,
+      "wallTimeExceeded" => $this->wallTimeExceeded,
+      "cpuTimeExceeded" => $this->cpuTimeExceeded,
       "exitCode" => $this->exitCode,
       "message" => $this->message,
-      "timeRatio" => $timeRatio,
+      "wallTimeRatio" => $wallTimeRatio,
+      "cpuTimeRatio" => $cpuTimeRatio,
       "memoryRatio" => $memoryRatio,
-      "time" => $time,
+      "wallTime" => $wallTime,
+      "cpuTime" => $cpuTime,
       "memory" => $memory
     ];
   }

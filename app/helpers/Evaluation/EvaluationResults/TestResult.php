@@ -167,6 +167,19 @@ class TestResult {
   }
 
   /**
+   * Checks if the execution cpu time of all tasks meets the limit
+   * @return boolean The result
+   */
+  public function isCpuTimeOK(): bool {
+    foreach ($this->statsInterpretation as $interpretation) {
+      if ($interpretation->isCpuTimeOK() === false) {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Checks if the execution memory of all tasks meets the limit
    * @return boolean The result
    */
@@ -243,6 +256,34 @@ class TestResult {
     foreach ($this->statsInterpretation as $interpretation) {
       if ($interpretation->getUsedWallTime() > $maxTime) {
         $maxTime = $interpretation->getUsedWallTime();
+      }
+    }
+    return $maxTime;
+  }
+
+  /**
+   * Get maximum used cpu time ratio of all tasks.
+   * @return float The value in [0.0, 1.0]
+   */
+  public function getUsedCpuTimeRatio(): float {
+    $maxRatio = 0.0;
+    foreach ($this->statsInterpretation as $interpretation) {
+      if ($interpretation->getUsedCpuTimeRatio() > $maxRatio) {
+        $maxRatio = $interpretation->getUsedCpuTimeRatio();
+      }
+    }
+    return $maxRatio;
+  }
+
+  /**
+   * Get maximum used cpu time of all tasks.
+   * @return float in seconds
+   */
+  public function getUsedCpuTime(): float {
+    $maxTime = 0.0;
+    foreach ($this->statsInterpretation as $interpretation) {
+      if ($interpretation->getUsedCpuTime() > $maxTime) {
+        $maxTime = $interpretation->getUsedCpuTime();
       }
     }
     return $maxTime;
