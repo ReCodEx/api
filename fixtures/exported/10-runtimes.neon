@@ -27,7 +27,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[pas, lpr]"
 			- GNU/Linux
 			- Pascal compiled with FreePascal
-			- "- name: \"source-file\"\r\n  type: \"file\"\r\n  value: \"*.{pas,lpr}\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{pas,lpr}\""
 
 	java:
 		__construct:

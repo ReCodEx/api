@@ -43,7 +43,7 @@ class UserStorage implements IUserStorage
    */
   function isAuthenticated()
   {
-    return $this->httpRequest->getHeader(self::AUTH_HEADER) !== NULL || $this->authenticated;
+    return $this->httpRequest->getHeader(self::AUTH_HEADER) !== null || $this->authenticated;
   }
 
   /**
@@ -51,9 +51,9 @@ class UserStorage implements IUserStorage
    * @param IIdentity $identity
    * @throws InvalidArgumentException
    */
-  function setIdentity(IIdentity $identity = NULL)
+  function setIdentity(IIdentity $identity = null)
   {
-    if ($identity !== NULL && !($identity instanceof Identity)) {
+    if ($identity !== null && !($identity instanceof Identity)) {
       throw new InvalidArgumentException("Wrong identity class");
     }
 
@@ -66,11 +66,11 @@ class UserStorage implements IUserStorage
    */
   function getIdentity()
   {
-    if ($this->cachedIdentity === NULL) {
+    if ($this->cachedIdentity === null) {
       $token = $this->accessManager->getGivenAccessToken($this->httpRequest);
 
-      if ($token === NULL) {
-        $this->cachedIdentity = new Identity(NULL, NULL);
+      if ($token === null) {
+        $this->cachedIdentity = new Identity(null, null);
         return $this->cachedIdentity;
       }
 
@@ -80,6 +80,20 @@ class UserStorage implements IUserStorage
     }
 
     return $this->cachedIdentity;
+  }
+
+  /**
+   * Returns current user entity from user identity, if any.
+   * @return ?\App\Model\Entity\User
+   */
+  function getUserData()
+  {
+    $identity = $this->getIdentity();
+    if ($identity && $identity instanceof Identity) {
+      return $identity->getUserData();
+    } else {
+      return null;
+    }
   }
 
   /**

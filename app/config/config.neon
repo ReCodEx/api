@@ -13,7 +13,7 @@ parameters:
     address: https://recodex.mff.cuni.cz:4000
     name: "ReCodEx API"
     description: "ReCodEx Code Examiner - API Server"
-    version: "1.1.1"
+    versionFormat: "{tag}"
 
   accessManager:
     leeway: 60
@@ -59,10 +59,10 @@ parameters:
         #port: 389
         #security: SSL
         bindName: "cunipersonalid"
-      oauth:
+      cas:
         baseUri: "https://idp.cuni.cz/cas/"
     fields:
-      oauth:
+      cas:
         ukco: "cunipersonalid"
         email: "mail"
         firstName: "givenname"
@@ -241,13 +241,13 @@ services:
 
   # external login services
   - App\Helpers\ExternalLogin\CAS\LDAPLoginService(%CAS.serviceId%, %CAS.options.ldap%, %CAS.fields.ldap%)
-  - App\Helpers\ExternalLogin\CAS\OAuthLoginService(%CAS.serviceId%, %CAS.options.oauth%, %CAS.fields.oauth%)
+  - App\Helpers\ExternalLogin\CAS\CASLoginService(%CAS.serviceId%, %CAS.options.cas%, %CAS.fields.cas%)
   - App\Helpers\ExternalLogin\ExternalServiceAuthenticator(
     @App\Model\Repository\ExternalLogins,
     @App\Model\Repository\Users,
     @App\Model\Repository\Logins,
     @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
-    @App\Helpers\ExternalLogin\CAS\OAuthLoginService,
+    @App\Helpers\ExternalLogin\CAS\CASLoginService,
   )
 
   # config objects
@@ -333,6 +333,7 @@ services:
   # views factories
   - App\Model\View\GroupViewFactory
   - App\Model\View\UserViewFactory
+  - App\Model\View\AssignmentSolutionViewFactory
 
 doctrine:
   user: 'root'

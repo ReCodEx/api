@@ -11,6 +11,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
+use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -64,6 +65,12 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public $evaluationLoadingHelper;
 
   /**
+   * @var AssignmentSolutionViewFactory
+   * @inject
+   */
+  public $assignmentSolutionViewFactory;
+
+    /**
    * Get information about solutions.
    * @GET
    * @param string $id Identifier of the solution
@@ -83,10 +90,9 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     }
 
     // fetch data
-    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
-    $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
-    $this->sendSuccessResponse($solution->getData($canViewDetails, $canViewValues, $canViewResubmissions));
+    $this->sendSuccessResponse(
+      $this->assignmentSolutionViewFactory->getSolutionData($solution)
+    );
   }
 
   /**
@@ -101,18 +107,17 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this solution evaluations");
     }
 
-    $submissions = array_filter($solution->getSubmissions()->getValues(),
-      function (AssignmentSolutionSubmission $submission) use ($solution) {
-        return $this->assignmentSolutionAcl->canViewEvaluation($solution, $submission);
-    });
+    $submissions = $this->assignmentSolutionAcl->canViewEvaluation($solution)
+      ? $solution->getSubmissions()->getValues()
+      : [];
 
     // display only data that the current user can view
     $submissions = array_map(function (AssignmentSolutionSubmission $submission) use ($solution) {
       // try to load evaluation if not present
       $this->evaluationLoadingHelper->loadEvaluation($submission);
 
-      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution);
+      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution);
       return $submission->getData($canViewDetails, $canViewValues);
     }, $submissions);
 
@@ -129,15 +134,15 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
     $solution = $submission->getAssignmentSolution();
-    if (!$this->assignmentSolutionAcl->canViewEvaluation($submission->getAssignmentSolution(), $submission)) {
+    if (!$this->assignmentSolutionAcl->canViewEvaluation($solution)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
 
     // try to load evaluation if not present
     $this->evaluationLoadingHelper->loadEvaluation($submission);
 
-    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution, $submission);
-    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution, $submission);
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution);
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution);
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
@@ -223,7 +228,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution(), $submission)) {
+    if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
 

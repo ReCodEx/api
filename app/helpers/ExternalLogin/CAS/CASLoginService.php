@@ -9,12 +9,13 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
 use App\Model\Entity\User;
-use GuzzleHttp\Psr7\Request;
 use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
+use Tracy\ILogger;
 
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Client;
 
 
@@ -29,7 +30,7 @@ use GuzzleHttp\Client;
  * This is hard to test on a local server, as the CAS will only reveal the sensitive
  * personal information to computers in the CUNI network.
  */
-class OAuthLoginService implements IExternalLoginService {
+class CASLoginService implements IExternalLoginService {
 
   /** @var string Unique identifier of this login service, for example "cas-uk" */
   private $serviceId;
@@ -41,9 +42,9 @@ class OAuthLoginService implements IExternalLoginService {
   public function getServiceId(): string { return $this->serviceId; }
 
   /**
-   * @return string The OAuth authentication
+   * @return string The CAS authentication
    */
-  public function getType(): string { return "oauth"; }
+  public function getType(): string { return "cas"; }
 
   /** @var string Name of JSON field containing user's UKCO */
   private $ukcoField;
@@ -67,12 +68,17 @@ class OAuthLoginService implements IExternalLoginService {
   private $casHttpBaseUri;
 
   /**
+   * @var ILogger
+   */
+  private $logger;
+
+  /**
    * Constructor
    * @param string $serviceId Identifier of this login service, must be unique
    * @param array $options
    * @param array $fields
    */
-  public function __construct(string $serviceId, array $options, array $fields) {
+  public function __construct(string $serviceId, array $options, array $fields, ILogger $logger) {
     $this->serviceId = $serviceId;
 
     // The field names of user's information stored in the CAS LDAP
@@ -85,6 +91,7 @@ class OAuthLoginService implements IExternalLoginService {
 
     // The CAS HTTP validation endpoint
     $this->casHttpBaseUri = Arrays::get($options, "baseUri", "https://idp.cuni.cz/cas/");
+    $this->logger = $logger;
   }
 
   /**
@@ -107,6 +114,30 @@ class OAuthLoginService implements IExternalLoginService {
   }
 
   /**
+   * Internal XML parsing routine for ticket response.
+   * @param string $ticket
+   * @param string $body String representation of the response body.
+   * @param string $namespace XML namespace URI, if detected.
+   * @return \SimpleXMLElement representing the response body.
+   * @throws WrongCredentialsException If the XML could not have been parsed.
+   */
+  private function parseXMLBody(string $ticket, string $body, string $namespace = '')
+  {
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_string($body, 'SimpleXMLElement', 0, $namespace);
+    $err = libxml_get_errors();
+    if ($err) {
+      $this->logger->log("CAS Ticket validation returned following response:\n$body", ILogger::DEBUG);
+      foreach ($err as $e) {
+        // Internal XML errors are logges as warnings
+        $this->logger->log($e, ILogger::WARNING);
+      }
+      throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+    }
+    return $xml;
+  }
+
+  /**
    * @param string $ticket
    * @param string $clientUrl
    * @return array
@@ -121,7 +152,18 @@ class OAuthLoginService implements IExternalLoginService {
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
       try {
-        $data = Json::decode($res->getBody(), Json::FORCE_ARRAY);
+        $body = (string)$res->getBody();
+
+        // Parse XML (twice, if necessary, to get right namespace) ...
+        $xml = $this->parseXMLBody($ticket, $body);
+        $namespaces = $xml->getDocNamespaces();
+        if ($namespaces) {
+          $namespace = empty($namespaces['cas']) ? reset($namespaces) : $namespaces['cas'];
+          $xml = $this->parseXMLBody($ticket, $body, $namespace);
+        }
+
+        // A trick that utilizes JSON serialization of SimpleXML objects to convert the XML into an array.
+        $data = JSON::decode(JSON::encode((array)$xml), JSON::FORCE_ARRAY);
       } catch (JsonException $e) {
         throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
       }
@@ -141,7 +183,7 @@ class OAuthLoginService implements IExternalLoginService {
   private function getValidationUrl($ticket, $clientUrl) {
     $service = urlencode($clientUrl);
     $ticket = urlencode($ticket);
-    return "{$this->casHttpBaseUri}serviceValidate?service={$service}&ticket={$ticket}&format=json";
+    return "{$this->casHttpBaseUri}p3/serviceValidate?service={$service}&ticket={$ticket}&format=xml";
   }
 
   /**
@@ -154,8 +196,9 @@ class OAuthLoginService implements IExternalLoginService {
    */
   private function getUserData($ticket, $data): UserData {
     try {
-      $info = Arrays::get($data, ["serviceResponse", "authenticationSuccess", "attributes"]);
+      $info = Arrays::get($data, ["authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
+      $this->logger->log("Ticket validation did not return successful response with attributes:\n" . var_export($data, true), ILogger::ERROR);
       throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
     }
 

@@ -27,7 +27,7 @@ parameters:
     options:
       ldap:
         hostname: "ldap.cuni.cz"
-      oauth:
+      cas:
         baseUri: "https://idp.cuni.cz/cas/"
 
   sis:

@@ -100,13 +100,16 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     /** @var Identity $identity */
     $identity = $this->getUser()->getIdentity();
 
-    if ($identity === NULL) {
+    if ($identity === null || $identity->getUserData() === null) {
       throw new ForbiddenRequestException();
     }
 
     return $identity->getUserData();
   }
 
+  /**
+   * @throws ForbiddenRequestException
+   */
   protected function getCurrentUserLocale(): string {
     return $this->getCurrentUser()->getSettings()->getDefaultLanguage();
   }
