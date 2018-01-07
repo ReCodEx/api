@@ -130,12 +130,43 @@ class Exercise implements JsonSerializable, IExercise
    */
   protected $isLocked;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isBroken;
+
   public function isPublic() {
     return $this->isPublic;
   }
 
   public function isLocked() {
     return $this->isLocked;
+  }
+
+  public function isBroken() {
+    return $this->isBroken;
+  }
+
+  public function setBroken(string $message) {
+    $this->isBroken = true;
+    $this->validationError = $message;
+  }
+
+  public function setNotBroken() {
+    $this->isBroken = false;
+  }
+
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $validationError;
+
+  public function getValidationError(): ?string {
+    if ($this->isBroken) {
+      return $this->validationError;
+    }
+
+    return null;
   }
 
   /**
@@ -206,6 +237,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->isPublic = $isPublic;
     $this->isLocked = $isLocked;
+    $this->isBroken = false;
     $this->groups = $groups;
     $this->attachmentFiles = $attachmentFiles;
     $this->exerciseLimits = $exerciseLimits;
@@ -341,7 +373,9 @@ class Exercise implements JsonSerializable, IExercise
       "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "attachmentFilesIds" => $this->getAttachmentFilesIds(),
-      "configurationType" => $this->configurationType
+      "configurationType" => $this->configurationType,
+      "isBroken" => $this->isBroken,
+      "validationError" => $this->getValidationError()
     ];
   }
 
