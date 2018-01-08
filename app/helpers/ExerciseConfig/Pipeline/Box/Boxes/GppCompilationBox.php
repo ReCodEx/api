@@ -22,8 +22,6 @@ class GppCompilationBox extends CompilationBox
   /** Type key */
   public static $GPP_TYPE = "g++";
   public static $GPP_BINARY = "/usr/bin/g++";
-  public static $SOURCE_FILES_PORT_KEY = "source-files";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "G++ Compilation";
 
   private static $initialized = false;
@@ -37,7 +35,7 @@ class GppCompilationBox extends CompilationBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -100,8 +98,8 @@ class GppCompilationBox extends CompilationBox
     $task->setCommandBinary(self::$GPP_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
     $task->setCommandArguments(
       array_merge(

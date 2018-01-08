@@ -22,8 +22,6 @@ class GccCompilationBox extends CompilationBox
   /** Type key */
   public static $GCC_TYPE = "gcc";
   public static $GCC_BINARY = "/usr/bin/gcc";
-  public static $SOURCE_FILES_PORT_KEY = "source-files";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "GCC Compilation";
 
   private static $initialized = false;
@@ -37,7 +35,7 @@ class GccCompilationBox extends CompilationBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -100,8 +98,8 @@ class GccCompilationBox extends CompilationBox
     $task->setCommandBinary(self::$GCC_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
     $task->setCommandArguments(
       array_merge(

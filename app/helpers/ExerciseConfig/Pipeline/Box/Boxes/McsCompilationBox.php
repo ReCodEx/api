@@ -23,7 +23,6 @@ class McsCompilationBox extends CompilationBox
   public static $MCS_TYPE = "mcs";
   public static $MCS_BINARY = "/usr/bin/mcs";
   public static $MAIN_CLASS_PORT_KEY = "main-class";
-  public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $EXTERNAL_SOURCES_PORT_KEY = "external-sources";
   public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
   public static $DEFAULT_NAME = "Mono Compilation";
@@ -41,7 +40,7 @@ class McsCompilationBox extends CompilationBox
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$MAIN_CLASS_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
         new Port((new PortMeta)->setName(self::$EXTERNAL_SOURCES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -104,8 +103,8 @@ class McsCompilationBox extends CompilationBox
     $task->setCommandBinary(self::$MCS_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
     $externalSources = [];
     if ($this->hasInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)) {
