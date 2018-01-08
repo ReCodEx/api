@@ -24,6 +24,9 @@ App\Model\Entity\PipelineConfig:
                     source-files:
                       type: file[]
                       value: source-files
+                    extra-files:
+                      type: file[]
+                      value: ""
                     args:
                       type: string[]
                       value: ""

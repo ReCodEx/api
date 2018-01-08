@@ -28,6 +28,7 @@ use Tester\Assert;
 /**
  * All special cases should be resolved in appropriate tests. This test is only
  * integration test of all compiler components and if it is working as expected.
+ * @testCase
  */
 class TestBaseCompiler extends Tester\TestCase
 {
@@ -98,6 +99,7 @@ class TestBaseCompiler extends Tester\TestCase
   private static $compilationPipeline = [
     "variables" => [
       ["name" => "source_files", "type" => "file[]", "value" => ["source"]],
+      ["name" => "extra_files", "type" => "file[]", "value" => ["extra"]],
       ["name" => "binary_file", "type" => "file", "value" => "a.out"]
     ],
     "boxes" => [
@@ -110,11 +112,20 @@ class TestBaseCompiler extends Tester\TestCase
         ]
       ],
       [
+        "name" => "extra",
+        "type" => "files-in",
+        "portsIn" => [],
+        "portsOut" => [
+          "input" => ["type" => "file[]", "value" => "extra_files"]
+        ]
+      ],
+      [
         "name" => "compilation",
         "type" => "gcc",
         "portsIn" => [
           "args" => ["type" => "string[]", "value" => ""],
-          "source-files" => ["type" => "file[]", "value" => "source_files"]
+          "source-files" => ["type" => "file[]", "value" => "source_files"],
+          "extra-files" => ["type" => "file[]", "value" => "extra_files"]
         ],
         "portsOut" => [
           "binary-file" => ["type" => "file", "value" => "binary_file"]
@@ -265,7 +276,7 @@ class TestBaseCompiler extends Tester\TestCase
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
-    Assert::equal(14, $jobConfig->getTasksCount());
+    Assert::equal(16, $jobConfig->getTasksCount());
 
     ////////////////////////////////////////////////////////////////////////////
     // check order of all tasks and right attributes
@@ -337,8 +348,19 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testATestTask->getTestId());
     Assert::null($testATestTask->getSandboxConfig());
 
-    $testASourceTask = $jobConfig->getTasks()[6];
-    Assert::equal("testA.compilationPipeline.source.65530", $testASourceTask->getId());
+    $testAExtraTask = $jobConfig->getTasks()[6];
+    Assert::equal("testA.compilationPipeline.extra.65530", $testAExtraTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testAExtraTask->getPriority());
+    Assert::count(1, $testAExtraTask->getDependencies());
+    Assert::equal([$testAMkdir->getId()], $testAExtraTask->getDependencies());
+    Assert::equal("cp", $testAExtraTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . "testA/extra"], $testAExtraTask->getCommandArguments());
+    Assert::null($testAExtraTask->getType());
+    Assert::equal("testA", $testAExtraTask->getTestId());
+    Assert::null($testAExtraTask->getSandboxConfig());
+
+    $testASourceTask = $jobConfig->getTasks()[7];
+    Assert::equal("testA.compilationPipeline.source.65529", $testASourceTask->getId());
     Assert::equal(Priorities::$DEFAULT, $testASourceTask->getPriority());
     Assert::count(1, $testASourceTask->getDependencies());
     Assert::equal([$testAMkdir->getId()], $testASourceTask->getDependencies());
@@ -348,32 +370,32 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testASourceTask->getTestId());
     Assert::null($testASourceTask->getSandboxConfig());
 
-    $testACompilationTask = $jobConfig->getTasks()[7];
-    Assert::equal("testA.compilationPipeline.compilation.65529", $testACompilationTask->getId());
+    $testACompilationTask = $jobConfig->getTasks()[8];
+    Assert::equal("testA.compilationPipeline.compilation.65528", $testACompilationTask->getId());
     Assert::equal(Priorities::$INITIATION, $testACompilationTask->getPriority());
-    Assert::count(2, $testACompilationTask->getDependencies());
-    Assert::equal([$testASourceTask->getId(), $testAMkdir->getId()], $testACompilationTask->getDependencies());
+    Assert::count(3, $testACompilationTask->getDependencies());
+    Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testACompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testACompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "testA/source", "-o", ConfigParams::$EVAL_DIR . "testA/a.out"], $testACompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "testA/source", ConfigParams::$EVAL_DIR . "testA/extra", "-o", ConfigParams::$EVAL_DIR . "testA/a.out"], $testACompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testACompilationTask->getType());
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
     Assert::count(0, $testACompilationTask->getSandboxConfig()->getLimitsArray());
 
-    $testAExistsTask = $jobConfig->getTasks()[8];
-    Assert::equal("testA.compilationPipeline.compilation.65528", $testAExistsTask->getId());
+    $testAExistsTask = $jobConfig->getTasks()[9];
+    Assert::equal("testA.compilationPipeline.compilation.65527", $testAExistsTask->getId());
     Assert::equal(Priorities::$INITIATION, $testAExistsTask->getPriority());
-    Assert::count(2, $testAExistsTask->getDependencies());
-    Assert::equal([$testASourceTask->getId(), $testAMkdir->getId()], $testAExistsTask->getDependencies());
+    Assert::count(3, $testAExistsTask->getDependencies());
+    Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testAExistsTask->getDependencies());
     Assert::equal(TaskCommands::$EXISTS, $testAExistsTask->getCommandBinary());
     Assert::equal([CompilationBox::$EXISTS_FAILED_MSG, ConfigParams::$SOURCE_DIR . "testA/a.out"], $testAExistsTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testAExistsTask->getType());
     Assert::equal("testA", $testAExistsTask->getTestId());
     Assert::null($testAExistsTask->getSandboxConfig());
 
-    $testARunTask = $jobConfig->getTasks()[9];
-    Assert::equal("testA.testPipeline.run.65527", $testARunTask->getId());
+    $testARunTask = $jobConfig->getTasks()[10];
+    Assert::equal("testA.testPipeline.run.65526", $testARunTask->getId());
     Assert::equal(Priorities::$EXECUTION, $testARunTask->getPriority());
     Assert::count(4, $testARunTask->getDependencies());
     Assert::equal([$testAInputTask->getId(), $testACompilationTask->getId(),
@@ -392,8 +414,8 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
     Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getWallTime());
 
-    $testAJudgeTask = $jobConfig->getTasks()[10];
-    Assert::equal("testA.testPipeline.judge.65526", $testAJudgeTask->getId());
+    $testAJudgeTask = $jobConfig->getTasks()[11];
+    Assert::equal("testA.testPipeline.judge.65525", $testAJudgeTask->getId());
     Assert::equal(Priorities::$EVALUATION, $testAJudgeTask->getPriority());
     Assert::count(3, $testAJudgeTask->getDependencies());
     Assert::equal([$testATestTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
@@ -407,8 +429,19 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testAJudgeTask->getSandboxConfig()->getChdir());
     Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
-    $testBSourceTask = $jobConfig->getTasks()[11];
-    Assert::equal("testB.compilationPipeline.source.65525", $testBSourceTask->getId());
+    $testBExtraTask = $jobConfig->getTasks()[12];
+    Assert::equal("testB.compilationPipeline.extra.65524", $testBExtraTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testBExtraTask->getPriority());
+    Assert::count(1, $testBExtraTask->getDependencies());
+    Assert::equal([$testBMkdir->getId()], $testBExtraTask->getDependencies());
+    Assert::equal(TaskCommands::$COPY, $testBExtraTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . "testB/extra"], $testBExtraTask->getCommandArguments());
+    Assert::null($testBExtraTask->getType());
+    Assert::equal("testB", $testBExtraTask->getTestId());
+    Assert::null($testBExtraTask->getSandboxConfig());
+
+    $testBSourceTask = $jobConfig->getTasks()[13];
+    Assert::equal("testB.compilationPipeline.source.65523", $testBSourceTask->getId());
     Assert::equal(Priorities::$DEFAULT, $testBSourceTask->getPriority());
     Assert::count(1, $testBSourceTask->getDependencies());
     Assert::equal([$testBMkdir->getId()], $testBSourceTask->getDependencies());
@@ -418,24 +451,24 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testB", $testBSourceTask->getTestId());
     Assert::null($testBSourceTask->getSandboxConfig());
 
-    $testBCompilationTask = $jobConfig->getTasks()[12];
-    Assert::equal("testB.compilationPipeline.compilation.65524", $testBCompilationTask->getId());
+    $testBCompilationTask = $jobConfig->getTasks()[14];
+    Assert::equal("testB.compilationPipeline.compilation.65522", $testBCompilationTask->getId());
     Assert::equal(Priorities::$INITIATION, $testBCompilationTask->getPriority());
-    Assert::count(2, $testBCompilationTask->getDependencies());
-    Assert::equal([$testBSourceTask->getId(), $testBMkdir->getId()], $testBCompilationTask->getDependencies());
+    Assert::count(3, $testBCompilationTask->getDependencies());
+    Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBCompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testBCompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "testB/source", "-o", ConfigParams::$EVAL_DIR . "testB/a.out"], $testBCompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "testB/source", ConfigParams::$EVAL_DIR . "testB/extra", "-o", ConfigParams::$EVAL_DIR . "testB/a.out"], $testBCompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testBCompilationTask->getType());
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
     Assert::count(0, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
 
-    $testBExistsTask = $jobConfig->getTasks()[13];
-    Assert::equal("testB.compilationPipeline.compilation.65523", $testBExistsTask->getId());
+    $testBExistsTask = $jobConfig->getTasks()[15];
+    Assert::equal("testB.compilationPipeline.compilation.65521", $testBExistsTask->getId());
     Assert::equal(Priorities::$INITIATION, $testBExistsTask->getPriority());
-    Assert::count(2, $testBExistsTask->getDependencies());
-    Assert::equal([$testBSourceTask->getId(), $testBMkdir->getId()], $testBExistsTask->getDependencies());
+    Assert::count(3, $testBExistsTask->getDependencies());
+    Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBExistsTask->getDependencies());
     Assert::equal(TaskCommands::$EXISTS, $testBExistsTask->getCommandBinary());
     Assert::equal([CompilationBox::$EXISTS_FAILED_MSG, ConfigParams::$SOURCE_DIR . "testB/a.out"], $testBExistsTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testBExistsTask->getType());
