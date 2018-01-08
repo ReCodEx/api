@@ -37,7 +37,8 @@ class JavacCompilationBox extends CompilationBox
       self::$initialized = true;
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
@@ -106,6 +107,8 @@ class JavacCompilationBox extends CompilationBox
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
+          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+        $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR)
       )
     );

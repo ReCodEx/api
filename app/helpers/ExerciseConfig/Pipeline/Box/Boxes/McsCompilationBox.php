@@ -41,7 +41,8 @@ class McsCompilationBox extends CompilationBox
         new Port((new PortMeta)->setName(self::$MAIN_CLASS_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
         new Port((new PortMeta)->setName(self::$EXTERNAL_SOURCES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$ASSEMBLY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
@@ -111,6 +112,11 @@ class McsCompilationBox extends CompilationBox
       $externalSources = $this->getInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)
         ->getPrefixedValue(ConfigParams::$EVAL_DIR);
     }
+    $extraFiles = [];
+    if ($this->hasInputPortValue(self::$EXTRA_FILES_PORT_KEY)) {
+      $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
+        ->getPrefixedValue(ConfigParams::$EVAL_DIR);
+    }
     $mainClass = [];
     if ($this->hasInputPortValue(self::$MAIN_CLASS_PORT_KEY)) {
       $mainClass = [
@@ -124,6 +130,7 @@ class McsCompilationBox extends CompilationBox
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getPrefixedValue(ConfigParams::$EVAL_DIR),
         $externalSources,
+        $extraFiles,
         $mainClass,
         [
           "-out:" . $this->getOutputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)

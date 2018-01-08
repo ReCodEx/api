@@ -23,6 +23,9 @@ use App\Model\Repository\Pipelines;
 use Tester\Assert;
 
 
+/**
+ * @testCase
+ */
 class TestPipelinesMerger extends Tester\TestCase
 {
   /** @var BoxService */
@@ -140,7 +143,8 @@ class TestPipelinesMerger extends Tester\TestCase
           "type" => "gcc",
           "portsIn" => [
             "args" => [ "type" => "string[]", "value" => "" ],
-            "source-files" => [ "type" => "file[]", "value" => "source_files" ]
+            "source-files" => [ "type" => "file[]", "value" => "source_files" ],
+            "extra-files" => [ "type" => "file[]", "value" => "" ]
           ],
           "portsOut" => [
             "binary-file" => [ "type" => "file", "value" => "binary_file" ]
