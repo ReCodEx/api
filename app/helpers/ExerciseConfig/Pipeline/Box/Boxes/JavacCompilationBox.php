@@ -22,7 +22,6 @@ class JavacCompilationBox extends CompilationBox
   /** Type key */
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
-  public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $DEFAULT_NAME = "Javac Compilation";
 
@@ -37,7 +36,7 @@ class JavacCompilationBox extends CompilationBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$COMPILATION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
@@ -100,8 +99,8 @@ class JavacCompilationBox extends CompilationBox
     $task->setCommandBinary(self::$JAVAC_BINARY);
 
     $args = [];
-    if ($this->hasInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$COMPILATION_ARGS_PORT_KEY)->getValue();
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
     $task->setCommandArguments(
       array_merge(
