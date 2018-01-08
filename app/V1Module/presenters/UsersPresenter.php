@@ -297,7 +297,7 @@ class UsersPresenter extends BasePresenter {
 
     Login::createLogin($user, $user->getEmail(), "");
     $this->users->flush();
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**

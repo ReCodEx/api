@@ -317,8 +317,8 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result["payload"];
-    Assert::equal($user->getId(), $payload->getId());
-    Assert::equal(true, $payload->hasLocalAccounts());
+    Assert::equal($user->getId(), $payload["id"]);
+    Assert::equal(true, $payload["privateData"]["isLocal"]);
   }
 
   public function testSupervisorGroups()

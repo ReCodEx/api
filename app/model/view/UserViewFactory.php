@@ -40,6 +40,7 @@ class UserViewFactory {
           "supervisorOf" => $user->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
         ],
         "settings" => $user->getSettings(),
+        "isLocal" => $user->hasLocalAccounts(),
         "isExternal" => $user->getLogins()->isEmpty()
       ];
     }
