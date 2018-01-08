@@ -156,25 +156,22 @@ class TestSisPresenter extends TestCase {
     $result = $response->getPayload();
     Assert::same(200, $result['code']);
 
-    /** @var Group $group */
     $group = $result['payload'];
-    Assert::type(Group::class, $group);
-    Assert::same("NSWI153", $group->getExternalId());
+    Assert::same("NSWI153", $group["externalId"]);
+    Assert::count(2, $group["localizedTexts"]);
 
-    $localizedTexts = $group->getLocalizedTexts();
-    Assert::count(2, $localizedTexts);
-
-    $en = $group->getLocalizedTextByLocale("en");
+    $en = $group["localizedTexts"][0];
     Assert::notSame(null, $en);
     Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $en->getName());
     Assert::same("The Lorem ipsum", $en->getDescription());
 
-    $cs = $group->getLocalizedTextByLocale("cs");
+    $cs = $group["localizedTexts"][1];
     Assert::notSame(null, $cs);
     Assert::same("Pokrocile technologie webovych aplikaci (St, 15:40, Sudé týdny)", $cs->getName());
     Assert::same("Lorem ipsum", $cs->getDescription());
 
-    Assert::notSame(null, $this->bindings->findByGroupAndCode($group, $courseId));
+    $groupEntity = $this->presenter->groups->findOrThrow($group["id"]);
+    Assert::notSame(null, $this->bindings->findByGroupAndCode($groupEntity, $courseId));
   }
 
   public function testStatus() {

@@ -172,6 +172,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @POST
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
+   * @throws \Nette\Application\AbortException
    */
   public function actionSetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -199,6 +200,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @DELETE
    * @param string $id identifier of the submission
    * @throws ForbiddenRequestException
+   * @throws \Nette\Application\AbortException
    */
   public function actionUnsetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -222,6 +224,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws InternalServerErrorException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);

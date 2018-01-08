@@ -218,6 +218,8 @@ class SubmitPresenter extends BasePresenter {
   }
 
   /**
+   * @param AssignmentSolutionSubmission $submission
+   * @param string $message
    * @throws SubmissionFailedException
    */
   private function submissionFailed(AssignmentSolutionSubmission $submission, string $message) {
@@ -234,6 +236,7 @@ class SubmitPresenter extends BasePresenter {
    * @return array The response that can be sent to the client
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
+   * @throws SubmissionFailedException
    */
   private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false) {
     if ($solution->getId() === NULL) {
@@ -293,6 +296,8 @@ class SubmitPresenter extends BasePresenter {
    * @param string $id Identifier of the submission
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws SubmissionFailedException
    */
   public function actionResubmit(string $id) {
     $req = $this->getRequest();
@@ -311,6 +316,8 @@ class SubmitPresenter extends BasePresenter {
    * @POST
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws SubmissionFailedException
    */
   public function actionResubmitAll(string $id) {
     $assignment = $this->assignments->findOrThrow($id);

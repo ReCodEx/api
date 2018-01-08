@@ -10,6 +10,7 @@ use App\Model\Entity\Instance;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Instances;
+use App\Model\View\UserViewFactory;
 use App\Security\AccessManager;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
@@ -59,6 +60,12 @@ class RegistrationPresenter extends BasePresenter {
   public $emailVerificationHelper;
 
   /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
+
+  /**
    * Get an instance by its ID.
    * @param string $instanceId
    * @return Instance
@@ -86,6 +93,9 @@ class RegistrationPresenter extends BasePresenter {
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="degreesBeforeName", required=false, validation="string:1..", description="Degrees which is placed before user name")
    * @Param(type="post", name="degreesAfterName", required=false, validation="string:1..", description="Degrees which is placed after user name")
+   * @throws BadRequestException
+   * @throws WrongCredentialsException
+   * @throws InvalidArgumentException
    */
   public function actionCreateAccount() {
     $req = $this->getRequest();
@@ -127,7 +137,7 @@ class RegistrationPresenter extends BasePresenter {
 
     // successful!
     $this->sendSuccessResponse([
-      "user" => $user,
+      "user" => $this->userViewFactory->getFullUser($user),
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
   }
@@ -137,6 +147,8 @@ class RegistrationPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="instanceId", validation="string:1..", description="Identifier of the instance to register in")
    * @Param(type="post", name="serviceId", validation="string:1..", description="Identifier of the authentication service")
+   * @throws BadRequestException
+   * @throws WrongCredentialsException
    */
   public function actionCreateAccountExt() {
     $req = $this->getRequest();
@@ -156,7 +168,7 @@ class RegistrationPresenter extends BasePresenter {
 
     // successful!
     $this->sendSuccessResponse([
-      "user" => $user,
+      "user" => $this->userViewFactory->getFullUser($user),
       "accessToken" => $this->accessManager->issueToken($user)
     ], IResponse::S201_CREATED);
   }

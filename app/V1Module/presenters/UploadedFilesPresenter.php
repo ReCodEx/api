@@ -87,6 +87,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @GET
    * @param string $id Identifier of the file
    * @throws ForbiddenRequestException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownload(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
@@ -129,6 +130,9 @@ class UploadedFilesPresenter extends BasePresenter {
    * Upload a file
    * @POST
    * @throws InvalidArgumentException for files with invalid names
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   * @throws CannotReceiveUploadedFileException
    */
   public function actionUpload() {
     if (!$this->uploadedFileAcl->canUpload()) {
@@ -161,6 +165,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @param string $id Identifier of the file
    * @throws ForbiddenRequestException
    * @throws NotFoundException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownloadSupplementaryFile(string $id) {
     $file = $this->supplementaryFiles->findOrThrow($id);

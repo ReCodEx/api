@@ -2,14 +2,11 @@
 
 namespace App\Model\Entity;
 
-use App\Helpers\Localizations;
-use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Gedmo\Mapping\Annotation as Gedmo;
-use JsonSerializable;
 
 /**
  * @ORM\Entity
@@ -24,11 +21,12 @@ use JsonSerializable;
  * @method float getThreshold()
  * @method Instance getInstance()
  * @method setExternalId(string $id)
+ * @method bool getPublicStats()
  * @method setPublicStats(bool $areStatsPublic)
  * @method setIsPublic(bool $isGroupPublic)
  * @method setThreshold(float $threshold)
  */
-class Group implements JsonSerializable
+class Group
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use DeleteableEntity;
@@ -407,65 +405,6 @@ class Group implements JsonSerializable
         return $group->getId();
       }
     )->getValues();
-  }
-
-  /**
-   * Get public data concerning group.
-   * @param bool $canView
-   * @return array
-   */
-  public function getPublicData(bool $canView): array {
-    /** @var LocalizedGroup $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
-
-    return [
-      "id" => $this->id,
-      "externalId" => $this->externalId,
-      "localizedTexts" => $this->localizedTexts->getValues(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
-      "admins" => $this->getPrimaryAdmins()->map(function (User $user) {
-        return $user->getPublicData();
-      })->getValues(),
-      "childGroups" => [
-        "all" => $this->getChildGroupsIds(),
-        "public" => $this->getPublicChildGroupsIds()
-      ],
-      "canView" => $canView
-    ];
-  }
-
-  public function jsonSerialize() {
-    $instance = $this->getInstance();
-
-    /** @var LocalizedGroup $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
-
-    return [
-      "id" => $this->id,
-      "externalId" => $this->externalId,
-      "localizedTexts" => $this->localizedTexts->getValues(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
-      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
-      "primaryAdminsIds" => $this->getPrimaryAdminsIds(),
-      "admins" => $this->getAdminsIds(),
-      "supervisors" => $this->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
-      "students" => $this->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
-      "instanceId" => $instance ? $instance->getId() : NULL,
-      "hasValidLicence" => $this->hasValidLicence(),
-      "parentGroupId" => $this->parentGroup ? $this->parentGroup->getId() : NULL,
-      "parentGroupsIds" => $this->getParentGroupsIds(),
-      "childGroups" => [
-        "all" => $this->getChildGroupsIds(),
-        "public" => $this->getPublicChildGroupsIds()
-      ],
-      "assignments" => [
-        "all" => $this->getAssignmentsIds(),
-        "public" => $this->getAssignmentsIds($this->getPublicAssignments())
-      ],
-      "publicStats" => $this->publicStats,
-      "isPublic" => $this->isPublic,
-      "threshold" => $this->threshold
-    ];
   }
 
   public function getChildGroups() {

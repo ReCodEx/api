@@ -332,6 +332,7 @@ services:
 
   # views factories
   - App\Model\View\GroupViewFactory
+  - App\Model\View\UserViewFactory
   - App\Model\View\AssignmentSolutionViewFactory
 
 doctrine:

@@ -9,6 +9,12 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
+ *
+ * @method string getNote()
+ * @method setNote(string $note)
+ * @method DateTime getValidUntil()
+ * @method setValidUntil(DateTime $validUntil)
+ * @method setIsValid(bool $isValid)
  */
 class Licence implements JsonSerializable
 {

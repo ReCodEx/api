@@ -12,6 +12,7 @@ use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Model\View\GroupViewFactory;
+use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
 
@@ -39,6 +40,12 @@ class UsersPresenter extends BasePresenter {
   public $groupViewFactory;
 
   /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
+
+  /**
    * @var IUserPermissions
    * @inject
    */
@@ -55,6 +62,9 @@ class UsersPresenter extends BasePresenter {
     }
 
     $users = $this->users->findAll();
+    $users = array_map(function (User $user) {
+      return $this->userViewFactory->getUser($user);
+    }, $users);
     $this->sendSuccessResponse($users);
   }
 
@@ -66,10 +76,11 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $user = $this->users->findOrThrow($id);
-    if (!$this->userAcl->canViewDetail($user)) {
+    if (!$this->userAcl->canViewPublicData($user)) {
       throw new ForbiddenRequestException();
     }
-    $this->sendSuccessResponse($user);
+
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**
@@ -88,21 +99,6 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
-   * Get public data about user.
-   * @GET
-   * @param string $id
-   * @throws ForbiddenRequestException
-   */
-  public function actionPublicData(string $id) {
-    $user = $this->users->findOrThrow($id);
-    if (!$this->userAcl->canViewPublicData($user)) {
-      throw new ForbiddenRequestException();
-    }
-
-    $this->sendSuccessResponse($user->getPublicData());
-  }
-
-  /**
    * Update the profile associated with a user account
    * @POST
    * @param string $id Identifier of the user
@@ -117,6 +113,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="oldPassword", required=FALSE, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="New password of current user")
    * @Param(type="post", name="passwordConfirm", required=FALSE, validation="string:1..", description="Confirmation of new password of current user")
+   * @throws WrongCredentialsException
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();
@@ -147,7 +144,7 @@ class UsersPresenter extends BasePresenter {
     $this->users->flush();
     $this->logins->flush();
 
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**
@@ -276,7 +273,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
 
     $this->users->persist($user);
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   /**
@@ -317,8 +314,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "supervisor" => $user->getGroupsAsSupervisor()->getValues(),
-      "student" => $user->getGroupsAsStudent()->getValues(),
+      "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues()),
+      "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues()),
       "stats" => $user->getGroupsAsStudent()->map(
         function (Group $group) use ($user) {
           return $this->groupViewFactory->getStudentsStats($group, $user);

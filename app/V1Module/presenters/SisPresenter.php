@@ -7,6 +7,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\SisCourseRecord;
 use App\Helpers\SisHelper;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
@@ -18,10 +19,12 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\Instances;
 use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
+use App\Model\View\GroupViewFactory;
 use App\Security\ACL\ISisPermissions;
 use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
+use Exception;
 use Nette\Utils\Json;
 
 /**
@@ -65,13 +68,21 @@ class SisPresenter extends BasePresenter {
   public $sisValidTerms;
 
   /**
+   * @var GroupViewFactory
+   * @inject
+   */
+  public $groupViewFactory;
+
+  /**
    * @var ISisPermissions
    * @inject
    */
   public $sisAcl;
 
+
   /**
    * @GET
+   * @throws ForbiddenRequestException
    */
   public function actionStatus() {
     $login = $this->externalLogins->findByUser($this->getCurrentUser(), "cas-uk");
@@ -149,7 +160,7 @@ class SisPresenter extends BasePresenter {
         if ($binding->getGroup() !== NULL) {
           /** @var Group $group */
           $group = $binding->getGroup();
-          $serializedGroup = $group->jsonSerialize();
+          $serializedGroup = $this->groupViewFactory->getGroup($group);
           $serializedGroup["sisCode"] = $binding->getCode();
           $groups[] = $serializedGroup;
         }
@@ -185,10 +196,11 @@ class SisPresenter extends BasePresenter {
       }
 
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
+      $groups = array_map(function (SisGroupBinding $binding) { return $binding->getGroup(); }, $bindings);
 
       $result[] = [
         'course' => $course,
-        'groups' => array_map(function (SisGroupBinding $binding) { return $binding->getGroup(); }, $bindings)
+        'groups' => $this->groupViewFactory->getGroups($groups)
       ];
     }
 
@@ -203,6 +215,7 @@ class SisPresenter extends BasePresenter {
    * @Param(name="parentGroupId", type="post")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
+   * @throws Exception
    */
   public function actionCreateGroup($courseId) {
     $user = $this->getCurrentUser();
@@ -237,7 +250,7 @@ class SisPresenter extends BasePresenter {
     $binding = new SisGroupBinding($group, $remoteCourse->getCode());
     $this->sisGroupBindings->persist($binding, true);
 
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -264,7 +277,7 @@ class SisPresenter extends BasePresenter {
 
     $binding = new SisGroupBinding($group, $remoteCourse->getCode());
     $this->sisGroupBindings->persist($binding);
-    $this->sendSuccessResponse($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
@@ -281,7 +294,7 @@ class SisPresenter extends BasePresenter {
     $groups = array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
       return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse);
     });
-    $this->sendSuccessResponse(array_values($groups));
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
   protected function getSisUserIdOrThrow(User $user) {
@@ -297,8 +310,9 @@ class SisPresenter extends BasePresenter {
   /**
    * @param $remoteGroupId
    * @param $sisUserId
-   * @return \App\Helpers\SisCourseRecord|mixed
+   * @return SisCourseRecord|mixed
    * @throws BadRequestException
+   * @throws InvalidArgumentException
    */
   private function findRemoteCourseOrThrow($remoteGroupId, $sisUserId) {
     foreach ($this->sisValidTerms->findAll() as $term) {

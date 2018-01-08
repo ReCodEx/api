@@ -171,7 +171,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::equal(200, $result["code"]);
 
-    Assert::equal(FALSE, $payload->isStudentOf($user));
+    Assert::false(in_array($user->getId(), $payload["privateData"]["students"]));
   }
 
   public function testAddGroup()
@@ -205,19 +205,19 @@ class TestGroupsPresenter extends Tester\TestCase
     /** @var Group $payload */
     $payload = $result['payload'];
 
-    Assert::count(1, $payload->getLocalizedTexts());
-    $localizedGroup = $payload->getLocalizedTextByLocale("en");
+    Assert::count(1, $payload["localizedTexts"]);
+    $localizedGroup = current($payload["localizedTexts"]);
     Assert::notSame(null, $localizedGroup);
 
     Assert::equal(200, $result['code']);
     Assert::count($allGroupsCount + 1, $this->presenter->groups->findAll());
     Assert::equal('new name', $localizedGroup->getName());
     Assert::equal('some neaty description', $localizedGroup->getDescription());
-    Assert::equal($instance->getId(), $payload->getInstance()->getId());
-    Assert::equal('external identification of exercise', $payload->getExternalId());
-    Assert::equal($instance->getRootGroup(), $payload->getParentGroup());
-    Assert::equal(TRUE, $payload->statsArePublic());
-    Assert::equal(TRUE, $payload->isPublic());
+    Assert::equal($instance->getId(), $payload["privateData"]["instanceId"]);
+    Assert::equal('external identification of exercise', $payload["externalId"]);
+    Assert::equal($instance->getRootGroup()->getId(), $payload["privateData"]["parentGroupId"]);
+    Assert::equal(TRUE, $payload["privateData"]["publicStats"]);
+    Assert::equal(TRUE, $payload["privateData"]["isPublic"]);
   }
 
   public function testValidateAddGroupData()
@@ -313,20 +313,18 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
-    /** @var Group $payload */
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
 
-    Assert::equal($group->getId(), $payload->getId());
-    Assert::count(1, $payload->getLocalizedTexts());
-    $localizedGroup = $payload->getLocalizedTextByLocale("en");
-    Assert::notSame(null, $localizedGroup);
+    Assert::equal($group->getId(), $payload["id"]);
+    Assert::count(1, $payload["localizedTexts"]);
+    $localizedGroup = current($payload["localizedTexts"]);
     Assert::equal('new name', $localizedGroup->getName());
     Assert::equal('some neaty description', $localizedGroup->getDescription());
-    Assert::equal('external identification of exercise', $payload->getExternalId());
-    Assert::equal(TRUE, $payload->statsArePublic());
-    Assert::equal(TRUE, $payload->isPublic());
-    Assert::equal(0.8, $payload->getThreshold());
+    Assert::equal('external identification of exercise', $payload["externalId"]);
+    Assert::equal(TRUE, $payload["privateData"]["publicStats"]);
+    Assert::equal(TRUE, $payload["privateData"]["isPublic"]);
+    Assert::equal(0.8, $payload["privateData"]["threshold"]);
   }
 
   public function testRemoveGroup()
@@ -369,28 +367,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
-    Assert::equal($group->getId(), $payload->id);
-  }
-
-  public function testPublicDetail()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-
-    $groups = $this->presenter->groups->findAll();
-    $group = array_pop($groups);
-
-    $request = new Nette\Application\Request('V1:Groups',
-      'GET',
-      ['action' => 'publicDetail', 'id' => $group->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    $payload = $result['payload'];
-    Assert::equal(200, $result['code']);
-    Assert::equal($group->getId(), $payload['id']);
-    Assert::true($payload['canView']);
+    Assert::equal($group->getId(), $payload["id"]);
   }
 
   public function testSubgroups()
@@ -431,8 +408,8 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
 
-    Assert::equal($group->getSupervisors()->getValues(), $payload["supervisors"]);
-    Assert::equal($group->getStudents()->getValues(), $payload["students"]);
+    Assert::equal($this->presenter->userViewFactory->getUsers($group->getSupervisors()->getValues()), $payload["supervisors"]);
+    Assert::equal($this->presenter->userViewFactory->getUsers($group->getStudents()->getValues()), $payload["students"]);
   }
 
   public function testSupervisors()
@@ -453,7 +430,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
 
-    Assert::equal($group->getSupervisors()->getValues(), $payload);
+    Assert::equal($this->presenter->userViewFactory->getUsers($group->getSupervisors()->getValues()), $payload);
   }
 
   public function testStudents()
@@ -588,7 +565,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::equal(200, $result["code"]);
 
-    Assert::equal(TRUE, $payload->isSupervisorOf($user));
+    Assert::true(in_array($user->getId(), $payload["privateData"]["supervisors"]));
   }
 
   public function testRemoveSupervisor()
@@ -617,7 +594,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::equal(200, $result["code"]);
 
-    Assert::equal(FALSE, $payload->isSupervisorOf($user));
+    Assert::false(in_array($user->getId(), $payload["privateData"]["supervisors"]));
   }
 
   public function testGetAdmins()
@@ -657,8 +634,8 @@ class TestGroupsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Groups',
       'POST',
-      ['action' => 'addAdmin', 'id' => $group->id],
-      ['userId' => $user->id]
+      ['action' => 'addAdmin', 'id' => $group->getId()],
+      ['userId' => $user->getId()]
     );
 
     /** @var \Nette\Application\Responses\JsonResponse $response */
@@ -669,7 +646,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::equal(200, $result["code"]);
 
-    Assert::equal(TRUE, $payload->isAdminOf($user));
+    Assert::equal([$user->getId()], $payload["primaryAdminsIds"]);
   }
 
   public function testRemoveAdmin()

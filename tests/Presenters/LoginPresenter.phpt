@@ -72,7 +72,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     Assert::same(200, $result["code"]);
     Assert::true(array_key_exists("accessToken", $result["payload"]));
-    Assert::same($this->presenter->users->getByEmail($this->userLogin), $result["payload"]["user"]);
+    Assert::same($this->presenter->users->getByEmail($this->userLogin)->getId(), $result["payload"]["user"]["id"]);
     Assert::true($this->presenter->user->isLoggedIn());
   }
 
@@ -117,7 +117,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     Assert::same(200, $result["code"]);
     Assert::true(array_key_exists("accessToken", $result["payload"]));
-    Assert::same($user, $result["payload"]["user"]);
+    Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
     Assert::true($this->presenter->user->isLoggedIn());
   }
 
@@ -137,7 +137,7 @@ class TestLoginPresenter extends Tester\TestCase
     Assert::same(200, $result["code"]);
 
     Assert::true(array_key_exists("accessToken", $result["payload"]));
-    Assert::same($user, $result["payload"]["user"]);
+    Assert::equal($user->getId(), $result["payload"]["user"]["id"]);
   }
 
   public function testTakeoverIncorrect()
@@ -178,7 +178,7 @@ class TestLoginPresenter extends Tester\TestCase
 
     Assert::same(200, $result["code"]);
     Assert::true(array_key_exists("accessToken", $result["payload"]));
-    Assert::same($user, $result["payload"]["user"]);
+    Assert::same($user->getId(), $result["payload"]["user"]["id"]);
     Assert::true($this->presenter->user->isLoggedIn());
 
     $newToken = $this->presenter->accessManager->decodeToken($result["payload"]["accessToken"]);

@@ -289,6 +289,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @param ReferenceExerciseSolution $referenceSolution
    * @param bool $isDebug
    * @return array
+   * @throws ForbiddenRequestException
    */
   private function evaluateReferenceSolution(
       ReferenceExerciseSolution $referenceSolution,
@@ -340,6 +341,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotFoundException
    * @throws NotReadyException
    * @throws InternalServerErrorException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
     /** @var ReferenceSolutionSubmission $submission */

@@ -76,7 +76,9 @@ class TestUsersPresenter extends Tester\TestCase
 
     $users = $result['payload'];
     foreach ($users as $user) {
-      Assert::type(App\Model\Entity\User::class, $user);
+      Assert::true(array_key_exists("id", $user));
+      Assert::true(array_key_exists("fullName", $user));
+      Assert::true(array_key_exists("privateData", $user));
     }
   }
 
@@ -94,8 +96,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    Assert::type(User::class, $result["payload"]);
-    Assert::same($user, $result["payload"]);
+    Assert::same($user->getId(), $result["payload"]["id"]);
   }
 
   public function testUpdateProfileWithoutEmailAndPassword()
@@ -124,14 +125,10 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(User::class, $updatedUser);
-    Assert::equal($firstName, $updatedUser->getFirstName());
-    Assert::equal($lastName, $updatedUser->getLastName());
-    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
-    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
+    Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
-    Assert::same($updatedUser, $storedUpdatedUser);
+    Assert::same($updatedUser["id"], $storedUpdatedUser->getId());
   }
 
   public function testUpdateProfileWithEmailAndWithoutPassword()
@@ -166,15 +163,11 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(User::class, $updatedUser);
-    Assert::equal($firstName, $updatedUser->getFirstName());
-    Assert::equal($lastName, $updatedUser->getLastName());
-    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
-    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
-    Assert::equal($email, $updatedUser->getEmail());
+    Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
+    Assert::equal($email, $updatedUser["privateData"]["email"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
-    Assert::same($updatedUser, $storedUpdatedUser);
+    Assert::same($updatedUser["id"], $storedUpdatedUser->getId());
   }
 
   public function testUpdateProfileWithoutEmailAndWithPassword()
@@ -210,15 +203,11 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $updatedUser = $result["payload"];
-    Assert::type(User::class, $updatedUser);
-    Assert::equal($firstName, $updatedUser->getFirstName());
-    Assert::equal($lastName, $updatedUser->getLastName());
-    Assert::equal($degreesBeforeName, $updatedUser->getDegreesBeforeName());
-    Assert::equal($degreesAfterName, $updatedUser->getDegreesAfterName());
+    Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
     Assert::true($login->passwordsMatch($password));
 
     $storedUpdatedUser = $this->users->get($user->getId());
-    Assert::same($updatedUser, $storedUpdatedUser);
+    Assert::equal($updatedUser["id"], $storedUpdatedUser->getId());
   }
 
   public function testUpdateProfileWithoutNewPassword()
@@ -295,13 +284,13 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $user = $result["payload"];
-    Assert::type(User::class, $user);
-    Assert::equal($darkTheme, $user->getSettings()->getDarkTheme());
-    Assert::equal($vimMode, $user->getSettings()->getVimMode());
-    Assert::equal($defaultLanguage, $user->getSettings()->getDefaultLanguage());
-    Assert::equal($newAssignmentEmails, $user->getSettings()->getNewAssignmentEmails());
-    Assert::equal($assignmentDeadlineEmails, $user->getSettings()->getAssignmentDeadlineEmails());
-    Assert::equal($submissionEvaluatedEmails, $user->getSettings()->getSubmissionEvaluatedEmails());
+    $settings = $user["privateData"]["settings"];
+    Assert::equal($darkTheme, $settings->getDarkTheme());
+    Assert::equal($vimMode, $settings->getVimMode());
+    Assert::equal($defaultLanguage, $settings->getDefaultLanguage());
+    Assert::equal($newAssignmentEmails, $settings->getNewAssignmentEmails());
+    Assert::equal($assignmentDeadlineEmails, $settings->getAssignmentDeadlineEmails());
+    Assert::equal($submissionEvaluatedEmails, $settings->getSubmissionEvaluatedEmails());
   }
 
   public function testCreateLocalAccount()
@@ -350,7 +339,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists("supervisor", $result["payload"]));
     $supervisorIn = $result["payload"]["supervisor"];
     $expectedSupervisorIn = $user->getGroupsAsSupervisor()->getValues();
-    Assert::equal($expectedSupervisorIn, $supervisorIn);
+    Assert::equal($this->presenter->groupViewFactory->getGroups($expectedSupervisorIn), $supervisorIn);
   }
 
   public function testStudentGroups()
@@ -371,7 +360,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true(array_key_exists("student", $result["payload"]));
     $studentIn = $result["payload"]["student"];
     $expectedStudentIn = $user->getGroupsAsStudent()->getValues();
-    Assert::equal($expectedStudentIn, $studentIn);
+    Assert::equal($this->presenter->groupViewFactory->getGroups($expectedStudentIn), $studentIn);
 
     Assert::true(array_key_exists("stats", $result["payload"]));
     $stats = $result["payload"]["stats"];
@@ -434,32 +423,11 @@ class TestUsersPresenter extends Tester\TestCase
     }
   }
 
-  public function testPublicData() {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
+  public function testUnauthenticatedUserCannotViewUserDetail() {
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
-      ['action' => 'publicData', 'id' => $user->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-
-    $payload = $result['payload'];
-    Assert::true(array_key_exists('id', $payload));
-    Assert::true(array_key_exists('fullName', $payload));
-    Assert::true(array_key_exists('name', $payload));
-    Assert::true(array_key_exists('avatarUrl', $payload));
-    Assert::true(array_key_exists('isVerified', $payload));
-  }
-
-  public function testUnauthenticatedUserCannotViewPublicData() {
-    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-
-    $request = new Nette\Application\Request($this->presenterPath, 'GET',
-      ['action' => 'publicData', 'id' => $user->getId()]
+      ['action' => 'detail', 'id' => $user->getId()]
     );
 
     Assert::exception(function () use ($request) {
@@ -485,5 +453,4 @@ class TestUsersPresenter extends Tester\TestCase
 
 }
 
-$testCase = new TestUsersPresenter();
-$testCase->run();
+(new TestUsersPresenter())->run();

@@ -3,10 +3,13 @@
 namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
+use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Group;
+use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
 
 
@@ -21,8 +24,14 @@ class GroupViewFactory {
    */
   private $assignmentSolutions;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions) {
+  /**
+   * @var IGroupPermissions
+   */
+  private $groupAcl;
+
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl) {
     $this->assignmentSolutions = $assignmentSolutions;
+    $this->groupAcl = $groupAcl;
   }
 
 
@@ -113,6 +122,65 @@ class GroupViewFactory {
       "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
       "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold()
     ];
+  }
+
+  /**
+   * Get as much group detail info as your permissions grants you.
+   * @param Group $group
+   * @return array
+   */
+  public function getGroup(Group $group): array {
+    $canView = $this->groupAcl->canViewDetail($group);
+    /** @var LocalizedGroup $primaryLocalization */
+    $primaryLocalization = Localizations::getPrimaryLocalization($group->getLocalizedTexts());
+
+    $privateData = null;
+    if ($canView) {
+      $privateData = [
+        "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
+        "admins" => $group->getAdminsIds(),
+        "supervisors" => $group->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
+        "students" => $group->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
+        "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : NULL,
+        "hasValidLicence" => $group->hasValidLicence(),
+        "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : NULL,
+        "parentGroupsIds" => $group->getParentGroupsIds(),
+        "assignments" => [
+          "all" => $group->getAssignmentsIds(),
+          "public" => $group->getAssignmentsIds($group->getPublicAssignments())
+        ],
+        "publicStats" => $group->getPublicStats(),
+        "isPublic" => $group->isPublic(),
+        "threshold" => $group->getThreshold()
+      ];
+    }
+
+    return [
+      "id" => $group->getId(),
+      "externalId" => $group->getExternalId(),
+      "localizedTexts" => $group->getLocalizedTexts()->getValues(),
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
+      "primaryAdminsIds" => $group->getPrimaryAdmins()->map(function (User $user) {
+        return $user->getId();
+      })->getValues(),
+      "childGroups" => [
+        "all" => $group->getChildGroupsIds(),
+        "public" => $group->getPublicChildGroupsIds()
+      ],
+      "canView" => $canView,
+      "privateData" => $privateData
+    ];
+  }
+
+  /**
+   * Get group data which current user can view about given groups.
+   * @param Group[] $groups
+   * @return array
+   */
+  public function getGroups(array $groups): array {
+    return array_map(function (Group $group) {
+      return $this->getGroup($group);
+    }, $groups);
   }
 
 }

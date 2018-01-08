@@ -21,6 +21,7 @@ class EmailVerificationPresenter extends BasePresenter {
    * Resend the email for the current user to verify his/her email address.
    * @POST
    * @LoggedIn
+   * @throws ForbiddenRequestException
    */
   public function actionResendVerificationEmail() {
     $user = $this->getCurrentUser();
@@ -35,6 +36,7 @@ class EmailVerificationPresenter extends BasePresenter {
    * Verify users email.
    * @POST
    * @LoggedIn
+   * @throws ForbiddenRequestException
    */
   public function actionEmailVerification() {
     $user = $this->getCurrentUser();

@@ -14,6 +14,7 @@ class DefaultPresenter extends BasePresenter {
 
   /**
    * @GET
+   * @throws \Nette\Application\AbortException
    */
   public function actionDefault() {
     $this->sendJson([
