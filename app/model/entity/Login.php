@@ -109,7 +109,8 @@ class Login
 
     $login = new Login;
     $login->username = $email;
-    $login->passwordHash = self::hashPassword($password);
+    $login->passwordHash = "";
+    if (!empty($password)) { $login->passwordHash = self::hashPassword($password); }
     $login->user = $user;
 
     $user->addLogin($login);
