@@ -91,9 +91,11 @@ class Updater {
         continue;
       }
 
-      // environment can be added only at the top level, in the tests there
-      // should be assigned default pipeline values during transformation
+      // add environment on top level and into all tests
       $exerciseConfig->addEnvironment($environmentId);
+      foreach ($exerciseConfig->getTests() as $test) {
+        $test->addEnvironment($environmentId, new Environment());
+      }
     }
 
     // delete unused environments from ExerciseConfig
