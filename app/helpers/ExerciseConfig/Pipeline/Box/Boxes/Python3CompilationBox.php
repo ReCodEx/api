@@ -11,15 +11,15 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 
 /**
- * Box which represents execution of custom compiled program in ELF format.
+ * Box which represents compilation of python scripts.
  */
-class Python3Box extends ExecutionBox
+class Python3CompilationBox extends CompilationBox
 {
   /** Type key */
-  public static $PYTHON3_TYPE = "python3";
+  public static $PYTHON3_COMPILATION_TYPE = "python3c";
   public static $PYTHON3_BINARY = "/usr/bin/python3";
-  public static $SOURCE_FILE_PORT_KEY = "source-file";
-  public static $DEFAULT_NAME = "Python3 Execution";
+  public static $PYC_FILE_PORT_KEY = "pyc-file";
+  public static $DEFAULT_NAME = "Python3 Compilation";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -33,13 +33,10 @@ class Python3Box extends ExecutionBox
       self::$initialized = true;
       self::$defaultInputPorts = array(
         new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$OUTPUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$PYC_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -58,7 +55,7 @@ class Python3Box extends ExecutionBox
    * @return string
    */
   public function getType(): string {
-    return self::$PYTHON3_TYPE;
+    return self::$PYTHON3_COMPILATION_TYPE;
   }
 
   /**
@@ -96,14 +93,18 @@ class Python3Box extends ExecutionBox
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
+    $task->setCommandArguments(["-m", "compileall", "-b", "."]);
 
-    $args = [$this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
-    if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
-      $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
-    }
-    $task->setCommandArguments($args);
+    // determine name of pyc file and set it to variable
+    $sourceFile = $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getValue();
+    $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME);
+    $this->getOutputPortValue(self::$PYC_FILE_PORT_KEY)->setValue($pycFilename);
 
-    return [$task];
+    // check if file produced by compilation was successfully created
+    $pycFile = $this->getOutputPortValue(self::$PYC_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+    $exists = $this->compileExistsTask([$pycFile]);
+
+    return [$task, $exists];
   }
 
 }

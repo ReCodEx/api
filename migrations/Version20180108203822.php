@@ -32,10 +32,12 @@ class Version20180108203822 extends AbstractMigration
     foreach ($configResult as $exerciseConfig) {
       $config = Yaml::parse($exerciseConfig["config"]);
 
+      $pipelineFound = false;
       foreach ($config["tests"] as &$test) {
         foreach ($test["environments"] as &$env) {
           foreach ($env["pipelines"] as &$pipeline) {
             if (in_array($pipeline["name"], $changedPipelines)) {
+              $pipelineFound = true;
               $pipeline["variables"][] = [
                 "name" => self::$EXTRA_FILES_PORT,
                 "type" => self::$REMOTE_FILES_TYPE,
@@ -51,8 +53,10 @@ class Version20180108203822 extends AbstractMigration
         }
       }
 
-      $this->connection->executeQuery("UPDATE exercise_config SET config = :config WHERE id = :id",
-        ["id" => $exerciseConfig["id"], "config" => Yaml::dump($config)]);
+      if ($pipelineFound) {
+        $this->connection->executeQuery("UPDATE exercise_config SET config = :config WHERE id = :id",
+          ["id" => $exerciseConfig["id"], "config" => Yaml::dump($config)]);
+      }
     }
   }
 
