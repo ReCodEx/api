@@ -347,11 +347,17 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise that should be synchronized
    * @POST
    * @throws ForbiddenRequestException
+   * @throws BadRequestException
    */
   public function actionSyncWithExercise($id) {
     $assignment = $this->assignments->findOrThrow($id);
     if (!$this->assignmentAcl->canUpdate($assignment)) {
       throw new ForbiddenRequestException("You cannot sync this assignment.");
+    }
+
+    $exercise = $assignment->getExercise();
+    if ($exercise->isBroken()) {
+      throw new BadRequestException("Exercise '{$exercise->getId()}' is broken. If you are the author, check its configuration");
     }
 
     $assignment->updatedNow();

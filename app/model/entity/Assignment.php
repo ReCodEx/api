@@ -350,6 +350,7 @@ class Assignment implements JsonSerializable, IExercise
       "isBonus" => $this->isBonus,
       "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
       "exerciseSynchronizationInfo" => [
+        "isSynchronizationPossible" => !$this->getExercise()->isBroken(),
         "updatedAt" => [
           "assignment" => $this->updatedAt->getTimestamp(),
           "exercise" => $this->getExercise()->getUpdatedAt()->getTimestamp(),

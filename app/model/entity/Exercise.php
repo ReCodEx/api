@@ -250,6 +250,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->scoreCalculator = $scoreCalculator;
     $this->scoreConfig = $scoreConfig;
     $this->configurationType = $configurationType;
+    $this->validationError = "";
   }
 
   public static function create(User $user, ?Group $group = NULL): Exercise {
