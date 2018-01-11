@@ -2,21 +2,17 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
-use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
  * Box which represents data source, mainly files.
  */
-class FetchFileBox extends Box
+class FetchFileBox extends FetchBox
 {
   /** Type key */
   public static $FETCH_TYPE = "fetch-file";
@@ -94,17 +90,9 @@ class FetchFileBox extends Box
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    $task = new Task();
-    $task->setPriority(Priorities::$DEFAULT);
-
-    // remote file has to have fetch task
-    $task->setCommandBinary(TaskCommands::$FETCH);
-    $task->setCommandArguments([
-      $this->getInputPortValue(self::$REMOTE_PORT_KEY)->getValue(),
-      $this->getOutputPortValue(self::$INPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)
-    ]);
-
-    return [$task];
+    $remoteFiles = [$this->getInputPortValue(self::$REMOTE_PORT_KEY)->getValue()];
+    $files = [$this->getOutputPortValue(self::$INPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
+    return $this->compileInternal($remoteFiles, $files);
   }
 
 }
