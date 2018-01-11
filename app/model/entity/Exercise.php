@@ -19,7 +19,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method Collection getRuntimeEnvironments()
+ * @method Collection getExerciseLimits()
+ * @method Collection getExerciseEnvironmentConfigs()
  * @method User getAuthor()
  * @method int getVersion()
  * @method void setScoreConfig(string $scoreConfig)
@@ -386,5 +387,13 @@ class Exercise implements JsonSerializable, IExercise
 
   public function clearExerciseLimits() {
     $this->exerciseLimits->clear();
+  }
+
+  /**
+   * Get all runtime environments associated with the exercise
+   * @return Collection
+   */
+  public function getRuntimeEnvironments(): Collection {
+    return $this->runtimeEnvironments;
   }
 }

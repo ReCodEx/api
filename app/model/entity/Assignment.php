@@ -21,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method Collection getRuntimeEnvironments()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
@@ -415,5 +414,13 @@ class Assignment implements JsonSerializable, IExercise
         ]
       ]
     ];
+  }
+
+  /**
+   * Get all runtime environments associated with the exercise
+   * @return Collection
+   */
+  public function getRuntimeEnvironments(): Collection {
+    return $this->runtimeEnvironments;
   }
 }

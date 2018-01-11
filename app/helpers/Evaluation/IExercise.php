@@ -24,6 +24,12 @@ interface IExercise {
   function getHardwareGroups(): Collection;
 
   /**
+   * Get all runtime environments associated with the exercise
+   * @return Collection
+   */
+  function getRuntimeEnvironments(): Collection;
+
+  /**
    * Get tests which belongs to exercise.
    * @return Collection
    */
