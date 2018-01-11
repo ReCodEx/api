@@ -5,11 +5,8 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
-use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
 
@@ -17,7 +14,7 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents data source, mainly files.
  */
-class FetchFilesBox extends Box
+class FetchFilesBox extends FetchBox
 {
   /** Type key */
   public static $FETCH_TYPE = "fetch-files";
@@ -92,7 +89,7 @@ class FetchFilesBox extends Box
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
+   * @return Task[]
    * @throws ExerciseConfigException in case of compilation error
    */
   public function compile(CompilationParams $params): array {
@@ -108,24 +105,7 @@ class FetchFilesBox extends Box
 
     $remoteFiles = array_values($remoteVariable->getValue());
     $files = array_values($variable->getPrefixedValue(ConfigParams::$SOURCE_DIR));
-
-    // general foreach for both local and remote files
-    $tasks = [];
-    for ($i = 0; $i < count($files); ++$i) {
-      $task = new Task();
-      $task->setPriority(Priorities::$DEFAULT);
-
-      // remote file has to have fetch task
-      $task->setCommandBinary(TaskCommands::$FETCH);
-      $task->setCommandArguments([
-        $remoteFiles[$i],
-        $files[$i]
-      ]);
-
-      // add task to result
-      $tasks[] = $task;
-    }
-    return $tasks;
+    return $this->compileInternal($remoteFiles, $files);
   }
 
 }
