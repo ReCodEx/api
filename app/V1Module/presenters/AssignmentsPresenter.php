@@ -304,6 +304,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("Exercise '$exerciseId' is locked");
     }
 
+    if ($exercise->isBroken()) {
+      throw new BadRequestException("Exercise '$exerciseId' is broken. If you are the author, check its configuration");
+    }
+
     if ($exercise->getReferenceSolutions()->isEmpty()) {
       throw new BadRequestException("Exercise '$exerciseId' does not have any reference solutions");
     }
