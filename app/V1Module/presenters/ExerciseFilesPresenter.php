@@ -6,6 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
+use App\Helpers\ExerciseConfigChecker;
 use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
@@ -75,6 +76,11 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public $restrictionsConfig;
 
+  /**
+   * @var ExerciseConfigChecker
+   * @inject
+   */
+  public $configChecker;
 
   /**
    * Associate supplementary files with an exercise and upload them to remote file server
@@ -194,6 +200,10 @@ class ExerciseFilesPresenter extends BasePresenter {
     $exercise->updatedNow();
     $exercise->removeSupplementaryEvaluationFile($file);
     $this->exercises->flush();
+
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse("OK");
   }
 
