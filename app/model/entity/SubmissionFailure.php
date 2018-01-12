@@ -114,6 +114,7 @@ class SubmissionFailure implements JsonSerializable {
 
   function jsonSerialize() {
     return [
+      "id" => $this->id,
       "type" => $this->type,
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
