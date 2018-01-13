@@ -306,6 +306,23 @@ permissions:
       conditions:
           - exercise.isAuthor
 
+    - allow: true # Admin of the group of an exercise has most of the rights to the exercise
+      resource: exercise
+      actions:
+          - viewDetail
+          - viewLimits
+          - setLimits
+          - viewScoreConfig
+          - setScoreConfig
+          - update
+          - fork
+          - addReferenceSolution
+          - evaluateReferenceSolution
+          - createPipeline
+          - viewPipelines
+      conditions:
+          - exercise.isSuperGroupAdmin
+
     - allow: true
       resource: exercise
       actions:
