@@ -35,7 +35,7 @@ class CleanupUploads extends Command {
   }
 
   protected function configure() {
-    $this->setName('uploads:cleanup')->setDescription('Remove unused uploaded files.');
+    $this->setName('db:cleanup:uploads')->setDescription('Remove unused uploaded files.');
   }
 
   protected function execute(InputInterface $input, OutputInterface $output) {

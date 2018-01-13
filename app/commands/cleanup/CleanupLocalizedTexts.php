@@ -1,10 +1,8 @@
 <?php
 namespace App\Console;
 
-use App\Helpers\UploadsConfig;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use DateTime;
@@ -37,7 +35,7 @@ class CleanupLocalizedTexts extends Command {
   }
 
   protected function configure() {
-    $this->setName('localized-texts:cleanup')->setDescription('Remove unused localized texts that are older than 14 days.');
+    $this->setName('db:cleanup:localized-texts')->setDescription('Remove unused localized texts that are older than 14 days.');
   }
 
   protected function execute(InputInterface $input, OutputInterface $output) {
