@@ -37,6 +37,7 @@ class ExerciseConfig
 
   /**
    * @ORM\ManyToOne(targetEntity="ExerciseConfig")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    */
   protected $createdFrom;
 

@@ -83,6 +83,14 @@ trait ExerciseData {
   protected $exerciseLimits;
 
   /**
+   * Get collection of limits belonging to exercise.
+   * @return Collection
+   */
+  public function getExerciseLimits(): Collection {
+    return $this->exerciseLimits;
+  }
+
+  /**
    * Get exercise limits based on environment.
    * @param RuntimeEnvironment $environment
    * @return ExerciseLimits[]
@@ -115,6 +123,14 @@ trait ExerciseData {
    * @var Collection|Selectable
    */
   protected $exerciseEnvironmentConfigs;
+
+  /**
+   * Get collection of environment configs belonging to exercise.
+   * @return Collection
+   */
+  public function getExerciseEnvironmentConfigs(): Collection {
+    return $this->exerciseEnvironmentConfigs;
+  }
 
   /**
    * Get runtime configuration based on environment identification.

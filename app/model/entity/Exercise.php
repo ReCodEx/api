@@ -20,8 +20,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method Collection getRuntimeEnvironments()
- * @method Collection getExerciseLimits()
- * @method Collection getExerciseEnvironmentConfigs()
  * @method User getAuthor()
  * @method int getVersion()
  * @method void setScoreConfig(string $scoreConfig)

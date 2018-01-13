@@ -41,6 +41,7 @@ class ExerciseLimits implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="ExerciseLimits")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    */
   protected $createdFrom;
 

@@ -44,6 +44,7 @@ class ExerciseEnvironmentConfig
   /**
    * Created from.
    * @ORM\ManyToOne(targetEntity="ExerciseEnvironmentConfig")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    * @var ExerciseEnvironmentConfig
    */
   protected $createdFrom;

@@ -3,11 +3,10 @@ namespace App\Console;
 
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
-use App\Model\Repository\Assignments;
-use App\Model\Repository\Exercises;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,19 +17,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupLocalizedTexts extends Command {
 
-  /** @var Exercises */
+  /** @var EntityRepository */
   private $exercises;
 
-  /** @var Assignments */
+  /** @var EntityRepository */
   private $assignments;
 
   /** @var EntityManager */
   private $entityManager;
 
-  public function __construct(Exercises $exercises, Assignments $assignments, EntityManager $entityManager) {
+  public function __construct(EntityManager $entityManager) {
     parent::__construct();
-    $this->exercises = $exercises;
-    $this->assignments = $assignments;
+    $this->exercises = $entityManager->getRepository(Exercise::class); // even deleted exercises has to be found
+    $this->assignments = $entityManager->getRepository(Assignment::class); // even deleted assignments has to be found
     $this->entityManager = $entityManager;
   }
 

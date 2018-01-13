@@ -36,11 +36,23 @@ interface IExercise {
   function getExerciseConfig(): ExerciseConfig;
 
   /**
+   * Get collection of environment configs belonging to exercise.
+   * @return Collection
+   */
+  function getExerciseEnvironmentConfigs(): Collection;
+
+  /**
    * Based on runtime environment get corresponding environment configuration.
    * @param RuntimeEnvironment $environment
    * @return ExerciseEnvironmentConfig|null
    */
   function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig;
+
+  /**
+   * Get collection of limits belonging to exercise.
+   * @return Collection
+   */
+  function getExerciseLimits(): Collection;
 
   /**
    * Get limits configuration entity based on environment and hardware group.
