@@ -21,6 +21,8 @@ class Version20180109174902 extends AbstractMigration
   public static $SOURCE_FILE_PORT = "source-file";
   public static $EXTRAS_BOX_NAME = "extras";
   public static $EXTRA_FILES_PORT = "extra-files";
+  public static $EXTRA_FILE_NAMES_PORT = "extra-file-names";
+  public static $EXTRA_FILE_NAMES_REF = "\$extra-file-names";
   public static $PYC_FILE_PORT = "pyc-file";
   public static $PYTHON_COMPILATION_BOX_TYPE = "python3c";
 
@@ -101,7 +103,7 @@ class Version20180109174902 extends AbstractMigration
         [
           "name" => self::$EXTRA_FILES_PORT,
           "type" => self::$FILES_TYPE,
-          "value" => []
+          "value" => self::$EXTRA_FILE_NAMES_REF
         ],
         [
           "name" => self::$PYC_FILE_PORT,
@@ -185,6 +187,11 @@ class Version20180109174902 extends AbstractMigration
               $pipeline["variables"][] = [
                 "name" => self::$EXTRA_FILES_PORT,
                 "type" => self::$REMOTE_FILES_TYPE,
+                "value" => []
+              ];
+              $pipeline["variables"][] = [
+                "name" => self::$EXTRA_FILE_NAMES_PORT,
+                "type" => self::$FILES_TYPE,
                 "value" => []
               ];
             }
