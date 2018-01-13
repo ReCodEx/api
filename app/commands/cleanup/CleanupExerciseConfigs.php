@@ -4,10 +4,11 @@ namespace App\Console;
 
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Repository\Assignments;
+use App\Model\Repository\Exercises;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,19 +19,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupExerciseConfigs extends Command {
 
-  /** @var EntityRepository */
+  /** @var Exercises */
   private $exercises;
 
-  /** @var EntityRepository */
+  /** @var Assignments */
   private $assignments;
 
   /** @var EntityManager */
   private $entityManager;
 
-  public function __construct(EntityManager $entityManager) {
+  public function __construct(Exercises $exercises, Assignments $assignments, EntityManager $entityManager) {
     parent::__construct();
-    $this->exercises = $entityManager->getRepository(Exercise::class); // even deleted exercises has to be found
-    $this->assignments = $entityManager->getRepository(Assignment::class); // even deleted assignments has to be found
+    $this->exercises = $exercises;
+    $this->assignments = $assignments;
     $this->entityManager = $entityManager;
   }
 
@@ -47,14 +48,14 @@ class CleanupExerciseConfigs extends Command {
     $usedConfigs = [];
 
     /** @var Exercise $exercise */
-    foreach ($this->exercises->findAll() as $exercise) {
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
       foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
         $usedConfigs[] = $config->getId();
       }
     }
 
     /** @var Assignment $assignment */
-    foreach ($this->assignments->findAll() as $assignment) {
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
       foreach ($assignment->getExerciseEnvironmentConfigs() as $config) {
         $usedConfigs[] = $config->getId();
       }
@@ -79,12 +80,12 @@ class CleanupExerciseConfigs extends Command {
     $usedConfigs = [];
 
     /** @var Exercise $exercise */
-    foreach ($this->exercises->findAll() as $exercise) {
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
       $usedConfigs[] = $exercise->getExerciseConfig()->getId();
     }
 
     /** @var Assignment $assignment */
-    foreach ($this->assignments->findAll() as $assignment) {
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
       $usedConfigs[] = $assignment->getExerciseConfig()->getId();
     }
 
@@ -107,14 +108,14 @@ class CleanupExerciseConfigs extends Command {
     $usedLimits = [];
 
     /** @var Exercise $exercise */
-    foreach ($this->exercises->findAll() as $exercise) {
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
       foreach ($exercise->getExerciseLimits() as $limits) {
         $usedLimits[] = $limits->getId();
       }
     }
 
     /** @var Assignment $assignment */
-    foreach ($this->assignments->findAll() as $assignment) {
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
       foreach ($assignment->getExerciseLimits() as $limits) {
         $usedLimits[] = $limits->getId();
       }
@@ -135,11 +136,11 @@ class CleanupExerciseConfigs extends Command {
     $limit = clone $now;
     $limit->modify("-14 days");
 
-    $deletedEnv = $this->cleanupEnvironmentConfigs($limit);
-    $deletedConf = $this->cleanupExerciseConfigs($limit);
-    $deletedLim = $this->cleanupLimits($limit);
+    $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
+    $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
+    $deletedLimsCount = $this->cleanupLimits($limit);
 
-    $output->writeln(sprintf("Removed: %d environment configs; %d exercise configs; %d exercise limits", $deletedEnv, $deletedConf, $deletedLim));
+    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits");
     return 0;
   }
 }

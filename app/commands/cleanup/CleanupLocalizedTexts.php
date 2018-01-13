@@ -3,10 +3,11 @@ namespace App\Console;
 
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Repository\Assignments;
+use App\Model\Repository\Exercises;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,19 +18,19 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupLocalizedTexts extends Command {
 
-  /** @var EntityRepository */
+  /** @var Exercises */
   private $exercises;
 
-  /** @var EntityRepository */
+  /** @var Assignments */
   private $assignments;
 
   /** @var EntityManager */
   private $entityManager;
 
-  public function __construct(EntityManager $entityManager) {
+  public function __construct(Exercises $exercises, Assignments $assignments, EntityManager $entityManager) {
     parent::__construct();
-    $this->exercises = $entityManager->getRepository(Exercise::class); // even deleted exercises has to be found
-    $this->assignments = $entityManager->getRepository(Assignment::class); // even deleted assignments has to be found
+    $this->exercises = $exercises;
+    $this->assignments = $assignments;
     $this->entityManager = $entityManager;
   }
 
@@ -45,14 +46,14 @@ class CleanupLocalizedTexts extends Command {
     $usedTexts = [];
 
     /** @var Exercise $exercise */
-    foreach ($this->exercises->findAll() as $exercise) {
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
       foreach ($exercise->getLocalizedTexts() as $localizedText) {
         $usedTexts[] = $localizedText->getId();
       }
     }
 
     /** @var Assignment $assignment */
-    foreach ($this->assignments->findAll() as $assignment) {
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
       foreach ($assignment->getLocalizedTexts() as $localizedText) {
         $usedTexts[] = $localizedText->getId();
       }
