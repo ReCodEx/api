@@ -213,6 +213,7 @@ services:
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
+  - App\Console\CleanupPipelineConfigs
 
   # migrations commands
   - Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand

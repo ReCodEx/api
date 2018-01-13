@@ -45,6 +45,7 @@ class PipelineConfig
 
   /**
    * @ORM\ManyToOne(targetEntity="PipelineConfig")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    */
   protected $createdFrom;
 
