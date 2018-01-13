@@ -56,7 +56,7 @@ recommended way of ensuring this is using a crontab like this:
 
 ```
 04	00	*	*	*	php www/index.php notifications:assignment-deadlines "1 day"
-02	00	*	*	*	php www/index.php uploads:cleanup
+02	00	*	*	*	php www/index.php db:cleanup:uploads
 ```
 
 Adminer
