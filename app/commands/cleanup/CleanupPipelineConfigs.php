@@ -3,10 +3,10 @@
 namespace App\Console;
 
 use App\Model\Entity\Pipeline;
+use App\Model\Repository\Pipelines;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,15 +17,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupPipelineConfigs extends Command {
 
-  /** @var EntityRepository */
+  /** @var Pipelines */
   private $pipelines;
 
   /** @var EntityManager */
   private $entityManager;
 
-  public function __construct(EntityManager $entityManager) {
+  public function __construct(Pipelines $pipelines, EntityManager $entityManager) {
     parent::__construct();
-    $this->pipelines = $entityManager->getRepository(Pipeline::class); // even deleted pipelines has to be found
+    $this->pipelines = $pipelines;
     $this->entityManager = $entityManager;
   }
 
@@ -41,7 +41,7 @@ class CleanupPipelineConfigs extends Command {
     $usedConfigs = [];
 
     /** @var Pipeline $pipeline */
-    foreach ($this->pipelines->findAll() as $pipeline) {
+    foreach ($this->pipelines->findAllAndIReallyMeanAllOkay() as $pipeline) {
       $usedConfigs[] = $pipeline->getPipelineConfig()->getId();
     }
 

@@ -19,6 +19,10 @@ class BaseSoftDeleteRepository extends BaseRepository {
     ]);
   }
 
+  public function findAllAndIReallyMeanAllOkay() {
+    return $this->repository->findAll();
+  }
+
   public function findBy($params, $orderBy = []) {
     return $this->repository->findBy(array_merge($params, [
       $this->softDeleteColumn => NULL
