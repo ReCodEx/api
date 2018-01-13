@@ -388,12 +388,4 @@ class Exercise implements JsonSerializable, IExercise
   public function clearExerciseLimits() {
     $this->exerciseLimits->clear();
   }
-
-  /**
-   * Get all runtime environments associated with the exercise
-   * @return Collection
-   */
-  public function getRuntimeEnvironments(): Collection {
-    return $this->runtimeEnvironments;
-  }
 }

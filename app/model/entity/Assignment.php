@@ -416,11 +416,4 @@ class Assignment implements JsonSerializable, IExercise
     ];
   }
 
-  /**
-   * Get all runtime environments associated with the exercise
-   * @return Collection
-   */
-  public function getRuntimeEnvironments(): Collection {
-    return $this->runtimeEnvironments;
-  }
 }

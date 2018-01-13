@@ -47,6 +47,14 @@ trait ExerciseData {
   protected $runtimeEnvironments;
 
   /**
+   * Get all runtime environments associated with the object
+   * @return Collection
+   */
+  public function getRuntimeEnvironments(): Collection {
+    return $this->runtimeEnvironments;
+  }
+
+  /**
    * Get IDs of all available runtime environments
    * @return array
    */
