@@ -1,5 +1,5 @@
 <?php
-namespace App\Helpers;
+namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig;
@@ -8,6 +8,9 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\RuntimeEnvironment;
 use Nette\SmartObject;
 
+/**
+ * A helper that hopes to detect broken exercise configurations by attempting to compile them.
+ */
 class ExerciseConfigChecker {
   use SmartObject;
 
@@ -33,6 +36,11 @@ class ExerciseConfigChecker {
     return ["main.{$extension}"];
   }
 
+  /**
+   * Check the configuration of an exercise (including all environment configs) and set the `isBroken` flag if there is
+   * an error.
+   * @param Exercise $exercise the exercise whose configuration should be checked
+   */
   public function check(Exercise $exercise) {
     try {
       $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());

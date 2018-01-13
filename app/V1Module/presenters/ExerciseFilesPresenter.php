@@ -6,7 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
-use App\Helpers\ExerciseConfigChecker;
+use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;

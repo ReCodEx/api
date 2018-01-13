@@ -304,7 +304,7 @@ services:
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
   - App\Helpers\PermissionsResponseDecorator
   - App\Helpers\UserActions
-  - App\Helpers\ExerciseConfigChecker
+  - App\Helpers\ExerciseConfig\ExerciseConfigChecker
 
   # models - repositories
   - App\Model\Repository\Comments
