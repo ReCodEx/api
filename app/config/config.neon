@@ -212,6 +212,7 @@ services:
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
+  - App\Console\CleanupExerciseConfigs
 
   # migrations commands
   - Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand
