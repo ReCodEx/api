@@ -17,6 +17,8 @@ class TaskResult {
   const TASK_ID_KEY = "task-id";
   const STATUS_KEY = "status";
   const OUTPUT_KEY = "output";
+  const OUTPUT_STDOUT_KEY = "stdout";
+  const OUTPUT_STDERR_KEY = "stderr";
 
   /** @var array Raw data */
   protected $data;
@@ -28,7 +30,7 @@ class TaskResult {
   private $status;
 
   /** @var string Output of the task */
-  protected $output;
+  protected $output = "";
 
   /**
    * Constructor
@@ -49,9 +51,12 @@ class TaskResult {
     $this->status = $data[self::STATUS_KEY];
 
     if (isset($data[self::OUTPUT_KEY])) {
-      $this->output = $data[self::OUTPUT_KEY];
-    } else {
-      $this->output = "";
+      if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY])) {
+        $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
+      }
+      if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
+        $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
+      }
     }
   }
 

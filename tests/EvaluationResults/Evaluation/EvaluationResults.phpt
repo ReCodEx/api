@@ -15,6 +15,9 @@ use App\Helpers\EvaluationResults\TestResult;
 
 use App\Exceptions\ResultsLoadingException;
 
+/**
+ * @testCase
+ */
 class TestEvaluationResults extends Tester\TestCase
 {
 
@@ -270,7 +273,7 @@ class TestEvaluationResults extends Tester\TestCase
       ]
     ];
 
-    $evalRes = [ "task-id" => "Y", "status" => "OK", "output" => "0.456" ];
+    $evalRes = [ "task-id" => "Y", "status" => "OK", "output" => [ "stdout" => "0.456" ] ];
     $results = new EvaluationResults([
       "job-id" => "student_bla bla bla",
       "hw-group" => "A",
