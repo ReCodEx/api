@@ -7,6 +7,9 @@ use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\Stats;
 use App\Exceptions\ResultsLoadingException;
 
+/**
+ * @testCase
+ */
 class TestEvaluationTask extends Tester\TestCase
 {
 
@@ -20,10 +23,10 @@ class TestEvaluationTask extends Tester\TestCase
   }
 
   public function testParsingParams() {
-    $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => "123" ]);
+    $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => [ "stdout" => "123", "stderr" => "456" ] ]);
     Assert::same("ABC", $result->getId());
     Assert::same("XYZ", $result->getStatus());
-    Assert::equal("123", $result->getOutput());
+    Assert::equal("123456", $result->getOutput());
   }
 
   public function testScoreCalculation() {
@@ -39,7 +42,7 @@ class TestEvaluationTask extends Tester\TestCase
     ];
 
     foreach ($judgeToScore as $judgeOutput => $score) {
-      $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => $judgeOutput ]);
+      $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => [ "stdout" => $judgeOutput ] ]);
       Assert::same($score, $result->getScore());
     }
   }
