@@ -307,24 +307,6 @@ class Group
   }
 
   /**
-   * User is admin of a group or any of its parents
-   * @param User $user
-   * @return bool
-   */
-  public function isAdminOfSuperGroup(User $user): bool {
-    $group = $this;
-    while ($group !== null) {
-      if ($group->isAdminOf($user)) {
-        return true;
-      }
-
-      $group = $group->getParentGroup();
-    }
-
-    return false;
-  }
-
-  /**
    * @ORM\OneToMany(targetEntity="Assignment", mappedBy="group")
    */
   protected $assignments;

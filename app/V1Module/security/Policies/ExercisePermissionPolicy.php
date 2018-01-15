@@ -49,7 +49,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
 
     /** @var Group $group */
     foreach ($exercise->getGroups() as $group) {
-      if ($group->isAdminOfSuperGroup($user)) {
+      if ($group->isAdminOf($user)) {
         return TRUE;
       }
     }
