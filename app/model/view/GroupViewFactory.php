@@ -141,10 +141,8 @@ class GroupViewFactory {
         "admins" => $group->getAdminsIds(),
         "supervisors" => $group->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
         "students" => $group->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
-        "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : NULL,
+        "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
         "hasValidLicence" => $group->hasValidLicence(),
-        "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : NULL,
-        "parentGroupsIds" => $group->getParentGroupsIds(),
         "assignments" => [
           "all" => $group->getAssignmentsIds(),
           "public" => $group->getAssignmentsIds($group->getPublicAssignments())
@@ -163,6 +161,8 @@ class GroupViewFactory {
       "primaryAdminsIds" => $group->getPrimaryAdmins()->map(function (User $user) {
         return $user->getId();
       })->getValues(),
+      "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
+      "parentGroupsIds" => $group->getParentGroupsIds(),
       "childGroups" => [
         "all" => $group->getChildGroupsIds(),
         "public" => $group->getPublicChildGroupsIds()
