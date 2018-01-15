@@ -19,6 +19,7 @@ class Python3CompilationBox extends CompilationBox
   public static $PYTHON3_COMPILATION_TYPE = "python3c";
   public static $PYTHON3_BINARY = "/usr/bin/python3";
   public static $PYC_FILE_PORT_KEY = "pyc-file";
+  public static $PYC_EXT = ".pyc";
   public static $DEFAULT_NAME = "Python3 Compilation";
 
   private static $initialized = false;
@@ -97,7 +98,7 @@ class Python3CompilationBox extends CompilationBox
 
     // determine name of pyc file and set it to variable
     $sourceFile = $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getValue();
-    $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME);
+    $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
     $this->getOutputPortValue(self::$PYC_FILE_PORT_KEY)->setValue($pycFilename);
 
     // check if file produced by compilation was successfully created
