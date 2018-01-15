@@ -54,6 +54,9 @@ class TaskResult {
       if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY])) {
         $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY];
       }
+      if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDOUT_KEY]) && isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
+        $this->output .= "\n";
+      }
       if (isset($data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY])) {
         $this->output .= $data[self::OUTPUT_KEY][self::OUTPUT_STDERR_KEY];
       }

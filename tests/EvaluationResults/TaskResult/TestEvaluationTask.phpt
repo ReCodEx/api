@@ -26,7 +26,7 @@ class TestEvaluationTask extends Tester\TestCase
     $result = new EvaluationTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'output' => [ "stdout" => "123", "stderr" => "456" ] ]);
     Assert::same("ABC", $result->getId());
     Assert::same("XYZ", $result->getStatus());
-    Assert::equal("123456", $result->getOutput());
+    Assert::equal("123\n456", $result->getOutput());
   }
 
   public function testScoreCalculation() {
