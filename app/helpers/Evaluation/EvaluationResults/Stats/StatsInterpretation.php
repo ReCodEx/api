@@ -38,6 +38,9 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function isWallTimeOK(): bool {
+    if ($this->stats->isStatusTO()) {
+      return false;
+    }
     return $this->limits === null || $this->stats->isWallTimeOK($this->limits->getWallTime());
   }
 
@@ -46,6 +49,9 @@ class StatsInterpretation {
    * @return boolean The result
    */
   public function isCpuTimeOK(): bool {
+    if ($this->stats->isStatusTO()) {
+      return false;
+    }
     return $this->limits === null || $this->stats->isCpuTimeOK($this->limits->getTimeLimit());
   }
 
@@ -81,7 +87,9 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedWallTimeRatio(): float {
-    if ($this->limits === null || $this->limits->getWallTime() === 0.0) {
+    if ($this->stats->isStatusTO()) {
+      return 1;
+    } else if ($this->limits === null || $this->limits->getWallTime() == 0.0) {
       return 0;
     }
     return floatval($this->stats->getUsedWallTime()) / floatval($this->limits->getWallTime());
@@ -100,7 +108,9 @@ class StatsInterpretation {
    * @return float Ratio between 0.0 and 1.0
    */
   public function getUsedCpuTimeRatio(): float {
-    if ($this->limits === null || $this->limits->getTimeLimit() === 0.0) {
+    if ($this->stats->isStatusTO()) {
+      return 1;
+    } else if ($this->limits === null || $this->limits->getTimeLimit() == 0.0) {
       return 0;
     }
     return floatval($this->stats->getUsedCpuTime()) / floatval($this->limits->getTimeLimit());

@@ -103,4 +103,27 @@ class SkippedStats implements IStats {
     return "SKIPPED";
   }
 
+  /**
+   * Get status of sandbox execution, one of the: OK, RE, SG, TO, XX
+   * @return string
+   */
+  public function getStatus(): string {
+    return self::STATUS_OK;
+  }
+
+  /**
+   * True if status was in OK state.
+   * @return bool
+   */
+  public function isStatusOK(): bool {
+    return false;
+  }
+
+  /**
+   * Determine whether execution was killed due to time-out.
+   * @return bool
+   */
+  public function isStatusTO(): bool {
+    return false;
+  }
 }

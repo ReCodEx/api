@@ -6,6 +6,7 @@ use App\Exceptions\ResultsLoadingException;
 use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
+
 /**
  * Stats implementation for Isolate sandbox
  */
@@ -18,7 +19,6 @@ class Stats implements IStats {
   const KILLED_KEY = "killed";
   const STATUS_KEY = "status";
 
-  const STATUS_OK = "OK";
 
   /** @var array Raw data of the stats */
   private $data;
@@ -94,7 +94,8 @@ class Stats implements IStats {
    * @return boolean The result
    */
   public function doesMeetAllCriteria(Limits $limits): bool {
-    return $this->isWallTimeOK($limits->getWallTime()) &&
+    return $this->isStatusOK() &&
+      $this->isWallTimeOK($limits->getWallTime()) &&
       $this->isCpuTimeOK($limits->getTimeLimit()) &&
       $this->isMemoryOK($limits->getMemoryLimit());
   }
@@ -113,7 +114,9 @@ class Stats implements IStats {
    * @return bool The result
    */
   public function isWallTimeOK(float $secondsLimit): bool {
-    if ($secondsLimit === 0.0) {
+    if ($this->isStatusTO()) {
+      return false;
+    } else if ($secondsLimit == 0.0) {
       return true;
     }
     return $this->getUsedWallTime() <= $secondsLimit;
@@ -133,7 +136,9 @@ class Stats implements IStats {
    * @return bool The result
    */
   public function isCpuTimeOK(float $secondsLimit): bool {
-    if ($secondsLimit === 0.0) {
+    if ($this->isStatusTO()) {
+      return false;
+    } else if ($secondsLimit == 0.0) {
       return true;
     }
     return $this->getUsedCpuTime() <= $secondsLimit;
@@ -185,6 +190,30 @@ class Stats implements IStats {
    */
   public function wasKilled(): bool {
     return $this->killed;
+  }
+
+  /**
+   * Get status of sandbox execution, one of the: OK, RE, SG, TO, XX
+   * @return string
+   */
+  public function getStatus(): string {
+    return $this->status;
+  }
+
+  /**
+   * True if status was in OK state.
+   * @return bool
+   */
+  public function isStatusOK(): bool {
+    return $this->status === self::STATUS_OK;
+  }
+
+  /**
+   * Determine whether execution was killed due to time-out.
+   * @return bool
+   */
+  public function isStatusTO(): bool {
+    return $this->status === self::STATUS_TO;
   }
 
   /**
