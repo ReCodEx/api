@@ -292,47 +292,36 @@ permissions:
       actions:
           - viewDetail
           - viewLimits
-          - setLimits
           - viewScoreConfig
-          - setScoreConfig
-          - update
-          - remove
-          - fork
           - addReferenceSolution
-          - deleteReferenceSolution
-          - evaluateReferenceSolution
-          - createPipeline
           - viewPipelines
       conditions:
-          - exercise.isAuthor
+          or:
+            - exercise.isAuthor
+            - exercise.isSubGroupSupervisor
+            - exercise.isSuperGroupAdmin
 
     - allow: true # Admin of the group of an exercise has most of the rights to the exercise
       resource: exercise
       actions:
-          - viewDetail
-          - viewLimits
           - setLimits
-          - viewScoreConfig
           - setScoreConfig
           - update
           - fork
-          - addReferenceSolution
           - evaluateReferenceSolution
           - createPipeline
-          - viewPipelines
       conditions:
-          - exercise.isSuperGroupAdmin
+          or:
+            - exercise.isSuperGroupAdmin
+            - exercise.isAuthor
 
     - allow: true
       resource: exercise
       actions:
-          - viewDetail
-          - viewLimits
-          - viewScoreConfig
-          - addReferenceSolution
-          - viewPipelines
+          - remove
+          - deleteReferenceSolution
       conditions:
-          - exercise.isSubGroupSupervisor
+          - exercise.isAuthor
 
     - allow: true
       resource: exercise
@@ -380,39 +369,12 @@ permissions:
           - download
           - viewDetail
       conditions:
-          - file.isSolutionInSupervisedGroup
-
-    - allow: true
-      resource: uploadedFile
-      actions:
-          - download
-          - viewDetail
-      conditions:
-          - file.isReferenceSolutionInSupervisedSubGroup
-
-    - allow: true
-      resource: uploadedFile
-      actions:
-          - download
-          - viewDetail
-      conditions:
-          - file.isPublic
-
-    - allow: true
-      resource: uploadedFile
-      actions:
-          - download
-          - viewDetail
-      conditions:
-          - file.isOwner
-
-    - allow: true
-      resource: uploadedFile
-      actions:
-          - download
-          - viewDetail
-      conditions:
-          - file.isRelatedToAssignment
+          or:
+            - file.isSolutionInSupervisedGroup
+            - file.isReferenceSolutionInSupervisedSubGroup
+            - file.isPublic
+            - file.isOwner
+            - file.isRelatedToAssignment
 
     - allow: true
       role: supervisor
@@ -431,16 +393,9 @@ permissions:
           - viewDetail
           - downloadSupplementaryFile
       conditions:
-          - file.isAuthorOfSupplementaryFileExercises
-
-    - allow: true
-      role: supervisor
-      resource: uploadedFile
-      actions:
-          - viewDetail
-          - downloadSupplementaryFile
-      conditions:
-          - file.isSupplementaryInGroupUserSupervises
+          or:
+            - file.isAuthorOfSupplementaryFileExercises
+            - file.isSupplementaryInGroupUserSupervises
 
     #####################################
     # Runtime environments permisssions #
