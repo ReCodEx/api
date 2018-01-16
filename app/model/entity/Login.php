@@ -72,6 +72,14 @@ class Login
   }
 
   /**
+   * Determine if password hash is empty string.
+   * @return bool
+   */
+  public function isPasswordEmpty(): bool {
+    return empty($this->passwordHash);
+  }
+
+  /**
    * Verify that the given password matches the stored password.
    * @param string $password The password given by the user
    * @return bool

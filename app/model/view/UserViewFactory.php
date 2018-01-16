@@ -4,6 +4,7 @@ namespace App\Model\View;
 
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
+use App\Model\Repository\Logins;
 use App\Security\ACL\IUserPermissions;
 
 
@@ -18,8 +19,14 @@ class UserViewFactory {
    */
   public $userAcl;
 
-  public function __construct(IUserPermissions $userAcl) {
+  /**
+   * @var Logins
+   */
+  public $logins;
+
+  public function __construct(IUserPermissions $userAcl, Logins $logins) {
     $this->userAcl = $userAcl;
+    $this->logins = $logins;
   }
 
 
@@ -31,6 +38,9 @@ class UserViewFactory {
   private function getUserData(User $user, bool $canViewPrivate) {
     $privateData = null;
     if ($canViewPrivate) {
+      $login = $this->logins->findByUserId($user->getId());
+      $emptyLocalPassword = $login ? $login->isPasswordEmpty() : true;
+
       $privateData = [
         "email" => $user->getEmail(),
         "instanceId" => $user->getInstance()->getId(),
@@ -40,6 +50,7 @@ class UserViewFactory {
           "supervisorOf" => $user->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
         ],
         "settings" => $user->getSettings(),
+        "emptyLocalPassword" => $emptyLocalPassword,
         "isLocal" => $user->hasLocalAccounts(),
         "isExternal" => $user->getLogins()->isEmpty()
       ];
