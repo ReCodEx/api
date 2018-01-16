@@ -137,7 +137,7 @@ class TestResult {
   }
 
   /**
-   * Checks the configuration agains the actual performance.
+   * Checks the configuration against the actual performance.
    * @return boolean The result
    */
   public function didExecutionMeetLimits(): bool {

@@ -12,6 +12,9 @@ interface IStats {
   const EXIT_CODE_OK = 0;
   const EXIT_CODE_UNKNOWN = -1;
 
+  const STATUS_OK = "OK";
+  const STATUS_TO = "TO";
+
   /**
    * Compares all the stats to the limits
    * @param  Limits $limits The configured limits
@@ -75,4 +78,23 @@ interface IStats {
    * @return bool The result
    */
   public function wasKilled(): bool;
+
+  /**
+   * Get status of sandbox execution, one of the: OK, RE, SG, TO, XX
+   * @return string
+   */
+  public function getStatus(): string;
+
+  /**
+   * True if status was in OK state.
+   * @return bool
+   */
+  public function isStatusOK(): bool;
+
+  /**
+   * Determine whether execution was killed due to time-out.
+   * @return bool
+   */
+  public function isStatusTO(): bool;
+
 }
