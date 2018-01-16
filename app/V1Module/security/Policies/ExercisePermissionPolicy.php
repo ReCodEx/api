@@ -3,6 +3,7 @@ namespace App\Security\Policies;
 
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Group;
 use App\Security\Identity;
 
 class ExercisePermissionPolicy implements IPermissionPolicy {
@@ -28,8 +29,27 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
       return FALSE;
     }
 
+    /** @var Group $group */
     foreach ($exercise->getGroups() as $group) {
       if ($group->isAdminOrSupervisorOfSubgroup($user)) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+  }
+
+  public function isSuperGroupAdmin(Identity $identity, Exercise $exercise) {
+    $user = $identity->getUserData();
+
+    if ($user === NULL || $exercise->getGroups()->isEmpty() ||
+      $exercise->isPublic() === FALSE) {
+      return FALSE;
+    }
+
+    /** @var Group $group */
+    foreach ($exercise->getGroups() as $group) {
+      if ($group->isAdminOf($user)) {
         return TRUE;
       }
     }
