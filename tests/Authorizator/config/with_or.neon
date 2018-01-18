@@ -1,0 +1,14 @@
+roles:
+    - name: parent
+    - name: child
+      parents: parent
+
+permissions:
+    - allow: true
+      role: parent
+      resource: resource2
+      actions: action2
+      conditions:
+          - or:
+              - resource1.condition1
+              - resource2.condition2

@@ -1,21 +1,25 @@
 <?php
 namespace App\Security;
 
-use App\Exceptions\InvalidArgumentException;
 use LogicException;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\PhpLiteral;
+use Nette\PhpGenerator\Helpers;
 use Nette\Security\Permission;
 use Nette\Reflection;
 use Nette\Utils\Arrays;
 use ReflectionException;
 
 class AuthorizatorBuilder {
+  private $checkCounter;
+
   public function getClassName($uniqueId) {
     return "AuthorizatorImpl_" . $uniqueId;
   }
 
   public function build($aclInterfaces, $roles, $permissions, $uniqueId): ClassType {
+    $this->checkCounter = 0;
+
     $class = new ClassType($this->getClassName($uniqueId));
     $class->addExtend(Authorizator::class);
     $setup = $class->addMethod("setup");
@@ -50,22 +54,14 @@ class AuthorizatorBuilder {
       if (count($conditions) > 0) {
         $assertion = $class->addMethod(sprintf("_assertion_%s", $i));
 
-        foreach ($conditions as $condition) {
-          list($conditionTarget, $condition) = explode(".", $condition, 2);
+        $checkVariables = [];
+        $condition = $this->loadConditionClauses($conditions, $interface, $actions, $checkVariables);
 
-          foreach ($actions as $action) {
-            $this->checkActionProvidesContext($interface, $action, $conditionTarget);
-          }
-
-          $assertion->addBody(
-            'if (!$this->policy->check(?, ?, $this->queriedIdentity)) return FALSE;', [
-              new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
-              $condition
-            ]
-          );
+        foreach ($checkVariables as $variableName => $variableValue) {
+          $assertion->addBody("? = ?;", [new PhpLiteral($variableName), new PhpLiteral($variableValue)]);
         }
 
-        $assertion->addBody('return TRUE;');
+        $assertion->addBody("return ?;", [new PhpLiteral($condition)]);
       }
 
       $actionsString = '"' . implode('", "', $actions) . '"';
@@ -83,6 +79,53 @@ class AuthorizatorBuilder {
     $check->addBody('return FALSE;');
 
     return $class;
+  }
+
+  private function loadConditionClauses($conditions, $interface, &$actions, array &$checkValues) {
+    $type = "and";
+
+    if (!is_array($conditions)) {
+      list($conditionTarget, $condition) = explode(".", $conditions, 2);
+
+      foreach ($actions as $action) {
+        $this->checkActionProvidesContext($interface, $action, $conditionTarget);
+      }
+
+      $checkVariable = "\$check_" . $this->checkCounter++;
+      $checkValues[$checkVariable] = Helpers::format(
+       '$this->policy->check(?, ?, $this->queriedIdentity)',
+        new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
+        $condition
+      );
+
+      return $checkVariable;
+    }
+
+    if (count($conditions) === 1) {
+      if (array_key_exists("or", $conditions)) {
+        $type = "or";
+        $conditions = $conditions["or"];
+      } else if (array_key_exists("and", $conditions)) {
+        $conditions = $conditions["and"];
+      }
+    }
+
+    if (!Arrays::isList($conditions)) {
+      throw new LogicException("Incorrect usage of and/or condition clauses");
+    }
+
+    $children = [];
+    foreach ($conditions as $condition) {
+      $children[] = $this->loadConditionClauses($condition, $interface, $actions, $checkValues);
+    }
+
+    if ($type === "and") {
+      return Helpers::format("(?)", new PhpLiteral(join(" && ", $children)));
+    } else if ($type === "or") {
+      return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
+    } else {
+      return new PhpLiteral("true");
+    }
   }
 
   private function checkActionProvidesContext(?Reflection\ClassType $interface, string $action, string $contextItem) {

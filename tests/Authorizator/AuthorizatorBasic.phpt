@@ -19,6 +19,9 @@ interface ITestResource2Permissions {
   function canAction2(Resource1 $resource1, Resource2 $resource2): bool;
 }
 
+/**
+ * @testCase
+ */
 class TestAuthorizatorBasic extends Tester\TestCase
 {
   use MockeryTrait;
