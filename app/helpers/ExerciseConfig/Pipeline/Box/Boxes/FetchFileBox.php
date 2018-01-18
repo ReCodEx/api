@@ -88,11 +88,12 @@ class FetchFileBox extends FetchBox
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws \App\Exceptions\ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    $remoteFiles = [$this->getInputPortValue(self::$REMOTE_PORT_KEY)->getValue()];
-    $files = [$this->getOutputPortValue(self::$INPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
-    return $this->compileInternal($remoteFiles, $files);
+    $remoteVariables = $this->getInputPortValue(self::$REMOTE_PORT_KEY);
+    $variable = $this->getOutputPortValue(self::$INPUT_PORT_KEY);
+    return $this->compileInternal($remoteVariables, $variable, $params );
   }
 
 }

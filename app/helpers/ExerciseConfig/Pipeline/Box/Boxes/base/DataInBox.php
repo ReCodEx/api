@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
@@ -53,11 +54,12 @@ abstract class DataInBox extends Box
    * have to be performed before calling this function.
    * @param Variable|null $inputVariable
    * @param Variable $variable
+   * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
    */
   protected function compileInternal(?Variable $inputVariable,
-      Variable $variable): array {
+      Variable $variable, CompilationParams $params): array {
 
     // preparations
     $isRemote = $inputVariable && $inputVariable->isRemoteFile();
@@ -92,7 +94,7 @@ abstract class DataInBox extends Box
     // general foreach for both local and remote files
     $tasks = [];
     for ($i = 0; $i < count($files); ++$i) {
-      $task = $this->compileTask($isRemote, $inputFiles[$i], $files[$i]);
+      $task = $this->compileTask($isRemote, $inputFiles[$i], $files[$i], $params);
       $tasks[] = $task;
     }
     return $tasks;
@@ -103,13 +105,21 @@ abstract class DataInBox extends Box
    * @param bool $isRemote
    * @param string $input
    * @param string $local
+   * @param CompilationParams $params
    * @return Task
+   * @throws ExerciseConfigException
    */
-  protected function compileTask(bool $isRemote, string $input, string $local): Task {
+  protected function compileTask(bool $isRemote, string $input, string $local, CompilationParams $params): Task {
     $task = new Task();
     $task->setPriority(Priorities::$DEFAULT);
 
     if ($isRemote) {
+      // check if soon-to-be fetched file does not collide with files given by user
+      $basename = basename($local);
+      if (in_array($basename, $params->getFiles())) {
+        throw new ExerciseConfigException("File '{$basename}' is already defined by author of the exercise");
+      }
+
       // remote file has to have fetch task
       $task->setCommandBinary(TaskCommands::$FETCH);
       $task->setCommandArguments([

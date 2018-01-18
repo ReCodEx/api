@@ -103,9 +103,7 @@ class FetchFilesBox extends FetchBox
       throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FETCH_TYPE));
     }
 
-    $remoteFiles = array_values($remoteVariable->getValue());
-    $files = array_values($variable->getPrefixedValue(ConfigParams::$SOURCE_DIR));
-    return $this->compileInternal($remoteFiles, $files);
+    return $this->compileInternal($remoteVariable, $variable, $params);
   }
 
 }

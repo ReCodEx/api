@@ -2,8 +2,12 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 
 
@@ -24,13 +28,29 @@ abstract class FetchBox extends Box
 
   /**
    * Compile task from given information.
-   * @param string[] $remoteFiles
-   * @param string[] $files
+   * @param Variable $remote
+   * @param Variable $local
+   * @param CompilationParams $params
    * @return Task[]
+   * @throws ExerciseConfigException
    */
-  protected function compileInternal(array $remoteFiles, array $files): array {
+  protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array {
+
+    // prepare arrays which will be processed
+    $remoteFiles = array_values($remote->getValueAsArray());
+    $files = array_values($local->getPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
+
     $tasks = [];
     for ($i = 0; $i < count($files); ++$i) {
+      $file = $files[$i];
+      $basename = basename($file);
+
+      // check if soon-to-be fetched file does not collide with files given by user
+      if (in_array($basename, $params->getFiles())) {
+        throw new ExerciseConfigException("File '{$basename}' is already defined by author of the exercise");
+      }
+
+      // create task
       $task = new Task();
       $task->setPriority(Priorities::$DEFAULT);
 
@@ -38,7 +58,7 @@ abstract class FetchBox extends Box
       $task->setCommandBinary(TaskCommands::$FETCH);
       $task->setCommandArguments([
         $remoteFiles[$i],
-        $files[$i]
+        $file
       ]);
 
       // add task to result

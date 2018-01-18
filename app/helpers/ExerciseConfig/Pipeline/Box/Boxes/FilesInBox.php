@@ -112,7 +112,7 @@ class FilesInBox extends DataInBox
     }
 
     // compilation
-    return $this->compileInternal($inputVariable, $variable);
+    return $this->compileInternal($inputVariable, $variable, $params);
   }
 
 }
