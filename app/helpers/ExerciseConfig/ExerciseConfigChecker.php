@@ -48,6 +48,16 @@ class ExerciseConfigChecker {
    * @param Exercise $exercise the exercise whose configuration should be checked
    */
   public function check(Exercise $exercise) {
+    if ($exercise->getRuntimeEnvironments()->count() === 0) {
+      $exercise->setBroken("There are no runtime environments");
+      return;
+    }
+
+    if ($exercise->getLocalizedTexts()->count() === 0) {
+      $exercise->setBroken("There are no student descriptions");
+      return;
+    }
+
     try {
       $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
       $this->validator->validateExerciseConfig($exercise, $config);
