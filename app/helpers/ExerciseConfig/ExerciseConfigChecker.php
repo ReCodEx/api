@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\RuntimeEnvironment;
 use Nette\SmartObject;
@@ -20,10 +21,15 @@ class ExerciseConfigChecker {
 
   private $loader;
 
-  public function  __construct(ExerciseConfig\Compiler $compiler, ExerciseConfig\Validator $validator, ExerciseConfig\Loader $loader) {
+  /** @var ScoreCalculatorAccessor */
+  public $calculators;
+
+  public function  __construct(ExerciseConfig\Compiler $compiler, ExerciseConfig\Validator $validator,
+                               ExerciseConfig\Loader $loader, ScoreCalculatorAccessor $calculators) {
     $this->compiler = $compiler;
     $this->validator = $validator;
     $this->loader = $loader;
+    $this->calculators = $calculators;
   }
 
   /**
@@ -71,6 +77,14 @@ class ExerciseConfigChecker {
         $environment !== null ? $environment->getId() : "UNKNOWN",
         $exception->getMessage()
       ));
+      return;
+    }
+
+    // validate score configuration
+    $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
+    if (!$calculator->isScoreConfigValid($exercise->getScoreConfig())) {
+      $exercise->setBroken("The score configuration is invalid");
+      return;
     }
   }
 }
