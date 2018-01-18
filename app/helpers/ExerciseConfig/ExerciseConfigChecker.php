@@ -96,6 +96,35 @@ class ExerciseConfigChecker {
       $exercise->setBroken("The score configuration is invalid");
       return;
     }
+
+    // validate limits
+    foreach ($exercise->getRuntimeEnvironments() as $environment) {
+      foreach ($exercise->getHardwareGroups() as $hardwareGroup) {
+        $limitsEntity = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hardwareGroup);
+        if ($limitsEntity === null) {
+          $exercise->setBroken(sprintf("Limits for environment %s and hardware group %s not found",
+            $environment->getName(), $hardwareGroup->getId()));
+          return;
+        }
+
+        $limits = null;
+
+        try {
+          $limits = $this->loader->loadExerciseLimits($limitsEntity->getParsedLimits());
+        } catch (ExerciseConfigException $exception) {
+          $exercise->setBroken(sprintf("Loading limits from %s failed: %s", $limitsEntity->getId(),
+            $exception->getMessage()));
+          return;
+        }
+
+        try {
+          $this->validator->validateExerciseLimits($exercise, $limits);
+        } catch (ExerciseConfigException $exception) {
+          $exercise->setBroken(sprintf("Error in limit configuration: %s", $exception->getMessage()));
+          return;
+        }
+      }
+    }
   }
 }
 

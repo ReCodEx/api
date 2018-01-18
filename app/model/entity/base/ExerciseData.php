@@ -70,6 +70,9 @@ trait ExerciseData {
    */
   protected $hardwareGroups;
 
+  /**
+   * @return Collection|HardwareGroup[]
+   */
   public function getHardwareGroups(): Collection {
     return $this->hardwareGroups;
   }
