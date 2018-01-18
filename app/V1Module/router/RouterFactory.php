@@ -173,6 +173,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
 
+    $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
+
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
     $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
     $router[] = new GetRoute("$prefix/<id>/students/<userId>", "Groups:studentsStats");
