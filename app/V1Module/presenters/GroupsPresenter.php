@@ -167,10 +167,11 @@ class GroupsPresenter extends BasePresenter {
    * Update group info
    * @POST
    * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
-   * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
-   * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
+   * @Param(type="post", name="publicStats", validation="bool", description="Should students be able to see each other's results?")
+   * @Param(type="post", name="isPublic", validation="bool", description="Should the group be visible to all student?")
+   * @Param(type="post", name="hasThreshold", validation="bool", description="True if threshold was given, false if it should be unset")
    * @Param(type="post", name="threshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to pass the course")
-   * @Param(type="post", name="localizedTexts", validation="array", required=FALSE, description="Localized names and descriptions")
+   * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
    * @param string $id An identifier of the updated group
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
@@ -179,9 +180,9 @@ class GroupsPresenter extends BasePresenter {
     $req = $this->getRequest();
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
 
     $group = $this->groups->findOrThrow($id);
-
     if (!$this->groupAcl->canUpdate($group)) {
       throw new ForbiddenRequestException();
     }
@@ -189,8 +190,13 @@ class GroupsPresenter extends BasePresenter {
     $group->setExternalId($req->getPost("externalId"));
     $group->setPublicStats($publicStats);
     $group->setIsPublic($isPublic);
-    $threshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
-    $group->setThreshold($threshold);
+
+    if ($hasThreshold) {
+      $threshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
+      $group->setThreshold($threshold);
+    } else {
+      $group->setThreshold(null);
+    }
 
     $this->updateLocalizations($req, $group);
 
