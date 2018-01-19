@@ -142,7 +142,10 @@ class PipelinesMerger {
     }
 
     // transform remaining output from first tree into classic array
-    $newFirstOutput = array_values($outVars);
+    $newFirstOutput = [];
+    foreach ($outVars as $outVar) {
+      $newFirstOutput[] = $outVar->node;
+    }
 
     // set all necessary things into returned tree
     $tree = new MergeTree();
