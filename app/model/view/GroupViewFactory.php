@@ -156,6 +156,9 @@ class GroupViewFactory {
     return [
       "id" => $group->getId(),
       "externalId" => $group->getExternalId(),
+      "organizational" => $group->isOrganizational(),
+      "archived" => $group->isArchived(),
+      "directlyArchived" => $group->isDirectlyArchived(),
       "localizedTexts" => $group->getLocalizedTexts()->getValues(),
       "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "primaryAdminsIds" => $group->getPrimaryAdmins()->map(function (User $user) {
