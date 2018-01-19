@@ -2,11 +2,13 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -87,8 +89,8 @@ class FetchFileBox extends FetchBox
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
-   * @return array
-   * @throws \App\Exceptions\ExerciseConfigException
+   * @return Task[]
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
     $remoteVariables = $this->getInputPortValue(self::$REMOTE_PORT_KEY);
