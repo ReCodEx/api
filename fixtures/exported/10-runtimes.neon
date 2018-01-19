@@ -49,6 +49,26 @@ App\Model\Entity\RuntimeEnvironment:
 			- C# run in Mono
 			- "- name: \"source-files\"\r\n  type: \"file[]\"\r\n  value: \"*.cs\""
 
+	node-linux:
+		__construct:
+			- node-linux
+			- "JS (Node.js)"
+			- JavaScript
+			- "[js]"
+			- GNU/Linux
+			- JavaScript executed with Node.js runtime
+			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.js\""
+
+	php-linux:
+		__construct:
+			- php-linux
+			- PHP
+			- PHP
+			- "[php]"
+			- GNU/Linux
+			- PHP scripts executed with official PHP interpreter
+			- "- name: \"source-file\"\r\n  type: \"file\"\r\n  value: \"*.php\""
+
 	python3:
 		__construct:
 			- python3
