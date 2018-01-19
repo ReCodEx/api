@@ -477,6 +477,7 @@ class GroupsPresenter extends BasePresenter {
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
@@ -484,6 +485,14 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$this->groupAcl->canAddStudent($group, $user)) {
       throw new ForbiddenRequestException();
+    }
+
+    if ($group->isArchived() && !$this->groupAcl->canAddStudentToArchivedGroup($group, $user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    if ($group->isOrganizational()) {
+      throw new InvalidArgumentException("It is forbidden to add students to organizational groups");
     }
 
     // make sure that the user is not already member of the group
