@@ -43,7 +43,9 @@ class BoxService
       JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::class,
       JavacCompilationBox::$JAVAC_TYPE => JavacCompilationBox::class,
       Python3RunBox::$PYTHON3_TYPE => Python3RunBox::class,
-      Python3CompilationBox::$PYTHON3_COMPILATION_TYPE => Python3CompilationBox::class
+      Python3CompilationBox::$PYTHON3_COMPILATION_TYPE => Python3CompilationBox::class,
+      PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
+      NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class
     ];
   }
 
