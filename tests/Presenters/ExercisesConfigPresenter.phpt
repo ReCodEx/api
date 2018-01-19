@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseRestrictionsConfig;
@@ -307,8 +308,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      '1' => ['wall-time' => 1.0],
-      '2' => ['wall-time' => 2.0]
+      '1' => ['wall-time' => 1.0, 'memory' => 1024],
+      '2' => ['wall-time' => 2.0, 'memory' => 1024]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
@@ -329,6 +330,33 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $updatedLimits = $result['payload'];
     Assert::same($updatedLimits, $limits);
     Assert::count(count($this->presenter->hardwareGroups->findAll()), $exercise->getHardwareGroups()->getValues());
+  }
+
+  public function testSetLimitsIncorrect()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = current($this->exercises->findAll());
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
+
+    // prepare limits arrays
+    $limits = [
+      '1' => ['wall-time' => 1.0, 'memory' => 0],
+      '2' => ['wall-time' => 2.0, 'memory' => 0]
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setLimits',
+        'id' => $exercise->getId(),
+        'runtimeEnvironmentId' => $exerciseLimits->getRuntimeEnvironment()->getId()
+      ],
+      ['limits' => $limits]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ExerciseConfigException::class);
   }
 
   public function testGetHardwareGroupLimits()
@@ -359,7 +387,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
   public function testSetHardwareGroupLimits()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // create new hardware group
     $hwGroup = new HardwareGroup("new limits hwgroup", "desc");
@@ -370,8 +398,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // prepare limits arrays
     $limits = [
-      '1' => ['wall-time' => 1.0],
-      '2' => ['wall-time' => 2.0]
+      '1' => ['wall-time' => 1.0, 'memory' => 1024],
+      '2' => ['wall-time' => 2.0, 'memory' => 1024]
     ];
 
     $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
@@ -395,6 +423,38 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     // check also if hwgroup was properly set
     Assert::true($exercise->getHardwareGroups()->contains($hwGroup));
+  }
+
+  public function testSetHardwareGroupLimitsIncorrect()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // create new hardware group
+    $hwGroup = new HardwareGroup("new limits hwgroup", "desc");
+    $this->presenter->hardwareGroups->persist($hwGroup);
+
+    $exercise = current($this->exercises->findAll());
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
+
+    // prepare limits arrays
+    $limits = [
+      '1' => ['wall-time' => 0.0, 'memory' => 1024],
+      '2' => ['wall-time' => 0.0, 'memory' => 1024]
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setHardwareGroupLimits',
+        'id' => $exercise->getId(),
+        'runtimeEnvironmentId' => $exerciseLimits->getRuntimeEnvironment()->getId(),
+        'hwGroupId' => $hwGroup->getId()
+      ],
+      ['limits' => $limits]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ExerciseConfigException::class);
   }
 
   public function testRemoveHardwareGroupLimits()

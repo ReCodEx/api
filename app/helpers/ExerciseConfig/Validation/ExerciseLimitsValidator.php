@@ -47,12 +47,20 @@ class ExerciseLimitsValidator {
   public function validate(Exercise $exercise, ExerciseLimits $exerciseLimits) {
     $exerciseTests = $exercise->getExerciseTestsIds();
 
-    foreach ($exerciseLimits->getLimitsArray() as $testId => $firstLevel) {
+    foreach ($exerciseLimits->getLimitsArray() as $testId => $testLimits) {
       if (!in_array($testId, $exerciseTests)) {
         throw new ExerciseConfigException(sprintf(
           "Test with id '%s' is not present in the exercise configuration",
           $testId
         ));
+      }
+
+      if ($testLimits->getMemoryLimit() === 0) {
+        throw new ExerciseConfigException(sprintf("Test with id '%s' needs to have a memory limit", $testId));
+      }
+
+      if ($testLimits->getCpuTime() === 0.0 && $testLimits->getWallTime() === 0.0) {
+        throw new ExerciseConfigException(sprintf("Test with id '%s' needs to have a time limit (either cpu or wall)", $testId));
       }
     }
   }

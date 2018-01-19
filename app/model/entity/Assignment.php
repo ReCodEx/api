@@ -21,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method Collection getRuntimeEnvironments()
  * @method int getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
@@ -350,6 +349,7 @@ class Assignment implements JsonSerializable, IExercise
       "isBonus" => $this->isBonus,
       "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
       "exerciseSynchronizationInfo" => [
+        "isSynchronizationPossible" => !$this->getExercise()->isBroken(),
         "updatedAt" => [
           "assignment" => $this->updatedAt->getTimestamp(),
           "exercise" => $this->getExercise()->getUpdatedAt()->getTimestamp(),
@@ -415,4 +415,5 @@ class Assignment implements JsonSerializable, IExercise
       ]
     ];
   }
+
 }

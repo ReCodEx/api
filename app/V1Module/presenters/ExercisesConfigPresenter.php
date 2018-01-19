@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\Transformer;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
+use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseRestrictionsConfig;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
@@ -116,6 +117,11 @@ class ExercisesConfigPresenter extends BasePresenter {
    */
   public $exerciseRestrictionsConfig;
 
+  /**
+   * @var ExerciseConfigChecker
+   * @inject
+   */
+  public $configChecker;
 
   /**
    * Get runtime configurations for exercise.
@@ -210,6 +216,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // flush database changes and return successful response
     $this->exercises->flush();
+
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -275,6 +285,9 @@ class ExercisesConfigPresenter extends BasePresenter {
     // set new exercise configuration into exercise and flush changes
     $exercise->updatedNow();
     $exercise->setExerciseConfig($newConfig);
+    $this->exercises->flush();
+
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
 
     $config = $this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig);
@@ -655,6 +668,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $exercise->updatedNow();
     $this->exercises->flush();
+
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
   }
 
