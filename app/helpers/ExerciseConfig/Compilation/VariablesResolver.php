@@ -120,8 +120,11 @@ class VariablesResolver {
       $outputPort = current($inputBox->getOutputPorts());
       $variableName = $outputPort->getVariable();
       $child = current($node->getChildren());
-      $inputPortName = array_search($node, $child->getParents());
+      if ($child === false) {
+        throw new ExerciseConfigException("Input port not found for variable {$variableName}");
+      }
 
+      $inputPortName = array_search($node, $child->getParents());
       if ($inputPortName === FALSE) {
         // input node not found in parents of the next one
         throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
