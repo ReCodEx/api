@@ -22,6 +22,7 @@ use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use DateTime;
 use Nette\Application\Request;
 
 /**
@@ -228,6 +229,33 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $group->setOrganizational($isOrganizational);
+    $this->groups->persist($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+  }
+
+  /**
+   * Set the 'isArchived' flag for a group
+   * @POST
+   * @Param(type="post", name="value", validation="bool", required=TRUE, description="The value of the flag")
+   * @param string $id An identifier of the updated group
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionSetArchived(string $id) {
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canArchive($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $archive = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+
+    if ($archive) {
+      $group->archive(new DateTime());
+    } else {
+      $group->undoArchivation();
+    }
+
     $this->groups->persist($group);
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
