@@ -306,6 +306,7 @@ class TestGroupsPresenter extends Tester\TestCase
         'externalId' => 'external identification of exercise',
         'publicStats' => TRUE,
         'isPublic' => TRUE,
+        'hasThreshold' => true,
         'threshold' => 80
       ]
     );
