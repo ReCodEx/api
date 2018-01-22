@@ -86,7 +86,7 @@ class LDAPLoginService implements IExternalLoginService {
       }
     }
 
-    if (Validators::isNumeric($username)) {
+    if (!Validators::isNumeric($username)) {
       throw new WrongCredentialsException("The UKCO given by the user is not a number.");
     }
 

@@ -44,7 +44,7 @@ parameters:
       result: 1000
 
   monitor:
-    address: wss://recodex.projekty.ms.mff.cuni.cz:4443/ws
+    address: wss://recodex.mff.cuni.cz:4443/ws
 
   uploads:
     removalThreshold: "1 day"
@@ -248,7 +248,6 @@ services:
     @App\Model\Repository\ExternalLogins,
     @App\Model\Repository\Users,
     @App\Model\Repository\Logins,
-    @App\Helpers\ExternalLogin\CAS\LDAPLoginService,
     @App\Helpers\ExternalLogin\CAS\CASLoginService,
   )
 

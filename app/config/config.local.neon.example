@@ -21,7 +21,7 @@ parameters:
       password: "pass"
 
   monitor:
-    address: wss://recodex.projekty.ms.mff.cuni.cz:443/ws
+    address: wss://recodex.mff.cuni.cz:443/ws
 
   CAS:
     options:
@@ -52,7 +52,7 @@ parameters:
 
   mail:
     host: "smtp.ps.stdin.cz"
-    clientHost: recodex.projekty.ms.mff.cuni.cz
+    clientHost: recodex.mff.cuni.cz
     port: 587
     username: "user"
     password: "pass"
