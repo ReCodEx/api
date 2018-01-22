@@ -41,13 +41,21 @@ class UserViewFactory {
       $login = $this->logins->findByUserId($user->getId());
       $emptyLocalPassword = $login ? $login->isPasswordEmpty() : true;
 
+      $studentOf = $user->getGroupsAsStudent()->filter(function (Group $group) {
+        return !$group->isArchived();
+      });
+
+      $supervisorOf = $user->getGroupsAsStudent()->filter(function (Group $group) {
+        return !$group->isArchived();
+      });
+
       $privateData = [
         "email" => $user->getEmail(),
         "instanceId" => $user->getInstance()->getId(),
         "role" => $user->getRole(),
         "groups" => [
-          "studentOf" => $user->getGroupsAsStudent()->map(function (Group $group) { return $group->getId(); })->getValues(),
-          "supervisorOf" => $user->getGroupsAsSupervisor()->map(function (Group $group) { return $group->getId(); })->getValues()
+          "studentOf" => $studentOf->map(function (Group $group) { return $group->getId(); })->getValues(),
+          "supervisorOf" => $supervisorOf->map(function (Group $group) { return $group->getId(); })->getValues()
         ],
         "settings" => $user->getSettings(),
         "emptyLocalPassword" => $emptyLocalPassword,

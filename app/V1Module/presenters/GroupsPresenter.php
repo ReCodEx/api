@@ -86,7 +86,7 @@ class GroupsPresenter extends BasePresenter {
   public $userViewFactory;
 
   /**
-   * Get a list of all groups
+   * Get a list of all non-archived groups
    * @GET
    * @throws ForbiddenRequestException
    */
@@ -95,8 +95,22 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $groups = $this->groups->findAll();
+    $groups = $this->groups->findUnarchived();
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
+  }
+
+  /**
+   * Get a list of all groups
+   * @GET
+   * @throws ForbiddenRequestException
+   */
+  public function actionAll() {
+    if (!$this->groupAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
+    $groups = $this->groups->findAll();
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups, false));
   }
 
   /**

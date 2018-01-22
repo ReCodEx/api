@@ -129,7 +129,7 @@ class GroupViewFactory {
    * @param Group $group
    * @return array
    */
-  public function getGroup(Group $group): array {
+  public function getGroup(Group $group, bool $ignoreArchived = true): array {
     $canView = $this->groupAcl->canViewDetail($group);
     /** @var LocalizedGroup $primaryLocalization */
     $primaryLocalization = Localizations::getPrimaryLocalization($group->getLocalizedTexts());
@@ -153,6 +153,20 @@ class GroupViewFactory {
       ];
     }
 
+    $childGroups = $group->getChildGroups();
+    $publicChildGroups = $group->getPublicChildGroups();
+
+    if ($ignoreArchived) {
+      $childGroups = $childGroups->filter(function (Group $group) {
+        return !$group->isArchived();
+      });
+
+      $publicChildGroups = $publicChildGroups->filter(function (Group $group) {
+        return !$group->isArchived();
+      });
+    }
+
+
     return [
       "id" => $group->getId(),
       "externalId" => $group->getExternalId(),
@@ -167,8 +181,8 @@ class GroupViewFactory {
       "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
       "parentGroupsIds" => $group->getParentGroupsIds(),
       "childGroups" => [
-        "all" => $group->getChildGroupsIds(),
-        "public" => $group->getPublicChildGroupsIds()
+        "all" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
+        "public" => $publicChildGroups->map(function (Group $group) { return $group->getId(); })->getValues()
       ],
       "canView" => $canView,
       "privateData" => $privateData
@@ -180,9 +194,9 @@ class GroupViewFactory {
    * @param Group[] $groups
    * @return array
    */
-  public function getGroups(array $groups): array {
-    return array_map(function (Group $group) {
-      return $this->getGroup($group);
+  public function getGroups(array $groups, bool $ignoreArchived = true): array {
+    return array_map(function (Group $group) use ($ignoreArchived) {
+      return $this->getGroup($group, $ignoreArchived);
     }, $groups);
   }
 

@@ -463,7 +463,15 @@ class Group
     )->getValues();
   }
 
-  public function getChildGroups() {
+  public function getPublicChildGroups(): Collection {
+    return $this->getChildGroups()->filter(
+      function(Group $group) {
+        return $group->isPublic();
+      }
+    );
+  }
+
+  public function getChildGroups(): Collection {
     return $this->childGroups->filter(function (Group $group) {
       return $group->getDeletedAt() === NULL;
     });

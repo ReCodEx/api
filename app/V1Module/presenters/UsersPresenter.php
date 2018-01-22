@@ -301,7 +301,7 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of groups for a user
+   * Get a list of non-archived groups for a user
    * @GET
    * @param string $id Identifier of the user
    * @throws ForbiddenRequestException
@@ -313,14 +313,41 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
+    $asStudent = $user->getGroupsAsStudent()->filter(function (Group $group) {
+      return !$group->isArchived();
+    });
+
+    $asSupervisor = $user->getGroupsAsSupervisor()->filter(function (Group $group) {
+      return !$group->isArchived();
+    });
+
     $this->sendSuccessResponse([
-      "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues()),
-      "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues()),
+      "supervisor" => $this->groupViewFactory->getGroups($asSupervisor->getValues()),
+      "student" => $this->groupViewFactory->getGroups($asStudent->getValues()),
       "stats" => $user->getGroupsAsStudent()->map(
         function (Group $group) use ($user) {
           return $this->groupViewFactory->getStudentsStats($group, $user);
         }
-      )->getValues()
+      )->getValues(),
+    ]);
+  }
+
+  /**
+   * Get a list of all groups for a user
+   * @GET
+   * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
+   */
+  public function actionAllGroups(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canViewGroups($user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $this->sendSuccessResponse([
+      "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues(), false),
+      "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues(), false)
     ]);
   }
 

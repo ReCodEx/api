@@ -5,7 +5,7 @@ use Doctrine\Common\Collections\Criteria;
 use Kdyby\Doctrine\EntityManager;
 
 class BaseSoftDeleteRepository extends BaseRepository {
-  private $softDeleteColumn;
+  protected $softDeleteColumn;
 
   public function __construct(EntityManager $em, $entityType, $softDeleteColumn = "deletedAt")
   {
