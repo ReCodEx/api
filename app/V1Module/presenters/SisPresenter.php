@@ -225,6 +225,10 @@ class SisPresenter extends BasePresenter {
     $parentGroupId = $request->getPost("parentGroupId");
     $parentGroup = $this->groups->findOrThrow($parentGroupId);
 
+    if ($parentGroup->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
+
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
     if (!$this->sisAcl->canCreateGroup(new SisGroupContext($parentGroup, $remoteCourse), $remoteCourse)) {
@@ -267,6 +271,10 @@ class SisPresenter extends BasePresenter {
     $sisUserId = $this->getSisUserIdOrThrow($user);
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
     $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+
+    if ($group->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
 
     if (!$this->sisAcl->canBindGroup($group, $remoteCourse)) {
       throw new ForbiddenRequestException();

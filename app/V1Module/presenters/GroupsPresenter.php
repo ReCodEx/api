@@ -136,6 +136,10 @@ class GroupsPresenter extends BasePresenter {
 
     $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
+    if ($parentGroup->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
+    
     if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
       throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
