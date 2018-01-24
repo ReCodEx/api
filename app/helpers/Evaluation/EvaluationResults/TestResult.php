@@ -176,7 +176,7 @@ class TestResult {
         return false;
       }
     }
-    return false;
+    return true;
   }
 
   /**
