@@ -157,7 +157,7 @@ class SisPresenter extends BasePresenter {
 
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
       foreach ($bindings as $binding) {
-        if ($binding->getGroup() !== NULL) {
+        if ($binding->getGroup() !== NULL && !$binding->getGroup()->isArchived()) {
           /** @var Group $group */
           $group = $binding->getGroup();
           $serializedGroup = $this->groupViewFactory->getGroup($group);
@@ -197,6 +197,7 @@ class SisPresenter extends BasePresenter {
 
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
       $groups = array_map(function (SisGroupBinding $binding) { return $binding->getGroup(); }, $bindings);
+      $groups = array_filter($groups, function (Group $group) { return !$group->isArchived(); });
 
       $result[] = [
         'course' => $course,
@@ -223,6 +224,10 @@ class SisPresenter extends BasePresenter {
     $request = $this->getRequest();
     $parentGroupId = $request->getPost("parentGroupId");
     $parentGroup = $this->groups->findOrThrow($parentGroupId);
+
+    if ($parentGroup->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
 
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
@@ -267,6 +272,10 @@ class SisPresenter extends BasePresenter {
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
     $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
 
+    if ($group->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
+
     if (!$this->sisAcl->canBindGroup($group, $remoteCourse)) {
       throw new ForbiddenRequestException();
     }
@@ -292,7 +301,7 @@ class SisPresenter extends BasePresenter {
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
     $groups = array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
-      return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse);
+      return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse) && !$group->isArchived();
     });
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }

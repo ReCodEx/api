@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
@@ -21,6 +22,7 @@ use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use DateTime;
 use Nette\Application\Request;
 
 /**
@@ -84,7 +86,7 @@ class GroupsPresenter extends BasePresenter {
   public $userViewFactory;
 
   /**
-   * Get a list of all groups
+   * Get a list of all non-archived groups
    * @GET
    * @throws ForbiddenRequestException
    */
@@ -93,8 +95,22 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $groups = $this->groups->findAll();
+    $groups = $this->groups->findUnarchived();
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
+  }
+
+  /**
+   * Get a list of all groups
+   * @GET
+   * @throws ForbiddenRequestException
+   */
+  public function actionAll() {
+    if (!$this->groupAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+
+    $groups = $this->groups->findAll();
+    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups, false));
   }
 
   /**
@@ -120,6 +136,10 @@ class GroupsPresenter extends BasePresenter {
 
     $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
+    if ($parentGroup->isArchived()) {
+      throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
+    }
+    
     if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
       throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
@@ -199,6 +219,60 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $this->updateLocalizations($req, $group);
+
+    $this->groups->persist($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+  }
+
+  /**
+   * Set the 'isOrganizational' flag for a group
+   * @POST
+   * @Param(type="post", name="value", validation="bool", required=TRUE, description="The value of the flag")
+   * @param string $id An identifier of the updated group
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionSetOrganizational(string $id) {
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canUpdate($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $isOrganizational = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+
+    if ($group->getStudents()->count() > 0 && $isOrganizational) {
+      throw new InvalidArgumentException("The group already contains students");
+    }
+
+    $group->setOrganizational($isOrganizational);
+    $this->groups->persist($group);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+  }
+
+  /**
+   * Set the 'isArchived' flag for a group
+   * @POST
+   * @Param(type="post", name="value", validation="bool", required=TRUE, description="The value of the flag")
+   * @param string $id An identifier of the updated group
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionSetArchived(string $id) {
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canArchive($group)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $archive = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+
+    if ($archive) {
+      $group->archive(new DateTime());
+    } else {
+      $group->undoArchivation();
+    }
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
@@ -421,6 +495,7 @@ class GroupsPresenter extends BasePresenter {
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the student
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
@@ -428,6 +503,14 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$this->groupAcl->canAddStudent($group, $user)) {
       throw new ForbiddenRequestException();
+    }
+
+    if ($group->isArchived() && !$this->groupAcl->canAddStudentToArchivedGroup($group, $user)) {
+      throw new ForbiddenRequestException();
+    }
+
+    if ($group->isOrganizational()) {
+      throw new InvalidArgumentException("It is forbidden to add students to organizational groups");
     }
 
     // make sure that the user is not already member of the group

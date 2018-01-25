@@ -4,6 +4,7 @@ namespace App\Model\Repository;
 
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
+use Doctrine\Common\Collections\Criteria;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Group;
 
@@ -23,6 +24,25 @@ class Groups extends BaseSoftDeleteRepository  {
    */
   public function findAllByInstance(Instance $instance) {
     return $this->findBy([ 'instance' => $instance->getId() ]);
+  }
+
+  public function findUnarchived() {
+    return $this->repository->findBy([
+      $this->softDeleteColumn => null,
+      "archivationDate" => null
+    ]);
+  }
+
+  /**
+   * @return Group[]
+   */
+  public function findArchived() {
+    $qb = $this->em->createQueryBuilder();
+    $qb->select("g")
+      ->from(Group::class, "g")
+      ->where($qb->expr()->isNull("g." . $this->softDeleteColumn))
+      ->andWhere($qb->expr()->isNotNull("archivationDate"));
+    return $qb->getQuery()->getArrayResult();
   }
 
   /**

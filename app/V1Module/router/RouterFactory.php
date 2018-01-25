@@ -165,6 +165,7 @@ class RouterFactory {
     $router = new RouteList();
 
     $router[] = new GetRoute("$prefix", "Groups:");
+    $router[] = new GetRoute("$prefix/all", "Groups:all");
     $router[] = new PostRoute("$prefix", "Groups:addGroup");
     $router[] = new PostRoute("$prefix/validate-add-group-data", "Groups:validateAddGroupData");
     $router[] = new GetRoute("$prefix/<id>", "Groups:detail");
@@ -172,6 +173,9 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>", "Groups:removeGroup");
     $router[] = new GetRoute("$prefix/<id>/subgroups", "Groups:subgroups");
     $router[] = new GetRoute("$prefix/<id>/members", "Groups:members");
+
+    $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
+    $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
 
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
     $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");
@@ -297,6 +301,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new DeleteRoute("$prefix/<id>", "Users:delete");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
+    $router[] = new GetRoute("$prefix/<id>/groups/all", "Users:allGroups");
     $router[] = new GetRoute("$prefix/<id>/instances", "Users:instances");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Users:exercises");
     $router[] = new PostRoute("$prefix/<id>", "Users:updateProfile");

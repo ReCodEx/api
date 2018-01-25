@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -37,7 +38,8 @@ class Group
       User $admin = NULL,
       Group $parentGroup = NULL,
       bool $publicStats = TRUE,
-      bool $isPublic = TRUE) {
+      bool $isPublic = TRUE,
+      bool $isOrganizational = false) {
     $this->externalId = $externalId;
     $this->memberships = new ArrayCollection;
     $this->primaryAdmins = new ArrayCollection;
@@ -58,6 +60,8 @@ class Group
     if ($parentGroup !== NULL) {
       $this->parentGroup->addChildGroup($this);
     }
+
+    $this->isOrganizational = $isOrganizational;
 
     $instance->addGroup($this);
   }
@@ -105,6 +109,58 @@ class Group
 
   public function statsArePublic(): bool {
     return $this->publicStats;
+  }
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $archivationDate;
+
+  public function archive(DateTime $date = null) {
+    $date = $date ?? new DateTime();
+    $this->archivationDate = $date;
+  }
+
+  public function undoArchivation() {
+    $this->archivationDate = null;
+  }
+
+  /**
+   * A group is considered archived if it or any of its parents has the `isArchived` flag set
+   * @return bool
+   */
+  public function isArchived(): bool {
+    $group = $this;
+
+    while ($group !== null) {
+      if ($group->isDirectlyArchived()) {
+        return true;
+      }
+
+      $group = $group->getParentGroup();
+    }
+
+    return false;
+  }
+
+  /**
+   * @return bool true only if the group itself (and not its parent) was marked as archived
+   */
+  public function isDirectlyArchived(): bool {
+    return $this->archivationDate !== null;
+  }
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isOrganizational;
+
+  public function isOrganizational(): bool {
+    return $this->isOrganizational;
+  }
+
+  public function setOrganizational($value = true) {
+    $this->isOrganizational = $value;
   }
 
   /**
@@ -407,7 +463,15 @@ class Group
     )->getValues();
   }
 
-  public function getChildGroups() {
+  public function getPublicChildGroups(): Collection {
+    return $this->getChildGroups()->filter(
+      function(Group $group) {
+        return $group->isPublic();
+      }
+    );
+  }
+
+  public function getChildGroups(): Collection {
     return $this->childGroups->filter(function (Group $group) {
       return $group->getDeletedAt() === NULL;
     });
