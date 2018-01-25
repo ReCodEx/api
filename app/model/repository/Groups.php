@@ -82,6 +82,7 @@ class Groups extends BaseSoftDeleteRepository  {
     }
 
     $groupsQb->andWhere($groupsQb->expr()->eq("i.id", ":instanceId"));
+    $groupsQb->andWhere($groupsQb->expr()->isNull("g.deletedAt"));
     $groupsQb->andWhere($groupsQb->expr()->orX(...$criteria));
 
     if ($parentGroup) {
