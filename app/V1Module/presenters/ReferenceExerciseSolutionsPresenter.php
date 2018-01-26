@@ -15,6 +15,7 @@ use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\SolutionFile;
+use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
@@ -326,8 +327,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         $evaluations[] = $evaluation;
       } catch (SubmissionFailedException $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
+        $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $evaluation);
+        $this->referenceSubmissions->persist($failure, false);
         $errors[] = $hwGroup->getId();
       }
+    }
+
+    if (count($errors) > 0) {
+      $this->referenceSubmissions->flush();
     }
 
     return [$evaluations, $errors];
