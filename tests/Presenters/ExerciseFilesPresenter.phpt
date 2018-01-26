@@ -321,7 +321,22 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Assert::count($filesCount, $exercise->getAttachmentFiles());
   }
 
+  public function testDownloadAttachmentFilesArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request("V1:ExerciseFiles",
+      'GET',
+      ['action' => 'downloadAttachmentFilesArchive', 'id' => $exercise->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal("exercise-attachment-" . $exercise->getId() . '.zip', $response->getName());
+  }
+
 }
 
-$testCase = new TestExerciseFilesPresenter();
-$testCase->run();
+(new TestExerciseFilesPresenter())->run();

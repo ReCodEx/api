@@ -344,7 +344,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Download archive containing all solution files for particular reference solution.
    * @GET
-   * @param string $id
+   * @param string $id of reference solution
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException

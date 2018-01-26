@@ -11,7 +11,7 @@ use ZipArchive;
 
 /**
  * Response which is able to compress given file into ZIP archive, send it to
- * user and then delete create zip.
+ * user and then delete created zip file.
  */
 class ZipFilesResponse extends FileResponse {
 

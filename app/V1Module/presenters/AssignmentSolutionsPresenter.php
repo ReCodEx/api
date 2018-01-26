@@ -221,7 +221,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   /**
    * Download archive containing all solution files for particular solution.
    * @GET
-   * @param string $id
+   * @param string $id of assignment solution
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException
