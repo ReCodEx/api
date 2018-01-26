@@ -14,6 +14,7 @@ use App\Model\Repository\Users;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
+use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 
 /**
@@ -218,6 +219,24 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   }
 
   /**
+   * Download archive containing all solution files for particular solution.
+   * @GET
+   * @param string $id
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws \Nette\Application\BadRequestException
+   */
+  public function actionDownloadSolutionArchive(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot access archive of solution files");
+    }
+
+    $files = $solution->getSolution()->getLocalPathsOfFiles();
+    $this->sendSuccessResponse(new ZipFilesResponse($files, "solution-files-" . $id . ".zip"));
+  }
+
+  /**
    * Download result archive from backend for particular submission.
    * @GET
    * @param string $id
@@ -243,7 +262,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, $id . '.zip', "application/zip"));
+    $this->sendResponse(new GuzzleResponse($stream, "results-" . $id . ".zip", "application/zip"));
   }
 
 }

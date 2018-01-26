@@ -24,13 +24,12 @@ class ZipFilesResponse extends FileResponse {
    * ZipFilesResponse constructor.
    * @param string[] $files
    * @param null $name
-   * @param null $contentType
    * @param bool $forceDownload
    * @throws \Nette\Application\BadRequestException
    */
-  public function __construct(array $files, $name = null, $contentType = null, bool $forceDownload = true) {
+  public function __construct(array $files, $name = null, bool $forceDownload = true) {
     $zipFile = tempnam(sys_get_temp_dir(), "ReC");
-    parent::__construct($zipFile, $name, $contentType, $forceDownload);
+    parent::__construct($zipFile, $name, "application/zip", $forceDownload);
   }
 
   /**

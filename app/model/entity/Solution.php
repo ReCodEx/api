@@ -94,4 +94,14 @@ class Solution implements JsonSerializable
     })->toArray();
   }
 
+  /**
+   * Get local paths of the files which belongs to solution.
+   * @return string[]
+   */
+  public function getLocalPathsOfFiles(): array {
+    return $this->files->map(function (SolutionFile $file) {
+      return $file->getLocalFilePath();
+    })->toArray();
+  }
+
 }
