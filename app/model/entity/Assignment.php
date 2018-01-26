@@ -336,6 +336,7 @@ class Assignment implements JsonSerializable, IExercise
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
+      "exerciseId" => $this->exercise->getId(),
       "groupId" => $this->group->getId(),
       "firstDeadline" => $this->firstDeadline->getTimestamp(),
       "secondDeadline" => $this->secondDeadline->getTimestamp(),
