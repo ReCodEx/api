@@ -417,6 +417,10 @@ class ExercisesConfigPresenter extends BasePresenter {
     // update and return
     $exercise->updatedNow();
     $this->exercises->flush();
+    
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exerciseLimits->toArray());
   }
 
