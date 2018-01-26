@@ -238,7 +238,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("Submission is not evaluated yet");
     }
 
-    $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
+    $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
     if ($stream === null) {
       throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
     }

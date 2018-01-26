@@ -58,7 +58,7 @@ class FileServerProxy {
   }
 
   /**
-   * Downloads the contents of a archive file and return it in form of guzzle stream.
+   * Downloads the contents of a file and return it in form of guzzle stream.
    * <p>
    * Returning whole body is fine guzzle uses smart streams
    * which will save content to filesystem if it is too big.
@@ -67,7 +67,7 @@ class FileServerProxy {
    * @param   string $url   URL of the file
    * @return  StreamInterface|NULL Stream with contents of the archive
    */
-  public function getResultArchiveStream(string $url) {
+  public function getFileserverFileStream(string $url) {
     return $this->getRequest($url);
   }
 

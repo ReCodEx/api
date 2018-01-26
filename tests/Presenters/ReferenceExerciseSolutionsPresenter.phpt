@@ -278,7 +278,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
 
     $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+    $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
     $this->presenter->fileServerProxy = $mockProxy;
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [

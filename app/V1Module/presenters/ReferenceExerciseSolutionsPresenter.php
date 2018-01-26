@@ -365,7 +365,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new NotReadyException("Submission is not evaluated yet");
     }
 
-    $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
+    $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
     if ($stream === null) {
       throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
     }
