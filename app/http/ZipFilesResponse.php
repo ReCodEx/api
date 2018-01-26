@@ -30,6 +30,7 @@ class ZipFilesResponse extends FileResponse {
   public function __construct(array $files, $name = null, bool $forceDownload = true) {
     $zipFile = tempnam(sys_get_temp_dir(), "ReC");
     parent::__construct($zipFile, $name, "application/zip", $forceDownload);
+    $this->files = $files;
   }
 
   /**

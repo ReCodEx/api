@@ -348,6 +348,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownloadSolutionArchive(string $id) {
     $solution = $this->referenceSolutions->findOrThrow($id);
@@ -356,7 +357,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $files = $solution->getSolution()->getLocalPathsOfFiles();
-    $this->sendSuccessResponse(new ZipFilesResponse($files, "solution-files-" . $id . ".zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-" . $id . ".zip"));
   }
 
   /**

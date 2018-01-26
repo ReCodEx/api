@@ -225,6 +225,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException
+   * @throws \Nette\Application\AbortException
    */
   public function actionDownloadSolutionArchive(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -233,7 +234,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     }
 
     $files = $solution->getSolution()->getLocalPathsOfFiles();
-    $this->sendSuccessResponse(new ZipFilesResponse($files, "solution-files-" . $id . ".zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "solution-" . $id . ".zip"));
   }
 
   /**
