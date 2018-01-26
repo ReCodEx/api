@@ -66,6 +66,8 @@ class GuzzleResponse implements IResponse {
       echo $s = $this->stream->read(min(4e6, $length));
       $length -= strlen($s);
     }
+
+    $this->stream->close();
   }
 
 }
