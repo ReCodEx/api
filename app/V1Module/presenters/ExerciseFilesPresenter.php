@@ -8,6 +8,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseRestrictionsConfig;
+use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -82,6 +83,12 @@ class ExerciseFilesPresenter extends BasePresenter {
    * @inject
    */
   public $configChecker;
+
+  /**
+   * @var FileServerProxy
+   * @inject
+   */
+  public $fileServerProxy;
 
   /**
    * Associate supplementary files with an exercise and upload them to remote file server
@@ -206,6 +213,29 @@ class ExerciseFilesPresenter extends BasePresenter {
     $this->exercises->flush();
 
     $this->sendSuccessResponse("OK");
+  }
+
+  /**
+   * Download archive containing all supplementary files for exercise.
+   * @GET
+   * @param string $id of exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws \Nette\Application\BadRequestException
+   * @throws \Nette\Application\AbortException
+   */
+  public function actionDownloadSupplementaryFilesArchive(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot access archive of exercise supplementary files");
+    }
+
+    $files = [];
+    foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
+      $files[] = $this->fileServerProxy->downloadFile($file->getFileServerPath());
+    }
+
+    $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-" . $id . ".zip", true));
   }
 
   /**

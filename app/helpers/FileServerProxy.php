@@ -72,6 +72,24 @@ class FileServerProxy {
   }
 
   /**
+   * Download file from files server directly to temporary file, path of newly
+   * created file will be returned.
+   * @param string $url
+   * @return null|string ?string local path
+   */
+  public function downloadFile(string $url): ?string {
+    try {
+      $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
+      $this->client->request("GET", $url, [
+        "sink" => $tmpFile
+      ]);
+      return $tmpFile;
+    } catch (ClientException $e) {
+      return null;
+    }
+  }
+
+  /**
    * Downloads the contents of a archive file at the given URL and return
    * unparsed YAML results of evaluation.
    * @param   string $url   URL of the file

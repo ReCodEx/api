@@ -110,9 +110,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");
     $router[] = new DeleteRoute("$prefix/<id>/supplementary-files/<fileId>", "ExerciseFiles:deleteSupplementaryFile");
+    $router[] = new GetRoute("$prefix/<id>/supplementary-files/download-archive", "ExerciseFiles:downloadSupplementaryFilesArchive");
     $router[] = new GetRoute("$prefix/<id>/attachment-files", "ExerciseFiles:getAttachmentFiles");
     $router[] = new PostRoute("$prefix/<id>/attachment-files", "ExerciseFiles:uploadAttachmentFiles");
     $router[] = new DeleteRoute("$prefix/<id>/attachment-files/<fileId>", "ExerciseFiles:deleteAttachmentFile");
+    $router[] = new GetRoute("$prefix/<id>/attachment-files/download-archive", "ExerciseFiles:downloadAttachmentFilesArchive");
 
     $router[] = new GetRoute("$prefix/<id>/tests", "ExercisesConfig:getTests");
     $router[] = new PostRoute("$prefix/<id>/tests", "ExercisesConfig:setTests");

@@ -11,7 +11,8 @@ use ZipArchive;
 
 /**
  * Response which is able to compress given file into ZIP archive, send it to
- * user and then delete created zip file.
+ * user and then delete created zip file. If flag deleteFiles is true, then
+ * given files will be deleted after sending response.
  */
 class ZipFilesResponse extends FileResponse {
 
@@ -21,16 +22,23 @@ class ZipFilesResponse extends FileResponse {
   private $files;
 
   /**
+   * @var bool
+   */
+  private $deleteFiles;
+
+  /**
    * ZipFilesResponse constructor.
    * @param string[] $files
    * @param null $name
+   * @param bool $deleteFiles if true given files will be deleted after send
    * @param bool $forceDownload
-   * @throws \Nette\Application\BadRequestException
+   * @throws Nette\Application\BadRequestException
    */
-  public function __construct(array $files, $name = null, bool $forceDownload = true) {
+  public function __construct(array $files, $name = null, bool $deleteFiles = false, bool $forceDownload = true) {
     $zipFile = tempnam(sys_get_temp_dir(), "ReC");
     parent::__construct($zipFile, $name, "application/zip", $forceDownload);
     $this->files = $files;
+    $this->deleteFiles = $deleteFiles;
   }
 
   /**
@@ -73,6 +81,17 @@ class ZipFilesResponse extends FileResponse {
       FileSystem::delete($this->getFile());
     } catch (Nette\IOException $e) {
       // silent
+    }
+
+    // given files was asked to be deleted after send
+    if ($this->deleteFiles) {
+      foreach ($this->files as $file) {
+        try {
+          FileSystem::delete($file);
+        } catch (Nette\IOException $e) {
+          // silent
+        }
+      }
     }
   }
 

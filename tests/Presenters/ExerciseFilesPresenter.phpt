@@ -269,6 +269,26 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Assert::count($filesCount, $exercise->getSupplementaryEvaluationFiles());
   }
 
+  public function testDownloadSupplementaryFilesArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockFileserverProxy->shouldReceive("downloadFile")->andReturn()->zeroOrMoreTimes();
+    $this->presenter->fileServerProxy = $mockFileserverProxy;
+
+    $request = new Nette\Application\Request("V1:ExerciseFiles",
+      'GET',
+      ['action' => 'downloadSupplementaryFilesArchive', 'id' => $exercise->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal("exercise-supplementary-" . $exercise->getId() . '.zip', $response->getName());
+  }
+
   public function testGetAttachmentFiles() {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
 
