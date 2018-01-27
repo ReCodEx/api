@@ -45,7 +45,7 @@ class UserViewFactory {
         return !$group->isArchived();
       });
 
-      $supervisorOf = $user->getGroupsAsStudent()->filter(function (Group $group) {
+      $supervisorOf = $user->getGroupsAsSupervisor()->filter(function (Group $group) {
         return !$group->isArchived();
       });
 
