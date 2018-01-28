@@ -85,8 +85,8 @@ class SisValidTerm implements JsonSerializable {
       'id' => $this->id,
       'year' => $this->year,
       'term' => $this->term,
-      'beginning' => $this->beginning->getTimestamp(),
-      'end' => $this->end->getTimestamp(),
+      'beginning' => $this->beginning ? $this->beginning->getTimestamp() : null,
+      'end' => $this->end ? $this->end->getTimestamp(): null,
       'advertiseUntil' => $this->advertiseUntil ? $this->advertiseUntil->getTimestamp() : null
     ];
   }
