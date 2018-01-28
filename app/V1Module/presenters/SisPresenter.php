@@ -150,9 +150,9 @@ class SisPresenter extends BasePresenter {
   /**
    * Set details of a term
    * @POST
-   * @Param(name="beginning", type="post")
-   * @Param(name="end", type="post")
-   * @Param(name="advertiseUntil", type="post")
+   * @Param(name="beginning", type="post", validation="timestamp")
+   * @Param(name="end", type="post", validation="timestamp")
+   * @Param(name="advertiseUntil", type="post", validation="timestamp")
    * @param $id
    * @throws InvalidArgumentException
    * @throws ForbiddenRequestException
