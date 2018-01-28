@@ -4,6 +4,9 @@ namespace App\Model\Repository;
 use App\Model\Entity\SisValidTerm;
 use Kdyby\Doctrine\EntityManager;
 
+/**
+ * @method SisValidTerm findOrThrow(string $id)
+ */
 class SisValidTerms extends BaseRepository {
   public function __construct(EntityManager $em) {
     parent::__construct($em, SisValidTerm::class);

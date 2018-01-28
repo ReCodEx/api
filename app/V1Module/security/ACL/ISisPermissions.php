@@ -3,6 +3,7 @@ namespace App\Security\ACL;
 
 use App\Helpers\SisCourseRecord;
 use App\Model\Entity\Group;
+use App\Model\Entity\SisValidTerm;
 
 class SisIdWrapper {
   private $id;
@@ -40,4 +41,7 @@ interface ISisPermissions {
   function canBindGroup(Group $group, SisCourseRecord $course): bool;
   function canViewCourses(SisIdWrapper $sisId): bool;
   function canCreateTerm(): bool;
+  function canEditTerm(SisValidTerm $term): bool;
+  function canDeleteTerm(SisValidTerm $term): bool;
+  function canViewTerms(): bool;
 }

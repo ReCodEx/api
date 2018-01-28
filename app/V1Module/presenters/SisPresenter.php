@@ -95,7 +95,7 @@ class SisPresenter extends BasePresenter {
       $terms[] = [
         'year' => $term->getYear(),
         'term' => $term->getTerm(),
-        'starting' => $term->getTerm() == 1 ? $month === 9 : $month === 2 // TODO make the start of term configurable
+        'starting' => $term->isAdvertised($now)
       ];
     }
 
@@ -106,6 +106,20 @@ class SisPresenter extends BasePresenter {
   }
 
   /**
+   * Get a list of all registered SIS terms
+   * @GET
+   * @throws ForbiddenRequestException
+   */
+  public function actionGetTerms() {
+    if (!$this->sisAcl->canViewTerms()) {
+      throw new ForbiddenRequestException();
+    }
+
+    $this->sendSuccessResponse($this->sisValidTerms->findAll());
+  }
+
+  /**
+   * Register a new term
    * @POST
    * @Param(name="year", type="post")
    * @Param(name="term", type="post")
@@ -128,6 +142,65 @@ class SisPresenter extends BasePresenter {
     $this->sisHelper->getCourses($this->getSisUserIdOrThrow($this->getCurrentUser()), $year, $term);
 
     $this->sisValidTerms->persist(new SisValidTerm($year, $term));
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
+   * Set details of a term
+   * @POST
+   * @Param(name="beginning", type="post")
+   * @Param(name="end", type="post")
+   * @Param(name="advertiseUntil", type="post")
+   * @param $id
+   * @throws InvalidArgumentException
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionEditTerm(string $id) {
+    $term = $this->sisValidTerms->findOrThrow($id);
+
+    if (!$this->sisAcl->canEditTerm($term)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $beginning = DateTime::createFromFormat("U", $this->getRequest()->getPost("beginning"));
+    $end = DateTime::createFromFormat("U", $this->getRequest()->getPost("end"));
+
+    $advertiseUntil = null;
+    if ($this->getRequest()->getPost("advertiseUntil") !== null) {
+      $advertiseUntil = DateTime::createFromFormat("U", $this->getRequest()->getPost("advertiseUntil"));
+    }
+
+    if ($beginning > $end) {
+      throw new InvalidArgumentException("beginning", "The beginning must precede the end");
+    }
+
+    if ($advertiseUntil !== null && ($advertiseUntil > $end || $advertiseUntil < $beginning)) {
+      throw new InvalidArgumentException("advertiseUntil", "The 'advertiseUntil' timestamp must be within the semester");
+    }
+
+    $term->setBeginning($beginning);
+    $term->setEnd($end);
+    $term->setAdvertiseUntil($advertiseUntil);
+
+    $this->sisValidTerms->persist($term);
+    $this->sendSuccessResponse($term);
+  }
+
+  /**
+   * Delete a term
+   * @DELETE
+   * @param $id
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionDeleteTerm(string $id) {
+    $term = $this->sisValidTerms->findOrThrow($id);
+    if (!$this->sisAcl->canDeleteTerm($term)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $this->sisValidTerms->remove($term);
     $this->sendSuccessResponse("OK");
   }
 
