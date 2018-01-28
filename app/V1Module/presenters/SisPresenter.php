@@ -141,8 +141,10 @@ class SisPresenter extends BasePresenter {
     // Throws InvalidArgumentException when given term is invalid
     $this->sisHelper->getCourses($this->getSisUserIdOrThrow($this->getCurrentUser()), $year, $term);
 
-    $this->sisValidTerms->persist(new SisValidTerm($year, $term));
-    $this->sendSuccessResponse("OK");
+    $termEntity = new SisValidTerm($year, $term);
+    $this->sisValidTerms->persist($termEntity);
+    
+    $this->sendSuccessResponse($termEntity);
   }
 
   /**
