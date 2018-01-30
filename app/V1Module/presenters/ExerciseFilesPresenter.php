@@ -226,7 +226,7 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public function actionDownloadSupplementaryFilesArchive(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access archive of exercise supplementary files");
     }
 
@@ -235,7 +235,7 @@ class ExerciseFilesPresenter extends BasePresenter {
       $files[] = $this->fileServerProxy->downloadFile($file->getFileServerPath());
     }
 
-    $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-" . $id . ".zip", true));
+    $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true));
   }
 
   /**
@@ -329,14 +329,14 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public function actionDownloadAttachmentFilesArchive(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access archive of exercise attachment files");
     }
 
     $files = $exercise->getAttachmentFiles()->map(function (AttachmentFile $file) {
       return $file->getLocalFilePath();
     })->getValues();
-    $this->sendResponse(new ZipFilesResponse($files, "exercise-attachment-" . $id . ".zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "exercise-attachment-{$id}.zip"));
   }
 
 }

@@ -234,7 +234,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     }
 
     $files = $solution->getSolution()->getLocalPathsOfFiles();
-    $this->sendResponse(new ZipFilesResponse($files, "solution-" . $id . ".zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "solution-{$id}.zip"));
   }
 
   /**
@@ -263,7 +263,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, "results-" . $id . ".zip", "application/zip"));
+    $this->sendResponse(new GuzzleResponse($stream, "results-{$id}.zip", "application/zip"));
   }
 
 }

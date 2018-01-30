@@ -357,7 +357,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $files = $solution->getSolution()->getLocalPathsOfFiles();
-    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-" . $id . ".zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$id}.zip"));
   }
 
   /**
@@ -390,6 +390,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, "results-" . $evaluationId . ".zip", "application/zip"));
+    $this->sendResponse(new GuzzleResponse($stream, "results-{$evaluationId}.zip", "application/zip"));
   }
 }
