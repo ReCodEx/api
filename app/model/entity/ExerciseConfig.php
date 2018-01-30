@@ -74,4 +74,16 @@ class ExerciseConfig
     }
   }
 
+  public function equals(?ExerciseConfig $config): bool {
+    if ($config === null) {
+      return false;
+    }
+
+    try {
+      return Yaml::dump($this->getParsedConfig()) === Yaml::dump($config->getParsedConfig());
+    } catch (ExerciseConfigException $exception) {
+      return false;
+    }
+  }
+
 }
