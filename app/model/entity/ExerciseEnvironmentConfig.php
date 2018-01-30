@@ -87,4 +87,16 @@ class ExerciseEnvironmentConfig
     }
   }
 
+  public function equals(?ExerciseEnvironmentConfig $other): bool {
+    if ($other === null) {
+      return false;
+    }
+
+    try {
+      return Yaml::dump($this->getParsedVariablesTable()) === Yaml::dump($other->getParsedVariablesTable());
+    } catch (ExerciseConfigException $e) {
+      return false;
+    }
+  }
+
 }

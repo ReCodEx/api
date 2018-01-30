@@ -195,17 +195,18 @@ class ExercisesConfigPresenter extends BasePresenter {
       $variablesTable = $this->exerciseConfigLoader->loadVariablesTable($varTableArray);
 
       // create all new runtime configuration
+      $oldConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
       $config = new ExerciseEnvironmentConfig(
         $environment,
         (string) $variablesTable,
         $this->getCurrentUser(),
-        $exercise->getExerciseEnvironmentConfigByEnvironment($environment)
+        $oldConfig
       );
 
       // validation of newly create environment config
       $this->configValidator->validateEnvironmentConfig($exercise, $variablesTable);
 
-      $configs[$environmentId] = $config;
+      $configs[$environmentId] = !$config->equals($oldConfig) ? $config: $oldConfig;
     }
 
     // make changes and updates to database entity
