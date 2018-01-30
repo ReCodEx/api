@@ -173,7 +173,7 @@ class UploadedFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to download file '{$file->getId()}");
     }
 
-    $stream = $this->fileServerProxy->getResultArchiveStream($file->getFileServerPath());
+    $stream = $this->fileServerProxy->getFileserverFileStream($file->getFileServerPath());
     if ($stream === null) {
       throw new NotFoundException("Supplementary file '$id' not found on remote fileserver");
     }

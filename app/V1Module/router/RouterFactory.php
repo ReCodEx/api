@@ -110,9 +110,11 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");
     $router[] = new DeleteRoute("$prefix/<id>/supplementary-files/<fileId>", "ExerciseFiles:deleteSupplementaryFile");
+    $router[] = new GetRoute("$prefix/<id>/supplementary-files/download-archive", "ExerciseFiles:downloadSupplementaryFilesArchive");
     $router[] = new GetRoute("$prefix/<id>/attachment-files", "ExerciseFiles:getAttachmentFiles");
     $router[] = new PostRoute("$prefix/<id>/attachment-files", "ExerciseFiles:uploadAttachmentFiles");
     $router[] = new DeleteRoute("$prefix/<id>/attachment-files/<fileId>", "ExerciseFiles:deleteAttachmentFile");
+    $router[] = new GetRoute("$prefix/<id>/attachment-files/download-archive", "ExerciseFiles:downloadAttachmentFilesArchive");
 
     $router[] = new GetRoute("$prefix/<id>/tests", "ExercisesConfig:getTests");
     $router[] = new PostRoute("$prefix/<id>/tests", "ExercisesConfig:setTests");
@@ -229,6 +231,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:createReferenceSolution");
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>/evaluate", "ReferenceExerciseSolutions:evaluateForExercise");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-solution", "ReferenceExerciseSolutions:downloadSolutionArchive");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
     $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
     $router[] = new PostRoute("$prefix/<id>/evaluate", "ReferenceExerciseSolutions:evaluate");
@@ -244,6 +247,7 @@ class RouterFactory {
   private static function createAssignmentSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix/evaluation/<id>", "AssignmentSolutions:evaluation");
+    $router[] = new GetRoute("$prefix/evaluation/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
     $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "AssignmentSolutions:downloadResultArchive");
 
     $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");

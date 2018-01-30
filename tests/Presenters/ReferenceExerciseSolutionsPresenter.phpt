@@ -265,6 +265,22 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::true(true);
   }
 
+  public function testDownloadSolutionArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $solution = current($this->presenter->referenceSolutions->findAll());
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions',
+      'GET',
+      ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
+    );
+    $response = $this->presenter->run($request);
+    Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
+
+    // Check invariants
+    Assert::equal("reference-solution-" . $solution->getId() . '.zip', $response->getName());
+  }
+
   public function testDownloadResultArchive()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -278,7 +294,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $mockGuzzleStream->shouldReceive("eof")->andReturn(true);
 
     $mockProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
-    $mockProxy->shouldReceive("getResultArchiveStream")->withAnyArgs()->andReturn($mockGuzzleStream);
+    $mockProxy->shouldReceive("getFileserverFileStream")->withAnyArgs()->andReturn($mockGuzzleStream);
     $this->presenter->fileServerProxy = $mockProxy;
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
@@ -290,7 +306,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
 
     // Check invariants
-    Assert::equal($evaluation->getId() . '.zip', $response->getName());
+    Assert::equal("results-" . $evaluation->getId() . '.zip', $response->getName());
   }
 
 }

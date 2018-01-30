@@ -26,6 +26,7 @@ use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Responses\GuzzleResponse;
+use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IExercisePermissions;
 use Tracy\ILogger;
 
@@ -341,6 +342,25 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   }
 
   /**
+   * Download archive containing all solution files for particular reference solution.
+   * @GET
+   * @param string $id of reference solution
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws \Nette\Application\BadRequestException
+   * @throws \Nette\Application\AbortException
+   */
+  public function actionDownloadSolutionArchive(string $id) {
+    $solution = $this->referenceSolutions->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+      throw new ForbiddenRequestException("You cannot access archive of reference solution files");
+    }
+
+    $files = $solution->getSolution()->getLocalPathsOfFiles();
+    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-" . $id . ".zip"));
+  }
+
+  /**
    * Download result archive from backend for a reference solution evaluation
    * @GET
    * @param string $evaluationId
@@ -365,11 +385,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new NotReadyException("Submission is not evaluated yet");
     }
 
-    $stream = $this->fileServerProxy->getResultArchiveStream($submission->getResultsUrl());
+    $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
     if ($stream === null) {
       throw new NotFoundException("Archive for solution evaluation '$evaluationId' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, $evaluationId . '.zip', "application/zip"));
+    $this->sendResponse(new GuzzleResponse($stream, "results-" . $evaluationId . ".zip", "application/zip"));
   }
 }
