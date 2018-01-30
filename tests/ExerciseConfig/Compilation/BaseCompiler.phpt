@@ -409,6 +409,8 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(ConfigParams::$EVAL_DIR . "testA", $testARunTask->getSandboxConfig()->getChdir());
     Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
     Assert::equal(ConfigParams::$EVAL_DIR . "testA/expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
+    Assert::contains(".stderr", $testARunTask->getSandboxConfig()->getStderr());
+    Assert::contains('${EVAL_DIR}/testA/', $testARunTask->getSandboxConfig()->getStderr());
     Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());

@@ -74,7 +74,14 @@ class BoxesCompiler {
     // main processing loop
     while (!empty($stack)) {
       $current = array_pop($stack); /** @var Node $current */
+      $currentTestId = $current->getTestId();
+      $currentTestName = null;
+      if (!empty($currentTestId)) {
+        $currentTestName = $context->getTestsNames()[$currentTestId];
+      }
+
       // compile box into set of tasks
+      $params->setCurrentTestName($currentTestName);
       $tasks = $current->getBox()->compile($params);
 
       // construct dependencies
@@ -94,15 +101,13 @@ class BoxesCompiler {
         $task->setDependencies($dependencies);
 
         // identification of test is present in node
-        if (!empty($current->getTestId())) {
-          $testId = $current->getTestId();
-          $testName = $context->getTestsNames()[$testId];
+        if (!empty($currentTestName)) {
           // set identification of test to task
-          $task->setTestId($testName);
+          $task->setTestId($currentTestName);
           // change evaluation directory to the one which belongs to test
           $sandbox = $task->getSandboxConfig();
           if ($sandbox) {
-            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $testName);
+            $sandbox->setChdir(ConfigParams::$EVAL_DIR . $currentTestName);
           }
         }
 
