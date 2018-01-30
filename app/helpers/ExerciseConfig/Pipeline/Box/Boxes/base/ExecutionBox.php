@@ -11,7 +11,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 use Nette\Utils\Random;
-use Nette\Utils\Strings;
 
 
 /**
@@ -62,8 +61,13 @@ abstract class ExecutionBox extends Box
       $sandbox->setStdout($stdoutValue->getPrefixedValue(ConfigParams::$EVAL_DIR));
     }
     if ($params->isDebug()) {
+      $stderrRandom = Random::generate(20) . ".stderr";
+      $stderrName = ConfigParams::$EVAL_DIR . $stderrRandom;
+      if ($params->getCurrentTestName()) {
+        $stderrName = ConfigParams::$EVAL_DIR . $params->getCurrentTestName() . "/" . $stderrRandom;
+      }
       // all stderrs are stored alongside solution in case of debugging submission
-      $sandbox->setStderr(Random::generate(20) . ".stderr");
+      $sandbox->setStderr($stderrName);
     }
 
     $task->setSandboxConfig($sandbox);
