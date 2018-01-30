@@ -281,14 +281,16 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // new config was provided, so construct new database entity
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $oldConfig);
+    
+    if (!$newConfig->equals($oldConfig)) {
+      // set new exercise configuration into exercise and flush changes
+      $exercise->updatedNow();
+      $exercise->setExerciseConfig($newConfig);
+      $this->exercises->flush();
 
-    // set new exercise configuration into exercise and flush changes
-    $exercise->updatedNow();
-    $exercise->setExerciseConfig($newConfig);
-    $this->exercises->flush();
-
-    $this->configChecker->check($exercise);
-    $this->exercises->flush();
+      $this->configChecker->check($exercise);
+      $this->exercises->flush();
+    }
 
     $config = $this->exerciseConfigTransformer->fromExerciseConfig($exerciseConfig);
     $this->sendSuccessResponse($config);
