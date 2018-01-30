@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Helpers\Notifications\FailureResolutionEmailsSender;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Security\ACL\ISubmissionFailurePermissions;
@@ -33,6 +34,12 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @inject
    */
   public $submissionFailureAcl;
+
+  /**
+   * @var FailureResolutionEmailsSender
+   * @inject
+   */
+  public $failureResolutionEmailsSender;
 
   /**
    * List all submission failures, ever
@@ -108,6 +115,7 @@ class SubmissionFailuresPresenter extends BasePresenter {
 
     $failure->resolve($req->getPost("note") ?: "", new DateTime());
     $this->submissionFailures->persist($failure);
+    $this->failureResolutionEmailsSender->failureResolved($failure);
     $this->sendSuccessResponse($failure);
   }
 }

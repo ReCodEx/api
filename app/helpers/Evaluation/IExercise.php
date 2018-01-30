@@ -97,4 +97,9 @@ interface IExercise {
    * @return string[]
    */
   function getExerciseTestsNames(): array;
+
+  /**
+   * Get a Collection of localized exercise texts
+   */
+  function getLocalizedTexts(): Collection;
 }

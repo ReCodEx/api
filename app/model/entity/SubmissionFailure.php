@@ -11,6 +11,8 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  *
  * @method AssignmentSolutionSubmission getAssignmentSolutionSubmission()
  * @method string getDescription()
+ * @method DateTime getCreatedAt()
+ * @method string getResolutionNote()
  */
 class SubmissionFailure implements JsonSerializable {
 
