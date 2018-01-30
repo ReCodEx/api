@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Evaluation\IExercise;
 use App\Helpers\EvaluationStatus\IEvaluable;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
@@ -78,4 +79,7 @@ abstract class Submission implements IEvaluable
 
   public abstract function getJobType(): string;
 
+  public abstract function getExercise(): IExercise;
+
+  public abstract function getAuthor(): User;
 }

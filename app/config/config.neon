@@ -106,6 +106,10 @@ parameters:
       from: %emails.from%
       submissionEvaluatedPrefix: "ReCodEx Submission Evaluated Notification - "
 
+  failureResolutionNotifications:
+    emails:
+      from: %emails.from%
+
   forgottenPassword:
     redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"
     tokenExpiration: 600 # 10 minutes
@@ -281,6 +285,7 @@ services:
   - App\Helpers\ExerciseFileStorage
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
+  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer

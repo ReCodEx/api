@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Evaluation\IExercise;
 use App\Helpers\EvaluationPointsLoader;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -71,5 +72,13 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
 
   public function getJobType(): string {
     return static::JOB_TYPE;
+  }
+
+  public  function getExercise(): IExercise {
+    return $this->getAssignmentSolution()->getAssignment();
+  }
+
+  public  function getAuthor(): User {
+    return $this->getAssignmentSolution()->getSolution()->getAuthor();
   }
 }
