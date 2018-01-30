@@ -411,10 +411,12 @@ class ExercisesConfigPresenter extends BasePresenter {
 
       // remove old limits for corresponding environment and hwgroup and add new
       // ones, also do not forget to set hwgroup to exercise
-      $exercise->removeExerciseLimits($oldLimits); // if there were ones before
-      $exercise->addExerciseLimits($newLimits);
-      $exercise->removeHardwareGroup($hwGroup); // if there was one before
-      $exercise->addHardwareGroup($hwGroup);
+      if (!$newLimits->equals($oldLimits)) {
+        $exercise->removeExerciseLimits($oldLimits); // if there were ones before
+        $exercise->addExerciseLimits($newLimits);
+        $exercise->removeHardwareGroup($hwGroup); // if there was one before
+        $exercise->addHardwareGroup($hwGroup);
+      }
     }
 
     // update and return

@@ -103,4 +103,16 @@ class ExerciseLimits implements JsonSerializable
     ];
   }
 
+  public function equals(?ExerciseLimits $other): bool {
+    if ($other === null) {
+      return false;
+    }
+
+    try {
+      return Yaml::dump($this->getParsedLimits()) === Yaml::dump($other->getParsedLimits());
+    } catch (ExerciseConfigException $exception) {
+      return false;
+    }
+  }
+
 }
