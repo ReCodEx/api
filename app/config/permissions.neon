@@ -448,6 +448,9 @@ permissions:
       resource: sis
       actions:
         - createTerm
+        - editTerm
+        - deleteTerm
+        - viewTerms
 
     - allow: true
       resource: sis

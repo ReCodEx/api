@@ -395,7 +395,10 @@ class RouterFactory {
   private static function createSisRouter(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix/status/", "Sis:status");
+    $router[] = new GetRoute("$prefix/terms/", "Sis:getTerms");
     $router[] = new PostRoute("$prefix/terms/", "Sis:registerTerm");
+    $router[] = new PostRoute("$prefix/terms/<id>", "Sis:editTerm");
+    $router[] = new DeleteRoute("$prefix/terms/<id>", "Sis:deleteTerm");
     $router[] = new GetRoute("$prefix/users/<userId>/subscribed-groups/<year>/<term>/as-student", "Sis:subscribedGroups");
     $router[] = new GetRoute("$prefix/users/<userId>/supervised-courses/<year>/<term>", "Sis:supervisedCourses");
     $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");

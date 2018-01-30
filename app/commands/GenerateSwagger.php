@@ -58,6 +58,7 @@ class GenerateSwagger extends Command
     'number' => 'number',
     'numeric' => 'number',
     'numericint' => 'integer',
+    'timestamp' => 'integer',
     'string' => 'string',
     'unicode' => ['string', 'unicode'],
     'email' => ['string', 'email'],

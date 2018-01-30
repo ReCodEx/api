@@ -229,7 +229,7 @@ class InstancesPresenter extends BasePresenter {
    * Create a new license for an instance
    * @POST
    * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
-   * @Param(type="post", name="validUntil", validation="numericint", description="Expiration date of the license")
+   * @Param(type="post", name="validUntil", validation="timestamp", description="Expiration date of the license")
    * @param string $id An identifier of the instance
    * @throws ForbiddenRequestException
    */
