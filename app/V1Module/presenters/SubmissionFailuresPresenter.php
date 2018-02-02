@@ -100,9 +100,10 @@ class SubmissionFailuresPresenter extends BasePresenter {
   /**
    * Mark a submission failure as resolved
    * @POST
+   * @param $id string An identifier of the failure
    * @Param(name="note", type="post", validation="string:0..255", required=false,
    *   description="Brief description of how the failure was resolved")
-   * @param $id string An identifier of the failure
+   * @Param(name="sendEmail", type="post", validation="bool", description="True if email should be sent to the author of submission")
    * @throws ForbiddenRequestException
    */
   public function actionResolve(string $id) {
@@ -115,7 +116,9 @@ class SubmissionFailuresPresenter extends BasePresenter {
 
     $failure->resolve($req->getPost("note") ?: "", new DateTime());
     $this->submissionFailures->persist($failure);
-    $this->failureResolutionEmailsSender->failureResolved($failure);
+    if ($req->getPost("sendEmail")) {
+      $this->failureResolutionEmailsSender->failureResolved($failure);
+    }
     $this->sendSuccessResponse($failure);
   }
 }

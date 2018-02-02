@@ -109,6 +109,7 @@ parameters:
   failureResolutionNotifications:
     emails:
       from: %emails.from%
+      failureResolvedPrefix: "ReCodEx Submission Failure resolved - "
 
   forgottenPassword:
     redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"

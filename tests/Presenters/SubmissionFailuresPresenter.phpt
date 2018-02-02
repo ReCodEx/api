@@ -91,10 +91,31 @@ class TestSubmissionFailures extends Tester\TestCase
     }
   }
 
-  public function testResolve()
+  public function testResolveWithoutEmail()
   {
+    $mockFailuresSender = Mockery::mock();
+    $mockFailuresSender->shouldReceive("failureResolved")->never();
+    $this->presenter->failureResolutionEmailsSender = $mockFailuresSender;
+
     $failure = current($this->presenter->submissionFailures->findUnresolved());
-    $request = new Request("V1:SubmissionFailures", "POST", ["action" => "resolve", "id" => $failure->id], ["note" => "bla"]);
+    $request = new Request("V1:SubmissionFailures", "POST", ["action" => "resolve", "id" => $failure->id], ["note" => "bla", "sendEmail" => false]);
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
+    $result = $response->getPayload();
+    Assert::same(200, $result["code"]);
+    Assert::same($failure, $result["payload"]);
+    Assert::same("bla", $failure->resolutionNote);
+    Assert::notSame(null, $failure->resolvedAt);
+  }
+
+  public function testResolveWithEmail()
+  {
+    $mockFailuresSender = Mockery::mock();
+    $mockFailuresSender->shouldReceive("failureResolved")->once();
+    $this->presenter->failureResolutionEmailsSender = $mockFailuresSender;
+
+    $failure = current($this->presenter->submissionFailures->findUnresolved());
+    $request = new Request("V1:SubmissionFailures", "POST", ["action" => "resolve", "id" => $failure->id], ["note" => "bla", "sendEmail" => true]);
     $response = $this->presenter->run($request);
     Assert::type(JsonResponse::class, $response);
     $result = $response->getPayload();
