@@ -16,7 +16,7 @@ class ExternalLogins extends BaseRepository {
   /**
    * @param string $authService
    * @param string $externalId
-   * @return User|NULL
+   * @return User|null
    */
   public function getUser($authService, $externalId) {
     $login = $this->findOneBy([
@@ -28,13 +28,13 @@ class ExternalLogins extends BaseRepository {
       return $login->getUser();
     }
 
-    return NULL;
+    return null;
   }
 
   /**
    * @param User $user
    * @param string $authService
-   * @return ExternalLogin|NULL
+   * @return ExternalLogin|null
    */
   public function findByUser(User $user, string $authService) {
     return $this->findOneBy([

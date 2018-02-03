@@ -35,8 +35,8 @@ class Group
   public function __construct(
       string $externalId,
       Instance $instance,
-      User $admin = NULL,
-      Group $parentGroup = NULL,
+      User $admin = null,
+      Group $parentGroup = null,
       bool $publicStats = TRUE,
       bool $isPublic = TRUE,
       bool $isOrganizational = false) {
@@ -51,13 +51,13 @@ class Group
     $this->exercises = new ArrayCollection;
     $this->localizedTexts = new ArrayCollection();
 
-    if ($admin !== NULL) {
+    if ($admin !== null) {
       $this->primaryAdmins->add($admin);
       $admin->makeSupervisorOf($this);
     }
 
     $this->parentGroup = $parentGroup;
-    if ($parentGroup !== NULL) {
+    if ($parentGroup !== null) {
       $this->parentGroup->addChildGroup($this);
     }
 
@@ -191,7 +191,7 @@ class Group
 
   public function getExercises() {
     return $this->exercises->filter(function (Exercise $exercise) {
-      return $exercise->getDeletedAt() === NULL;
+      return $exercise->getDeletedAt() === null;
     });
   }
 
@@ -212,7 +212,7 @@ class Group
 
   protected function getMemberships() {
     return $this->memberships->filter(function (GroupMembership $membership) {
-      return $membership->getUser()->getDeletedAt() === NULL;
+      return $membership->getUser()->getDeletedAt() === null;
     });
   }
 
@@ -325,7 +325,7 @@ class Group
   public function getAdminsIds() {
     $group = $this;
     $admins = [];
-    while ($group !== NULL) {
+    while ($group !== null) {
       $admins = array_merge($admins, $group->getPrimaryAdminsIds());
       $group = $group->getParentGroup();
     }
@@ -372,8 +372,8 @@ class Group
    * @param ArrayCollection   $assignments  List of assignments
    * @return string[]
    */
-  public function getAssignmentsIds($assignments = NULL): array {
-    $assignments = $assignments === NULL ? $this->getAssignments() : $assignments;
+  public function getAssignmentsIds($assignments = null): array {
+    $assignments = $assignments === null ? $this->getAssignments() : $assignments;
     return $assignments->map(function (Assignment $a) {
       return $a->getId();
     })->getValues();
@@ -384,7 +384,7 @@ class Group
    */
   public function getAssignments() {
     return $this->assignments->filter(function (Assignment $assignment) {
-      return $assignment->getDeletedAt() === NULL;
+      return $assignment->getDeletedAt() === null;
     });
   }
 
@@ -427,7 +427,7 @@ class Group
   public function getParentGroupsIds(): array {
     $group = $this->getParentGroup();
     $parents = [];
-    while ($group !== NULL) {
+    while ($group !== null) {
       $parents[] = $group->getId();
       $group = $group->getParentGroup();
     }
@@ -473,12 +473,12 @@ class Group
 
   public function getChildGroups(): Collection {
     return $this->childGroups->filter(function (Group $group) {
-      return $group->getDeletedAt() === NULL;
+      return $group->getDeletedAt() === null;
     });
   }
 
   public function getParentGroup(): ?Group {
-    if ($this->parentGroup !== NULL) {
+    if ($this->parentGroup !== null) {
       return $this->parentGroup;
     }
 

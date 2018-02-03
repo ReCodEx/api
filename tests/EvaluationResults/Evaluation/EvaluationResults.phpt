@@ -90,7 +90,7 @@ class TestEvaluationResults extends Tester\TestCase
     Assert::exception(function () use ($jobConfig) {
       new EvaluationResults([
         "job-id" => "student_bla bla bla",
-        "results" => NULL
+        "results" => null
       ], $jobConfig);
     }, ResultsLoadingException::CLASS);
 

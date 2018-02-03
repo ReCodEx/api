@@ -35,8 +35,8 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
 
 
   public function getData(bool $canViewRatios = false, bool $canViewValues = false) {
-    $evaluationData = NULL;
-    if ($this->evaluation !== NULL) {
+    $evaluationData = null;
+    if ($this->evaluation !== null) {
       $evaluationData = $this->evaluation->getData($canViewRatios, $canViewValues);
     }
 

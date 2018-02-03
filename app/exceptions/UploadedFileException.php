@@ -13,7 +13,7 @@ class UploadedFileException extends ApiException {
    * @param string $msg description
    * @param null $previous
    */
-  public function __construct($msg, $previous = NULL) {
+  public function __construct($msg, $previous = null) {
     parent::__construct("Uploaded files error - $msg", IResponse::S500_INTERNAL_SERVER_ERROR, $previous);
   }
 

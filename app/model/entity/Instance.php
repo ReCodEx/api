@@ -104,10 +104,10 @@ class Instance implements JsonSerializable
    * @param null $search
    * @return User[]
    */
-  public function getMembers($search = NULL) {
-    if ($search === NULL || empty($search)) {
+  public function getMembers($search = null) {
+    if ($search === null || empty($search)) {
       return $this->members->filter(function (User $user) {
-        return $user->getDeletedAt() === NULL;
+        return $user->getDeletedAt() === null;
       })->toArray();
     }
 
@@ -160,7 +160,7 @@ class Instance implements JsonSerializable
 
   public function getGroups(): Collection {
     return $this->groups->filter(function (Group $group) {
-      return $group->getDeletedAt() === NULL;
+      return $group->getDeletedAt() === null;
     });
   }
 
@@ -181,9 +181,9 @@ class Instance implements JsonSerializable
       "isAllowed" => $this->isAllowed,
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
-      "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : NULL,
-      "admin" => $this->admin ? $this->admin->getId() : NULL,
-      "rootGroupId" => $this->rootGroup !== NULL ? $this->rootGroup->getId() : NULL
+      "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : null,
+      "admin" => $this->admin ? $this->admin->getId() : null,
+      "rootGroupId" => $this->rootGroup !== null ? $this->rootGroup->getId() : null
     ];
   }
 
@@ -199,7 +199,7 @@ class Instance implements JsonSerializable
     return $localizedRootGroup->getName();
   }
 
-  public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = NULL) {
+  public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = null) {
     $instance = new Instance;
     $instance->isOpen = $isOpen;
     $instance->isAllowed = TRUE; //@todo - find out who should set this and how
@@ -214,7 +214,7 @@ class Instance implements JsonSerializable
       "",
       $instance,
       $admin,
-      NULL,
+      null,
       FALSE,
       TRUE
     );

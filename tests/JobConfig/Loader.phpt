@@ -32,7 +32,7 @@ class TestJobConfigLoader extends Tester\TestCase
     }, JobConfigLoadingException::class);
 
     Assert::exception(function () {
-      $this->loader->loadJobConfig(NULL);
+      $this->loader->loadJobConfig(null);
     }, JobConfigLoadingException::class);
   }
 
@@ -58,7 +58,7 @@ class TestJobConfigLoader extends Tester\TestCase
     Assert::equal("x.out", $task1->getCommandBinary());
     Assert::equal([], $task1->getCommandArguments());
     Assert::false($task1->isSandboxedTask());
-    Assert::equal(NULL, $task1->getSandboxConfig());
+    Assert::equal(null, $task1->getSandboxConfig());
 
     Assert::equal("Y", $task2->getId());
     Assert::equal("A", $task2->getTestId());

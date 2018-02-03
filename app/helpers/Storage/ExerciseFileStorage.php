@@ -33,7 +33,7 @@ class ExerciseFileStorage {
    * Save the file into fileserver and return database entity
    * @param UploadedFile|FileUpload $file The file to be stored
    * @param Exercise $exercise
-   * @return SupplementaryExerciseFile|NULL If the operation is not successful, NULL is returned
+   * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
    * @throws SubmissionFailedException
    */
   public function storeExerciseFile(UploadedFile $file, Exercise $exercise) {
@@ -47,7 +47,7 @@ class ExerciseFileStorage {
    * Save the file into fileserver and return database entity
    * @param UploadedFile|FileUpload $file The file to be stored
    * @param Pipeline $pipeline
-   * @return SupplementaryExerciseFile|NULL If the operation is not successful, NULL is returned
+   * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
    * @throws SubmissionFailedException
    */
   public function storePipelineFile(UploadedFile $file, Pipeline $pipeline) {

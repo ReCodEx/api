@@ -186,7 +186,7 @@ class AssignmentsPresenter extends BasePresenter {
     $oldSecondDeadlinePoints = $assignment->getMaxPointsBeforeSecondDeadline();
     $secondDeadlinePoints = $req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
     $oldThreshold = $assignment->getPointsPercentualThreshold();
-    $threshold = $req->getPost("pointsPercentualThreshold") !== NULL ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
+    $threshold = $req->getPost("pointsPercentualThreshold") !== null ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
     $oldFirstDeadlineTimestamp = $assignment->getFirstDeadline()->getTimestamp();
     $firstDeadlineTimestamp = $req->getPost("firstDeadline");
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
@@ -405,8 +405,8 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $this->users->findOrThrow($userId);
     $solution = $this->assignmentSolutions->findBestSolution($assignment, $user);
 
-    if ($solution == NULL) {
-      $this->sendSuccessResponse(NULL);
+    if ($solution == null) {
+      $this->sendSuccessResponse(null);
     }
     if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
         !$this->assignmentSolutionAcl->canViewDetail($solution)) {

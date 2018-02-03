@@ -64,7 +64,7 @@ class GenerateSwagger extends Command
     'email' => ['string', 'email'],
     'url' => ['string', 'url'],
     'uri' => ['string', 'uri'],
-    'pattern' => NULL,
+    'pattern' => null,
     'alnum' => ['string', 'alphanumeric'],
     'alpha' => ['string', 'alphabetic'],
     'digit' => ['string', 'numeric'],
@@ -84,8 +84,8 @@ class GenerateSwagger extends Command
   protected function configure()
   {
     $this->setName("swagger:generate")->setDescription("Generate a swagger specification file from existing code");
-    $this->addArgument("source", InputArgument::OPTIONAL, "A YAML Swagger file to use as a template for the generated file", NULL);
-    $this->addOption("save", NULL, InputOption::VALUE_NONE, "Save the output back to the source file");
+    $this->addArgument("source", InputArgument::OPTIONAL, "A YAML Swagger file to use as a template for the generated file", null);
+    $this->addOption("save", null, InputOption::VALUE_NONE, "Save the output back to the source file");
   }
 
   protected function setArrayDefault(&$array, $key, $default)
@@ -110,7 +110,7 @@ class GenerateSwagger extends Command
     $source = $input->getArgument("source");
     $save = $input->getOption("save");
 
-    if ($save && $source === NULL) {
+    if ($save && $source === null) {
       $output->writeln("<error>--save cannot be used without a source file</error>");
       return;
     }
@@ -124,7 +124,7 @@ class GenerateSwagger extends Command
     $this->setArrayDefault($document, "tags", []);
     $tags = &$document["tags"];
 
-    $defaultSecurity = NULL;
+    $defaultSecurity = null;
     $securityDefinitions = [];
 
     if (array_key_exists('securityDefinitions', $document)) {
@@ -180,9 +180,9 @@ class GenerateSwagger extends Command
     }
   }
 
-  private function fillPathEntry(array $metadata, array &$entry, $module, $defaultSecurity = NULL, callable $warning = NULL)
+  private function fillPathEntry(array $metadata, array &$entry, $module, $defaultSecurity = null, callable $warning = null)
   {
-    if ($warning === NULL) {
+    if ($warning === null) {
       $warning = function ($text) {};
     }
 
@@ -200,7 +200,7 @@ class GenerateSwagger extends Command
     try {
       $method = Method::from(get_class($presenter), $methodName);
     } catch (ReflectionException $exception) {
-      return NULL;
+      return null;
     }
 
     $annotations = $method->getAnnotations();
@@ -239,8 +239,8 @@ class GenerateSwagger extends Command
 
       foreach ($parameterAnnotations as $annotation) {
         $annotationParts = explode(" ", $annotation, 3);
-        $firstPart = Arrays::get($annotationParts, 0, NULL);
-        $secondPart = Arrays::get($annotationParts, 1, NULL);
+        $firstPart = Arrays::get($annotationParts, 0, null);
+        $secondPart = Arrays::get($annotationParts, 1, null);
 
         if ($secondPart === "$" . $methodParameter->getName()) {
           $validation = $firstPart;
@@ -270,7 +270,7 @@ class GenerateSwagger extends Command
     if ($isLoginNeeded) {
       $this->setArrayDefault($entry["responses"], "401", []);
 
-      if ($defaultSecurity !== NULL) {
+      if ($defaultSecurity !== null) {
         $this->setArrayDefault($entry, 'security', [[$defaultSecurity => []]]);
       }
     } else if (array_key_exists($entry["responses"], "401")) {
@@ -354,7 +354,7 @@ class GenerateSwagger extends Command
       }
     }
 
-    return NULL;
+    return null;
   }
 
   private static function getPropertyValue($object, $propertyName)
@@ -366,9 +366,9 @@ class GenerateSwagger extends Command
         $property = $class->getProperty($propertyName);
       } catch (ReflectionException $exception) {
         $class = $class->getParentClass();
-        $property = NULL;
+        $property = null;
       }
-    } while ($property === NULL && $class !== NULL);
+    } while ($property === null && $class !== null);
 
     $property->setAccessible(TRUE);
     return $property->getValue($object);
@@ -380,19 +380,19 @@ class GenerateSwagger extends Command
       return [];
     }
 
-    $validation = NULL;
+    $validation = null;
 
     if (Strings::contains($type, ':')) {
       list($type, $validation) = explode(':', $type);
     }
 
-    $translation = Arrays::get($this->typeMap, $type, NULL);
+    $translation = Arrays::get($this->typeMap, $type, null);
     if (is_array($translation)) {
       $typeInfo = [
         'type' => $translation[0],
         'format' => $translation[1]
       ];
-    } else if ($translation !== NULL) {
+    } else if ($translation !== null) {
       $typeInfo = [
         'type' => $translation
       ];
@@ -507,7 +507,7 @@ class GenerateSwagger extends Command
       }
     } else {
       $this->setArrayDefault($entry[$key], "type", $type);
-      if ($entry[$key]["type"] === $type && $value !== NULL) {
+      if ($entry[$key]["type"] === $type && $value !== null) {
         $entry[$key]["example"] = $value;
       }
     }

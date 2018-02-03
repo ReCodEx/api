@@ -42,13 +42,13 @@ class AuthorizatorBuilder {
       $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));
 
       $allow = Arrays::get($rule, "allow", TRUE);
-      $role = Arrays::get($rule, "role", NULL);
-      $resource = Arrays::get($rule, "resource", NULL);
-      $interface = $resource !== NULL ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : NULL;
+      $role = Arrays::get($rule, "role", null);
+      $resource = Arrays::get($rule, "resource", null);
+      $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
       $actions = Arrays::get($rule, "actions", []);
       $actions = $actions !== $all ? (array) $actions : $actions;
 
-      $assertion = NULL;
+      $assertion = null;
       $conditions = (array) Arrays::get($rule, "conditions", []);
 
       if (count($conditions) > 0) {
@@ -67,10 +67,10 @@ class AuthorizatorBuilder {
       $actionsString = '"' . implode('", "', $actions) . '"';
 
       $check->addBody('if (? && ? && ? && ?) {', [
-        $role !== NULL ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : TRUE,
-        $resource !== NULL ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : TRUE,
+        $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : TRUE,
+        $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : TRUE,
         count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : TRUE,
-        $assertion !== NULL ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : TRUE
+        $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : TRUE
       ]);
       $check->addBody('return ?;', [$allow]);
       $check->addBody('}');
@@ -129,7 +129,7 @@ class AuthorizatorBuilder {
   }
 
   private function checkActionProvidesContext(?Reflection\ClassType $interface, string $action, string $contextItem) {
-    if ($interface === NULL) {
+    if ($interface === null) {
       throw new LogicException("No resource was specified for this rule - context (and condition checking) is not available");
     }
 

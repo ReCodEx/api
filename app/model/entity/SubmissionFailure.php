@@ -82,14 +82,14 @@ class SubmissionFailure implements JsonSerializable {
    * SubmissionFailure constructor.
    * @param string $type
    * @param string $description
-   * @param AssignmentSolutionSubmission|NULL $submission
-   * @param ReferenceSolutionSubmission|NULL $referenceSolutionSubmission
-   * @param DateTime|NULL $createdAt
+   * @param AssignmentSolutionSubmission|null $submission
+   * @param ReferenceSolutionSubmission|null $referenceSolutionSubmission
+   * @param DateTime|null $createdAt
    */
   private function __construct(string $type, string $description,
-      AssignmentSolutionSubmission $submission = NULL,
-      ReferenceSolutionSubmission $referenceSolutionSubmission = NULL,
-      DateTime $createdAt = NULL) {
+      AssignmentSolutionSubmission $submission = null,
+      ReferenceSolutionSubmission $referenceSolutionSubmission = null,
+      DateTime $createdAt = null) {
     $this->type = $type;
     $this->description = $description;
     $this->assignmentSolutionSubmission = $submission;
@@ -97,15 +97,15 @@ class SubmissionFailure implements JsonSerializable {
     $this->createdAt = $createdAt ?: new DateTime();
   }
 
-  public static function forSubmission(string $type, string $description, AssignmentSolutionSubmission $submission, DateTime $createdAt = NULL) {
-    return new static($type, $description, $submission, NULL, $createdAt);
+  public static function forSubmission(string $type, string $description, AssignmentSolutionSubmission $submission, DateTime $createdAt = null) {
+    return new static($type, $description, $submission, null, $createdAt);
   }
 
-  public static function forReferenceSubmission(string $type, string $description, ReferenceSolutionSubmission $evaluation, DateTime $createdAt = NULL) {
-    return new static($type, $description, NULL, $evaluation, $createdAt);
+  public static function forReferenceSubmission(string $type, string $description, ReferenceSolutionSubmission $evaluation, DateTime $createdAt = null) {
+    return new static($type, $description, null, $evaluation, $createdAt);
   }
 
-  public function resolve(string $note, DateTime $resolvedAt = NULL) {
+  public function resolve(string $note, DateTime $resolvedAt = null) {
     $this->resolvedAt = $resolvedAt ?: new DateTime();
     $this->resolutionNote = $note;
   }
@@ -120,7 +120,7 @@ class SubmissionFailure implements JsonSerializable {
       "type" => $this->type,
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
-      "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : NULL,
+      "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : null,
       "resolutionNote" => $this->resolutionNote,
       "assignmentSolutionId" => $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution()->getId() : null,
       "referenceSolutionId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getId() : null

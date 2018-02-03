@@ -20,11 +20,11 @@ class Logins extends BaseRepository {
 
   /**
    * Find currently logged in user's login.
-   * @return Login|NULL
+   * @return Login|null
    */
   public function findCurrent() {
     if ($this->userSession->isLoggedIn() === FALSE) {
-      return NULL;
+      return null;
     }
 
     return $this->findByUserId($this->userSession->getId());
@@ -33,7 +33,7 @@ class Logins extends BaseRepository {
   /**
    * Find user's login
    * @param   string $userId ID of the user
-   * @return  Login|NULL
+   * @return  Login|null
    */
   public function findByUserId($userId) {
     return $this->findOneBy([ "user" => $userId ]);
@@ -58,7 +58,7 @@ class Logins extends BaseRepository {
    *
    * @param string $username
    * @param string $password
-   * @return User|NULL
+   * @return User|null
    */
   public function getUser(string $username, string $password) {
     $login = $this->findOneBy([ "username" => $username ]);
@@ -75,7 +75,7 @@ class Logins extends BaseRepository {
       }
     }
 
-    return NULL;
+    return null;
   }
 
   /**

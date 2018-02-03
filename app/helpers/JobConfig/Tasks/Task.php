@@ -44,12 +44,12 @@ class Task {
   private $commandBinary = "";
   /** @var array Arguments for execution command */
   private $commandArguments = [];
-  /** @var string|NULL Type of the task */
-  private $type = NULL;
-  /** @var string|NULL ID of the test to which this task corresponds */
-  private $testId = NULL;
-  /** @var SandboxConfig|NULL */
-  private $sandboxConfig = NULL;
+  /** @var string|null Type of the task */
+  private $type = null;
+  /** @var string|null ID of the test to which this task corresponds */
+  private $testId = null;
+  /** @var SandboxConfig|null */
+  private $sandboxConfig = null;
   /** @var array Additional data */
   private $data = [];
 
@@ -163,7 +163,7 @@ class Task {
 
   /**
    * Type of the task
-   * @return string|NULL
+   * @return string|null
    */
   public function getType() {
     return $this->type;
@@ -181,7 +181,7 @@ class Task {
 
   /**
    * ID of the test this task belongs to (if any).
-   * @return string|NULL
+   * @return string|null
    */
   public function getTestId() {
     return $this->testId;
@@ -198,8 +198,8 @@ class Task {
   }
 
   /**
-   * Get sandbox config structure, if this is internal task then NULL should be returned.
-   * @return SandboxConfig|NULL
+   * Get sandbox config structure, if this is internal task then null should be returned.
+   * @return SandboxConfig|null
    */
   public function getSandboxConfig() {
     return $this->sandboxConfig;
@@ -265,7 +265,7 @@ class Task {
    * @return bool
    */
   public function isSandboxedTask(): bool {
-    return !($this->sandboxConfig === NULL);
+    return !($this->sandboxConfig === null);
   }
 
   /**

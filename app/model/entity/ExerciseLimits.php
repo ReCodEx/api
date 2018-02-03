@@ -70,7 +70,7 @@ class ExerciseLimits implements JsonSerializable
    */
   public function __construct(RuntimeEnvironment $runtimeEnvironment,
       HardwareGroup $hardwareGroup, string $limits, User $author,
-      ExerciseLimits $createdFrom = NULL) {
+      ExerciseLimits $createdFrom = null) {
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->hardwareGroup = $hardwareGroup;
     $this->limits = $limits;

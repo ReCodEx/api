@@ -15,7 +15,7 @@ class BaseSoftDeleteRepository extends BaseRepository {
 
   public function findAll() {
     return $this->repository->findBy([
-      $this->softDeleteColumn => NULL
+      $this->softDeleteColumn => null
     ]);
   }
 
@@ -25,13 +25,13 @@ class BaseSoftDeleteRepository extends BaseRepository {
 
   public function findBy($params, $orderBy = []) {
     return $this->repository->findBy(array_merge($params, [
-      $this->softDeleteColumn => NULL
+      $this->softDeleteColumn => null
     ]), $orderBy);
   }
 
   public function findOneBy($params) {
     return $this->repository->findOneBy(array_merge($params, [
-      $this->softDeleteColumn => NULL
+      $this->softDeleteColumn => null
     ]));
   }
 

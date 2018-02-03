@@ -198,7 +198,7 @@ class InstancesPresenter extends BasePresenter {
    * @param string $search A result filter
    * @throws ForbiddenRequestException
    */
-  public function actionUsers(string $id, string $search = NULL) {
+  public function actionUsers(string $id, string $search = null) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewUsers($instance)) {
       throw new ForbiddenRequestException();

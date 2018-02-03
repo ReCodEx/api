@@ -48,8 +48,8 @@ class LdapConnectTest extends Tester\TestCase
     Assert::equal("54726191", LdapUserUtils::getPersonalId("cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz"));
     Assert::equal("123", LdapUserUtils::getPersonalId("differentPersonalId=123,ou=people,dc=sth,dc=com"));
     Assert::equal("547261911234567", LdapUserUtils::getPersonalId("id=547261911234567,ou=people,dc=cuni,dc=cz"));
-    Assert::equal(NULL, LdapUserUtils::getPersonalId(""));
-    Assert::equal(NULL, LdapUserUtils::getPersonalId("asldkjasdlkjasldkj"));
+    Assert::equal(null, LdapUserUtils::getPersonalId(""));
+    Assert::equal(null, LdapUserUtils::getPersonalId("asldkjasdlkjasldkj"));
   }
 
   public function testInvalidArgumentConfig() {
@@ -83,7 +83,7 @@ class LdapConnectTest extends Tester\TestCase
 
   public function testFindInvalidUserByMail() {
     $ldapManager = new LdapUserUtils(self::$config);
-    Assert::equal(NULL, $ldapManager->findUserByMail("ukco@example.com"));
+    Assert::equal(null, $ldapManager->findUserByMail("ukco@example.com"));
   }
 
 }

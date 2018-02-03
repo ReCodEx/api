@@ -40,8 +40,8 @@ class LdapUserUtils {
   /** @var string Name of userId element (such as cn or cunipersonalid) */
   private $bindName;
 
-  /** @var Manager|NULL Anonymous LDAP connection for searching */
-  private $anonymousManager = NULL;
+  /** @var Manager|null Anonymous LDAP connection for searching */
+  private $anonymousManager = null;
 
   /**
    * Access anonymous connection manager.
@@ -49,7 +49,7 @@ class LdapUserUtils {
    * @throws LdapConnectException
    */
   protected function getAnonymousManager() {
-    if ($this->anonymousManager === NULL) {
+    if ($this->anonymousManager === null) {
       try {
         $this->anonymousManager = $this->connect();
         $this->anonymousManager->bind();
@@ -68,8 +68,8 @@ class LdapUserUtils {
    */
   public function __construct(array $config) {
     $this->ldapConfig = [
-      'hostname' => Arrays::get($config, 'hostname', NULL),
-      'base_dn' => Arrays::get($config, 'base_dn', NULL)
+      'hostname' => Arrays::get($config, 'hostname', null),
+      'base_dn' => Arrays::get($config, 'base_dn', null)
     ];
 
     if (array_key_exists('port', $config)) {
@@ -124,7 +124,7 @@ class LdapUserUtils {
    * Find unique user identifier for email supplied (anonymous finding).
    * @param string $mail      Email address to be searched
    * @param string $mailField LDAP email field, defaults to 'mail'
-   * @return string|NULL Unique user ID or NULL
+   * @return string|null Unique user ID or null
    */
   public function findUserByMail(string $mail, string $mailField = 'mail') {
     $results = $this->getAnonymousManager()->search(
@@ -140,8 +140,8 @@ class LdapUserUtils {
     /** @var Node|bool $nextResult */
     $nextResult = $results->current();
 
-    if ($dn === NULL || $nextResult !== FALSE) {
-      return NULL;
+    if ($dn === null || $nextResult !== FALSE) {
+      return null;
     }
 
     return self::getPersonalId($dn);
@@ -184,7 +184,7 @@ class LdapUserUtils {
    */
   public static function getErrorCode(string $msg): int {
     list($code) = Strings::match($msg, "/-?\d+/");
-    if ($code === NULL) {
+    if ($code === null) {
       throw new LdapConnectException; // The bind exception didn't yield correct error message
     }
 
@@ -194,12 +194,12 @@ class LdapUserUtils {
   /**
    * Extracts the personal ID from distinguished name of the node. It is assumed, that the ID is the value of the left most component of the DN.
    * @param  string $dn   Distinguished name of the node (i.e.: cuniPersonalId=54726191,ou=people,dc=cuni,dc=cz)
-   * @return string|NULL  The personal ID
+   * @return string|null  The personal ID
    */
   public static function getPersonalId(string $dn) {
     $parts = ldap_explode_dn($dn, 1); // 1 ==> only values of RDN, see http://php.net/manual/en/function.ldap-explode-dn.php
     if ($parts === FALSE || $parts["count"] === 0) {
-      return NULL;
+      return null;
     }
 
     unset($parts["count"]);

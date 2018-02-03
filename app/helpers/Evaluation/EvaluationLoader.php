@@ -48,13 +48,13 @@ class EvaluationLoader {
   /**
    * Downloads and processes the results for the given submission.
    * @param Submission $submission The submission
-   * @return SolutionEvaluation|NULL  Evaluated results for given submission
+   * @return SolutionEvaluation|null  Evaluated results for given submission
    * @throws SubmissionEvaluationFailedException
    */
   public function load(Submission $submission) {
     $results = $this->getResults($submission);
     if (!$results) {
-      return NULL;
+      return null;
     }
 
     $evaluation = new SolutionEvaluation($results);
@@ -83,8 +83,8 @@ class EvaluationLoader {
       $jobConfig = $this->jobConfigStorage->get($jobConfigPath);
       $jobConfig->getSubmissionHeader()->setId($submission->getId())->setType($submission->getJobType());
       $resultsYml = $this->fileServer->downloadResults($submission->getResultsUrl());
-      return $resultsYml === NULL
-        ? NULL
+      return $resultsYml === null
+        ? null
         : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
     } catch (JobConfigLoadingException | MalformedJobConfigException $e) {
       throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");

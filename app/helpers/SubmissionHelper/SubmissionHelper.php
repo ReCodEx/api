@@ -42,7 +42,7 @@ class SubmissionHelper {
     $jobConfig->getSubmissionHeader()->setId($jobId)->setType($jobType);
 
     // Send the submission to the broker
-    $resultsUrl = NULL;
+    $resultsUrl = null;
 
     $resultsUrl = $this->backendSubmitHelper->initiateEvaluation(
       $jobConfig,
@@ -51,7 +51,7 @@ class SubmissionHelper {
       $hwgroup
     );
 
-    if ($resultsUrl === NULL) {
+    if ($resultsUrl === null) {
       throw new SubmissionFailedException("The broker rejected our request");
     }
 

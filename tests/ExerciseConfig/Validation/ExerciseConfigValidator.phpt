@@ -87,8 +87,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
     $envC = new RuntimeEnvironment("envC", "Env C", "C", ".c", "", "");
     $envD = new RuntimeEnvironment("envD", "Env D", "D", ".d", "", "");
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envC, "",  $user, NULL));
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envD, "",  $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envC, "",  $user, null));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envD, "",  $user, null));
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
@@ -126,7 +126,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(NULL);
+    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(null);
     $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
 
     // missing in environments
@@ -248,8 +248,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $user = $exercise->getAuthor();
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
     $envB = new RuntimeEnvironment("envB", "Env B", "B", ".b", "", "");
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envB, "[]", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, null));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envB, "[]", $user, null));
     return $exercise;
   }
 
@@ -276,7 +276,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
   {
     $user = $exercise->getAuthor();
     $envA = new RuntimeEnvironment("envA", "Env A", "A", ".a", "", "");
-    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, NULL));
+    $exercise->addExerciseEnvironmentConfig(new ExerciseEnvironmentConfig($envA, "[]", $user, null));
     return $exercise;
   }
 

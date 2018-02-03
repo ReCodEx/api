@@ -14,7 +14,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
 
   public function isAuthor(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -24,7 +24,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
   public function isSubGroupSupervisor(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
 
-    if ($user === NULL || $exercise->getGroups()->isEmpty() ||
+    if ($user === null || $exercise->getGroups()->isEmpty() ||
         $exercise->isPublic() === FALSE) {
       return FALSE;
     }
@@ -42,7 +42,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
   public function isSuperGroupAdmin(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
 
-    if ($user === NULL || $exercise->getGroups()->isEmpty() ||
+    if ($user === null || $exercise->getGroups()->isEmpty() ||
       $exercise->isPublic() === FALSE) {
       return FALSE;
     }

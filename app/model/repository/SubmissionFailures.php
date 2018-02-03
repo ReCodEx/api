@@ -17,7 +17,7 @@ class SubmissionFailures extends BaseRepository {
 
   public function findUnresolved() {
     return $this->findBy([
-      "resolvedAt" => NULL
+      "resolvedAt" => null
     ]);
   }
 

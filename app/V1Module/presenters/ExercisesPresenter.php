@@ -76,7 +76,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $search text which will be searched in exercises names
    * @throws ForbiddenRequestException
    */
-  public function actionDefault(string $search = NULL) {
+  public function actionDefault(string $search = null) {
     if (!$this->exerciseAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
@@ -245,7 +245,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionCreate() {
     $user = $this->getCurrentUser();
 
-    $group = NULL;
+    $group = null;
     if ($this->getRequest()->getPost("groupId")) {
       $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
     }

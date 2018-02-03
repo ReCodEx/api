@@ -50,8 +50,8 @@ class Licence implements JsonSerializable
    * @param DateTime $when When the licence should have been valid.
    * @return bool
    */
-  public function isValid(\DateTime $when = NULL) {
-    if ($when === NULL) {
+  public function isValid(\DateTime $when = null) {
+    if ($when === null) {
       $when = new \DateTime;
     }
     return $this->isValid && $this->validUntil >= $when;

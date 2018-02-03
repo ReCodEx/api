@@ -318,7 +318,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Assignments $assignments */
     $assignments = $this->container->getByType(Assignments::class);
 
-    $assignment = NULL;
+    $assignment = null;
     $totalSubmissionCount = count($this->presenter->assignmentSubmissions->findAll());
     $solutionCount = 2;
 

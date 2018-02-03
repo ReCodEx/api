@@ -224,7 +224,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\ExternalServiceAuthenticator::class);
     $mockAuthService->shouldReceive("findService")
-      ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
+      ->with($serviceId, null)->andReturn($mockExternalLoginService)->once();
     $mockAuthService->shouldReceive("register")->with($mockExternalLoginService, $instance, Mockery::any())
       ->andReturn($user)->once();
 
@@ -278,7 +278,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     $mockAuthService = Mockery::mock(\App\Helpers\ExternalLogin\ExternalServiceAuthenticator::class);
     $mockAuthService->shouldReceive("findService")
-      ->with($serviceId, NULL)->andReturn($mockExternalLoginService)->once();
+      ->with($serviceId, null)->andReturn($mockExternalLoginService)->once();
     $mockAuthService->shouldReceive("register")->with($mockExternalLoginService, $instance, Mockery::any())
       ->andReturn($existingUser)->once();
 

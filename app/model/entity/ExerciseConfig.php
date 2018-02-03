@@ -53,7 +53,7 @@ class ExerciseConfig
    * @param ExerciseConfig|null $createdFrom
    */
   public function __construct(string $config, User $author,
-      ExerciseConfig $createdFrom = NULL) {
+      ExerciseConfig $createdFrom = null) {
     $this->createdAt = new DateTime;
 
     $this->config = $config;

@@ -240,7 +240,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     $exerciseConfig = $exercise->getExerciseConfig();
-    if ($exerciseConfig === NULL) {
+    if ($exerciseConfig === null) {
       // should not be reached...
       throw new NotFoundException("Configuration for the exercise not exists");
     }
@@ -268,7 +268,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     $oldConfig = $exercise->getExerciseConfig();
-    if ($oldConfig === NULL) {
+    if ($oldConfig === null) {
       throw new NotFoundException("Configuration for the exercise not exists");
     }
 
@@ -328,7 +328,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     // prepare environment configuration if needed
-    if ($runtimeEnvironmentId !== NULL) {
+    if ($runtimeEnvironmentId !== null) {
         $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
         $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
         $environmentVariables = $this->exerciseConfigLoader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
@@ -455,7 +455,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     $limits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
-    if ($limits === NULL) {
+    if ($limits === null) {
       // there are no specified limits for this combination of environments
       // and hwgroup yet, so return empty array
       $limits = array();

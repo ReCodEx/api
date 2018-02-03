@@ -37,7 +37,7 @@ class UploadedFile implements JsonSerializable
   protected $name;
 
   /**
-   * A complete path to the file on local filesystem. If NULL, the file is not present.
+   * A complete path to the file on local filesystem. If null, the file is not present.
    * @ORM\Column(type="string", nullable=true)
    */
   protected $localFilePath;

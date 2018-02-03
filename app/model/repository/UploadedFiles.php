@@ -31,7 +31,7 @@ class UploadedFiles extends BaseRepository {
   public function findGroupForSolutionFile(UploadedFile $file)
   {
     if (!($file instanceof SolutionFile)) {
-      return NULL;
+      return null;
     }
 
     $query = $this->em->createQuery("
@@ -46,7 +46,7 @@ class UploadedFiles extends BaseRepository {
 
     $result = $query->getResult();
     if (count($result) === 0) {
-      return NULL;
+      return null;
     }
 
     return current($result)->getAssignment()->getGroup();

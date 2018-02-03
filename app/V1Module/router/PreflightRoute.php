@@ -37,13 +37,13 @@ class PreflightRoute implements IRouter {
 
   /**
    * Maps HTTP request to a Request object.
-   * @return Request|NULL
+   * @return Request|null
    */
   public function match(IRequest $httpRequest) {
     $isOptions = $httpRequest->isMethod("OPTIONS");
     $path = $httpRequest->getUrl()->getPath();
     if (!$isOptions || !Strings::startsWith($path, $this->prefix)) {
-      return NULL;
+      return null;
     }
 
     return new Request(
@@ -58,10 +58,10 @@ class PreflightRoute implements IRouter {
 
   /**
    * Constructs absolute URL from Request object.
-   * @return string|NULL
+   * @return string|null
    */
   public function constructUrl(Request $appRequest, Url $refUrl) {
-    return NULL;
+    return null;
   }
 
 }

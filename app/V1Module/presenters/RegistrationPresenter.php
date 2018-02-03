@@ -102,15 +102,15 @@ class RegistrationPresenter extends BasePresenter {
 
     // check if the email is free
     $email = trim($req->getPost("email"));
-    if ($this->users->getByEmail($email) !== NULL) {
+    if ($this->users->getByEmail($email) !== null) {
       throw new BadRequestException("This email address is already taken.");
     }
 
     $instanceId = $req->getPost("instanceId");
     $instance = $this->getInstance($instanceId);
 
-    $degreesBeforeName = $req->getPost("degreesBeforeName") === NULL ? "" : $req->getPost("degreesBeforeName");
-    $degreesAfterName = $req->getPost("degreesAfterName") === NULL ? "" : $req->getPost("degreesAfterName");
+    $degreesBeforeName = $req->getPost("degreesBeforeName") === null ? "" : $req->getPost("degreesBeforeName");
+    $degreesAfterName = $req->getPost("degreesAfterName") === null ? "" : $req->getPost("degreesAfterName");
 
     // check given passwords
     $password = $req->getPost("password");
@@ -190,7 +190,7 @@ class RegistrationPresenter extends BasePresenter {
     $passwordStrength = $zxcvbn->passwordStrength($password, [ $email, $emailParts[0] ]);
 
     $this->sendSuccessResponse([
-      "usernameIsFree" => $user === NULL,
+      "usernameIsFree" => $user === null,
       "passwordScore" => $passwordStrength["score"]
     ]);
   }

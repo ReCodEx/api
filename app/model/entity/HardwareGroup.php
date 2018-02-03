@@ -38,8 +38,8 @@ class HardwareGroup implements JsonSerializable
    * @param DateTime $when Explicit time
    * @return bool
    */
-  public function isAvailable(DateTime $when = NULL): bool {
-    if ($when === NULL) {
+  public function isAvailable(DateTime $when = null): bool {
+    if ($when === null) {
       $when = new DateTime;
     }
 

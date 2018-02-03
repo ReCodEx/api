@@ -27,7 +27,7 @@ class TestExecutionTask extends Tester\TestCase
     Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC' ]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new ExecutionTaskResult([ 'status' => 'XYZ' ]); }, ResultsLoadingException::CLASS);
     Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK' ]); }, ResultsLoadingException::CLASS);
-    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK', 'sample_stats' => NULL ]); }, ResultsLoadingException::CLASS);
+    Assert::exception(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'OK', 'sample_stats' => null ]); }, ResultsLoadingException::CLASS);
     Assert::noError(function() { new ExecutionTaskResult([ 'task-id' => 'ABC', 'status' => 'XYZ', 'sandbox_results' => self::$sampleStats ]); });
   }
 

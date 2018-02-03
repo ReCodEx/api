@@ -60,7 +60,7 @@ class User
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
     $this->createdAt = new DateTime();
-    $this->deletedAt = NULL;
+    $this->deletedAt = null;
     $this->instance = $instance;
     $instance->addMember($this);
     $this->settings = new UserSettings(TRUE, FALSE, "en");
@@ -171,7 +171,7 @@ class User
             ->andWhere(Criteria::expr()->eq("type", $type));
     $filtered = $this->memberships->matching($filter);
     if ($filtered->isEmpty()) {
-      return NULL;
+      return null;
     }
 
     if ($filtered->count() > 1) {
@@ -191,7 +191,7 @@ class User
 
   protected function getMemberships() {
     return $this->memberships->filter(function (GroupMembership $membership) {
-      return $membership->getGroup()->getDeletedAt() === NULL;
+      return $membership->getGroup()->getDeletedAt() === null;
     });
   }
 
@@ -222,7 +222,7 @@ class User
 
   protected function makeMemberOf(Group $group, string $type) {
     $membership = $this->findMembership($group, $type);
-    if ($membership === NULL) {
+    if ($membership === null) {
       $this->addMembership($group, $type);
     } else {
       $membership->setType($type);
@@ -230,10 +230,10 @@ class User
     }
   }
 
-  public function getGroups(string $type = NULL) {
+  public function getGroups(string $type = null) {
     $result = $this->getMemberships();
 
-    if ($type !== NULL) {
+    if ($type !== null) {
       $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
       $result = $result->matching($filter);
     }

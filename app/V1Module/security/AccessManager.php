@@ -105,8 +105,8 @@ class AccessManager {
    * @param   array $payload
    * @return string
    */
-  public function issueToken(User $user, $scopes = NULL, $exp = NULL, $payload = []) {
-    if ($exp === NULL || !is_numeric($exp)) {
+  public function issueToken(User $user, $scopes = null, $exp = null, $payload = []) {
+    if ($exp === null || !is_numeric($exp)) {
       $exp = $this->expiration;
     }
 
@@ -132,19 +132,19 @@ class AccessManager {
 
   /**
    * Extract the access token from the request.
-   * @return string|null  The access token parsed from the HTTP request, or NULL if there is no access token.
+   * @return string|null  The access token parsed from the HTTP request, or null if there is no access token.
    */
   public static function getGivenAccessToken(IRequest $request) {
     $accessToken = $request->getQuery("access_token");
-    if($accessToken !== NULL && Strings::length($accessToken) > 0) {
+    if($accessToken !== null && Strings::length($accessToken) > 0) {
       return $accessToken; // the token specified in the URL is prefered
     }
 
     // if the token is not in the URL, try to find the "Authorization" header with the bearer token
-    $authorizationHeader = $request->getHeader("Authorization", NULL);
+    $authorizationHeader = $request->getHeader("Authorization", null);
 
-    if ($authorizationHeader === NULL) {
-      return NULL;
+    if ($authorizationHeader === null) {
+      return null;
     }
 
     $parts = Strings::split($authorizationHeader, "/ /");
@@ -155,7 +155,7 @@ class AccessManager {
       }
     }
 
-    return NULL; // there is no access token or it could not be parsed
+    return null; // there is no access token or it could not be parsed
   }
 
 }

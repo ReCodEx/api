@@ -79,17 +79,17 @@ class ExternalServiceAuthenticator {
    * @throws InvalidStateException
    */
   public function authenticate(IExternalLoginService $service, ...$credentials) {
-    $user = NULL;
+    $user = null;
     $userData = $service->getUser(...$credentials);
     try {
       $user = $this->findUser($service, $userData);
     } catch (WrongCredentialsException $e) {
       // second try - is there a user with a verified email corresponding to this one?
-      if ($userData !== NULL) {
+      if ($userData !== null) {
         $user = $this->tryConnect($service, $userData);
       }
 
-      if ($user === NULL) {
+      if ($user === null) {
         throw $e;
       }
     }
@@ -110,13 +110,13 @@ class ExternalServiceAuthenticator {
     $userData = $service->getUser(...$credentials); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
 
-    if ($user !== NULL) {
+    if ($user !== null) {
       throw new WrongCredentialsException("User is already registered using '{$service->getServiceId()}'.");
     }
 
     // try to connect new user to already existing ones
     $user = $this->tryConnect($service, $userData);
-    if ($user === NULL) {
+    if ($user === null) {
       // user is not registered locally, create brand new one
       $user = $userData->createEntity($instance);
       $this->users->persist($user);
@@ -136,12 +136,12 @@ class ExternalServiceAuthenticator {
    * @throws WrongCredentialsException
    */
   private function findUser(IExternalLoginService $service, ?UserData $userData): User {
-    if ($userData === NULL) {
+    if ($userData === null) {
       throw new WrongCredentialsException("Authentication failed.");
     }
 
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
-    if ($user === NULL) {
+    if ($user === null) {
       throw new WrongCredentialsException("User authenticated through '{$service->getServiceId()}' not found. Please register first.");
     }
 

@@ -29,16 +29,16 @@ class SandboxConfig {
 
   /** @var string Sandbox name */
   private $name = "";
-  /** @var string|NULL Standard input redirection file */
-  private $stdin = NULL;
-  /** @var string|NULL Standard output redirection file */
-  private $stdout = NULL;
-  /** @var string|NULL Standard error redirection file */
-  private $stderr = NULL;
+  /** @var string|null Standard input redirection file */
+  private $stdin = null;
+  /** @var string|null Standard output redirection file */
+  private $stdout = null;
+  /** @var string|null Standard error redirection file */
+  private $stderr = null;
   /** @var bool Output from stdout and stderr will be written to result yaml */
   private $output = false;
-  /** @var string|NULL Change directory */
-  protected $chdir = NULL;
+  /** @var string|null Change directory */
+  protected $chdir = null;
   /** @var array List of limits */
   private $limits = [];
   /** @var array Additional data */
@@ -64,7 +64,7 @@ class SandboxConfig {
 
   /**
    * Return standard input redirection file.
-   * @return string|NULL
+   * @return string|null
    */
   public function getStdin() {
     return $this->stdin;
@@ -82,7 +82,7 @@ class SandboxConfig {
 
   /**
    * Return standard output redirection file.
-   * @return string|NULL
+   * @return string|null
    */
   public function getStdout() {
     return $this->stdout;
@@ -100,7 +100,7 @@ class SandboxConfig {
 
   /**
    * Get standard error redirection file.
-   * @return string|NULL
+   * @return string|null
    */
   public function getStderr() {
     return $this->stderr;
@@ -136,7 +136,7 @@ class SandboxConfig {
 
   /**
    * Get directory in which sandboxed program will be executed.
-   * @return string|NULL
+   * @return string|null
    */
   public function getChdir() {
     return $this->chdir;

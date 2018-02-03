@@ -144,7 +144,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
 
-    $externalId = $req->getPost("externalId") === NULL ? "" : $req->getPost("externalId");
+    $externalId = $req->getPost("externalId") === null ? "" : $req->getPost("externalId");
     $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
 
@@ -172,7 +172,7 @@ class GroupsPresenter extends BasePresenter {
     $locale = $req->getPost("locale");
     $parentGroupId = $req->getPost("parentGroupId");
     $instance = $this->instances->findOrThrow($req->getPost("instanceId"));
-    $parentGroup = $parentGroupId !== NULL ? $this->groups->findOrThrow($parentGroupId) : $instance->getRootGroup();
+    $parentGroup = $parentGroupId !== null ? $this->groups->findOrThrow($parentGroupId) : $instance->getRootGroup();
 
     if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
       throw new ForbiddenRequestException();
@@ -212,7 +212,7 @@ class GroupsPresenter extends BasePresenter {
     $group->setIsPublic($isPublic);
 
     if ($hasThreshold) {
-      $threshold = $req->getPost("threshold") !== NULL ? $req->getPost("threshold") / 100 : $group->getThreshold();
+      $threshold = $req->getPost("threshold") !== null ? $req->getPost("threshold") / 100 : $group->getThreshold();
       $group->setThreshold($threshold);
     } else {
       $group->setThreshold(null);
@@ -293,7 +293,7 @@ class GroupsPresenter extends BasePresenter {
 
     if ($group->getChildGroups()->count() !== 0) {
       throw new ForbiddenRequestException("There are subgroups of group '$id'. Please remove them first.");
-    } else if ($group->getInstance() !== NULL && $group->getInstance()->getRootGroup() === $group) {
+    } else if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
       throw new ForbiddenRequestException("Group '$id' is the root group of instance '{$group->getInstance()->getId()}' and root groups cannot be deleted.");
     }
 

@@ -47,21 +47,21 @@ class GroupPermissionPolicy implements IPermissionPolicy {
 
   public function canAccessDetail(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
     return $group->isAdminOf($user)
         || $group->isMemberOf($user)
         || $group->isPublic()
-        || ($user->getInstance() !== NULL
-            && $user->getInstance()->getRootGroup() !== NULL
+        || ($user->getInstance() !== null
+            && $user->getInstance()->getRootGroup() !== null
             && $group->getId() === $user->getInstance()->getRootGroup()->getId());
   }
 
   public function isInSameInstance(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 

@@ -137,11 +137,11 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     foreach ($requiredFields as $field) {
       $type = strtolower($field->type);
       $name = $field->name;
-      $validationRule = isset($field->validation) ? $field->validation : NULL;
-      $msg = isset($field->msg) ? $field->msg : NULL;
+      $validationRule = isset($field->validation) ? $field->validation : null;
+      $msg = isset($field->msg) ? $field->msg : null;
       $required = isset($field->required) ? $field->required : TRUE;
 
-      $value = NULL;
+      $value = null;
       switch ($type) {
         case "post":
           $value = $this->getPostField($name, $required);
@@ -153,7 +153,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
           throw new InternalServerErrorException("Unknown parameter type '$type'");
       }
 
-      if ($validationRule !== NULL && $value !== NULL) {
+      if ($validationRule !== null && $value !== null) {
         $value = $this->validateValue($name, $value, $validationRule, $msg);
       }
 
@@ -178,24 +178,24 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     } else if ($required) {
       throw new BadRequestException("Missing required POST field $param");
     } else {
-      return NULL;
+      return null;
     }
   }
 
   private function getQueryField($param, $required = TRUE) {
     $value = $this->getHttpRequest()->getQuery($param);
-    if ($value === NULL && $required) {
+    if ($value === null && $required) {
       throw new BadRequestException("Missing required query field $param");
     }
     return $value;
   }
 
-  private function validateValue($param, $value, $validationRule, $msg = NULL) {
+  private function validateValue($param, $value, $validationRule, $msg = null) {
     $value = Validators::preprocessValue($value, $validationRule);
     if (Validators::is($value, $validationRule) === FALSE) {
       throw new InvalidArgumentException(
         $param,
-        $msg !== NULL ? $msg : "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
+        $msg !== null ? $msg : "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
       );
     }
 

@@ -54,7 +54,7 @@ class TestExerciseLimits extends Tester\TestCase
 
   public function testEmptyLimits() {
     Assert::exception(function () {
-      $this->loader->loadExerciseLimits(NULL);
+      $this->loader->loadExerciseLimits(null);
     }, \App\Exceptions\ExerciseConfigException::class);
   }
 

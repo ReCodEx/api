@@ -147,12 +147,12 @@ class TestResult implements JsonSerializable
   protected $tasks;
 
   public function getData(bool $canViewRatios, bool $canViewValues = false) {
-    $wallTime = NULL;
-    $wallTimeRatio = NULL;
-    $cpuTime = NULL;
-    $cpuTimeRatio = NULL;
-    $memory = NULL;
-    $memoryRatio = NULL;
+    $wallTime = null;
+    $wallTimeRatio = null;
+    $cpuTime = null;
+    $cpuTimeRatio = null;
+    $memory = null;
+    $memoryRatio = null;
 
     if ($canViewRatios) {
       $wallTimeRatio = $this->usedWallTimeRatio;

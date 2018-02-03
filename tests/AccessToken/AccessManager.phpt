@@ -123,7 +123,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, NULL, 30);
+    $token = $manager->issueToken($user, null, 30);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);
@@ -136,7 +136,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, NULL, 30, [ "sub" => "abcde", "xyz" => "uvw" ]);
+    $token = $manager->issueToken($user, null, 30, [ "sub" => "abcde", "xyz" => "uvw" ]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);
@@ -165,28 +165,28 @@ class TestAccessManager extends Tester\TestCase
   public function testExtractFromHeader() {
     $token = "abcdefg";
     $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-    $request = new Request($url, NULL, NULL, NULL, NULL, [ "Authorization" => "Bearer $token" ]);
+    $request = new Request($url, null, null, null, null, [ "Authorization" => "Bearer $token" ]);
     Assert::equal($token, AccessManager::getGivenAccessToken($request));
   }
 
   public function testExtractFromHeaderWrongType() {
     $token = "abcdefg";
     $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-    $request = new Request($url, NULL, NULL, NULL, NULL, [ "Authorization" => "Basic $token" ]);
+    $request = new Request($url, null, null, null, null, [ "Authorization" => "Basic $token" ]);
     Assert::null(AccessManager::getGivenAccessToken($request));
   }
 
   public function testExtractFromHeaderEmpty() {
     $token = "";
     $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-    $request = new Request($url, NULL, NULL, NULL, NULL, [ "Authorization" => "Basic $token" ]);
+    $request = new Request($url, null, null, null, null, [ "Authorization" => "Basic $token" ]);
     Assert::null(AccessManager::getGivenAccessToken($request));
   }
 
   public function testExtractFromHeaderWithSpace() {
     $token = "";
     $url = new UrlScript("https://www.whatever.com/bla/bla/bla?x=y");
-    $request = new Request($url, NULL, NULL, NULL, NULL, [ "Authorization" => "Bearer $token and more!" ]);
+    $request = new Request($url, null, null, null, null, [ "Authorization" => "Bearer $token and more!" ]);
     Assert::null(AccessManager::getGivenAccessToken($request));
   }
 }

@@ -59,8 +59,8 @@ class BrokerProxy {
    * @throws SubmissionFailedException on any error
    */
   public function startEvaluation(string $jobId, array $hardwareGroups, array $headers = [], string $archiveRemotePath, string $resultRemotePath) {
-    $queue = NULL;
-    $poll = NULL;
+    $queue = null;
+    $poll = null;
 
     try {
       $queue = new ZMQSocket(new ZMQContext, ZMQ::SOCKET_DEALER, $jobId);
@@ -102,7 +102,7 @@ class BrokerProxy {
     }
 
     $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
-    if ($ack === NULL) {
+    if ($ack === null) {
       $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Broker did not send acknowledgement message.");
     }
@@ -127,7 +127,7 @@ class BrokerProxy {
    * Wait until given socket can be read from
    * @param ZMQSocket $queue The socket for which we want to wait
    * @param int $timeout Time limit in milliseconds
-   * @return array|NULL
+   * @return array|null
    * @throws SubmissionFailedException
    */
   private function pollReadWorkaround(ZMQSocket $queue, int $timeout) {
@@ -148,6 +148,6 @@ class BrokerProxy {
       }
     } while (microtime(true) <= $limit);
 
-    return NULL;
+    return null;
   }
 }

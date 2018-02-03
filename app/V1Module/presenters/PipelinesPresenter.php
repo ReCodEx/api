@@ -133,7 +133,7 @@ class PipelinesPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionCreatePipeline() {
-    $exercise = NULL;
+    $exercise = null;
     if ($this->getRequest()->getPost("exerciseId")) {
       $exercise = $this->exercises->findOrThrow($this->getRequest()->getPost("exerciseId"));
     }

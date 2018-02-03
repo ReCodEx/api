@@ -13,8 +13,8 @@ class AccessToken {
   const SCOPE_CHANGE_PASSWORD = "change-password";
   const SCOPE_EMAIL_VERIFICATION = "email-verification";
 
-  /** @var string|NULL The subject */
-  private $sub = NULL;
+  /** @var string|null The subject */
+  private $sub = null;
 
   /** @var string[] Array of scopes this access can access */
   private $scopes = [];
@@ -44,7 +44,7 @@ class AccessToken {
    * @throws InvalidAccessTokenException
    */
   public function getUserId(): string {
-    if ($this->sub === NULL) {
+    if ($this->sub === null) {
       throw new InvalidAccessTokenException("Missing the required 'sub' parameter of the token payload.");
     }
 

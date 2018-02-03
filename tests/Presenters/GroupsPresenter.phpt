@@ -193,7 +193,7 @@ class TestGroupsPresenter extends Tester\TestCase
         ]],
         'instanceId' => $instance->getId(),
         'externalId' => 'external identification of exercise',
-        'parentGroupId' => NULL,
+        'parentGroupId' => null,
         'publicStats' => TRUE,
         'isPublic' => TRUE
       ]
@@ -233,7 +233,7 @@ class TestGroupsPresenter extends Tester\TestCase
         'name' => 'new name',
         'locale' => 'en',
         'instanceId' => $instance->getId(),
-        'parentGroupId' => NULL,
+        'parentGroupId' => null,
       ]
     );
     $response = $this->presenter->run($request);
@@ -275,7 +275,7 @@ class TestGroupsPresenter extends Tester\TestCase
         'name' => $group->getLocalizedTextByLocale("en")->getName(),
         'locale' => 'en',
         'instanceId' => $instance->getId(),
-        'parentGroupId' => NULL,
+        'parentGroupId' => null,
       ]
     );
     $response = $this->presenter->run($request);
