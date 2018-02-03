@@ -41,7 +41,7 @@ class AuthorizatorBuilder {
     foreach ($permissions as $i => $rule) {
       $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));
 
-      $allow = Arrays::get($rule, "allow", TRUE);
+      $allow = Arrays::get($rule, "allow", true);
       $role = Arrays::get($rule, "role", null);
       $resource = Arrays::get($rule, "resource", null);
       $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
@@ -67,10 +67,10 @@ class AuthorizatorBuilder {
       $actionsString = '"' . implode('", "', $actions) . '"';
 
       $check->addBody('if (? && ? && ? && ?) {', [
-        $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : TRUE,
-        $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : TRUE,
-        count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : TRUE,
-        $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : TRUE
+        $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : true,
+        $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : true,
+        count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : true,
+        $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : true
       ]);
       $check->addBody('return ?;', [$allow]);
       $check->addBody('}');

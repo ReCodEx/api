@@ -55,7 +55,7 @@ class BrokerProxy {
    * @param array $headers Headers used to further specify which workers can process the job
    * @param string $archiveRemotePath URL of the archive with source codes and job evaluation configuration
    * @param string $resultRemotePath URL where to store resulting archive of whole evaluation
-   * @return bool Evaluation has been started on remote server when returns TRUE.
+   * @return bool Evaluation has been started on remote server when returns true.
    * @throws SubmissionFailedException on any error
    */
   public function startEvaluation(string $jobId, array $hardwareGroups, array $headers = [], string $archiveRemotePath, string $resultRemotePath) {
@@ -132,7 +132,7 @@ class BrokerProxy {
    */
   private function pollReadWorkaround(ZMQSocket $queue, int $timeout) {
     $timeoutSeconds = $timeout / 1000;
-    $limit = microtime(TRUE) + $timeout / 1000;
+    $limit = microtime(true) + $timeout / 1000;
 
     do {
       $waitTime = min($limit - microtime(true), $timeoutSeconds / 10);

@@ -66,7 +66,7 @@ class PipelineValidator {
           }
 
           if (!$variableUsedAsOutput) {
-            $variableUsedAsOutput = TRUE;
+            $variableUsedAsOutput = true;
             continue;
           }
 
@@ -78,7 +78,7 @@ class PipelineValidator {
 
         foreach ($box->getInputPorts() as $inputPort) {
           if ($inputPort->getVariable() === $variableName) {
-            $variableUsedAsInput = TRUE;
+            $variableUsedAsInput = true;
           }
         }
       }

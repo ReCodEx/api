@@ -50,16 +50,16 @@ class BaseRepository {
     return $entity;
   }
 
-  public function persist($entity, $autoFlush = TRUE) {
+  public function persist($entity, $autoFlush = true) {
     $this->em->persist($entity);
-    if ($autoFlush === TRUE) {
+    if ($autoFlush === true) {
       $this->flush();
     }
   }
 
-  public function remove($entity, $autoFlush = TRUE) {
+  public function remove($entity, $autoFlush = true) {
     $this->em->remove($entity);
-    if ($autoFlush === TRUE) {
+    if ($autoFlush === true) {
       $this->flush();
     }
   }

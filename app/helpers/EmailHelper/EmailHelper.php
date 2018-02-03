@@ -79,7 +79,7 @@ class EmailHelper {
 
     try {
       $this->mailer->send($message);
-      return TRUE;
+      return true;
     } catch (SendException $e) {
       // silent error
     }

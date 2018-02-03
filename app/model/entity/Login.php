@@ -88,7 +88,7 @@ class Login
     if (empty($this->passwordHash) && empty($password)) {
       // quite special situation, but can happen if user registered using CAS
       // and already have existing local account
-      return TRUE;
+      return true;
     }
 
     if (Passwords::verify($password, $this->passwordHash)) {
@@ -96,7 +96,7 @@ class Login
         $this->passwordHash = self::hashPassword($password);
       }
 
-      return TRUE;
+      return true;
     }
 
     return FALSE;

@@ -54,7 +54,7 @@ class TestLoginPresenter extends Tester\TestCase
 
   protected function tearDown()
   {
-    $this->user->logout(TRUE);
+    $this->user->logout(true);
     Mockery::close();
   }
 
@@ -161,7 +161,7 @@ class TestLoginPresenter extends Tester\TestCase
     $mockToken->shouldReceive("isInScope")
       ->with(AccessToken::SCOPE_REFRESH)
       ->once()
-      ->andReturn(TRUE);
+      ->andReturn(true);
     $mockToken->shouldReceive("getUserId")
       ->withNoArgs()
       ->zeroOrMoreTimes()

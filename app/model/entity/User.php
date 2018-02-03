@@ -56,14 +56,14 @@ class User
     $this->degreesAfterName = $degreesAfterName;
     $this->setEmail($email);
     $this->isVerified = FALSE;
-    $this->isAllowed = TRUE;
+    $this->isAllowed = true;
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
     $this->createdAt = new DateTime();
     $this->deletedAt = null;
     $this->instance = $instance;
     $instance->addMember($this);
-    $this->settings = new UserSettings(TRUE, FALSE, "en");
+    $this->settings = new UserSettings(true, FALSE, "en");
     $this->logins = new ArrayCollection();
 
     if (empty($role)) {
@@ -130,7 +130,7 @@ class User
 
   public function isVerified() { return $this->isVerified; }
 
-  public function setVerified($verified = TRUE) {
+  public function setVerified($verified = true) {
     $this->isVerified = $verified;
   }
 

@@ -54,7 +54,7 @@ class Assignments extends BaseSoftDeleteRepository {
     );
 
     $qb->setParameters([
-      "true" => TRUE,
+      "true" => true,
       "from" => $from,
       "to" => $to
     ]);

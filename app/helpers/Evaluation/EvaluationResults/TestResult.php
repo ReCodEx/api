@@ -146,7 +146,7 @@ class TestResult {
         return FALSE;
       }
     }
-    return TRUE;
+    return true;
   }
 
   public function getStatsInterpretation(): array {
@@ -163,7 +163,7 @@ class TestResult {
         return FALSE;
       }
     }
-    return TRUE;
+    return true;
   }
 
   /**
@@ -189,7 +189,7 @@ class TestResult {
         return FALSE;
       }
     }
-    return TRUE;
+    return true;
   }
 
   /**

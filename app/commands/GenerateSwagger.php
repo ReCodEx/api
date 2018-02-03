@@ -92,7 +92,7 @@ class GenerateSwagger extends Command
   {
     if (!array_key_exists($key, $array)) {
       $array[$key] = $default;
-      return TRUE;
+      return true;
     }
 
     return FALSE;
@@ -305,7 +305,7 @@ class GenerateSwagger extends Command
     foreach ($entry["parameters"] as $i => $parameter) {
       if ($parameter["name"] === $name) {
         $paramEntry = &$entry["parameters"][$i];
-        $paramEntryFound = TRUE;
+        $paramEntryFound = true;
         break;
       }
     }
@@ -322,7 +322,7 @@ class GenerateSwagger extends Command
     $paramEntry["required"] = $required;
 
     if ($in === "path") {
-      $paramEntry["required"] = TRUE;
+      $paramEntry["required"] = true;
     } else if ($in === "query") {
       $this->setArrayDefault($paramEntry, "required", FALSE);
     }
@@ -370,7 +370,7 @@ class GenerateSwagger extends Command
       }
     } while ($property === null && $class !== null);
 
-    $property->setAccessible(TRUE);
+    $property->setAccessible(true);
     return $property->getValue($object);
   }
 
@@ -527,7 +527,7 @@ class GenerateSwagger extends Command
 
     foreach ($tags as $i => $tagEntry) {
       if ($tagEntry["name"] === $tag) {
-        $tagEntryFound = TRUE;
+        $tagEntryFound = true;
         $tagEntry = &$tags[$i];
         break;
       }

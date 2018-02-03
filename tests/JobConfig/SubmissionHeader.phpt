@@ -123,7 +123,7 @@ class TestSubmissionHeader extends Tester\TestCase
   public function testSetLog() {
     $header = $this->builder->loadSubmissionHeader(self::$minimalConfig);
     Assert::false($header->getLog());
-    $header->setLog(TRUE);
+    $header->setLog(true);
     Assert::true($header->getLog());
   }
 

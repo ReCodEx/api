@@ -84,7 +84,7 @@ class TestDeadlineNotifications extends Tester\TestCase
   }
 
   public function testNothing() {
-    $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, TRUE);
+    $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, true);
 
     $deadline = new DateTime();
     $deadline->modify("+3 days");
@@ -95,22 +95,22 @@ class TestDeadlineNotifications extends Tester\TestCase
     $input = new StringInput("'1 day'");
     $this->command->run($input, new NullOutput());
 
-    Assert::true(TRUE); // We make no assertions here - all the work is done by Mockery
+    Assert::true(true); // We make no assertions here - all the work is done by Mockery
   }
 
   public function testFirstDeadlineNearby() {
-    $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, TRUE);
+    $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, true);
 
     $deadline = new DateTime();
     $deadline->modify("+36 hours");
     $assignment->setFirstDeadline($deadline);
     $this->assignments->persist($assignment);
 
-    $this->emailHelperMock->shouldReceive("send")->once()->andReturn(TRUE);
+    $this->emailHelperMock->shouldReceive("send")->once()->andReturn(true);
     $input = new StringInput("'1 day'");
     $this->command->run($input, new NullOutput());
 
-    Assert::true(TRUE); // We make no assertions here - all the work is done by Mockery
+    Assert::true(true); // We make no assertions here - all the work is done by Mockery
   }
 }
 

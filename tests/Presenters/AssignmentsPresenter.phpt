@@ -72,7 +72,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Mockery::close();
 
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 
@@ -217,7 +217,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $exercise = $this->presenter->exercises->findAll()[0];
     $group = $this->presenter->groups->findAll()[0];
 
-    $exercise->setLocked(TRUE);
+    $exercise->setLocked(true);
     $this->presenter->exercises->flush();
 
     $request = new Nette\Application\Request(

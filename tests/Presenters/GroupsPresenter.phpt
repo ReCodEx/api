@@ -51,7 +51,7 @@ class TestGroupsPresenter extends Tester\TestCase
   protected function tearDown()
   {
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 
@@ -155,7 +155,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $this->presenter->users->flush();
 
     // initial checks
-    Assert::equal(TRUE, $group->isStudentOf($user));
+    Assert::equal(true, $group->isStudentOf($user));
 
     $request = new Nette\Application\Request('V1:Groups', 'DELETE', [
       'action' => 'removeStudent',
@@ -194,8 +194,8 @@ class TestGroupsPresenter extends Tester\TestCase
         'instanceId' => $instance->getId(),
         'externalId' => 'external identification of exercise',
         'parentGroupId' => null,
-        'publicStats' => TRUE,
-        'isPublic' => TRUE
+        'publicStats' => true,
+        'isPublic' => true
       ]
     );
     $response = $this->presenter->run($request);
@@ -216,8 +216,8 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal($instance->getId(), $payload["privateData"]["instanceId"]);
     Assert::equal('external identification of exercise', $payload["externalId"]);
     Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
-    Assert::equal(TRUE, $payload["privateData"]["publicStats"]);
-    Assert::equal(TRUE, $payload["privateData"]["isPublic"]);
+    Assert::equal(true, $payload["privateData"]["publicStats"]);
+    Assert::equal(true, $payload["privateData"]["isPublic"]);
   }
 
   public function testValidateAddGroupData()
@@ -242,7 +242,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
-    Assert::equal(TRUE, $payload['groupNameIsFree']);
+    Assert::equal(true, $payload['groupNameIsFree']);
   }
 
   public function testValidateAddGroupDataNameExists()
@@ -304,8 +304,8 @@ class TestGroupsPresenter extends Tester\TestCase
           'description' => 'some neaty description',
         ]],
         'externalId' => 'external identification of exercise',
-        'publicStats' => TRUE,
-        'isPublic' => TRUE,
+        'publicStats' => true,
+        'isPublic' => true,
         'hasThreshold' => true,
         'threshold' => 80
       ]
@@ -323,8 +323,8 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal('new name', $localizedGroup->getName());
     Assert::equal('some neaty description', $localizedGroup->getDescription());
     Assert::equal('external identification of exercise', $payload["externalId"]);
-    Assert::equal(TRUE, $payload["privateData"]["publicStats"]);
-    Assert::equal(TRUE, $payload["privateData"]["isPublic"]);
+    Assert::equal(true, $payload["privateData"]["publicStats"]);
+    Assert::equal(true, $payload["privateData"]["isPublic"]);
     Assert::equal(0.8, $payload["privateData"]["threshold"]);
   }
 
@@ -579,7 +579,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $this->presenter->users->flush();
 
     // initial checks
-    Assert::equal(TRUE, $group->isSupervisorOf($user));
+    Assert::equal(true, $group->isSupervisorOf($user));
 
     $request = new Nette\Application\Request('V1:Groups', 'DELETE', [
       'action' => 'removeSupervisor',

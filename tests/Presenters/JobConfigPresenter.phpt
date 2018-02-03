@@ -64,7 +64,7 @@ tasks:
 
   protected function tearDown()
   {
-    $this->user->logout(TRUE);
+    $this->user->logout(true);
   }
 
   public function testValidation1()

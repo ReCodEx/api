@@ -28,10 +28,10 @@ class UserSettings implements JsonSerializable
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
   public function __construct(
-    bool $darkTheme = TRUE,
+    bool $darkTheme = true,
     bool $vimMode = FALSE,
     string $defaultLanguage = "en",
-    bool $openedSidebar = TRUE
+    bool $openedSidebar = true
   ) {
     $this->darkTheme = $darkTheme;
     $this->vimMode = $vimMode;

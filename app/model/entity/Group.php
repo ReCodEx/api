@@ -37,8 +37,8 @@ class Group
       Instance $instance,
       User $admin = null,
       Group $parentGroup = null,
-      bool $publicStats = TRUE,
-      bool $isPublic = TRUE,
+      bool $publicStats = true,
+      bool $isPublic = true,
       bool $isOrganizational = false) {
     $this->externalId = $externalId;
     $this->memberships = new ArrayCollection;
@@ -292,7 +292,7 @@ class Group
    */
   public function isPrimaryAdminOf(User $user) {
     $admins = $this->getPrimaryAdminsIds();
-    return array_search($user->getId(), $admins, TRUE) !== FALSE;
+    return array_search($user->getId(), $admins, true) !== FALSE;
   }
 
   /**
@@ -340,7 +340,7 @@ class Group
    */
   public function isAdminOf(User $user) {
     $admins = $this->getAdminsIds();
-    return array_search($user->getId(), $admins, TRUE) !== FALSE;
+    return array_search($user->getId(), $admins, true) !== FALSE;
   }
 
   /**

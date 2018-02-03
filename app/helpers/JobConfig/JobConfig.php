@@ -260,7 +260,7 @@ class JobConfig {
    * @return string
    */
   public function __toString() {
-    return Yaml::dump($this->toArray(), $this->humanReadable === TRUE ? 100 : -1); // do not inline yaml - 100 nesting limit ~ "infinity"
+    return Yaml::dump($this->toArray(), $this->humanReadable === true ? 100 : -1); // do not inline yaml - 100 nesting limit ~ "infinity"
   }
 
 }
