@@ -109,10 +109,10 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
-   * @Param(type="post", name="email", validation="email", description="New email address", required=FALSE)
-   * @Param(type="post", name="oldPassword", required=FALSE, validation="string:1..", description="Old password of current user")
-   * @Param(type="post", name="password", required=FALSE, validation="string:1..", description="New password of current user")
-   * @Param(type="post", name="passwordConfirm", required=FALSE, validation="string:1..", description="Confirmation of new password of current user")
+   * @Param(type="post", name="email", validation="email", description="New email address", required=false)
+   * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
+   * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
+   * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..", description="Confirmation of new password of current user")
    * @throws WrongCredentialsException
    */
   public function actionUpdateProfile(string $id) {
@@ -182,7 +182,7 @@ class UsersPresenter extends BasePresenter {
       }
 
       // email has to be re-verified
-      $user->setVerified(FALSE);
+      $user->setVerified(false);
       $this->emailVerificationHelper->process($user);
     }
   }
@@ -226,13 +226,13 @@ class UsersPresenter extends BasePresenter {
    * Update the profile settings
    * @POST
    * @param string $id Identifier of the user
-   * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=FALSE)
-   * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=FALSE)
-   * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=FALSE)
-   * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=FALSE)
-   * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=FALSE)
-   * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=FALSE)
-   * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=FALSE)
+   * @Param(type="post", name="darkTheme", validation="bool", description="Flag if dark theme is used", required=false)
+   * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=false)
+   * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=false)
+   * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=false)
+   * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=false)
+   * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
+   * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
    * @throws ForbiddenRequestException
    */
   public function actionUpdateSettings(string $id) {

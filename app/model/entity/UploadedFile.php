@@ -89,7 +89,7 @@ class UploadedFile implements JsonSerializable
    * @param string $filePath Path where the file is stored
    * @param bool $isPublic
    */
-  public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null, $isPublic = FALSE) {
+  public function __construct(string $name, DateTime $uploadedAt, int $fileSize, User $user, string $filePath = null, $isPublic = false) {
     $this->localFilePath = $filePath;
     $this->name = $name;
     $this->uploadedAt = $uploadedAt;

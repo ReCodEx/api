@@ -33,6 +33,6 @@ class SisGroupContextPermissionPolicy implements IPermissionPolicy {
       $cursor = $cursor->getParentGroup();
     }
 
-    return FALSE;
+    return false;
   }
 }

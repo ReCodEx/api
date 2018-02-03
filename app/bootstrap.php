@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $configurator = new Nette\Configurator;
 
 $configurator->enableDebugger(__DIR__ . '/../log');
-// $configurator->setDebugMode(FALSE);
+// $configurator->setDebugMode(false);
 
 $configurator->setTimeZone('Europe/Prague');
 $configurator->setTempDirectory(__DIR__ . '/../temp');

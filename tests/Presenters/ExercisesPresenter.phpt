@@ -150,7 +150,7 @@ class TestExercisesPresenter extends Tester\TestCase
       [
         'version' => 1,
         'difficulty' => 'super hard',
-        'isPublic' => FALSE,
+        'isPublic' => false,
         'localizedTexts' => [
           [
             'locale' => 'cs',
@@ -167,7 +167,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal('super hard', $result['payload']->difficulty);
-    Assert::equal(FALSE, $result['payload']->isPublic);
+    Assert::equal(false, $result['payload']->isPublic);
 
     $updatedLocalizedTexts = $result['payload']->localizedTexts;
     Assert::count(count($exercise->localizedTexts), $updatedLocalizedTexts);
@@ -181,7 +181,7 @@ class TestExercisesPresenter extends Tester\TestCase
         return true;
       }
 
-      return FALSE;
+      return false;
     }));
   }
 
@@ -264,8 +264,8 @@ class TestExercisesPresenter extends Tester\TestCase
     $pipeline2 = Pipeline::forkFrom($user, $pipeline, $exercise);
     $pipeline1->setId("testGetPipelines1");
     $pipeline2->setId("testGetPipelines2");
-    $this->pipelines->persist($pipeline1, FALSE);
-    $this->pipelines->persist($pipeline2, FALSE);
+    $this->pipelines->persist($pipeline1, false);
+    $this->pipelines->persist($pipeline2, false);
     $this->pipelines->flush();
 
     $request = new Nette\Application\Request("V1:Exercises", 'GET',

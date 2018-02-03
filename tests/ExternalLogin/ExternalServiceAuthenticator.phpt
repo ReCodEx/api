@@ -110,7 +110,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     $instance = Mockery::mock(Instance::class);
     $instance->shouldReceive("addMember");
-    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, FALSE);
+    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, false);
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
     $externalLogins->shouldReceive("getUser")->with("x", "123")->once()->andReturn($user);
@@ -131,7 +131,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     $instance = Mockery::mock(Instance::class);
     $instance->shouldReceive("addMember");
-    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, FALSE);
+    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, false);
     $user->setVerified(true); // user has to be verified
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
@@ -157,7 +157,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     $instance = Mockery::mock(Instance::class);
     $instance->shouldReceive("addMember");
-    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, FALSE);
+    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, false);
     $user->setVerified(true); // user has to be verified
 
     $externalLogin = new ExternalLogin($user, "", "");
@@ -184,7 +184,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     $instance = Mockery::mock(Instance::class);
     $instance->shouldReceive("addMember");
-    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, FALSE);
+    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, false);
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
     $externalLogins->shouldReceive("getUser")->with("x", "123")->andReturn($user)->once();
@@ -207,7 +207,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
     $instance = Mockery::mock(Instance::class);
     $instance->shouldReceive("addMember");
-    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, FALSE);
+    $user = new User("a@b.cd", "A", "B", "", "", "", $instance, false);
 
     $externalLogin = new ExternalLogin($user, "", "");
     $externalLogins = Mockery::mock(ExternalLogins::class);

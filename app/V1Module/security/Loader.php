@@ -15,7 +15,7 @@ class Loader {
 
   private $aclModuleBuilder;
 
-  private $loaded = FALSE;
+  private $loaded = false;
 
   private $configFilePath;
 
@@ -87,7 +87,7 @@ class Loader {
 
     flock($lock, LOCK_UN);
 
-    if ((@include $file) === FALSE) {
+    if ((@include $file) === false) {
       throw new IOException("Could not read generated security classes");
     }
 

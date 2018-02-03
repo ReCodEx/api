@@ -99,7 +99,7 @@ class Login
       return true;
     }
 
-    return FALSE;
+    return false;
   }
 
   /**
@@ -111,7 +111,7 @@ class Login
    * @throws InvalidArgumentException
    */
   public static function createLogin(User $user, string $email, string $password) {
-    if (Validators::isEmail($email) === FALSE) {
+    if (Validators::isEmail($email) === false) {
       throw new InvalidArgumentException("email", "Username must be a valid email address.");
     }
 

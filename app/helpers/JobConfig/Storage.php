@@ -40,7 +40,7 @@ class Storage {
    */
   private $humanReadable;
 
-  public function __construct(string $jobConfigDir, $humanReadable = FALSE) {
+  public function __construct(string $jobConfigDir, $humanReadable = false) {
     $this->jobConfigDir = $jobConfigDir;
     $this->jobLoader = new Loader;
     $this->humanReadable = $humanReadable;
@@ -97,7 +97,7 @@ class Storage {
 
     // make sure the directory exists and that the file is stored correctly
     $dirname = dirname($filePath);
-    if (!is_dir($dirname) && mkdir($dirname, self::DEFAULT_MKDIR_MODE, true) === FALSE) {
+    if (!is_dir($dirname) && mkdir($dirname, self::DEFAULT_MKDIR_MODE, true) === false) {
       throw new JobConfigStorageException("Cannot create the directory for the job config.");
     }
 
@@ -155,12 +155,12 @@ class Storage {
    */
   private function loadConfig(string $path): string {
     $configFileName = realpath($path);
-    if ($configFileName === FALSE) {
+    if ($configFileName === false) {
       throw new MalformedJobConfigException("The configuration file does not exist on the server.");
     }
 
     $config = file_get_contents($configFileName);
-    if ($config === FALSE) {
+    if ($config === false) {
       throw new MalformedJobConfigException("Cannot open the configuration file for reading.");
     }
 

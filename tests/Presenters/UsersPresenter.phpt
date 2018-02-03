@@ -259,8 +259,8 @@ class TestUsersPresenter extends Tester\TestCase
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $darkTheme = FALSE;
-    $vimMode = FALSE;
+    $darkTheme = false;
+    $vimMode = false;
     $defaultLanguage = "de";
     $newAssignmentEmails = false;
     $assignmentDeadlineEmails = false;

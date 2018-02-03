@@ -17,7 +17,7 @@ class SkippedStats implements IStats {
    * @return boolean The result
    */
   public function doesMeetAllCriteria(Limits $limits): bool {
-    return FALSE;
+    return false;
   }
 
   /**
@@ -34,7 +34,7 @@ class SkippedStats implements IStats {
    * @return boolean The result
    */
   public function isWallTimeOK(float $secondsLimit): bool {
-    return FALSE;
+    return false;
   }
 
   /**
@@ -68,7 +68,7 @@ class SkippedStats implements IStats {
    * @return boolean The result
    */
   public function isMemoryOK(int $bytesLimit): bool {
-    return FALSE;
+    return false;
   }
 
   /**
@@ -92,7 +92,7 @@ class SkippedStats implements IStats {
    * @return bool The result
    */
   public function wasKilled(): bool {
-    return FALSE;
+    return false;
   }
 
   /**

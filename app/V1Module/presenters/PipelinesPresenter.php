@@ -315,8 +315,8 @@ class PipelinesPresenter extends BasePresenter {
       }
 
       $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->storePipelineFile($file, $pipeline);
-      $this->uploadedFiles->persist($pipelineFile, FALSE);
-      $this->uploadedFiles->remove($file, FALSE);
+      $this->uploadedFiles->persist($pipelineFile, false);
+      $this->uploadedFiles->remove($file, false);
       $deletedFiles[] = $file;
     }
 

@@ -155,8 +155,8 @@ class ExerciseFilesPresenter extends BasePresenter {
     /** @var UploadedFile $file */
     foreach ($files as $file) {
       $exerciseFile = $this->supplementaryFileStorage->storeExerciseFile($file, $exercise);
-      $this->uploadedFiles->persist($exerciseFile, FALSE);
-      $this->uploadedFiles->remove($file, FALSE);
+      $this->uploadedFiles->persist($exerciseFile, false);
+      $this->uploadedFiles->remove($file, false);
       $deletedFiles[] = $file;
     }
 
@@ -271,8 +271,8 @@ class ExerciseFilesPresenter extends BasePresenter {
       }
 
       $exerciseFile = AttachmentFile::fromUploadedFile($file, $exercise);
-      $this->uploadedFiles->persist($exerciseFile, FALSE);
-      $this->uploadedFiles->remove($file, FALSE);
+      $this->uploadedFiles->persist($exerciseFile, false);
+      $this->uploadedFiles->remove($file, false);
     }
 
     $exercise->updatedNow();

@@ -193,7 +193,7 @@ class TestLoginPresenter extends Tester\TestCase
     $mockToken->shouldReceive("isInScope")
       ->with(AccessToken::SCOPE_REFRESH)
       ->once()
-      ->andReturn(FALSE);
+      ->andReturn(false);
     $mockToken->shouldReceive("getUserId")
       ->withNoArgs()
       ->zeroOrMoreTimes()

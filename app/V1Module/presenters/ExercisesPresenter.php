@@ -114,9 +114,9 @@ class ExercisesPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="difficulty", description="Difficulty of an exercise, should be one of 'easy', 'medium' or 'hard'")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the exercise")
-   * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=FALSE)
-   * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=FALSE)
-   * @Param(type="post", name="configurationType", description="Identifies the way the evaluation of the exercise is configured", validation="string", required=FALSE)
+   * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=false)
+   * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=false)
+   * @Param(type="post", name="configurationType", description="Identifies the way the evaluation of the exercise is configured", validation="string", required=false)
    * @throws BadRequestException
    * @throws InvalidArgumentException
    */
@@ -186,7 +186,7 @@ class ExercisesPresenter extends BasePresenter {
     Localizations::updateCollection($exercise->getLocalizedTexts(), $localizations);
 
     foreach ($exercise->getLocalizedTexts() as $localizedText) {
-      $this->exercises->persist($localizedText, FALSE);
+      $this->exercises->persist($localizedText, false);
     }
 
     $this->exercises->flush();
@@ -239,7 +239,7 @@ class ExercisesPresenter extends BasePresenter {
    * Create exercise with all default values.
    * Exercise detail can be then changed in appropriate endpoint.
    * @POST
-   * @Param(type="post", name="groupId", required=FALSE, description="Identifier of the group to which exercise belongs to")
+   * @Param(type="post", name="groupId", required=false, description="Identifier of the group to which exercise belongs to")
    * @throws ForbiddenRequestException
    */
   public function actionCreate() {
@@ -262,7 +262,7 @@ class ExercisesPresenter extends BasePresenter {
       $user->getSettings()->getDefaultLanguage(),
       "Exercise by " . $user->getName(), "", ""
     );
-    $this->exercises->persist($localizedExercise, FALSE);
+    $this->exercises->persist($localizedExercise, false);
     $exercise->addLocalizedText($localizedExercise);
 
     // create and store basic exercise configuration
@@ -305,7 +305,7 @@ class ExercisesPresenter extends BasePresenter {
    * Fork exercise from given one into the completely new one.
    * @POST
    * @param string $id Identifier of the exercise
-   * @Param(type="post", name="groupId", required=FALSE, description="Identifier of the group to which exercise will be forked")
+   * @Param(type="post", name="groupId", required=false, description="Identifier of the group to which exercise will be forked")
    * @throws ForbiddenRequestException
    */
   public function actionForkFrom(string $id) {

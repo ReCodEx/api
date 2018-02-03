@@ -24,7 +24,7 @@ class SubmissionHeader {
   private $fileCollector = "";
   /** @var string Programming language (no specific meaning yet, just better readability of config) */
   /** @var bool Logging of job evaluation */
-  private $log = FALSE;
+  private $log = false;
   /** @var array Available hardware groups */
   private $hardwareGroups = [];
 
@@ -161,7 +161,7 @@ class SubmissionHeader {
    * @return $this
    */
   public function removeHardwareGroup(string $hwGroupId) {
-    if(($key = array_search($hwGroupId, $this->hardwareGroups)) !== FALSE) {
+    if(($key = array_search($hwGroupId, $this->hardwareGroups)) !== false) {
       unset($this->hardwareGroups[$key]);
     }
     return $this;

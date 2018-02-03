@@ -106,7 +106,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     $this->getHttpResponse()->setCode($code);
     $this->sendJson([
         "code"      => $code,
-        "success"   => FALSE,
+        "success"   => false,
         "msg"       => $msg
     ]);
   }

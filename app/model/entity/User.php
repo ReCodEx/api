@@ -48,14 +48,14 @@ class User
     string $degreesAfterName,
     ?string $role,
     Instance $instance,
-    bool $instanceAdmin = FALSE
+    bool $instanceAdmin = false
   ) {
     $this->firstName = $firstName;
     $this->lastName = $lastName;
     $this->degreesBeforeName = $degreesBeforeName;
     $this->degreesAfterName = $degreesAfterName;
     $this->setEmail($email);
-    $this->isVerified = FALSE;
+    $this->isVerified = false;
     $this->isAllowed = true;
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
@@ -63,7 +63,7 @@ class User
     $this->deletedAt = null;
     $this->instance = $instance;
     $instance->addMember($this);
-    $this->settings = new UserSettings(true, FALSE, "en");
+    $this->settings = new UserSettings(true, false, "en");
     $this->logins = new ArrayCollection();
 
     if (empty($role)) {

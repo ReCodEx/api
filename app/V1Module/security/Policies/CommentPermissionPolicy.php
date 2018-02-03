@@ -12,7 +12,7 @@ class CommentPermissionPolicy implements IPermissionPolicy {
   public function isAuthor(Identity $identity, Comment $comment) {
     $user = $identity->getUserData();
     if (!$user) {
-      return FALSE;
+      return false;
     }
 
     return $user === $comment->getUser();

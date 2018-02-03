@@ -125,7 +125,7 @@ class VariablesResolver {
       }
 
       $inputPortName = array_search($node, $child->getParents());
-      if ($inputPortName === FALSE) {
+      if ($inputPortName === false) {
         // input node not found in parents of the next one
         throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
       }

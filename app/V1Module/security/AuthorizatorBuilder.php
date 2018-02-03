@@ -76,7 +76,7 @@ class AuthorizatorBuilder {
       $check->addBody('}');
     }
 
-    $check->addBody('return FALSE;');
+    $check->addBody('return false;');
 
     return $class;
   }

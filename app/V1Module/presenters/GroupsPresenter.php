@@ -117,11 +117,11 @@ class GroupsPresenter extends BasePresenter {
    * Create a new group
    * @POST
    * @Param(type="post", name="instanceId", validation="string:36", description="An identifier of the instance where the group should be created")
-   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable identifier of the group")
-   * @Param(type="post", name="parentGroupId", validation="string:36", required=FALSE, description="Identifier of the parent group (if none is given, a top-level group is created)")
-   * @Param(type="post", name="publicStats", validation="bool", required=FALSE, description="Should students be able to see each other's results?")
-   * @Param(type="post", name="isPublic", validation="bool", required=FALSE, description="Should the group be visible to all student?")
-   * @Param(type="post", name="localizedTexts", validation="array", required=FALSE, description="Localized names and descriptions")
+   * @Param(type="post", name="externalId", required=false, description="An informative, human readable identifier of the group")
+   * @Param(type="post", name="parentGroupId", validation="string:36", required=false, description="Identifier of the parent group (if none is given, a top-level group is created)")
+   * @Param(type="post", name="publicStats", validation="bool", required=false, description="Should students be able to see each other's results?")
+   * @Param(type="post", name="isPublic", validation="bool", required=false, description="Should the group be visible to all student?")
+   * @Param(type="post", name="localizedTexts", validation="array", required=false, description="Localized names and descriptions")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
@@ -163,7 +163,7 @@ class GroupsPresenter extends BasePresenter {
    * @Param(name="name", type="post", description="Name of the group")
    * @Param(name="locale", type="post", description="The locale of the name")
    * @Param(name="instanceId", type="post", description="Identifier of the instance where the group belongs")
-   * @Param(name="parentGroupId", type="post", required=FALSE, description="Identifier of the parent group")
+   * @Param(name="parentGroupId", type="post", required=false, description="Identifier of the parent group")
    * @throws ForbiddenRequestException
    */
   public function actionValidateAddGroupData() {
@@ -186,11 +186,11 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Update group info
    * @POST
-   * @Param(type="post", name="externalId", required=FALSE, description="An informative, human readable indentifier of the group")
+   * @Param(type="post", name="externalId", required=false, description="An informative, human readable indentifier of the group")
    * @Param(type="post", name="publicStats", validation="bool", description="Should students be able to see each other's results?")
    * @Param(type="post", name="isPublic", validation="bool", description="Should the group be visible to all student?")
    * @Param(type="post", name="hasThreshold", validation="bool", description="True if threshold was given, false if it should be unset")
-   * @Param(type="post", name="threshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to pass the course")
+   * @Param(type="post", name="threshold", validation="numericint", required=false, description="A minimum percentage of points needed to pass the course")
    * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
    * @param string $id An identifier of the updated group
    * @throws ForbiddenRequestException
@@ -482,7 +482,7 @@ class GroupsPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    if ($group->isStudentOf($user) === FALSE) {
+    if ($group->isStudentOf($user) === false) {
       throw new BadRequestException("User $userId is not student of $id");
     }
 
@@ -514,7 +514,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // make sure that the user is not already member of the group
-    if ($group->isStudentOf($user) === FALSE) {
+    if ($group->isStudentOf($user) === false) {
       $user->makeStudentOf($group);
       $this->groups->flush();
     }
@@ -566,7 +566,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // make sure that the user is not already supervisor of the group
-    if ($group->isSupervisorOf($user) === FALSE) {
+    if ($group->isSupervisorOf($user) === false) {
       if ($user->getRole() === "student") {
         $user->setRole("supervisor");
       }

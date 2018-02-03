@@ -128,7 +128,7 @@ class TestResult {
    * @return float The score between SCORE_MIN a SCORE_MAX
    */
   public function getScore(): float {
-    if ($this->didExecutionMeetLimits() === FALSE || $this->getStatus() !== self::STATUS_OK) {
+    if ($this->didExecutionMeetLimits() === false || $this->getStatus() !== self::STATUS_OK) {
       // even though the judge might say different, this test failed and the score is zero
       return self::SCORE_MIN;
     }
@@ -142,8 +142,8 @@ class TestResult {
    */
   public function didExecutionMeetLimits(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->doesMeetAllCriteria() === FALSE) {
-        return FALSE;
+      if ($interpretation->doesMeetAllCriteria() === false) {
+        return false;
       }
     }
     return true;
@@ -159,8 +159,8 @@ class TestResult {
    */
   public function isWallTimeOK(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isWallTimeOK() === FALSE) {
-        return FALSE;
+      if ($interpretation->isWallTimeOK() === false) {
+        return false;
       }
     }
     return true;
@@ -185,8 +185,8 @@ class TestResult {
    */
   public function isMemoryOK(): bool {
     foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isMemoryOK() === FALSE) {
-        return FALSE;
+      if ($interpretation->isMemoryOK() === false) {
+        return false;
       }
     }
     return true;

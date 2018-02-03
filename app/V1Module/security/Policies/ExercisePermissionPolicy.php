@@ -15,7 +15,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
   public function isAuthor(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $user === $exercise->getAuthor();
@@ -25,8 +25,8 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
 
     if ($user === null || $exercise->getGroups()->isEmpty() ||
-        $exercise->isPublic() === FALSE) {
-      return FALSE;
+        $exercise->isPublic() === false) {
+      return false;
     }
 
     /** @var Group $group */
@@ -36,15 +36,15 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
   public function isSuperGroupAdmin(Identity $identity, Exercise $exercise) {
     $user = $identity->getUserData();
 
     if ($user === null || $exercise->getGroups()->isEmpty() ||
-      $exercise->isPublic() === FALSE) {
-      return FALSE;
+      $exercise->isPublic() === false) {
+      return false;
     }
 
     /** @var Group $group */
@@ -54,7 +54,7 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
   public function isPublic(Identity $identity, Exercise $exercise) {

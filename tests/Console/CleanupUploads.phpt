@@ -54,18 +54,18 @@ class TestCleanupUploads extends Tester\TestCase
 
     // Remove fixtures and stuff
     foreach ($this->uploadedFiles->findAll() as $file) {
-      $this->uploadedFiles->remove($file, FALSE);
+      $this->uploadedFiles->remove($file, false);
     }
 
     // Insert our own uploaded files
     for ($i = 0; $i < 5; $i++) {
       $uploadedFile = new UploadedFile("filenameRecent", new DateTime(), 1, $user, "url");
-      $this->uploadedFiles->persist($uploadedFile, FALSE);
+      $this->uploadedFiles->persist($uploadedFile, false);
     }
 
     for ($i = 0; $i < 5; $i++) {
       $uploadedFile = new UploadedFile("filenameOld", (new DateTime())->modify("-1 year"), 1, $user, "url");
-      $this->uploadedFiles->persist($uploadedFile, FALSE);
+      $this->uploadedFiles->persist($uploadedFile, false);
     }
 
     $this->uploadedFiles->flush();

@@ -29,7 +29,7 @@ class UserSettings implements JsonSerializable
 
   public function __construct(
     bool $darkTheme = true,
-    bool $vimMode = FALSE,
+    bool $vimMode = false,
     string $defaultLanguage = "en",
     bool $openedSidebar = true
   ) {

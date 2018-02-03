@@ -13,7 +13,7 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   public function isMember(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if (!$user) {
-      return FALSE;
+      return false;
     }
 
     return $group->isMemberOf($user) || $group->isSupervisorOf($user) || $group->isAdminOf($user);
@@ -22,7 +22,7 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   public function isSupervisor(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if (!$user) {
-      return FALSE;
+      return false;
     }
 
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
@@ -31,7 +31,7 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   public function isAdmin(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if (!$user) {
-      return FALSE;
+      return false;
     }
 
     return $group->isAdminOf($user);
@@ -48,7 +48,7 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   public function canAccessDetail(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $group->isAdminOf($user)
@@ -62,7 +62,7 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   public function isInSameInstance(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $user->getInstance() === $group->getInstance();

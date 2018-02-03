@@ -181,7 +181,7 @@ class PortNode {
    */
   public function findChildPort(PortNode $node): ?string {
     foreach ($this->childrenByPort as $portName => $children) {
-      if (array_search($node, $children, true) !== FALSE) {
+      if (array_search($node, $children, true) !== false) {
         return $portName;
       }
     }

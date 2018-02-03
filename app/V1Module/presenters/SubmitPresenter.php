@@ -203,8 +203,8 @@ class SubmitPresenter extends BasePresenter {
 
       $submittedFiles[] = $file->getName();
       $solutionFile = SolutionFile::fromUploadedFile($file, $solution);
-      $this->files->persist($solutionFile, FALSE);
-      $this->files->remove($file, FALSE);
+      $this->files->persist($solutionFile, false);
+      $this->files->remove($file, false);
     }
 
     // create and fill assignment solution
@@ -245,7 +245,7 @@ class SubmitPresenter extends BasePresenter {
 
     // check for the license of instance of user
     $assignment = $solution->getAssignment();
-    if ($assignment->getGroup()->hasValidLicence() === FALSE) {
+    if ($assignment->getGroup()->hasValidLicence() === false) {
       throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getId()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
         IResponse::S402_PAYMENT_REQUIRED);
     }

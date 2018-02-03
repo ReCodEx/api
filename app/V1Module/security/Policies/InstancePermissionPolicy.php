@@ -12,6 +12,6 @@ class InstancePermissionPolicy implements IPermissionPolicy {
 
   public function isMember(Identity $identity, Instance $instance) {
     $user = $identity->getUserData();
-    return $user ? $user->belongsTo($instance) : FALSE;
+    return $user ? $user->belongsTo($instance) : false;
   }
 }

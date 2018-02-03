@@ -41,7 +41,7 @@ class RuntimeEnvironments extends BaseRepository {
         $runtimeExtensions = $runtimeEnvironment->getExtensionsList();
         foreach ($extensions as $ext) {
           if (!in_array($ext, $runtimeExtensions)) {
-            return FALSE;
+            return false;
           }
         }
         return true;

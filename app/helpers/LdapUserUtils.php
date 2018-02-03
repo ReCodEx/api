@@ -140,7 +140,7 @@ class LdapUserUtils {
     /** @var Node|bool $nextResult */
     $nextResult = $results->current();
 
-    if ($dn === null || $nextResult !== FALSE) {
+    if ($dn === null || $nextResult !== false) {
       return null;
     }
 
@@ -198,7 +198,7 @@ class LdapUserUtils {
    */
   public static function getPersonalId(string $dn) {
     $parts = ldap_explode_dn($dn, 1); // 1 ==> only values of RDN, see http://php.net/manual/en/function.ldap-explode-dn.php
-    if ($parts === FALSE || $parts["count"] === 0) {
+    if ($parts === false || $parts["count"] === 0) {
       return null;
     }
 

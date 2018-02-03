@@ -84,7 +84,7 @@ class EmailHelper {
       // silent error
     }
 
-    return FALSE;
+    return false;
   }
 
 }

@@ -292,7 +292,7 @@ class Group
    */
   public function isPrimaryAdminOf(User $user) {
     $admins = $this->getPrimaryAdminsIds();
-    return array_search($user->getId(), $admins, true) !== FALSE;
+    return array_search($user->getId(), $admins, true) !== false;
   }
 
   /**
@@ -340,7 +340,7 @@ class Group
    */
   public function isAdminOf(User $user) {
     $admins = $this->getAdminsIds();
-    return array_search($user->getId(), $admins, true) !== FALSE;
+    return array_search($user->getId(), $admins, true) !== false;
   }
 
   /**

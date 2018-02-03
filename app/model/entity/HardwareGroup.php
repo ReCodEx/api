@@ -46,7 +46,7 @@ class HardwareGroup implements JsonSerializable
     $criteria = Criteria::create()->where(Criteria::expr()->lte("loggedAt", $when));
     $latestLog = $this->availabilityLog->matching($criteria)->first();
     if (!$latestLog) {
-      return FALSE;
+      return false;
     }
 
     return $latestLog->isAvailable();

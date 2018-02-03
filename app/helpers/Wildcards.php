@@ -22,7 +22,7 @@ class Wildcards {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
   /**
@@ -41,7 +41,7 @@ class Wildcards {
     while ($offset < $len) {
       $start = strpos($pattern, "{", $offset);
 
-      if ($start === FALSE) {
+      if ($start === false) {
         if ($offset === 0) {
           yield $pattern;
         }

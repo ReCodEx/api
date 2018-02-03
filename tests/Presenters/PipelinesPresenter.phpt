@@ -389,8 +389,8 @@ class TestPipelinesPresenter extends Tester\TestCase
     $pipeline = current($this->presenter->pipelines->findAll());
     $expectedFile1 = new SupplementaryExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, null, $pipeline);
     $expectedFile2 = new SupplementaryExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, null, $pipeline);
-    $this->presenter->uploadedFiles->persist($expectedFile1, FALSE);
-    $this->presenter->uploadedFiles->persist($expectedFile2, FALSE);
+    $this->presenter->uploadedFiles->persist($expectedFile1, false);
+    $this->presenter->uploadedFiles->persist($expectedFile2, false);
     $this->presenter->uploadedFiles->flush();
 
     $request = new Nette\Application\Request("V1:Pipelines", 'GET',
