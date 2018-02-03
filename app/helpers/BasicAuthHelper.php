@@ -18,8 +18,8 @@ class BasicAuthHelper {
    * @throws HttpBasicAuthException if Authorization header is not present or is corrupted
    */
   public static function getCredentials(IRequest $req) {
-    $auth = $req->getHeader("Authorization", NULL);
-    if ($auth === NULL || Strings::startsWith($auth, "Basic ") === FALSE) {
+    $auth = $req->getHeader("Authorization", null);
+    if ($auth === null || Strings::startsWith($auth, "Basic ") === FALSE) {
       throw new HttpBasicAuthException("The request from broker must contain HTTP Basic authentication.");
     }
 

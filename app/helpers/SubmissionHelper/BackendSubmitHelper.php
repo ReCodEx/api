@@ -34,10 +34,10 @@ class BackendSubmitHelper {
    * @param array $headers Headers used to further specify which workers can evaluate the submission
    * @param string $hardwareGroup Hardware group to evaluate this submission with
    *                              (if none is given, all hardware groups associated with the assignment can be used)
-   * @return NULL|string URL of the results when the submission was accepted and evaluation started, otherwise NULL
+   * @return null|string URL of the results when the submission was accepted and evaluation started, otherwise null
    * @throws SubmissionFailedException
    */
-  public function initiateEvaluation(JobConfig $jobConfig, array $files, array $headers = [], string $hardwareGroup = NULL) {
+  public function initiateEvaluation(JobConfig $jobConfig, array $files, array $headers = [], string $hardwareGroup = null) {
     // firstly let us set address of fileserver to job configuration
     $jobConfig->setFileCollector($this->fileServer->getFileserverTasksUrl());
 
@@ -51,7 +51,7 @@ class BackendSubmitHelper {
     // tell broker that we have new job which has to be executed
     $evaluationStarted = $this->broker->startEvaluation(
       $jobConfig->getJobId(),
-      $hardwareGroup !== NULL ? [$hardwareGroup] : $jobConfig->getHardwareGroups(),
+      $hardwareGroup !== null ? [$hardwareGroup] : $jobConfig->getHardwareGroups(),
       $headers,
       $archiveUrl,
       $resultsUrl
@@ -60,7 +60,7 @@ class BackendSubmitHelper {
     if ($evaluationStarted) {
       return $resultsUrl;
     } else {
-      return NULL;
+      return null;
     }
   }
 

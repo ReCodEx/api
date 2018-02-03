@@ -145,7 +145,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
       })->first();
 
-    Assert::notSame(NULL, $user);
+    Assert::notSame(null, $user);
 
     PresenterTestHelper::login($this->container, $user->getEmail());
 
@@ -177,7 +177,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
       function (User $user) use ($submission) {
         return $submission->getSolution()->getAuthor() !== $user && $user->getRole() !== 'superadmin';
       })->first();
-    Assert::notSame(NULL, $user);
+    Assert::notSame(null, $user);
 
     PresenterTestHelper::login($this->container, $user->getEmail());
 

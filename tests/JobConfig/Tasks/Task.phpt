@@ -84,8 +84,8 @@ class TestTaskBase extends Tester\TestCase
     Assert::equal([], $task->getDependencies());
     Assert::equal("cmdA", $task->getCommandBinary());
     Assert::equal([], $task->getCommandArguments());
-    Assert::equal(NULL, $task->getType());
-    Assert::equal(NULL, $task->getTestId());
+    Assert::equal(null, $task->getType());
+    Assert::equal(null, $task->getTestId());
 
     Assert::isEqual(self::$basic, $task->toArray());
   }

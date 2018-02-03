@@ -24,7 +24,7 @@ class SisGroupBindings extends BaseRepository {
   /**
    * @param $group
    * @param $code
-   * @return SisGroupBinding|NULL
+   * @return SisGroupBinding|null
    */
   public function findByGroupAndCode(Group $group, $code) {
     return $this->findOneBy([

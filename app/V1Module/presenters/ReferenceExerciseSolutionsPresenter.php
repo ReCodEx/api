@@ -201,7 +201,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $runtimeId = $req->getPost("runtimeEnvironmentId");
 
     // detect the runtime configuration
-    if ($runtimeId !== NULL) {
+    if ($runtimeId !== null) {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
     } else {
       throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");

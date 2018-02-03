@@ -100,7 +100,7 @@ class SisPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse([
-      "accessible" => $login !== NULL,
+      "accessible" => $login !== null,
       "terms" => $terms
     ]);
   }
@@ -232,7 +232,7 @@ class SisPresenter extends BasePresenter {
 
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
       foreach ($bindings as $binding) {
-        if ($binding->getGroup() !== NULL && !$binding->getGroup()->isArchived()) {
+        if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
           /** @var Group $group */
           $group = $binding->getGroup();
           $serializedGroup = $this->groupViewFactory->getGroup($group);
@@ -384,7 +384,7 @@ class SisPresenter extends BasePresenter {
   protected function getSisUserIdOrThrow(User $user) {
     $login = $this->externalLogins->findByUser($user, "cas-uk");
 
-    if ($login === NULL) {
+    if ($login === null) {
       throw new InvalidArgumentException("Given user is not bound to a CAS UK account");
     }
 

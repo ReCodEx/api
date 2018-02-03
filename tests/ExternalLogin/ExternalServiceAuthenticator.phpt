@@ -69,7 +69,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
 
   public function testAuthenticateMissingUserData() {
     $serviceA = Mockery::mock(IExternalLoginService::class);
-    $serviceA->shouldReceive("getUser")->andReturn(NULL);
+    $serviceA->shouldReceive("getUser")->andReturn(null);
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
     $users = Mockery::mock(Users::class);
@@ -88,10 +88,10 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
     $serviceA->shouldReceive("getServiceId")->andReturn("x");
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
-    $externalLogins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(NULL);
+    $externalLogins->shouldReceive("getUser")->with("x", "123")->once()->andReturn(null);
 
     $users = Mockery::mock(Users::class);
-    $users->shouldReceive("getByEmail")->andReturn(NULL);
+    $users->shouldReceive("getByEmail")->andReturn(null);
 
     $logins = Mockery::mock(Logins::class);
 

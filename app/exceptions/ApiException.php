@@ -17,7 +17,7 @@ class ApiException extends \Exception {
    * @param int       $code     Error code
    * @param \Exception $previous Previous exception
    */
-  public function __construct($msg = "Unexpected API error", $code = IResponse::S500_INTERNAL_SERVER_ERROR, $previous = NULL) {
+  public function __construct($msg = "Unexpected API error", $code = IResponse::S500_INTERNAL_SERVER_ERROR, $previous = null) {
     parent::__construct($msg, $code, $previous);
   }
 

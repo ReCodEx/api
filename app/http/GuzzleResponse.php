@@ -32,7 +32,7 @@ class GuzzleResponse implements IResponse {
    * @param bool $forceDownload
    */
   public function __construct(StreamInterface $stream, string $name,
-      string $contentType = NULL, bool $forceDownload = TRUE)
+      string $contentType = null, bool $forceDownload = TRUE)
   {
     $this->stream = $stream;
     $this->name = $name;

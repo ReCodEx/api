@@ -75,7 +75,7 @@ class GroupViewFactory {
       $this->getCompletedAssignmentsByStudent($group, $student)->getValues(),
       function ($carry, Assignment $assignment) use ($student) {
         $best = $this->assignmentSolutions->findBestSolution($assignment, $student);
-        if ($best !== NULL) {
+        if ($best !== null) {
           $carry += $best->getTotalPoints();
         }
 

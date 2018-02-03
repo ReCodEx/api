@@ -9,8 +9,8 @@ use Nette\Utils\Validators;
  */
 class EvaluationTaskResult extends TaskResult {
 
-  /** @var float|NULL Explicit score from the results */
-  private $score = NULL;
+  /** @var float|null Explicit score from the results */
+  private $score = null;
 
   /**
    * Constructor
@@ -34,7 +34,7 @@ class EvaluationTaskResult extends TaskResult {
    * @return float The score
    */
   public function getScore(): float {
-    if ($this->score !== NULL) {
+    if ($this->score !== null) {
       return $this->score;
     }
     return parent::getScore();

@@ -163,7 +163,7 @@ class UsersPresenter extends BasePresenter {
 
     // check if there is not another user using provided email
     $userEmail = $this->users->getByEmail($email);
-    if ($userEmail !== NULL && $userEmail->getId() !== $user->getId()) {
+    if ($userEmail !== null && $userEmail->getId() !== $user->getId()) {
       throw new BadRequestException("This email address is already taken.");
     }
 
@@ -244,23 +244,23 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    $darkTheme = $req->getPost("darkTheme") !== NULL
+    $darkTheme = $req->getPost("darkTheme") !== null
       ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getDarkTheme();
-    $vimMode = $req->getPost("vimMode") !== NULL
+    $vimMode = $req->getPost("vimMode") !== null
       ? filter_var($req->getPost("vimMode"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getVimMode();
-    $openedSidebar = $req->getPost("openedSidebar") !== NULL
+    $openedSidebar = $req->getPost("openedSidebar") !== null
       ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getOpenedSidebar();
-    $defaultLanguage = $req->getPost("defaultLanguage") !== NULL ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage();
-    $newAssignmentEmails = $req->getPost("newAssignmentEmails") !== NULL
+    $defaultLanguage = $req->getPost("defaultLanguage") !== null ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage();
+    $newAssignmentEmails = $req->getPost("newAssignmentEmails") !== null
       ? filter_var($req->getPost("newAssignmentEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getNewAssignmentEmails();
-    $assignmentDeadlineEmails = $req->getPost("assignmentDeadlineEmails") !== NULL
+    $assignmentDeadlineEmails = $req->getPost("assignmentDeadlineEmails") !== null
       ? filter_var($req->getPost("assignmentDeadlineEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getAssignmentDeadlineEmails();
-    $submissionEvaluatedEmails = $req->getPost("submissionEvaluatedEmails") !== NULL
+    $submissionEvaluatedEmails = $req->getPost("submissionEvaluatedEmails") !== null
       ? filter_var($req->getPost("submissionEvaluatedEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getSubmissionEvaluatedEmails();
 

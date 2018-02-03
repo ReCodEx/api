@@ -20,8 +20,8 @@ class Storage {
 
   const DEFAULT_MKDIR_MODE = 0777;
 
-  /** @var Cache|NULL Run-time memory cache for job configurations */
-  private static $cache = NULL;
+  /** @var Cache|null Run-time memory cache for job configurations */
+  private static $cache = null;
 
   /**
    * Loader of job configuration.
@@ -51,7 +51,7 @@ class Storage {
    * @return Cache
    */
   protected function getCache(): Cache {
-    if (self::$cache === NULL) {
+    if (self::$cache === null) {
       self::$cache = new Cache(new MemoryStorage());
     }
 

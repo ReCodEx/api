@@ -117,7 +117,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     // create virtual filesystem setup
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
     $vfsFile = $vfs->getChild($filename);
 
     // create new file upload
@@ -142,7 +142,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     // create virtual filesystem setup
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
     $vfsFile = $vfs->getChild($filename);
 
     // create new file upload
@@ -170,7 +170,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     // create virtual filesystem setup
     $filename = "file.ext";
     $content = iconv("UTF-8", "Windows-1250",  "Žluťoučké kobylky");
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
     $vfsFile = $vfs->getChild($filename);
 
     // create new file upload
@@ -200,7 +200,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     // create virtual filesystem setup
     $filename = "file.ext";
     $content = chr(0xef) . chr(0xbb) . chr(0xbf) . "Hello";
-    $vfs = vfsStream::setup("root", NULL, [$filename => ""]);
+    $vfs = vfsStream::setup("root", null, [$filename => ""]);
     $vfsFile = $vfs->getChild($filename);
 
     $f = fopen($vfsFile->url(), "wb");
@@ -268,7 +268,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
 
     $file = current($this->presenter->uploadedFiles->findAll());
     $file->localFilePath = $vfs->getChild($filename)->url();
@@ -289,7 +289,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
 
     /** @var EntityManager $em */
     $em = $this->container->getByType(EntityManager::class);
@@ -313,7 +313,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     $filename = "file.ext";
     $content = "ContentOfContentedFile";
-    $vfs = vfsStream::setup("root", NULL, [$filename => $content]);
+    $vfs = vfsStream::setup("root", null, [$filename => $content]);
 
     /** @var EntityManager $em */
     $em = $this->container->getByType(EntityManager::class);

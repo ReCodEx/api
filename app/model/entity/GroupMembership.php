@@ -134,11 +134,11 @@ class GroupMembership implements JsonSerializable
       "userId" => $this->user->getId(),
       "groupId" => $this->group->getId(),
       "status" => $this->status,
-      "requestedAt" => $this->requestedAt ? $this->requestedAt->getTimestamp() : NULL,
-      "joinedAt" => $this->joinedAt ? $this->joinedAt->getTimestamp() : NULL,
-      "rejectedAt" => $this->rejectedAt ? $this->rejectedAt->getTimestamp() : NULL,
-      "studentSince" => $this->studentSince ? $this->studentSince->getTimestamp() : NULL,
-      "supervisorSince" => $this->supervisorSince ? $this->supervisorSince->getTimestamp() : NULL,
+      "requestedAt" => $this->requestedAt ? $this->requestedAt->getTimestamp() : null,
+      "joinedAt" => $this->joinedAt ? $this->joinedAt->getTimestamp() : null,
+      "rejectedAt" => $this->rejectedAt ? $this->rejectedAt->getTimestamp() : null,
+      "studentSince" => $this->studentSince ? $this->studentSince->getTimestamp() : null,
+      "supervisorSince" => $this->supervisorSince ? $this->supervisorSince->getTimestamp() : null,
     ];
   }
 

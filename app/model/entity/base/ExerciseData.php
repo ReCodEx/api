@@ -32,7 +32,7 @@ trait ExerciseData {
   /**
    * Get localized text based on given locale.
    * @param string $locale
-   * @return LocalizedExercise|NULL
+   * @return LocalizedExercise|null
    */
   public function getLocalizedTextByLocale(string $locale) {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
@@ -118,7 +118,7 @@ trait ExerciseData {
    * Get exercise limits based on environment and hardware group.
    * @param RuntimeEnvironment $environment
    * @param HardwareGroup $hwGroup
-   * @return ExerciseLimits|NULL
+   * @return ExerciseLimits|null
    */
   public function getLimitsByEnvironmentAndHwGroup(RuntimeEnvironment $environment, HardwareGroup $hwGroup): ?ExerciseLimits {
     $first = $this->exerciseLimits->filter(
@@ -126,7 +126,7 @@ trait ExerciseData {
         return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
           && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
       })->first();
-    return $first === FALSE ? NULL : $first;
+    return $first === FALSE ? null : $first;
   }
 
   /**
@@ -146,7 +146,7 @@ trait ExerciseData {
   /**
    * Get runtime configuration based on environment identification.
    * @param RuntimeEnvironment $environment
-   * @return ExerciseEnvironmentConfig|NULL
+   * @return ExerciseEnvironmentConfig|null
    */
   public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig {
     $first = $this->exerciseEnvironmentConfigs->filter(

@@ -48,7 +48,7 @@ class TestConfig {
       }
     }
 
-    if (empty($this->executionTaskType) || $this->evaluationTaskType === NULL) {
+    if (empty($this->executionTaskType) || $this->evaluationTaskType === null) {
       throw new JobConfigLoadingException("Each test must contain at least on task of type 'execution' and exactly one of type 'evaluation'. Test '{$id}' does not meet these criteria.");
     }
   }

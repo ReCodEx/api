@@ -20,7 +20,7 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
     string $name,
     string $assignmentText,
     string $description = "",
-    LocalizedExercise $createdFrom = NULL
+    LocalizedExercise $createdFrom = null
   ) {
     parent::__construct($locale);
     $this->assignmentText = $assignmentText;

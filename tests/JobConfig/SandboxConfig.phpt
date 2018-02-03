@@ -57,9 +57,9 @@ class TestSandboxConfig extends Tester\TestCase
   public function testParsing() {
     $sandbox = $this->builder->loadSandboxConfig(self::$cfg);
     Assert::equal("sandboxName", $sandbox->getName());
-    Assert::equal(NULL, $sandbox->getStdin());
-    Assert::equal(NULL, $sandbox->getStdout());
-    Assert::equal(NULL, $sandbox->getStderr());
+    Assert::equal(null, $sandbox->getStdin());
+    Assert::equal(null, $sandbox->getStdout());
+    Assert::equal(null, $sandbox->getStderr());
     Assert::equal(2, count($sandbox->getLimitsArray()));
     Assert::true($sandbox->hasLimits("idA"));
     Assert::true($sandbox->hasLimits("idB"));

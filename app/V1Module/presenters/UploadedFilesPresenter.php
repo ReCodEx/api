@@ -150,7 +150,7 @@ class UploadedFilesPresenter extends BasePresenter {
     $file = array_pop($files);
     $uploadedFile = $this->fileStorage->store($file, $user);
 
-    if ($uploadedFile === NULL) {
+    if ($uploadedFile === null) {
       throw new CannotReceiveUploadedFileException($file->getName());
     }
 

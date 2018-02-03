@@ -111,14 +111,14 @@ class ExerciseConfigValidator {
    * @throws ExerciseConfigException
    */
   private function checkPipelinesSection(Exercise $exercise, array $pipelines,
-      VariablesTable $environmentVariables, ?string $environment = NULL) {
+      VariablesTable $environmentVariables, ?string $environment = null) {
     $exerciseFiles = $exercise->getHashedSupplementaryFiles();
 
     // load pipeline configurations from database
     $pipelineConfigs = [];
     foreach (array_keys($pipelines) as $pipelineId) {
       $pipelineEntity = $this->pipelines->get($pipelineId);
-      if ($pipelineEntity === NULL) {
+      if ($pipelineEntity === null) {
         throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
       }
       $pipelineConfig = $pipelineEntity->getPipelineConfig();

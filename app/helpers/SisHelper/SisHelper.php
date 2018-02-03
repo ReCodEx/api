@@ -24,7 +24,7 @@ class SisHelper {
    * @param $secret
    * @param GuzzleHttp\HandlerStack|null $handler An optional HTTP handler (mainly for unit testing purposes)
    */
-  public function __construct($apiBase, $faculty, $secret, GuzzleHttp\HandlerStack $handler = NULL) {
+  public function __construct($apiBase, $faculty, $secret, GuzzleHttp\HandlerStack $handler = null) {
     $this->apiBase = $apiBase;
     $this->faculty = $faculty;
     $this->secret = $secret;
@@ -37,7 +37,7 @@ class SisHelper {
       'base_uri' => $this->apiBase . 'rozvrhng/rest.php'
     ];
 
-    if ($handler !== NULL) {
+    if ($handler !== null) {
       $options['handler'] = $handler;
     }
 
@@ -51,7 +51,7 @@ class SisHelper {
    * @return SisCourseRecord[]|Generator
    * @throws InvalidArgumentException
    */
-  public function getCourses($sisUserId, $year = NULL, $term = 1) {
+  public function getCourses($sisUserId, $year = null, $term = 1) {
     $salt = join(',', [ time(), $this->faculty, $sisUserId ]);
     $hash = hash('sha256', "$salt,$this->secret");
 
@@ -63,7 +63,7 @@ class SisHelper {
       'extras' => ['annotations']
     ];
 
-    if ($year !== NULL) {
+    if ($year !== null) {
       $params['semesters'] = [sprintf("%s-%s", $year, $term)];
     }
 

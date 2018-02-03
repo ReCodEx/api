@@ -33,11 +33,11 @@ class MethodRoute implements IRouter {
 
   /**
    * Maps HTTP request to a Request object.
-   * @return Request|NULL
+   * @return Request|null
    */
   public function match(IRequest $httpRequest) {
     if (!$httpRequest->isMethod($this->method)) {
-      return NULL;
+      return null;
     }
 
     return $this->route->match($httpRequest);
@@ -45,7 +45,7 @@ class MethodRoute implements IRouter {
 
   /**
    * Constructs absolute URL from Request object.
-   * @return string|NULL
+   * @return string|null
    */
   public function constructUrl(Request $appRequest, Url $refUrl) {
     return $this->route->constructUrl($appRequest, $refUrl);

@@ -28,6 +28,6 @@ class SisPermissionPolicy implements IPermissionPolicy {
       'externalId' => $id->get()
     ]);
 
-    return $login !== NULL;
+    return $login !== null;
   }
 }

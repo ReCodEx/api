@@ -65,7 +65,7 @@ class FileServerProxy {
    * But this must be considered when using it!
    * </p>
    * @param   string $url   URL of the file
-   * @return  StreamInterface|NULL Stream with contents of the archive
+   * @return  StreamInterface|null Stream with contents of the archive
    */
   public function getFileserverFileStream(string $url) {
     return $this->getRequest($url);
@@ -93,14 +93,14 @@ class FileServerProxy {
    * Downloads the contents of a archive file at the given URL and return
    * unparsed YAML results of evaluation.
    * @param   string $url   URL of the file
-   * @return  string|NULL   Contents of the results file
+   * @return  string|null   Contents of the results file
    * @throws  SubmissionEvaluationFailedException when results are not available
    */
   public function downloadResults(string $url) {
     $zip = $this->getRequest($url);
 
     if ($zip === null) {
-      return NULL; // Results are probably not ready yet
+      return null; // Results are probably not ready yet
     }
 
     return $this->getResultYmlContent($zip);
@@ -114,13 +114,13 @@ class FileServerProxy {
    * But this must be considered when using it!
    * </p>
    * @param   string $url   URL of the file
-   * @return  StreamInterface|NULL Stream with contents of the archive
+   * @return  StreamInterface|null Stream with contents of the archive
    */
   private function getRequest(string $url) {
     try {
       $response = $this->client->request("GET", $url);
     } catch (ClientException $e) {
-      return NULL;
+      return null;
     }
     return $response->getBody();
   }

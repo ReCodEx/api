@@ -102,10 +102,10 @@ class CASLoginService implements IExternalLoginService {
    * @throws CASMissingInfoException
    */
   public function getUser($credentials): UserData {
-    $ticket = Arrays::get($credentials, "ticket", NULL);
-    $clientUrl = Arrays::get($credentials, "clientUrl", NULL);
+    $ticket = Arrays::get($credentials, "ticket", null);
+    $clientUrl = Arrays::get($credentials, "clientUrl", null);
 
-    if ($ticket === NULL || $clientUrl === NULL) {
+    if ($ticket === null || $clientUrl === null) {
         throw new AppInvalidArgumentException("The ticket or the client URL is missing for validation of the request.");
     }
 
@@ -148,7 +148,7 @@ class CASLoginService implements IExternalLoginService {
     $url = $this->getValidationUrl($ticket, $clientUrl);
     $req = new Request('GET', $url);
     $res = $client->send($req);
-    $data = NULL;
+    $data = null;
 
     if ($res->getStatusCode() === 200) { // the response should be 200 even if the ticket is invalid
       try {

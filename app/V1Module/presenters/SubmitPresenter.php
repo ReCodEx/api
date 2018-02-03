@@ -120,7 +120,7 @@ class SubmitPresenter extends BasePresenter {
   /**
    * Determine if given user can submit solutions to assignment.
    * @param Assignment $assignment
-   * @param User|NULL $user
+   * @param User|null $user
    * @return bool
    */
   private function canReceiveSubmissions(Assignment $assignment, User $user = null) {
@@ -167,7 +167,7 @@ class SubmitPresenter extends BasePresenter {
 
     $loggedInUser = $this->getCurrentUser();
     $userId = $req->getPost("userId");
-    $user = $userId !== NULL
+    $user = $userId !== null
       ? $this->users->findOrThrow($userId)
       : $loggedInUser;
 
@@ -186,7 +186,7 @@ class SubmitPresenter extends BasePresenter {
     }
 
     // detect the runtime environment
-    if ($req->getPost("runtimeEnvironmentId") === NULL) {
+    if ($req->getPost("runtimeEnvironmentId") === null) {
       $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
     } else {
       $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
@@ -239,7 +239,7 @@ class SubmitPresenter extends BasePresenter {
    * @throws SubmissionFailedException
    */
   private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false) {
-    if ($solution->getId() === NULL) {
+    if ($solution->getId() === null) {
       throw new InvalidArgumentException("The submission object is missing an id");
     }
 

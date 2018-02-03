@@ -24,7 +24,7 @@ class SisCoursePermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
     $sisUser = $this->externalLogins->getUser("cas-uk", $course->getSisUserId());
 
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 

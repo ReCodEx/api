@@ -81,7 +81,7 @@ class LDAPLoginService implements IExternalLoginService {
   public function ensureUKCO(string $username) {
     if (Validators::isEmail($username)) {
       $username = $this->getUKCO($username);
-      if ($username === NULL) {
+      if ($username === null) {
         throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
       }
     }
@@ -97,7 +97,7 @@ class LDAPLoginService implements IExternalLoginService {
    * Tries to find UKCO for the given email. The ID cannot be determined if there is no
    * person with this email or if there mare multiple people sharing the email.
    * @param  string $email Email address of user, whose UKCO is requested
-   * @return string|NULL
+   * @return string|null
    */
   public function getUKCO(string $email) {
     return $this->ldap->findUserByMail($email, $this->emailField);
@@ -112,10 +112,10 @@ class LDAPLoginService implements IExternalLoginService {
    * @internal param string $password User's password
    */
   public function getUser($credentials): UserData {
-    $username = Arrays::get($credentials, "username", NULL);
-    $password= Arrays::get($credentials, "password", NULL);
+    $username = Arrays::get($credentials, "username", null);
+    $password= Arrays::get($credentials, "password", null);
 
-    if ($username === NULL || $password === NULL) {
+    if ($username === null || $password === null) {
       throw new InvalidArgumentException("The ticket or the client URL is missing for validation of the request.");
     }
 
@@ -143,7 +143,7 @@ class LDAPLoginService implements IExternalLoginService {
    * Get value of an LDAP attribute.
    * @param  NodeAttribute $attribute The attribute
    * @return mixed                    The value
-   * @throws CASMissingInfoException  If attribute is invalid (empty or NULL)
+   * @throws CASMissingInfoException  If attribute is invalid (empty or null)
    */
   private function getValue(NodeAttribute $attribute) {
     if ($attribute === null || $attribute->count() === 0) {

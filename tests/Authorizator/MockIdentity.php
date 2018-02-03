@@ -6,7 +6,7 @@ class MockIdentity extends App\Security\Identity
 
   public function __construct(array $roles)
   {
-    parent::__construct(NULL, NULL);
+    parent::__construct(null, null);
     $this->roles = $roles;
   }
 

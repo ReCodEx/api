@@ -26,7 +26,7 @@ class TestUploadedFileStorage extends Tester\TestCase {
   protected $user;
 
   protected function setUp() {
-    $this->vfsStream = vfsStream::setup("root", NULL, [
+    $this->vfsStream = vfsStream::setup("root", null, [
       "uploads" => [],
       "tmp" => []
     ]);

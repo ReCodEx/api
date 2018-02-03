@@ -208,8 +208,8 @@ class Assignment implements JsonSerializable, IExercise
    */
   protected $maxPointsBeforeSecondDeadline;
 
-  public function getMaxPoints(DateTime $time = NULL) {
-    if ($time === NULL || $time < $this->firstDeadline) {
+  public function getMaxPoints(DateTime $time = null) {
+    if ($time === null || $time < $this->firstDeadline) {
       return $this->maxPointsBeforeFirstDeadline;
     } else if ($this->allowSecondDeadline && $time < $this->secondDeadline) {
       return $this->maxPointsBeforeSecondDeadline;
@@ -377,7 +377,7 @@ class Assignment implements JsonSerializable, IExercise
           "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
               && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
             $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
-            return $theirs === NULL || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
+            return $theirs === null || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
           })
         ],
         "limits" => [

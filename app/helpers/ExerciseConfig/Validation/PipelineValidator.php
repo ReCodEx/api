@@ -27,12 +27,12 @@ class PipelineValidator {
     // Check ports of all boxes
     foreach ($pipelineConfig->getAll() as $box) {
       foreach ($box->getPorts() as $port) {
-        if ($port->getVariable() === NULL || $port->getVariable() === "") {
+        if ($port->getVariable() === null || $port->getVariable() === "") {
           continue; // Empty port - no further validation is necessary
         }
 
         $variable = $variables->get($port->getVariable());
-        if ($variable === NULL) {
+        if ($variable === null) {
           throw new ExerciseConfigException(sprintf(
             "Variable %s used in port %s is not present in the variable table",
             $port->getVariable(),

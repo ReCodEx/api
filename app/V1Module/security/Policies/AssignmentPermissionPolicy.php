@@ -16,7 +16,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
   public function isAssignee(Identity $identity, Assignment $assignment) {
     $user = $identity->getUserData();
 
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -27,7 +27,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
 
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 

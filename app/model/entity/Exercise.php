@@ -108,7 +108,7 @@ class Exercise implements JsonSerializable, IExercise
    */
   public function getReferenceSolutions() {
     return $this->referenceSolutions->filter(function (ReferenceExerciseSolution $solution) {
-      return $solution->getDeletedAt() === NULL;
+      return $solution->getDeletedAt() === null;
     });
   }
 
@@ -180,7 +180,7 @@ class Exercise implements JsonSerializable, IExercise
    */
   public function getGroups() {
     return $this->groups->filter(function (Group $group) {
-      return $group->getDeletedAt() === NULL;
+      return $group->getDeletedAt() === null;
     });
   }
 
@@ -191,7 +191,7 @@ class Exercise implements JsonSerializable, IExercise
 
   public function getPipelines() {
     return $this->pipelines->filter(function (Pipeline $pipeline) {
-      return $pipeline->getDeletedAt() === NULL;
+      return $pipeline->getDeletedAt() === null;
     });
   }
 
@@ -254,7 +254,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->validationError = "";
   }
 
-  public static function create(User $user, ?Group $group = NULL): Exercise {
+  public static function create(User $user, ?Group $group = null): Exercise {
     $groups = new ArrayCollection;
     if ($group !== null) {
       $groups->add($group);
@@ -273,8 +273,8 @@ class Exercise implements JsonSerializable, IExercise
       new ArrayCollection,
       new ArrayCollection,
       $groups,
-      NULL,
-      NULL,
+      null,
+      null,
       $user
     );
   }

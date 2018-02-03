@@ -55,7 +55,7 @@ abstract class Submission implements IEvaluable
   protected $evaluation;
 
   public function canBeEvaluated(): bool {
-    return $this->resultsUrl !== NULL;
+    return $this->resultsUrl !== null;
   }
 
 
@@ -66,7 +66,7 @@ abstract class Submission implements IEvaluable
   }
 
   public function hasEvaluation(): bool {
-    return $this->evaluation !== NULL;
+    return $this->evaluation !== null;
   }
 
   public function getEvaluation(): ?SolutionEvaluation {

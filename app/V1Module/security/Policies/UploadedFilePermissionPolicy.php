@@ -48,7 +48,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     }
 
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -87,7 +87,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
   public function isOwner(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -96,7 +96,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
   public function isReferenceSolutionInSupervisedSubGroup(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -112,7 +112,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
   public function isSolutionInSupervisedGroup(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 
@@ -122,7 +122,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
   public function isRelatedToAssignment(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
-    if ($user === NULL) {
+    if ($user === null) {
       return FALSE;
     }
 

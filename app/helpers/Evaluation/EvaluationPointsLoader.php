@@ -67,7 +67,7 @@ class EvaluationPointsLoader {
     $points = floor($evaluation->getScore() * $maxPoints);
 
     // if the submission does not meet point threshold, it does not deserve any points
-    if ($submission !== NULL) {
+    if ($submission !== null) {
       $threshold = $submission->getAssignmentSolution()->getPointsThreshold();
       if ($points < $threshold) {
         $points = 0;
@@ -146,7 +146,7 @@ class EvaluationPointsLoader {
 
     // calculate percentual score of whole solution
     $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
-    if ($calculator !== NULL && !$evaluation->getInitFailed()) {
+    if ($calculator !== null && !$evaluation->getInitFailed()) {
       $score = $calculator->computeScore($exercise->getScoreConfig(), $scores);
     }
 

@@ -34,18 +34,18 @@ class UploadedFileStorage {
    * Save the file into storage
    * @param FileUpload $file The file to be stored
    * @param User $user User who uploaded the file
-   * @return UploadedFile|NULL If the operation is not successful, NULL is returned
+   * @return UploadedFile|null If the operation is not successful, null is returned
    * @throws InvalidArgumentException
    */
   public function store(FileUpload $file, User $user) {
     if (!$file->isOk()) {
-      return NULL;
+      return null;
     }
 
     list($fileName, $fileExt) = $this->splitFileName($file->getName());
 
     if (!Strings::match($fileName, self::FILENAME_PATTERN)
-        || ($fileExt != NULL && !Strings::match($fileExt, self::FILENAME_PATTERN))) {
+        || ($fileExt != null && !Strings::match($fileExt, self::FILENAME_PATTERN))) {
       throw new InvalidArgumentException("file", "File name contains invalid characters");
     }
 
@@ -54,10 +54,10 @@ class UploadedFileStorage {
       $filePath = $this->getFilePath($user->getId(), $sanitizedFileName, $sanitizedFileExt);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
     } catch (Nette\InvalidStateException $e) {
-      return NULL;
+      return null;
     }
 
-    $uploadedFileName = $fileExt !== NULL ? sprintf("%s.%s", $fileName, strtolower($fileExt)) : $fileName;
+    $uploadedFileName = $fileExt !== null ? sprintf("%s.%s", $fileName, strtolower($fileExt)) : $fileName;
     $uploadedFile = new UploadedFile($uploadedFileName, new DateTime(), $file->getSize(), $user, $filePath);
 
     return $uploadedFile;
@@ -70,7 +70,7 @@ class UploadedFileStorage {
    * @param $ext
    * @return string Path, where the newly stored file will be saved (including configured uploadDir)
    */
-  protected function getFilePath($userId, $fileName, $ext = NULL): string {
+  protected function getFilePath($userId, $fileName, $ext = null): string {
     $uniqueId = uniqid();
 
     if ($ext !== null) {
@@ -84,7 +84,7 @@ class UploadedFileStorage {
   }
 
   public function delete(UploadedFile $file) {
-    if ($file->getLocalFilePath() !== NULL) {
+    if ($file->getLocalFilePath() !== null) {
       try {
         Nette\Utils\FileSystem::delete($file->getLocalFilePath());
       } catch (\Exception $e) {
@@ -98,7 +98,7 @@ class UploadedFileStorage {
     if (!Strings::startsWith($name, ".") && Strings::contains($name, ".")) {
       return [pathinfo($name, PATHINFO_FILENAME), pathinfo($name, PATHINFO_EXTENSION)];
     } else {
-      return [$name, NULL];
+      return [$name, null];
     }
   }
 }

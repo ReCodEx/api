@@ -38,11 +38,11 @@ class Exercises extends BaseSoftDeleteRepository {
 
   /**
    * Search exercises names based on given string.
-   * @param string|NULL $search
+   * @param string|null $search
    * @return Exercise[]
    */
   public function searchByName(?string $search): array {
-    if ($search === NULL) {
+    if ($search === null) {
       return $this->findAll();
     }
 
