@@ -87,7 +87,7 @@ class InstancesPresenter extends BasePresenter {
    * Create a new instance
    * @POST
    * @Param(type="post", name="name", validation="string:2..", description="Name of the instance")
-   * @Param(type="post", name="description", required=FALSE, description="Description of the instance")
+   * @Param(type="post", name="description", required=false, description="Description of the instance")
    * @Param(type="post", name="isOpen", validation="bool", description="Should the instance be open for registration?")
    * @throws ForbiddenRequestException
    */
@@ -117,7 +117,7 @@ class InstancesPresenter extends BasePresenter {
   /**
    * Update an instance
    * @POST
-   * @Param(type="post", name="isOpen", validation="bool", required=FALSE, description="Should the instance be open for registration?")
+   * @Param(type="post", name="isOpen", validation="bool", required=false, description="Should the instance be open for registration?")
    * @param string $id An identifier of the updated instance
    * @throws ForbiddenRequestException
    */
@@ -251,9 +251,9 @@ class InstancesPresenter extends BasePresenter {
   /**
    * Update an existing license for an instance
    * @POST
-   * @Param(type="post", name="note", validation="string:2..", required=FALSE, description="A note for users or administrators")
-   * @Param(type="post", name="validUntil", validation="string", required=FALSE, description="Expiration date of the license")
-   * @Param(type="post", name="isValid", validation="bool", required=FALSE, description="Administrator switch to toggle licence validity")
+   * @Param(type="post", name="note", validation="string:2..", required=false, description="A note for users or administrators")
+   * @Param(type="post", name="validUntil", validation="string", required=false, description="Expiration date of the license")
+   * @Param(type="post", name="isValid", validation="bool", required=false, description="Administrator switch to toggle licence validity")
    * @param string $licenceId Identifier of the licence
    * @throws ForbiddenRequestException
    * @throws NotFoundException

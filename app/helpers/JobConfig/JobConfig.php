@@ -30,7 +30,7 @@ class JobConfig {
   /**
    * Construct basic instance of JobConfig.
    */
-  public function __construct($humanReadable = FALSE) {
+  public function __construct($humanReadable = false) {
     $this->submissionHeader = new SubmissionHeader;
     $this->humanReadable = $humanReadable;
   }

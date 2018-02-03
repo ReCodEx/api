@@ -124,7 +124,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $identity = $this->getUser()->getIdentity();
 
     if (!$identity) {
-      return FALSE;
+      return false;
     }
 
     return $identity->isInScope($scope);
@@ -192,7 +192,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   private function validateValue($param, $value, $validationRule, $msg = null) {
     $value = Validators::preprocessValue($value, $validationRule);
-    if (Validators::is($value, $validationRule) === FALSE) {
+    if (Validators::is($value, $validationRule) === false) {
       throw new InvalidArgumentException(
         $param,
         $msg !== null ? $msg : "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"

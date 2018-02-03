@@ -91,7 +91,7 @@ class SolutionEvaluation implements JsonSerializable
   }
 
   public function jsonSerialize() {
-    return $this->getData(FALSE);
+    return $this->getData(false);
   }
 
   /**

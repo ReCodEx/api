@@ -17,7 +17,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
 
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $assignment->getGroup()->isMemberOf($user);
@@ -28,7 +28,7 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
 
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);

@@ -153,7 +153,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="secondDeadline", validation="timestamp", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
-   * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=FALSE, description="A minimum percentage of points needed to gain point from assignment")
+   * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
    * @throws ForbiddenRequestException
@@ -250,7 +250,7 @@ class AssignmentsPresenter extends BasePresenter {
     Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
 
     foreach ($assignment->getLocalizedTexts() as $localizedText) {
-      $this->assignments->persist($localizedText, FALSE);
+      $this->assignments->persist($localizedText, false);
     }
 
     $this->assignments->flush();
@@ -320,7 +320,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = Assignment::assignToGroup($exercise, $group, FALSE);
+    $assignment = Assignment::assignToGroup($exercise, $group, false);
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }

@@ -225,8 +225,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     $exercise = current($this->presenter->exercises->findAll());
     $expectedFile1 = new SupplementaryExerciseFile("name1", new DateTime(), 1, "hashName1", "fileServerPath1", $user, $exercise);
     $expectedFile2 = new SupplementaryExerciseFile("name2", new DateTime(), 2, "hashName2", "fileServerPath2", $user, $exercise);
-    $this->supplementaryFiles->persist($expectedFile1, FALSE);
-    $this->supplementaryFiles->persist($expectedFile2, FALSE);
+    $this->supplementaryFiles->persist($expectedFile1, false);
+    $this->supplementaryFiles->persist($expectedFile2, false);
     $this->supplementaryFiles->flush();
 
     $request = new Nette\Application\Request("V1:ExerciseFiles", 'GET',
@@ -297,8 +297,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     $exercise = $this->presenter->exercises->searchByName("An exercise")[0];
     $expectedFile1 = new AttachmentFile("name1", new DateTime(), 1, "hashName1", $user, $exercise);
     $expectedFile2 = new AttachmentFile("name2", new DateTime(), 2, "hashName2", $user, $exercise);
-    $this->attachmentFiles->persist($expectedFile1, FALSE);
-    $this->attachmentFiles->persist($expectedFile2, FALSE);
+    $this->attachmentFiles->persist($expectedFile1, false);
+    $this->attachmentFiles->persist($expectedFile2, false);
     $this->attachmentFiles->flush();
 
     $request = new Nette\Application\Request("V1:ExerciseFiles", 'GET',

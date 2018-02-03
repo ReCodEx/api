@@ -51,6 +51,6 @@ class Identity implements Nette\Security\IIdentity
 
   function isInScope($scope)
   {
-    return $this->token ? $this->token->isInScope($scope) : FALSE;
+    return $this->token ? $this->token->isInScope($scope) : false;
   }
 }

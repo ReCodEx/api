@@ -19,7 +19,7 @@ class SisPermissionPolicy implements IPermissionPolicy {
   public function isLinkedToUser(Identity $identity, SisIdWrapper $id) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     $login = $this->externalLogins->findOneBy([

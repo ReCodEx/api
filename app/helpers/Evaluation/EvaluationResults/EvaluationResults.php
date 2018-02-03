@@ -87,7 +87,7 @@ class EvaluationResults {
       }
 
       if ($taskCfg->isInitiationTask() && !$this->tasks[$id]->isOK()) {
-        $this->initOK = FALSE;
+        $this->initOK = false;
       }
     }
   }

@@ -126,7 +126,7 @@ trait ExerciseData {
         return $exerciseLimits->getRuntimeEnvironment()->getId() === $environment->getId()
           && $exerciseLimits->getHardwareGroup()->getId() === $hwGroup->getId();
       })->first();
-    return $first === FALSE ? null : $first;
+    return $first === false ? null : $first;
   }
 
   /**

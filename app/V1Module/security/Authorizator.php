@@ -19,7 +19,7 @@ abstract class Authorizator implements IAuthorizator {
 
   protected $roles = [];
 
-  private $initialized = FALSE;
+  private $initialized = false;
 
   public function __construct(PolicyRegistry $policy) {
     $this->policy = $policy;
@@ -55,6 +55,6 @@ abstract class Authorizator implements IAuthorizator {
       }
     }
 
-    return FALSE;
+    return false;
   }
 }

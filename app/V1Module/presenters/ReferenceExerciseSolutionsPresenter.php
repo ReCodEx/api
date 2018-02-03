@@ -221,8 +221,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       }
 
       $solutionFile = SolutionFile::fromUploadedFile($file, $referenceSolution->getSolution());
-      $this->files->persist($solutionFile, FALSE);
-      $this->files->remove($file, FALSE);
+      $this->files->persist($solutionFile, false);
+      $this->files->remove($file, false);
     }
 
     $this->referenceSolutions->persist($referenceSolution);

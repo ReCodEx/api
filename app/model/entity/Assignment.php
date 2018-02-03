@@ -61,8 +61,8 @@ class Assignment implements JsonSerializable, IExercise
     bool $allowSecondDeadline,
     DateTime $secondDeadline = null,
     int $maxPointsBeforeSecondDeadline = 0,
-    bool $canViewLimitRatios = FALSE,
-    bool $isBonus = FALSE,
+    bool $canViewLimitRatios = false,
+    bool $isBonus = false,
     $pointsPercentualThreshold = 0
   ) {
     if ($secondDeadline == null) {
@@ -99,7 +99,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->attachmentFiles = $exercise->getAttachmentFiles();
   }
 
-  public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = FALSE) {
+  public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = false) {
     if ($exercise->getLocalizedTexts()->count() == 0) {
       throw new InvalidStateException("There are no localized descriptions of exercise");
     }
@@ -115,7 +115,7 @@ class Assignment implements JsonSerializable, IExercise
       $group,
       $isPublic,
       50,
-      FALSE
+      false
     );
 
     $group->addAssignment($assignment);
@@ -344,7 +344,7 @@ class Assignment implements JsonSerializable, IExercise
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => FALSE, // the app must perform a special request to get the valid information TODO why is it still here then?
+      "canReceiveSubmissions" => false, // the app must perform a special request to get the valid information TODO why is it still here then?
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $this->canViewLimitRatios,
       "isBonus" => $this->isBonus,

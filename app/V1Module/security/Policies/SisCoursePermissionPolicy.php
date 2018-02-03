@@ -25,7 +25,7 @@ class SisCoursePermissionPolicy implements IPermissionPolicy {
     $sisUser = $this->externalLogins->getUser("cas-uk", $course->getSisUserId());
 
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $sisUser === $user && $course->isOwnerSupervisor();

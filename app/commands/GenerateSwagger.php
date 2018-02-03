@@ -95,7 +95,7 @@ class GenerateSwagger extends Command
       return true;
     }
 
-    return FALSE;
+    return false;
   }
 
   protected function execute(InputInterface $input, OutputInterface $output)
@@ -220,7 +220,7 @@ class GenerateSwagger extends Command
         $annotation = get_object_vars($annotation);
       }
 
-      $required = Arrays::get($annotation, "required", FALSE);
+      $required = Arrays::get($annotation, "required", false);
       $validation = Arrays::get($annotation, "validation", "");
       $in = $annotation["type"] === "post" ? "formData" : "query";
       $description = Arrays::get($annotation, "description", "");
@@ -300,7 +300,7 @@ class GenerateSwagger extends Command
    */
   private function fillParamEntry(array &$entry, $name, $in, $required, $validation, $description)
   {
-    $paramEntryFound = FALSE;
+    $paramEntryFound = false;
 
     foreach ($entry["parameters"] as $i => $parameter) {
       if ($parameter["name"] === $name) {
@@ -324,7 +324,7 @@ class GenerateSwagger extends Command
     if ($in === "path") {
       $paramEntry["required"] = true;
     } else if ($in === "query") {
-      $this->setArrayDefault($paramEntry, "required", FALSE);
+      $this->setArrayDefault($paramEntry, "required", false);
     }
 
     $paramEntry = array_merge($paramEntry, $this->translateType($validation));
@@ -523,7 +523,7 @@ class GenerateSwagger extends Command
 
     $tag = strtolower(Strings::replace($presenterName, '/(?!^)([A-Z])/', '-\1'));
     $tagEntry = [];
-    $tagEntryFound = FALSE;
+    $tagEntryFound = false;
 
     foreach ($tags as $i => $tagEntry) {
       if ($tagEntry["name"] === $tag) {

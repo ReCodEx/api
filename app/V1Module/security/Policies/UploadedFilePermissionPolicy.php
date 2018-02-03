@@ -44,12 +44,12 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
   public function isAuthorOfSupplementaryFileExercises(Identity $identity, UploadedFile $file) {
     if (!($file instanceof SupplementaryExerciseFile)) {
-      return FALSE;
+      return false;
     }
 
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     foreach ($file->getExercises() as $exercise) {
@@ -58,7 +58,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
 
@@ -88,7 +88,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
   public function isOwner(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     return $file->getUser()->getId() === $user->getId();
@@ -97,7 +97,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
   public function isReferenceSolutionInSupervisedSubGroup(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     $groups = $this->files->findGroupsForReferenceSolutionFile($file);
@@ -107,13 +107,13 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
   public function isSolutionInSupervisedGroup(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     $group = $this->files->findGroupForSolutionFile($file);
@@ -123,7 +123,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
   public function isRelatedToAssignment(Identity $identity, UploadedFile $file) {
     $user = $identity->getUserData();
     if ($user === null) {
-      return FALSE;
+      return false;
     }
 
     if ($file instanceof AttachmentFile) {
@@ -136,7 +136,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       }
     }
 
-    return FALSE;
+    return false;
   }
 
 }

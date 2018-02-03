@@ -216,7 +216,7 @@ class TestRegistrationPresenter extends Tester\TestCase
     $serviceId = "serviceId";
 
     $user = new User($username, $firstname, $lastname, $degreesBeforeName,
-      $degreesAfterName, "", $instance, FALSE);
+      $degreesAfterName, "", $instance, false);
 
     // setup mocking authService
     $mockExternalLoginService = Mockery::mock(\App\Helpers\ExternalLogin\IExternalLoginService::class);

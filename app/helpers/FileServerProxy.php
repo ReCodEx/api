@@ -141,7 +141,7 @@ class FileServerProxy {
     }
 
     $yml = $zip->getFromName("result/result.yml");
-    if ($yml === FALSE) {
+    if ($yml === false) {
       throw new SubmissionEvaluationFailedException("Results YAML file is missing in the archive received from remote FS.");
     }
 

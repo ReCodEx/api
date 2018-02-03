@@ -23,7 +23,7 @@ class Logins extends BaseRepository {
    * @return Login|null
    */
   public function findCurrent() {
-    if ($this->userSession->isLoggedIn() === FALSE) {
+    if ($this->userSession->isLoggedIn() === false) {
       return null;
     }
 

@@ -56,8 +56,8 @@ class PipelineValidator {
     // Check if all variables are written and read by some ports
     /** @var Variable $variable */
     foreach ($variables as $variableName => $variable) {
-      $variableUsedAsOutput = FALSE;
-      $variableUsedAsInput = FALSE;
+      $variableUsedAsOutput = false;
+      $variableUsedAsInput = false;
 
       foreach ($pipelineConfig->getAll() as $box) {
         foreach ($box->getOutputPorts() as $outputPort) {

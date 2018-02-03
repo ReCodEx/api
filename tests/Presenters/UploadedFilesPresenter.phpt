@@ -72,7 +72,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
   public function testUserCannotAccessDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->otherUserLogin);
-    $file = current($this->presenter->uploadedFiles->findBy([ "isPublic" => FALSE ]));
+    $file = current($this->presenter->uploadedFiles->findBy([ "isPublic" => false ]));
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
       ['action' => 'detail', 'id' => $file->getId()]);
     Assert::exception(function () use ($request) {

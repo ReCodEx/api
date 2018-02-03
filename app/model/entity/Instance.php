@@ -91,7 +91,7 @@ class Instance implements JsonSerializable
   }
 
   public function hasValidLicence() {
-    return $this->needsLicence === FALSE || $this->getValidLicences()->count() > 0;
+    return $this->needsLicence === false || $this->getValidLicences()->count() > 0;
   }
 
   /**
@@ -215,7 +215,7 @@ class Instance implements JsonSerializable
       $instance,
       $admin,
       null,
-      FALSE,
+      false,
       true
     );
 

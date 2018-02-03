@@ -550,7 +550,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $user = $this->presenter->users->getByEmail($this->userLogin);
 
     // initial checks
-    Assert::equal(FALSE, $group->isSupervisorOf($user));
+    Assert::equal(false, $group->isSupervisorOf($user));
 
     $request = new Nette\Application\Request('V1:Groups', 'POST', [
       'action' => 'addSupervisor',
@@ -627,7 +627,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $user = $this->presenter->users->getByEmail($this->userLogin);
 
     // initial checks
-    Assert::equal(FALSE, $group->isAdminOf($user));
+    Assert::equal(false, $group->isAdminOf($user));
 
     // initial setup
     $user->makeSupervisorOf($group);
@@ -670,7 +670,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::equal(200, $result["code"]);
 
-    Assert::equal(FALSE, $group->isAdminOf($user));
+    Assert::equal(false, $group->isAdminOf($user));
   }
 
 }

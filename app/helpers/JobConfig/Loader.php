@@ -262,7 +262,7 @@ class Loader {
       $task->setFatalFailure(filter_var($data[Task::FATAL_FAILURE_KEY], FILTER_VALIDATE_BOOLEAN));
       unset($data[Task::FATAL_FAILURE_KEY]);
     } else {
-      $task->setFatalFailure(FALSE);
+      $task->setFatalFailure(false);
     }
 
     if (isset($data[Task::DEPENDENCIES]) && is_array($data[Task::DEPENDENCIES])) {
@@ -302,7 +302,7 @@ class Loader {
    * @return JobConfig
    * @throws JobConfigLoadingException
    */
-  public function loadJobConfig($data, $humanReadable = FALSE): JobConfig {
+  public function loadJobConfig($data, $humanReadable = false): JobConfig {
     $config = new JobConfig($humanReadable);
 
     if (!is_array($data)) {

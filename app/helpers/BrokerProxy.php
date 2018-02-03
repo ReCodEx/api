@@ -143,7 +143,7 @@ class BrokerProxy {
 
       $result = $queue->recvmulti(ZMQ::MODE_DONTWAIT);
 
-      if ($result !== FALSE) {
+      if ($result !== false) {
         return $result;
       }
     } while (microtime(true) <= $limit);

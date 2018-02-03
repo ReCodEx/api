@@ -19,7 +19,7 @@ class BasicAuthHelper {
    */
   public static function getCredentials(IRequest $req) {
     $auth = $req->getHeader("Authorization", null);
-    if ($auth === null || Strings::startsWith($auth, "Basic ") === FALSE) {
+    if ($auth === null || Strings::startsWith($auth, "Basic ") === false) {
       throw new HttpBasicAuthException("The request from broker must contain HTTP Basic authentication.");
     }
 

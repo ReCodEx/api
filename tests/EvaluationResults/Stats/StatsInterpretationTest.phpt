@@ -59,7 +59,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "wall-time" => 0.037 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isWallTimeOK());
+    Assert::equal(false, $interpretation->isWallTimeOK());
     Assert::equal(0.1 / 0.037, $interpretation->getUsedWallTimeRatio());
     Assert::equal(0.1, $interpretation->getUsedWallTime());
   }
@@ -89,7 +89,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "time" => 0.037 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isCpuTimeOK());
+    Assert::equal(false, $interpretation->isCpuTimeOK());
     Assert::equal(0.1 / 0.037, $interpretation->getUsedCpuTimeRatio());
     Assert::equal(0.1, $interpretation->getUsedCpuTime());
   }
@@ -109,7 +109,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "memory" => 128 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isMemoryOK());
+    Assert::equal(false, $interpretation->isMemoryOK());
     Assert::equal(1.0, $interpretation->getUsedMemoryRatio());
     Assert::equal(128, $interpretation->getUsedMemory());
   }
@@ -119,7 +119,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits(array_merge(self::$limitsSample, [ "hw-group-id" => "xzy", "memory" => 128 ]));
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->isMemoryOK());
+    Assert::equal(false, $interpretation->isMemoryOK());
     Assert::equal(2.0, $interpretation->getUsedMemoryRatio());
     Assert::equal(256, $interpretation->getUsedMemory());
   }
@@ -137,7 +137,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "time" => 3, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
+    Assert::equal(false, $interpretation->doesMeetAllCriteria());
   }
 
   public function testOnlyWallTimeExceeded() {
@@ -145,7 +145,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
+    Assert::equal(false, $interpretation->doesMeetAllCriteria());
   }
 
   public function testOnlyCpuTimeExceeded() {
@@ -153,7 +153,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
+    Assert::equal(false, $interpretation->doesMeetAllCriteria());
   }
 
   public function testOnlyMemoryExceeded() {
@@ -161,7 +161,7 @@ class TestStatsInterpretation extends Tester\TestCase
     $limits = $this->builder->loadLimits([ "hw-group-id" => "xzy", "wall-time" => 2, "memory" => 128 ]);
     $interpretation = new StatsInterpretation($stats, $limits);
 
-    Assert::equal(FALSE, $interpretation->doesMeetAllCriteria());
+    Assert::equal(false, $interpretation->doesMeetAllCriteria());
   }
 
 
