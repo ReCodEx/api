@@ -72,7 +72,7 @@ class Licence implements JsonSerializable
     ];
   }
 
-  public static function createLicence(string $note, \DateTime $validUntil, Instance $instance, bool $isValid = TRUE) {
+  public static function createLicence(string $note, \DateTime $validUntil, Instance $instance, bool $isValid = true) {
     $licence = new Licence();
     $licence->note = $note;
     $licence->validUntil = $validUntil;

@@ -54,7 +54,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
 
     foreach ($file->getExercises() as $exercise) {
       if ($exercise->isAuthor($user)) {
-        return TRUE;
+        return true;
       }
     }
 
@@ -103,7 +103,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     $groups = $this->files->findGroupsForReferenceSolutionFile($file);
     foreach ($groups as $group) {
       if ($group->isAdminOrSupervisorOfSubgroup($user)) {
-        return TRUE;
+        return true;
       }
     }
 
@@ -130,7 +130,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       foreach ($file->getExercises() as $exercise) {
         foreach ($user->getGroups() as $group) {
           if ($this->assignments->isAssignedToGroup($exercise, $group)) {
-            return TRUE;
+            return true;
           }
         }
       }

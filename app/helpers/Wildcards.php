@@ -18,7 +18,7 @@ class Wildcards {
   public static function match(string $wildcard, string $string): bool {
     foreach (static::expandPattern($wildcard) as $pattern) {
       if (fnmatch($pattern, $string)) {
-        return TRUE;
+        return true;
       }
     }
 

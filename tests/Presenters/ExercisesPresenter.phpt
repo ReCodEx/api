@@ -77,7 +77,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Mockery::close();
 
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 
@@ -178,7 +178,7 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::true($updatedLocalizedTexts->exists(function ($key, LocalizedExercise $localized) {
       if ($localized->getLocale() == "cs"
           && $localized->getAssignmentText() == "new descr") {
-        return TRUE;
+        return true;
       }
 
       return FALSE;

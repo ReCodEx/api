@@ -139,7 +139,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       $name = $field->name;
       $validationRule = isset($field->validation) ? $field->validation : null;
       $msg = isset($field->msg) ? $field->msg : null;
-      $required = isset($field->required) ? $field->required : TRUE;
+      $required = isset($field->required) ? $field->required : true;
 
       $value = null;
       switch ($type) {
@@ -161,7 +161,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private function getPostField($param, $required = TRUE) {
+  private function getPostField($param, $required = true) {
     $req = $this->getRequest();
     $post = $req->getPost();
 
@@ -182,7 +182,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
   }
 
-  private function getQueryField($param, $required = TRUE) {
+  private function getQueryField($param, $required = true) {
     $value = $this->getHttpRequest()->getQuery($param);
     if ($value === null && $required) {
       throw new BadRequestException("Missing required query field $param");
@@ -206,7 +206,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     if ($this->getUser()->isLoggedIn()) {
       $params = $this->getRequest()->getParameters();
       unset($params[self::ACTION_KEY]);
-      $this->userActions->log($this->getAction(TRUE), $params, $code);
+      $this->userActions->log($this->getAction(true), $params, $code);
     }
 
     if ($this->responseDecorator) {
@@ -216,7 +216,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $resp = $this->getHttpResponse();
     $resp->setCode($code);
     $this->sendJson([
-      "success" => TRUE,
+      "success" => true,
       "code" => $code,
       "payload" => $payload
     ]);

@@ -139,7 +139,7 @@ class GroupsPresenter extends BasePresenter {
     if ($parentGroup->isArchived()) {
       throw new InvalidArgumentException("It is not permitted to create subgroups in archived groups");
     }
-    
+
     if (!$this->groupAcl->canAddSubgroup($parentGroup)) {
       throw new ForbiddenRequestException("You are not allowed to add subgroups to this group");
     }
@@ -227,7 +227,7 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Set the 'isOrganizational' flag for a group
    * @POST
-   * @Param(type="post", name="value", validation="bool", required=TRUE, description="The value of the flag")
+   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
    * @param string $id An identifier of the updated group
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
@@ -254,7 +254,7 @@ class GroupsPresenter extends BasePresenter {
   /**
    * Set the 'isArchived' flag for a group
    * @POST
-   * @Param(type="post", name="value", validation="bool", required=TRUE, description="The value of the flag")
+   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
    * @param string $id An identifier of the updated group
    * @throws ForbiddenRequestException
    * @throws NotFoundException
@@ -539,7 +539,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // make sure that the user is student of the group
-    if ($group->isStudentOf($user) === TRUE) {
+    if ($group->isStudentOf($user) === true) {
       $membership = $user->findMembershipAsStudent($group);
       if ($membership) {
         $this->groups->remove($membership);
@@ -599,7 +599,7 @@ class GroupsPresenter extends BasePresenter {
     }
 
     // make sure that the user is really supervisor of the group
-    if ($group->isSupervisorOf($user) === TRUE) {
+    if ($group->isSupervisorOf($user) === true) {
       $membership = $user->findMembershipAsSupervisor($group); // should be always there
       $this->groupMemberships->remove($membership);
       $this->groupMemberships->flush();

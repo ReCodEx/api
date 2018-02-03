@@ -57,7 +57,7 @@ class AssignmentEmailsSender {
     }
 
     if (count($recipients) === 0) {
-      return TRUE;
+      return true;
     }
 
     // Send the mail
@@ -111,7 +111,7 @@ class AssignmentEmailsSender {
     }
 
     if (count($recipients) === 0) {
-      return TRUE;
+      return true;
     }
 
     // Send the mail

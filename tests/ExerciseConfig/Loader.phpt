@@ -20,7 +20,7 @@ class TestExerciseConfigLoader extends Tester\TestCase
   }
 
   public function testTrue() {
-    Assert::true(TRUE);
+    Assert::true(true);
   }
 
 }

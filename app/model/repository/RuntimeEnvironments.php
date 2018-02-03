@@ -44,7 +44,7 @@ class RuntimeEnvironments extends BaseRepository {
             return FALSE;
           }
         }
-        return TRUE;
+        return true;
       }
     );
 

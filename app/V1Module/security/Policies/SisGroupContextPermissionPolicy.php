@@ -27,7 +27,7 @@ class SisGroupContextPermissionPolicy implements IPermissionPolicy {
     while ($cursor !== null) {
       $associatedCourses = explode(" ", $cursor->getExternalId());
       if (in_array($context->getCourse()->getCourseId(), $associatedCourses)) {
-        return TRUE;
+        return true;
       }
 
       $cursor = $cursor->getParentGroup();

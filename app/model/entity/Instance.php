@@ -202,8 +202,8 @@ class Instance implements JsonSerializable
   public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = null) {
     $instance = new Instance;
     $instance->isOpen = $isOpen;
-    $instance->isAllowed = TRUE; //@todo - find out who should set this and how
-    $instance->needsLicence = TRUE;
+    $instance->isAllowed = true; //@todo - find out who should set this and how
+    $instance->needsLicence = true;
     $now = new \DateTime;
     $instance->createdAt = $now;
     $instance->updatedAt = $now;
@@ -216,7 +216,7 @@ class Instance implements JsonSerializable
       $admin,
       null,
       FALSE,
-      TRUE
+      true
     );
 
     /** @var LocalizedGroup $text */

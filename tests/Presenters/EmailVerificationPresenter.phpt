@@ -47,7 +47,7 @@ class TestEmailVerificationPresenter extends Tester\TestCase
   protected function tearDown()
   {
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 
@@ -58,7 +58,7 @@ class TestEmailVerificationPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | EmailHelper $mockEmailVerificationHelper */
     $mockEmailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
-    $mockEmailVerificationHelper->shouldReceive("process")->with($user)->andReturn(TRUE);
+    $mockEmailVerificationHelper->shouldReceive("process")->with($user)->andReturn(true);
     $this->presenter->emailVerificationHelper = $mockEmailVerificationHelper;
 
     $request = new Nette\Application\Request(

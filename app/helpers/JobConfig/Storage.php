@@ -97,7 +97,7 @@ class Storage {
 
     // make sure the directory exists and that the file is stored correctly
     $dirname = dirname($filePath);
-    if (!is_dir($dirname) && mkdir($dirname, self::DEFAULT_MKDIR_MODE, TRUE) === FALSE) {
+    if (!is_dir($dirname) && mkdir($dirname, self::DEFAULT_MKDIR_MODE, true) === FALSE) {
       throw new JobConfigStorageException("Cannot create the directory for the job config.");
     }
 

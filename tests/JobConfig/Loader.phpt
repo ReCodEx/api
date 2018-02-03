@@ -43,7 +43,7 @@ class TestJobConfigLoader extends Tester\TestCase
     Assert::equal("bla bla bla", $header->getId());
     Assert::equal("student", $header->getType());
     Assert::equal("url://url.url", $header->getFileCollector());
-    Assert::equal(TRUE, $header->getLog());
+    Assert::equal(true, $header->getLog());
     Assert::equal(["A"], $header->getHardwareGroups());
 
     Assert::count(2, $job->getTasks());

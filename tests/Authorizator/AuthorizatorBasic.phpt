@@ -63,7 +63,7 @@ class TestAuthorizatorBasic extends Tester\TestCase
 
   public function testConditionTrue()
   {
-    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(true);
 
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'child' ]),
@@ -91,8 +91,8 @@ class TestAuthorizatorBasic extends Tester\TestCase
 
   public function testComplexConditionTrue()
   {
-    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
-    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(TRUE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(true);
+    $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(true);
 
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'parent' ]),
@@ -107,7 +107,7 @@ class TestAuthorizatorBasic extends Tester\TestCase
 
   public function testComplexConditionFalse()
   {
-    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(TRUE);
+    $this->policy1->shouldReceive("condition1")->withAnyArgs()->andReturn(true);
     $this->policy2->shouldReceive("condition2")->withAnyArgs()->andReturn(FALSE);
 
     Assert::false($this->authorizator->isAllowed(

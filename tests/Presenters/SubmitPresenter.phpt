@@ -61,7 +61,7 @@ class TestSubmitPresenter extends Tester\TestCase
     Mockery::close();
 
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 
@@ -105,7 +105,7 @@ class TestSubmitPresenter extends Tester\TestCase
     $resultsUrl = "resultsUrl";
     $fileserverUrl = "fileserverUrl";
     $tasksCount = 5;
-    $evaluationStarted = TRUE;
+    $evaluationStarted = true;
     $webSocketMonitorUrl = "webSocketMonitorUrl";
 
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
@@ -287,7 +287,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | BrokerProxy $mockBrokerProxy */
     $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
-      ->andReturn($evaluationStarted = TRUE)->once();
+      ->andReturn($evaluationStarted = true)->once();
     $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy));
 
     // fake monitor configuration
@@ -370,7 +370,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | BrokerProxy $mockBrokerProxy */
     $mockBrokerProxy = Mockery::mock(BrokerProxy::class);
     $mockBrokerProxy->shouldReceive("startEvaluation")->withArgs([$jobId, $hwGroups, Mockery::any(), $archiveUrl, $resultsUrl])
-      ->andReturn($evaluationStarted = TRUE)->times($solutionCount);
+      ->andReturn($evaluationStarted = true)->times($solutionCount);
     $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy));
 
     // fake monitor configuration

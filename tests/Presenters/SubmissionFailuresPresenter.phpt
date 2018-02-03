@@ -42,7 +42,7 @@ class TestSubmissionFailures extends Tester\TestCase
 
   protected function tearDown()
   {
-    $this->user->logout(TRUE);
+    $this->user->logout(true);
     Mockery::close();
   }
 

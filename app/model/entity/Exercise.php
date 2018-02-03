@@ -381,7 +381,7 @@ class Exercise implements JsonSerializable, IExercise
     ];
   }
 
-  public function setLocked($value = TRUE) {
+  public function setLocked($value = true) {
     $this->isLocked = $value;
   }
 

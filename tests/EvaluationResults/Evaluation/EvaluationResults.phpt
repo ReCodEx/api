@@ -285,9 +285,9 @@ class TestEvaluationResults extends Tester\TestCase
     Assert::type(TestResult::CLASS, $testResult);
     Assert::equal("A", $testResult->getId());
     Assert::equal("OK", $testResult->getStatus());
-    Assert::equal(TRUE, $testResult->isMemoryOK());
-    Assert::equal(TRUE, $testResult->isWallTimeOK());
-    Assert::equal(TRUE, $testResult->didExecutionMeetLimits());
+    Assert::equal(true, $testResult->isMemoryOK());
+    Assert::equal(true, $testResult->isWallTimeOK());
+    Assert::equal(true, $testResult->didExecutionMeetLimits());
     Assert::equal("0.456", $testResult->getJudgeOutput());
     Assert::equal(0.456, $testResult->getScore());
 

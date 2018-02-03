@@ -23,7 +23,7 @@ class Exercises extends BaseSoftDeleteRepository {
    * @param array $configs configurations which will be placed to exercise
    * @param bool $flush if true then all changes will be flush at the end
    */
-  public function replaceEnvironmentConfigs(Exercise $exercise, array $configs, bool $flush = TRUE) {
+  public function replaceEnvironmentConfigs(Exercise $exercise, array $configs, bool $flush = true) {
     $originalConfigs = $exercise->getExerciseEnvironmentConfigs()->toArray();
     foreach ($configs as $config) {
       $exercise->addExerciseEnvironmentConfig($config);

@@ -34,21 +34,21 @@ class TestStats extends Tester\TestCase
   public function testCpuTimeLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "time" => 0.5 ]));
     Assert::equal(0.5, $stats->getUsedCpuTime());
-    Assert::equal(TRUE, $stats->isCpuTimeOK(1));
+    Assert::equal(true, $stats->isCpuTimeOK(1));
     Assert::equal(FALSE, $stats->isCpuTimeOK(0.4));
   }
 
   public function testWallTimeLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "wall-time" => 0.5 ]));
     Assert::equal(0.5, $stats->getUsedWallTime());
-    Assert::equal(TRUE, $stats->isWallTimeOK(1));
+    Assert::equal(true, $stats->isWallTimeOK(1));
     Assert::equal(FALSE, $stats->isWallTimeOK(0.4));
   }
 
   public function testMemoryLimit() {
     $stats = new Stats(array_merge(self::$sample, [ "memory" => 100 ]));
     Assert::equal(100, $stats->getUsedMemory());
-    Assert::equal(TRUE, $stats->isMemoryOK(200));
+    Assert::equal(true, $stats->isMemoryOK(200));
     Assert::equal(FALSE, $stats->isMemoryOK(50));
   }
 

@@ -65,7 +65,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     Mockery::close();
 
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
   }
 

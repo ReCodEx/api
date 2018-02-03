@@ -31,7 +31,7 @@ class EvaluationResults {
   private $config;
 
   /** @var bool */
-  private $initOK = TRUE;
+  private $initOK = true;
 
   /**
    * Constructor

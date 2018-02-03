@@ -46,12 +46,12 @@ abstract class Authorizator implements IAuthorizator {
 
   protected function isInRole($target, $role): bool {
     if ($target === $role) {
-      return TRUE;
+      return true;
     }
 
     foreach ($this->roles[$target] as $parent) {
       if ($this->isInRole($parent, $role)) {
-        return TRUE;
+        return true;
       }
     }
 

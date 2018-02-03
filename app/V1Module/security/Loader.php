@@ -91,7 +91,7 @@ class Loader {
       throw new IOException("Could not read generated security classes");
     }
 
-    $this->loaded = TRUE;
+    $this->loaded = true;
   }
 
   public function loadAuthorizator(PolicyRegistry $registry): Authorizator {

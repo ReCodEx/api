@@ -50,7 +50,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
   protected function tearDown()
   {
     if ($this->user->isLoggedIn()) {
-      $this->user->logout(TRUE);
+      $this->user->logout(true);
     }
     Mockery::close();
   }

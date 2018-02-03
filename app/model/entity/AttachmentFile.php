@@ -53,7 +53,7 @@ class AttachmentFile extends UploadedFile implements JsonSerializable
    */
   public function __construct($name, DateTime $uploadedAt, $fileSize, $filePath, User $user, Exercise $exercise)
   {
-    parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath, TRUE);
+    parent::__construct($name, $uploadedAt, $fileSize, $user, $filePath, true);
     $this->exercises = new ArrayCollection;
     $this->assignments = new ArrayCollection;
 
