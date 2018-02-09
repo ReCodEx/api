@@ -60,7 +60,6 @@ class Solution implements JsonSerializable
    */
   public function jsonSerialize() {
     return [
-      "id" => $this->id,
       "userId" => $this->author->getId(),
       "createdAt" => $this->createdAt->getTimestamp(),
       "files" => $this->files->getValues()

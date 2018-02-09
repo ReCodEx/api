@@ -230,12 +230,14 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:exercise");
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:createReferenceSolution");
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>/evaluate", "ReferenceExerciseSolutions:evaluateForExercise");
+
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
-    $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-solution", "ReferenceExerciseSolutions:downloadSolutionArchive");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
+
     $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
     $router[] = new PostRoute("$prefix/<id>/evaluate", "ReferenceExerciseSolutions:evaluate");
     $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
+    $router[] = new GetRoute("$prefix/<solutionId>/download-solution", "ReferenceExerciseSolutions:downloadSolutionArchive");
     return $router;
   }
 
@@ -247,7 +249,6 @@ class RouterFactory {
   private static function createAssignmentSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix/evaluation/<id>", "AssignmentSolutions:evaluation");
-    $router[] = new GetRoute("$prefix/evaluation/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
     $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "AssignmentSolutions:downloadResultArchive");
 
     $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
@@ -255,8 +256,8 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
     $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAcceptedSubmission");
     $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAcceptedSubmission");
-
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
+    $router[] = new GetRoute("$prefix/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
     return $router;
   }
 

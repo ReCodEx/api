@@ -344,20 +344,20 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Download archive containing all solution files for particular reference solution.
    * @GET
-   * @param string $id of reference solution
+   * @param string $solutionId of reference solution
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException
    * @throws \Nette\Application\AbortException
    */
-  public function actionDownloadSolutionArchive(string $id) {
-    $solution = $this->referenceSolutions->findOrThrow($id);
+  public function actionDownloadSolutionArchive(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
     if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
       throw new ForbiddenRequestException("You cannot access archive of reference solution files");
     }
 
     $files = $solution->getSolution()->getLocalPathsOfFiles();
-    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$id}.zip"));
+    $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$solutionId}.zip"));
   }
 
   /**

@@ -272,7 +272,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions',
       'GET',
-      ['action' => 'downloadSolutionArchive', 'id' => $solution->id]
+      ['action' => 'downloadSolutionArchive', 'solutionId' => $solution->id]
     );
     $response = $this->presenter->run($request);
     Assert::same(App\Responses\ZipFilesResponse::class, get_class($response));
