@@ -356,7 +356,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access archive of reference solution files");
     }
 
-    $files = $solution->getSolution()->getLocalPathsOfFiles();
+    $files = [];
+    foreach ($solution->getSolution()->getFiles() as $file) {
+      $files[$file->getLocalFilePath()] = $file->getName();
+    }
     $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$solutionId}.zip"));
   }
 

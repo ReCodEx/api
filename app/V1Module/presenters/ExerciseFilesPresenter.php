@@ -232,7 +232,8 @@ class ExerciseFilesPresenter extends BasePresenter {
 
     $files = [];
     foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
-      $files[] = $this->fileServerProxy->downloadFile($file->getFileServerPath());
+      $localPath = $this->fileServerProxy->downloadFile($file->getFileServerPath());
+      $files[$localPath] = $file->getName();
     }
 
     $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true));
@@ -333,9 +334,10 @@ class ExerciseFilesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access archive of exercise attachment files");
     }
 
-    $files = $exercise->getAttachmentFiles()->map(function (AttachmentFile $file) {
-      return $file->getLocalFilePath();
-    })->getValues();
+    $files = [];
+    foreach ($exercise->getAttachmentFiles() as $file) {
+      $files[$file->getLocalFilePath()] = $file->getName();
+    }
     $this->sendResponse(new ZipFilesResponse($files, "exercise-attachment-{$id}.zip"));
   }
 

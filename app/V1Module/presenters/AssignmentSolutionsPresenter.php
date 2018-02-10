@@ -233,7 +233,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access archive of solution files");
     }
 
-    $files = $solution->getSolution()->getLocalPathsOfFiles();
+    $files = [];
+    foreach ($solution->getSolution()->getFiles() as $file) {
+      $files[$file->getLocalFilePath()] = $file->getName();
+    }
     $this->sendResponse(new ZipFilesResponse($files, "solution-{$id}.zip"));
   }
 

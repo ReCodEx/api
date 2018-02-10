@@ -17,6 +17,7 @@ use ZipArchive;
 class ZipFilesResponse extends FileResponse {
 
   /**
+   * Indexed by local path, containing original filename.
    * @var string[]
    */
   private $files;
@@ -28,7 +29,7 @@ class ZipFilesResponse extends FileResponse {
 
   /**
    * ZipFilesResponse constructor.
-   * @param string[] $files
+   * @param string[] $files indexed by local path, containing original filename
    * @param null $name
    * @param bool $deleteFiles if true given files will be deleted after send
    * @param bool $forceDownload
@@ -51,8 +52,8 @@ class ZipFilesResponse extends FileResponse {
       throw new ApiException("Archive could not be created");
     }
 
-    foreach ($this->files as $file) {
-      if ($zip->addFile($file, basename($file)) !== true) {
+    foreach ($this->files as $localPath => $name) {
+      if ($zip->addFile($localPath, basename($name)) !== true) {
         throw new ApiException("Error while adding file to archive");
       }
     }
