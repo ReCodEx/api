@@ -52,7 +52,7 @@ class ZipFilesResponse extends FileResponse {
     }
 
     foreach ($this->files as $file) {
-      if ($zip->addFile($file) !== true) {
+      if ($zip->addFile($file, basename($file)) !== true) {
         throw new ApiException("Error while adding file to archive");
       }
     }
@@ -71,6 +71,9 @@ class ZipFilesResponse extends FileResponse {
   public function send(Nette\Http\IRequest $httpRequest, Nette\Http\IResponse $httpResponse) {
     // first compress all given files into zip
     $this->compress();
+
+    // clear all potentially cached information like filesize and such
+    clearstatcache();
 
     // in order to delete file after download, lets forbid continuous download
     $this->resuming = false;
