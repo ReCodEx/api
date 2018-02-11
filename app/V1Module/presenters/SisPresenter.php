@@ -143,7 +143,7 @@ class SisPresenter extends BasePresenter {
 
     $termEntity = new SisValidTerm($year, $term);
     $this->sisValidTerms->persist($termEntity);
-    
+
     $this->sendSuccessResponse($termEntity);
   }
 
@@ -375,9 +375,9 @@ class SisPresenter extends BasePresenter {
     $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
     $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
 
-    $groups = array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
+    $groups = array_values(array_filter($this->groups->findAll(), function (Group $group) use ($remoteCourse) {
       return $this->sisAcl->canCreateGroup(new SisGroupContext($group, $remoteCourse), $remoteCourse) && !$group->isArchived();
-    });
+    }));
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
