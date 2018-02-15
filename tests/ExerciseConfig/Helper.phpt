@@ -10,6 +10,9 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
 
+/**
+ * @testCase
+ */
 class TestExerciseConfigHelper extends Tester\TestCase
 {
   /** @var Helper */
@@ -382,5 +385,4 @@ class TestExerciseConfigHelper extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfigHelper;
-$testCase->run();
+(new TestExerciseConfigHelper())->run();

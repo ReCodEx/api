@@ -37,6 +37,7 @@ class Port implements JsonSerializable
   /**
    * Port constructor.
    * @param PortMeta $meta
+   * @throws ExerciseConfigException
    */
   public function __construct(PortMeta $meta) {
     $this->meta = $meta;
