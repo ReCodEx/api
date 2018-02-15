@@ -16,14 +16,14 @@ class Environment implements JsonSerializable {
 
   /**
    * Array indexed by pipelines name.
-   * @var array
+   * @var PipelineVars[]
    */
   protected $pipelines = array();
 
 
   /**
    * Get pipelines for this environment.
-   * @return array
+   * @return PipelineVars[]
    */
   public function getPipelines(): array {
     return $this->pipelines;
