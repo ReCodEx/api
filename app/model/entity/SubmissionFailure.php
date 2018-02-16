@@ -123,7 +123,9 @@ class SubmissionFailure implements JsonSerializable {
       "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : null,
       "resolutionNote" => $this->resolutionNote,
       "assignmentSolutionId" => $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution()->getId() : null,
-      "referenceSolutionId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getId() : null
+      "assignmentId" => $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution()->getAssignment()->getId() : null,
+      "referenceSolutionId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getId() : null,
+      "exerciseId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getExercise()->getId() : null
     ];
   }
 }

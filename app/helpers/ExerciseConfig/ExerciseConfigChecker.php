@@ -8,6 +8,7 @@ use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\RuntimeEnvironment;
 use Nette\SmartObject;
+use Nette\Utils\Random;
 
 /**
  * A helper that hopes to detect broken exercise configurations by attempting to compile them.
@@ -39,7 +40,8 @@ class ExerciseConfigChecker {
    */
   private function conjureSubmittedFiles(RuntimeEnvironment $environment) {
     $extension = current($environment->getExtensionsList());
-    return ["main.{$extension}"];
+    $random = Random::generate(20);
+    return ["recodex.{$random}.{$extension}"];
   }
 
   /**
