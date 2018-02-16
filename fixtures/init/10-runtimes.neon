@@ -7,7 +7,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[c, h]"
 			- GNU/Linux
 			- C compiled with GCC
-			- "- name: \"source-files\"\r\n  type: \"file[]\"\r\n  value: \"*.{c,h}\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{c,h}\""
 
 	cxx-gcc-linux:
 		__construct:
@@ -17,7 +17,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[cpp, h, hpp]"
 			- GNU/Linux
 			- C++ compiled with G++
-			- "- name: \"source-files\"\r\n  type: \"file[]\"\r\n  value: \"*.{cpp,h,hpp}\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\""
 
 	freepascal-linux:
 		__construct:
@@ -37,7 +37,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[java]"
 			- GNU/Linux
 			- Java
-			- "- name: \"source-files\"\r\n  type: \"file[]\"\r\n  value: \"*.java\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.java\""
 
 	mono:
 		__construct:
@@ -47,7 +47,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[cs]"
 			- GNU/Linux
 			- C# run in Mono
-			- "- name: \"source-files\"\r\n  type: \"file[]\"\r\n  value: \"*.cs\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.cs\""
 
 	node-linux:
 		__construct:
@@ -67,7 +67,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[php]"
 			- GNU/Linux
 			- PHP scripts executed with official PHP interpreter
-			- "- name: \"source-file\"\r\n  type: \"file\"\r\n  value: \"*.php\""
+			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.php\""
 
 	python3:
 		__construct:
@@ -77,5 +77,5 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[py]"
 			- GNU/Linux
 			- "Python 3 (CPython)"
-			- "- name: \"source-file\"\r\n  type: \"file\"\r\n  value: \"*.py\""
+			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.py\""
 
