@@ -2,9 +2,11 @@
 
 namespace App\Console;
 
+use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\Pipeline;
 use App\Model\Entity\PipelineConfig;
 use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
 use Kdyby\Doctrine\EntityManager;
@@ -33,15 +35,22 @@ class ExportDatabase extends Command {
   private $pipelines;
 
   /**
+   * @var HardwareGroups
+   */
+  private $hardwareGroups;
+
+  /**
    * Constructor
    * @param RuntimeEnvironments $runtimeEnvironments
    * @param Pipelines $pipelines
+   * @param HardwareGroups $hardwareGroups
    */
   public function __construct(RuntimeEnvironments $runtimeEnvironments,
-      Pipelines $pipelines) {
+      Pipelines $pipelines, HardwareGroups $hardwareGroups) {
     parent::__construct();
     $this->runtimeEnvironments = $runtimeEnvironments;
     $this->pipelines = $pipelines;
+    $this->hardwareGroups = $hardwareGroups;
   }
 
   /**
@@ -65,9 +74,39 @@ class ExportDatabase extends Command {
     // export data from database
     $this->exportRuntimes($fixtureDir);
     $this->exportPipelines($fixtureDir);
+    $this->exportHardwareGroups($fixtureDir);
 
     $output->writeln('<info>[OK] - DB:EXPORT</info>');
     return 0;
+  }
+
+  /**
+   * Helper function which will encode array like input to neon formatted string.
+   * @param $content
+   * @return string
+   */
+  private function encodeResult($content): string {
+    return preg_replace('~\r\n?~', "\n", Neon::encode($content, Encoder::BLOCK));
+  }
+
+  private function exportHardwareGroups(string $fixtureDir) {
+    $content = [];
+    $content[HardwareGroup::class] = [];
+
+    foreach ($this->hardwareGroups->findAll() as $group) {
+      /** @var HardwareGroup $group */
+
+      $constructArr = [];
+      $constructArr[] = $group->getId();
+      $constructArr[] = $group->getDescription();
+
+      $groupArr = [];
+      $groupArr["__construct"] = $constructArr;
+
+      $content[HardwareGroup::class][$group->getId()] = $groupArr;
+    }
+
+    FileSystem::write($fixtureDir . "10-hwGroups.neon", $this->encodeResult($content));
   }
 
   private function exportRuntimes($fixtureDir) {
@@ -92,7 +131,7 @@ class ExportDatabase extends Command {
       $content[RuntimeEnvironment::class][$runtime->getId()] = $runtimeArr;
     }
 
-    FileSystem::write($fixtureDir . "10-runtimes.neon", Neon::encode($content, Encoder::BLOCK));
+    FileSystem::write($fixtureDir . "10-runtimes.neon", $this->encodeResult($content));
   }
 
   private function exportPipelines($fixtureDir) {
@@ -154,7 +193,7 @@ class ExportDatabase extends Command {
 
     }
 
-    FileSystem::write($fixtureDir . "15-pipelines.neon", Neon::encode($content, Encoder::BLOCK));
+    FileSystem::write($fixtureDir . "15-pipelines.neon", $this->encodeResult($content));
   }
 
 }
