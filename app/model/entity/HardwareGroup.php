@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\Criteria;
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getDescription()
  */
 class HardwareGroup implements JsonSerializable
 {
