@@ -37,8 +37,8 @@ class Group
       Instance $instance,
       User $admin = null,
       Group $parentGroup = null,
-      bool $publicStats = true,
-      bool $isPublic = true,
+      bool $publicStats = false,
+      bool $isPublic = false,
       bool $isOrganizational = false) {
     $this->externalId = $externalId;
     $this->memberships = new ArrayCollection;
