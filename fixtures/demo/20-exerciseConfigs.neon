@@ -5,7 +5,7 @@ App\Model\Entity\ExerciseEnvironmentConfig:
             - '''
               - name: "source-files"
                 type: "file[]"
-                value: "*.cpp"
+                value: "*.c"
               '''
             - @demoAdmin
     demoJavaEnvironmentConfig:

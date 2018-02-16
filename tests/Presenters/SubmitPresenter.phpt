@@ -398,7 +398,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
+    $environment = $assignment->getRuntimeEnvironments()->first();
+    $ext = current($environment->getExtensionsList());
 
     // save fake files into db
     $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
@@ -416,7 +417,12 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(2, $result['payload']);
+
+    $payload =  $result["payload"];
+    Assert::count(1, $payload);
+    Assert::true(array_key_exists("environments", $payload));
+
+    Assert::equal([$environment->getId()], $payload["environments"]);
   }
 
 }

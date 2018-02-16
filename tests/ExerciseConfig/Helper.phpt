@@ -2,13 +2,21 @@
 
 include '../bootstrap.php';
 
+use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseConfig;
+use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\RuntimeEnvironment;
+use App\Model\Entity\User;
+use App\Model\Entity\Instance;
 use App\Model\Repository\Pipelines;
 use Mockery\Mock;
+use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
 
 
@@ -27,11 +35,169 @@ class TestExerciseConfigHelper extends Tester\TestCase
   private $pipelines;
 
   public function __construct() {
+    $mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
+    $mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($mockCompilationPipelineConfig);
+    $mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
+    $mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($mockTestPipelineConfig);
+    $mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
+    $mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
+
     $this->pipelines = Mockery::mock(Pipelines::class);
+    $this->pipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($mockCompilationPipeline);
+    $this->pipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($mockTestPipeline);
 
     $this->loader = new Loader(new BoxService());
     $this->helper = new Helper($this->loader, $this->pipelines);
   }
+
+
+  private static $cEnvVariablesTable = [
+    [ "name" => "source_files", "type" => "file[]", "value" => "*.c" ]
+  ];
+  private static $javaEnvVariablesTable = [
+    [ "name" => "source_files", "type" => "file[]", "value" => "*.java" ]
+  ];
+  private static $exerciseConfig = [
+    "environments" => [ "c-gcc-linux", "java-linux" ],
+    "tests" => [
+      "1" => [
+        "environments" => [
+          "c-gcc-linux" => [ "pipelines" => [
+            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "testPipeline", "variables" => [
+              [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
+              [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
+            ] ]
+          ] ],
+          "java-linux" => [
+            "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [
+                [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
+                [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
+              ] ]
+            ]
+          ]
+        ]
+      ],
+      "2" => [
+        "environments" => [
+          "c-gcc-linux" => [
+            "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+            ]
+          ],
+          "java-linux" => [
+            "pipelines" => [
+              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [
+                [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ,
+                [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
+              ] ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ];
+  private static $compilationPipeline = [
+    "variables" => [
+      ["name" => "source_files", "type" => "file[]", "value" => ["source"]],
+      ["name" => "binary_file", "type" => "file", "value" => "a.out"]
+    ],
+    "boxes" => [
+      [
+        "name" => "source",
+        "type" => "files-in",
+        "portsIn" => [],
+        "portsOut" => [
+          "input" => ["type" => "file[]", "value" => "source_files"]
+        ]
+      ],
+      [
+        "name" => "compilation",
+        "type" => "gcc",
+        "portsIn" => [
+          "args" => ["type" => "string[]", "value" => ""],
+          "source-files" => ["type" => "file[]", "value" => "source_files"],
+          "extra-files" => ["type" => "file[]", "value" => ""]
+        ],
+        "portsOut" => [
+          "binary-file" => ["type" => "file", "value" => "binary_file"]
+        ]
+      ],
+      [
+        "name" => "output",
+        "type" => "file-out",
+        "portsIn" => [
+          "output" => ["type" => "file", "value" => "binary_file"]
+        ],
+        "portsOut" => []
+      ]
+    ]
+  ];
+  private static $testPipeline = [
+    "variables" => [
+      [ "name" => "binary_file", "type" => "file", "value" => "a.out" ],
+      [ "name" => "input-file", "type" => "file", "value" => "" ],
+      [ "name" => "expected_output", "type" => "file", "value" => "expected.out" ],
+      [ "name" => "actual_output", "type" => "file", "value" => "actual.out" ]
+    ],
+    "boxes" => [
+      [
+        "name" => "binary",
+        "type" => "file-in",
+        "portsIn" => [],
+        "portsOut" => [
+          "input" => [ "type" => "file", "value" => "binary_file" ]
+        ]
+      ],
+      [
+        "name" => "test",
+        "type" => "file-in",
+        "portsIn" => [],
+        "portsOut" => [
+          "input" => [ "type" => "file", "value" => "expected_output" ]
+        ]
+      ],
+      [
+        "name" => "input-file",
+        "type" => "file-in",
+        "portsIn" => [],
+        "portsOut" => [
+          "input" => [ "type" => "file", "value" => "input-file" ]
+        ]
+      ],
+      [
+        "name" => "run",
+        "type" => "elf-exec",
+        "portsIn" => [
+          "args" => [ "type" => "string[]", "value" => "" ],
+          "stdin" => [ "type" => "file", "value" => "input-file" ],
+          "binary-file" => [ "type" => "file", "value" => "binary_file" ],
+          "input-files" => [ "type" => "file[]", "value" => "" ]
+        ],
+        "portsOut" => [
+          "stdout" => [ "type" => "file", "value" => "" ],
+          "output-file" => [ "type" => "file", "value" => "actual_output" ]
+        ]
+      ],
+      [
+        "name" => "judge",
+        "type" => "judge",
+        "portsIn" => [
+          "judge-type" => [ "type" => "string", "value" => "" ],
+          "args" => ['type' => 'string[]', 'value' => ""],
+          "custom-judge" => ['type' => 'file', 'value' => ""],
+          "actual-output" => [ "type" => "file", "value" => "actual_output" ],
+          "expected-output" => [ "type" => "file", "value" => "expected_output" ]
+        ],
+        "portsOut" => []
+      ]
+    ]
+  ];
 
 
   public function testVariablesForExerciseEmptyArray() {
@@ -389,8 +555,39 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][1]->getType());
   }
 
-  public function testEnvironmentsForFiles() {
-    Assert::false(true);
+  public function testEnvironmentsForFilesNotMatched() {
+    $exercise = $this->createExercise();
+    $result = $this->helper->getEnvironmentsForFiles($exercise, ["main.cpp"]);
+
+    Assert::equal([], $result);
+  }
+
+  public function testEnvironmentsForFilesSingleMatched() {
+    $exercise = $this->createExercise();
+    $result = $this->helper->getEnvironmentsForFiles($exercise, ["main.c"]);
+
+    Assert::equal(["c-gcc-linux"], $result);
+  }
+
+
+  private function createExercise(): IExercise {
+    $user = new User("", "", "", "", "", "", new Instance());
+
+    $cRuntime = new RuntimeEnvironment("c-gcc-linux", "C (GCC)", "c", "*.c", "Linux", "");
+    $javaRuntime = new RuntimeEnvironment("java-linux", "Java", "java", "*.java", "Linux", "");
+
+    $cEnvConfig = new ExerciseEnvironmentConfig($cRuntime, Yaml::dump(self::$cEnvVariablesTable), $user);
+    $javaEnvConfig = new ExerciseEnvironmentConfig($javaRuntime, Yaml::dump(self::$javaEnvVariablesTable), $user);
+
+    $exerciseConfig = new ExerciseConfig(Yaml::dump(self::$exerciseConfig), $user);
+
+    $exercise = Exercise::create($user);
+    $exercise->addRuntimeEnvironment($cRuntime);
+    $exercise->addRuntimeEnvironment($javaRuntime);
+    $exercise->addExerciseEnvironmentConfig($cEnvConfig);
+    $exercise->addExerciseEnvironmentConfig($javaEnvConfig);
+    $exercise->setExerciseConfig($exerciseConfig);
+    return $exercise;
   }
 
 }
