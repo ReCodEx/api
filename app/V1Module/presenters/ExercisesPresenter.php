@@ -5,7 +5,9 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compiler;
+use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Entity\ExerciseConfig;
@@ -68,6 +70,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $calculators;
+
+  /**
+   * @var Updater
+   * @inject
+   */
+  public $exerciseConfigUpdater;
 
 
   /**
@@ -203,7 +211,6 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionValidate($id) {
     $exercise = $this->exercises->findOrThrow($id);
-
     if (!$this->exerciseAcl->canUpdate($exercise)) {
       throw new ForbiddenRequestException("You cannot modify this exercise.");
     }
@@ -273,14 +280,43 @@ class ExercisesPresenter extends BasePresenter {
     $scoreConfig = $this->calculators->getDefaultCalculator()->getDefaultConfig([]);
     $exercise->setScoreConfig($scoreConfig);
 
-    // set all hardware groups from the system to exercise
-    // TODO: not quite good solution, automatically assign hwgroups, but sufficient for now
-    foreach ($this->hardwareGroups->findAll() as $hardwareGroup) {
-      $exercise->addHardwareGroup($hardwareGroup);
-    }
-
     // and finally make changes to database
     $this->exercises->persist($exercise);
+    $this->sendSuccessResponse($exercise);
+  }
+
+  /**
+   * Create exercise with all default values.
+   * Exercise detail can be then changed in appropriate endpoint.
+   * @POST
+   * @param string $id identifier of exercise
+   * @Param(type="post", name="hwGroups", validation="array", description="List of hardware groups to which exercise belongs to")
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionHardwareGroups(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot modify this exercise.");
+    }
+
+    // load all new hardware groups
+    $req = $this->getRequest();
+    $groups = [];
+    foreach ($req->getPost("hwGroups") as $groupId) {
+      $groups[] = $this->hardwareGroups->findOrThrow($groupId);
+    }
+
+    // ... and after clearing the old ones assign new ones
+    $exercise->getHardwareGroups()->clear();
+    foreach ($groups as $group) {
+      $exercise->addHardwareGroup($group);
+    }
+
+    // update configurations
+    $this->exerciseConfigUpdater->hwGroupsUpdated($exercise, $this->getCurrentUser(), false);
+
+    $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }
 
