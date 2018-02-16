@@ -5,8 +5,7 @@ App\Model\Entity\PipelineConfig:
               variables:
                 - name: source-files
                   type: file[]
-                  value:
-                    - source.cpp
+                  value: []
                 - name: binary-file
                   type: file
                   value: a.out

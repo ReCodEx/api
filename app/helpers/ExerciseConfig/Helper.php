@@ -158,7 +158,13 @@ class Helper {
 
     $envConfigs = [];
     foreach ($exercise->getRuntimeEnvironments() as $environment) {
-      $envConfig = $this->loader->loadVariablesTable($exercise->getExerciseEnvironmentConfigByEnvironment($environment));
+      $exerciseEnvironment = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+      if ($exerciseEnvironment === null) {
+        throw new ExerciseConfigException("Environment config not found for environment '{$environment->getId()}'");
+      }
+
+      $parsedConfig = $exerciseEnvironment->getParsedVariablesTable();
+      $envConfig = $this->loader->loadVariablesTable($parsedConfig);
       $envConfigs[$environment->getId()] = $envConfig;
       $envStatuses[$environment->getId()] = true;
     }
@@ -172,7 +178,7 @@ class Helper {
         $pipelines = [];
         foreach ($env->getPipelines() as $pipelineId => $pipeline) {
           $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
-          $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig());
+          $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
           $pipelines[$pipelineId] = $pipelineConfig;
         }
 
@@ -194,6 +200,11 @@ class Helper {
           if ($variable === null) {
             // if variable was not found in environment config, peek into exercise config
             $variable = $env->getPipeline($input[0])->getVariablesTable()->get($varName);
+          }
+
+          // somethings fishy here
+          if ($variable === null) {
+            throw new ExerciseConfigException("Variable '{$varName}' not found in environment and exercise config");
           }
 
           // we only seek for the local file variables, not the remote ones...
