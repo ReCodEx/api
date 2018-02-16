@@ -18,9 +18,11 @@ Installation
    `app/config/config.local.neon.example`)
 4. Setup the database schema by running `php www/index.php
    migrations:migrate`
-5. Fill database with initial values by running `php www/index.php 
-   db:fill`
-
+5. Fill database with initial values by running `php www/index.php db:fill init`, after this database will contain:
+	* Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
+	* Runtime environments which ReCodEx can handle
+	* Default single hardware group which might be used for workers
+	* Pipelines for runtime environments which can be used when building exercises
 
 Web Server Setup
 ----------------
