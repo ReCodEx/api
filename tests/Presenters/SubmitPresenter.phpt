@@ -395,7 +395,34 @@ class TestSubmitPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal($totalSubmissionCount + $solutionCount, count($this->presenter->assignmentSubmissions->findAll()));
   }
+
+  public function testSubmitOracle()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = current($this->presenter->users->findAll());
+    $assignment = current($this->assignments->findAll());
+    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
+
+    // save fake files into db
+    $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
+    $file2 = new UploadedFile("file2." . $ext, new \DateTime, 0, $user, "file2." . $ext);
+    $this->presenter->files->persist($file1);
+    $this->presenter->files->persist($file2);
+    $this->presenter->files->flush();
+    $files = [ $file1->getId(), $file2->getId() ];
+
+    $request = new Nette\Application\Request('V1:Submit', 'GET',
+      ['action' => 'submitOracle', 'id' => $assignment->getId(), 'files' => $files]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+  }
+
 }
 
-$testCase = new TestSubmitPresenter();
-$testCase->run();
+(new TestSubmitPresenter())->run();

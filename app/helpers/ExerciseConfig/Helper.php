@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\Wildcards;
 use App\Model\Repository\Pipelines;
 
 
@@ -27,7 +28,7 @@ class Helper {
    * @param Loader $loader
    * @param Pipelines $pipelines
    */
-  public function Helper(Loader $loader, Pipelines $pipelines) {
+  public function __construct(Loader $loader, Pipelines $pipelines) {
     $this->loader = $loader;
     $this->pipelines = $pipelines;
   }
@@ -180,11 +181,52 @@ class Helper {
         $references = []; // pairs of pipeline identifier and variable indexed by variable name
         $this->joinPipelinesAndGetInputVariables($pipelines, $inputs, $references);
 
-        // TODO: go through inputs and find local files, then wildcard them and check them
+        // go through all inputs, references are no use to us
+        foreach ($inputs as $varName => $input) {
+          if (!$input[1]->isFile()) {
+            continue;
+          }
+
+          // now we have only file input ports... use them... for the glory of ReCodEx
+
+          // try to find variable in environment config variable table
+          $variable = $envConfig->get($varName);
+          if ($variable === null) {
+            // if variable was not found in environment config, peek into exercise config
+            $variable = $env->getPipeline($input[0])->getVariablesTable()->get($varName);
+          }
+
+          // we only seek for the local file variables, not the remote ones...
+          // although port might be of type file, variables assigned to it
+          // may have remote-file type in case the file should be downloaded
+          if (!$variable->isFile()) {
+            continue;
+          }
+
+          // determine if variable really defines only single wildcard expression
+          // and not an array of values
+          if ($variable->isValueArray()) {
+            continue;
+          }
+
+          // everything is gonna be ok... now we can do wildcard matching
+          $matched = false;
+          foreach ($files as $file) {
+            if (Wildcards::match($variable->getValue(), $file)) {
+              $matched = true;
+            }
+          }
+
+          // none of the files matched the wildcard from variable,
+          // this means whole environment could not be matched
+          if ($matched === false) {
+            $envStatuses[$envId] = false;
+          }
+        }
       }
     }
 
-    // go through all envirovnment statuses and if environment is suitable for given files,
+    // go through all environment statuses and if environment is suitable for given files,
     // return it in resulting array
     $result = [];
     foreach ($envStatuses as $envId => $status) {

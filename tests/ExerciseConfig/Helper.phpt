@@ -7,6 +7,8 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use App\Model\Repository\Pipelines;
+use Mockery\Mock;
 use Tester\Assert;
 
 
@@ -21,9 +23,14 @@ class TestExerciseConfigHelper extends Tester\TestCase
   /** @var Loader */
   private $loader;
 
+  /** @var Pipelines|Mock */
+  private $pipelines;
+
   public function __construct() {
-    $this->helper = new Helper;
+    $this->pipelines = Mockery::mock(Pipelines::class);
+
     $this->loader = new Loader(new BoxService());
+    $this->helper = new Helper($this->loader, $this->pipelines);
   }
 
 
@@ -380,6 +387,10 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
     Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][0]->getType());
     Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][1]->getType());
+  }
+
+  public function testEnvironmentsForFiles() {
+    Assert::false(true);
   }
 
 }

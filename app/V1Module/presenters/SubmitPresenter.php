@@ -8,6 +8,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\MonitorConfig;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -18,6 +19,7 @@ use App\Model\Entity\Assignment;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\SubmissionFailure;
+use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutionSubmissions;
@@ -115,6 +117,12 @@ class SubmitPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutionViewFactory;
+
+  /**
+   * @var ExerciseConfigHelper
+   * @inject
+   */
+  public $exerciseConfigHelper;
 
 
   /**
@@ -347,4 +355,39 @@ class SubmitPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($result);
   }
+
+  /**
+   * Oracle which will based on given files detect possible runtime environments
+   * for the assignment. Also it can be further used for entry points and
+   * other important things that should be provided by user during submit.
+   * @GET
+   * @param string $id identifier of assignment
+   * @param string[] $files identification of submitted files
+   * @throws NotFoundException
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws \App\Exceptions\ExerciseConfigException
+   */
+  public function actionSubmitOracle(string $id, array $files) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
+      throw new ForbiddenRequestException("You cannot submit this assignment.");
+    }
+
+    // retrieve and check uploaded files
+    $uploadedFiles = $this->files->findAllById($files);
+    if (count($uploadedFiles) === 0) {
+      throw new InvalidArgumentException("files", "No files were uploaded");
+    }
+
+    // prepare file names into separate array
+    $filenames = array_values(array_map(function (UploadedFile $uploadedFile) {
+      return $uploadedFile->getName();
+    }, $uploadedFiles));
+
+    $this->sendSuccessResponse([
+      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($assignment, $filenames)
+    ]);
+  }
+
 }
