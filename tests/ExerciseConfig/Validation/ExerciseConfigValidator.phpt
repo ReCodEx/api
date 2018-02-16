@@ -51,7 +51,10 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function __construct(Container $container) {
     $this->mockPipelines = Mockery::mock(Pipelines::class);
-    $this->validator = new ExerciseConfigValidator($this->mockPipelines, new Loader(new BoxService()), new Helper());
+
+    $loader = new Loader(new BoxService());
+    $helper = new Helper($loader, Mockery::mock(Pipelines::class));
+    $this->validator = new ExerciseConfigValidator($this->mockPipelines, $loader, $helper);
     $this->container = $container;
 
     $this->mockPipelineConfigEntity = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
