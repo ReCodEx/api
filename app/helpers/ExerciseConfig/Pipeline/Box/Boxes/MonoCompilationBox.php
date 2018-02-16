@@ -17,11 +17,11 @@ use App\Helpers\JobConfig\Tasks\Task;
 /**
  * Box which represents mcs compilation unit.
  */
-class McsCompilationBox extends CompilationBox
+class MonoCompilationBox extends CompilationBox
 {
   /** Type key */
   public static $MCS_TYPE = "mcs";
-  public static $MCS_BINARY = "/usr/bin/mcs";
+  public static $MCS_BINARY = "/usr/bin/csc";
   public static $MAIN_CLASS_PORT_KEY = "main-class";
   public static $EXTERNAL_SOURCES_PORT_KEY = "external-sources";
   public static $ASSEMBLY_FILE_PORT_KEY = "assembly";
