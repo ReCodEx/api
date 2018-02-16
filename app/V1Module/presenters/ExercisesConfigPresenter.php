@@ -282,7 +282,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // new config was provided, so construct new database entity
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $oldConfig);
-    
+
     if (!$newConfig->equals($oldConfig)) {
       // set new exercise configuration into exercise and flush changes
       $exercise->updatedNow();
@@ -404,25 +404,22 @@ class ExercisesConfigPresenter extends BasePresenter {
     // validate new limits
     $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
 
-    foreach ($this->hardwareGroups->findAll() as $hwGroup) {
+    foreach ($exercise->getHardwareGroups() as $hwGroup) {
       // new limits were provided, so construct new database entity
       $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
       $newLimits = new ExerciseLimits($environment, $hwGroup, (string)$exerciseLimits, $this->getCurrentUser(), $oldLimits);
 
-      // remove old limits for corresponding environment and hwgroup and add new
-      // ones, also do not forget to set hwgroup to exercise
+      // remove old limits for corresponding environment and hwgroup and add new ones
       if (!$newLimits->equals($oldLimits)) {
         $exercise->removeExerciseLimits($oldLimits); // if there were ones before
         $exercise->addExerciseLimits($newLimits);
-        $exercise->removeHardwareGroup($hwGroup); // if there was one before
-        $exercise->addHardwareGroup($hwGroup);
       }
     }
 
     // update and return
     $exercise->updatedNow();
     $this->exercises->flush();
-    
+
     $this->configChecker->check($exercise);
     $this->exercises->flush();
 

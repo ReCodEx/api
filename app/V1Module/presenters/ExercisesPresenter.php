@@ -316,6 +316,8 @@ class ExercisesPresenter extends BasePresenter {
     // update configurations
     $this->exerciseConfigUpdater->hwGroupsUpdated($exercise, $this->getCurrentUser(), false);
 
+    // update and return
+    $exercise->updatedNow();
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }

@@ -213,7 +213,16 @@ class Updater {
    * @param User $user
    */
   private function updateHwGroupsInLimits(Exercise $exercise, User $user) {
-    // TODO
+    $hwGroups = $exercise->getHardwareGroupsIds();
+
+    foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
+      $hwGroup = $exerciseLimits->getHardwareGroup();
+
+      // remove old hardware groups
+      if (!in_array($hwGroup->getId(), $hwGroups)) {
+        $exercise->removeExerciseLimits($exerciseLimits);
+      }
+    }
   }
 
 }
