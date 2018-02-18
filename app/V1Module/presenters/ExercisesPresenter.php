@@ -286,11 +286,10 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   * Create exercise with all default values.
-   * Exercise detail can be then changed in appropriate endpoint.
+   * Set hardware groups which are associated with exercise.
    * @POST
    * @param string $id identifier of exercise
-   * @Param(type="post", name="hwGroups", validation="array", description="List of hardware groups to which exercise belongs to")
+   * @Param(type="post", name="hwGroups", validation="array", description="List of hardware groups identifications to which exercise belongs to")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
