@@ -9,7 +9,6 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
-use Kdyby\Doctrine\EntityManager;
 use Nette\Neon\Encoder;
 use Nette\Neon\Neon;
 use Nette\Utils\FileSystem;
@@ -86,7 +85,16 @@ class ExportDatabase extends Command {
    * @return string
    */
   private function encodeResult($content): string {
-    return preg_replace('~\r\n?~', "\n", Neon::encode($content, Encoder::BLOCK));
+    return Neon::encode($content, Encoder::BLOCK);
+  }
+
+  /**
+   * Replace CRLF newlines with the Unix ones.
+   * @param string $content
+   * @return string
+   */
+  private function correctDbNewlines(string $content): string {
+    return preg_replace('~\r\n?~', "\n", $content);
   }
 
   private function exportHardwareGroups(string $fixtureDir) {
@@ -123,7 +131,7 @@ class ExportDatabase extends Command {
       $constructArr[] = $runtime->getExtensions();
       $constructArr[] = $runtime->getPlatform();
       $constructArr[] = $runtime->getDescription();
-      $constructArr[] = $runtime->getDefaultVariables();
+      $constructArr[] = $this->correctDbNewlines($runtime->getDefaultVariables());
 
       $runtimeArr = [];
       $runtimeArr["__construct"] = $constructArr;
@@ -154,7 +162,7 @@ class ExportDatabase extends Command {
 
       // create yaml config
       $constructArr = [];
-      $constructArr[] = $config->getPipelineConfig();
+      $constructArr[] = $this->correctDbNewlines($config->getPipelineConfig());
       $constructArr[] = "@demoAdmin";
 
       $configArr = [];
