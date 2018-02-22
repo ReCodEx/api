@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use DateTime;
@@ -27,6 +28,11 @@ class HardwareGroup implements JsonSerializable
    * @ORM\Column(type="text")
    */
   protected $description;
+
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $metadata;
 
   /**
    * @ORM\OneToMany(targetEntity="HardwareGroupAvailabilityLog", mappedBy="hardwareGroup")
@@ -55,19 +61,32 @@ class HardwareGroup implements JsonSerializable
 
   public function __construct(
     string $id,
-    string $description
+    string $description,
+    string $metadata = ""
   ) {
     $this->id = $id;
     $this->description = $description;
     $this->availabilityLog = new ArrayCollection;
+    $this->metadata = $metadata;
+  }
+
+  public function getMetadataString(): string {
+    return $this->metadata;
+  }
+
+  public function getMetadata(): HwGroupMeta {
+    return new HwGroupMeta($this->metadata);
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "description" => $this->description,
-      "isAvailable" => $this->isAvailable()
+      "isAvailable" => $this->isAvailable(),
+      "metadata" => $this->getMetadata()->toArray()
     ];
   }
+
+
 
 }
