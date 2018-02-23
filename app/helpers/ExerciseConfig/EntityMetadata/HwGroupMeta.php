@@ -14,8 +14,8 @@ class HwGroupMeta {
   private static $MEMORY_KEY = "memory";
   private static $CPU_TIME_PER_TEST_KEY = "cpuTimePerTest";
   private static $CPU_TIME_PER_EXERCISE_KEY = "cpuTimePerExercise";
-  private static $WALL_TIME_PER_TEST_KEY = "wallTimePerTestKey";
-  private static $WALL_TIME_PER_EXERCISE_KEY = "wallTimePerExerciseKey";
+  private static $WALL_TIME_PER_TEST_KEY = "wallTimePerTest";
+  private static $WALL_TIME_PER_EXERCISE_KEY = "wallTimePerExercise";
 
 
   /**

@@ -5,13 +5,11 @@ namespace App\Model\Entity;
 use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getName()
  * @method string getDescription()
  */
 class HardwareGroup implements JsonSerializable
@@ -25,6 +23,11 @@ class HardwareGroup implements JsonSerializable
   protected $id;
 
   /**
+   * @ORM\Column(type="string")
+   */
+  protected $name;
+
+  /**
    * @ORM\Column(type="text")
    */
   protected $description;
@@ -34,39 +37,16 @@ class HardwareGroup implements JsonSerializable
    */
   protected $metadata;
 
-  /**
-   * @ORM\OneToMany(targetEntity="HardwareGroupAvailabilityLog", mappedBy="hardwareGroup")
-   * @ORM\OrderBy({ "loggedAt" = "DESC" })
-   */
-  protected $availabilityLog;
-
-  /**
-   * Find out whether the hardware group is available now or was available at a given time.
-   * @param DateTime $when Explicit time
-   * @return bool
-   */
-  public function isAvailable(DateTime $when = null): bool {
-    if ($when === null) {
-      $when = new DateTime;
-    }
-
-    $criteria = Criteria::create()->where(Criteria::expr()->lte("loggedAt", $when));
-    $latestLog = $this->availabilityLog->matching($criteria)->first();
-    if (!$latestLog) {
-      return false;
-    }
-
-    return $latestLog->isAvailable();
-  }
 
   public function __construct(
     string $id,
+    string $name,
     string $description,
     string $metadata = ""
   ) {
     $this->id = $id;
+    $this->name = $name;
     $this->description = $description;
-    $this->availabilityLog = new ArrayCollection;
     $this->metadata = $metadata;
   }
 
@@ -81,8 +61,8 @@ class HardwareGroup implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
+      "name" => $this->name,
       "description" => $this->description,
-      "isAvailable" => $this->isAvailable(),
       "metadata" => $this->getMetadata()->toArray()
     ];
   }

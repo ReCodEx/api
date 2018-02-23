@@ -9,7 +9,6 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
-use Kdyby\Doctrine\EntityManager;
 use Nette\Neon\Encoder;
 use Nette\Neon\Neon;
 use Nette\Utils\FileSystem;
@@ -107,6 +106,7 @@ class ExportDatabase extends Command {
 
       $constructArr = [];
       $constructArr[] = $group->getId();
+      $constructArr[] = $group->getName();
       $constructArr[] = $group->getDescription();
       $constructArr[] = $group->getMetadataString();
 

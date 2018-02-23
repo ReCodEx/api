@@ -2,8 +2,10 @@ App\Model\Entity\HardwareGroup:
     demoHWGroup:
         __construct:
             - group1
+            - Name of the group1
             - Our only hardware group
     demoHWGroup2:
         __construct:
             - group2
+            - Name of the group2
             - Our other only hardware group
