@@ -337,6 +337,29 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($group->getId(), $forked->getGroups()->first()->getId());
   }
 
+  public function testHardwareGroups()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'hardwareGroups', 'id' => $exercise->getId()],
+      ['hwGroups' => [
+        "group1"
+      ]]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result["payload"];
+    Assert::count(1, $payload->getHardwareGroups());
+    Assert::equal("group1", $payload->getHardwareGroups()->first()->getId());
+  }
+
 }
 
 $testCase = new TestExercisesPresenter();

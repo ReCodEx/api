@@ -4,13 +4,11 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
 
 /**
  * @ORM\Entity
  * @method string getId()
+ * @method string getName()
  * @method string getDescription()
  */
 class HardwareGroup implements JsonSerializable
@@ -24,49 +22,31 @@ class HardwareGroup implements JsonSerializable
   protected $id;
 
   /**
+   * @ORM\Column(type="string")
+   */
+  protected $name;
+
+  /**
    * @ORM\Column(type="text")
    */
   protected $description;
 
-  /**
-   * @ORM\OneToMany(targetEntity="HardwareGroupAvailabilityLog", mappedBy="hardwareGroup")
-   * @ORM\OrderBy({ "loggedAt" = "DESC" })
-   */
-  protected $availabilityLog;
-
-  /**
-   * Find out whether the hardware group is available now or was available at a given time.
-   * @param DateTime $when Explicit time
-   * @return bool
-   */
-  public function isAvailable(DateTime $when = null): bool {
-    if ($when === null) {
-      $when = new DateTime;
-    }
-
-    $criteria = Criteria::create()->where(Criteria::expr()->lte("loggedAt", $when));
-    $latestLog = $this->availabilityLog->matching($criteria)->first();
-    if (!$latestLog) {
-      return false;
-    }
-
-    return $latestLog->isAvailable();
-  }
 
   public function __construct(
     string $id,
-    string $description
+    string $description,
+    string $name = ""
   ) {
     $this->id = $id;
     $this->description = $description;
-    $this->availabilityLog = new ArrayCollection;
+    $this->name = $name;
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "description" => $this->description,
-      "isAvailable" => $this->isAvailable()
+      "name" => $this->name,
+      "description" => $this->description
     ];
   }
 

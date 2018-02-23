@@ -55,6 +55,11 @@ class ExerciseConfigChecker {
       return;
     }
 
+    if ($exercise->getHardwareGroups()->count() === 0) {
+      $exercise->setBroken("There are no hardware groups");
+      return;
+    }
+
     if ($exercise->getLocalizedTexts()->count() === 0) {
       $exercise->setBroken("There are no student descriptions");
       return;

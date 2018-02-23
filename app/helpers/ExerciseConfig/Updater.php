@@ -74,6 +74,21 @@ class Updater {
     }
   }
 
+  /**
+   * Hardware groups were updated. Apply changes in all exercise configuration
+   * entities which are connected to them.
+   * @param Exercise $exercise
+   * @param User $user
+   * @param bool $flush
+   */
+  public function hwGroupsUpdated(Exercise $exercise, User $user, bool $flush = true) {
+    $this->updateHwGroupsInLimits($exercise, $user);
+
+    if ($flush) {
+      $this->exercises->flush();
+    }
+  }
+
 
   /**
    * Needed change of ExerciseConfig after update of environment configurations.
@@ -189,6 +204,24 @@ class Updater {
         $exerciseLimits->getHardwareGroup(), (string)$limits, $user, $exerciseLimits);
       $exercise->removeExerciseLimits($exerciseLimits);
       $exercise->addExerciseLimits($limitsEntity);
+    }
+  }
+
+  /**
+   * Hardware groups for the exercise were changes, we need to delete the deprecated ones.
+   * @param Exercise $exercise
+   * @param User $user
+   */
+  private function updateHwGroupsInLimits(Exercise $exercise, User $user) {
+    $hwGroups = $exercise->getHardwareGroupsIds();
+
+    foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
+      $hwGroup = $exerciseLimits->getHardwareGroup();
+
+      // remove old hardware groups
+      if (!in_array($hwGroup->getId(), $hwGroups)) {
+        $exercise->removeExerciseLimits($exerciseLimits);
+      }
     }
   }
 

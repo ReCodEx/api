@@ -9,7 +9,6 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\RuntimeEnvironments;
-use Kdyby\Doctrine\EntityManager;
 use Nette\Neon\Encoder;
 use Nette\Neon\Neon;
 use Nette\Utils\FileSystem;
