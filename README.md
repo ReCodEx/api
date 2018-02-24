@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/ReCodEx/api.svg?branch=master)](https://travis-ci.org/ReCodEx/api)
 [![API documentation](https://img.shields.io/badge/docs-OpenAPI-orange.svg)](https://recodex.github.io/api/)
 [![Test coverage](https://img.shields.io/coveralls/ReCodEx/api.svg)](https://coveralls.io/github/ReCodEx/api)
+[![GitHub release](https://img.shields.io/github/release/recodex/api.svg)](https://github.com/ReCodEx/wiki/wiki/Changelog)
 
 A REST API that provides access to the evaluation backend by clients.
 
