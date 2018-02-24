@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
@@ -31,23 +32,41 @@ class HardwareGroup implements JsonSerializable
    */
   protected $description;
 
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $metadata;
+
 
   public function __construct(
     string $id,
+    string $name,
     string $description,
-    string $name = ""
+    string $metadata = ""
   ) {
     $this->id = $id;
-    $this->description = $description;
     $this->name = $name;
+    $this->description = $description;
+    $this->metadata = $metadata;
+  }
+
+  public function getMetadataString(): string {
+    return $this->metadata;
+  }
+
+  public function getMetadata(): HwGroupMeta {
+    return new HwGroupMeta($this->metadata);
   }
 
   public function jsonSerialize() {
     return [
       "id" => $this->id,
       "name" => $this->name,
-      "description" => $this->description
+      "description" => $this->description,
+      "metadata" => $this->getMetadata()->toArray()
     ];
   }
+
+
 
 }

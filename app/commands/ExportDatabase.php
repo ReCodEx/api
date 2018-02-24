@@ -106,7 +106,9 @@ class ExportDatabase extends Command {
 
       $constructArr = [];
       $constructArr[] = $group->getId();
+      $constructArr[] = $group->getName();
       $constructArr[] = $group->getDescription();
+      $constructArr[] = $group->getMetadataString();
 
       $groupArr = [];
       $groupArr["__construct"] = $constructArr;

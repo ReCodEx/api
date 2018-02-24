@@ -305,7 +305,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // create new hardware group
-    $hwGroup = new HardwareGroup("new limits hwgroup", "desc");
+    $hwGroup = new HardwareGroup("new limits hwgroup", "name", "desc");
     $this->presenter->hardwareGroups->persist($hwGroup);
 
     $exercise = current($this->exercises->findAll());
@@ -345,7 +345,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // create new hardware group
-    $hwGroup = new HardwareGroup("new limits hwgroup", "desc");
+    $hwGroup = new HardwareGroup("new limits hwgroup", "name", "desc");
     $this->presenter->hardwareGroups->persist($hwGroup);
 
     $exercise = current($this->exercises->findAll());
