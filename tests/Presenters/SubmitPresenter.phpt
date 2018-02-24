@@ -79,7 +79,11 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal(true, $result['payload']);
+
+    $payload = $result['payload'];
+    Assert::count(2, $payload);
+    Assert::equal(true, $payload["canSubmit"]);
+    Assert::equal(0, $payload["submittedCount"]);
   }
 
   public function testSubmit()
