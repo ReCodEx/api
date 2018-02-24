@@ -145,7 +145,10 @@ class SubmitPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You cannot access this assignment.");
     }
 
-    $this->sendSuccessResponse($this->canReceiveSubmissions($assignment, $user));
+    $this->sendSuccessResponse([
+      "canSubmit" => $this->canReceiveSubmissions($assignment, $user),
+      "submittedCount" => count($this->assignmentSolutions->findValidSolutions($assignment, $user))
+    ]);
   }
 
   /**
