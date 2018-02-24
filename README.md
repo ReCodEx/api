@@ -81,6 +81,9 @@ recommended way of ensuring this is using a crontab like this:
 [Adminer](https://www.adminer.org/) is full-featured database management tool written in PHP and it is part of this Sandbox.
 To use it, browse to the subdirectory `/adminer` in your project root (i.e. `http://localhost:4000/adminer`).
 
+## Documentation
+
+Feel free to read the documentation on [our wiki](https://github.com/ReCodEx/wiki/wiki).
 
 ## License
 
