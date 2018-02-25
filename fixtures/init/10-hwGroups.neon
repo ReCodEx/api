@@ -1,6 +1,15 @@
 App\Model\Entity\HardwareGroup:
-	group1:
+	01-worker1-regular:
 		__construct:
-			- group1
-			- recodex-worker1.ms.mff.cuni.cz
+			- 01-worker1-regular
+			- "Default Worker (Regular Exercises)"
+			- "1@recodex-worker1.ms.mff.cuni.cz\n5@recodex-worker1.ms.mff.cuni.cz\n9@recodex-worker1.ms.mff.cuni.cz\n13@recodex-worker1.ms.mff.cuni.cz\n17@recodex-worker1.ms.mff.cuni.cz\n21@recodex-worker1.ms.mff.cuni.cz"
+			- "memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300"
+
+	10-worker1-longrunning:
+		__construct:
+			- 10-worker1-longrunning
+			- "Default Worker (Long-running Exercises)"
+			- "25@recodex-worker1.ms.mff.cuni.cz\n29@recodex-worker1.ms.mff.cuni.cz"
+			- "memory: 4194304\ncpuTimePerTest: 900\ncpuTimePerExercise: 3600\nwallTimePerTest: 900\nwallTimePerExercise: 3600"
 
