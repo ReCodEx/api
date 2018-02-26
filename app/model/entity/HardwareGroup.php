@@ -42,7 +42,7 @@ class HardwareGroup implements JsonSerializable
     string $id,
     string $name,
     string $description,
-    string $metadata = ""
+    string $metadata
   ) {
     $this->id = $id;
     $this->name = $name;

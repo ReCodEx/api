@@ -70,7 +70,7 @@ class ExerciseConfigChecker {
         }
 
         try {
-          $this->validator->validateExerciseLimits($exercise, $limits);
+          $this->validator->validateExerciseLimits($exercise, $hardwareGroup->getMetadata(), $limits);
         } catch (ExerciseConfigException $exception) {
           $exercise->setBroken(sprintf("Error in limit configuration: %s", $exception->getMessage()));
           return false;
