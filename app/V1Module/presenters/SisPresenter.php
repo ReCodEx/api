@@ -236,17 +236,20 @@ class SisPresenter extends BasePresenter {
           /** @var Group $group */
           $group = $binding->getGroup();
 
-	  if (!array_key_exists($group->getId(), $groups)) {
-		  $groups[$group->getId()] = $this->groupViewFactory->getGroup($group);
-		  $groups[$group->getId()]["sisCode"] = [];
-	  }
-
-          $serializedGroup = $groups[$group->getId()];
-          $serializedGroup["sisCode"][] = $binding->getCode();
-          $groups[$group->getId()] = $serializedGroup;
+          if (!array_key_exists($group->getId(), $groups)) {
+            $groups[$group->getId()] = $group;
+          }
         }
       }
     }
+
+    // Decorate the groups with associated SIS codes.
+    foreach ($groups as &$group) {
+      $bindings = $this->sisGroupBindings->findByGroup($group);
+      $group = $this->groupViewFactory->getGroup($group);
+      $group["sisCode"] = array_map(function($binding) { return $binding->getCode(); }, $bindings);
+    }
+    unset($group);  // let's clean our hands since we used references
 
     $this->sendSuccessResponse(array_values($groups));
   }
