@@ -220,7 +220,6 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $this->configChecker->check($exercise);
     $this->exercises->flush();
-
     $this->sendSuccessResponse("OK");
   }
 
@@ -407,9 +406,6 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
-    // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
-
     // new limits were provided, so construct new database entity
     $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
     $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $this->getCurrentUser(), $oldLimits);
@@ -423,6 +419,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // update and return
     $exercise->updatedNow();
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($newLimits->getParsedLimits());
   }
@@ -457,6 +457,10 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->removeHardwareGroup($hwGroup);
 
     $exercise->updatedNow();
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
   }
@@ -502,6 +506,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $exercise->updatedNow();
     $exercise->setScoreConfig($config);
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise->getScoreConfig());
   }
