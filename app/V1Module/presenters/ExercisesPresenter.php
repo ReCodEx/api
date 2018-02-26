@@ -7,6 +7,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compiler;
+use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -76,6 +77,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseConfigUpdater;
+
+  /**
+   * @var ExerciseConfigChecker
+   * @inject
+   */
+  public $configChecker;
 
 
   /**
@@ -317,6 +324,10 @@ class ExercisesPresenter extends BasePresenter {
 
     // update and return
     $exercise->updatedNow();
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise);
   }
