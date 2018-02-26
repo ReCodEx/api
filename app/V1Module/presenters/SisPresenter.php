@@ -235,14 +235,20 @@ class SisPresenter extends BasePresenter {
         if ($binding->getGroup() !== null && !$binding->getGroup()->isArchived()) {
           /** @var Group $group */
           $group = $binding->getGroup();
-          $serializedGroup = $this->groupViewFactory->getGroup($group);
-          $serializedGroup["sisCode"] = $binding->getCode();
-          $groups[] = $serializedGroup;
+
+	  if (!array_key_exists($group->getId(), $groups)) {
+		  $groups[$group->getId()] = $this->groupViewFactory->getGroup($group);
+		  $groups[$group->getId()]["sisCode"] = [];
+	  }
+
+          $serializedGroup = $groups[$group->getId()];
+          $serializedGroup["sisCode"][] = $binding->getCode();
+          $groups[$group->getId()] = $serializedGroup;
         }
       }
     }
 
-    $this->sendSuccessResponse($groups);
+    $this->sendSuccessResponse(array_values($groups));
   }
 
   /**
