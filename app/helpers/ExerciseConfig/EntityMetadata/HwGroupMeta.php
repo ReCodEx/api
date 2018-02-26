@@ -22,31 +22,31 @@ class HwGroupMeta {
    * Maximal memory limit for hwgroup in kilobytes.
    * @var int
    */
-  private $memory;
+  private $memory = 0;
 
   /**
    * Maximal cpu-time for hwgroup per test in seconds.
    * @var float
    */
-  private $cpuTimePerTest;
+  private $cpuTimePerTest = 0;
 
   /**
    * Maximal cpu-time for hwgroup per exercise in seconds.
    * @var float
    */
-  private $cpuTimePerExercise;
+  private $cpuTimePerExercise = 0;
 
   /**
    * Maximal wall-time for hwgroup per test in seconds.
    * @var float
    */
-  private $wallTimePerTest;
+  private $wallTimePerTest = 0;
 
   /**
    * Maximal wall-time for hwgroup per exercise in seconds.
    * @var float
    */
-  private $wallTimePerExercise;
+  private $wallTimePerExercise = 0;
 
 
   /**

@@ -3,6 +3,7 @@
 $container = include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Limits;
 use App\Helpers\ExerciseConfig\Loader;
@@ -59,8 +60,21 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     $this->addTwoTestsToExercise($exercise);
 
     Assert::exception(function () use ($exercise, $limits) {
-      $this->validator->validate($exercise, $limits);
+      $this->validator->validate($exercise, $this->createHwMeta(), $limits);
     }, ExerciseConfigException::class, "Exercise configuration error - Test with id '3' is not present in the exercise configuration");
+  }
+
+  public function testMemoryHighAF() {
+    $limits = new ExerciseLimits();
+    $limits->addLimits("1", Limits::create(2.0, 3.0, 1234567890, 1));
+    $limits->addLimits("2", Limits::create(2.0, 3.0, 10, 1));
+
+    $exercise = $this->createExercise();
+    $this->addTwoTestsToExercise($exercise);
+
+    Assert::exception(function () use ($exercise, $limits) {
+      $this->validator->validate($exercise, $this->createHwMeta(), $limits);
+    }, ExerciseConfigException::class, "Exercise configuration error - Test with id '1' has exceeded memory limit '1048576'");
   }
 
   public function testCorrect() {
@@ -72,10 +86,15 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     $this->addTwoTestsToExercise($exercise);
 
     Assert::noError(function () use ($exercise, $limits) {
-      $this->validator->validate($exercise, $limits);
+      $this->validator->validate($exercise, $this->createHwMeta(), $limits);
     });
   }
 
+
+  private function createHwMeta(): HwGroupMeta {
+    $hwGroupMeta = new HwGroupMeta("memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300");
+    return $hwGroupMeta;
+  }
 
   /**
    * @return Exercise
