@@ -5,7 +5,6 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
@@ -27,7 +26,6 @@ use App\Model\Repository\Pipelines;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Arrays;
 
@@ -406,6 +404,9 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
+    // validate new limits
+    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
+
     // new limits were provided, so construct new database entity
     $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
     $newLimits = new ExerciseLimits($environment, $hwGroup, (string) $exerciseLimits, $this->getCurrentUser(), $oldLimits);

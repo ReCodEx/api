@@ -3,11 +3,9 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Model\Entity\Exercise;
-use App\Model\Entity\ExerciseTest;
 use App\Model\Repository\Pipelines;
 
 
@@ -17,22 +15,15 @@ use App\Model\Repository\Pipelines;
 class ExerciseLimitsValidator {
 
   /**
-   * @var Pipelines
-   */
-  private $pipelines;
-
-  /**
    * @var Loader
    */
   private $loader;
 
   /**
    * ExerciseConfigValidator constructor.
-   * @param Pipelines $pipelines
    * @param Loader $loader
    */
-  public function __construct(Pipelines $pipelines, Loader $loader) {
-    $this->pipelines = $pipelines;
+  public function __construct(Loader $loader) {
     $this->loader = $loader;
   }
 
