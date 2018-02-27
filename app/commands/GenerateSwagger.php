@@ -1,6 +1,7 @@
 <?php
 namespace App\Console;
 
+use App\Helpers\ApiConfig;
 use App\V1Module\Router\MethodRoute;
 use Doctrine\ORM\Tools\SchemaTool;
 use JsonSerializable;
@@ -49,6 +50,11 @@ class GenerateSwagger extends Command
    */
   private $em;
 
+  /**
+   * @var ApiConfig
+   */
+  private $apiConfig;
+
   private $typeMap = [
     'bool' => 'boolean',
     'boolean' => 'boolean',
@@ -72,13 +78,15 @@ class GenerateSwagger extends Command
     'upper' => ['string', 'uppercase']
   ];
 
-  public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader, Kdyby\Doctrine\EntityManager $em)
+  public function __construct(RouteList $router, IPresenterFactory $presenterFactory, Fixtures\Loader $loader,
+                              Kdyby\Doctrine\EntityManager $em, ApiConfig $apiConfig)
   {
     parent::__construct();
     $this->router = $router;
     $this->presenterFactory = $presenterFactory;
     $this->fixtureLoader = $loader;
     $this->em = $em;
+    $this->apiConfig = $apiConfig;
   }
 
   protected function configure()
@@ -117,6 +125,9 @@ class GenerateSwagger extends Command
 
     $document = $source ? Yaml::parse(file_get_contents($source)) : [];
     $basePath = ltrim(Arrays::get($document, "basePath", "/v1"), "/");
+
+    $this->setArrayDefault($document, "info", []);
+    $document["info"]["version"] = $this->apiConfig->getVersion();
 
     $this->setArrayDefault($document, "paths", []);
     $paths = &$document["paths"];
@@ -463,7 +474,8 @@ class GenerateSwagger extends Command
     $entityExamples = [];
     foreach ($em->getMetadataFactory()->getAllMetadata() as $metadata) {
       $name = $metadata->getName();
-      if (Strings::startsWith($name, "App")) {
+      $reflection = ClassType::from($name);
+      if (Strings::startsWith($name, "App") && !$reflection->isAbstract()) {
         $entityExamples[] = $em->getRepository($name)->findAll()[0];
       }
     }
