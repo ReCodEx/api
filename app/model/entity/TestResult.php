@@ -142,7 +142,7 @@ class TestResult implements JsonSerializable
   protected $judgeOutput;
 
   /**
-   * @ORM\OneToMany(targetEntity="TaskResult", mappedBy="testResult", cascade={"persist"})
+   * @ORM\OneToMany(targetEntity="TaskResult", mappedBy="testResult", cascade={"persist", "remove"})
    */
   protected $tasks;
 

@@ -68,7 +68,7 @@ class SolutionEvaluation implements JsonSerializable
   protected $initiationOutputs;
 
   /**
-   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="solutionEvaluation", cascade={"persist"})
+   * @ORM\OneToMany(targetEntity="TestResult", mappedBy="solutionEvaluation", cascade={"persist", "remove"})
    */
   protected $testResults;
 
