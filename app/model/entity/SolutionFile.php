@@ -15,6 +15,7 @@ class SolutionFile extends UploadedFile implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="Solution")
+   * @ORM\JoinColumn(onDelete="SET NULL")
    */
   protected $solution;
 

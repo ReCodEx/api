@@ -42,12 +42,12 @@ class ReferenceExerciseSolution implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
+   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"})
    */
   protected $solution;
 
   /**
-   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution")
+   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
    */
   protected $submissions;
 

@@ -29,7 +29,7 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolutionSubmission")
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolutionSubmission", cascade={"remove"})
    */
   protected $failures;
 

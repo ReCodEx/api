@@ -71,7 +71,7 @@ class AssignmentSolution
 
   /**
    * @var Solution
-   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
+   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"})
    */
   protected $solution;
 
@@ -129,7 +129,7 @@ class AssignmentSolution
   /**
    * Note that order by annotation has to be present!
    *
-   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution")
+   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution", cascade={"remove"})
    * @ORM\OrderBy({"submittedAt" = "DESC"})
    */
   protected $submissions;
