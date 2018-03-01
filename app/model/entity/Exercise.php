@@ -23,6 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getExerciseEnvironmentConfigs()
  * @method User getAuthor()
  * @method int getVersion()
+ * @method Collection getReferenceSolutions()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
@@ -102,15 +103,6 @@ class Exercise implements JsonSerializable, IExercise
    * @ORM\OneToMany(targetEntity="ReferenceExerciseSolution", mappedBy="exercise")
    */
   protected $referenceSolutions;
-
-  /**
-   * @return Collection
-   */
-  public function getReferenceSolutions() {
-    return $this->referenceSolutions->filter(function (ReferenceExerciseSolution $solution) {
-      return $solution->getDeletedAt() === null;
-    });
-  }
 
   /**
    * @ORM\ManyToOne(targetEntity="User", inversedBy="exercises")
