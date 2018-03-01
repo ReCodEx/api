@@ -79,6 +79,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->assignmentSolutions = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = new ArrayCollection($exercise->getRuntimeEnvironments()->toArray());
+    $this->disabledRuntimeEnvironments = new ArrayCollection();
     $this->hardwareGroups = new ArrayCollection($exercise->getHardwareGroups()->toArray());
     $this->exerciseTests = new ArrayCollection($exercise->getExerciseTests()->toArray());
     $this->exerciseLimits = new ArrayCollection($exercise->getExerciseLimits()->toArray());
@@ -262,6 +263,18 @@ class Assignment implements JsonSerializable, IExercise
    */
   protected $assignmentSolutions;
 
+  /**
+   * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
+   * @ORM\JoinTable(name="assignment_disabled_runtime_environments")
+   */
+  protected $disabledRuntimeEnvironments;
+
+  public function getRuntimeEnvironments(): Collection {
+    return $this->runtimeEnvironments->filter(function (RuntimeEnvironment $environment) {
+      return !$this->disabledRuntimeEnvironments->contains($environment);
+    });
+  }
+
   public function syncWithExercise() {
     $exercise = $this->getExercise();
 
@@ -345,6 +358,9 @@ class Assignment implements JsonSerializable, IExercise
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
+      "disabledRuntimeEnvironmentsIds" => $this->disabledRuntimeEnvironments->map(function (RuntimeEnvironment $environment) {
+        return $environment->getId();
+      })->getValues(),
       "canViewLimitRatios" => $this->canViewLimitRatios,
       "isBonus" => $this->isBonus,
       "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
@@ -407,13 +423,20 @@ class Assignment implements JsonSerializable, IExercise
             })
         ],
         "runtimeEnvironments" => [
-          "upToDate" => $this->getRuntimeEnvironments()->count() === $this->getExercise()->getRuntimeEnvironments()->count()
-            && $this->getRuntimeEnvironments()->forAll(function ($key, RuntimeEnvironment $env) {
+          "upToDate" => $this->runtimeEnvironments->count() === $this->getExercise()->getRuntimeEnvironments()->count()
+            && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
               return $this->getExercise()->getRuntimeEnvironments()->contains($env);
             })
         ]
       ]
     ];
+  }
+
+  public function setDisabledRuntimeEnvironments(array $disabledRuntimes) {
+    $this->disabledRuntimeEnvironments->clear();
+    foreach ($disabledRuntimes as $environment) {
+      $this->disabledRuntimeEnvironments->add($environment);
+    }
   }
 
 }

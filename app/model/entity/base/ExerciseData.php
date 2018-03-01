@@ -59,7 +59,7 @@ trait ExerciseData {
    * @return array
    */
   public function getRuntimeEnvironmentsIds() {
-    return $this->runtimeEnvironments->map(function(RuntimeEnvironment $environment) {
+    return $this->getRuntimeEnvironments()->map(function(RuntimeEnvironment $environment) {
       return $environment->getId();
     })->getValues();
   }

@@ -14,9 +14,11 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\V1Module\Presenters\AssignmentsPresenter;
+use Nette\Utils\Json;
 use Tester\Assert;
 use App\Helpers\JobConfig;
 use App\Exceptions\NotFoundException;
+use Nette\Http;
 
 
 /**
@@ -48,6 +50,12 @@ class TestAssignmentsPresenter extends Tester\TestCase
   /** @var AssignmentSolutionViewFactory */
   private $assignmentSolutionViewFactory;
 
+  /** @var Http\Request */
+  private $originalHttpRequest;
+
+  /** @var Http\Request|Mockery\Mock */
+  private $mockHttpRequest;
+
   public function __construct()
   {
     global $container;
@@ -63,6 +71,10 @@ class TestAssignmentsPresenter extends Tester\TestCase
   protected function setUp()
   {
     PresenterTestHelper::fillDatabase($this->container);
+
+    $this->originalHttpRequest = $this->container->getByType(Http\Request::class);
+    $this->mockHttpRequest = Mockery::mock($this->originalHttpRequest);
+    PresenterTestHelper::replaceService($this->container, $this->mockHttpRequest, Http\Request::class);
 
     $this->presenter = PresenterTestHelper::createPresenter($this->container, AssignmentsPresenter::class);
   }
@@ -124,7 +136,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $mockEvaluations->shouldReceive("flush")->once();
     $this->presenter->solutionEvaluations = $mockEvaluations;
 
-    $name = "newAssignmentName";
     $isPublic = true;
     $localizedTexts = [
       [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
@@ -183,6 +194,42 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $updatedLocalized = $updatedAssignment->getLocalizedTexts()->first();
     Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
     Assert::equal($updatedLocalized->getAssignmentText(), $localized["text"]);
+  }
+
+  public function testDisableRuntimeEnvironments()
+  {
+    $this->mockHttpRequest->shouldReceive("getHeader")->andReturn("application/json");
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignments = $this->assignments->findAll();
+    $assignment = array_pop($assignments);
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'updateDetail', 'id' => $assignment->getId()],
+      [
+        'isPublic' => true,
+        'version' => 1,
+        'localizedTexts' => [
+          [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
+        ],
+        'firstDeadline' => (new \DateTime())->getTimestamp(),
+        'maxPointsBeforeFirstDeadline' => 123,
+        'submissionsCountLimit' => 321,
+        'allowSecondDeadline' => true,
+        'canViewLimitRatios' => false,
+        'secondDeadline' => (new \DateTime)->getTimestamp(),
+        'maxPointsBeforeSecondDeadline' => 543,
+        'isBonus' => true,
+        'pointsPercentualThreshold' => 90,
+        'disabledRuntimeEnvironments' => ['freepascal-linux']
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    $updatedAssignment = PresenterTestHelper::extractPayload($response);
+
+    Assert::same(["freepascal-linux"], $updatedAssignment["disabledRuntimeEnvironmentsIds"]);
+    Assert::false(in_array("freepascal-linux", $updatedAssignment["runtimeEnvironmentsIds"]));
   }
 
   public function testCreateAssignment()
