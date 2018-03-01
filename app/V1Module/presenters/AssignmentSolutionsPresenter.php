@@ -97,6 +97,22 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   }
 
   /**
+   * Delete assignment solution with given identification.
+   * @DELETE
+   * @param string $id identifier of assignment solution
+   * @throws ForbiddenRequestException
+   */
+  public function actionDeleteSolution(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canDelete($solution)) {
+      throw new ForbiddenRequestException("You cannot delete this assignment solution");
+    }
+
+    $this->assignmentSolutions->remove($solution);
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Get information about the evaluations of a solution
    * @GET
    * @param string $id Identifier of the solution

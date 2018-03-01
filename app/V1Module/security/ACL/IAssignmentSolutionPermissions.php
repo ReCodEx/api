@@ -8,6 +8,7 @@ use App\Model\Entity\AssignmentSolutionSubmission;
 interface IAssignmentSolutionPermissions {
   function canViewAll(): bool;
   function canViewDetail(AssignmentSolution $assignmentSolution): bool;
+  function canDelete(AssignmentSolution $assignmentSolution): bool;
   function canSetBonusPoints(AssignmentSolution $assignmentSolution): bool;
   function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
   function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;

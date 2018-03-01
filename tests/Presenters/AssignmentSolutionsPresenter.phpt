@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\NotFoundException;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
@@ -232,6 +233,31 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     // Check invariants
     Assert::equal("results-" . $submission->getId() . '.zip', $response->getName());
+  }
+
+  public function testDeleteAssignmentSolution()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var AssignmentSolution $solution */
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+    $solutionId = $solution->getId();
+
+    $request = new Nette\Application\Request('V1:AssignmentSolutions', 'DELETE', [
+      'action' => 'deleteSolution',
+      'id' => $solution->getId()
+    ]);
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal('OK', $result['payload']);
+
+    Assert::exception(function () use ($solutionId) {
+      $this->presenter->assignmentSolutions->findOrThrow($solutionId);
+    }, NotFoundException::class);
   }
 
 }
