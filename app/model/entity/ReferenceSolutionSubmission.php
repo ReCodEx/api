@@ -38,7 +38,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission")
+   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission", cascade={"remove"})
    */
   protected $failures;
 
