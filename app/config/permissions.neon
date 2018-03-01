@@ -257,6 +257,7 @@ permissions:
           - viewEvaluationDetails
           - viewEvaluationValues
           - viewResubmissions
+          - delete
           - setBonusPoints
           - setAccepted
           - downloadResultArchive
