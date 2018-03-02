@@ -254,6 +254,32 @@ class TestUsersPresenter extends Tester\TestCase
     }, App\Exceptions\InvalidArgumentException::class);
   }
 
+  public function testUpdateProfileWithoutFirstAndLastName()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $degreesBeforeName = "degreesBeforeNameUpdated";
+    $degreesAfterName = "degreesAfterNameUpdated";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::equal("$degreesBeforeName {$user->getFirstName()} {$user->getLastName()} $degreesAfterName", $updatedUser["fullName"]);
+  }
+
   public function testUpdateSettings()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

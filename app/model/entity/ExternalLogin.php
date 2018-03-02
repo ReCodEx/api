@@ -37,7 +37,7 @@ class ExternalLogin
   protected $externalId;
 
   /**
-   * @ORM\ManyToOne(targetEntity="User")
+   * @ORM\ManyToOne(targetEntity="User", inversedBy="externalLogins")
    */
   protected $user;
 

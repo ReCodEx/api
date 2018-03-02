@@ -21,4 +21,14 @@ class UserPermissionPolicy implements IPermissionPolicy
     $currentUser = $identity->getUserData();
     return $currentUser !== null && $currentUser->getInstance() === $user->getInstance();
   }
+
+  public function isNotExternalAccount(Identity $identity, User $user): bool {
+    $currentUser = $identity->getUserData();
+    if (!$currentUser) {
+      return false;
+    }
+
+    return !$user->hasExternalAccounts();
+  }
+
 }

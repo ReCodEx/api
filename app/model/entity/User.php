@@ -30,6 +30,7 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
  * @method Collection getLogins()
+ * @method Collection getExternalLogins()
  */
 class User
 {
@@ -65,6 +66,7 @@ class User
     $instance->addMember($this);
     $this->settings = new UserSettings(true, false, "en");
     $this->logins = new ArrayCollection();
+    $this->externalLogins = new ArrayCollection();
 
     if (empty($role)) {
       $this->role = self::STUDENT_ROLE;
@@ -272,6 +274,11 @@ class User
   protected $role;
 
   /**
+   * @ORM\OneToMany(targetEntity="ExternalLogin", mappedBy="user", cascade={"all"})
+   */
+  protected $externalLogins;
+
+  /**
    * @ORM\OneToMany(targetEntity="Login", mappedBy="user", cascade={"all"})
    */
   protected $logins;
@@ -303,6 +310,14 @@ class User
    */
   public function hasLocalAccounts(): bool {
     return !$this->logins->isEmpty();
+  }
+
+  /**
+   * Returns true if the user entity is associated with a external login entity.
+   * @return bool
+   */
+  public function hasExternalAccounts(): bool {
+    return !$this->externalLogins->isEmpty();
   }
 
 }

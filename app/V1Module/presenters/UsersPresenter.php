@@ -105,8 +105,8 @@ class UsersPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @Param(type="post", name="firstName", validation="string:2..", description="First name")
-   * @Param(type="post", name="lastName", validation="string:2..", description="Last name")
+   * @Param(type="post", name="firstName", required=false, validation="string:2..", description="First name")
+   * @Param(type="post", name="lastName", required=false, validation="string:2..", description="Last name")
    * @Param(type="post", name="degreesBeforeName", description="Degrees before name")
    * @Param(type="post", name="degreesAfterName", description="Degrees after name")
    * @Param(type="post", name="email", validation="email", description="New email address", required=false)
@@ -117,8 +117,6 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();
-    $firstName = $req->getPost("firstName");
-    $lastName = $req->getPost("lastName");
     $degreesBeforeName = $req->getPost("degreesBeforeName");
     $degreesAfterName = $req->getPost("degreesAfterName");
 
@@ -130,13 +128,12 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    // change the email and passwords
+    // change details in separate methods
     $this->changeUserEmail($user, $login, $req->getPost("email"));
+    $this->changeFirstAndLastName($user, $req->getPost("firstName"), $req->getPost("lastName"));
     $this->changeUserPassword($login, $req->getPost("oldPassword"),
       $req->getPost("password"), $req->getPost("passwordConfirm"));
 
-    $user->setFirstName($firstName);
-    $user->setLastName($lastName);
     $user->setDegreesBeforeName($degreesBeforeName);
     $user->setDegreesAfterName($degreesAfterName);
 
@@ -184,6 +181,28 @@ class UsersPresenter extends BasePresenter {
       // email has to be re-verified
       $user->setVerified(false);
       $this->emailVerificationHelper->process($user);
+    }
+  }
+
+  /**
+   * Change firstname and second name and check if user can change them.
+   * @param User $user
+   * @param null|string $firstname
+   * @param null|string $lastname
+   * @throws ForbiddenRequestException
+   */
+  public function changeFirstAndLastName(User $user, ?string $firstname, ?string $lastname) {
+    if (($firstname !== null || $lastname !== null) &&
+        !$this->userAcl->canUpdatePersonalData($user)) {
+      throw new ForbiddenRequestException("You cannot update personal data");
+    }
+
+    if ($firstname) {
+      $user->setFirstName($firstname);
+    }
+
+    if ($lastname) {
+      $user->setLastName($lastname);
     }
   }
 
