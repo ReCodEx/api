@@ -85,17 +85,18 @@ class ExercisesPresenter extends BasePresenter {
   public $configChecker;
 
 
+  public function checkDefault(string $search = null) {
+    if (!$this->exerciseAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Get a list of exercises with an optional filter
    * @GET
    * @param string $search text which will be searched in exercises names
-   * @throws ForbiddenRequestException
    */
   public function actionDefault(string $search = null) {
-    if (!$this->exerciseAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-
     $exercises = $this->exercises->searchByName($search);
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
@@ -103,20 +104,31 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse(array_values($exercises));
   }
 
-  /**
-   * Get details of an exercise
-   * @GET
-   * @param string $id identification of exercise
-   * @throws ForbiddenRequestException
-   */
-  public function actionDetail(string $id) {
+  public function checkDetail(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get details of an exercise
+   * @GET
+   * @param string $id identification of exercise
+   */
+  public function actionDetail(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
     $this->sendSuccessResponse($exercise);
+  }
+
+  public function checkUpdateDetail(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot update this exercise.");
+    }
   }
 
   /**
@@ -137,17 +149,12 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionUpdateDetail(string $id) {
     $req = $this->getRequest();
-    $name = $req->getPost("name");
     $difficulty = $req->getPost("difficulty");
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
-    $description = $req->getPost("description");
 
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot update this exercise.");
-    }
 
     $version = intval($req->getPost("version"));
     if ($version !== $exercise->getVersion()) {
@@ -209,18 +216,21 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
+  public function checkValidate($id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot modify this exercise.");
+    }
+  }
+
   /**
    * Check if the version of the exercise is up-to-date.
    * @POST
    * @Param(type="post", name="version", validation="numericint", description="Version of the exercise.")
    * @param string $id Identifier of the exercise
-   * @throws ForbiddenRequestException
    */
   public function actionValidate($id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot modify this exercise.");
-    }
 
     $req = $this->getHttpRequest();
     $version = intval($req->getPost("version"));
@@ -230,18 +240,21 @@ class ExercisesPresenter extends BasePresenter {
     ]);
   }
 
-  /**
-   * Get all pipelines for an exercise.
-   * @GET
-   * @param string $id Identifier of the exercise
-   * @throws ForbiddenRequestException
-   */
-  public function actionGetPipelines(string $id) {
+  public function checkGetPipelines(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
 
     if (!$this->exerciseAcl->canViewPipelines($exercise)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get all pipelines for an exercise.
+   * @GET
+   * @param string $id Identifier of the exercise
+   */
+  public function actionGetPipelines(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
 
     $pipelines = $exercise->getPipelines()->filter(function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
@@ -292,6 +305,13 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
+  public function checkHardwareGroups(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot modify this exercise.");
+    }
+  }
+
   /**
    * Set hardware groups which are associated with exercise.
    * @POST
@@ -302,9 +322,6 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionHardwareGroups(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot modify this exercise.");
-    }
 
     // load all new hardware groups
     $req = $this->getRequest();
@@ -332,18 +349,22 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
-  /**
-   * Delete an exercise
-   * @DELETE
-   * @param string $id
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemove(string $id) {
+  public function checkRemove(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canRemove($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to remove this exercise.");
     }
+  }
+
+  /**
+   * Delete an exercise
+   * @DELETE
+   * @param string $id
+   */
+  public function actionRemove(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
 
     $this->exercises->remove($exercise);
     $this->sendSuccessResponse("OK");
