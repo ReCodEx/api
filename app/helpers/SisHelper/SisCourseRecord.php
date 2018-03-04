@@ -64,7 +64,7 @@ class SisCourseRecord implements JsonSerializable {
 
     foreach (static::$languages as $language) {
       $result->captions[$language] = $data["caption_" . $language];
-      $result->annotations[$language] = $data["annotation_" . $language];
+      $result->annotations[$language] = !empty($data["annotation_" . $language]) ? $data["annotation_" . $language] : '';
     }
 
     return $result;
