@@ -21,7 +21,7 @@ class Comments extends BaseRepository {
     $this->comments = $em->getRepository(Comment::class);
   }
 
-  public function getThread(string $id) {
+  public function getThread(string $id): ?CommentThread {
     return $this->threads->find($id);
   }
 
