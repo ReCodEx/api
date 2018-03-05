@@ -392,7 +392,7 @@ class TestSubmitPresenter extends Tester\TestCase
     Assert::equal($totalSubmissionCount + $solutionCount, count($this->presenter->assignmentSubmissions->findAll()));
   }
 
-  public function testSubmitOracle()
+  public function testPreSubmit()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -410,7 +410,7 @@ class TestSubmitPresenter extends Tester\TestCase
     $files = [ $file1->getId(), $file2->getId() ];
 
     $request = new Nette\Application\Request('V1:Submit', 'GET',
-      ['action' => 'submitOracle', 'id' => $assignment->getId(), 'files' => $files]
+      ['action' => 'preSubmit', 'id' => $assignment->getId(), 'files' => $files]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
