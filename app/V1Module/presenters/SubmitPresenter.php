@@ -357,9 +357,10 @@ class SubmitPresenter extends BasePresenter {
   }
 
   /**
-   * Oracle which will based on given files detect possible runtime environments
-   * for the assignment. Also it can be further used for entry points and
-   * other important things that should be provided by user during submit.
+   * Pre submit action which will, based on given files, detect possible runtime
+   * environments for the assignment. Also it can be further used for entry
+   * points and other important things that should be provided by user during
+   * submit.
    * @GET
    * @param string $id identifier of assignment
    * @param string[] $files identification of submitted files
@@ -368,7 +369,7 @@ class SubmitPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    * @throws \App\Exceptions\ExerciseConfigException
    */
-  public function actionSubmitOracle(string $id, array $files) {
+  public function actionPreSubmit(string $id, array $files) {
     $assignment = $this->assignments->findOrThrow($id);
     if (!$this->assignmentAcl->canSubmit($assignment)) {
       throw new ForbiddenRequestException("You cannot submit this assignment.");
