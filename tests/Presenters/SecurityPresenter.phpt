@@ -53,7 +53,7 @@ class TestSecurityPresenter extends Tester\TestCase {
     $payload = $response->getPayload()["payload"];
 
     Assert::true($payload["result"]);
-    Assert::true($payload["certain"]);
+    Assert::true($payload["isResultReliable"]);
   }
 
   public function testDisabled() {
@@ -70,7 +70,7 @@ class TestSecurityPresenter extends Tester\TestCase {
     $payload = $response->getPayload()["payload"];
 
     Assert::false($payload["result"]);
-    Assert::true($payload["certain"]);
+    Assert::true($payload["isResultReliable"]);
   }
 }
 

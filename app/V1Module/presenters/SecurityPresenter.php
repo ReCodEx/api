@@ -69,14 +69,14 @@ class SecurityPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "result" => $result,
-      "certain" => true
+      "isResultReliable" => true
     ]);
   }
 
   protected function checkFailed() {
     $this->sendSuccessResponse([
       "result" => true,
-      "certain" => false
+      "isResultReliable" => false
     ]);
   }
 }
