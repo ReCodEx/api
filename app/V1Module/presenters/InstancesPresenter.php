@@ -67,20 +67,27 @@ class InstancesPresenter extends BasePresenter {
    */
   public $userAcl;
 
-  /**
-   * Get a list of all instances
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionDefault() {
+  public function checkDefault() {
     if (!$this->instanceAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of all instances
+   * @GET
+   */
+  public function actionDefault() {
     $instances = array_filter($this->instances->findAll(),
         function (Instance $instance) { return $instance->isAllowed(); }
     );
     $this->sendSuccessResponse($instances);
+  }
+
+  public function checkCreateInstance() {
+    if (!$this->instanceAcl->canAdd()) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -92,10 +99,6 @@ class InstancesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionCreateInstance() {
-    if (!$this->instanceAcl->canAdd()) {
-      throw new ForbiddenRequestException();
-    }
-
     $req = $this->getRequest();
     $user = $this->getCurrentUser();
     $name = $req->getPost("name");
@@ -114,19 +117,22 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($instance, IResponse::S201_CREATED);
   }
 
-  /**
-   * Update an instance
-   * @POST
-   * @Param(type="post", name="isOpen", validation="bool", required=false, description="Should the instance be open for registration?")
-   * @param string $id An identifier of the updated instance
-   * @throws ForbiddenRequestException
-   */
-  public function actionUpdateInstance(string $id) {
+  public function checkUpdateInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
 
     if (!$this->instanceAcl->canUpdate($instance)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Update an instance
+   * @POST
+   * @Param(type="post", name="isOpen", validation="bool", required=false, description="Should the instance be open for registration?")
+   * @param string $id An identifier of the updated instance
+   */
+  public function actionUpdateInstance(string $id) {
+    $instance = $this->instances->findOrThrow($id);
 
     $req = $this->getRequest();
     $isOpen = $req->getPost("isOpen") ? filter_var($req->getPost("isOpen"), FILTER_VALIDATE_BOOLEAN) : $instance->isOpen();
@@ -136,17 +142,20 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($instance);
   }
 
-  /**
-   * Delete an instance
-   * @DELETE
-   * @param string $id An identifier of the instance to be deleted
-   * @throws ForbiddenRequestException
-   */
-  public function actionDeleteInstance(string $id) {
+  public function checkDeleteInstance(string $id) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canRemove($instance)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Delete an instance
+   * @DELETE
+   * @param string $id An identifier of the instance to be deleted
+   */
+  public function actionDeleteInstance(string $id) {
+    $instance = $this->instances->findOrThrow($id);
 
     $this->instances->remove($instance);
     $this->instances->flush();
@@ -154,13 +163,10 @@ class InstancesPresenter extends BasePresenter {
   }
 
   /**
-   * Get details of an instance
-   * @GET
-   * @param string $id An identifier of the instance
    * @throws BadRequestException if the instance is not allowed
    * @throws ForbiddenRequestException
    */
-  public function actionDetail(string $id) {
+  public function checkDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewDetail($instance)) {
       throw new ForbiddenRequestException();
@@ -169,7 +175,23 @@ class InstancesPresenter extends BasePresenter {
     if (!$instance->getIsAllowed()) {
       throw new BadRequestException("This instance is not allowed.");
     }
+  }
+
+  /**
+   * Get details of an instance
+   * @GET
+   * @param string $id An identifier of the instance
+   */
+  public function actionDetail(string $id) {
+    $instance = $this->instances->findOrThrow($id);
     $this->sendSuccessResponse($instance);
+  }
+
+  public function checkGroups(string $id) {
+    $instance = $this->instances->findOrThrow($id);
+    if (!$this->instanceAcl->canViewGroups($instance)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -180,10 +202,6 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canViewGroups($instance)) {
-      throw new ForbiddenRequestException();
-    }
-
     $groups = array_filter($instance->getGroups()->getValues(),
       function (Group $group) {
         return $this->groupAcl->canViewPublicDetail($group);
@@ -191,18 +209,21 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
+  public function checkUsers(string $id) {
+    $instance = $this->instances->findOrThrow($id);
+    if (!$this->instanceAcl->canViewUsers($instance)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Get a list of users registered in an instance
    * @GET
    * @param string $id An identifier of the instance
    * @param string $search A result filter
-   * @throws ForbiddenRequestException
    */
   public function actionUsers(string $id, string $search = null) {
     $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canViewUsers($instance)) {
-      throw new ForbiddenRequestException();
-    }
 
     $members = array_filter($instance->getMembers($search), function (User $user) {
       return $this->userAcl->canViewPublicData($user);
@@ -210,19 +231,28 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->userViewFactory->getUsers($members));
   }
 
-  /**
-   * Get a list of licenses associated with an instance
-   * @GET
-   * @param string $id An identifier of the instance
-   * @throws ForbiddenRequestException
-   */
-  public function actionLicences(string $id) {
+  public function checkLicences(string $id) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewLicences($instance)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of licenses associated with an instance
+   * @GET
+   * @param string $id An identifier of the instance
+   */
+  public function actionLicences(string $id) {
+    $instance = $this->instances->findOrThrow($id);
     $this->sendSuccessResponse($instance->getLicences()->getValues());
+  }
+
+  public function checkCreateLicence(string $id) {
+    $instance = $this->instances->findOrThrow($id);
+    if (!$this->instanceAcl->canAddLicence($instance)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -231,14 +261,9 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="note", validation="string:2..", description="A note for users or administrators")
    * @Param(type="post", name="validUntil", validation="timestamp", description="Expiration date of the license")
    * @param string $id An identifier of the instance
-   * @throws ForbiddenRequestException
    */
   public function actionCreateLicence(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canAddLicence($instance)) {
-      throw new ForbiddenRequestException();
-    }
-
     $req = $this->getRequest();
     $validUntil = (new \DateTime())->setTimestamp($req->getPost("validUntil"));
     $note = $req->getPost("note");
@@ -248,6 +273,13 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($licence);
   }
 
+  public function checkUpdateLicence(string $licenceId) {
+    $licence = $this->licences->findOrThrow($licenceId);
+    if (!$this->instanceAcl->canUpdateLicence($licence)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Update an existing license for an instance
    * @POST
@@ -255,15 +287,10 @@ class InstancesPresenter extends BasePresenter {
    * @Param(type="post", name="validUntil", validation="string", required=false, description="Expiration date of the license")
    * @Param(type="post", name="isValid", validation="bool", required=false, description="Administrator switch to toggle licence validity")
    * @param string $licenceId Identifier of the licence
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionUpdateLicence(string $licenceId) {
     $licence = $this->licences->findOrThrow($licenceId);
-    if (!$this->instanceAcl->canUpdateLicence($licence)) {
-      throw new ForbiddenRequestException();
-    }
-
     $req = $this->getRequest();
     $validUntil = $req->getPost("validUntil") ? new \DateTime($req->getPost("validUntil")) : $licence->getValidUntil();
     $isValid = $req->getPost("isValid") ? filter_var($req->getPost("isValid"), FILTER_VALIDATE_BOOLEAN) : $licence->isValid();
@@ -276,18 +303,21 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($licence);
   }
 
-  /**
-   * Remove existing license for an instance
-   * @DELETE
-   * @param string $licenceId Identifier of the licence
-   * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   */
-  public function actionDeleteLicence(string $licenceId) {
+  public function checkDeleteLicence(string $licenceId) {
     $licence = $this->licences->findOrThrow($licenceId);
     if (!$this->instanceAcl->canRemoveLicence($licence)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Remove existing license for an instance
+   * @DELETE
+   * @param string $licenceId Identifier of the licence
+   * @throws NotFoundException
+   */
+  public function actionDeleteLicence(string $licenceId) {
+    $licence = $this->licences->findOrThrow($licenceId);
     $this->licences->remove($licence);
     $this->licences->flush();
     $this->sendSuccessResponse("OK");
