@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -284,12 +285,6 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
       throw new ForbiddenRequestException("You cannot access result archive for this submission");
     }
-
-    $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-    if (!$submission->hasEvaluation()) {
-      throw new ForbiddenRequestException("Submission is not evaluated yet");
-    }
   }
 
   /**
@@ -303,6 +298,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
     $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+    if (!$submission->hasEvaluation()) {
+      throw new NotReadyException("Submission is not evaluated yet");
+    }
 
     $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
     if ($stream === null) {
