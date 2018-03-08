@@ -51,16 +51,17 @@ class UsersPresenter extends BasePresenter {
    */
   public $userAcl;
 
-  /**
-   * Get a list of all users
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionDefault() {
+  public function checkDefault() {
     if (!$this->userAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of all users
+   * @GET
+   */
+  public function actionDefault() {
     $users = $this->users->findAll();
     $users = array_map(function (User $user) {
       return $this->userViewFactory->getUser($user);
@@ -68,19 +69,28 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($users);
   }
 
-  /**
-   * Get details of a user account
-   * @GET
-   * @param string $id Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionDetail(string $id) {
+  public function checkDetail(string $id) {
     $user = $this->users->findOrThrow($id);
     if (!$this->userAcl->canViewPublicData($user)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get details of a user account
+   * @GET
+   * @param string $id Identifier of the user
+   */
+  public function actionDetail(string $id) {
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+  }
+
+  public function checkDelete(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canDelete($user)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -91,11 +101,16 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDelete(string $id) {
     $user = $this->users->findOrThrow($id);
-    if (!$this->userAcl->canDelete($user)) {
-      throw new ForbiddenRequestException();
-    }
     $this->users->remove($user);
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkUpdateProfile(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canUpdateProfile($user)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -123,10 +138,6 @@ class UsersPresenter extends BasePresenter {
     // fill user with provided data
     $user = $this->users->findOrThrow($id);
     $login = $this->logins->findCurrent();
-
-    if (!$this->userAcl->canUpdateProfile($user)) {
-      throw new ForbiddenRequestException();
-    }
 
     // change details in separate methods
     $this->changeUserEmail($user, $login, $req->getPost("email"));
@@ -241,6 +252,14 @@ class UsersPresenter extends BasePresenter {
     }
   }
 
+  public function checkUpdateSettings(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canUpdateProfile($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Update the profile settings
    * @POST
@@ -252,16 +271,11 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=false)
    * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
    * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
-   * @throws ForbiddenRequestException
    */
   public function actionUpdateSettings(string $id) {
     $req = $this->getRequest();
     $user = $this->users->findOrThrow($id);
     $settings = $user->getSettings();
-
-    if (!$this->userAcl->canUpdateProfile($user)) {
-      throw new ForbiddenRequestException();
-    }
 
     $darkTheme = $req->getPost("darkTheme") !== null
       ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
@@ -295,16 +309,7 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
-  /**
-   * If user is registered externally, add local account as another login method.
-   * Created password is empty and has to be changed in order to use it.
-   * @POST
-   * @param string $id
-   * @throws ForbiddenRequestException
-   * @throws BadRequestException
-   * @throws InvalidArgumentException
-   */
-  public function actionCreateLocalAccount(string $id) {
+  public function checkCreateLocalAccount(string $id) {
     $user = $this->users->findOrThrow($id);
     if (!$this->userAcl->canCreateLocalAccount($user)) {
       throw new ForbiddenRequestException();
@@ -313,24 +318,38 @@ class UsersPresenter extends BasePresenter {
     if ($user->hasLocalAccounts()) {
       throw new BadRequestException("User is already registered locally");
     }
+  }
+
+  /**
+   * If user is registered externally, add local account as another login method.
+   * Created password is empty and has to be changed in order to use it.
+   * @POST
+   * @param string $id
+   * @throws InvalidArgumentException
+   */
+  public function actionCreateLocalAccount(string $id) {
+    $user = $this->users->findOrThrow($id);
 
     Login::createLogin($user, $user->getEmail(), "");
     $this->users->flush();
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
-  /**
-   * Get a list of non-archived groups for a user
-   * @GET
-   * @param string $id Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionGroups(string $id) {
+  public function checkGroups(string $id) {
     $user = $this->users->findOrThrow($id);
 
     if (!$this->userAcl->canViewGroups($user)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get a list of non-archived groups for a user
+   * @GET
+   * @param string $id Identifier of the user
+   */
+  public function actionGroups(string $id) {
+    $user = $this->users->findOrThrow($id);
 
     $asStudent = $user->getGroupsAsStudent()->filter(function (Group $group) {
       return !$group->isArchived();
@@ -351,56 +370,63 @@ class UsersPresenter extends BasePresenter {
     ]);
   }
 
-  /**
-   * Get a list of all groups for a user
-   * @GET
-   * @param string $id Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionAllGroups(string $id) {
+  public function checkAllGroups(string $id) {
     $user = $this->users->findOrThrow($id);
 
     if (!$this->userAcl->canViewGroups($user)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of all groups for a user
+   * @GET
+   * @param string $id Identifier of the user
+   */
+  public function actionAllGroups(string $id) {
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse([
       "supervisor" => $this->groupViewFactory->getGroups($user->getGroupsAsSupervisor()->getValues(), false),
       "student" => $this->groupViewFactory->getGroups($user->getGroupsAsStudent()->getValues(), false)
     ]);
   }
 
-  /**
-   * Get a list of instances where a user is registered
-   * @GET
-   * @param string $id Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionInstances(string $id) {
+  public function checkInstances(string $id) {
     $user = $this->users->findOrThrow($id);
 
     if (!$this->userAcl->canViewInstances($user)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get a list of instances where a user is registered
+   * @GET
+   * @param string $id Identifier of the user
+   */
+  public function actionInstances(string $id) {
+    $user = $this->users->findOrThrow($id);
 
     $this->sendSuccessResponse([
       $user->getInstance() // @todo change when the user can be member of multiple instances
     ]);
   }
 
-  /**
-   * Get a list of exercises authored by a user
-   * @GET
-   * @param string $id Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionExercises(string $id) {
+  public function checkExercises(string $id) {
     $user = $this->users->findOrThrow($id);
 
     if (!$this->userAcl->canViewExercises($user)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of exercises authored by a user
+   * @GET
+   * @param string $id Identifier of the user
+   */
+  public function actionExercises(string $id) {
+    $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse($user->getExercises()->getValues());
   }
 
