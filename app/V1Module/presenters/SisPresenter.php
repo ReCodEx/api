@@ -105,17 +105,24 @@ class SisPresenter extends BasePresenter {
     ]);
   }
 
-  /**
-   * Get a list of all registered SIS terms
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionGetTerms() {
+  public function checkGetTerms() {
     if (!$this->sisAcl->canViewTerms()) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of all registered SIS terms
+   * @GET
+   */
+  public function actionGetTerms() {
     $this->sendSuccessResponse($this->sisValidTerms->findAll());
+  }
+
+  public function checkRegisterTerm() {
+    if (!$this->sisAcl->canCreateTerm()) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -127,10 +134,6 @@ class SisPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionRegisterTerm() {
-    if (!$this->sisAcl->canCreateTerm()) {
-      throw new ForbiddenRequestException();
-    }
-
     $year = intval($this->getRequest()->getPost("year"));
     $term = intval($this->getRequest()->getPost("term"));
 
@@ -147,6 +150,14 @@ class SisPresenter extends BasePresenter {
     $this->sendSuccessResponse($termEntity);
   }
 
+  public function checkEditTerm(string $id) {
+    $term = $this->sisValidTerms->findOrThrow($id);
+
+    if (!$this->sisAcl->canEditTerm($term)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Set details of a term
    * @POST
@@ -155,15 +166,10 @@ class SisPresenter extends BasePresenter {
    * @Param(name="advertiseUntil", type="post", validation="timestamp")
    * @param $id
    * @throws InvalidArgumentException
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionEditTerm(string $id) {
     $term = $this->sisValidTerms->findOrThrow($id);
-
-    if (!$this->sisAcl->canEditTerm($term)) {
-      throw new ForbiddenRequestException();
-    }
 
     $beginning = DateTime::createFromFormat("U", $this->getRequest()->getPost("beginning"));
     $end = DateTime::createFromFormat("U", $this->getRequest()->getPost("end"));
@@ -189,21 +195,33 @@ class SisPresenter extends BasePresenter {
     $this->sendSuccessResponse($term);
   }
 
-  /**
-   * Delete a term
-   * @DELETE
-   * @param $id
-   * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   */
-  public function actionDeleteTerm(string $id) {
+  public function checkDeleteTerm(string $id) {
     $term = $this->sisValidTerms->findOrThrow($id);
     if (!$this->sisAcl->canDeleteTerm($term)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Delete a term
+   * @DELETE
+   * @param $id
+   * @throws NotFoundException
+   */
+  public function actionDeleteTerm(string $id) {
+    $term = $this->sisValidTerms->findOrThrow($id);
 
     $this->sisValidTerms->remove($term);
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkSubscribedGroups($userId, $year, $term) {
+    $user = $this->users->findOrThrow($userId);
+    $sisUserId = $this->getSisUserIdOrThrow($user);
+
+    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -213,15 +231,10 @@ class SisPresenter extends BasePresenter {
    * @param $year
    * @param $term
    * @throws InvalidArgumentException
-   * @throws ForbiddenRequestException
    */
   public function actionSubscribedGroups($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
     $sisUserId = $this->getSisUserIdOrThrow($user);
-
-    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
-      throw new ForbiddenRequestException();
-    }
 
     $groups = [];
 
@@ -254,6 +267,15 @@ class SisPresenter extends BasePresenter {
     $this->sendSuccessResponse(array_values($groups));
   }
 
+  public function checkSupervisedCourses($userId, $year, $term) {
+    $user = $this->users->findOrThrow($userId);
+    $sisUserId = $this->getSisUserIdOrThrow($user);
+
+    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Get SIS groups of which the user is a supervisor (regardless of them being bound to a local group)
    * @GET
@@ -261,16 +283,11 @@ class SisPresenter extends BasePresenter {
    * @param $year
    * @param $term
    * @throws InvalidArgumentException
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionSupervisedCourses($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
     $sisUserId = $this->getSisUserIdOrThrow($user);
-
-    if (!$this->sisAcl->canViewCourses(new SisIdWrapper($sisUserId))) {
-      throw new ForbiddenRequestException();
-    }
 
     $result = [];
 
