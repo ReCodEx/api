@@ -131,6 +131,14 @@ class SubmitPresenter extends BasePresenter {
         <= $assignment->getSubmissionsCountLimit());
   }
 
+  public function checkCanSubmit(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
+      throw new ForbiddenRequestException("You cannot access this assignment.");
+    }
+  }
+
   /**
    * Check if the current user can submit solutions to the assignment
    * @GET
@@ -140,10 +148,6 @@ class SubmitPresenter extends BasePresenter {
   public function actionCanSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->getCurrentUser();
-
-    if (!$this->assignmentAcl->canSubmit($assignment)) {
-      throw new ForbiddenRequestException("You cannot access this assignment.");
-    }
 
     $this->sendSuccessResponse([
       "canSubmit" => $this->canReceiveSubmissions($assignment, $user),
@@ -293,6 +297,13 @@ class SubmitPresenter extends BasePresenter {
     ];
   }
 
+  public function checkResubmit(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentAcl->canResubmitSubmissions($solution->getAssignment())) {
+      throw new ForbiddenRequestException("You cannot resubmit this submission");
+    }
+  }
+
   /**
    * Resubmit a submission (for example in case of broker failure)
    * @POST
@@ -305,13 +316,16 @@ class SubmitPresenter extends BasePresenter {
   public function actionResubmit(string $id) {
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
-
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentAcl->canResubmitSubmissions($solution->getAssignment())) {
-      throw new ForbiddenRequestException("You cannot resubmit this submission");
-    }
 
     $this->sendSuccessResponse($this->finishSubmission($solution, $isDebug));
+  }
+
+  public function checkResubmitAll(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
+      throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
+    }
   }
 
   /**
@@ -324,9 +338,6 @@ class SubmitPresenter extends BasePresenter {
    */
   public function actionResubmitAll(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canResubmitSubmissions($assignment)) {
-      throw new ForbiddenRequestException("You cannot resubmit submissions to this assignment");
-    }
 
     /** @var AssignmentSolution $solution */
     $result = [];
