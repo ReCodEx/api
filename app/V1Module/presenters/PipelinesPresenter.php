@@ -93,31 +93,33 @@ class PipelinesPresenter extends BasePresenter {
   public $uploadedFileStorage;
 
 
-  /**
-   * Get a list of default boxes which might be used in pipeline.
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionGetDefaultBoxes() {
+  public function checkGetDefaultBoxes() {
     if (!$this->pipelineAcl->canViewAll()) {
       throw new ForbiddenRequestException("You cannot list default boxes.");
     }
+  }
 
+  /**
+   * Get a list of default boxes which might be used in pipeline.
+   * @GET
+   */
+  public function actionGetDefaultBoxes() {
     $boxes = $this->boxService->getAllBoxes();
     $this->sendSuccessResponse($boxes);
+  }
+
+  public function checkGetPipelines(string $search = null) {
+    if (!$this->pipelineAcl->canViewAll()) {
+      throw new ForbiddenRequestException("You cannot list all pipelines.");
+    }
   }
 
   /**
    * Get a list of pipelines with an optional filter
    * @GET
    * @param string $search text which will be searched in pipeline names
-   * @throws ForbiddenRequestException
    */
   public function actionGetPipelines(string $search = null) {
-    if (!$this->pipelineAcl->canViewAll()) {
-      throw new ForbiddenRequestException("You cannot list all pipelines.");
-    }
-
     $pipelines = $this->pipelines->searchByName($search);
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
@@ -176,38 +178,51 @@ class PipelinesPresenter extends BasePresenter {
     $this->sendSuccessResponse($pipeline);
   }
 
-  /**
-   * Delete an pipeline
-   * @DELETE
-   * @param string $id
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemovePipeline(string $id) {
+  public function checkRemovePipeline(string $id) {
     /** @var Pipeline $pipeline */
     $pipeline = $this->pipelines->findOrThrow($id);
     if (!$this->pipelineAcl->canRemove($pipeline)) {
       throw new ForbiddenRequestException("You are not allowed to remove this pipeline.");
     }
+  }
 
+  /**
+   * Delete an pipeline
+   * @DELETE
+   * @param string $id
+   */
+  public function actionRemovePipeline(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
     $this->pipelines->remove($pipeline);
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkGetPipeline(string $id) {
+    /** @var Pipeline $pipeline */
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canViewDetail($pipeline)) {
+      throw new ForbiddenRequestException("You are not allowed to get this pipeline.");
+    }
   }
 
   /**
    * Get pipeline based on given identification.
    * @GET
    * @param string $id Identifier of the pipeline
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionGetPipeline(string $id) {
     /** @var Pipeline $pipeline */
     $pipeline = $this->pipelines->findOrThrow($id);
-    if (!$this->pipelineAcl->canViewDetail($pipeline)) {
-      throw new ForbiddenRequestException("You are not allowed to get this pipeline.");
-    }
-
     $this->sendSuccessResponse($pipeline);
+  }
+
+  public function checkUpdatePipeline(string $id) {
+    /** @var Pipeline $pipeline */
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canUpdate($pipeline)) {
+      throw new ForbiddenRequestException("You are not allowed to update this pipeline.");
+    }
   }
 
   /**
@@ -228,9 +243,6 @@ class PipelinesPresenter extends BasePresenter {
   public function actionUpdatePipeline(string $id) {
     /** @var Pipeline $pipeline */
     $pipeline = $this->pipelines->findOrThrow($id);
-    if (!$this->pipelineAcl->canUpdate($pipeline)) {
-      throw new ForbiddenRequestException("You are not allowed to update this pipeline.");
-    }
 
     $req = $this->getRequest();
     $version = intval($req->getPost("version"));
@@ -288,6 +300,13 @@ class PipelinesPresenter extends BasePresenter {
     ]);
   }
 
+  public function checkUploadSupplementaryFiles(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canUpdate($pipeline)) {
+      throw new ForbiddenRequestException("You cannot update this pipeline.");
+    }
+  }
+
   /**
    * Associate supplementary files with a pipeline and upload them to remote file server
    * @POST
@@ -300,10 +319,6 @@ class PipelinesPresenter extends BasePresenter {
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
-    if (!$this->pipelineAcl->canUpdate($pipeline)) {
-      throw new ForbiddenRequestException("You cannot update this pipeline.");
-    }
-
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $supplementaryFiles = [];
     $deletedFiles = [];
@@ -332,18 +347,20 @@ class PipelinesPresenter extends BasePresenter {
     $this->sendSuccessResponse($supplementaryFiles);
   }
 
-  /**
-   * Get list of all supplementary files for a pipeline
-   * @GET
-   * @param string $id identification of pipeline
-   * @throws ForbiddenRequestException
-   */
-  public function actionGetSupplementaryFiles(string $id) {
+  public function checkGetSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
     if (!$this->pipelineAcl->canViewDetail($pipeline)) {
       throw new ForbiddenRequestException("You cannot view supplementary files for this pipeline.");
     }
+  }
 
+  /**
+   * Get list of all supplementary files for a pipeline
+   * @GET
+   * @param string $id identification of pipeline
+   */
+  public function actionGetSupplementaryFiles(string $id) {
+    $pipeline = $this->pipelines->findOrThrow($id);
     $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
   }
 
