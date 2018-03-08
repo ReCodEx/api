@@ -344,7 +344,6 @@ class Assignment implements JsonSerializable, IExercise
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "canReceiveSubmissions" => false, // the app must perform a special request to get the valid information TODO why is it still here then?
       "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $this->canViewLimitRatios,
       "isBonus" => $this->isBonus,

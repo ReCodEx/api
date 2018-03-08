@@ -20,6 +20,11 @@
 			"url": "https://github.com/ReCodEx/DoctrineFixtures"
 		}
 	],
+	"scripts": {
+		"post-install-cmd": [
+			"composer dump-autoload --optimize --classmap-authoritative"
+		]
+	},
 	"require": {
 		"php": ">=7.1",
 		"nette/application": "^2.4",

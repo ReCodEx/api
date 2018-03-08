@@ -50,21 +50,6 @@ class GroupViewFactory {
   }
 
   /**
-   * Get collection of assignments which given user do not submitted yet.
-   * @param Group $group
-   * @param User $student
-   * @return Collection
-   */
-  private function getMissedAssignmentsByStudent(Group $group, User $student) {
-    return $group->getAssignments()->filter(
-      function(Assignment $assignment) use ($student) {
-        $best = $this->assignmentSolutions->findBestSolution($assignment, $student);
-        return $assignment->isAfterDeadline() && $best === null;
-      }
-    );
-  }
-
-  /**
    * Get total sum of points which given user gained in group.
    * @param Group $group
    * @param User $student
@@ -92,35 +77,36 @@ class GroupViewFactory {
    * @return array Students statistics
    */
   public function getStudentsStats(Group $group, User $student) {
-    $total = $group->getAssignments()->count();
-    $completed = $this->getCompletedAssignmentsByStudent($group, $student);
-    $missed = $this->getMissedAssignmentsByStudent($group, $student);
     $maxPoints = $group->getMaxPoints();
     $gainedPoints = $this->getPointsGainedByStudent($group, $student);
 
-    $statuses = [];
+    $assignments = [];
     /** @var Assignment $assignment */
     foreach ($group->getAssignments() as $assignment) {
       $best = $this->assignmentSolutions->findBestSolution($assignment, $student);
       $submission = $best ? $best->getLastSubmission() : null;
-      $statuses[$assignment->getId()] = $submission ? EvaluationStatus::getStatus($submission) : null;
+
+      $assignments[] = [
+        "id" => $assignment->getId(),
+        "status" => $submission ? EvaluationStatus::getStatus($submission) : null,
+        "points" => [
+          "total" => $assignment->getMaxPointsBeforeFirstDeadline(),
+          "gained" => $best ? $best->getPoints() : null,
+          "bonus" => $best ? $best->getBonusPoints() : null
+        ]
+      ];
     }
 
     return [
       "userId" => $student->getId(),
       "groupId" => $group->getId(),
-      "assignments" => [
-        "total" => $total,
-        "completed" => $completed->count(),
-        "missed" => $missed->count()
-      ],
       "points" => [
         "total" => $maxPoints,
         "gained" => $gainedPoints
       ],
-      "statuses" => $statuses,
       "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
-      "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold()
+      "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold(),
+      "assignments" => $assignments
     ];
   }
 

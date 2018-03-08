@@ -36,7 +36,7 @@ class BoxService
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
-      McsCompilationBox::$MCS_TYPE => McsCompilationBox::class,
+      MonoCompilationBox::$MCS_TYPE => MonoCompilationBox::class,
       MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,
       FetchFilesBox::$FETCH_TYPE => FetchFilesBox::class,
       FetchFileBox::$FETCH_TYPE => FetchFileBox::class,

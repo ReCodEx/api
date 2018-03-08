@@ -9,7 +9,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 /**
  * @method ReferenceExerciseSolution findOrThrow($solutionId)
  */
-class ReferenceExerciseSolutions extends BaseSoftDeleteRepository {
+class ReferenceExerciseSolutions extends BaseRepository {
 
   public function __construct(EntityManager $em) {
     parent::__construct($em, ReferenceExerciseSolution::class);

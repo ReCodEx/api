@@ -170,6 +170,15 @@ permissions:
           - createLocalAccount
       conditions: user.isSameUser
 
+    - allow: true
+      role: student
+      resource: user
+      actions:
+        - updatePersonalData
+      conditions:
+        - user.isSameUser
+        - user.isNotExternalAccount
+
     ##########################
     # Assignment permissions #
     ##########################
@@ -257,6 +266,7 @@ permissions:
           - viewEvaluationDetails
           - viewEvaluationValues
           - viewResubmissions
+          - delete
           - setBonusPoints
           - setAccepted
           - downloadResultArchive

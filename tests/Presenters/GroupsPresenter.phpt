@@ -537,7 +537,6 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::true(array_key_exists("groupId", $payload));
     Assert::true(array_key_exists("assignments", $payload));
     Assert::true(array_key_exists("points", $payload));
-    Assert::true(array_key_exists("statuses", $payload));
     Assert::true(array_key_exists("hasLimit", $payload));
     Assert::true(array_key_exists("passesLimit", $payload));
   }

@@ -106,6 +106,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>/validate", "Exercises:validate");
     $router[] = new PostRoute("$prefix/<id>/fork", "Exercises:forkFrom");
     $router[] = new GetRoute("$prefix/<id>/pipelines", "Exercises:getPipelines");
+    $router[] = new PostRoute("$prefix/<id>/hardware-groups", "Exercises:hardwareGroups");
 
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");
@@ -123,8 +124,6 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/config", "ExercisesConfig:getConfiguration");
     $router[] = new PostRoute("$prefix/<id>/config", "ExercisesConfig:setConfiguration");
     $router[] = new PostRoute("$prefix/<id>/config/variables", "ExercisesConfig:getVariablesForExerciseConfig");
-    $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/limits", "ExercisesConfig:getLimits");
-    $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/limits", "ExercisesConfig:setLimits");
     $router[] = new GetRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:getHardwareGroupLimits");
     $router[] = new PostRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:setHardwareGroupLimits");
     $router[] = new DeleteRoute("$prefix/<id>/environment/<runtimeEnvironmentId>/hwgroup/<hwGroupId>/limits", "ExercisesConfig:removeHardwareGroupLimits");
@@ -253,6 +252,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/evaluation/<id>/download-result", "AssignmentSolutions:downloadResultArchive");
 
     $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
+    $router[] = new DeleteRoute("$prefix/<id>", "AssignmentSolutions:deleteSolution");
     $router[] = new PostRoute("$prefix/<id>/bonus-points", "AssignmentSolutions:setBonusPoints");
     $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
     $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAcceptedSubmission");

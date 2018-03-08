@@ -254,6 +254,32 @@ class TestUsersPresenter extends Tester\TestCase
     }, App\Exceptions\InvalidArgumentException::class);
   }
 
+  public function testUpdateProfileWithoutFirstAndLastName()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $degreesBeforeName = "degreesBeforeNameUpdated";
+    $degreesAfterName = "degreesAfterNameUpdated";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $updatedUser = $result["payload"];
+    Assert::equal("$degreesBeforeName {$user->getFirstName()} {$user->getLastName()} $degreesAfterName", $updatedUser["fullName"]);
+  }
+
   public function testUpdateSettings()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -367,12 +393,11 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::count(count($expectedStudentIn), $stats);
 
     foreach ($stats as $stat) {
-      Assert::count(7, $stat);
+      Assert::count(6, $stat);
       Assert::true(array_key_exists("userId", $stat));
       Assert::true(array_key_exists("groupId", $stat));
       Assert::true(array_key_exists("assignments", $stat));
       Assert::true(array_key_exists("points", $stat));
-      Assert::true(array_key_exists("statuses", $stat));
       Assert::true(array_key_exists("hasLimit", $stat));
       Assert::true(array_key_exists("passesLimit", $stat));
     }

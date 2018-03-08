@@ -1,0 +1,13 @@
+App\Model\Entity\HardwareGroup:
+    demoHWGroup:
+        __construct:
+            - group1
+            - Name of the group1
+            - Our only hardware group
+            - "memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300"
+    demoHWGroup2:
+        __construct:
+            - group2
+            - Name of the group2
+            - Our other only hardware group
+            - "memory: 4194304\ncpuTimePerTest: 900\ncpuTimePerExercise: 3600\nwallTimePerTest: 900\nwallTimePerExercise: 3600"

@@ -1,9 +1,0 @@
-App\Model\Entity\HardwareGroup:
-    demoHWGroup:
-        __construct:
-            - group1
-            - Our only hardware group
-    demoHWGroup2:
-        __construct:
-            - group2
-            - Our other only hardware group

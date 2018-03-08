@@ -24,7 +24,7 @@ use App\Exceptions\ForbiddenRequestException;
  * @method setBonusPoints(int $points)
  * @method Collection getSubmissions()
  */
-class AssignmentSolution// implements JsonSerializable
+class AssignmentSolution
 {
   use MagicAccessors;
 
@@ -71,7 +71,7 @@ class AssignmentSolution// implements JsonSerializable
 
   /**
    * @var Solution
-   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist"})
+   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"})
    */
   protected $solution;
 
@@ -88,6 +88,24 @@ class AssignmentSolution// implements JsonSerializable
    * @ORM\Column(type="integer")
    */
   protected $bonusPoints;
+
+  /**
+   * Get points acquired by evaluation. If evaluation is not present return null.
+   * @return int|null
+   */
+  public function getPoints(): ?int {
+    $lastSubmission = $this->getLastSubmission();
+    if ($lastSubmission === null) {
+      return null;
+    }
+
+    $evaluation = $lastSubmission->getEvaluation();
+    if ($evaluation === null) {
+      return null;
+    }
+
+    return $evaluation->getPoints();
+  }
 
   /**
    * Get total points which this solution got. Including bonus points and points
@@ -111,7 +129,7 @@ class AssignmentSolution// implements JsonSerializable
   /**
    * Note that order by annotation has to be present!
    *
-   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution")
+   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution", cascade={"remove"})
    * @ORM\OrderBy({"submittedAt" = "DESC"})
    */
   protected $submissions;

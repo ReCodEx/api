@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
 use App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
@@ -115,11 +116,12 @@ class Validator {
    * Validation of exercise limits, limits are defined for tests which comes
    * from exercise database entity and are checked if existing.
    * @param Exercise $exercise
+   * @param HwGroupMeta $hwGroupMeta
    * @param ExerciseLimits $limits
    * @throws ExerciseConfigException
    */
-  public function validateExerciseLimits(Exercise $exercise, ExerciseLimits $limits) {
-    $this->exerciseLimitsValidator->validate($exercise, $limits);
+  public function validateExerciseLimits(Exercise $exercise, HwGroupMeta $hwGroupMeta, ExerciseLimits $limits) {
+    $this->exerciseLimitsValidator->validate($exercise, $hwGroupMeta, $limits);
   }
 
 }

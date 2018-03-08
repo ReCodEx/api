@@ -5,7 +5,6 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
@@ -27,7 +26,6 @@ use App\Model\Repository\Pipelines;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IExercisePermissions;
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Arrays;
 
@@ -220,7 +218,6 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $this->configChecker->check($exercise);
     $this->exercises->flush();
-
     $this->sendSuccessResponse("OK");
   }
 
@@ -282,7 +279,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // new config was provided, so construct new database entity
     $newConfig = new ExerciseConfig((string) $exerciseConfig, $this->getCurrentUser(), $oldConfig);
-    
+
     if (!$newConfig->equals($oldConfig)) {
       // set new exercise configuration into exercise and flush changes
       $exercise->updatedNow();
@@ -339,94 +336,6 @@ class ExercisesConfigPresenter extends BasePresenter {
     // compute result and send it back
     $result = $this->exerciseConfigHelper->getVariablesForExercise($pipelines, $environmentVariables);
     $this->sendSuccessResponse($result);
-  }
-
-  /**
-   * Get a description of resource limits for an exercise.
-   * @GET
-   * @param string $id Identifier of the exercise
-   * @param string $runtimeEnvironmentId
-   * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   * @throws ExerciseConfigException
-   */
-  public function actionGetLimits(string $id, string $runtimeEnvironmentId) {
-    /** @var Exercise $exercise */
-    $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canViewLimits($exercise)) {
-      throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
-    }
-
-    // check if exercise defines requested environment
-    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
-    if (!$exercise->getRuntimeEnvironments()->contains($environment)) {
-      throw new NotFoundException("Specified environment '$runtimeEnvironmentId' not defined for this exercise");
-    }
-
-    // limits from all hwgroups are merged, therefore only some values will be
-    // visible and might not correctly represent overall limits for exercise
-    $result = [];
-    $limitsArray = $exercise->getLimitsByEnvironment($environment);
-    foreach ($limitsArray as $limits) {
-      $result = $result + $limits->getParsedLimits();
-    }
-
-    $this->sendSuccessResponse($result);
-  }
-
-  /**
-   * Set resource limits for an exercise.
-   * @POST
-   * @Param(type="post", name="limits", description="A list of resource limits for the given environment", validation="array")
-   * @param string $id Identifier of the exercise
-   * @param string $runtimeEnvironmentId
-   * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   * @throws ExerciseConfigException
-   */
-  public function actionSetLimits(string $id, string $runtimeEnvironmentId) {
-    /** @var Exercise $exercise */
-    $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canSetLimits($exercise)) {
-      throw new ForbiddenRequestException("You are not allowed to set limits for this exercise.");
-    }
-
-    $limits = $this->getRequest()->getPost("limits");
-    $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
-
-    // check if exercise defines requested environment
-    if (!$exercise->getRuntimeEnvironments()->contains($environment)) {
-      throw new NotFoundException("Specified environment '$runtimeEnvironmentId' not defined for this exercise");
-    }
-
-    // using loader load limits into internal structure which should detect formatting errors
-    $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
-    // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
-
-    foreach ($this->hardwareGroups->findAll() as $hwGroup) {
-      // new limits were provided, so construct new database entity
-      $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
-      $newLimits = new ExerciseLimits($environment, $hwGroup, (string)$exerciseLimits, $this->getCurrentUser(), $oldLimits);
-
-      // remove old limits for corresponding environment and hwgroup and add new
-      // ones, also do not forget to set hwgroup to exercise
-      if (!$newLimits->equals($oldLimits)) {
-        $exercise->removeExerciseLimits($oldLimits); // if there were ones before
-        $exercise->addExerciseLimits($newLimits);
-        $exercise->removeHardwareGroup($hwGroup); // if there was one before
-        $exercise->addHardwareGroup($hwGroup);
-      }
-    }
-
-    // update and return
-    $exercise->updatedNow();
-    $this->exercises->flush();
-    
-    $this->configChecker->check($exercise);
-    $this->exercises->flush();
-
-    $this->sendSuccessResponse($exerciseLimits->toArray());
   }
 
   /**
@@ -496,7 +405,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     // using loader load limits into internal structure which should detect formatting errors
     $exerciseLimits = $this->exerciseConfigLoader->loadExerciseLimits($limits);
     // validate new limits
-    $this->configValidator->validateExerciseLimits($exercise, $exerciseLimits);
+    $this->configValidator->validateExerciseLimits($exercise, $hwGroup->getMetadata(), $exerciseLimits);
 
     // new limits were provided, so construct new database entity
     $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
@@ -511,6 +420,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // update and return
     $exercise->updatedNow();
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($newLimits->getParsedLimits());
   }
@@ -545,6 +458,10 @@ class ExercisesConfigPresenter extends BasePresenter {
     $exercise->removeHardwareGroup($hwGroup);
 
     $exercise->updatedNow();
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
   }
@@ -590,6 +507,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $exercise->updatedNow();
     $exercise->setScoreConfig($config);
+    $this->exercises->flush();
+
+    // check exercise configuration
+    $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse($exercise->getScoreConfig());
   }

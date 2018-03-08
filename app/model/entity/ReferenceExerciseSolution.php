@@ -6,12 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
-use DateTime;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
  * @method string getDescription()
@@ -22,7 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class ReferenceExerciseSolution implements JsonSerializable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-  use DeleteableEntity;
 
   /**
    * @ORM\Id
@@ -42,12 +38,12 @@ class ReferenceExerciseSolution implements JsonSerializable
   protected $description;
 
   /**
-   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist"})
+   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"})
    */
   protected $solution;
 
   /**
-   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution")
+   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
    */
   protected $submissions;
 

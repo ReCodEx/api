@@ -142,6 +142,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var Exercise $exercise */
     $exercise = $this->exercises->searchByName("Convex hull")[0];
     $solution = $exercise->getReferenceSolutions()->first();
+    $solutionId = $solution->getId();
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'DELETE', [
       'action' => 'deleteReferenceSolution',
@@ -155,8 +156,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal('OK', $result['payload']);
 
-    Assert::exception(function () use ($solution) {
-      $this->referenceSolutions->findOrThrow($solution->getId());
+    Assert::exception(function () use ($solutionId) {
+      $this->referenceSolutions->findOrThrow($solutionId);
     }, NotFoundException::class);
   }
 

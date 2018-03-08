@@ -8,11 +8,12 @@ interface IUserPermissions {
   function canViewAll(): bool;
   function canViewPublicData(User $user): bool;
   function canViewDetail(User $user): bool;
-  function canUpdateProfile($user): bool;
-  function canViewExercises($user): bool;
-  function canViewGroups($user): bool;
-  function canViewInstances($user): bool;
-  function canDelete($user): bool;
-  function canTakeOver($user): bool;
-  function canCreateLocalAccount($user): bool;
+  function canUpdateProfile(User $user): bool;
+  function canViewExercises(User $user): bool;
+  function canViewGroups(User $user): bool;
+  function canViewInstances(User $user): bool;
+  function canDelete(User $user): bool;
+  function canTakeOver(User $user): bool;
+  function canCreateLocalAccount(User $user): bool;
+  function canUpdatePersonalData(User $user): bool;
 }

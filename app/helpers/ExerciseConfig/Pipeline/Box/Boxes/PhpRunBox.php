@@ -18,6 +18,7 @@ class PhpRunBox extends ExecutionBox
   /** Type key */
   public static $PHP_RUN_TYPE = "php";
   public static $PHP_BINARY = "/usr/bin/php";
+  public static $PHP_EXEC_ARGS = [ "-c", "/usr/etc" ];
   public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $DEFAULT_NAME = "PHP Execution";
 
@@ -97,7 +98,8 @@ class PhpRunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PHP_BINARY);
 
-    $args = [$this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
+    $args = array_merge(self::$PHP_EXEC_ARGS,
+      [ $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR) ]);
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
