@@ -415,6 +415,10 @@ class AssignmentsPresenter extends BasePresenter {
     $user = $this->users->findOrThrow($userId);
     $solution = $this->assignmentSolutions->findBestSolution($assignment, $user);
 
+    if ($solution === null) {
+      return;
+    }
+
     if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
       !$this->assignmentSolutionAcl->canViewDetail($solution)) {
       throw new ForbiddenRequestException();
