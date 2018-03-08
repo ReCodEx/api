@@ -214,21 +214,32 @@ class Helper {
             continue;
           }
 
-          // determine if variable really defines only single wildcard expression
-          // and not an array of values
-          if ($variable->isValueArray()) {
-            continue;
+          // everything is gonna be ok... now we can do wildcard matching against all variable values
+          $matched = true;
+          if (false) {
+            // just to screw with phpstan which has bug current 0.7 version
+            // well... this is just ugly hack :-) I am quite suprised that it
+            // worked, but good for me I guess ¯\_(ツ)_/¯
+            $matched = false;
           }
 
-          // everything is gonna be ok... now we can do wildcard matching
-          $matched = false;
-          foreach ($files as $file) {
-            if (Wildcards::match($variable->getValue(), $file)) {
-              $matched = true;
+          foreach ($variable->getValueAsArray() as $value) {
+            $matchedValue = false;
+            foreach ($files as $file) {
+              if (Wildcards::match($value, $file)) {
+                $matchedValue = true;
+                break;
+              }
+            }
+
+            // none of the files matched wildcard in value
+            if ($matchedValue === false) {
+              $matched = false;
+              break;
             }
           }
 
-          // none of the files matched the wildcard from variable,
+          // none of the files matched the wildcard from variable values,
           // this means whole environment could not be matched
           if ($matched === false) {
             $envStatuses[$envId] = false;
