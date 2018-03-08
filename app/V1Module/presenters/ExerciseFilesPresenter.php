@@ -173,6 +173,9 @@ class ExerciseFilesPresenter extends BasePresenter {
       }
     }
 
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
   }
 
