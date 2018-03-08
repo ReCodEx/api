@@ -75,7 +75,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public function checkSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
+      throw new ForbiddenRequestException("You cannot view details of this solution");
     }
   }
 
