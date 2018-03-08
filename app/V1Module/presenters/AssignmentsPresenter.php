@@ -109,34 +109,42 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $calculators;
 
+  public function checkDefault() {
+    if (!$this->assignmentAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+  }
 
   /**
    * Get a list of all assignments
    * @GET
-   * @throws ForbiddenRequestException
    */
   public function actionDefault() {
-    if (!$this->assignmentAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-
     $assignments = $this->assignments->findAll();
     $this->sendSuccessResponse($assignments);
+  }
+
+  public function checkDetail(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canViewDetail($assignment)) {
+      throw new ForbiddenRequestException("You cannot view this assignment.");
+    }
   }
 
   /**
    * Get details of an assignment
    * @GET
    * @param string $id Identifier of the assignment
-   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
-    $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canViewDetail($assignment)) {
-      throw new ForbiddenRequestException("You cannot view this assignment.");
-    }
+    $this->sendSuccessResponse($this->assignments->findOrThrow($id));
+  }
 
-    $this->sendSuccessResponse($assignment);
+  public function checkUpdateDetail(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot update this assignment.");
+    }
   }
 
   /**
@@ -156,14 +164,10 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
-   * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canUpdate($assignment)) {
-      throw new ForbiddenRequestException("You cannot update this assignment.");
-    }
 
     $req = $this->getRequest();
     $version = intval($req->getPost("version"));
@@ -258,6 +262,14 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
+  public function checkValidate(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot access this assignment.");
+    }
+  }
+
   /**
    * Check if the version of the assignment is up-to-date.
    * @POST
@@ -267,9 +279,6 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionValidate($id) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canUpdate($assignment)) {
-      throw new ForbiddenRequestException("You cannot access this assignment.");
-    }
 
     $req = $this->getHttpRequest();
     $version = intval($req->getPost("version"));
@@ -325,37 +334,41 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
-  /**
-   * Delete an assignment
-   * @DELETE
-   * @param string $id Identifier of the assignment to be removed
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemove(string $id) {
+  public function checkRemove(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
 
     if (!$this->assignmentAcl->canRemove($assignment)) {
       throw new ForbiddenRequestException("You cannot remove this assignment.");
     }
+  }
 
-    $this->assignments->remove($assignment);
+  /**
+   * Delete an assignment
+   * @DELETE
+   * @param string $id Identifier of the assignment to be removed
+   */
+  public function actionRemove(string $id) {
+    $this->assignments->remove($this->assignments->findOrThrow($id));
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkSyncWithExercise(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot sync this assignment.");
+    }
   }
 
   /**
    * Update the assignment so that it matches with the current version of the exercise (limits, texts, etc.)
    * @param string $id Identifier of the exercise that should be synchronized
    * @POST
-   * @throws ForbiddenRequestException
    * @throws BadRequestException
    */
   public function actionSyncWithExercise($id) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canUpdate($assignment)) {
-      throw new ForbiddenRequestException("You cannot sync this assignment.");
-    }
-
     $exercise = $assignment->getExercise();
+
     if ($exercise->isBroken()) {
       throw new BadRequestException("Exercise '{$exercise->getId()}' is broken. If you are the author, check its configuration");
     }
@@ -366,20 +379,24 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($assignment);
   }
 
-  /**
-   * Get a list of solutions created by a user of an assignment
-   * @GET
-   * @param string $id Identifier of the assignment
-   * @param string $userId Identifier of the user
-   * @throws ForbiddenRequestException
-   */
-  public function actionSolutions(string $id, string $userId) {
+  public function checkSolutions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
 
     if (!$this->assignmentAcl->canViewSubmissions($assignment, $user)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get a list of solutions created by a user of an assignment
+   * @GET
+   * @param string $id Identifier of the assignment
+   * @param string $userId Identifier of the user
+   */
+  public function actionSolutions(string $id, string $userId) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findOrThrow($userId);
 
     $solutions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
       function (AssignmentSolution $solution) {
@@ -391,6 +408,21 @@ class AssignmentsPresenter extends BasePresenter {
     }, $solutions);
 
     $this->sendSuccessResponse($solutions);
+  }
+
+  public function checkBestSolution(string $id, string $userId) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->users->findOrThrow($userId);
+    $solution = $this->assignmentSolutions->findBestSolution($assignment, $user);
+
+    if ($solution === null) {
+      return;
+    }
+
+    if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
+      !$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -408,29 +440,28 @@ class AssignmentsPresenter extends BasePresenter {
     if ($solution == null) {
       $this->sendSuccessResponse(null);
     }
-    if (!$this->assignmentAcl->canViewSubmissions($assignment, $user) ||
-        !$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException();
-    }
 
     $this->sendSuccessResponse(
       $this->assignmentSolutionViewFactory->getSolutionData($solution)
     );
   }
 
-  /**
-   * Get the best solutions to an assignment for all students in group.
-   * @GET
-   * @param string $id Identifier of the assignment
-   * @throws ForbiddenRequestException
-   */
-  public function actionBestSolutions(string $id) {
+  public function checkBestSolutions(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     if (!$this->assignmentAcl->canViewDetail($assignment)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get the best solutions to an assignment for all students in group.
+   * @GET
+   * @param string $id Identifier of the assignment
+   */
+  public function actionBestSolutions(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
     $bestSubmissions = [];
+
     foreach ($assignment->getGroup()->getStudents() as $student) {
       $solution = $this->assignmentSolutions->findBestSolution($assignment, $student);
       if ($solution === null) {
@@ -449,5 +480,4 @@ class AssignmentsPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($bestSubmissions);
   }
-
 }

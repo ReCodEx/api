@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -71,18 +72,21 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public $assignmentSolutionViewFactory;
 
+  public function checkSolution(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot view details of this solution");
+    }
+  }
+
     /**
    * Get information about solutions.
    * @GET
    * @param string $id Identifier of the solution
-   * @throws ForbiddenRequestException
    * @throws InternalServerErrorException
    */
   public function actionSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
-    }
 
     // if there is submission, try to evaluate it
     $submission = $solution->getLastSubmission();
@@ -94,6 +98,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse(
       $this->assignmentSolutionViewFactory->getSolutionData($solution)
     );
+  }
+
+  public function checkEvaluations(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot access this solution evaluations");
+    }
   }
 
   /**
@@ -116,13 +127,9 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Get information about the evaluations of a solution
    * @GET
    * @param string $id Identifier of the solution
-   * @throws ForbiddenRequestException
    */
   public function actionEvaluations(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot access this solution evaluations");
-    }
 
     $submissions = $this->assignmentSolutionAcl->canViewEvaluation($solution)
       ? $solution->getSubmissions()->getValues()
@@ -141,19 +148,23 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submissions);
   }
 
-  /**
-   * Get information about the evaluation of a submission
-   * @GET
-   * @param string $id Identifier of the submission
-   * @throws ForbiddenRequestException
-   * @throws InternalServerErrorException
-   */
-  public function actionEvaluation(string $id) {
+  public function checkEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
     $solution = $submission->getAssignmentSolution();
     if (!$this->assignmentSolutionAcl->canViewEvaluation($solution)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
     }
+  }
+
+  /**
+   * Get information about the evaluation of a submission
+   * @GET
+   * @param string $id Identifier of the submission
+   * @throws InternalServerErrorException
+   */
+  public function actionEvaluation(string $id) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+    $solution = $submission->getAssignmentSolution();
 
     // try to load evaluation if not present
     $this->evaluationLoadingHelper->loadEvaluation($submission);
@@ -163,20 +174,23 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
   }
 
-  /**
-   * Set new amount of bonus points for a solution
-   * @POST
-   * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-   * @param string $id Identifier of the submission
-   * @throws ForbiddenRequestException
-   */
-  public function actionSetBonusPoints(string $id) {
-    $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
+  public function checkSetBonusPoints(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
 
     if (!$this->assignmentSolutionAcl->canSetBonusPoints($solution)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }
+  }
+
+  /**
+   * Set new amount of bonus points for a solution
+   * @POST
+   * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
+   * @param string $id Identifier of the submission
+   */
+  public function actionSetBonusPoints(string $id) {
+    $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
+    $solution = $this->assignmentSolutions->findOrThrow($id);
 
     $solution->setBonusPoints($newBonusPoints);
     $this->assignmentSolutions->flush();
@@ -184,18 +198,21 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  /**
-   * Set solution of student as accepted, this solution will be then presented as the best one.
-   * @POST
-   * @param string $id identifier of the submission
-   * @throws ForbiddenRequestException
-   * @throws \Nette\Application\AbortException
-   */
-  public function actionSetAcceptedSubmission(string $id) {
+  public function checkSetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
+  }
+
+  /**
+   * Set solution of student as accepted, this solution will be then presented as the best one.
+   * @POST
+   * @param string $id identifier of the submission
+   * @throws \Nette\Application\AbortException
+   */
+  public function actionSetAcceptedSubmission(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
 
     // accepted flag has to be set to false for all other submissions
     $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
@@ -212,18 +229,21 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
-  /**
-   * Set solution of student as unaccepted if it was.
-   * @DELETE
-   * @param string $id identifier of the submission
-   * @throws ForbiddenRequestException
-   * @throws \Nette\Application\AbortException
-   */
-  public function actionUnsetAcceptedSubmission(string $id) {
+  public function checkUnsetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
     }
+  }
+
+  /**
+   * Set solution of student as unaccepted if it was.
+   * @DELETE
+   * @param string $id identifier of the submission
+   * @throws \Nette\Application\AbortException
+   */
+  public function actionUnsetAcceptedSubmission(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
 
     // set accepted flag as false even if it was false
     $solution->setAccepted(false);
@@ -232,6 +252,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     // forward to student statistics of group
     $groupOfSubmission = $solution->getAssignment()->getGroup();
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
+  }
+
+  public function checkDownloadSolutionArchive(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot access archive of solution files");
+    }
   }
 
   /**
@@ -245,9 +272,6 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionDownloadSolutionArchive(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot access archive of solution files");
-    }
 
     $files = [];
     foreach ($solution->getSolution()->getFiles() as $file) {
@@ -256,25 +280,27 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendResponse(new ZipFilesResponse($files, "solution-{$id}.zip"));
   }
 
+  public function checkDownloadResultArchive(string $id) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
+      throw new ForbiddenRequestException("You cannot access result archive for this submission");
+    }
+  }
+
   /**
    * Download result archive from backend for particular submission.
    * @GET
    * @param string $id
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws InternalServerErrorException
    * @throws \Nette\Application\AbortException
    */
   public function actionDownloadResultArchive(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
-      throw new ForbiddenRequestException("You cannot access result archive for this submission");
-    }
-
     $this->evaluationLoadingHelper->loadEvaluation($submission);
 
     if (!$submission->hasEvaluation()) {
-      throw new ForbiddenRequestException("Submission is not evaluated yet");
+      throw new NotReadyException("Submission is not evaluated yet");
     }
 
     $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());

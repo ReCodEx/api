@@ -85,30 +85,32 @@ class GroupsPresenter extends BasePresenter {
    */
   public $userViewFactory;
 
-  /**
-   * Get a list of all non-archived groups
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionDefault() {
+  public function checkDefault() {
     if (!$this->groupAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of all non-archived groups
+   * @GET
+   */
+  public function actionDefault() {
     $groups = $this->groups->findUnarchived();
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
+  }
+
+  public function checkAll() {
+    if (!$this->groupAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
    * Get a list of all groups
    * @GET
-   * @throws ForbiddenRequestException
    */
   public function actionAll() {
-    if (!$this->groupAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-
     $groups = $this->groups->findAll();
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups, false));
   }
@@ -183,6 +185,13 @@ class GroupsPresenter extends BasePresenter {
     ]);
   }
 
+  public function checkUpdateGroup(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    if (!$this->groupAcl->canUpdate($group)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Update group info
    * @POST
@@ -193,7 +202,6 @@ class GroupsPresenter extends BasePresenter {
    * @Param(type="post", name="threshold", validation="numericint", required=false, description="A minimum percentage of points needed to pass the course")
    * @Param(type="post", name="localizedTexts", validation="array", description="Localized names and descriptions")
    * @param string $id An identifier of the updated group
-   * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    */
   public function actionUpdateGroup(string $id) {
@@ -203,10 +211,6 @@ class GroupsPresenter extends BasePresenter {
     $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
 
     $group = $this->groups->findOrThrow($id);
-    if (!$this->groupAcl->canUpdate($group)) {
-      throw new ForbiddenRequestException();
-    }
-
     $group->setExternalId($req->getPost("externalId"));
     $group->setPublicStats($publicStats);
     $group->setIsPublic($isPublic);
@@ -224,22 +228,24 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Set the 'isOrganizational' flag for a group
-   * @POST
-   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
-   * @param string $id An identifier of the updated group
-   * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
-   * @throws NotFoundException
-   */
-  public function actionSetOrganizational(string $id) {
+  public function checkSetOrganizational(string $id) {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canUpdate($group)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Set the 'isOrganizational' flag for a group
+   * @POST
+   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
+   * @param string $id An identifier of the updated group
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionSetOrganizational(string $id) {
+    $group = $this->groups->findOrThrow($id);
     $isOrganizational = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
 
     if ($group->getStudents()->count() > 0 && $isOrganizational) {
@@ -251,21 +257,23 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Set the 'isArchived' flag for a group
-   * @POST
-   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
-   * @param string $id An identifier of the updated group
-   * @throws ForbiddenRequestException
-   * @throws NotFoundException
-   */
-  public function actionSetArchived(string $id) {
+  public function checkSetArchived(string $id) {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canArchive($group)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Set the 'isArchived' flag for a group
+   * @POST
+   * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
+   * @param string $id An identifier of the updated group
+   * @throws NotFoundException
+   */
+  public function actionSetArchived(string $id) {
+    $group = $this->groups->findOrThrow($id);
     $archive = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
 
     if ($archive) {
@@ -278,13 +286,7 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Delete a group
-   * @DELETE
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemoveGroup(string $id) {
+  public function checkRemoveGroup(string $id) {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canRemove($group)) {
@@ -296,6 +298,15 @@ class GroupsPresenter extends BasePresenter {
     } else if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
       throw new ForbiddenRequestException("Group '$id' is the root group of instance '{$group->getInstance()->getId()}' and root groups cannot be deleted.");
     }
+  }
+
+  /**
+   * Delete a group
+   * @DELETE
+   * @param string $id Identifier of the group
+   */
+  public function actionRemoveGroup(string $id) {
+    $group = $this->groups->findOrThrow($id);
 
     $this->groups->remove($group);
     $this->groups->flush();
@@ -303,34 +314,41 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  /**
-   * Get details of a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionDetail(string $id) {
+  public function checkDetail(string $id) {
     $group = $this->groups->findOrThrow($id);
     if (!$this->groupAcl->canViewPublicDetail($group)) {
       throw new ForbiddenRequestException();
     }
-
-    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
   /**
-   * Get a list of subgroups of a group
+   * Get details of a group
    * @GET
    * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
    */
-  public function actionSubgroups(string $id) {
+  public function actionDetail(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+  }
+
+  public function checkSubgroups(string $id) {
     /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewSubgroups($group)) {
       throw new ForbiddenRequestException();
     }
+
+  }
+
+  /**
+   * Get a list of subgroups of a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionSubgroups(string $id) {
+    /** @var Group $group */
+    $group = $this->groups->findOrThrow($id);
 
     $subgroups = array_filter(
       $group->getAllSubgroups(),
@@ -341,18 +359,21 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($subgroups));
   }
 
-  /**
-   * Get a list of members of a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionMembers(string $id) {
+  public function checkMembers(string $id) {
     $group = $this->groups->findOrThrow($id);
 
     if (!($this->groupAcl->canViewStudents($group) && $this->groupAcl->canViewSupervisors($group))) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get a list of members of a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionMembers(string $id) {
+    $group = $this->groups->findOrThrow($id);
 
     $this->sendSuccessResponse([
       "supervisors" => $this->userViewFactory->getUsers($group->getSupervisors()->getValues()),
@@ -360,49 +381,57 @@ class GroupsPresenter extends BasePresenter {
     ]);
   }
 
-  /**
-   * Get a list of supervisors in a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionSupervisors(string $id) {
+  public function checkSupervisors(string $id) {
     $group = $this->groups->findOrThrow($id);
     if (!$this->groupAcl->canViewSupervisors($group)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get a list of supervisors in a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionSupervisors(string $id) {
+    $group = $this->groups->findOrThrow($id);
     $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getSupervisors()->getValues()));
+  }
+
+  public function checkStudents(string $id) {
+    $group = $this->groups->findOrThrow($id);
+    if (!$this->groupAcl->canViewStudents($group)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
    * Get a list of students in a group
    * @GET
    * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
    */
   public function actionStudents(string $id) {
     $group = $this->groups->findOrThrow($id);
-    if (!$this->groupAcl->canViewStudents($group)) {
-      throw new ForbiddenRequestException();
-    }
-
     $this->sendSuccessResponse($this->userViewFactory->getUsers($group->getStudents()->getValues()));
   }
 
-  /**
-   * Get all exercise assignments for a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionAssignments(string $id) {
+  public function checkAssignments(string $id) {
     /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewAssignments($group)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get all exercise assignments for a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionAssignments(string $id) {
+    /** @var Group $group */
+    $group = $this->groups->findOrThrow($id);
 
     $assignments = $group->getAssignments();
     $this->sendSuccessResponse(array_values(array_filter($assignments->getValues(), function (Assignment $assignment) {
@@ -410,20 +439,23 @@ class GroupsPresenter extends BasePresenter {
     })));
   }
 
-  /**
-   * Get all exercises for a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionExercises(string $id) {
+  public function checkExercises(string $id) {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewExercises($group)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get all exercises for a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionExercises(string $id) {
+    $group = $this->groups->findOrThrow($id);
     $exercises = array();
+
     while ($group !== null) {
       $groupExercises = $group->getExercises()->filter(function (Exercise $exercise) {
         return $this->exerciseAcl->canViewDetail($exercise);
@@ -434,6 +466,18 @@ class GroupsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse($exercises);
+  }
+
+  public function checkStats(string $id) {
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canViewStats($group)) {
+      $user = $this->getCurrentUser();
+
+      if (!($this->groupAcl->canViewStudentStats($group, $user) && $group->isStudentOf($user))) {
+        throw new ForbiddenRequestException();
+      }
+    }
   }
 
   /**
@@ -448,12 +492,8 @@ class GroupsPresenter extends BasePresenter {
 
     if (!$this->groupAcl->canViewStats($group)) {
       $user = $this->getCurrentUser();
-      if ($this->groupAcl->canViewStudentStats($group, $user) && $group->isStudentOf($user)) {
-        $stats = $this->groupViewFactory->getStudentsStats($group, $user);
-        $this->sendSuccessResponse([$stats]);
-      }
-
-      throw new ForbiddenRequestException();
+      $stats = $this->groupViewFactory->getStudentsStats($group, $user);
+      $this->sendSuccessResponse([$stats]);
     }
 
     $this->sendSuccessResponse(
@@ -466,21 +506,25 @@ class GroupsPresenter extends BasePresenter {
     );
   }
 
-  /**
-   * Get statistics of a single student in a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @param string $userId Identifier of the student
-   * @throws BadRequestException
-   * @throws ForbiddenRequestException
-   */
-  public function actionStudentsStats(string $id, string $userId) {
+  public function checkStudentsStats(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canViewStudentStats($group, $user)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Get statistics of a single student in a group
+   * @GET
+   * @param string $id Identifier of the group
+   * @param string $userId Identifier of the student
+   * @throws BadRequestException
+   */
+  public function actionStudentsStats(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
 
     if ($group->isStudentOf($user) === false) {
       throw new BadRequestException("User $userId is not student of $id");
@@ -489,15 +533,7 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getStudentsStats($group, $user));
   }
 
-  /**
-   * Add a student to a group
-   * @POST
-   * @param string $id Identifier of the group
-   * @param string $userId Identifier of the student
-   * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
-   */
-  public function actionAddStudent(string $id, string $userId) {
+  public function checkAddStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
 
@@ -512,6 +548,17 @@ class GroupsPresenter extends BasePresenter {
     if ($group->isOrganizational()) {
       throw new InvalidArgumentException("It is forbidden to add students to organizational groups");
     }
+  }
+
+  /**
+   * Add a student to a group
+   * @POST
+   * @param string $id Identifier of the group
+   * @param string $userId Identifier of the student
+   */
+  public function actionAddStudent(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
 
     // make sure that the user is not already member of the group
     if ($group->isStudentOf($user) === false) {
@@ -523,20 +570,24 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Remove a student from a group
-   * @DELETE
-   * @param string $id Identifier of the group
-   * @param string $userId Identifier of the student
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemoveStudent(string $id, string $userId) {
+  public function checkRemoveStudent(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canRemoveStudent($group, $user)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Remove a student from a group
+   * @DELETE
+   * @param string $id Identifier of the group
+   * @param string $userId Identifier of the student
+   */
+  public function actionRemoveStudent(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
 
     // make sure that the user is student of the group
     if ($group->isStudentOf($user) === true) {
@@ -550,6 +601,15 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
+  public function checkAddSupervisor(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canAddSupervisor($group, $user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Add a supervisor to a group
    * @POST
@@ -560,10 +620,6 @@ class GroupsPresenter extends BasePresenter {
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
-
-    if (!$this->groupAcl->canAddSupervisor($group, $user)) {
-      throw new ForbiddenRequestException();
-    }
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === false) {
@@ -578,14 +634,7 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Remove a supervisor from a group
-   * @DELETE
-   * @param string $id Identifier of the group
-   * @param string $userId Identifier of the supervisor
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemoveSupervisor(string $id, string $userId) {
+  public function checkRemoveSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
 
@@ -597,6 +646,17 @@ class GroupsPresenter extends BasePresenter {
     if ($group->isPrimaryAdminOf($user) === true) {
       throw new ForbiddenRequestException("Supervisor is admin of group and thus cannot be removed as supervisor.");
     }
+  }
+
+  /**
+   * Remove a supervisor from a group
+   * @DELETE
+   * @param string $id Identifier of the group
+   * @param string $userId Identifier of the supervisor
+   */
+  public function actionRemoveSupervisor(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
 
     // make sure that the user is really supervisor of the group
     if ($group->isSupervisorOf($user) === true) {
@@ -615,18 +675,20 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Get identifiers of administrators of a group
-   * @GET
-   * @param string $id Identifier of the group
-   * @throws ForbiddenRequestException
-   */
-  public function actionAdmins($id) {
+  public function checkAdmins($id) {
     $group = $this->groups->findOrThrow($id);
     if (!$this->groupAcl->canViewAdmin($group)) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * Get identifiers of administrators of a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionAdmins($id) {
+    $group = $this->groups->findOrThrow($id);
     $this->sendSuccessResponse($group->getAdminsIds());
   }
 
@@ -658,20 +720,23 @@ class GroupsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
   }
 
-  /**
-   * Remove user as an administrator of a group
-   * @DELETE
-   * @param string $id Identifier of the group
-   * @param string $userId identifier of admin
-   * @throws ForbiddenRequestException
-   */
-  public function actionRemoveAdmin(string $id, string $userId) {
-    $user = $this->users->findOrThrow($userId);
+  public function checkRemoveAdmin(string $id, string $userId) {
     $group = $this->groups->findOrThrow($id);
 
     if (!$this->groupAcl->canSetAdmin($group)) {
       throw new ForbiddenRequestException();
     }
+  }
+
+  /**
+   * Remove user as an administrator of a group
+   * @DELETE
+   * @param string $id Identifier of the group
+   * @param string $userId identifier of admin
+   */
+  public function actionRemoveAdmin(string $id, string $userId) {
+    $user = $this->users->findOrThrow($userId);
+    $group = $this->groups->findOrThrow($id);
 
     // delete admin and flush changes
     $group->removePrimaryAdmin($user);

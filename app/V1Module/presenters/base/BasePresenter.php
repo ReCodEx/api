@@ -75,6 +75,10 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   /** @var object Processed parameters from annotations */
   protected $parameters;
 
+  protected function formatPermissionCheckMethod($action) {
+    return "check" . $action;
+  }
+
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
@@ -87,6 +91,8 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     } catch (ReflectionException $e) {
       throw new NotImplementedException;
     }
+
+    $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);
 
     Validators::init();
     $this->processParams($actionReflection);

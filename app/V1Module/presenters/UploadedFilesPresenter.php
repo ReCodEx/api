@@ -67,48 +67,57 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   public $uploadsConfig;
 
+  public function checkDetail(string $id) {
+    $file = $this->uploadedFiles->findOrThrow($id);
+    if (!$this->uploadedFileAcl->canViewDetail($file)) {
+      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
+    }
+  }
+
   /**
    * Get details of a file
    * @GET
    * @LoggedIn
    * @param string $id Identifier of the uploaded file
-   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    if (!$this->uploadedFileAcl->canViewDetail($file)) {
+    $this->sendSuccessResponse($file);
+  }
+
+  public function checkDownload(string $id) {
+    $file = $this->uploadedFiles->findOrThrow($id);
+    if (!$this->uploadedFileAcl->canDownload($file)) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
-    $this->sendSuccessResponse($file);
   }
 
   /**
    * Download a file
    * @GET
    * @param string $id Identifier of the file
-   * @throws ForbiddenRequestException
    * @throws \Nette\Application\AbortException
+   * @throws \Nette\Application\BadRequestException
    */
   public function actionDownload(string $id) {
+    $file = $this->uploadedFiles->findOrThrow($id);
+    $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
+  }
+
+  public function checkContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
     if (!$this->uploadedFileAcl->canDownload($file)) {
       throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
     }
-    $this->sendResponse(new FileResponse($file->getLocalFilePath(), $file->getName()));
   }
 
   /**
    * Get the contents of a file
    * @GET
    * @param string $id Identifier of the file
-   * @throws ForbiddenRequestException
    */
   public function actionContent(string $id) {
     $file = $this->uploadedFiles->findOrThrow($id);
-    if (!$this->uploadedFileAcl->canDownload($file)) {
-      throw new ForbiddenRequestException("You are not allowed to access file '{$file->getId()}");
-    }
-
     $sizeLimit = $this->uploadsConfig->getMaxPreviewSize();
     $content = $file->getContent($sizeLimit);
 
@@ -125,6 +134,11 @@ class UploadedFilesPresenter extends BasePresenter {
     ]);
   }
 
+  public function checkUpload() {
+    if (!$this->uploadedFileAcl->canUpload()) {
+      throw new ForbiddenRequestException();
+    }
+  }
 
   /**
    * Upload a file
@@ -135,10 +149,6 @@ class UploadedFilesPresenter extends BasePresenter {
    * @throws CannotReceiveUploadedFileException
    */
   public function actionUpload() {
-    if (!$this->uploadedFileAcl->canUpload()) {
-      throw new ForbiddenRequestException();
-    }
-
     $user = $this->getCurrentUser();
     $files = $this->getRequest()->getFiles();
     if (count($files) === 0) {
@@ -159,6 +169,13 @@ class UploadedFilesPresenter extends BasePresenter {
     $this->sendSuccessResponse($uploadedFile);
   }
 
+  public function checkDownloadSupplementaryFile(string $id) {
+    $file = $this->supplementaryFiles->findOrThrow($id);
+    if (!$this->uploadedFileAcl->canDownloadSupplementaryFile($file)) {
+      throw new ForbiddenRequestException("You are not allowed to download file '{$file->getId()}");
+    }
+  }
+
   /**
    * Download supplementary file
    * @GET
@@ -169,9 +186,6 @@ class UploadedFilesPresenter extends BasePresenter {
    */
   public function actionDownloadSupplementaryFile(string $id) {
     $file = $this->supplementaryFiles->findOrThrow($id);
-    if (!$this->uploadedFileAcl->canDownloadSupplementaryFile($file)) {
-      throw new ForbiddenRequestException("You are not allowed to download file '{$file->getId()}");
-    }
 
     $stream = $this->fileServerProxy->getFileserverFileStream($file->getFileServerPath());
     if ($stream === null) {

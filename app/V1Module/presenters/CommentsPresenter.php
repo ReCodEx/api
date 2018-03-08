@@ -30,13 +30,8 @@ class CommentsPresenter extends BasePresenter {
   /**
    * @param string $id
    * @return CommentThread
-   * @throws ForbiddenRequestException
    */
   protected function findThreadOrCreateIt(string $id) {
-    if (!$this->commentAcl->canCreateThread()) {
-      throw new ForbiddenRequestException();
-    }
-
     $thread = $this->comments->getThread($id);
     if (!$thread) {
       $thread = CommentThread::createThread($id);
@@ -44,6 +39,18 @@ class CommentsPresenter extends BasePresenter {
     }
 
     return $thread;
+  }
+
+  public function checkDefault($id) {
+    $thread = $this->comments->getThread($id);
+
+    if (!$thread && !$this->commentAcl->canCreateThread()) {
+      throw new ForbiddenRequestException();
+    }
+
+    if (!$this->commentAcl->canViewThread($thread)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -54,13 +61,22 @@ class CommentsPresenter extends BasePresenter {
    */
   public function actionDefault($id) {
     $thread = $this->findThreadOrCreateIt($id);
-    if (!$this->commentAcl->canViewThread($thread)) {
-      throw new ForbiddenRequestException();
-    }
     $this->comments->flush();
     $user = $this->getCurrentUser();
     $thread->filterPublic($user);
     $this->sendSuccessResponse($thread);
+  }
+
+  public function checkAddComment(string $id) {
+    $thread = $this->comments->getThread($id);
+
+    if (!$thread && !$this->commentAcl->canCreateThread()) {
+      throw new ForbiddenRequestException();
+    }
+
+    if ($thread && !$this->commentAcl->canAddComment($thread)) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
@@ -73,9 +89,6 @@ class CommentsPresenter extends BasePresenter {
    */
   public function actionAddComment(string $id) {
     $thread = $this->findThreadOrCreateIt($id);
-    if (!$this->commentAcl->canAddComment($thread)) {
-      throw new ForbiddenRequestException();
-    }
 
     $user = $this->getCurrentUser();
     $text = $this->getRequest()->getPost("text");
@@ -89,6 +102,19 @@ class CommentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($comment);
   }
 
+  public function checkTogglePrivate(string $threadId, string $commentId) {
+    /** @var Comment $comment */
+    $comment = $this->comments->findOrThrow($commentId);
+
+    if ($comment->getThread()->getId() !== $threadId) {
+      throw new NotFoundException();
+    }
+
+    if (!$this->commentAcl->canAlter($comment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Make a private comment public or vice versa
    * @POST
@@ -100,14 +126,6 @@ class CommentsPresenter extends BasePresenter {
   public function actionTogglePrivate(string $threadId, string $commentId) {
     /** @var Comment $comment */
     $comment = $this->comments->findOrThrow($commentId);
-
-    if ($comment->getThread()->getId() !== $threadId) {
-      throw new NotFoundException();
-    }
-
-    if (!$this->commentAcl->canAlter($comment)) {
-      throw new ForbiddenRequestException();
-    }
 
     $comment->togglePrivate();
     $this->comments->persistComment($comment);

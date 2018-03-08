@@ -90,6 +90,13 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public $fileServerProxy;
 
+  public function checkUploadSupplementaryFiles(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot update this exercise.");
+    }
+  }
+
   /**
    * Associate supplementary files with an exercise and upload them to remote file server
    * @POST
@@ -101,9 +108,6 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot update this exercise.");
-    }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $deletedFiles = [];
@@ -179,19 +183,28 @@ class ExerciseFilesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
   }
 
-  /**
-   * Get list of all supplementary files for an exercise
-   * @GET
-   * @param string $id identification of exercise
-   * @throws ForbiddenRequestException
-   */
-  public function actionGetSupplementaryFiles(string $id) {
+  public function checkGetSupplementaryFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot view supplementary files for this exercise.");
     }
+  }
 
+  /**
+   * Get list of all supplementary files for an exercise
+   * @GET
+   * @param string $id identification of exercise
+   */
+  public function actionGetSupplementaryFiles(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
     $this->sendSuccessResponse($exercise->getSupplementaryEvaluationFiles()->getValues());
+  }
+
+  public function checkDeleteSupplementaryFile(string $id, string $fileId) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot delete supplementary files for this exercise.");
+    }
   }
 
   /**
@@ -204,9 +217,6 @@ class ExerciseFilesPresenter extends BasePresenter {
   public function actionDeleteSupplementaryFile(string $id, string $fileId) {
     $exercise = $this->exercises->findOrThrow($id);
     $file = $this->supplementaryFiles->findOrThrow($fileId);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot delete supplementary files for this exercise.");
-    }
 
     $exercise->updatedNow();
     $exercise->removeSupplementaryEvaluationFile($file);
@@ -216,6 +226,13 @@ class ExerciseFilesPresenter extends BasePresenter {
     $this->exercises->flush();
 
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkDownloadSupplementaryFilesArchive(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException("You cannot access archive of exercise supplementary files");
+    }
   }
 
   /**
@@ -229,9 +246,6 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public function actionDownloadSupplementaryFilesArchive(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canViewDetail($exercise)) {
-      throw new ForbiddenRequestException("You cannot access archive of exercise supplementary files");
-    }
 
     $files = [];
     foreach ($exercise->getSupplementaryEvaluationFiles() as $file) {
@@ -240,6 +254,13 @@ class ExerciseFilesPresenter extends BasePresenter {
     }
 
     $this->sendResponse(new ZipFilesResponse($files, "exercise-supplementary-{$id}.zip", true));
+  }
+
+  public function checkUploadAttachmentFiles(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot upload files for this exercise.");
+    }
   }
 
   /**
@@ -251,9 +272,6 @@ class ExerciseFilesPresenter extends BasePresenter {
    */
   public function actionUploadAttachmentFiles(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot upload files for this exercise.");
-    }
 
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $currentAttachmentFiles = [];
@@ -285,6 +303,14 @@ class ExerciseFilesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
   }
 
+  public function checkGetAttachmentFiles(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot view attachment files for this exercise.");
+    }
+  }
+
   /**
    * Get a list of all attachment files for an exercise
    * @GET
@@ -294,11 +320,15 @@ class ExerciseFilesPresenter extends BasePresenter {
   public function actionGetAttachmentFiles(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot view attachment files for this exercise.");
-    }
 
     $this->sendSuccessResponse($exercise->getAttachmentFiles()->getValues());
+  }
+
+  public function checkDeleteAttachmentFile(string $id, string $fileId) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canUpdate($exercise)) {
+      throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
+    }
   }
 
   /**
@@ -312,9 +342,6 @@ class ExerciseFilesPresenter extends BasePresenter {
   public function actionDeleteAttachmentFile(string $id, string $fileId) {
     $exercise = $this->exercises->findOrThrow($id);
     $file = $this->attachmentFiles->findOrThrow($fileId);
-    if (!$this->exerciseAcl->canUpdate($exercise)) {
-      throw new ForbiddenRequestException("You cannot delete attachment files for this exercise.");
-    }
 
     $exercise->updatedNow();
     $exercise->removeAttachmentFile($file);
@@ -322,20 +349,23 @@ class ExerciseFilesPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
+  public function checkDownloadAttachmentFilesArchive(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewDetail($exercise)) {
+      throw new ForbiddenRequestException("You cannot access archive of exercise attachment files");
+    }
+  }
+
   /**
    * Download archive containing all attachment files for exercise.
    * @GET
    * @param string $id of exercise
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws \Nette\Application\BadRequestException
    * @throws \Nette\Application\AbortException
    */
   public function actionDownloadAttachmentFilesArchive(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
-    if (!$this->exerciseAcl->canViewDetail($exercise)) {
-      throw new ForbiddenRequestException("You cannot access archive of exercise attachment files");
-    }
 
     $files = [];
     foreach ($exercise->getAttachmentFiles() as $file) {
