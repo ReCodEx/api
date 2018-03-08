@@ -41,60 +41,73 @@ class SubmissionFailuresPresenter extends BasePresenter {
    */
   public $failureResolutionEmailsSender;
 
-  /**
-   * List all submission failures, ever
-   * @GET
-   * @throws ForbiddenRequestException
-   */
-  public function actionDefault() {
+  public function checkDefault() {
     if (!$this->submissionFailureAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
+  }
 
+  /**
+   * List all submission failures, ever
+   * @GET
+   */
+  public function actionDefault() {
     $this->sendSuccessResponse($this->submissionFailures->findAll());
+  }
+
+  public function checkUnresolved() {
+    if (!$this->submissionFailureAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
   }
 
   /**
    * List all unresolved submission failures
    * @GET
-   * @throws ForbiddenRequestException
    */
   public function actionUnresolved() {
-    if (!$this->submissionFailureAcl->canViewAll()) {
+    $this->sendSuccessResponse($this->submissionFailures->findUnresolved());
+  }
+
+  public function checkListBySubmission(string $submissionId) {
+    $submission = $this->submissions->findOrThrow($submissionId);
+    if (!$this->submissionFailureAcl->canViewForAssignmentSolutionSubmission($submission)) {
       throw new ForbiddenRequestException();
     }
-
-    $this->sendSuccessResponse($this->submissionFailures->findUnresolved());
   }
 
   /**
    * List all failures of a single submission
    * @GET
    * @param $submissionId string An identifier of the submission
-   * @throws ForbiddenRequestException
    */
   public function actionListBySubmission(string $submissionId) {
     $submission = $this->submissions->findOrThrow($submissionId);
-    if (!$this->submissionFailureAcl->canViewForAssignmentSolutionSubmission($submission)) {
+    $this->sendSuccessResponse($this->submissionFailures->findBySubmission($submission));
+  }
+
+  public function checkDetail(string $id) {
+    $failure = $this->submissionFailures->findOrThrow($id);
+    if (!$this->submissionFailureAcl->canView($failure)) {
       throw new ForbiddenRequestException();
     }
-
-    $this->sendSuccessResponse($this->submissionFailures->findBySubmission($submission));
   }
 
   /**
    * Get details of a failure
    * @GET
    * @param $id string An identifier of the failure
-   * @throws ForbiddenRequestException
    */
   public function actionDetail(string $id) {
     $failure = $this->submissionFailures->findOrThrow($id);
-    if (!$this->submissionFailureAcl->canView($failure)) {
+    $this->sendSuccessResponse($failure);
+  }
+
+  public function checkResolve(string $id) {
+    $failure = $this->submissionFailures->findOrThrow($id);
+    if (!$this->submissionFailureAcl->canResolve($failure)) {
       throw new ForbiddenRequestException();
     }
-
-    $this->sendSuccessResponse($failure);
   }
 
   /**
@@ -104,14 +117,9 @@ class SubmissionFailuresPresenter extends BasePresenter {
    * @Param(name="note", type="post", validation="string:0..255", required=false,
    *   description="Brief description of how the failure was resolved")
    * @Param(name="sendEmail", type="post", validation="bool", description="True if email should be sent to the author of submission")
-   * @throws ForbiddenRequestException
    */
   public function actionResolve(string $id) {
     $failure = $this->submissionFailures->findOrThrow($id);
-    if (!$this->submissionFailureAcl->canResolve($failure)) {
-      throw new ForbiddenRequestException();
-    }
-
     $req = $this->getRequest();
 
     $failure->resolve($req->getPost("note") ?: "", new DateTime());
