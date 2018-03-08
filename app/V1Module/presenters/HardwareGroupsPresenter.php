@@ -24,15 +24,17 @@ class HardwareGroupsPresenter extends BasePresenter {
    */
   public $hardwareGroupAcl;
 
+  public function checkDefault() {
+    if (!$this->hardwareGroupAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Get a list of all hardware groups in system
    * @GET
    */
   public function actionDefault() {
-    if (!$this->hardwareGroupAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-
     $hwGroups = $this->hardwareGroups->findAll();
     $this->sendSuccessResponse($hwGroups);
   }
