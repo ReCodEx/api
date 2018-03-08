@@ -112,6 +112,13 @@ class LoginPresenter extends BasePresenter {
     $this->sendAccessTokenResponse($user);
   }
 
+  public function checkTakeOver($userId) {
+    $user = $this->users->findOrThrow($userId);
+    if (!$this->userAcl->canTakeOver($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
   /**
    * Takeover user account with specified user identification.
    * @POST
@@ -123,11 +130,13 @@ class LoginPresenter extends BasePresenter {
    */
   public function actionTakeOver($userId) {
     $user = $this->users->findOrThrow($userId);
-    if (!$this->userAcl->canTakeOver($user)) {
+    $this->sendAccessTokenResponse($user);
+  }
+
+  public function checkRefresh() {
+    if (!$this->isInScope(AccessToken::SCOPE_REFRESH)) {
       throw new ForbiddenRequestException();
     }
-
-    $this->sendAccessTokenResponse($user);
   }
 
   /**
@@ -137,10 +146,6 @@ class LoginPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionRefresh() {
-    if (!$this->isInScope(AccessToken::SCOPE_REFRESH)) {
-      throw new ForbiddenRequestException();
-    }
-
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]),
