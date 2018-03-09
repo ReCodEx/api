@@ -98,6 +98,10 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     $this->processParams($actionReflection);
   }
 
+  protected function isRequestJson(): bool {
+    return $this->getHttpRequest()->getHeader("content-type") === "application/json";
+  }
+
   /**
    * @return User
    * @throws ForbiddenRequestException

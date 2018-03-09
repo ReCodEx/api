@@ -192,7 +192,7 @@ class AssignmentsPresenter extends BasePresenter {
       throw new InvalidArgumentException("No entry for localized texts given.");
     }
 
-    if ($this->getHttpRequest()->getHeader("content-type") === "application/json") {
+    if ($this->isRequestJson()) {
       $disabledRuntimeIds = $req->getPost("disabledRuntimeEnvironments");
       $disabledRuntimes = array_map([$this->runtimeEnvironments, "findOrThrow"], $disabledRuntimeIds);
 
