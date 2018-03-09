@@ -155,7 +155,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>/can-submit", "Submit:canSubmit");
     $router[] = new PostRoute("$prefix/<id>/submit", "Submit:submit");
     $router[] = new PostRoute("$prefix/<id>/resubmit-all", "Submit:resubmitAll");
-    $router[] = new GetRoute("$prefix/<id>/pre-submit", "Submit:preSubmit");
+    $router[] = new PostRoute("$prefix/<id>/pre-submit", "Submit:preSubmit");
     return $router;
   }
 
