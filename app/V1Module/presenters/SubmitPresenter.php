@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
@@ -361,22 +362,22 @@ class SubmitPresenter extends BasePresenter {
    * environments for the assignment. Also it can be further used for entry
    * points and other important things that should be provided by user during
    * submit.
-   * @GET
+   * @POST
    * @param string $id identifier of assignment
-   * @param string[] $files identification of submitted files
+   * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
    * @throws NotFoundException
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @throws \App\Exceptions\ExerciseConfigException
+   * @throws ExerciseConfigException
    */
-  public function actionPreSubmit(string $id, array $files) {
+  public function actionPreSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     if (!$this->assignmentAcl->canSubmit($assignment)) {
       throw new ForbiddenRequestException("You cannot submit this assignment.");
     }
 
     // retrieve and check uploaded files
-    $uploadedFiles = $this->files->findAllById($files);
+    $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
     if (count($uploadedFiles) === 0) {
       throw new InvalidArgumentException("files", "No files were uploaded");
     }

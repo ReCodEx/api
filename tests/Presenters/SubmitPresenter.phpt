@@ -413,8 +413,9 @@ class TestSubmitPresenter extends Tester\TestCase
     $this->presenter->files->flush();
     $files = [ $file1->getId(), $file2->getId() ];
 
-    $request = new Nette\Application\Request('V1:Submit', 'GET',
-      ['action' => 'preSubmit', 'id' => $assignment->getId(), 'files' => $files]
+    $request = new Nette\Application\Request('V1:Submit', 'POST',
+      ['action' => 'preSubmit', 'id' => $assignment->getId()],
+      ['files' => $files]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
