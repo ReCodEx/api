@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
@@ -17,6 +18,7 @@ use App\Helpers\ScoreCalculatorAccessor;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;
+use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\AssignmentSolutionViewFactory;
@@ -109,6 +111,12 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $calculators;
 
+  /**
+   * @var RuntimeEnvironments
+   * @inject
+   */
+  public $runtimeEnvironments;
+
   public function checkDefault() {
     if (!$this->assignmentAcl->canViewAll()) {
       throw new ForbiddenRequestException();
@@ -162,9 +170,11 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
+   * @Param(type="post", name="disabledRuntimeEnvironments", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
    * @throws InvalidArgumentException
+   * @throws NotFoundException
    */
   public function actionUpdateDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -180,6 +190,13 @@ class AssignmentsPresenter extends BasePresenter {
     $localizedTexts = $req->getPost("localizedTexts");
     if (count($localizedTexts) == 0) {
       throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    if ($this->isRequestJson()) {
+      $disabledRuntimeIds = $req->getPost("disabledRuntimeEnvironments");
+      $disabledRuntimes = array_map([$this->runtimeEnvironments, "findOrThrow"], $disabledRuntimeIds);
+
+      $assignment->setDisabledRuntimeEnvironments($disabledRuntimes);
     }
 
     // old values of some attributes

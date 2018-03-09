@@ -1,13 +1,15 @@
 <?php
 
 use App\Model\Entity\User;
+use Nette\Application\IResponse;
+use Nette\Application\Responses\JsonResponse;
 use Nette\DI\Container;
 use Nette\Utils\FileSystem;
 use Kdyby\Doctrine\EntityManager;
 use Kdyby\Doctrine\Configuration;
 use Doctrine\Common\EventManager;
 use Nette\Utils\Json;
-use Nette\Utils\Random;
+use Nette\Utils\JsonException;
 use Symfony\Component\Process\Process;
 
 class PresenterTestHelper
@@ -26,10 +28,29 @@ class PresenterTestHelper
     );
   }
 
-  public static function replaceService(Container $container, $service) {
-    $emServiceName = $container->findByType(get_class($service))[0];
+  public static function replaceService(Container $container, $service, $type = null) {
+    $type = $type ?? get_class($service);
+    $emServiceName = $container->findByType($type)[0];
     $container->removeService($emServiceName);
     $container->addService($emServiceName, $service);
+  }
+
+  /**
+   * @throws Tester\AssertException
+   * @throws JsonException
+   */
+  public static function extractPayload(IResponse $response, $jsonify = true) {
+    Tester\Assert::type(JsonResponse::class, $response);
+
+    /** @var JsonResponse $response */
+    Tester\Assert::same(200, $response->getPayload()["code"]);
+    $payload = $response->getPayload()["payload"];
+
+    if ($jsonify) {
+      return Json::decode(Json::encode($payload), Json::FORCE_ARRAY);
+    }
+
+    return $payload;
   }
 
   public static function getEntityManager(Container $container): EntityManager {
