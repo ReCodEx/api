@@ -101,7 +101,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public $evaluationLoadingHelper;
 
-  public function checkExercise(string $exerciseId) {
+  public function checkSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
       throw new ForbiddenRequestException("You cannot access this exercise solutions");
@@ -113,7 +113,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $exerciseId Identifier of the exercise
    */
-  public function actionExercise(string $exerciseId) {
+  public function actionSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
   }
@@ -241,7 +241,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($referenceSolution);
   }
 
-  public function checkEvaluate(string $id) {
+  public function checkResubmit(string $id) {
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
@@ -257,7 +257,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
    */
-  public function actionEvaluate(string $id) {
+  public function actionResubmit(string $id) {
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
 
@@ -273,7 +273,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     ]);
   }
 
-  public function checkEvaluateForExercise($exerciseId) {
+  public function checkResubmitAll($exerciseId) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($exerciseId);
 
@@ -289,7 +289,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
    */
-  public function actionEvaluateForExercise($exerciseId) {
+  public function actionResubmitAll($exerciseId) {
     $req = $this->getRequest();
     $isDebug = filter_var($req->getPost("debug"), FILTER_VALIDATE_BOOLEAN);
 
