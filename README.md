@@ -38,6 +38,17 @@ dependencies to the `vendor/` subdirectory.
 	* Default single hardware group which might be used for workers
 	* Pipelines for runtime environments which can be used when building exercises
 
+## Configuration
+
+The API can be configured in `config.neon` and `config.local.neon` files in
+`app/config` directory of the API project source tree. The first file is
+predefined by authors and should not be modified. The second one is not present
+and could be created by copying `config.local.neon.example` template in the
+config directory. Local configuration have higher precedence, so it will
+override default values from `config.neon`.
+
+Descriptions of particular config items are managed in static global config file in form of comments. Global `config.neon` should never be changed, local changes should be made to `config.local.neon`.
+
 ## Web Server Setup
 
 The simplest way to get started is to start the built-in PHP server in the root directory of your project:

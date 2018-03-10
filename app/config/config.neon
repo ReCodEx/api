@@ -15,7 +15,7 @@ parameters:
     description: "ReCodEx Code Examiner - API Server"
     versionFormat: "{tag}"
 
-  accessManager:
+  accessManager:  # configuration of access token in JWT standard. Do not modify unless you really know what are you doing.
     leeway: 60
     issuer: https://recodex.mff.cuni.cz
     audience: https://recodex.mff.cuni.cz
@@ -25,35 +25,35 @@ parameters:
       - HS256
     verificationKey: "recodex-123"
 
-  fileServer:
-    address: http://195.113.17.8:10009
-    auth:
+  fileServer:  # connection to fileserver
+    address: http://195.113.17.8:10009  # URI of fileserver
+    auth:  # username and password for HTTP basic authentication
       username: "re"
       password: "codex"
     timeouts:
-      connection: 500
+      connection: 500  # connection timeout for establishing new connection and request timeout for completing one request
 
-  broker:
-    address: tcp://195.113.17.8:9668
-    auth:
+  broker:  # connection to broker
+    address: tcp://195.113.17.8:9668  # URI of broker
+    auth:  # username and password for broker callback authentication back to API
       username: "re"
       password: "codex"
     timeouts:
-      ack: 100
-      send: 5000
-      result: 1000
+      ack: 100  # ack timeout for first response that broker receives the message
+      send: 5000  # send timeout how long try to send new job to the broker
+      result: 1000  # result timeout how long to wait for confirmation if job can be processed or not
 
-  monitor:
-    address: wss://recodex.mff.cuni.cz:4443/ws
+  monitor:  # connection to monitor
+    address: wss://recodex.mff.cuni.cz:4443/ws  # URI of monitor
 
   uploads:
     removalThreshold: "1 day"
     maxPreviewSize: 65536
 
-  CAS:
-    serviceId: "cas-uk"
+  CAS:  # CAS external authentication
+    serviceId: "cas-uk"  # visible identifier of this service
     options:
-      ldap:
+      ldap:  # parameters for connecting to LDAP, hostname, base_dn, port, security and bindName
         hostname: "ldap.cuni.cz"
         base_dn: "ou=people,dc=cuni,dc=cz"
         #port: 389
@@ -61,7 +61,7 @@ parameters:
         bindName: "cunipersonalid"
       cas:
         baseUri: "https://idp.cuni.cz/cas/"
-    fields:
+    fields:  # names of LDAP keys for informations as email, firstName and lastName
       cas:
         ukco: "cunipersonalid"
         email: "mail"
@@ -81,18 +81,18 @@ parameters:
     faculty: FACULTY
     secret: SECRET_TOKEN
 
-  emails:
-    apiUrl: https://recodex.mff.cuni.cz:4000
-    footerUrl: https://recodex.mff.cuni.cz
-    siteName: "ReCodEx"
-    githubUrl: https://github.com/ReCodEx
-    from: "ReCodEx <noreply@recodex.org>"
+  emails:  # common configuration for sending email (addresses and template variables)
+    apiUrl: %api.address%  # base URL of API server including port (for referencing pictures in messages)
+    footerUrl: https://recodex.mff.cuni.cz  # link in the message footer
+    siteName: "ReCodEx"  # name of frontend (ReCodEx, or KSP for unique instance for KSP course)
+    githubUrl: https://github.com/ReCodEx  # URL to GitHub repository of this project
+    from: "ReCodEx <noreply@recodex.mff.cuni.cz>"  # sending email address
 
-  failures:
-    emails:
-      to: "Administrator <admin@example.com>"
-      from: %emails.from%
-      subjectPrefix: "ReCodEx Failure Report - "
+  failures:  # admin messages on errors
+    emails:  # additional info for sending mails
+      to: "Administrator <admin@example.com>"  # admin mail address
+      from: %emails.from%  # source address
+      subjectPrefix: "ReCodEx Failure Report - "  # prefix of mail subject
 
   assignmentNotifications:
     emails:
@@ -111,10 +111,10 @@ parameters:
       from: %emails.from%
       failureResolvedPrefix: "ReCodEx Submission Failure resolved - "
 
-  forgottenPassword:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"
-    tokenExpiration: 600 # 10 minutes
-    emails:
+  forgottenPassword:  # user messages for changing passwords
+    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"  # URL of web application where the password can be changed
+    tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
+    emails:  # additional info for sending mails, from is source address and subjectPrefix is prefix of mail subject
       from: %emails.from%
       subjectPrefix: "ReCodEx Forgotten Password Request - "
 
@@ -125,15 +125,15 @@ parameters:
       from: %emails.from%
       subjectPrefix: "ReCodEx Email Verification Request - "
 
-  mail:
-    smtp: true
-    host: "smtp.ps.stdin.cz"
-    port: 587
-    username: ""
-    password: ""
-    secure: "tls"
-    context:
-      ssl:
+  mail:  # configuration of sending mails
+    smtp: true  # using SMTP server, have to be "true"
+    host: "smtp.ps.stdin.cz"  # address of the server
+    port: 587  # sending port (common values are 25, 465, 587)
+    username: ""  # login to the server
+    password: ""  # password to the server
+    secure: "tls"  # security, values are empty for no security, "ssl" or "tls"
+    context:  # additional parameters, depending on used mail engine
+      ssl:  # examle self-signed certificates can be allowed as verify_peer and verify_peer_name to false and allow_self_signed to true under ssl key (see example)
         verify_peer: false
         verify_peer_name: false
         allow_self_signed: true
