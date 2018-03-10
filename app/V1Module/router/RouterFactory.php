@@ -230,7 +230,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:solutions");
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>/pre-submit", "ReferenceExerciseSolutions:preSubmit");
-    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/submit", "ReferenceExerciseSolutions:createReferenceSolution");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/submit", "ReferenceExerciseSolutions:submit");
     $router[] = new PostRoute("$prefix/exercise/<exerciseId>/resubmit-all", "ReferenceExerciseSolutions:resubmitAll");
 
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
