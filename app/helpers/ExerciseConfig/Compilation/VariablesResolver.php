@@ -9,6 +9,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\Wildcards;
+use Nette\Utils\Arrays;
 
 
 /**
@@ -18,6 +19,39 @@ use App\Helpers\Wildcards;
  * variable values during boxes compilation.
  */
 class VariablesResolver {
+
+  /**
+   * Variables defined in exercise config or environment config can contain
+   * references, these references are resolved against user submitted variable
+   * values. And that is, surprisingly, what this method does.
+   * @param Variable|null $variable
+   * @param CompilationParams $params
+   * @throws ExerciseConfigException
+   */
+  private function resolveSubmitVariableReference(?Variable $variable, CompilationParams $params) {
+    if (!$variable || !$variable->isReference()) {
+      return;
+    }
+
+    // author of exercise defined reference which should be provided on submit,
+    // but user which submitted solution did not provide the value for reference
+    $reference = $variable->getReference();
+    if (!array_key_exists($reference, $params->getVariables())) {
+      throw new ExerciseConfigException("Variable '{$reference}' was not provided on submit");
+    }
+
+    // set user provided variable to actual variable
+    $variable->setValue($params->getVariables()[$reference]);
+
+    // files can be further validated on existence
+    if ($variable->isFile()) {
+      foreach ($variable->getValueAsArray() as $value) {
+        if (!in_array($value, $params->getFiles())) {
+          throw new ExerciseConfigException("File '{$value}' in variable '{$reference}' could not be found in submitted files");
+        }
+      }
+    }
+  }
 
   /**
    * Regular expressions are allowed only in file inputs and should be resolved
@@ -153,6 +187,9 @@ class VariablesResolver {
       // resolve name of the file to the hash if variable is remote file
       $this->resolveRemoteFileHash($inputVariable, $context->getExerciseFiles());
 
+      // resolve references which might be in exercise or environment config
+      $this->resolveSubmitVariableReference($inputVariable, $params);
+
       // assign variable to both nodes
       $inputBox->setInputVariable($inputVariable);
       $outputPort->setVariableValue($variable);
@@ -199,11 +236,13 @@ class VariablesResolver {
    * @param VariablesTable $pipelineVariables
    * @param array $pipelineFiles
    * @param CompilationContext $context
+   * @param CompilationParams $params
    * @throws ExerciseConfigException
    */
   private function resolveForVariable(?PortNode $parent, PortNode $child,
       string $inPortName, ?string $outPortName, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables, array $pipelineFiles, CompilationContext $context) {
+      VariablesTable $pipelineVariables, array $pipelineFiles,
+      CompilationContext $context, CompilationParams $params) {
 
     // init
     $inPort = $child->getBox()->getInputPort($inPortName);
@@ -239,10 +278,18 @@ class VariablesResolver {
     }
 
     // variable is reference, try to find its value in external variables tables
+    $pipelineVariable = $variable;
     $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables);
 
     // resolve name of the file to the hash if variable is remote file
     $this->resolveRemoteFileHash($variable, $pipelineFiles);
+
+    if ($pipelineVariable !== $variable) {
+      // pipeline variable was reference thus we loaded it from exercise or
+      // environment config, this means it can contain further references
+      // to submitted variables in solution
+      $this->resolveSubmitVariableReference($variable, $params);
+    }
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
@@ -258,20 +305,22 @@ class VariablesResolver {
    * @param VariablesTable $pipelineVariables
    * @param array $pipelineFiles
    * @param CompilationContext $context
+   * @param CompilationParams $params
    * @throws ExerciseConfigException
    */
-  public function resolveForOtherNodes(MergeTree $mergeTree, VariablesTable $exerciseVariables,
-      VariablesTable $pipelineVariables, array $pipelineFiles, CompilationContext $context) {
+  private function resolveForOtherNodes(MergeTree $mergeTree, VariablesTable $exerciseVariables,
+      VariablesTable $pipelineVariables, array $pipelineFiles, CompilationContext $context,
+      CompilationParams $params) {
     foreach ($mergeTree->getOtherNodes() as $node) {
       foreach ($node->getBox()->getInputPorts() as $inPortName => $inputPort) {
         $parent = $node->getParent($inPortName);
         $outPortName = $parent === null ? null : $parent->findChildPort($node);
         if ($parent !== null && $outPortName === null) {
           // I do not like what you got!
-          throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in parent {$parent->getBox()->getName()}");
+          throw new ExerciseConfigException("Malformed tree - node '{$node->getBox()->getName()}' not found in parent '{$parent->getBox()->getName()}'");
         }
 
-        $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context);
+        $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context, $params);
       }
 
       foreach ($node->getChildrenByPort() as $outPortName => $children) {
@@ -279,10 +328,10 @@ class VariablesResolver {
           $inPortName = $child->findParentPort($node);
           if (!$inPortName) {
             // Oh boy, here we go throwing exceptions again!
-            throw new ExerciseConfigException("Malformed tree - node {$node->getBox()->getName()} not found in child {$child->getBox()->getName()}");
+            throw new ExerciseConfigException("Malformed tree - node '{$node->getBox()->getName()}' not found in child '{$child->getBox()->getName()}'");
           }
 
-          $this->resolveForVariable($node, $child, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context);
+          $this->resolveForVariable($node, $child, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context, $params);
         }
       }
     }
@@ -301,7 +350,7 @@ class VariablesResolver {
   public function resolve(MergeTree $mergeTree, VariablesTable $exerciseVariables, VariablesTable $pipelineVariables,
       array $pipelineFiles, CompilationContext $context, CompilationParams $params) {
     $this->resolveForInputNodes($mergeTree, $exerciseVariables, $pipelineVariables, $context, $params);
-    $this->resolveForOtherNodes($mergeTree, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context);
+    $this->resolveForOtherNodes($mergeTree, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context, $params);
   }
 
 }

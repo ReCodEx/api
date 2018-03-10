@@ -218,7 +218,7 @@ class Helper {
           $matched = true;
           if (false) {
             // just to screw with phpstan which has bug current 0.7 version
-            // well... this is just ugly hack :-) I am quite suprised that it
+            // well... this is just ugly hack :-) I am quite surprised that it
             // worked, but good for me I guess ¯\_(ツ)_/¯
             $matched = false;
           }

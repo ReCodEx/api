@@ -15,6 +15,12 @@ class CompilationParams {
   private $files = [];
 
   /**
+   * Variables submitted by user.
+   * @var array
+   */
+  private $variables = [];
+
+  /**
    * Flag determining if compilation should include debug execution information.
    * @var bool
    */
@@ -33,6 +39,14 @@ class CompilationParams {
    */
   public function getFiles(): array {
     return $this->files;
+  }
+
+  /**
+   * Get variables submitted by user.
+   * @return array
+   */
+  public function getVariables(): array {
+    return $this->variables;
   }
 
   /**
@@ -65,11 +79,13 @@ class CompilationParams {
    * Factory.
    * @param array $files
    * @param bool $debug
+   * @param array $variables
    * @return CompilationParams
    */
-  public static function create(array $files = [], bool $debug = false): CompilationParams {
+  public static function create(array $files = [], bool $debug = false, array $variables = []): CompilationParams {
     $params = new CompilationParams();
     $params->files = $files;
+    $params->variables = $variables;
     $params->debug = $debug;
     return $params;
   }
