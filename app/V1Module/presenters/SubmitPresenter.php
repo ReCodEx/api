@@ -357,6 +357,13 @@ class SubmitPresenter extends BasePresenter {
     $this->sendSuccessResponse($result);
   }
 
+  public function checkPreSubmit(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canSubmit($assignment)) {
+      throw new ForbiddenRequestException("You cannot submit this assignment.");
+    }
+  }
+
   /**
    * Pre submit action which will, based on given files, detect possible runtime
    * environments for the assignment. Also it can be further used for entry
@@ -366,15 +373,11 @@ class SubmitPresenter extends BasePresenter {
    * @param string $id identifier of assignment
    * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
    * @throws NotFoundException
-   * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws ExerciseConfigException
    */
   public function actionPreSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canSubmit($assignment)) {
-      throw new ForbiddenRequestException("You cannot submit this assignment.");
-    }
 
     // retrieve and check uploaded files
     $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
