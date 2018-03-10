@@ -281,7 +281,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, [ "submitFileRef" => "wrong.file.in" ]);
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseConfigException::class, "Exercise configuration error - File 'wrong.file.in' in variable 'submitFileRef' could not be found in submitted files");
+    }, ExerciseConfigException::class, "Exercise configuration error - File 'wrong.file.in' in variable 'submitFileRef' could not be found among submitted files");
   }
 
   public function testRegexp() {

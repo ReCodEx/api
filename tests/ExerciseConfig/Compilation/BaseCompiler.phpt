@@ -59,7 +59,7 @@ class TestBaseCompiler extends Tester\TestCase
           "envA" => [ "pipelines" => [
             [ "name" => "compilationPipeline", "variables" => [] ],
             [ "name" => "testPipeline", "variables" => [
-              [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
+              [ "name" => "expected_output", "type" => "file", "value" => '$expected-a-out' ],
               [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
             ] ]
           ] ],
@@ -93,7 +93,7 @@ class TestBaseCompiler extends Tester\TestCase
     ]
   ];
   private static $envVariablesTable = [
-    [ "name" => "source_files", "type" => "file[]", "value" => ["source"] ]
+    [ "name" => "source_files", "type" => "file[]", "value" => "source" ]
   ];
   private static $environment = "envA";
   private static $compilationPipeline = [
@@ -226,6 +226,10 @@ class TestBaseCompiler extends Tester\TestCase
     "expected.B.out" => "expected.B.out.hash",
     "expected.B.in" => "expected.B.in.hash"
   ];
+  private static $submitFiles = [ "source" ];
+  private static $submitVariables = [
+    "expected-a-out" => "source"
+  ];
 
 
   /**
@@ -272,7 +276,8 @@ class TestBaseCompiler extends Tester\TestCase
 
     $context = CompilationContext::create($exerciseConfig, $environmentConfigVariables, $limits,
       self::$exerciseFiles, self::$testsNames, self::$environment);
-    $jobConfig = $this->compiler->compile($context, CompilationParams::create([], true));
+    $params = CompilationParams::create(self::$submitFiles, true, self::$submitVariables);
+    $jobConfig = $this->compiler->compile($context, $params);
 
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
@@ -337,16 +342,16 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testAInputTask->getTestId());
     Assert::null($testAInputTask->getSandboxConfig());
 
-    $testATestTask = $jobConfig->getTasks()[5];
-    Assert::equal("testA.testPipeline.test.65531", $testATestTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testATestTask->getPriority());
-    Assert::count(1, $testATestTask->getDependencies());
-    Assert::equal([$testAMkdir->getId()], $testATestTask->getDependencies());
-    Assert::equal("fetch", $testATestTask->getCommandBinary());
-    Assert::equal(["expected.A.out.hash", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
-    Assert::null($testATestTask->getType());
-    Assert::equal("testA", $testATestTask->getTestId());
-    Assert::null($testATestTask->getSandboxConfig());
+    $testACopyTask = $jobConfig->getTasks()[5];
+    Assert::equal("testA.testPipeline.test.65531", $testACopyTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testACopyTask->getPriority());
+    Assert::count(1, $testACopyTask->getDependencies());
+    Assert::equal([$testAMkdir->getId()], $testACopyTask->getDependencies());
+    Assert::equal("cp", $testACopyTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testACopyTask->getCommandArguments());
+    Assert::null($testACopyTask->getType());
+    Assert::equal("testA", $testACopyTask->getTestId());
+    Assert::null($testACopyTask->getSandboxConfig());
 
     $testAExtraTask = $jobConfig->getTasks()[6];
     Assert::equal("testA.compilationPipeline.extra.65530", $testAExtraTask->getId());
@@ -420,7 +425,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA.testPipeline.judge.65525", $testAJudgeTask->getId());
     Assert::equal(Priorities::$EVALUATION, $testAJudgeTask->getPriority());
     Assert::count(3, $testAJudgeTask->getDependencies());
-    Assert::equal([$testATestTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
+    Assert::equal([$testACopyTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
       $testAJudgeTask->getDependencies());
     Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-judge-normal", $testAJudgeTask->getCommandBinary());
     Assert::equal([ConfigParams::$EVAL_DIR . "testA/expected.out", ConfigParams::$EVAL_DIR . "testA/actual.out"], $testAJudgeTask->getCommandArguments());

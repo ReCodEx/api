@@ -47,7 +47,7 @@ class VariablesResolver {
     if ($variable->isFile()) {
       foreach ($variable->getValueAsArray() as $value) {
         if (!in_array($value, $params->getFiles())) {
-          throw new ExerciseConfigException("File '{$value}' in variable '{$reference}' could not be found in submitted files");
+          throw new ExerciseConfigException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
         }
       }
     }
