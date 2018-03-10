@@ -228,15 +228,16 @@ class RouterFactory {
    */
   private static function createReferenceSolutionsRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:exercise");
-    $router[] = new PostRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:createReferenceSolution");
-    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/evaluate", "ReferenceExerciseSolutions:evaluateForExercise");
+    $router[] = new GetRoute("$prefix/exercise/<exerciseId>", "ReferenceExerciseSolutions:solutions");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/pre-submit", "ReferenceExerciseSolutions:preSubmit");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/submit", "ReferenceExerciseSolutions:createReferenceSolution");
+    $router[] = new PostRoute("$prefix/exercise/<exerciseId>/resubmit-all", "ReferenceExerciseSolutions:resubmitAll");
 
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
 
     $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
-    $router[] = new PostRoute("$prefix/<id>/evaluate", "ReferenceExerciseSolutions:evaluate");
+    $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
     $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
     $router[] = new GetRoute("$prefix/<solutionId>/download-solution", "ReferenceExerciseSolutions:downloadSolutionArchive");
     return $router;

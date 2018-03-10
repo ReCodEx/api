@@ -77,7 +77,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $exercise = $this->exercises->searchByName("Convex hull")[0];
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'GET', [
-      'action' => 'exercise',
+      'action' => 'solutions',
       'exerciseId' => $exercise->getId()
     ]);
 
@@ -201,7 +201,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal($exercise->getId(), $payload->getExercise()->getId());
   }
 
-  public function testEvaluateSingle()
+  public function testResubmit()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -244,7 +244,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST',
-      ['action' => 'evaluate', 'id' => $solution->getId()]
+      ['action' => 'resubmit', 'id' => $solution->getId()]
     );
 
     $response = $this->presenter->run($request);
@@ -260,7 +260,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(0, count($errors));
   }
 
-  public function testEvaluateMultiple()
+  public function testResubmitAll()
   {
     // @todo
     Assert::true(true);
