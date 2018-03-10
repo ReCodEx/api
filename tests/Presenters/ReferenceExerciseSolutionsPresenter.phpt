@@ -161,7 +161,41 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testCreateReferenceSolution()
+  public function testPreSubmit()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = current($this->presenter->users->findAll());
+    $exercise = current($this->exercises->findAll());
+    $environment = $exercise->getRuntimeEnvironments()->first();
+    $ext = current($environment->getExtensionsList());
+
+    // save fake files into db
+    $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
+    $file2 = new UploadedFile("file2." . $ext, new \DateTime, 0, $user, "file2." . $ext);
+    $this->presenter->files->persist($file1);
+    $this->presenter->files->persist($file2);
+    $this->presenter->files->flush();
+    $files = [ $file1->getId(), $file2->getId() ];
+
+    $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST',
+      ['action' => 'preSubmit', 'exerciseId' => $exercise->getId()],
+      ['files' => $files]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload =  $result["payload"];
+    Assert::count(1, $payload);
+    Assert::true(array_key_exists("environments", $payload));
+
+    Assert::equal([$environment->getId()], $payload["environments"]);
+  }
+
+  public function testSubmit()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -180,7 +214,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $files = [ $file1->getId(), $file2->getId() ];
 
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST', [
-      'action' => 'createReferenceSolution',
+      'action' => 'submit',
       'exerciseId' => $exercise->getId()
     ], [
       'note' => 'new reference solution',

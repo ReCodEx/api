@@ -2,7 +2,9 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
@@ -10,6 +12,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FileServerProxy;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
@@ -101,6 +104,13 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public $evaluationLoadingHelper;
 
+  /**
+   * @var ExerciseConfigHelper
+   * @inject
+   */
+  public $exerciseConfigHelper;
+
+
   public function checkSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$this->exerciseAcl->canViewDetail($exercise)) {
@@ -185,9 +195,46 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submission);
   }
 
-  public function checkCreateReferenceSolution(string $exerciseId) {
+  public function checkPreSubmit(string $exerciseId) {
+    $exercise = $this->exercises->findOrThrow($exerciseId);
+    if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
+      throw new ForbiddenRequestException("You cannot create reference solutions for this exercise");
+    }
+  }
+
+  /**
+   * Pre submit action which will, based on given files, detect possible runtime
+   * environments for the exercise. Also it can be further used for entry
+   * points and other important things that should be provided by user during
+   * submit.
+   * @POST
+   * @param string $exerciseId identifier of exercise
+   * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
+   * @throws NotFoundException
+   * @throws InvalidArgumentException
+   * @throws ExerciseConfigException
+   */
+  public function actionPreSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
 
+    // retrieve and check uploaded files
+    $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
+    if (count($uploadedFiles) === 0) {
+      throw new InvalidArgumentException("files", "No files were uploaded");
+    }
+
+    // prepare file names into separate array
+    $filenames = array_values(array_map(function (UploadedFile $uploadedFile) {
+      return $uploadedFile->getName();
+    }, $uploadedFiles));
+
+    $this->sendSuccessResponse([
+      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($exercise, $filenames)
+    ]);
+  }
+
+  public function checkSubmit(string $exerciseId) {
+    $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
       throw new ForbiddenRequestException("You cannot create reference solutions for this exercise");
     }
@@ -204,7 +251,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotFoundException
    * @throws SubmissionEvaluationFailedException
    */
-  public function actionCreateReferenceSolution(string $exerciseId) {
+  public function actionSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $user = $this->getCurrentUser();
 
