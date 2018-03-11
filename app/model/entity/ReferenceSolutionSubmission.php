@@ -66,6 +66,8 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
     $this->failures = new ArrayCollection();
+
+    $referenceSolution->addSubmission($this);
   }
 
   function isFailed(): bool {

@@ -47,6 +47,14 @@ class ReferenceExerciseSolution implements JsonSerializable
    */
   protected $submissions;
 
+  /**
+   * Add submission to solution entity.
+   * @param ReferenceSolutionSubmission $submission
+   */
+  public function addSubmission(ReferenceSolutionSubmission $submission) {
+    $this->submissions->add($submission);
+  }
+
   public function getFiles() {
     return $this->solution->getFiles();
   }
