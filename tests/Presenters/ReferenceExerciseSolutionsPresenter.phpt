@@ -213,6 +213,32 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     $this->presenter->files->flush();
     $files = [ $file1->getId(), $file2->getId() ];
 
+    // prepare return variables for mocked objects
+    $jobId = 'jobId';
+
+    /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
+    $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
+    $mockSubmissionHeader->shouldReceive("setId")->withArgs([Mockery::any()])->andReturn($mockSubmissionHeader)->times(2)
+      ->shouldReceive("setType")->withArgs([ReferenceSolutionSubmission::JOB_TYPE])->andReturn($mockSubmissionHeader)->times(2);
+
+    /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
+    $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
+    $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(2)
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)
+      ->shouldReceive("getTasksCount")->andReturn(10);
+
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
+      ->andReturn(new GeneratorResult("", $mockJobConfig))->once();
+    $this->presenter->jobConfigGenerator = $mockGenerator;
+
+    /** @var Mockery\Mock | BackendSubmitHelper $mockBackendSubmitHelper */
+    $mockBackendSubmitHelper = Mockery::mock(App\Helpers\BackendSubmitHelper::class);
+    $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl1");
+    $mockBackendSubmitHelper->shouldReceive("initiateEvaluation")->withAnyArgs()->once()->andReturn("resultUrl2");
+    $this->presenter->submissionHelper = new SubmissionHelper($mockBackendSubmitHelper);
+
     $request = new Nette\Application\Request('V1:ReferenceExerciseSolutions', 'POST', [
       'action' => 'submit',
       'exerciseId' => $exercise->getId()
@@ -227,12 +253,12 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
+    Assert::count(3, $result['payload']);
 
-    /** @var ReferenceExerciseSolution $payload */
-    $payload = $result['payload'];
-    Assert::type(ReferenceExerciseSolution::class, $payload);
-    Assert::equal('new reference solution', $payload->getDescription());
-    Assert::equal($exercise->getId(), $payload->getExercise()->getId());
+    $submissions = $result['payload']['submissions'];
+    $errors = $result['payload']['errors'];
+    Assert::equal(2, count($submissions));
+    Assert::equal(0, count($errors));
   }
 
   public function testResubmit()
@@ -243,7 +269,6 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
     // prepare return variables for mocked objects
     $jobId = 'jobId';
-    $hwGroups = ["group1", "group2"];
 
     /** @var Mockery\Mock | JobConfig\SubmissionHeader $mockSubmissionHeader */
     $mockSubmissionHeader = Mockery::mock(JobConfig\SubmissionHeader::class);
@@ -253,7 +278,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\JobConfig $mockJobConfig */
     $mockJobConfig = Mockery::mock(JobConfig\JobConfig::class);
     $mockJobConfig->shouldReceive("getJobId")->withAnyArgs()->andReturn($jobId)->atLeast(2)
-      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader);
+      ->shouldReceive("getSubmissionHeader")->withAnyArgs()->andReturn($mockSubmissionHeader)
+      ->shouldReceive("getTasksCount")->andReturn(10);
 
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
@@ -288,9 +314,9 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count(3, $result['payload']);
 
-    $evaluations = $result['payload']['evaluations'];
+    $submissions = $result['payload']['submissions'];
     $errors = $result['payload']['errors'];
-    Assert::equal(2, count($evaluations));
+    Assert::equal(2, count($submissions));
     Assert::equal(0, count($errors));
   }
 
