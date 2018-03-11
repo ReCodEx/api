@@ -14,6 +14,7 @@ use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FileServerProxy;
+use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\Exercise;
@@ -110,6 +111,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public $exerciseConfigHelper;
 
+  /**
+   * @var MonitorConfig
+   * @inject
+   */
+  public $monitorConfig;
+
 
   public function checkSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -160,7 +167,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solution evaluations for an exercise solution.
    * @GET
    * @param string $solutionId identifier of the reference exercise solution
-   * @throws ForbiddenRequestException
    * @throws InternalServerErrorException
    */
   public function actionEvaluations(string $solutionId) {
@@ -285,7 +291,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     $this->referenceSolutions->persist($referenceSolution);
-    $this->sendSuccessResponse($referenceSolution);
+    $this->sendSuccessResponse($this->finishSubmission($referenceSolution));
   }
 
   public function checkResubmit(string $id) {
@@ -310,14 +316,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
-
-    list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution, $isDebug);
-
-    $this->sendSuccessResponse([
-      "referenceSolution" => $referenceSolution,
-      "evaluations" => $evaluations,
-      "errors" => $errors
-    ]);
+    $this->sendSuccessResponse($this->finishSubmission($referenceSolution, $isDebug));
   }
 
   public function checkResubmitAll($exerciseId) {
@@ -345,12 +344,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $result = [];
 
     foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
-      list($evaluations, $errors) = $this->evaluateReferenceSolution($referenceSolution, $isDebug);
-      $result[] = [
-        "referenceSolution" => $referenceSolution,
-        "evaluations" => $evaluations,
-        "errors" => $errors
-      ];
+      $result[] = $this->finishSubmission($referenceSolution, $isDebug);
     }
 
     $this->sendSuccessResponse($result);
@@ -362,42 +356,49 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @return array
    * @throws ForbiddenRequestException
    */
-  private function evaluateReferenceSolution(
+  private function finishSubmission(
       ReferenceExerciseSolution $referenceSolution,
       bool $isDebug = false
   ): array {
     $exercise = $referenceSolution->getExercise();
     $runtimeEnvironment = $referenceSolution->getRuntimeEnvironment();
     $hwGroups = $exercise->getHardwareGroups();
-    $evaluations = [];
+    $submissions = [];
     $errors = [];
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
     $compilationParams = CompilationParams::create($submittedFiles, $isDebug);
-    $generatorResults = $this->jobConfigGenerator
+    $generatorResult = $this->jobConfigGenerator
       ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
-      $evaluation = new ReferenceSolutionSubmission($referenceSolution, $hwGroup,
-        $generatorResults->getJobConfigPath(), $this->getCurrentUser());
-      $this->referenceSubmissions->persist($evaluation);
+      $submission = new ReferenceSolutionSubmission($referenceSolution, $hwGroup,
+        $generatorResult->getJobConfigPath(), $this->getCurrentUser());
+      $this->referenceSubmissions->persist($submission);
 
       try {
         $resultsUrl = $this->submissionHelper->submitReference(
-          $evaluation->getId(),
+          $submission->getId(),
           $runtimeEnvironment->getId(),
           $hwGroup->getId(),
           $referenceSolution->getFiles()->getValues(),
-          $generatorResults->getJobConfig()
+          $generatorResult->getJobConfig()
         );
 
-        $evaluation->setResultsUrl($resultsUrl);
+        $submission->setResultsUrl($resultsUrl);
         $this->referenceSubmissions->flush();
-        $evaluations[] = $evaluation;
+        $submissions[] = [
+          "submission" => $submission,
+          "webSocketChannel" => [
+            "id" => $generatorResult->getJobConfig()->getJobId(),
+            "monitorUrl" => $this->monitorConfig->getAddress(),
+            "expectedTasksCount" => $generatorResult->getJobConfig()->getTasksCount()
+          ]
+        ];
       } catch (SubmissionFailedException $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
-        $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $evaluation);
+        $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $submission);
         $this->referenceSubmissions->persist($failure, false);
         $errors[] = $hwGroup->getId();
       }
@@ -407,7 +408,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $this->referenceSubmissions->flush();
     }
 
-    return [$evaluations, $errors];
+    return [
+      "referenceSolution" => $referenceSolution,
+      "submissions" => $submissions,
+      "errors" => $errors
+    ];
   }
 
   public function checkDownloadSolutionArchive(string $solutionId) {
