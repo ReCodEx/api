@@ -217,7 +217,7 @@ class CASLoginService implements IExternalLoginService {
       $emails = LDAPHelper::getArray(Arrays::get($info, $this->emailField));
     } catch (InvalidArgumentException $e) {
       $this->logger->log("The user attributes received from the CAS are incomplete (email missing):\n" . var_export($data, true), ILogger::ERROR);
-      throw new CASMissingInfoException("The user attributes received from the CAS does not contain an email address, which is required.");
+      throw new CASMissingInfoException("The user attributes received from the CAS do not contain an email address, which is required.");
     }
 
     // we do not get information about the degrees of the user
