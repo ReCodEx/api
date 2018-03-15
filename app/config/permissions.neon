@@ -305,6 +305,7 @@ permissions:
           - viewScoreConfig
           - addReferenceSolution
           - viewPipelines
+          - fork
       conditions:
           or:
             - exercise.isAuthor
@@ -317,7 +318,6 @@ permissions:
           - setLimits
           - setScoreConfig
           - update
-          - fork
           - evaluateReferenceSolution
           - createPipeline
       conditions:
