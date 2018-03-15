@@ -3,7 +3,7 @@
 $container = include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
+use App\Helpers\EntityMetadata\HwGroupMeta;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Limits;
 use App\Helpers\ExerciseConfig\Loader;

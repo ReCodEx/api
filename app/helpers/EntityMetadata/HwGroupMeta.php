@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\ExerciseConfig\EntityMetadata;
+namespace App\Helpers\EntityMetadata;
 
 use Symfony\Component\Yaml\Yaml;
 

@@ -3,7 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
-use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
+use App\Helpers\EntityMetadata\HwGroupMeta;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Model\Entity\Exercise;

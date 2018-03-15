@@ -2,7 +2,7 @@
 
 namespace App\Model\Entity;
 
-use App\Helpers\ExerciseConfig\EntityMetadata\HwGroupMeta;
+use App\Helpers\EntityMetadata\HwGroupMeta;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 
