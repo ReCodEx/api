@@ -357,7 +357,9 @@ class Assignment implements JsonSerializable, IExercise
       "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
       "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
       "submissionsCountLimit" => $this->submissionsCountLimit,
-      "runtimeEnvironmentsIds" => $this->getRuntimeEnvironmentsIds(),
+      "runtimeEnvironmentsIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $environment) {
+        return $environment->getId();
+      }),
       "disabledRuntimeEnvironmentsIds" => $this->disabledRuntimeEnvironments->map(function (RuntimeEnvironment $environment) {
         return $environment->getId();
       })->getValues(),
