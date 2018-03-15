@@ -63,8 +63,8 @@ class VariablesResolver {
    */
   private function resolveFileInputsRegexp(?Variable $variable,
       array $submittedFiles): ?Variable {
-    if (!$variable || !$variable->isFile() || $variable->isValueArray()) {
-      // variable is null or variable is not file or value is already array,
+    if (!$variable || $variable->isReference() || !$variable->isFile() || $variable->isValueArray()) {
+      // variable is null, reference or variable is not file or value is already array,
       // then no regexp matching is needed
       return $variable;
     }
@@ -172,7 +172,7 @@ class VariablesResolver {
       }
 
       // find references
-      $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables);
+      $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables, $params);
 
       // try to look for remote variable in configuration tables
       $inputVariable = null;
@@ -180,15 +180,15 @@ class VariablesResolver {
       $exerciseVariable = $exerciseVariables->get($variableName);
       if ($environmentVariable) {
         $inputVariable = $this->resolveFileInputsRegexp($environmentVariable, $params->getFiles());
+
+        // resolve references which might be in environment config
+        $this->resolveSubmitVariableReference($inputVariable, $params);
       } else if ($exerciseVariable) {
         $inputVariable = $exerciseVariable;
       }
 
       // resolve name of the file to the hash if variable is remote file
       $this->resolveRemoteFileHash($inputVariable, $context->getExerciseFiles());
-
-      // resolve references which might be in exercise or environment config
-      $this->resolveSubmitVariableReference($inputVariable, $params);
 
       // assign variable to both nodes
       $inputBox->setInputVariable($inputVariable);
@@ -202,16 +202,21 @@ class VariablesResolver {
    * @param Variable $variable
    * @param VariablesTable $environmentVariables
    * @param VariablesTable $exerciseVariables
+   * @param CompilationParams $params
    * @return Variable
    * @throws ExerciseConfigException
    */
   private function findReferenceIfAny(Variable $variable,
       VariablesTable $environmentVariables,
-      VariablesTable $exerciseVariables): Variable {
+      VariablesTable $exerciseVariables,
+      CompilationParams $params): Variable {
     if ($variable->isReference()) {
       $referenceName = $variable->getReference();
       $variable = $environmentVariables->get($referenceName);
-      if (!$variable) {
+      if ($variable) {
+        // resolve references which might be in environment config
+        $this->resolveSubmitVariableReference($variable, $params);
+      } else {
         $variable = $exerciseVariables->get($referenceName);
       }
 
@@ -279,7 +284,7 @@ class VariablesResolver {
 
     // variable is reference, try to find its value in external variables tables
     $pipelineVariable = $variable;
-    $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables);
+    $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables, $params);
 
     // resolve name of the file to the hash if variable is remote file
     $this->resolveRemoteFileHash($variable, $pipelineFiles);

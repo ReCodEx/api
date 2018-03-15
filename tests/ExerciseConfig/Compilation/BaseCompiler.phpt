@@ -59,14 +59,12 @@ class TestBaseCompiler extends Tester\TestCase
           "envA" => [ "pipelines" => [
             [ "name" => "compilationPipeline", "variables" => [] ],
             [ "name" => "testPipeline", "variables" => [
-              [ "name" => "expected_output", "type" => "file", "value" => '$expected-a-out' ],
               [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
             ] ]
           ] ],
           "envB" => [ "pipelines" => [
             [ "name" => "compilationPipeline", "variables" => [] ],
             [ "name" => "testPipeline", "variables" => [
-              [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
               [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
             ] ]
           ] ]
@@ -83,7 +81,6 @@ class TestBaseCompiler extends Tester\TestCase
             "pipelines" => [
               [ "name" => "compilationPipeline", "variables" => [] ],
               [ "name" => "testPipeline", "variables" => [
-                [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ,
                 [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
               ] ]
             ]
@@ -93,7 +90,8 @@ class TestBaseCompiler extends Tester\TestCase
     ]
   ];
   private static $envVariablesTable = [
-    [ "name" => "source_files", "type" => "file[]", "value" => "source" ]
+    [ "name" => "source_files", "type" => "file[]", "value" => "source" ],
+    [ "name" => "expected_output", "type" => "file", "value" => '$expected-a-out' ]
   ];
   private static $environment = "envA";
   private static $compilationPipeline = [
