@@ -54,10 +54,12 @@ class TestExerciseConfigHelper extends Tester\TestCase
 
 
   private static $cEnvVariablesTable = [
-    [ "name" => "source_files", "type" => "file[]", "value" => "*.c" ]
+    [ "name" => "source_files", "type" => "file[]", "value" => "*.c" ],
+    [ "name" => "submit_file", "type" => "file", "value" => '$c-submit-file' ]
   ];
   private static $javaEnvVariablesTable = [
-    [ "name" => "source_files", "type" => "file[]", "value" => "*.java" ]
+    [ "name" => "source_files", "type" => "file[]", "value" => "*.java" ],
+    [ "name" => "submit_file", "type" => "file", "value" => '$java-submit-file' ]
   ];
   private static $exerciseConfig = [
     "environments" => [ "c-gcc-linux", "java-linux" ],
@@ -567,6 +569,24 @@ class TestExerciseConfigHelper extends Tester\TestCase
     $result = $this->helper->getEnvironmentsForFiles($exercise, ["main.c"]);
 
     Assert::equal(["c-gcc-linux"], $result);
+  }
+
+  public function testSubmitVariables() {
+    $exercise = $this->createExercise();
+    $result = $this->helper->getSubmitVariablesForExercise($exercise);
+    Assert::count(2, $result);
+
+    $cRuntime = $result[0];
+    Assert::equal("c-gcc-linux", $cRuntime["runtimeEnvironmentId"]);
+    Assert::count(1, $cRuntime["variables"]);
+    Assert::equal("c-submit-file", $cRuntime["variables"][0]["name"]);
+    Assert::equal("file", $cRuntime["variables"][0]["type"]);
+
+    $javaRuntime = $result[1];
+    Assert::equal("java-linux", $javaRuntime["runtimeEnvironmentId"]);
+    Assert::count(1, $javaRuntime["variables"]);
+    Assert::equal("java-submit-file", $javaRuntime["variables"][0]["name"]);
+    Assert::equal("file", $javaRuntime["variables"][0]["type"]);
   }
 
 

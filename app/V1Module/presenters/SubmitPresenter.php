@@ -391,7 +391,8 @@ class SubmitPresenter extends BasePresenter {
     }, $uploadedFiles));
 
     $this->sendSuccessResponse([
-      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($assignment, $filenames)
+      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($assignment, $filenames),
+      "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($assignment)
     ]);
   }
 

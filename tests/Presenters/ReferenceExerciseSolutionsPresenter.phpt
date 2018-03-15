@@ -189,10 +189,12 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload =  $result["payload"];
-    Assert::count(1, $payload);
+    Assert::count(2, $payload);
     Assert::true(array_key_exists("environments", $payload));
+    Assert::true(array_key_exists("submitVariables", $payload));
 
     Assert::equal([$environment->getId()], $payload["environments"]);
+    Assert::count(2, $payload["submitVariables"]);
   }
 
   public function testSubmit()

@@ -235,7 +235,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }, $uploadedFiles));
 
     $this->sendSuccessResponse([
-      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($exercise, $filenames)
+      "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($exercise, $filenames),
+      "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($exercise)
     ]);
   }
 

@@ -260,4 +260,46 @@ class Helper {
     return $result;
   }
 
+  /**
+   * Get list of submit variables which should be given by user on submit of solution.
+   * Variables are divided by environments.
+   * @param IExercise $exercise
+   * @return array
+   * @throws ExerciseConfigException
+   */
+  public function getSubmitVariablesForExercise(IExercise $exercise): array {
+    $result = [];
+
+    foreach ($exercise->getRuntimeEnvironments() as $environment) {
+      $exerciseEnvironment = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+      if ($exerciseEnvironment === null) {
+        throw new ExerciseConfigException("Environment config not found for environment '{$environment->getId()}'");
+      }
+
+      $parsedConfig = $exerciseEnvironment->getParsedVariablesTable();
+      $variablesTable = $this->loader->loadVariablesTable($parsedConfig);
+
+      // go though variables and find references
+      $variables = [];
+      foreach ($variablesTable->getAll() as $variable) {
+        if (!$variable->isReference()) {
+          continue;
+        }
+
+        $variables[] = [
+          "name" => $variable->getReference(),
+          "type" => $variable->getType()
+        ];
+      }
+
+      // define result structure for environment
+      $result[] = [
+        "runtimeEnvironmentId" => $environment->getId(),
+        "variables" => $variables
+      ];
+    }
+
+    return $result;
+  }
+
 }
