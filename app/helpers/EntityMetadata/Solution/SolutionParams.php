@@ -56,10 +56,11 @@ class SolutionParams {
   }
 
   public function toArray(): array {
-    $result = [
-      self::VARIABLES_KEY => []
-    ];
+    if (empty($this->variables)) {
+      return [];
+    }
 
+    $result = [ self::VARIABLES_KEY => [] ];
     foreach ($this->variables as $variable) {
       $result[self::VARIABLES_KEY][] = $variable->toArray();
     }

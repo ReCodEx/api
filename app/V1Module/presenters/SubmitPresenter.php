@@ -4,10 +4,12 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 
+use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
 use App\Helpers\FailureHelper;
@@ -170,12 +172,14 @@ class SubmitPresenter extends BasePresenter {
    * @Param(type="post", name="note", description="A private note by the author of the solution")
    * @Param(type="post", name="userId", required=false, description="Author of the submission")
    * @Param(type="post", name="files", description="Submitted files")
-   * @Param(type="post", name="runtimeEnvironmentId", required=false, description="Identifier of the runtime environment used for evaluation")
+   * @Param(type="post", name="runtimeEnvironmentId", description="Identifier of the runtime environment used for evaluation")
+   * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws NotFoundException
    * @throws SubmissionFailedException
+   * @throws ParseException
    */
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -201,15 +205,10 @@ class SubmitPresenter extends BasePresenter {
       throw new InvalidArgumentException("files", "No files were uploaded");
     }
 
-    // detect the runtime environment
-    if ($req->getPost("runtimeEnvironmentId") === null) {
-      $runtimeEnvironment = $this->runtimeEnvironments->detectOrThrow($assignment, $uploadedFiles);
-    } else {
-      $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
-    }
-
     // create Solution object
+    $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
     $solution = new Solution($user, $runtimeEnvironment);
+    $solution->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
 
     $submittedFiles = [];
     foreach ($uploadedFiles as $file) {
@@ -253,6 +252,7 @@ class SubmitPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws SubmissionFailedException
+   * @throws ParseException
    */
   private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false) {
     if ($solution->getId() === null) {
@@ -267,7 +267,7 @@ class SubmitPresenter extends BasePresenter {
     }
 
     // generate job configuration
-    $compilationParams = CompilationParams::create($solution->getSolution()->getFileNames(), $isDebug);
+    $compilationParams = CompilationParams::create($solution->getSolution()->getFileNames(), $isDebug, $solution->getSolution()->getSolutionParams());
     $generatorResult =
       $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(),
         $solution->getAssignment(),

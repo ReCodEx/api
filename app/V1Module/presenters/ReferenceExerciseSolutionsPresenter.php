@@ -6,10 +6,12 @@ use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotReadyException;
+use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
@@ -253,10 +255,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="note", validation="string", description="Description of this particular reference solution, for example used algorithm")
    * @Param(type="post", name="files", description="Files of the reference solution")
    * @Param(type="post", name="runtimeEnvironmentId", description="ID of runtime for this solution")
+   * @Param(type="post", name="solutionParams", required=false, description="Solution parameters")
    * @param string $exerciseId Identifier of the exercise
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws SubmissionEvaluationFailedException
+   * @throws ParseException
    */
   public function actionSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -275,6 +279,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     // create reference solution
     $referenceSolution = new ReferenceExerciseSolution($exercise, $user, $note, $runtimeEnvironment);
+    $referenceSolution->getSolution()->setSolutionParams(new SolutionParams($req->getPost("solutionParams")));
 
     $uploadedFiles = $this->files->findAllById($req->getPost("files"));
     if (count($uploadedFiles) === 0) {
@@ -335,6 +340,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @param string $exerciseId Identifier of the exercise
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
+   * @throws ParseException
    */
   public function actionResubmitAll($exerciseId) {
     $req = $this->getRequest();
@@ -356,6 +362,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @param bool $isDebug
    * @return array
    * @throws ForbiddenRequestException
+   * @throws ParseException
    */
   private function finishSubmission(
       ReferenceExerciseSolution $referenceSolution,
@@ -368,7 +375,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $errors = [];
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
-    $compilationParams = CompilationParams::create($submittedFiles, $isDebug);
+    $compilationParams = CompilationParams::create($submittedFiles, $isDebug, $referenceSolution->getSolution()->getSolutionParams());
     $generatorResult = $this->jobConfigGenerator
       ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
 

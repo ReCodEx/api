@@ -92,7 +92,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
+    $environment = $assignment->getRuntimeEnvironments()->first();
+    $ext = current($environment->getExtensionsList());
 
     // save fake files into db
     $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
@@ -149,7 +150,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Submit', 'POST',
       ['action' => 'submit', 'id' => $assignment->getId()],
-      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files]
+      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files, 'runtimeEnvironmentId' => $environment->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -175,7 +176,8 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $user = current($this->presenter->users->findAll());
     $assignment = current($this->assignments->findAll());
-    $ext = current($assignment->getRuntimeEnvironments()->first()->getExtensionsList());
+    $environment = $assignment->getRuntimeEnvironments()->first();
+    $ext = current($environment->getExtensionsList());
 
     // save fake files into db
     $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
@@ -231,7 +233,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Submit', 'POST',
       ['action' => 'submit', 'id' => $assignment->getId()],
-      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files]
+      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files, 'runtimeEnvironmentId' => $environment->getId()]
     );
 
     $failureCount = count($this->presenter->submissionFailures->findAll());

@@ -2,12 +2,14 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use DateTime;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
@@ -54,6 +56,11 @@ class Solution implements JsonSerializable
    */
   protected $evaluated;
 
+  /**
+   * @ORM\Column(type="text")
+   */
+  protected $solutionParams;
+
 
   /**
    * @return array
@@ -77,6 +84,7 @@ class Solution implements JsonSerializable
     $this->evaluated = false;
     $this->createdAt = new DateTime;
     $this->runtimeEnvironment = $runtimeEnvironment;
+    $this->solutionParams = "";
   }
 
   public function addFile(SolutionFile $file) {
@@ -91,6 +99,15 @@ class Solution implements JsonSerializable
     return $this->files->map(function (SolutionFile $file) {
       return $file->getName();
     })->toArray();
+  }
+
+  public function getSolutionParams(): SolutionParams {
+    return new SolutionParams(Yaml::parse($this->solutionParams));
+  }
+
+  public function setSolutionParams(SolutionParams $params) {
+    $dumped = Yaml::dump($params->toArray());
+    $this->solutionParams = $dumped ?: "";
   }
 
 }
