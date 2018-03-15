@@ -18,7 +18,6 @@ class NodeRunBox extends ExecutionBox
   /** Type key */
   public static $NODE_RUN_TYPE = "node";
   public static $NODE_BINARY = "/usr/bin/node";
-  public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $DEFAULT_NAME = "Node.js Execution";
 
   private static $initialized = false;
@@ -27,15 +26,17 @@ class NodeRunBox extends ExecutionBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -64,6 +65,7 @@ class NodeRunBox extends ExecutionBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -73,6 +75,7 @@ class NodeRunBox extends ExecutionBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -97,7 +100,7 @@ class NodeRunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$NODE_BINARY);
 
-    $args = [$this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
+    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }

@@ -19,7 +19,6 @@ class PhpRunBox extends ExecutionBox
   public static $PHP_RUN_TYPE = "php";
   public static $PHP_BINARY = "/usr/bin/php";
   public static $PHP_EXEC_ARGS = [ "-c", "/usr/etc" ];
-  public static $SOURCE_FILE_PORT_KEY = "source-file";
   public static $DEFAULT_NAME = "PHP Execution";
 
   private static $initialized = false;
@@ -28,15 +27,17 @@ class PhpRunBox extends ExecutionBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -65,6 +66,7 @@ class PhpRunBox extends ExecutionBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -74,6 +76,7 @@ class PhpRunBox extends ExecutionBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -99,7 +102,7 @@ class PhpRunBox extends ExecutionBox
     $task->setCommandBinary(self::$PHP_BINARY);
 
     $args = array_merge(self::$PHP_EXEC_ARGS,
-      [ $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR) ]);
+      [ $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR) ]);
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }

@@ -22,9 +22,11 @@ abstract class ExecutionBox extends Box
 {
   public static $EXECUTION_ARGS_PORT_KEY = "args";
   public static $INPUT_FILES_PORT_KEY = "input-files";
+  public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
+  public static $ENTRY_POINT_KEY = "entry-point";
 
 
   /**

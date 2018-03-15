@@ -18,7 +18,7 @@ class Python3RunBox extends ExecutionBox
   /** Type key */
   public static $PYTHON3_TYPE = "python3";
   public static $PYTHON3_BINARY = "/usr/bin/python3";
-  public static $PYC_FILE_PORT_KEY = "pyc-file";
+  public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $DEFAULT_NAME = "Python3 Execution";
 
   private static $initialized = false;
@@ -27,15 +27,17 @@ class Python3RunBox extends ExecutionBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$PYC_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$PYC_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta)->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -64,6 +66,7 @@ class Python3RunBox extends ExecutionBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -73,6 +76,7 @@ class Python3RunBox extends ExecutionBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -97,7 +101,7 @@ class Python3RunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
 
-    $args = [$this->getInputPortValue(self::$PYC_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
+    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }

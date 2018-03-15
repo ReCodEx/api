@@ -18,7 +18,7 @@ class Python3CompilationBox extends CompilationBox
   /** Type key */
   public static $PYTHON3_COMPILATION_TYPE = "python3c";
   public static $PYTHON3_BINARY = "/usr/bin/python3";
-  public static $PYC_FILE_PORT_KEY = "pyc-file";
+  public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $PYC_EXT = ".pyc";
   public static $DEFAULT_NAME = "Python3 Compilation";
 
@@ -28,16 +28,17 @@ class Python3CompilationBox extends CompilationBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$PYC_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta)->setName(self::$PYC_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }
@@ -62,6 +63,7 @@ class Python3CompilationBox extends CompilationBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -71,6 +73,7 @@ class Python3CompilationBox extends CompilationBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -97,13 +100,17 @@ class Python3CompilationBox extends CompilationBox
     $task->setCommandArguments(["-m", "compileall", "-b", "."]);
 
     // determine name of pyc file and set it to variable
-    $sourceFile = $this->getInputPortValue(self::$SOURCE_FILE_PORT_KEY)->getValue();
-    $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
-    $this->getOutputPortValue(self::$PYC_FILE_PORT_KEY)->setValue($pycFilename);
+    $pycFilenames = [];
+    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue();
+    foreach ($sourceFiles as $sourceFile) {
+      $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
+      $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->setValue($pycFilename);
+      $pycFilenames[] = $pycFilename;
+    }
 
     // check if file produced by compilation was successfully created
-    $pycFile = $this->getOutputPortValue(self::$PYC_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
-    $exists = $this->compileExistsTask([$pycFile]);
+    $pycFiles = $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->getPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
+    $exists = $this->compileExistsTask($pycFiles);
 
     return [$task, $exists];
   }
