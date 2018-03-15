@@ -36,12 +36,12 @@ class VariablesResolver {
     // author of exercise defined reference which should be provided on submit,
     // but user which submitted solution did not provide the value for reference
     $reference = $variable->getReference();
-    if (!array_key_exists($reference, $params->getVariables())) {
+    if (!$params->getSolutionParams()->getVariable($reference)) {
       throw new ExerciseConfigException("Variable '{$reference}' was not provided on submit");
     }
 
     // set user provided variable to actual variable
-    $variable->setValue($params->getVariables()[$reference]);
+    $variable->setValue($params->getSolutionParams()->getVariable($reference)->getValue());
 
     // files can be further validated on existence
     if ($variable->isFile()) {

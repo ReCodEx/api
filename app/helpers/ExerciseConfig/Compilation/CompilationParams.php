@@ -2,6 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ParseException;
+use App\Helpers\EntityMetadata\Solution\SolutionParams;
+
 
 /**
  * Holder for various general compilation parameters.
@@ -15,10 +18,10 @@ class CompilationParams {
   private $files = [];
 
   /**
-   * Variables submitted by user.
-   * @var array
+   * Solution parameters as submitted by user.
+   * @var SolutionParams
    */
-  private $variables = [];
+  private $solutionParams = null;
 
   /**
    * Flag determining if compilation should include debug execution information.
@@ -42,11 +45,11 @@ class CompilationParams {
   }
 
   /**
-   * Get variables submitted by user.
-   * @return array
+   * Get solution parameters submitted by user.
+   * @return SolutionParams
    */
-  public function getVariables(): array {
-    return $this->variables;
+  public function getSolutionParams(): SolutionParams {
+    return $this->solutionParams;
   }
 
   /**
@@ -79,13 +82,14 @@ class CompilationParams {
    * Factory.
    * @param array $files
    * @param bool $debug
-   * @param array $variables
+   * @param SolutionParams $solutionParams
    * @return CompilationParams
+   * @throws ParseException
    */
-  public static function create(array $files = [], bool $debug = false, array $variables = []): CompilationParams {
+  public static function create(array $files = [], bool $debug = false, SolutionParams $solutionParams = null): CompilationParams {
     $params = new CompilationParams();
     $params->files = $files;
-    $params->variables = $variables;
+    $params->solutionParams = $solutionParams ?: new SolutionParams;
     $params->debug = $debug;
     return $params;
   }
