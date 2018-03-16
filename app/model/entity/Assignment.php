@@ -359,7 +359,7 @@ class Assignment implements JsonSerializable, IExercise
       "submissionsCountLimit" => $this->submissionsCountLimit,
       "runtimeEnvironmentsIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $environment) {
         return $environment->getId();
-      }),
+      })->getValues(),
       "disabledRuntimeEnvironmentsIds" => $this->disabledRuntimeEnvironments->map(function (RuntimeEnvironment $environment) {
         return $environment->getId();
       })->getValues(),
