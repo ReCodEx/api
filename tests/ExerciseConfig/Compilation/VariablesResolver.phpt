@@ -19,6 +19,9 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
 
+/**
+ * @testCase
+ */
 class TestVariablesResolver extends Tester\TestCase
 {
   /** @var VariablesResolver */
@@ -75,8 +78,8 @@ class TestVariablesResolver extends Tester\TestCase
     $submitRefReferenceVarA = (new Variable("file"))->setName("test-a-submit-ref-reference-variable")->setValue('$test-a-submit-reference-variable');
     $submitReferenceVarA = (new Variable("file"))->setName("test-a-submit-reference-variable")->setValue('$submitFileRef');
 
-    $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testRemoteInputVarA)->set($testInputArrayVarA);
-    $this->exerVarTableA = (new VariablesTable)->set($referencedVarA)->set($submitReferenceVarA);
+    $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testRemoteInputVarA)->set($testInputArrayVarA)->set($submitReferenceVarA);
+    $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
     $this->pipeVarTableA = (new VariablesTable)->set($testInputVarA)->set($testInputArrayVarA)->set($testOutputVarA)->set($preExecVarA)->set($submitRefReferenceVarA);
 
     $outPortA = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarA->getName()));

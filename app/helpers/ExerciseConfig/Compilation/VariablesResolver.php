@@ -283,18 +283,10 @@ class VariablesResolver {
     }
 
     // variable is reference, try to find its value in external variables tables
-    $pipelineVariable = $variable;
     $variable = $this->findReferenceIfAny($variable, $context->getEnvironmentConfigVariables(), $exerciseVariables, $params);
 
     // resolve name of the file to the hash if variable is remote file
     $this->resolveRemoteFileHash($variable, $pipelineFiles);
-
-    if ($pipelineVariable !== $variable) {
-      // pipeline variable was reference thus we loaded it from exercise or
-      // environment config, this means it can contain further references
-      // to submitted variables in solution
-      $this->resolveSubmitVariableReference($variable, $params);
-    }
 
     // set variable to both proper ports in child and parent
     $inPort->setVariableValue($variable);
