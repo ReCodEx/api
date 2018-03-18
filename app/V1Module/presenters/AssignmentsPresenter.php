@@ -194,12 +194,14 @@ class AssignmentsPresenter extends BasePresenter {
 
     if ($this->isRequestJson()) {
       $disabledRuntimeIds = $req->getPost("disabledRuntimeEnvironmentIds");
-      if (!is_array($disabledRuntimeIds)) {
-        throw new InvalidArgumentException("disabledRuntimeEnvironmentIds");
-      }
+      if ($disabledRuntimeIds !== null) {
+        if (!is_array($disabledRuntimeIds)) {
+          throw new InvalidArgumentException("disabledRuntimeEnvironmentIds");
+        }
 
-      $disabledRuntimes = array_map([$this->runtimeEnvironments, "findOrThrow"], $disabledRuntimeIds);
-      $assignment->setDisabledRuntimeEnvironments($disabledRuntimes);
+        $disabledRuntimes = array_map([$this->runtimeEnvironments, "findOrThrow"], $disabledRuntimeIds);
+        $assignment->setDisabledRuntimeEnvironments($disabledRuntimes);
+      }
     }
 
     // old values of some attributes
