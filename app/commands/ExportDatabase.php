@@ -101,7 +101,7 @@ class ExportDatabase extends Command {
     $content = [];
     $content[HardwareGroup::class] = [];
 
-    foreach ($this->hardwareGroups->findAll() as $group) {
+    foreach ($this->hardwareGroups->findBy([], ["id" => "ASC"]) as $group) {
       /** @var HardwareGroup $group */
 
       $constructArr = [];
@@ -123,7 +123,7 @@ class ExportDatabase extends Command {
     $content = [];
     $content[RuntimeEnvironment::class] = [];
 
-    foreach ($this->runtimeEnvironments->findAll() as $runtime) {
+    foreach ($this->runtimeEnvironments->findBy([], ["id" => "ASC"]) as $runtime) {
       /** @var RuntimeEnvironment $runtime */
 
       $constructArr = [];
@@ -154,7 +154,7 @@ class ExportDatabase extends Command {
     $pipelines = [];
 
     $index = 0;
-    foreach ($this->pipelines->findAll() as $pipeline) {
+    foreach ($this->pipelines->findBy([], ["name" => "ASC"]) as $pipeline) {
       /** @var Pipeline $pipeline */
 
       $index++;

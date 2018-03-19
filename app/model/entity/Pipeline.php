@@ -109,6 +109,7 @@ class Pipeline implements JsonSerializable
     "isExecutionPipeline" => false,
     "producesStdout" => false,
     "producesFiles" => false,
+    "hasEntryPoint" => false,
   ];
 
   /**
