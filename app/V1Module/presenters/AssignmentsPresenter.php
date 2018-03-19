@@ -170,7 +170,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
-   * @Param(type="post", name="disabledRuntimeEnvironmentIds", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
+   * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
    * @throws InvalidArgumentException
@@ -195,10 +195,6 @@ class AssignmentsPresenter extends BasePresenter {
     if ($this->isRequestJson()) {
       $disabledRuntimeIds = $req->getPost("disabledRuntimeEnvironmentIds");
       if ($disabledRuntimeIds !== null) {
-        if (!is_array($disabledRuntimeIds)) {
-          throw new InvalidArgumentException("disabledRuntimeEnvironmentIds");
-        }
-
         $disabledRuntimes = array_map([$this->runtimeEnvironments, "findOrThrow"], $disabledRuntimeIds);
         $assignment->setDisabledRuntimeEnvironments($disabledRuntimes);
       }
