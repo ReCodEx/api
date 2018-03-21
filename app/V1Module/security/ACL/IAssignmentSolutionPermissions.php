@@ -16,5 +16,6 @@ interface IAssignmentSolutionPermissions {
   function canViewEvaluation(AssignmentSolution $assignmentSolution): bool;
   function canViewEvaluationDetails(AssignmentSolution $assignmentSolution): bool;
   function canViewEvaluationValues(AssignmentSolution $assignmentSolution): bool;
+  function canViewEvaluationJudgeOutput(AssignmentSolution $assignmentSolution): bool;
   function canDownloadResultArchive(AssignmentSolution $assignmentSolution): bool;
 }

@@ -30,10 +30,11 @@ class AssignmentSolutionSubmissionViewFactory {
     // Get permission details
     $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($submission->getAssignmentSolution());
     $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($submission->getAssignmentSolution());
+    $canViewJudgeOutput = $this->assignmentSolutionAcl->canViewEvaluationJudgeOutput($submission->getAssignmentSolution());
 
     $evaluationData = null;
     if ($submission->getEvaluation() !== null) {
-      $evaluationData = $submission->getEvaluation()->getData($canViewDetails, $canViewValues);
+      $evaluationData = $submission->getEvaluation()->getData($canViewDetails, $canViewValues, $canViewJudgeOutput);
     }
 
     return [
