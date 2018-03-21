@@ -14,7 +14,6 @@ class AssignmentSolutionViewFactory {
 
   /**
    * @var IAssignmentSolutionPermissions
-   * @inject
    */
   public $assignmentSolutionAcl;
 
@@ -28,11 +27,19 @@ class AssignmentSolutionViewFactory {
    */
   private $userStorage;
 
-  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments, UserStorage $userStorage) {
+  /**
+   * @var AssignmentSolutionSubmissionViewFactory
+   */
+  private $submissionViewFactory;
+
+  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments,
+      UserStorage $userStorage, AssignmentSolutionSubmissionViewFactory $submissionViewFactory) {
     $this->assignmentSolutionAcl = $assignmentSolutionAcl;
     $this->comments = $comments;
     $this->userStorage = $userStorage;
+    $this->submissionViewFactory = $submissionViewFactory;
   }
+
 
   /**
    * Parametrized view.
@@ -41,13 +48,14 @@ class AssignmentSolutionViewFactory {
    */
   public function getSolutionData(AssignmentSolution $solution) {
     // Get permission details
-    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution);
-    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution);
     $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
 
     $lastSubmissionId = $solution->getLastSubmission() ? $solution->getLastSubmission()->getId() : null;
     $lastSubmissionIdArray = $lastSubmissionId ? [ $lastSubmissionId ] : [];
     $submissions = $canViewResubmissions ? $solution->getSubmissionsIds() : $lastSubmissionIdArray;
+
+    $lastSubmission = !$solution->getLastSubmission() ? null :
+      $this->submissionViewFactory->getSubmissionData($solution->getLastSubmission());
 
     $thread = $this->comments->getThread($solution->getId());
     $user = $this->userStorage->getUserData();
@@ -62,7 +70,7 @@ class AssignmentSolutionViewFactory {
       "maxPoints" => $solution->getMaxPoints(),
       "accepted" => $solution->getAccepted(),
       "bonusPoints" => $solution->getBonusPoints(),
-      "lastSubmission" => $solution->getLastSubmission() ? $solution->getLastSubmission()->getData($canViewDetails, $canViewValues) : null,
+      "lastSubmission" => $lastSubmission,
       "submissions" => $submissions,
       "commentsStats" => $threadCommentsCount ? [
         "count" => $threadCommentsCount,

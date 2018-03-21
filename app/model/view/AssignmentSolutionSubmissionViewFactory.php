@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Model\View;
+
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Security\ACL\IAssignmentSolutionPermissions;
+use App\Helpers\EvaluationStatus\EvaluationStatus;
+
+/**
+ * Factory for assignment solution submission views.
+ */
+class AssignmentSolutionSubmissionViewFactory {
+
+  /**
+   * @var IAssignmentSolutionPermissions
+   */
+  public $assignmentSolutionAcl;
+
+  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl) {
+    $this->assignmentSolutionAcl = $assignmentSolutionAcl;
+  }
+
+
+  /**
+   * Parametrized view.
+   * @param AssignmentSolutionSubmission $submission
+   * @return array
+   */
+  public function getSubmissionData(AssignmentSolutionSubmission $submission) {
+    // Get permission details
+    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($submission->getAssignmentSolution());
+    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($submission->getAssignmentSolution());
+
+    $evaluationData = null;
+    if ($submission->getEvaluation() !== null) {
+      $evaluationData = $submission->getEvaluation()->getData($canViewDetails, $canViewValues);
+    }
+
+    return [
+      "id" => $submission->getId(),
+      "assignmentSolutionId" => $submission->getAssignmentSolution()->getId(),
+      "evaluationStatus" => EvaluationStatus::getStatus($submission),
+      "isCorrect" => $submission->isCorrect(),
+      "evaluation" => $evaluationData,
+      "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
+      "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null
+    ];
+  }
+}
