@@ -397,4 +397,62 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
+  public function checkAttachGroup(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    if (!$this->exerciseAcl->canAttachGroup($exercise) ||
+        !$this->groupAcl->canAttachExercise($group)) {
+      throw new ForbiddenRequestException("You are not allowed to attach the group to the exercise");
+    }
+  }
+
+  /**
+   * Attach exercise to group with given identification.
+   * @POST
+   * @param string $id Identifier of the exercise
+   * @Param(type="post", name="groupId", description="Identifier of the group to which exercise should be attached")
+   * @throws InvalidArgumentException
+   */
+  public function actionAttachGroup(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+
+    if ($exercise->getGroups()->contains($group)) {
+      throw new InvalidArgumentException("groupId", "group is already attached to the exercise");
+    }
+
+    $exercise->addGroup($group);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($exercise);
+  }
+
+  public function checkDetachGroup(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    if (!$this->exerciseAcl->canDetachGroup($exercise) ||
+        !$this->groupAcl->canDetachExercise($group)) {
+      throw new ForbiddenRequestException("You are not allowed to detach the group to the exercise");
+    }
+  }
+
+  /**
+   * Detach exercise from given group.
+   * @DELETE
+   * @param string $id Identifier of the exercise
+   * @Param(type="post", name="groupId", description="Identifier of the group which should be detached from exercise")
+   * @throws InvalidArgumentException
+   */
+  public function actionDetachGroup(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+
+    if (!$exercise->getGroups()->contains($group)) {
+      throw new InvalidArgumentException("groupId", "given group is not associated with exercise");
+    }
+
+    $exercise->removeGroup($group);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($exercise);
+  }
+
 }

@@ -3,6 +3,7 @@ namespace App\Security\ACL;
 
 
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Group;
 use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IExercisePermissions {
@@ -21,4 +22,6 @@ interface IExercisePermissions {
   function canEvaluateReferenceSolution(Exercise $exercise, ?ReferenceExerciseSolution $referenceExerciseSolution): bool;
   function canCreatePipeline(Exercise $exercise): bool;
   function canViewPipelines(Exercise $exercise): bool;
+  function canAttachGroup(Exercise $exercise): bool;
+  function canDetachGroup(Exercise $exercise): bool;
 }

@@ -327,7 +327,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var Exercise $forked */
     $forked = $result['payload'];
-    Assert::type(\App\Model\Entity\Exercise::class, $forked);
+    Assert::type(Exercise::class, $forked);
     Assert::true($forked->getLocalizedTexts()->forAll(function ($i, $text) use ($exercise) {
       return $exercise->getLocalizedTexts()->contains($text);
     }));
@@ -358,6 +358,55 @@ class TestExercisesPresenter extends Tester\TestCase
     $payload = $result["payload"];
     Assert::count(1, $payload->getHardwareGroups());
     Assert::equal("group1", $payload->getHardwareGroups()->first()->getId());
+  }
+
+  public function testAttachGroup()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $group = current($this->presenter->groups->findAll());
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'attachGroup', 'id' => $exercise->getId()],
+      ['groupId' => $group->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    /** @var Exercise $payload */
+    $payload = $result['payload'];
+    Assert::type(Exercise::class, $payload);
+    Assert::equal(1, $payload->getGroups()->count());
+    Assert::true($payload->getGroups()->contains($group));
+  }
+
+  public function testDetachGroup()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
+    $exercise = current($this->presenter->exercises->findAll());
+    $group = current($this->presenter->groups->findAll());
+
+    $exercise->addGroup($group);
+    $this->presenter->exercises->flush();
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'detachGroup', 'id' => $exercise->getId()],
+      ['groupId' => $group->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    /** @var Exercise $payload */
+    $payload = $result['payload'];
+    Assert::type(Exercise::class, $payload);
+    Assert::equal(0, $payload->getGroups()->count());
   }
 
 }

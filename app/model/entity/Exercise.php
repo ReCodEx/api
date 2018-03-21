@@ -29,6 +29,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void setIsPublic(bool $isPublic)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  * @method setConfigurationType($type)
+ * @method void addGroup(Group $group)
+ * @method void removeGroup(Group $group)
  */
 class Exercise implements JsonSerializable, IExercise
 {
@@ -172,7 +174,7 @@ class Exercise implements JsonSerializable, IExercise
    */
   public function getGroups() {
     return $this->groups->filter(function (Group $group) {
-      return $group->getDeletedAt() === null;
+      return !$group->isDeleted();
     });
   }
 
@@ -183,7 +185,7 @@ class Exercise implements JsonSerializable, IExercise
 
   public function getPipelines() {
     return $this->pipelines->filter(function (Pipeline $pipeline) {
-      return $pipeline->getDeletedAt() === null;
+      return !$pipeline->isDeleted();
     });
   }
 

@@ -18,4 +18,8 @@ trait DeleteableEntity {
     return $this->deletedAt;
   }
 
+  public function isDeleted(): bool {
+    return $this->deletedAt !== null;
+  }
+
 }
