@@ -8,7 +8,6 @@ use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 
 
 /**
@@ -25,7 +24,7 @@ use JsonSerializable;
  * @method ReferenceSolutionSubmission getReferenceSolutionSubmission()
  * @method bool getInitFailed()
  */
-class SolutionEvaluation implements JsonSerializable
+class SolutionEvaluation
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
@@ -88,10 +87,6 @@ class SolutionEvaluation implements JsonSerializable
       "initiationOutputs" => $this->initiationOutputs,
       "testResults" => $testResults
     ];
-  }
-
-  public function jsonSerialize() {
-    return $this->getData(false);
   }
 
   /**

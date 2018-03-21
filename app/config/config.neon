@@ -342,6 +342,7 @@ services:
   - App\Model\View\GroupViewFactory
   - App\Model\View\UserViewFactory
   - App\Model\View\AssignmentSolutionViewFactory
+  - App\Model\View\AssignmentSolutionSubmissionViewFactory
 
 doctrine:
   user: 'root'
