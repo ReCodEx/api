@@ -9,7 +9,7 @@ use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Exercise;
 
 /**
- * @method Exercise findOrThrow($solutionId)
+ * @method Exercise findOrThrow($id)
  */
 class Exercises extends BaseSoftDeleteRepository {
 

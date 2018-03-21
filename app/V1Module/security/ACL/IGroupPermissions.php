@@ -31,4 +31,6 @@ interface IGroupPermissions
   function canCreateExercise(Group $group): bool;
   function canViewPublicDetail(Group $group): bool;
   function canAddStudentToArchivedGroup($group, $user): bool;
+  function canAttachExercise(Group $group): bool;
+  function canDetachExercise(Group $group): bool;
 }
