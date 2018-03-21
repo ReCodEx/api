@@ -46,7 +46,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
   public function jsonSerialize() {
     $evaluationData = null;
     if ($this->evaluation !== null) {
-      $evaluationData = $this->evaluation->getData(true, true);
+      $evaluationData = $this->evaluation->getData(true, true, true);
     }
 
     return [

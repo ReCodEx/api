@@ -265,6 +265,7 @@ permissions:
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
+          - viewEvaluationJudgeOutput
           - viewResubmissions
           - delete
           - setBonusPoints

@@ -162,13 +162,14 @@ class TestResult
    */
   protected $tasks;
 
-  public function getData(bool $canViewRatios, bool $canViewValues = false) {
+  public function getData(bool $canViewRatios, bool $canViewValues, bool $canViewJudgeOutput) {
     $wallTime = null;
     $wallTimeRatio = null;
     $cpuTime = null;
     $cpuTimeRatio = null;
     $memory = null;
     $memoryRatio = null;
+    $judgeOutput = null;
 
     if ($canViewRatios) {
       $wallTimeRatio = $this->usedWallTimeRatio;
@@ -179,6 +180,9 @@ class TestResult
       $wallTime = $this->usedWallTime;
       $cpuTime = $this->usedCpuTime;
       $memory = $this->usedMemory;
+    }
+    if ($canViewJudgeOutput) {
+      $judgeOutput = $this->judgeOutput;
     }
 
     return [
@@ -197,7 +201,8 @@ class TestResult
       "memoryRatio" => $memoryRatio,
       "wallTime" => $wallTime,
       "cpuTime" => $cpuTime,
-      "memory" => $memory
+      "memory" => $memory,
+      "judgeOutput" => $judgeOutput,
     ];
   }
 
