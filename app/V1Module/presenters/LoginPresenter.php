@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
@@ -133,10 +134,15 @@ class LoginPresenter extends BasePresenter {
     $this->sendAccessTokenResponse($user);
   }
 
+  /**
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   */
   public function checkRefresh() {
     if (!$this->isInScope(AccessToken::SCOPE_REFRESH)) {
-      throw new ForbiddenRequestException();
+      throw new ForbiddenRequestException(sprintf("Only tokens in the '%s' scope can be refreshed", AccessToken::SCOPE_REFRESH));
     }
+
   }
 
   /**
@@ -146,9 +152,11 @@ class LoginPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionRefresh() {
+    $token = $this->getAccessToken();
+
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]),
+      "accessToken" => $this->accessManager->issueToken($user, $token->getScopes(), $token->getExpirationTime()),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }

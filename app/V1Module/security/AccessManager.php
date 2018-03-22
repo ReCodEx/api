@@ -45,7 +45,7 @@ class AccessManager {
   public function __construct(array $parameters, Users $users) {
     $this->users = $users;
     $this->verificationKey = Arrays::get($parameters, "verificationKey");
-    $this->expiration = Arrays::get($parameters, "expiration", 60 * 60); // one hour in seconds
+    $this->expiration = Arrays::get($parameters, "expiration", 24 * 60 * 60); // one day in seconds
     $this->issuer = Arrays::get($parameters, "issuer", "https://recodex.mff.cuni.cz");
     $this->audience = Arrays::get($parameters, "audience", "https://recodex.mff.cuni.cz");
     $this->allowedAlgorithms = Arrays::get($parameters, "allowedAlgorithms", [ "HS256" ]);
@@ -105,16 +105,12 @@ class AccessManager {
    * @param   array $payload
    * @return string
    */
-  public function issueToken(User $user, $scopes = null, $exp = null, $payload = []) {
-    if ($exp === null || !is_numeric($exp)) {
+  public function issueToken(User $user, array $scopes = [], int $exp = null, array $payload = []) {
+    if ($exp === null) {
       $exp = $this->expiration;
     }
 
-    if (!$scopes || !is_array($scopes)) {
-      $scopes = [];
-    }
-
-    $tokenPayload = array_merge(
+    $token = new AccessToken((object) array_merge(
       $payload,
       [
         "iss" => $this->issuer,
@@ -125,9 +121,9 @@ class AccessManager {
         "sub" => $user->getId(),
         "scopes" => $scopes
       ]
-    );
+    ));
 
-    return JWT::encode($tokenPayload, $this->verificationKey, $this->usedAlgorithm);
+    return $token->encode($this->verificationKey, $this->usedAlgorithm);
   }
 
   /**

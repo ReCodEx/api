@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
+use Firebase\JWT\JWT;
 use stdClass;
 
 class AccessToken {
@@ -72,5 +73,38 @@ class AccessToken {
     }
 
     return $this->payload->$key;
+  }
+
+  /**
+   * Access any claim of the payload. If the claim is not present, return a default value.
+   * @param $key
+   * @param $default
+   * @return mixed
+   */
+  public function getPayloadOrDefault($key, $default) {
+    if (!isset($this->payload->$key)) {
+      return $default;
+    }
+
+    return $this->payload->$key;
+  }
+
+  public function getScopes(): array {
+    return $this->scopes;
+  }
+
+  /**
+   * @throws InvalidArgumentException
+   */
+  public function getIssuedAt(): int {
+    return $this->getPayload("iat");
+  }
+
+  public function getExpirationTime(): int {
+    return $this->getPayload("exp") - $this->getPayload("iat");
+  }
+
+  public function encode(string $verificationKey, string $usedAlgorithm): string {
+    return JWT::encode($this->payload, $verificationKey, $usedAlgorithm);
   }
 }

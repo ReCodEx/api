@@ -114,7 +114,7 @@ class TestForgottenPasswordPresenter extends Tester\TestCase
     $user = $this->presenter->users->getByEmail($this->userLogin);
 
     // issue token for changing password
-    $token = $this->accessManager->issueToken($user, [ \App\Security\AccessToken::SCOPE_CHANGE_PASSWORD ], 600);
+    $token = $this->accessManager->issueToken($user, [\App\Security\AccessToken::SCOPE_CHANGE_PASSWORD], 600);
     // login with obtained token
     $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
 

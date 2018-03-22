@@ -1,6 +1,8 @@
 <?php
 namespace App\Security;
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Model\Entity\User;
 use Nette\Security\IIdentity;
 use Nette\Security\IUserStorage;
 use Nette;
@@ -76,11 +78,29 @@ class UserStorage implements IUserStorage
 
       $decodedToken = $this->accessManager->decodeToken($token);
       $user = $this->accessManager->getUser($decodedToken);
+      $this->checkTokenForRevocation($decodedToken, $user);
       $this->cachedIdentity = new Identity($user, $decodedToken);
     }
 
     return $this->cachedIdentity;
   }
+
+  /**
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   */
+  protected function checkTokenForRevocation(AccessToken $token, User $user)
+  {
+    $validityThreshold = $user->getTokenValidityThreshold();
+
+    $wasTokenIssuedAfterThreshold = $validityThreshold === null
+      || $token->getIssuedAt() > $validityThreshold->getTimestamp();
+
+    if (!$wasTokenIssuedAfterThreshold) {
+      throw new ForbiddenRequestException("The token was revoked and cannot be used anymore");
+    }
+  }
+
 
   /**
    * Returns current user entity from user identity, if any.

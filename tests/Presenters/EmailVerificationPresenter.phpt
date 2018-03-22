@@ -82,8 +82,7 @@ class TestEmailVerificationPresenter extends Tester\TestCase
 
     // prepare token for email verification
     $token = $this->accessManager->issueToken(
-      $user, [ AccessToken::SCOPE_EMAIL_VERIFICATION ],
-      600, [ "email" => $user->getEmail() ]
+      $user, [AccessToken::SCOPE_EMAIL_VERIFICATION], 600, ["email" => $user->getEmail()]
     );
     // login with obtained token
     $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));

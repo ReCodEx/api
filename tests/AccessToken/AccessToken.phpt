@@ -7,6 +7,9 @@ use App\Security\AccessManager;
 use Tester\Assert;
 use App\Exceptions\InvalidAccessTokenException;
 
+/**
+ * @testCase
+ */
 class TestAccessToken extends Tester\TestCase
 {
 
