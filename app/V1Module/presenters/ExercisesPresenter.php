@@ -397,9 +397,9 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
-  public function checkAttachGroup(string $id) {
+  public function checkAttachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
-    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    $group = $this->groups->findOrThrow($groupId);
     if (!$this->exerciseAcl->canAttachGroup($exercise) ||
         !$this->groupAcl->canAttachExercise($group)) {
       throw new ForbiddenRequestException("You are not allowed to attach the group to the exercise");
@@ -410,12 +410,12 @@ class ExercisesPresenter extends BasePresenter {
    * Attach exercise to group with given identification.
    * @POST
    * @param string $id Identifier of the exercise
-   * @Param(type="post", name="groupId", description="Identifier of the group to which exercise should be attached")
+   * @param string $groupId Identifier of the group to which exercise should be attached
    * @throws InvalidArgumentException
    */
-  public function actionAttachGroup(string $id) {
+  public function actionAttachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
-    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    $group = $this->groups->findOrThrow($groupId);
 
     if ($exercise->getGroups()->contains($group)) {
       throw new InvalidArgumentException("groupId", "group is already attached to the exercise");
@@ -426,9 +426,9 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise);
   }
 
-  public function checkDetachGroup(string $id) {
+  public function checkDetachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
-    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    $group = $this->groups->findOrThrow($groupId);
     if (!$this->exerciseAcl->canDetachGroup($exercise) ||
         !$this->groupAcl->canDetachExercise($group)) {
       throw new ForbiddenRequestException("You are not allowed to detach the group to the exercise");
@@ -439,12 +439,12 @@ class ExercisesPresenter extends BasePresenter {
    * Detach exercise from given group.
    * @DELETE
    * @param string $id Identifier of the exercise
-   * @Param(type="post", name="groupId", description="Identifier of the group which should be detached from exercise")
+   * @param string $groupId Identifier of the group which should be detached from exercise
    * @throws InvalidArgumentException
    */
-  public function actionDetachGroup(string $id) {
+  public function actionDetachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
-    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    $group = $this->groups->findOrThrow($groupId);
 
     if (!$exercise->getGroups()->contains($group)) {
       throw new InvalidArgumentException("groupId", "given group is not associated with exercise");
