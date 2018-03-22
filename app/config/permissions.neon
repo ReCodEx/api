@@ -12,6 +12,9 @@ permissions:
     - allow: true
       role: superadmin
 
+    - allow: true
+      role: scope-master
+
     #############################
     # User takeover permissions #
     #############################

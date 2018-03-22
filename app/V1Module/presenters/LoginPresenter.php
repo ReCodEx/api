@@ -67,7 +67,7 @@ class LoginPresenter extends BasePresenter {
    * @throws InvalidAccessTokenException
    */
   private function sendAccessTokenResponse(User $user) {
-    $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_REFRESH]);
+    $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_MASTER, AccessToken::SCOPE_REFRESH]);
     $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $this->sendSuccessResponse([
@@ -157,6 +157,38 @@ class LoginPresenter extends BasePresenter {
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user, $token->getScopes(), $token->getExpirationTime()),
+      "user" => $this->userViewFactory->getFullUser($user)
+    ]);
+  }
+
+  public function checkIssueToken() {
+    if (!$this->getAccessToken()->isInScope(AccessToken::SCOPE_MASTER)) {
+      throw new ForbiddenRequestException("Restricted tokens cannot be used to issue new tokens");
+    }
+  }
+
+  /**
+   * Issue a new access token with a restricted set of scopes
+   * @POST
+   * @LoggedIn
+   * @Param(type="post", name="scopes", validation="list", description="A list of requested scopes")
+   * @Param(type="post", required=false, name="expiration", validation="integer", description="How long the token should be valid (in seconds)")
+   * @throws ForbiddenRequestException
+   */
+  public function actionIssueToken() {
+    $request = $this->getRequest();
+    // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
+    $scopes = $request->getPost("scopes");
+
+    if (in_array(AccessToken::SCOPE_MASTER, $scopes)) {
+      throw new ForbiddenRequestException("Master tokens can only be issued through the login endpoint");
+    }
+
+    $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
+    $user = $this->getCurrentUser();
+
+    $this->sendSuccessResponse([
+      "accessToken" => $this->accessManager->issueToken($user, $scopes, $expiration),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }
