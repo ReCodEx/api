@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 use App\Helpers\EvaluationResults as ER;
 
 /**
@@ -13,8 +12,25 @@ use App\Helpers\EvaluationResults as ER;
  * @method string getId()
  * @method string getTestName()
  * @method float getScore()
+ * @method float getUsedMemoryRatio()
+ * @method int getUsedMemory()
+ * @method bool getIsMemoryOK()
+ * @method float getUsedWallTimeRatio()
+ * @method float getUsedWallTime()
+ * @method bool getIsWallTimeOK()
+ * @method float getUsedCpuTimeRatio()
+ * @method float getUsedCpuTime()
+ * @method bool getIsCpuTimeOK()
+ * @method string getJudgeOutput()
+ * @method string getStatus()
+ * @method string getMessage()
+ * @method int getExitCode()
+ * @method bool getCpuTimeExceeded()
+ * @method bool getWallTimeExceeded()
+ * @method bool getMemoryExceeded()
+ * @method SolutionEvaluation getSolutionEvaluation()
  */
-class TestResult implements JsonSerializable
+class TestResult
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
@@ -146,13 +162,14 @@ class TestResult implements JsonSerializable
    */
   protected $tasks;
 
-  public function getData(bool $canViewRatios, bool $canViewValues = false) {
+  public function getData(bool $canViewRatios, bool $canViewValues, bool $canViewJudgeOutput) {
     $wallTime = null;
     $wallTimeRatio = null;
     $cpuTime = null;
     $cpuTimeRatio = null;
     $memory = null;
     $memoryRatio = null;
+    $judgeOutput = null;
 
     if ($canViewRatios) {
       $wallTimeRatio = $this->usedWallTimeRatio;
@@ -163,6 +180,9 @@ class TestResult implements JsonSerializable
       $wallTime = $this->usedWallTime;
       $cpuTime = $this->usedCpuTime;
       $memory = $this->usedMemory;
+    }
+    if ($canViewJudgeOutput) {
+      $judgeOutput = $this->judgeOutput;
     }
 
     return [
@@ -181,12 +201,9 @@ class TestResult implements JsonSerializable
       "memoryRatio" => $memoryRatio,
       "wallTime" => $wallTime,
       "cpuTime" => $cpuTime,
-      "memory" => $memory
+      "memory" => $memory,
+      "judgeOutput" => $judgeOutput,
     ];
-  }
-
-  public function jsonSerialize() {
-    return $this->getData(false);
   }
 
 }

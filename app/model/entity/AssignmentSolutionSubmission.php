@@ -7,7 +7,6 @@ use App\Helpers\EvaluationPointsLoader;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 use App\Helpers\EvaluationStatus as ES;
 
 
@@ -16,7 +15,7 @@ use App\Helpers\EvaluationStatus as ES;
  *
  * @method AssignmentSolution getAssignmentSolution()
  */
-class AssignmentSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
+class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
@@ -33,27 +32,6 @@ class AssignmentSolutionSubmission extends Submission implements JsonSerializabl
    */
   protected $failures;
 
-
-  public function getData(bool $canViewRatios = false, bool $canViewValues = false) {
-    $evaluationData = null;
-    if ($this->evaluation !== null) {
-      $evaluationData = $this->evaluation->getData($canViewRatios, $canViewValues);
-    }
-
-    return [
-      "id" => $this->id,
-      "assignmentSolutionId" => $this->assignmentSolution->getId(),
-      "evaluationStatus" => ES\EvaluationStatus::getStatus($this),
-      "isCorrect" => $this->isCorrect(),
-      "evaluation" => $evaluationData,
-      "submittedAt" => $this->submittedAt->getTimestamp(),
-      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
-    ];
-  }
-
-  public function jsonSerialize() {
-    return $this->getData();
-  }
 
   public function __construct(AssignmentSolution $assignmentSolution,
       string $jobConfigPath, User $submittedBy) {

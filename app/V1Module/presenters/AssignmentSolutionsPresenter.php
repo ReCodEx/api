@@ -12,6 +12,7 @@ use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
 use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\Users;
+use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 use App\Model\View\AssignmentSolutionViewFactory;
 use App\Exceptions\ForbiddenRequestException;
 use App\Responses\GuzzleResponse;
@@ -71,6 +72,12 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutionViewFactory;
+
+  /**
+   * @var AssignmentSolutionSubmissionViewFactory
+   * @inject
+   */
+  public $assignmentSolutionSubmissionViewFactory;
 
   public function checkSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -136,13 +143,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       : [];
 
     // display only data that the current user can view
-    $submissions = array_map(function (AssignmentSolutionSubmission $submission) use ($solution) {
+    $submissions = array_map(function (AssignmentSolutionSubmission $submission) {
       // try to load evaluation if not present
       $this->evaluationLoadingHelper->loadEvaluation($submission);
-
-      $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution);
-      $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution);
-      return $submission->getData($canViewDetails, $canViewValues);
+      return $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission);
     }, $submissions);
 
     $this->sendSuccessResponse($submissions);
@@ -164,19 +168,16 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionEvaluation(string $id) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
-    $solution = $submission->getAssignmentSolution();
 
     // try to load evaluation if not present
     $this->evaluationLoadingHelper->loadEvaluation($submission);
 
-    $canViewDetails = $this->assignmentSolutionAcl->canViewEvaluationDetails($solution);
-    $canViewValues = $this->assignmentSolutionAcl->canViewEvaluationValues($solution);
-    $this->sendSuccessResponse($submission->getData($canViewDetails, $canViewValues));
+    $submissionData = $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission);
+    $this->sendSuccessResponse($submissionData);
   }
 
   public function checkSetBonusPoints(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-
     if (!$this->assignmentSolutionAcl->canSetBonusPoints($solution)) {
       throw new ForbiddenRequestException("You cannot change amount of bonus points for this submission");
     }

@@ -16,6 +16,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method string setResultsUrl(string $url)
  * @method string getJobConfigPath()
  * @method User getSubmittedBy()
+ * @method DateTime getSubmittedAt()
  */
 abstract class Submission implements IEvaluable
 {

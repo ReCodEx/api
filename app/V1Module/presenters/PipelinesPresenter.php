@@ -124,7 +124,7 @@ class PipelinesPresenter extends BasePresenter {
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });
-    $this->sendSuccessResponse($pipelines);
+    $this->sendSuccessResponse(array_values($pipelines));
   }
 
   /**

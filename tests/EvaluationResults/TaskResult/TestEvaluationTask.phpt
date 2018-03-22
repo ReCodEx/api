@@ -36,9 +36,14 @@ class TestEvaluationTask extends Tester\TestCase
       "abc 1.0" => 0.0,
       "0.123" => 0.123,
       "0.456000" => 0.456,
+      "0.456000\nHello world" => 0.456,
+      "0.456000\twhoosh" => 0.456,
       "0.123 ahoj" => 0.123,
       "123" => 1.0,
-      "-0.123" => 0.0
+      "-0.123" => 0.0,
+      "" => 0.0,
+      "FALSE" => 0.0,
+      "TRUE" => 0.0
     ];
 
     foreach ($judgeToScore as $judgeOutput => $score) {

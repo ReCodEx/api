@@ -202,7 +202,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $assignments = $this->assignments->findAll();
+    /** @var Assignment $assignment */
     $assignment = array_pop($assignments);
+    $disabledEnv = $assignment->getRuntimeEnvironments()->first();
 
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'updateDetail', 'id' => $assignment->getId()],
@@ -221,15 +223,15 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'maxPointsBeforeSecondDeadline' => 543,
         'isBonus' => true,
         'pointsPercentualThreshold' => 90,
-        'disabledRuntimeEnvironments' => ['freepascal-linux']
+        'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
       ]
     );
 
     $response = $this->presenter->run($request);
     $updatedAssignment = PresenterTestHelper::extractPayload($response);
 
-    Assert::same(["freepascal-linux"], $updatedAssignment["disabledRuntimeEnvironmentsIds"]);
-    Assert::false(in_array("freepascal-linux", $updatedAssignment["runtimeEnvironmentsIds"]));
+    Assert::same([$disabledEnv->getId()], $updatedAssignment["disabledRuntimeEnvironmentIds"]);
+    Assert::true(in_array($disabledEnv->getId(), $updatedAssignment["runtimeEnvironmentIds"]));
   }
 
   public function testCreateAssignment()

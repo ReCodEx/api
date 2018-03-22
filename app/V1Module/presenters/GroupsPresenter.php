@@ -350,11 +350,11 @@ class GroupsPresenter extends BasePresenter {
     /** @var Group $group */
     $group = $this->groups->findOrThrow($id);
 
-    $subgroups = array_filter(
+    $subgroups = array_values(array_filter(
       $group->getAllSubgroups(),
       function (Group $subgroup) {
         return $this->groupAcl->canViewPublicDetail($subgroup);
-      });
+      }));
 
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($subgroups));
   }

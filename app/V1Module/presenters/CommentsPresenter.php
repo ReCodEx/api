@@ -44,12 +44,14 @@ class CommentsPresenter extends BasePresenter {
   public function checkDefault($id) {
     $thread = $this->comments->getThread($id);
 
-    if (!$thread && !$this->commentAcl->canCreateThread()) {
-      throw new ForbiddenRequestException();
-    }
-
-    if (!$this->commentAcl->canViewThread($thread)) {
-      throw new ForbiddenRequestException();
+    if ($thread) {
+      if (!$this->commentAcl->canViewThread($thread)) {
+        throw new ForbiddenRequestException();
+      }
+    } else {
+      if (!$this->commentAcl->canCreateThread()) {
+        throw new ForbiddenRequestException();
+      }
     }
   }
 

@@ -298,7 +298,7 @@ class SisPresenter extends BasePresenter {
 
       $bindings = $this->sisGroupBindings->findByCode($course->getCode());
       $groups = array_map(function (SisGroupBinding $binding) { return $binding->getGroup(); }, $bindings);
-      $groups = array_filter($groups, function (Group $group) { return !$group->isArchived(); });
+      $groups = array_values(array_filter($groups, function (Group $group) { return !$group->isArchived(); }));
 
       $result[] = [
         'course' => $course,
