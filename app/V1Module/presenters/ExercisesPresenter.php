@@ -400,8 +400,7 @@ class ExercisesPresenter extends BasePresenter {
   public function checkAttachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
     $group = $this->groups->findOrThrow($groupId);
-    if (!$this->exerciseAcl->canAttachGroup($exercise) ||
-        !$this->groupAcl->canAttachExercise($group)) {
+    if (!$this->exerciseAcl->canAttachGroup($exercise, $group)) {
       throw new ForbiddenRequestException("You are not allowed to attach the group to the exercise");
     }
   }
@@ -429,8 +428,7 @@ class ExercisesPresenter extends BasePresenter {
   public function checkDetachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
     $group = $this->groups->findOrThrow($groupId);
-    if (!$this->exerciseAcl->canDetachGroup($exercise) ||
-        !$this->groupAcl->canDetachExercise($group)) {
+    if (!$this->exerciseAcl->canDetachGroup($exercise, $group)) {
       throw new ForbiddenRequestException("You are not allowed to detach the group to the exercise");
     }
   }

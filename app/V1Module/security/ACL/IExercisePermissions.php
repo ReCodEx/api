@@ -22,6 +22,6 @@ interface IExercisePermissions {
   function canEvaluateReferenceSolution(Exercise $exercise, ?ReferenceExerciseSolution $referenceExerciseSolution): bool;
   function canCreatePipeline(Exercise $exercise): bool;
   function canViewPipelines(Exercise $exercise): bool;
-  function canAttachGroup(Exercise $exercise): bool;
-  function canDetachGroup(Exercise $exercise): bool;
+  function canAttachGroup(Exercise $exercise, Group $group): bool;
+  function canDetachGroup(Exercise $exercise, Group $group): bool;
 }
