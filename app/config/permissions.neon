@@ -97,8 +97,6 @@ permissions:
           - viewStats
           - viewStudentStats
           - viewPublicDetail
-          - attachExercise
-          - detachExercise
       conditions: group.isSupervisor
 
     - allow: true
@@ -323,12 +321,22 @@ permissions:
           - update
           - evaluateReferenceSolution
           - createPipeline
-          - attachGroup
-          - detachGroup
       conditions:
           or:
             - exercise.isSuperGroupAdmin
             - exercise.isAuthor
+
+    - allow: true
+      resource: exercise
+      actions:
+          - attachGroup
+          - detachGroup
+      conditions:
+          and:
+            - or:
+              - exercise.isSuperGroupAdmin
+              - exercise.isAuthor
+            - group.isSupervisor
 
     - allow: true
       resource: exercise
