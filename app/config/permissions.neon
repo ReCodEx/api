@@ -179,6 +179,13 @@ permissions:
         - user.isSameUser
         - user.isNotExternalAccount
 
+    - allow: true
+      resource: user
+      actions:
+        - invalidateTokens
+      conditions:
+        - user.isSameUser
+
     ##########################
     # Assignment permissions #
     ##########################

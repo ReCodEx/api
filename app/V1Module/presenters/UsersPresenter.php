@@ -432,4 +432,23 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($user->getExercises()->getValues());
   }
 
+  public function checkInvalidateTokens(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canInvalidateTokens($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Invalidate all existing tokens issued for given user
+   * @POST
+   * @param string $id Identifier of the user
+   */
+  public function actionInvalidateTokens(string $id) {
+    $user = $this->users->findOrThrow($id);
+    $user->setTokenValidityThreshold(new DateTime());
+    $this->users->flush();
+  }
+
 }
