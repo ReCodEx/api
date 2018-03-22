@@ -368,8 +368,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $group = current($this->presenter->groups->findAll());
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST',
-      ['action' => 'attachGroup', 'id' => $exercise->getId()],
-      ['groupId' => $group->getId()]);
+      ['action' => 'attachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -394,9 +393,8 @@ class TestExercisesPresenter extends Tester\TestCase
     $exercise->addGroup($group);
     $this->presenter->exercises->flush();
 
-    $request = new Nette\Application\Request('V1:Exercises', 'POST',
-      ['action' => 'detachGroup', 'id' => $exercise->getId()],
-      ['groupId' => $group->getId()]);
+    $request = new Nette\Application\Request('V1:Exercises', 'DELETE',
+      ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
