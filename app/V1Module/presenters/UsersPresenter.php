@@ -15,6 +15,7 @@ use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
+use DateTime;
 
 /**
  * User management endpoints
@@ -247,6 +248,7 @@ class UsersPresenter extends BasePresenter {
       }
 
       $login->changePassword($password);
+      $login->getUser()->setTokenValidityThreshold(new DateTime());
     } else {
       throw new WrongCredentialsException("Your current password does not match");
     }
