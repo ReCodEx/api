@@ -45,7 +45,7 @@ class AssignmentSolutions extends BaseRepository {
       "solution.createdAt" => "DESC"
     ]);
 
-    return array_filter($solutions, function (AssignmentSolution $solution) {
+    return array_values(array_filter($solutions, function (AssignmentSolution $solution) {
       $submission = $solution->getLastSubmission();
       if ($submission === null || $submission->isFailed() || $submission->getResultsUrl() === null) {
         return false;
@@ -59,7 +59,7 @@ class AssignmentSolutions extends BaseRepository {
       }
 
       return true;
-    });
+    }));
   }
 
   /**

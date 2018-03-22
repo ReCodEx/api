@@ -34,7 +34,7 @@ class RuntimeEnvironments extends BaseRepository {
     }, $files);
 
     // go through all environments and found suitable ones
-    $foundEnvironments = array_filter(
+    $foundEnvironments = array_values(array_filter(
       $this->findAll(),
       function($runtimeEnvironment) use ($extensions) {
         // if all extensions belong to this runtime environment save it
@@ -46,7 +46,7 @@ class RuntimeEnvironments extends BaseRepository {
         }
         return true;
       }
-    );
+    ));
 
     // environment has to be only one to avoid ambiguity matches
     if (count($foundEnvironments) == 0) {

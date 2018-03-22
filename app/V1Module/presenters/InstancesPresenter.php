@@ -81,7 +81,7 @@ class InstancesPresenter extends BasePresenter {
     $instances = array_filter($this->instances->findAll(),
         function (Instance $instance) { return $instance->isAllowed(); }
     );
-    $this->sendSuccessResponse($instances);
+    $this->sendSuccessResponse(array_values($instances));
   }
 
   public function checkCreateInstance() {
@@ -202,10 +202,10 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionGroups(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    $groups = array_filter($instance->getGroups()->getValues(),
+    $groups = array_values(array_filter($instance->getGroups()->getValues(),
       function (Group $group) {
         return $this->groupAcl->canViewPublicDetail($group);
-      });
+      }));
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
@@ -225,9 +225,9 @@ class InstancesPresenter extends BasePresenter {
   public function actionUsers(string $id, string $search = null) {
     $instance = $this->instances->findOrThrow($id);
 
-    $members = array_filter($instance->getMembers($search), function (User $user) {
+    $members = array_values(array_filter($instance->getMembers($search), function (User $user) {
       return $this->userAcl->canViewPublicData($user);
-    });
+    }));
     $this->sendSuccessResponse($this->userViewFactory->getUsers($members));
   }
 

@@ -425,7 +425,7 @@ class AssignmentsPresenter extends BasePresenter {
       return $this->assignmentSolutionViewFactory->getSolutionData($solution);
     }, $solutions);
 
-    $this->sendSuccessResponse($solutions);
+    $this->sendSuccessResponse(array_values($solutions));
   }
 
   public function checkBestSolution(string $id, string $userId) {
