@@ -60,4 +60,9 @@ class ExercisePermissionPolicy implements IPermissionPolicy {
   public function isPublic(Identity $identity, Exercise $exercise) {
     return $exercise->isPublic() && $exercise->getGroups()->isEmpty();
   }
+
+  public function hasAtLeastTwoAttachedGroups(Identity $identity, Exercise $exercise) {
+    return $exercise->getGroups()->count() > 1;
+  }
+
 }
