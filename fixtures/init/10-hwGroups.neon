@@ -13,3 +13,10 @@ App\Model\Entity\HardwareGroup:
 			- "25@recodex-worker1.ms.mff.cuni.cz\n29@recodex-worker1.ms.mff.cuni.cz"
 			- "memory: 4194304\ncpuTimePerTest: 900\ncpuTimePerExercise: 3600\nwallTimePerTest: 900\nwallTimePerExercise: 3600"
 
+	20-tomsk-parallel:
+		__construct:
+			- 20-tomsk-parallel
+			- "Ulita Worker (Parallel C++ Exercises)"
+			- 1@tomsk.ms.mff.cuni.cz
+			- "memory: 4194304\ncpuTimePerTest: 120\ncpuTimePerExercise: 600\nwallTimePerTest: 120\nwallTimePerExercise: 600"
+

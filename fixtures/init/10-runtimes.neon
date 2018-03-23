@@ -57,7 +57,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[js]"
 			- GNU/Linux
 			- JavaScript executed with Node.js runtime
-			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.js\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \" *.js\""
 
 	php-linux:
 		__construct:
@@ -67,7 +67,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[php]"
 			- GNU/Linux
 			- PHP scripts executed with official PHP interpreter
-			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.php\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \" *.php\""
 
 	python3:
 		__construct:
@@ -77,5 +77,5 @@ App\Model\Entity\RuntimeEnvironment:
 			- "[py]"
 			- GNU/Linux
 			- "Python 3 (CPython)"
-			- "- name: \"source-file\"\n  type: \"file\"\n  value: \"*.py\""
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \" *.py\""
 
