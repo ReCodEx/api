@@ -131,7 +131,7 @@ class Version20180316141301 extends AbstractMigration
    * @throws DBALException
    */
   private function updateEnvironment(string $environmentId, string $ext) {
-    $defVars = "- name: \"source-files\"\n  type: \"file[]\"\n  value: \" *.{$ext}\"";
+    $defVars = "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{$ext}\"";
     $this->connection->executeQuery("UPDATE runtime_environment SET default_variables = :variables WHERE id = :id",
       ["id" => $environmentId, "variables" => $defVars]);
 
