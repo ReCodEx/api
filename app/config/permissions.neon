@@ -330,12 +330,23 @@ permissions:
       resource: exercise
       actions:
           - attachGroup
+      conditions:
+          and:
+            - or:
+              - exercise.isSuperGroupAdmin
+              - exercise.isAuthor
+            - group.isSupervisor
+
+    - allow: true
+      resource: exercise
+      actions:
           - detachGroup
       conditions:
           and:
             - or:
               - exercise.isSuperGroupAdmin
               - exercise.isAuthor
+            - exercise.hasAtLeastTwoAttachedGroups
             - group.isSupervisor
 
     - allow: true
