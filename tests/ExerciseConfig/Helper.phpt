@@ -67,7 +67,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
       "1" => [
         "environments" => [
           "c-gcc-linux" => [ "pipelines" => [
-            [ "name" => "compilationPipeline", "variables" => [] ],
+            [ "name" => "compilationPipeline", "variables" => [
+              [ "name" => "submit_exercise_file", "type" => "file", "value" => '$c-submit-exercise-file' ],
+            ] ],
             [ "name" => "testPipeline", "variables" => [
               [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
               [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
@@ -75,7 +77,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
           ] ],
           "java-linux" => [
             "pipelines" => [
-              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "compilationPipeline", "variables" => [
+                [ "name" => "submit_exercise_file", "type" => "file", "value" => '$java-submit-exercise-file' ],
+              ] ],
               [ "name" => "testPipeline", "variables" => [
                 [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.A.out" ],
                 [ "name" => "input-file", "type" => "remote-file", "value" => "expected.A.in" ]
@@ -93,7 +97,9 @@ class TestExerciseConfigHelper extends Tester\TestCase
           ],
           "java-linux" => [
             "pipelines" => [
-              [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "compilationPipeline", "variables" => [
+                [ "name" => "submit_exercise_file", "type" => "file", "value" => '$java-submit-exercise-file' ],
+              ] ],
               [ "name" => "testPipeline", "variables" => [
                 [ "name" => "expected_output", "type" => "remote-file", "value" => "expected.B.out" ] ,
                 [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
@@ -578,15 +584,19 @@ class TestExerciseConfigHelper extends Tester\TestCase
 
     $cRuntime = $result[0];
     Assert::equal("c-gcc-linux", $cRuntime["runtimeEnvironmentId"]);
-    Assert::count(1, $cRuntime["variables"]);
+    Assert::count(2, $cRuntime["variables"]);
     Assert::equal("c-submit-file", $cRuntime["variables"][0]["name"]);
     Assert::equal("file", $cRuntime["variables"][0]["type"]);
+    Assert::equal("c-submit-exercise-file", $cRuntime["variables"][1]["name"]);
+    Assert::equal("file", $cRuntime["variables"][1]["type"]);
 
     $javaRuntime = $result[1];
     Assert::equal("java-linux", $javaRuntime["runtimeEnvironmentId"]);
-    Assert::count(1, $javaRuntime["variables"]);
+    Assert::count(2, $javaRuntime["variables"]);
     Assert::equal("java-submit-file", $javaRuntime["variables"][0]["name"]);
     Assert::equal("file", $javaRuntime["variables"][0]["type"]);
+    Assert::equal("java-submit-exercise-file", $javaRuntime["variables"][1]["name"]);
+    Assert::equal("file", $javaRuntime["variables"][1]["type"]);
   }
 
 

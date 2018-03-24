@@ -204,7 +204,7 @@ class Helper {
 
           // somethings fishy here
           if ($variable === null) {
-            throw new ExerciseConfigException("Variable '{$varName}' not found in environment and exercise config");
+            throw new ExerciseConfigException("Variable '{$varName}' not found in environment or exercise config");
           }
 
           // we only seek for the local file variables, not the remote ones...
@@ -260,6 +260,19 @@ class Helper {
     return $result;
   }
 
+  private function findSubmitVariablesInVariablesTable(VariablesTable $table) {
+    $variables = [];
+    foreach ($table->getAll() as $variable) {
+      if (!$variable->isReference()) {
+        continue;
+      }
+
+      $variables[$variable->getReference()] = $variable->getType();
+    }
+
+    return $variables;
+  }
+
   /**
    * Get list of submit variables which should be given by user on submit of solution.
    * Variables are divided by environments.
@@ -268,8 +281,7 @@ class Helper {
    * @throws ExerciseConfigException
    */
   public function getSubmitVariablesForExercise(IExercise $exercise): array {
-    $result = [];
-
+    $envResults = [];
     foreach ($exercise->getRuntimeEnvironments() as $environment) {
       $exerciseEnvironment = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
       if ($exerciseEnvironment === null) {
@@ -278,23 +290,31 @@ class Helper {
 
       $parsedConfig = $exerciseEnvironment->getParsedVariablesTable();
       $variablesTable = $this->loader->loadVariablesTable($parsedConfig);
+      $envResults[$environment->getId()] = $this->findSubmitVariablesInVariablesTable($variablesTable);
+    }
 
-      // go though variables and find references
-      $variables = [];
-      foreach ($variablesTable->getAll() as $variable) {
-        if (!$variable->isReference()) {
-          continue;
+    $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
+    foreach ($config->getTests() as $testId => $test) {
+      foreach ($test->getEnvironments() as $envId => $env) {
+        foreach ($env->getPipelines() as $pipelineId => $pipeline) {
+          $variables = $this->findSubmitVariablesInVariablesTable($pipeline->getVariablesTable());
+          $envResults[$envId] = array_merge($envResults[$envId], $variables);
         }
+      }
+    }
 
+    $result = [];
+    foreach ($envResults as $envId => $envVars) {
+      $variables = [];
+      foreach ($envVars as $varName => $varType) {
         $variables[] = [
-          "name" => $variable->getReference(),
-          "type" => $variable->getType()
+          "name" => $varName,
+          "type" => $varType
         ];
       }
 
-      // define result structure for environment
       $result[] = [
-        "runtimeEnvironmentId" => $environment->getId(),
+        "runtimeEnvironmentId" => $envId,
         "variables" => $variables
       ];
     }
