@@ -180,12 +180,12 @@ class VariablesResolver {
       $exerciseVariable = $exerciseVariables->get($variableName);
       if ($environmentVariable) {
         $inputVariable = $this->resolveFileInputsRegexp($environmentVariable, $params->getFiles());
-
-        // resolve references which might be in environment config
-        $this->resolveSubmitVariableReference($inputVariable, $params);
       } else if ($exerciseVariable) {
         $inputVariable = $exerciseVariable;
       }
+
+      // resolve references which might be in environment config
+      $this->resolveSubmitVariableReference($inputVariable, $params);
 
       // resolve name of the file to the hash if variable is remote file
       $this->resolveRemoteFileHash($inputVariable, $context->getExerciseFiles());
@@ -213,12 +213,12 @@ class VariablesResolver {
     if ($variable->isReference()) {
       $referenceName = $variable->getReference();
       $variable = $environmentVariables->get($referenceName);
-      if ($variable) {
-        // resolve references which might be in environment config
-        $this->resolveSubmitVariableReference($variable, $params);
-      } else {
+      if (!$variable) {
         $variable = $exerciseVariables->get($referenceName);
       }
+
+      // resolve references which might be in environment config
+      $this->resolveSubmitVariableReference($variable, $params);
 
       // reference could not be found
       if (!$variable) {
