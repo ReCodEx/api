@@ -55,6 +55,14 @@ class SolutionParams {
     return $this->variables[$name];
   }
 
+  /**
+   * Add submit variable to params.
+   * @param SubmitVariable $variable
+   */
+  public function addVariable(SubmitVariable $variable) {
+    $this->variables[$variable->getName()] = $variable;
+  }
+
   public function toArray(): array {
     if (empty($this->variables)) {
       return [];
