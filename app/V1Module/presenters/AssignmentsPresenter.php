@@ -183,7 +183,6 @@ class AssignmentsPresenter extends BasePresenter {
     $version = intval($req->getPost("version"));
     if ($version !== $assignment->getVersion()) {
       throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}.");
-      // @todo better exception
     }
 
     // localized texts cannot be empty
@@ -276,7 +275,6 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $this->assignments->flush();
-
     $this->sendSuccessResponse($assignment);
   }
 

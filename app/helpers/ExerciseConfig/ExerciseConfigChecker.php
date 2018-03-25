@@ -1,7 +1,11 @@
 <?php
 namespace App\Helpers\ExerciseConfig;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ParseException;
+use App\Helpers\EntityMetadata\Solution\SolutionParams;
+use App\Helpers\EntityMetadata\Solution\SubmitVariable;
 use App\Helpers\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -22,26 +26,65 @@ class ExerciseConfigChecker {
 
   private $loader;
 
+  private $helper;
+
   /** @var ScoreCalculatorAccessor */
   public $calculators;
 
   public function  __construct(ExerciseConfig\Compiler $compiler, ExerciseConfig\Validator $validator,
-                               ExerciseConfig\Loader $loader, ScoreCalculatorAccessor $calculators) {
+                               ExerciseConfig\Loader $loader, ScoreCalculatorAccessor $calculators,
+                               ExerciseConfig\Helper $helper) {
     $this->compiler = $compiler;
     $this->validator = $validator;
     $this->loader = $loader;
     $this->calculators = $calculators;
+    $this->helper = $helper;
   }
 
   /**
    * Make up names of submitted files for a runtime environment.
    * This is necessary because we do not have any real submissions yet, but the compiler needs their names.
    * TODO when we implement a mechanism that ensures further constraints on submitted files, it must be reflected here
+   * @param RuntimeEnvironment $environment
+   * @return string[]
+   * @throws ApiException
    */
-  private function conjureSubmittedFiles(RuntimeEnvironment $environment) {
+  private function conjureSubmittedFiles(RuntimeEnvironment $environment): array {
     $extension = current($environment->getExtensionsList());
     $random = Random::generate(20);
     return ["recodex.{$random}.{$extension}"];
+  }
+
+  /**
+   * Make up names of submitted files for a runtime environment.
+   * @param Exercise $exercise
+   * @param RuntimeEnvironment $environment
+   * @param string[] $submitFiles
+   * @return SolutionParams
+   * @throws ExerciseConfigException
+   * @throws ParseException
+   */
+  private function conjureSubmitVariables(Exercise $exercise,
+                                          RuntimeEnvironment $environment,
+                                          array $submitFiles): SolutionParams {
+    $result = new SolutionParams();
+    $envs = $this->helper->getSubmitVariablesForExercise($exercise);
+    foreach ($envs as $envVars) {
+      if ($envVars["runtimeEnvironmentId"] === $environment->getId()) {
+        foreach ($envVars["variables"] as $variable) {
+          if (strpos($variable["type"], "string") === 0) {
+            $result->addVariable(new SubmitVariable(["name" => $variable["name"], "value" => Random::generate()]));
+          } else if (strpos($variable["type"], "file") === 0) {
+            $result->addVariable(new SubmitVariable(["name" => $variable["name"], "value" => current($submitFiles)]));
+          } else {
+            // Uh-oh
+            throw new ExerciseConfigException("I should not generate this error. I really should not. Uh-oh... here we go");
+          }
+        }
+      }
+    }
+
+    return $result;
   }
 
   /**
@@ -85,6 +128,8 @@ class ExerciseConfigChecker {
    * Validate exercises environments configurations.
    * @param Exercise $exercise
    * @return bool false if broken flag was set
+   * @throws ParseException
+   * @throws ApiException
    */
   private function validateEnvironmentConfigurations(Exercise $exercise): bool {
     /** @var RuntimeEnvironment $environment */
@@ -94,10 +139,14 @@ class ExerciseConfigChecker {
         $envConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
         $table = $this->loader->loadVariablesTable($envConfig->getParsedVariablesTable());
         $this->validator->validateEnvironmentConfig($exercise, $table);
+
+        $submitFiles = $this->conjureSubmittedFiles($environment);
+        $submitVariables = $this->conjureSubmitVariables($exercise, $environment, $submitFiles);
+
         $this->compiler->compile(
           $exercise,
           $environment,
-          CompilationParams::create($this->conjureSubmittedFiles($environment))
+          CompilationParams::create($submitFiles, false, $submitVariables)
         );
       }
       $exercise->setNotBroken();
@@ -117,6 +166,8 @@ class ExerciseConfigChecker {
    * Check the configuration of an exercise (including all environment configs) and set the `isBroken` flag if there is
    * an error.
    * @param Exercise $exercise the exercise whose configuration should be checked
+   * @throws ApiException
+   * @throws ParseException
    */
   public function check(Exercise $exercise) {
     if ($exercise->getRuntimeEnvironments()->count() === 0) {
