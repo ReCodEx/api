@@ -171,8 +171,12 @@ class Helper {
 
     $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     foreach ($config->getTests() as $testId => $test) {
-      foreach ($test->getEnvironments() as $envId => $env) {
-        $envConfig = $envConfigs[$envId];
+      foreach ($exercise->getRuntimeEnvironments() as $environment) {
+        $envConfig = $envConfigs[$environment->getId()];
+        $env = $test->getEnvironment($environment->getId());
+        if ($env === null) {
+          throw new ExerciseConfigException("Environment '{$environment->getId()}' not found in test '$testId'");
+        }
 
         // load all pipelines for this test and environment
         $pipelines = [];
@@ -242,7 +246,7 @@ class Helper {
           // none of the files matched the wildcard from variable values,
           // this means whole environment could not be matched
           if ($matched === false) {
-            $envStatuses[$envId] = false;
+            $envStatuses[$environment->getId()] = false;
           }
         }
       }
@@ -295,10 +299,15 @@ class Helper {
 
     $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     foreach ($config->getTests() as $testId => $test) {
-      foreach ($test->getEnvironments() as $envId => $env) {
+      foreach ($exercise->getRuntimeEnvironments() as $environment) {
+        $env = $test->getEnvironment($environment->getId());
+        if ($env === null) {
+          throw new ExerciseConfigException("Environment '{$environment->getId()}' not found in test '$testId'");
+        }
+
         foreach ($env->getPipelines() as $pipelineId => $pipeline) {
           $variables = $this->findSubmitVariablesInVariablesTable($pipeline->getVariablesTable());
-          $envResults[$envId] = array_merge($envResults[$envId], $variables);
+          $envResults[$environment->getId()] = array_merge($envResults[$environment->getId()], $variables);
         }
       }
     }
