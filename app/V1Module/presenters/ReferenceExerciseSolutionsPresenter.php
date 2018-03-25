@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\InvalidArgumentException;
@@ -221,9 +222,14 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotFoundException
    * @throws InvalidArgumentException
    * @throws ExerciseConfigException
+   * @throws BadRequestException
    */
   public function actionPreSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
+
+    if ($exercise->isBroken()) {
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+    }
 
     // retrieve and check uploaded files
     $uploadedFiles = $this->files->findAllById($this->getRequest()->getPost("files"));
@@ -261,6 +267,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotFoundException
    * @throws SubmissionEvaluationFailedException
    * @throws ParseException
+   * @throws BadRequestException
    */
   public function actionSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -268,13 +275,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     $req = $this->getRequest();
     $note = $req->getPost("note");
-    $runtimeId = $req->getPost("runtimeEnvironmentId");
+    $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
 
-    // detect the runtime configuration
-    if ($runtimeId !== null) {
-      $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($runtimeId);
-    } else {
-      throw new NotFoundException("RuntimeConfiguration was not found - automatic detection is not supported");
+    if ($exercise->isBroken()) {
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
     }
 
     // create reference solution
@@ -315,6 +319,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @param string $id Identifier of the reference solution
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
+   * @throws ParseException
+   * @throws BadRequestException
    */
   public function actionResubmit(string $id) {
     $req = $this->getRequest();
@@ -322,6 +328,11 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
+
+    if ($referenceSolution->getExercise()->isBroken()) {
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+    }
+
     $this->sendSuccessResponse($this->finishSubmission($referenceSolution, $isDebug));
   }
 
@@ -341,6 +352,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging evaluation with all logs and outputs")
    * @throws ForbiddenRequestException
    * @throws ParseException
+   * @throws BadRequestException
    */
   public function actionResubmitAll($exerciseId) {
     $req = $this->getRequest();
@@ -349,6 +361,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($exerciseId);
     $result = [];
+
+    if ($exercise->isBroken()) {
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+    }
 
     foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
       $result[] = $this->finishSubmission($referenceSolution, $isDebug);
