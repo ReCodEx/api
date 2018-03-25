@@ -2,6 +2,7 @@
 
 use App\Model\Entity\User;
 use App\Security\AccessToken;
+use App\Security\TokenScope;
 use Nette\Application\IResponse;
 use Nette\Application\Responses\JsonResponse;
 use Nette\DI\Container;
@@ -137,7 +138,7 @@ class PresenterTestHelper
 
     /** @var \App\Security\AccessManager $accessManager */
     $accessManager = $container->getByType(\App\Security\AccessManager::class);
-    $tokenText = $accessManager->issueToken($user, [AccessToken::SCOPE_MASTER, AccessToken::SCOPE_REFRESH]);
+    $tokenText = $accessManager->issueToken($user, [TokenScope::MASTER, TokenScope::REFRESH]);
     $token = $accessManager->decodeToken($tokenText);
 
     $userSession->login(new \App\Security\Identity($user, $token));

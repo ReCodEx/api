@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Security\TokenScope;
 use Latte;
 use Nette\Utils\Arrays;
 use App\Model\Entity\User;
@@ -74,7 +75,7 @@ class EmailVerificationHelper {
   public function process(User $user) {
     // prepare all necessary things
     $token = $this->accessManager->issueToken(
-      $user, [AccessToken::SCOPE_EMAIL_VERIFICATION], $this->tokenExpiration, ["email" => $user->getEmail()]
+      $user, [TokenScope::EMAIL_VERIFICATION], $this->tokenExpiration, ["email" => $user->getEmail()]
     );
 
     return $this->sendEmail($user, $token);
@@ -93,7 +94,7 @@ class EmailVerificationHelper {
     // 1] correct scope
     // 2] the IDs and emails of the user and the token are the same
 
-    if (!$token->isInScope(AccessToken::SCOPE_EMAIL_VERIFICATION)) {
+    if (!$token->isInScope(TokenScope::EMAIL_VERIFICATION)) {
       throw new ForbiddenRequestException("You cannot verify email with this access token.");
     }
 

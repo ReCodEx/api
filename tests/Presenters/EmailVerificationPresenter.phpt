@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Security\Identity;
 use App\Security\AccessToken;
 use App\Helpers\EmailVerificationHelper;
+use App\Security\TokenScope;
 use App\V1Module\Presenters\EmailVerificationPresenter;
 use App\V1Module\Presenters\GroupsPresenter;
 use Tester\Assert;
@@ -82,7 +83,7 @@ class TestEmailVerificationPresenter extends Tester\TestCase
 
     // prepare token for email verification
     $token = $this->accessManager->issueToken(
-      $user, [AccessToken::SCOPE_EMAIL_VERIFICATION], 600, ["email" => $user->getEmail()]
+      $user, [TokenScope::EMAIL_VERIFICATION], 600, ["email" => $user->getEmail()]
     );
     // login with obtained token
     $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));

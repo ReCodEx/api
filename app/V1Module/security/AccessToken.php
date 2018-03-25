@@ -8,13 +8,6 @@ use Firebase\JWT\JWT;
 use stdClass;
 
 class AccessToken {
-
-  // predefined scopes
-  const SCOPE_REFRESH = "refresh";
-  const SCOPE_CHANGE_PASSWORD = "change-password";
-  const SCOPE_EMAIL_VERIFICATION = "email-verification";
-  const SCOPE_MASTER = "master";
-
   /** @var string|null The subject */
   private $sub = null;
 

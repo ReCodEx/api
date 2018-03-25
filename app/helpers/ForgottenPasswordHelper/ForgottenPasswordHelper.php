@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Security\TokenScope;
 use Latte;
 use Nette\Utils\Arrays;
 use Kdyby\Doctrine\EntityManager;
@@ -88,7 +89,7 @@ class ForgottenPasswordHelper {
     $this->em->flush();
 
     // prepare all necessary things
-    $token = $this->accessManager->issueToken($login->getUser(), [AccessToken::SCOPE_CHANGE_PASSWORD],
+    $token = $this->accessManager->issueToken($login->getUser(), [TokenScope::CHANGE_PASSWORD],
       $this->tokenExpiration);
     $subject = $this->createSubject($login);
     $message = $this->createBody($login, $token);

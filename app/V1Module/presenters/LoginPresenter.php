@@ -16,6 +16,7 @@ use App\Security\AccessManager;
 use App\Security\ACL\IUserPermissions;
 use App\Security\CredentialsAuthenticator;
 use App\Security\Identity;
+use App\Security\TokenScope;
 use Nette\Security\AuthenticationException;
 
 /**
@@ -67,7 +68,7 @@ class LoginPresenter extends BasePresenter {
    * @throws InvalidAccessTokenException
    */
   private function sendAccessTokenResponse(User $user) {
-    $token = $this->accessManager->issueToken($user, [AccessToken::SCOPE_MASTER, AccessToken::SCOPE_REFRESH]);
+    $token = $this->accessManager->issueToken($user, [TokenScope::MASTER, TokenScope::REFRESH]);
     $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $this->sendSuccessResponse([
@@ -139,8 +140,8 @@ class LoginPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   public function checkRefresh() {
-    if (!$this->isInScope(AccessToken::SCOPE_REFRESH)) {
-      throw new ForbiddenRequestException(sprintf("Only tokens in the '%s' scope can be refreshed", AccessToken::SCOPE_REFRESH));
+    if (!$this->isInScope(TokenScope::REFRESH)) {
+      throw new ForbiddenRequestException(sprintf("Only tokens in the '%s' scope can be refreshed", TokenScope::REFRESH));
     }
 
   }
@@ -162,7 +163,7 @@ class LoginPresenter extends BasePresenter {
   }
 
   public function checkIssueToken() {
-    if (!$this->getAccessToken()->isInScope(AccessToken::SCOPE_MASTER)) {
+    if (!$this->getAccessToken()->isInScope(TokenScope::MASTER)) {
       throw new ForbiddenRequestException("Restricted tokens cannot be used to issue new tokens");
     }
   }
@@ -180,7 +181,7 @@ class LoginPresenter extends BasePresenter {
     // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
     $scopes = $request->getPost("scopes");
 
-    if (in_array(AccessToken::SCOPE_MASTER, $scopes)) {
+    if (in_array(TokenScope::MASTER, $scopes)) {
       throw new ForbiddenRequestException("Master tokens can only be issued through the login endpoint");
     }
 

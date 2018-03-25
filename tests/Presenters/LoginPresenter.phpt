@@ -6,6 +6,7 @@ use App\Helpers\ExternalLogin\CAS\LDAPLoginService;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Security\AccessToken;
 use App\Security\Identity;
+use App\Security\TokenScope;
 use App\V1Module\Presenters\LoginPresenter;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
@@ -159,7 +160,7 @@ class TestLoginPresenter extends Tester\TestCase
     $user = $this->presenter->users->getByEmail($this->userLogin);
     $time = time();
     $token = new AccessToken((object) [
-      "scopes" => [AccessToken::SCOPE_REFRESH, "hello", "world"],
+      "scopes" => [TokenScope::REFRESH, "hello", "world"],
       "sub" => $user->getId(),
       "exp" => $time + 1200,
       "ref" => $time + 2400,
@@ -181,7 +182,7 @@ class TestLoginPresenter extends Tester\TestCase
     Assert::true($this->presenter->user->isLoggedIn());
 
     $newToken = $this->presenter->accessManager->decodeToken($result["payload"]["accessToken"]);
-    Assert::true($newToken->isInScope(AccessToken::SCOPE_REFRESH));
+    Assert::true($newToken->isInScope(TokenScope::REFRESH));
     Assert::true($newToken->isInScope("hello"));
     Assert::true($newToken->isInScope("world"));
   }
