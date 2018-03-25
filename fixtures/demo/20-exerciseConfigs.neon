@@ -69,5 +69,6 @@ App\Model\Entity\ExerciseConfig:
                             - name: expected-output
                               type: remote-file
                               value: expected.2.cpp.out
+                    java: []
               '''
             - @demoAdmin
