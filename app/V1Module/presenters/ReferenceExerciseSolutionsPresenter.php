@@ -228,7 +228,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $exercise = $this->exercises->findOrThrow($exerciseId);
 
     if ($exercise->isBroken()) {
-      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
     }
 
     // retrieve and check uploaded files
@@ -278,7 +278,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $runtimeEnvironment = $this->runtimeEnvironments->findOrThrow($req->getPost("runtimeEnvironmentId"));
 
     if ($exercise->isBroken()) {
-      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
     }
 
     // create reference solution
@@ -330,7 +330,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
     if ($referenceSolution->getExercise()->isBroken()) {
-      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
     }
 
     $this->sendSuccessResponse($this->finishSubmission($referenceSolution, $isDebug));
@@ -363,7 +363,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $result = [];
 
     if ($exercise->isBroken()) {
-      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");
     }
 
     foreach ($exercise->getReferenceSolutions() as $referenceSolution) {

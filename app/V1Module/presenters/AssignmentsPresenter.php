@@ -330,7 +330,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     if ($exercise->isBroken()) {
-      throw new BadRequestException("Exercise '$exerciseId' is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise '$exerciseId' is broken. If you are the author, check its configuration.");
     }
 
     if ($exercise->getReferenceSolutions()->isEmpty()) {
@@ -386,7 +386,7 @@ class AssignmentsPresenter extends BasePresenter {
     $exercise = $assignment->getExercise();
 
     if ($exercise->isBroken()) {
-      throw new BadRequestException("Exercise '{$exercise->getId()}' is broken. If you are the author, check its configuration");
+      throw new BadRequestException("Exercise '{$exercise->getId()}' is broken. If you are the author, check its configuration.");
     }
 
     $assignment->updatedNow();
