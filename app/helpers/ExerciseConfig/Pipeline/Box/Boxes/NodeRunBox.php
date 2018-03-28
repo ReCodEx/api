@@ -100,7 +100,7 @@ class NodeRunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$NODE_BINARY);
 
-    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)];
+    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue()];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
