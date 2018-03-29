@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
 use App\Exceptions\InvalidArgumentException;
@@ -268,11 +269,21 @@ class SubmitPresenter extends BasePresenter {
 
     // generate job configuration
     $compilationParams = CompilationParams::create($solution->getSolution()->getFileNames(), $isDebug, $solution->getSolution()->getSolutionParams());
-    $generatorResult =
-      $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(),
-        $solution->getAssignment(),
-        $solution->getSolution()->getRuntimeEnvironment(),
-        $compilationParams);
+
+    try {
+      $generatorResult =
+        $this->jobConfigGenerator->generateJobConfig($this->getCurrentUser(),
+          $solution->getAssignment(),
+          $solution->getSolution()->getRuntimeEnvironment(),
+          $compilationParams);
+    } catch (ExerciseConfigException | JobConfigStorageException $e) {
+      $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser());
+      $this->assignmentSubmissions->persist($submission, false);
+      $failure = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_CONFIG_ERROR, $e->getMessage(), $submission);
+      $this->submissionFailures->persist($failure);
+      $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, "Failed to generate job config for {$submission->getId()}");
+      throw new SubmissionFailedException($e->getMessage());
+    }
 
     // create submission entity
     $submission = new AssignmentSolutionSubmission($solution,

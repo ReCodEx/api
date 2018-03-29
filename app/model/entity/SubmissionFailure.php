@@ -34,6 +34,11 @@ class SubmissionFailure implements JsonSerializable {
   const TYPE_LOADING_FAILURE = "loading_failure";
 
   /**
+   * The exercise configuration is invalid and it cannot be compiled
+   */
+  const TYPE_CONFIG_ERROR = "config_error";
+
+  /**
    * @ORM\Id
    * @ORM\Column(type="guid")
    * @ORM\GeneratedValue(strategy="UUID")
