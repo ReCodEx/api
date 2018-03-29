@@ -213,6 +213,9 @@ class ExercisesPresenter extends BasePresenter {
 
     $this->exercises->flush();
 
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise);
   }
 
@@ -302,6 +305,10 @@ class ExercisesPresenter extends BasePresenter {
 
     // and finally make changes to database
     $this->exercises->persist($exercise);
+
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise);
   }
 
@@ -394,6 +401,10 @@ class ExercisesPresenter extends BasePresenter {
 
     $exercise = Exercise::forkFrom($forkFrom, $user, $group);
     $this->exercises->persist($exercise);
+
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+
     $this->sendSuccessResponse($exercise);
   }
 
