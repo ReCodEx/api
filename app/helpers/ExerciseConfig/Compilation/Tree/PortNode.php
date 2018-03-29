@@ -23,7 +23,7 @@ class PortNode {
   private $box;
 
   /**
-   * Nodes which identify themselves as parent of this node, ndexed by port
+   * Nodes which identify themselves as parent of this node, indexed by port
    * name.
    * @var PortNode[]
    */
