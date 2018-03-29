@@ -27,6 +27,7 @@ abstract class ExecutionBox extends Box
   public static $OUTPUT_FILE_PORT_KEY = "output-file";
   public static $STDOUT_FILE_PORT_KEY = "stdout";
   public static $ENTRY_POINT_KEY = "entry-point";
+  public static $EXTRA_FILES_PORT_KEY = "extra-files";
 
 
   /**
