@@ -65,8 +65,20 @@ class Compiler {
       throw new ExerciseConfigException("Submitted files contains two or more files with the same name.");
     }
 
+    if ($exercise->getExerciseConfig() === null) {
+      throw new ExerciseConfigException("The exercise has no configuration");
+    }
+
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
+
+    if ($environmentConfig === null) {
+      throw new ExerciseConfigException(sprintf(
+        "The exercise has no configuration for environment '%s'",
+        $runtimeEnvironment->getId()
+      ));
+    }
+
     $environmentConfigVariables = $this->loader->loadVariablesTable($environmentConfig->getParsedVariablesTable());
 
     $limits = array();
