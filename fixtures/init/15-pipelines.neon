@@ -107,9 +107,7 @@ App\Model\Entity\Pipeline:
 
 		name: Compilation source file pass-through
 		pipelineConfig: @pipelineConfig1
-		runtimeEnvironments:
-			- @node-linux
-			- @php-linux
+		runtimeEnvironments: []
 
 	pipeline2:
 		__construct:
@@ -118,7 +116,9 @@ App\Model\Entity\Pipeline:
 
 		name: Compilation source files pass-through
 		pipelineConfig: @pipelineConfig2
-		runtimeEnvironments: []
+		runtimeEnvironments:
+			- @node-linux
+			- @php-linux
 
 	pipeline3:
 		__construct:
