@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 
+use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compiler;
 use App\Model\Entity\Assignment;
@@ -73,12 +74,12 @@ class Generator {
    * Generate job configuration from exercise configuration and save it in the
    * job configuration storage.
    * @param User $user
-   * @param Exercise|Assignment $exerciseAssignment
+   * @param IExercise $exerciseAssignment
    * @param RuntimeEnvironment $runtimeEnvironment
    * @param CompilationParams $params
    * @return GeneratorResult
    */
-  public function generateJobConfig(User $user, $exerciseAssignment,
+  public function generateJobConfig(User $user, IExercise $exerciseAssignment,
       RuntimeEnvironment $runtimeEnvironment, CompilationParams $params): GeneratorResult {
     $jobConfig = $this->compiler->compile($exerciseAssignment, $runtimeEnvironment, $params);
     $jobConfigPath = $this->storage->save($jobConfig, $user);
