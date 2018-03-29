@@ -142,7 +142,7 @@ class ExternalServiceAuthenticator {
 
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
     if ($user === null) {
-      throw new WrongCredentialsException("User authenticated through '{$service->getServiceId()}' not found. Please register first.");
+      throw new WrongCredentialsException("User authenticated through '{$service->getServiceId()}' has no corresponding account in ReCodEx. Please register to ReCodEx first.");
     }
 
     return $user;

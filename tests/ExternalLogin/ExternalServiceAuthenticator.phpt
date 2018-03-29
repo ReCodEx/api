@@ -98,7 +98,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
     $authenticator = new ExternalServiceAuthenticator($externalLogins, $users, $logins, $serviceA);
     Assert::throws(function () use ($authenticator, $serviceA) {
       $authenticator->authenticate($serviceA, [ "a" => "b" ]);
-    }, WrongCredentialsException::class, "User authenticated through 'x' not found. Please register first.");
+    }, WrongCredentialsException::class, "User authenticated through 'x' has no corresponding account in ReCodEx. Please register to ReCodEx first.");
   }
 
   public function testAuthenticateFindUser() {
