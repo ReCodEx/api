@@ -116,6 +116,8 @@ class PipelinesMerger {
         $next = current($inNode->getChildren());
 
         // remove input and output data nodes from tree
+        $previousChildPort = $previous->findChildPort($outNode);
+        $nextParentPort = $next->findParentPort($inNode);
         $previous->removeChild($outNode);
         $next->removeParent($inNode);
 
@@ -128,9 +130,9 @@ class PipelinesMerger {
         $joinNodes[] = $joinNode = new PortNode($joinBox, $next->getPipelineId(), $next->getTestId());
 
         // engage join node into tree
-        $previous->addChild($inPort->getName(), $joinNode);
+        $previous->addChild($previousChildPort, $joinNode);
         $joinNode->addParent($inPort->getName(), $previous);
-        $next->addParent($outPort->getName(), $joinNode);
+        $next->addParent($nextParentPort, $joinNode);
         $joinNode->addChild($outPort->getName(), $next);
 
         // delete variable from the indexed array to be able to say which nodes have to stay at the end
