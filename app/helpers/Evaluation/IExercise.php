@@ -37,9 +37,9 @@ interface IExercise {
 
   /**
    * Get configuration belonging to this exercise.
-   * @return ExerciseConfig
+   * @return ExerciseConfig|null
    */
-  function getExerciseConfig(): ExerciseConfig;
+  function getExerciseConfig(): ?ExerciseConfig;
 
   /**
    * Get collection of environment configs belonging to exercise.
