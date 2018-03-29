@@ -97,7 +97,7 @@ class ExerciseConfigChecker {
       foreach ($exercise->getHardwareGroups() as $hardwareGroup) {
         $limitsEntity = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hardwareGroup);
         if ($limitsEntity === null) {
-          $exercise->setBroken(sprintf("Limits for environment %s and hardware group %s not found",
+          $exercise->setBroken(sprintf("Limits for environment '%s' and hardware group '%s' not found",
             $environment->getName(), $hardwareGroup->getId()));
           return false;
         }
@@ -107,7 +107,7 @@ class ExerciseConfigChecker {
         try {
           $limits = $this->loader->loadExerciseLimits($limitsEntity->getParsedLimits());
         } catch (ExerciseConfigException $exception) {
-          $exercise->setBroken(sprintf("Loading limits from %s failed: %s", $limitsEntity->getId(),
+          $exercise->setBroken(sprintf("Loading limits from '%s' failed: %s", $limitsEntity->getId(),
             $exception->getMessage()));
           return false;
         }
