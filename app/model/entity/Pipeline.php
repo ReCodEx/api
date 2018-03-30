@@ -107,9 +107,11 @@ class Pipeline implements JsonSerializable
   public const DEFAULT_PARAMETERS = [
     "isCompilationPipeline" => false,
     "isExecutionPipeline" => false,
+    "judgeOnlyPipeline" => false,
     "producesStdout" => false,
     "producesFiles" => false,
     "hasEntryPoint" => false,
+    "hasExtraFiles" => false,
   ];
 
   /**
