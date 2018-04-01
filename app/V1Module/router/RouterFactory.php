@@ -62,7 +62,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
-    $router[] = new PostRoute("$prefix/issue-token", "Login:issueToken");
+    $router[] = new PostRoute("$prefix/issue-restricted-token", "Login:issueRestrictedToken");
     $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeOver");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
     return $router;

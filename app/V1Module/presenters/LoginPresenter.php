@@ -162,7 +162,7 @@ class LoginPresenter extends BasePresenter {
     ]);
   }
 
-  public function checkIssueToken() {
+  public function checkIssueRestrictedToken() {
     if (!$this->getAccessToken()->isInScope(TokenScope::MASTER)) {
       throw new ForbiddenRequestException("Restricted tokens cannot be used to issue new tokens");
     }
@@ -176,7 +176,7 @@ class LoginPresenter extends BasePresenter {
    * @Param(type="post", required=false, name="expiration", validation="integer", description="How long the token should be valid (in seconds)")
    * @throws ForbiddenRequestException
    */
-  public function actionIssueToken() {
+  public function actionIssueRestrictedToken() {
     $request = $this->getRequest();
     // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
     $scopes = $request->getPost("scopes");
