@@ -181,8 +181,15 @@ class LoginPresenter extends BasePresenter {
     // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
     $scopes = $request->getPost("scopes");
 
-    if (in_array(TokenScope::MASTER, $scopes)) {
-      throw new ForbiddenRequestException("Master tokens can only be issued through the login endpoint");
+    $forbiddenScopes = [
+      TokenScope::MASTER => "Master tokens can only be issued through the login endpoint",
+      TokenScope::CHANGE_PASSWORD => "Password change tokens can only be issued through the password reset endpoint",
+      TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail"
+    ];
+
+    $violations = array_intersect(array_keys($forbiddenScopes), $scopes);
+    if ($violations) {
+      throw new ForbiddenRequestException($forbiddenScopes[$violations[0]]);
     }
 
     $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
