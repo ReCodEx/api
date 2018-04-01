@@ -444,11 +444,21 @@ class UsersPresenter extends BasePresenter {
    * Invalidate all existing tokens issued for given user
    * @POST
    * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
    */
   public function actionInvalidateTokens(string $id) {
     $user = $this->users->findOrThrow($id);
     $user->setTokenValidityThreshold(new DateTime());
     $this->users->flush();
+    $token = $this->getAccessToken();
+
+    $this->sendSuccessResponse([
+      "accessToken" => $this->accessManager->issueToken(
+        $this->getCurrentUser(),
+        $token->getScopes(),
+        $token->getExpirationTime()
+      )
+    ]);
   }
 
 }
