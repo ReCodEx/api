@@ -137,7 +137,6 @@ class LoginPresenter extends BasePresenter {
 
   /**
    * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
    */
   public function checkRefresh() {
     if (!$this->isInScope(TokenScope::REFRESH)) {
