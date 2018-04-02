@@ -59,11 +59,6 @@ class SolutionEvaluation
   /**
    * @ORM\Column(type="text")
    */
-  protected $resultYml;
-
-  /**
-   * @ORM\Column(type="text")
-   */
   protected $initiationOutputs;
 
   /**
@@ -96,7 +91,6 @@ class SolutionEvaluation
   public function __construct(EvaluationResults $results) {
     $this->evaluatedAt = new \DateTime;
     $this->initFailed = !$results->initOK();
-    $this->resultYml = (string) $results;
     $this->score = 0;
     $this->points = 0;
     $this->testResults = new ArrayCollection;

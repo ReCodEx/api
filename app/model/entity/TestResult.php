@@ -54,7 +54,6 @@ class TestResult
     $this->cpuTimeExceeded = !$result->isCpuTimeOK();
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
-    $this->stats = implode(",", array_map(function ($stat) { return (string) $stat; }, $result->getStats()));
 
     $this->tasks = new ArrayCollection;
     foreach ($result->getExecutionResults() as $executionResult) {
@@ -146,11 +145,6 @@ class TestResult
     * @ORM\Column(type="string")
     */
   protected $message;
-
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $stats;
 
   /**
    * @ORM\Column(type="string", nullable=true)

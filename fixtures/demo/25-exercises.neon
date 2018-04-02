@@ -152,7 +152,6 @@ App\Model\Entity\SolutionEvaluation:
         initFailed: false
         score: 0.95
         points: 10
-        resultYml: ""
         initiationOutputs: ""
 
 App\Model\Entity\ReferenceSolutionSubmission:
