@@ -34,6 +34,22 @@ permissions:
     #####################
 
     - allow: true
+      role: scope-read-all
+      resource: group
+      actions:
+          - viewAssignments
+          - viewExercises
+          - viewStudents
+          - viewPublicDetail
+          - viewDetail
+          - viewSubgroups
+          - viewSupervisors
+          - viewStudents
+          - viewAdmin
+          - viewStudentStats
+          - viewStats
+
+    - allow: true
       role: student
       resource: group
       actions: viewAssignments
@@ -117,6 +133,16 @@ permissions:
     ########################
 
     - allow: true
+      role: scope-read-all
+      resource: instance
+      actions:
+        - viewAll
+        - viewDetail
+        - viewGroups
+        - viewUsers
+        - viewLicences
+
+    - allow: true
       role: unauthenticated
       resource: instance
       actions:
@@ -152,6 +178,16 @@ permissions:
     ####################
     # User permissions #
     ####################
+
+    - allow: true
+      role: scope-read-all
+      resource: user
+      actions:
+        - viewPublicData
+        - viewExercises
+        - viewInstances
+        - viewGroups
+        - viewDetail
 
     - allow: true
       role: student
@@ -192,6 +228,13 @@ permissions:
     ##########################
     # Assignment permissions #
     ##########################
+
+    - allow: true
+      role: scope-read-all
+      resource: assignment
+      actions:
+        - viewDetail
+        - viewSubmissions
 
     - allow: true
       role: student
@@ -251,6 +294,17 @@ permissions:
     ###################################
 
     - allow: true
+      role: scope-read-all
+      resource: assignmentSolution
+      actions:
+          - viewDetail
+          - viewEvaluation
+          - viewEvaluationDetails
+          - viewEvaluationValues
+          - viewEvaluationJudgeOutput
+          - viewResubmissions
+
+    - allow: true
       role: student
       resource: assignmentSolution
       actions:
@@ -289,6 +343,12 @@ permissions:
     #######################
 
     - allow: true
+      role: scope-read-all
+      resource: comment
+      actions:
+          - viewThread
+
+    - allow: true
       role: student
       resource: comment
       actions:
@@ -307,6 +367,16 @@ permissions:
     ########################
     # Exercise permissions #
     ########################
+
+    - allow: true
+      role: scope-read-all
+      resource: exercise
+      actions:
+          - viewAll
+          - viewDetail
+          - viewLimits
+          - viewScoreConfig
+          - viewPipelines
 
     - allow: true
       resource: exercise
@@ -402,6 +472,14 @@ permissions:
     #############################
 
     - allow: true
+      role: scope-read-all
+      resource: uploadedFile
+      actions:
+          - download
+          - viewDetail
+          - downloadSupplementaryFile
+
+    - allow: true
       role: student
       resource: uploadedFile
       actions:
@@ -446,6 +524,12 @@ permissions:
     #####################################
 
     - allow: true
+      role: scope-read-all
+      resource: runtimeEnvironment
+      actions:
+          - viewAll
+
+    - allow: true
       role: student
       resource: runtimeEnvironment
       actions:
@@ -456,6 +540,12 @@ permissions:
     ##############################
 
     - allow: true
+      role: scope-read-all
+      resource: hardwareGroup
+      actions:
+          - viewAll
+
+    - allow: true
       role: supervisor
       resource: hardwareGroup
       actions:
@@ -464,6 +554,13 @@ permissions:
     #########################
     # Pipelines permissions #
     #########################
+
+    - allow: true
+      role: scope-read-all
+      resource: pipeline
+      actions:
+          - viewDetail
+          - viewAll
 
     - allow: true
       role: supervisor
@@ -486,6 +583,13 @@ permissions:
       ###################
       # Sis permissions #
       ###################
+
+    - allow: true
+      role: scope-read-all
+      resource: sis
+      actions:
+        - viewTerms
+        - viewCourses
 
     - allow: true
       role: supervisor
