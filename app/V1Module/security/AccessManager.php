@@ -126,6 +126,10 @@ class AccessManager {
     return $token->encode($this->verificationKey, $this->usedAlgorithm);
   }
 
+  public function issueRefreshedToken(AccessToken $token): string {
+    return $this->issueToken($this->getUser($token), $token->getScopes(), $token->getExpirationTime(), $token->getPayloadData());
+  }
+
   /**
    * Extract the access token from the request.
    * @return string|null  The access token parsed from the HTTP request, or null if there is no access token.

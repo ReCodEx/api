@@ -156,7 +156,7 @@ class LoginPresenter extends BasePresenter {
 
     $user = $this->getCurrentUser();
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user, $token->getScopes(), $token->getExpirationTime()),
+      "accessToken" => $this->accessManager->issueRefreshedToken($token),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }

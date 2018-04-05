@@ -55,6 +55,10 @@ class AccessToken {
     return in_array($scope, $this->scopes);
   }
 
+  public function getPayloadData(): array {
+    return (array) $this->payload;
+  }
+
   /**
    * Access any claim of the payload.
    * @param $key
