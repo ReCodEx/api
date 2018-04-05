@@ -6,6 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotReadyException;
 use App\Exceptions\ParseException;
 use App\Exceptions\SubmissionFailedException;
@@ -21,6 +22,7 @@ use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
 use App\Helpers\JobConfig\Generator as JobConfigGenerator;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\SolutionFile;
 use App\Model\Entity\SubmissionFailure;
 use App\Model\Entity\UploadedFile;
@@ -392,8 +394,17 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $submittedFiles = array_map(function(UploadedFile $file) { return $file->getName(); }, $referenceSolution->getFiles()->getValues());
 
     $compilationParams = CompilationParams::create($submittedFiles, $isDebug, $referenceSolution->getSolution()->getSolutionParams());
-    $generatorResult = $this->jobConfigGenerator
-      ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
+
+    try {
+      $generatorResult = $this->jobConfigGenerator
+        ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
+    } catch (ExerciseConfigException | JobConfigStorageException $e) {
+      return [
+        "referenceSolution" => $referenceSolution,
+        "submissions" => [],
+        "errors" => $hwGroups->map(function (HardwareGroup $group) { return $group->getId(); })
+      ];
+    }
 
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID

@@ -137,6 +137,12 @@ class ExerciseConfigChecker {
     try {
       foreach ($exercise->getRuntimeEnvironments() as $environment) {
         $envConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+
+        if ($envConfig === null) {
+          $exercise->setBroken(sprintf("Environment '%s' has no configuration", $environment->getId()));
+          return false;
+        }
+
         $table = $this->loader->loadVariablesTable($envConfig->getParsedVariablesTable());
         $this->validator->validateEnvironmentConfig($exercise, $table);
 
@@ -182,6 +188,11 @@ class ExerciseConfigChecker {
 
     if ($exercise->getLocalizedTexts()->count() === 0) {
       $exercise->setBroken("There are no student descriptions");
+      return;
+    }
+
+    if ($exercise->getExerciseConfig() === null) {
+      $exercise->setBroken("There is no configuration for this exercise");
       return;
     }
 
