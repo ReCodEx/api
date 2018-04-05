@@ -25,7 +25,6 @@ use App\Security\ACL\SisGroupContext;
 use App\Security\ACL\SisIdWrapper;
 use DateTime;
 use Exception;
-use Nette\Utils\Json;
 
 /**
  * @LoggedIn
@@ -132,6 +131,7 @@ class SisPresenter extends BasePresenter {
    * @Param(name="term", type="post")
    * @throws InvalidArgumentException
    * @throws ForbiddenRequestException
+   * @throws BadRequestException
    */
   public function actionRegisterTerm() {
     $year = intval($this->getRequest()->getPost("year"));
@@ -231,6 +231,7 @@ class SisPresenter extends BasePresenter {
    * @param $year
    * @param $term
    * @throws InvalidArgumentException
+   * @throws BadRequestException
    */
   public function actionSubscribedGroups($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
@@ -284,6 +285,7 @@ class SisPresenter extends BasePresenter {
    * @param $term
    * @throws InvalidArgumentException
    * @throws NotFoundException
+   * @throws BadRequestException
    */
   public function actionSupervisedCourses($userId, $year, $term) {
     $user = $this->users->findOrThrow($userId);
@@ -365,6 +367,7 @@ class SisPresenter extends BasePresenter {
    * @param $courseId
    * @throws ApiException
    * @throws ForbiddenRequestException
+   * @throws BadRequestException
    * @Param(name="groupId", type="post")
    */
   public function actionBindGroup($courseId) {
@@ -396,6 +399,7 @@ class SisPresenter extends BasePresenter {
    * @param $courseId
    * @throws ApiException
    * @throws ForbiddenRequestException
+   * @throws BadRequestException
    */
   public function actionPossibleParents($courseId) {
     $sisUserId = $this->getSisUserIdOrThrow($this->getCurrentUser());
@@ -407,11 +411,14 @@ class SisPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
+  /**
+   * @throws BadRequestException
+   */
   protected function getSisUserIdOrThrow(User $user) {
     $login = $this->externalLogins->findByUser($user, "cas-uk");
 
     if ($login === null) {
-      throw new InvalidArgumentException("Given user is not bound to a CAS UK account");
+      throw new BadRequestException(sprintf("User %s is not bound to a CAS UK account", $user->getId()));
     }
 
     return $login->getExternalId();
