@@ -1,0 +1,21 @@
+roles:
+    - name: normal_role
+    - name: effective_role_1
+    - name: effective_role_2
+
+permissions:
+    - allow: true
+      role: normal_role
+      resource: resource1
+      actions:
+          - action1
+    - allow: true
+      role: effective_role_1
+      resource: resource1
+      actions:
+          - action1
+    - allow: true
+      role: effective_role_2
+      resource: resource1
+      actions:
+          - action2

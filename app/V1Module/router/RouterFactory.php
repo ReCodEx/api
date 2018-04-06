@@ -62,6 +62,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
+    $router[] = new PostRoute("$prefix/issue-restricted-token", "Login:issueRestrictedToken");
     $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeOver");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
     return $router;
@@ -309,6 +310,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
 
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
+    $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");
     $router[] = new DeleteRoute("$prefix/<id>", "Users:delete");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/groups/all", "Users:allGroups");

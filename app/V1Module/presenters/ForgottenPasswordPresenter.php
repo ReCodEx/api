@@ -9,6 +9,7 @@ use App\Model\Repository\Logins;
 use App\Model\Entity\Login;
 use App\Security\AccessToken;
 
+use App\Security\TokenScope;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -55,7 +56,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
   public function actionChange() {
     $req = $this->getHttpRequest();
 
-    if (!$this->isInScope(AccessToken::SCOPE_CHANGE_PASSWORD)) {
+    if (!$this->isInScope(TokenScope::CHANGE_PASSWORD)) {
       throw new ForbiddenRequestException("You cannot reset your password with this access token.");
     }
 

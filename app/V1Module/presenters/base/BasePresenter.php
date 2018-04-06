@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Model\Entity\User;
+use App\Security\AccessToken;
 use App\Security\Identity;
 use ReflectionException;
 use App\Exceptions\BadRequestException;
@@ -115,6 +116,20 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     }
 
     return $identity->getUserData();
+  }
+
+  /**
+   * @throws ForbiddenRequestException
+   */
+  protected function getAccessToken(): AccessToken {
+    /** @var Identity $identity */
+    $identity = $this->getUser()->getIdentity();
+
+    if ($identity === null || $identity->getToken() === null) {
+      throw new ForbiddenRequestException();
+    }
+
+    return $identity->getToken();
   }
 
   /**
