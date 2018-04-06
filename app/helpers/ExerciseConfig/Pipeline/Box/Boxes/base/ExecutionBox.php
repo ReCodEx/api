@@ -52,7 +52,7 @@ abstract class ExecutionBox extends Box
 
     $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
     if ($this->hasInputPortValue(self::$STDIN_FILE_PORT_KEY)) {
-      $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR));
+      $sandbox->setStdin($this->getInputPortValue(self::$STDIN_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR));
     }
     if ($this->getOutputPort(self::$STDOUT_FILE_PORT_KEY)->getVariableValue() !== null) {
       $stdoutValue = $this->getOutputPortValue(self::$STDOUT_FILE_PORT_KEY);
@@ -60,16 +60,12 @@ abstract class ExecutionBox extends Box
         // name of the file is empty, so just make up some appropriate one
         $stdoutValue->setValue(Random::generate(20) . ".stdout");
       }
-      $sandbox->setStdout($stdoutValue->getTestPrefixedValue(ConfigParams::$EVAL_DIR));
+      $sandbox->setStdout($stdoutValue->getValue(ConfigParams::$EVAL_DIR));
     }
     if ($params->isDebug()) {
       $stderrRandom = Random::generate(20) . ".stderr";
-      $stderrName = ConfigParams::$EVAL_DIR . $stderrRandom;
-      if ($params->getCurrentTestName()) {
-        $stderrName = ConfigParams::$EVAL_DIR . $params->getCurrentTestName() . "/" . $stderrRandom;
-      }
       // all stderrs are stored alongside solution in case of debugging submission
-      $sandbox->setStderr($stderrName);
+      $sandbox->setStderr(ConfigParams::$EVAL_DIR . $stderrRandom);
     }
 
     $task->setSandboxConfig($sandbox);

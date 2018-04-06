@@ -110,12 +110,12 @@ class MonoCompilationBox extends CompilationBox
     $externalSources = [];
     if ($this->hasInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)) {
       $externalSources = $this->getInputPortValue(self::$EXTERNAL_SOURCES_PORT_KEY)
-        ->getTestPrefixedValue(ConfigParams::$EVAL_DIR);
+        ->getValue(ConfigParams::$EVAL_DIR);
     }
     $extraFiles = [];
     if ($this->hasInputPortValue(self::$EXTRA_FILES_PORT_KEY)) {
       $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
-        ->getTestPrefixedValue(ConfigParams::$EVAL_DIR);
+        ->getValue(ConfigParams::$EVAL_DIR);
     }
     $mainClass = [];
     if ($this->hasInputPortValue(self::$MAIN_CLASS_PORT_KEY)) {
@@ -128,13 +128,13 @@ class MonoCompilationBox extends CompilationBox
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
-          ->getTestPrefixedValue(ConfigParams::$EVAL_DIR),
+          ->getValue(ConfigParams::$EVAL_DIR),
         $externalSources,
         $extraFiles,
         $mainClass,
         [
           "-out:" . $this->getOutputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)
-            ->getTestPrefixedValue(ConfigParams::$EVAL_DIR)
+            ->getValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );

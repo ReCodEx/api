@@ -97,8 +97,8 @@ class FpcCompilationBox extends CompilationBox
   public function compile(CompilationParams $params): array {
     $tasks = [];
 
-    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR);
-    $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR);
+    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
+    $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
     foreach (array_merge($sourceFiles, $extraFiles) as $sourceFile) {
       $task = $this->compileBaseTask($params);
       $task->setCommandBinary(self::$FPC_BINARY);
@@ -112,7 +112,7 @@ class FpcCompilationBox extends CompilationBox
         [
           $sourceFile,
           "-o" . $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
-            ->getTestPrefixedValue(ConfigParams::$EVAL_DIR)
+            ->getValue(ConfigParams::$EVAL_DIR)
         ]
       );
       $task->setCommandArguments($args);
