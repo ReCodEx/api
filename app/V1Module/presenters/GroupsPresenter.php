@@ -615,7 +615,6 @@ class GroupsPresenter extends BasePresenter {
    * @POST
    * @param string $id Identifier of the group
    * @param string $userId Identifier of the supervisor
-   * @throws ForbiddenRequestException
    */
   public function actionAddSupervisor(string $id, string $userId) {
     $user = $this->users->findOrThrow($userId);
@@ -623,9 +622,6 @@ class GroupsPresenter extends BasePresenter {
 
     // make sure that the user is not already supervisor of the group
     if ($group->isSupervisorOf($user) === false) {
-      if ($user->getRole() === "student") {
-        $user->setRole("supervisor");
-      }
       $user->makeSupervisorOf($group);
       $this->users->flush();
       $this->groups->flush();
@@ -663,13 +659,6 @@ class GroupsPresenter extends BasePresenter {
       $membership = $user->findMembershipAsSupervisor($group); // should be always there
       $this->groupMemberships->remove($membership);
       $this->groupMemberships->flush();
-
-      // if user is not supervisor in any other group, lets downgrade his/hers privileges
-      if (empty($user->findGroupMembershipsAsSupervisor())
-        && $user->getRole() === "supervisor") {
-        $user->setRole("student");
-        $this->users->flush();
-      }
     }
 
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));

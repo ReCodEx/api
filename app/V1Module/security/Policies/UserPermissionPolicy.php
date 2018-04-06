@@ -31,4 +31,13 @@ class UserPermissionPolicy implements IPermissionPolicy
     return !$user->hasExternalAccounts();
   }
 
+  public function isSupervisor(Identity $identity, User $user) {
+    $currentUser = $identity->getUserData();
+    if (!$currentUser) {
+      return false;
+    }
+
+    return $user->getRole() === User::SUPERVISOR_ROLE;
+  }
+
 }

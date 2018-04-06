@@ -105,9 +105,16 @@ permissions:
           - update
           - remove
           - addSubgroup
-          - addSupervisor
           - removeSupervisor
       conditions: group.isAdmin
+
+    - allow: true
+      resource: group
+      actions:
+          - addSupervisor
+      conditions:
+          - group.isAdmin
+          - supervisor.isSupervisor
 
     ########################
     # Instance permissions #
