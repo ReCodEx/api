@@ -383,7 +383,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $testACompilationTask->getDependencies());
     Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testACompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testACompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "testA/source", ConfigParams::$EVAL_DIR . "testA/extra", "-o", ConfigParams::$EVAL_DIR . "testA/a.out"], $testACompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testACompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testACompilationTask->getType());
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
@@ -407,7 +407,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(4, $testARunTask->getDependencies());
     Assert::equal([$testAInputTask->getId(), $testACompilationTask->getId(),
       $testAExistsTask->getId(), $testAMkdir->getId()], $testARunTask->getDependencies());
-    Assert::equal(ConfigParams::$EVAL_DIR . "testA/a.out", $testARunTask->getCommandBinary());
+    Assert::equal(ConfigParams::$EVAL_DIR . "a.out", $testARunTask->getCommandBinary());
     Assert::equal([], $testARunTask->getCommandArguments());
     Assert::equal(TaskType::$EXECUTION, $testARunTask->getType());
     Assert::equal("testA", $testARunTask->getTestId());
@@ -415,9 +415,9 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(LinuxSandbox::$ISOLATE, $testARunTask->getSandboxConfig()->getName());
     Assert::null($testARunTask->getSandboxConfig()->getChdir());
     Assert::count(2, $testARunTask->getSandboxConfig()->getLimitsArray());
-    Assert::equal(ConfigParams::$EVAL_DIR . "testA/expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
+    Assert::equal(ConfigParams::$EVAL_DIR . "expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
     Assert::contains(".stderr", $testARunTask->getSandboxConfig()->getStderr());
-    Assert::contains('${EVAL_DIR}/testA/', $testARunTask->getSandboxConfig()->getStderr());
+    Assert::contains('${EVAL_DIR}/', $testARunTask->getSandboxConfig()->getStderr());
     Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
@@ -430,7 +430,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal([$testACopyTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
       $testAJudgeTask->getDependencies());
     Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-judge-normal", $testAJudgeTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "testA/expected.out", ConfigParams::$EVAL_DIR . "testA/actual.out"], $testAJudgeTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "expected.out", ConfigParams::$EVAL_DIR . "actual.out"], $testAJudgeTask->getCommandArguments());
     Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
     Assert::equal("testA", $testAJudgeTask->getTestId());
     Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
@@ -466,7 +466,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $testBCompilationTask->getDependencies());
     Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBCompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testBCompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "testB/source", ConfigParams::$EVAL_DIR . "testB/extra", "-o", ConfigParams::$EVAL_DIR . "testB/a.out"], $testBCompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testBCompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testBCompilationTask->getType());
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());

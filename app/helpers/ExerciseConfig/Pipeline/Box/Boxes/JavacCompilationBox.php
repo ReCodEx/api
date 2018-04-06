@@ -107,9 +107,9 @@ class JavacCompilationBox extends CompilationBox
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
-          ->getTestPrefixedValue(ConfigParams::$EVAL_DIR),
+          ->getValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
-          ->getTestPrefixedValue(ConfigParams::$EVAL_DIR)
+          ->getValue(ConfigParams::$EVAL_DIR)
       )
     );
 

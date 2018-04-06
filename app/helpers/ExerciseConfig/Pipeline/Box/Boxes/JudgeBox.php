@@ -160,8 +160,8 @@ class JudgeBox extends Box
       array_merge(
         $args,
         [
-          $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR),
-          $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR)
+          $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
+          $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );

@@ -98,7 +98,7 @@ class MonoExecutionBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$MONO_BINARY);
 
-    $args = [$this->getInputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR)];
+    $args = [$this->getInputPortValue(self::$ASSEMBLY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR)];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
