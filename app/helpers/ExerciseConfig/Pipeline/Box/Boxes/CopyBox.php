@@ -94,8 +94,8 @@ class CopyBox extends Box
    * @return array
    */
   public function compile(CompilationParams $params): array {
-    if ($this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getPrefixedValue() ===
-        $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getPrefixedValue()) {
+    if ($this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getTestPrefixedValue() ===
+        $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getTestPrefixedValue()) {
       return [];
     }
 
@@ -103,8 +103,8 @@ class CopyBox extends Box
     $task->setPriority(Priorities::$DEFAULT);
     $task->setCommandBinary(TaskCommands::$COPY);
     $task->setCommandArguments([
-      $this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR)
+      $this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

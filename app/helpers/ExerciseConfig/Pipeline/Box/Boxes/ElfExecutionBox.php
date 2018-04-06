@@ -94,7 +94,7 @@ class ElfExecutionBox extends ExecutionBox
    */
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
-    $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR));
+    $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getTestPrefixedValue(ConfigParams::$EVAL_DIR));
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $task->setCommandArguments($this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }

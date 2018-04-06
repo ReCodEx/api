@@ -106,19 +106,19 @@ class GppCompilationBox extends CompilationBox
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
-          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+          ->getTestPrefixedValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
-          ->getPrefixedValue(ConfigParams::$EVAL_DIR),
+          ->getTestPrefixedValue(ConfigParams::$EVAL_DIR),
         [
           "-o",
           $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
-            ->getPrefixedValue(ConfigParams::$EVAL_DIR)
+            ->getTestPrefixedValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );
 
     // check if file produced by compilation was successfully created
-    $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+    $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR);
     $exists = $this->compileExistsTask([$binary]);
 
     return [$task, $exists];

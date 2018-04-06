@@ -66,11 +66,11 @@ abstract class DataInBox extends Box
     if (!$inputVariable) {
       // input variable was not given, which is fine, treatment in validation
       // which takes place next can be applied even in this situation,
-      // getValue and getPrefixedValue are sufficient and correct here
+      // getValue and getTestPrefixedValue are sufficient and correct here
       $inputVariable = $variable;
     }
 
-    if (($inputVariable->getValue() === $variable->getPrefixedValue()) ||
+    if (($inputVariable->getValue() === $variable->getTestPrefixedValue()) ||
       ($inputVariable->isEmpty() && $variable->isEmpty())) {
       // there are no files which should be renamed
       return [];
@@ -84,7 +84,7 @@ abstract class DataInBox extends Box
 
     // prepare arrays which will be processed
     $inputFiles = array_values($inputVariable->getValueAsArray());
-    $files = array_values($variable->getPrefixedValueAsArray());
+    $files = array_values($variable->getTestPrefixedValueAsArray());
 
     // counts are not the same, this is really bad situation, end it now!
     if (count($inputFiles) !== count($files)) {

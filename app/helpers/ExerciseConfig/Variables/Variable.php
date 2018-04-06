@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig;
 
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
 use Nette\Utils\Strings;
@@ -43,10 +44,10 @@ class Variable implements JsonSerializable
   protected $value = null;
 
   /**
-   * Prefix of variable.
+   * Name of the test to which variable belongs to.
    * @var string
    */
-  protected $prefix = "";
+  protected $testName = null;
 
   /**
    * Determines if variable is array or not.
@@ -193,14 +194,17 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Get prefixed value or values.
+   * Get test prefixed value or values.
    * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
    * @return array|string
    */
-  public function getPrefixedValue(string $prefix = "") {
+  public function getTestPrefixedValue(string $prefix = "") {
     $value = $this->getValue();
-    $prefix = $prefix . $this->prefix;
+    if ($this->testName !== null) {
+      $prefix = $prefix . $this->testName . ConfigParams::$PATH_DELIM;
+    }
+
     if (is_scalar($value)) {
       return $prefix . $value;
     } else {
@@ -211,13 +215,13 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Get prefixed value as array if it is not array already.
+   * Get test prefixed value as array if it is not array already.
    * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
    * @return array|string
    */
-  public function getPrefixedValueAsArray(string $prefix = "") {
-    $value = $this->getPrefixedValue($prefix);
+  public function getTestPrefixedValueAsArray(string $prefix = "") {
+    $value = $this->getTestPrefixedValue($prefix);
     if (!is_array($value)) {
       $value = [$value];
     }
@@ -225,16 +229,23 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Get value of the variable.
+   * Get value of the variable. Optionally prefixed with given prefix.
+   * @param string $prefix
    * @return array|string
    */
-  public function getValue() {
+  public function getValue(string $prefix = "") {
     $value = $this->value;
     if (is_scalar($value) && Strings::startsWith($value, self::$ESCAPE_CHAR . self::$REFERENCE_KEY)) {
       return Strings::substring($value, 1);
     }
 
-    return $value;
+    if (is_scalar($value)) {
+      return $prefix . $value;
+    } else {
+      return array_map(function ($val) use ($prefix) {
+        return $prefix . $val;
+      }, $value);
+    }
   }
 
   /**
@@ -262,21 +273,21 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Set given prefix to variable.
+   * Set test name to which variable belongs to.
    * @param string $prefix
    * @return Variable
    */
-  public function setValuePrefix(string $prefix): Variable {
-    $this->prefix = $prefix;
+  public function setTestName(string $prefix): Variable {
+    $this->testName = $prefix;
     return $this;
   }
 
   /**
-   * Get current variable prefix.
+   * Get test name to which variable belongs to.
    * @return string
    */
-  public function getValuePrefix(): string {
-    return $this->prefix;
+  public function getTestName(): string {
+    return $this->testName;
   }
 
   /**
