@@ -15,6 +15,7 @@ use App\Security\AccessManager;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
+use App\Security\Roles;
 use Nette\Http\IResponse;
 use ZxcvbnPhp\Zxcvbn;
 
@@ -125,7 +126,7 @@ class RegistrationPresenter extends BasePresenter {
       $req->getPost("lastName"),
       $degreesBeforeName,
       $degreesAfterName,
-      User::STUDENT_ROLE,
+      Roles::STUDENT_ROLE,
       $instance
     );
 

@@ -15,6 +15,7 @@ use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
+use App\Security\Roles;
 
 /**
  * User management endpoints
@@ -428,6 +429,33 @@ class UsersPresenter extends BasePresenter {
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);
     $this->sendSuccessResponse($user->getExercises()->getValues());
+  }
+
+  public function checkSetRole(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canSetRole($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Set a given role to the given user.
+   * @POST
+   * @param string $id Identifier of the user
+   * @Param(type="post", name="role", validation="bool", description="Role which should be assigned to the user")
+   * @throws InvalidArgumentException
+   */
+  public function actionSetRole(string $id) {
+    $user = $this->users->findOrThrow($id);
+    $role = $this->getRequest()->getPost("role");
+    // validate role
+    if (!Roles::validateRole($role)) {
+      throw new InvalidArgumentException("role", "Unknown user role '$role'");
+    }
+
+    $user->setRole($role);
+    $this->users->flush();
+    $this->sendSuccessResponse($user);
   }
 
 }

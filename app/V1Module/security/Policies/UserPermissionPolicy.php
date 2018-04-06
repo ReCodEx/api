@@ -5,6 +5,7 @@ namespace App\Security\Policies;
 use App\Model\Entity\User;
 use App\Model\Repository\Users;
 use App\Security\Identity;
+use App\Security\Roles;
 
 class UserPermissionPolicy implements IPermissionPolicy
 {
@@ -37,7 +38,7 @@ class UserPermissionPolicy implements IPermissionPolicy
       return false;
     }
 
-    return $user->getRole() === User::SUPERVISOR_ROLE;
+    return $user->getRole() === Roles::SUPERVISOR_ROLE;
   }
 
 }

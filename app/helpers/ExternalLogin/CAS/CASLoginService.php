@@ -9,6 +9,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\CASMissingInfoException;
 
 use App\Model\Entity\User;
+use App\Security\Roles;
 use Nette\InvalidArgumentException;
 use Nette\Utils\Arrays;
 use Nette\Utils\Json;
@@ -233,7 +234,7 @@ class CASLoginService implements IExternalLoginService {
   private function getUserRole(array $affiliation): ?string {
     foreach ($this->supervisorAffiliations as $supervisorAffiliation) {
       if (array_search($supervisorAffiliation, $affiliation) !== false) {
-        return User::SUPERVISOR_ROLE;
+        return Roles::SUPERVISOR_ROLE;
       }
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use App\Security\Roles;
 use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -37,10 +38,6 @@ class User
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use DeleteableEntity;
 
-  public const STUDENT_ROLE = "student";
-  public const SUPERVISOR_ROLE = "supervisor";
-  public const SUPERADMIN_ROLE = "superadmin";
-
   public function __construct(
     string $email,
     string $firstName,
@@ -69,7 +66,7 @@ class User
     $this->externalLogins = new ArrayCollection();
 
     if (empty($role)) {
-      $this->role = self::STUDENT_ROLE;
+      $this->role = Roles::STUDENT_ROLE;
     } else {
       $this->role = $role;
     }

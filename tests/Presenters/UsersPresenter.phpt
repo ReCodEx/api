@@ -7,6 +7,7 @@ use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Users;
+use App\Security\Roles;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
 
@@ -474,6 +475,24 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::null($this->users->getByEmail($victim));
+  }
+
+  public function testSetRoleUser() {
+    $victim = "user2@example.com";
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail($victim);
+    Assert::equal(Roles::STUDENT_ROLE, $user->getRole());
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'setRole', 'id' => $user->getId()],
+      ['role' => Roles::SUPERVISOR_ROLE]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal(Roles::SUPERVISOR_ROLE, $this->users->getByEmail($victim)->getRole());
   }
 
 }
