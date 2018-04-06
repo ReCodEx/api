@@ -39,7 +39,7 @@ class TestDirectoriesResolver {
     foreach ($node->getBox()->getOutputPorts() as $outputPort) {
       $variableValue = $outputPort->getVariableValue();
       if ($variableValue && $variableValue->isFile()) {
-        $outputPort->getVariableValue()->setValuePrefix($testName . ConfigParams::$PATH_DELIM);
+        $outputPort->getVariableValue()->setTestName($testName);
       }
     }
   }

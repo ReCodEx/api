@@ -161,23 +161,25 @@ class TestVariable extends Tester\TestCase
 
   public function testCorrectArray() {
     $variable = $this->loader->loadVariable(self::$configArray);
-    $variable->setValuePrefix("nice_prefix/");
+    $variable->setTestName("nice_prefix");
     Assert::equal("string[]", $variable->getType());
     Assert::true(is_array($variable->getValue()));
     Assert::equal("hehe", $variable->getValue()[0]);
     Assert::equal("haha", $variable->getValue()[1]);
     Assert::equal(["hehe", "haha"], $variable->getValueAsArray());
-    Assert::equal("nice_prefix/hehe", $variable->getPrefixedValue()[0]);
-    Assert::equal("nice_prefix/haha", $variable->getPrefixedValue()[1]);
+    Assert::equal("nice_prefix/hehe", $variable->getTestPrefixedValue()[0]);
+    Assert::equal("nice_prefix/haha", $variable->getTestPrefixedValue()[1]);
+    Assert::equal(["shame-shame-shame-hehe", "shame-shame-shame-haha"], $variable->getValue("shame-shame-shame-"));
   }
 
   public function testCorrect() {
     $variable = $this->loader->loadVariable(self::$config);
-    $variable->setValuePrefix("nice_prefix/");
+    $variable->setTestName("nice_prefix");
     Assert::equal("string", $variable->getType());
     Assert::equal("varValue", $variable->getValue());
     Assert::equal(["varValue"], $variable->getValueAsArray());
-    Assert::equal("nice_prefix/varValue", $variable->getPrefixedValue());
+    Assert::equal("nice_prefix/varValue", $variable->getTestPrefixedValue());
+    Assert::equal("shame-shame-shame-varValue", $variable->getValue("shame-shame-shame-"));
   }
 
 }

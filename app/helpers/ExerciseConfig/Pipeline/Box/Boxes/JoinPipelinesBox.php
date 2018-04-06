@@ -129,12 +129,12 @@ class JoinPipelinesBox extends Box
         throw new ExerciseConfigException("Different count of remote variables and local variables in box '{$this->getName()}'");
       }
 
-      $inputs = $inputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR);
-      $outputs = $outputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR);
+      $inputs = $inputVariable->getTestPrefixedValue(ConfigParams::$SOURCE_DIR);
+      $outputs = $outputVariable->getTestPrefixedValue(ConfigParams::$SOURCE_DIR);
     } else if (!$inputVariable->isValueArray() && !$outputVariable->isValueArray()) {
       // both variable values are single values
-      $inputs = [$inputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
-      $outputs = [$outputVariable->getPrefixedValue(ConfigParams::$SOURCE_DIR)];
+      $inputs = [$inputVariable->getTestPrefixedValue(ConfigParams::$SOURCE_DIR)];
+      $outputs = [$outputVariable->getTestPrefixedValue(ConfigParams::$SOURCE_DIR)];
     } else {
       throw new ExerciseConfigException("Incompatible types of variables in joining box '{$this->getName()}'");
     }

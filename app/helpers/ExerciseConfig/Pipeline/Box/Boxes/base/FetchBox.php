@@ -38,7 +38,7 @@ abstract class FetchBox extends Box
 
     // prepare arrays which will be processed
     $remoteFiles = array_values($remote->getValueAsArray());
-    $files = array_values($local->getPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
+    $files = array_values($local->getTestPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
 
     $tasks = [];
     for ($i = 0; $i < count($files); ++$i) {
