@@ -129,7 +129,7 @@ class ExportDatabase extends Command {
       $constructArr = [];
       $constructArr[] = $runtime->getId();
       $constructArr[] = $runtime->getName();
-      $constructArr[] = $runtime->getLanguage();
+      $constructArr[] = $runtime->getLongName();
       $constructArr[] = $runtime->getExtensions();
       $constructArr[] = $runtime->getPlatform();
       $constructArr[] = $runtime->getDescription();
