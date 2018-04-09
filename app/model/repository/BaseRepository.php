@@ -127,7 +127,7 @@ class BaseRepository {
       $filtered = array_merge($filtered, $weaker);
     }
 
-    return $filtered;
+    return array_unique($filtered);
   }
 
 }
