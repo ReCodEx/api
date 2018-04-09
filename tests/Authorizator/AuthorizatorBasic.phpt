@@ -46,7 +46,7 @@ class TestAuthorizatorBasic extends Tester\TestCase
     $this->loader = new Loader(TEMP_DIR . '/security', __DIR__ . '/config/basic.neon', [
       'resource1' => ITestResource1Permissions::class,
       'resource2' => ITestResource2Permissions::class
-    ]);
+    ], Mockery::mock(\App\Security\UserStorage::class));
   }
 
   public function setUp()

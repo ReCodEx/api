@@ -37,7 +37,7 @@ class SecurityExtension extends Nette\DI\CompilerExtension {
     foreach ($acl as $name => $interface) {
       $module = $builder->addDefinition($this->prefix("aclModule_" . $name));
       $module->setClass($interface);
-      $module->setFactory(sprintf('@%s::loadAclModule', Loader::class), [$name]);
+      $module->setFactory(sprintf('@%s::loadAclModule', Loader::class), [$interface]);
     }
   }
 }

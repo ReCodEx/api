@@ -547,6 +547,7 @@ class TestGroupsPresenter extends Tester\TestCase
 
     $group = $this->presenter->groups->findAll()[0];
     $user = $this->presenter->users->getByEmail($this->userLogin);
+    $user->setRole("supervisor");
 
     // initial checks
     Assert::equal(false, $group->isSupervisorOf($user));
@@ -566,6 +567,28 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(200, $result["code"]);
 
     Assert::true(in_array($user->getId(), $payload["privateData"]["supervisors"]));
+  }
+
+  public function testAddStudentAsSupervisor()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = $this->presenter->groups->findAll()[0];
+    $user = $this->presenter->users->getByEmail($this->userLogin);
+    $user->setRole("student");
+
+    // initial checks
+    Assert::equal(false, $group->isSupervisorOf($user));
+
+    $request = new Nette\Application\Request('V1:Groups', 'POST', [
+      'action' => 'addSupervisor',
+      'id' => $group->id,
+      'userId' => $user->id
+    ]);
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, \App\Exceptions\ForbiddenRequestException::class);
   }
 
   public function testRemoveSupervisor()

@@ -25,12 +25,15 @@ class Loader {
 
   private $tempDirectory;
 
-  public function __construct($tempDirectory, $configFilePath, $aclInterfaces) {
+  private $userStorage;
+
+  public function __construct($tempDirectory, $configFilePath, $aclInterfaces, UserStorage $userStorage) {
     $this->tempDirectory = $tempDirectory;
     $this->configFilePath = $configFilePath;
     $this->aclInterfaces = $aclInterfaces;
     $this->authorizatorBuilder = new AuthorizatorBuilder();
     $this->aclModuleBuilder = new ACLModuleBuilder();
+    $this->userStorage = $userStorage;
     $this->hash = $this->calculateHash($this->configFilePath, $this->aclInterfaces);
   }
 
@@ -100,9 +103,10 @@ class Loader {
     return new $class($registry);
   }
 
-  public function loadACLModule($name, UserStorage $userStorage, IAuthorizator $authorizator) {
+  public function loadACLModule($interfaceName, IAuthorizator $authorizator, ?Identity $identity = null) {
     $this->loadGeneratedClasses();
-    $class = $this->aclModuleBuilder->getClassName($this->aclInterfaces[$name], $this->hash);
-    return new $class($userStorage, $authorizator);
+    $class = $this->aclModuleBuilder->getClassName($interfaceName, $this->hash);
+    $module = new $class($this->userStorage, $authorizator, $identity);
+    return $module;
   }
 }

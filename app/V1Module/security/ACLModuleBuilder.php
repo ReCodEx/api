@@ -22,6 +22,12 @@ class ACLModuleBuilder {
     return $interfaceName . "Impl_" . $uniqueId;
   }
 
+  /**
+   * @param $interfaceName
+   * @param $name
+   * @param $uniqueId
+   * @return ClassType the newly created class
+   */
   public function build($interfaceName, $name, $uniqueId): ClassType {
     $class = new ClassType($this->getClassName($interfaceName, $uniqueId));
     $class->addImplement($interfaceName);

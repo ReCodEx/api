@@ -10,7 +10,6 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
-use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
@@ -22,6 +21,9 @@ use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
+use App\Security\Identity;
+use App\Security\Loader;
+use App\Security\UserStorage;
 use DateTime;
 use Nette\Application\Request;
 
@@ -72,6 +74,18 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentAcl;
+
+  /**
+   * @var Loader
+   * @inject
+   */
+  public $aclLoader;
+
+  /**
+   * @var UserStorage
+   * @inject
+   */
+  public $userStorage;
 
   /**
    * @var GroupViewFactory
@@ -605,7 +619,14 @@ class GroupsPresenter extends BasePresenter {
     $user = $this->users->findOrThrow($userId);
     $group = $this->groups->findOrThrow($id);
 
-    if (!$this->groupAcl->canAddSupervisor($group, $user)) {
+    /** @var IGroupPermissions $userAcl */
+    $userAcl = $this->aclLoader->loadACLModule(
+      IGroupPermissions::class,
+      $this->authorizator,
+      new Identity($user, null)
+    );
+
+    if (!$this->groupAcl->canAddSupervisor($group, $user) || !$userAcl->canSupervise($group)) {
       throw new ForbiddenRequestException();
     }
   }

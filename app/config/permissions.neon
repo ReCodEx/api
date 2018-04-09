@@ -114,7 +114,12 @@ permissions:
           - addSupervisor
       conditions:
           - group.isAdmin
-          - supervisor.isSupervisor
+
+    - allow: true
+      resource: group
+      role: supervisor
+      actions:
+          - supervise
 
     ########################
     # Instance permissions #
