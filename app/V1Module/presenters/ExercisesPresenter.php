@@ -12,6 +12,7 @@ use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
+use App\Helpers\Pagination;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Model\Entity\ExerciseConfig;
@@ -88,7 +89,7 @@ class ExercisesPresenter extends BasePresenter {
   public $configChecker;
 
 
-  public function checkDefault(string $search = null) {
+  public function checkDefault() {
     if (!$this->exerciseAcl->canViewAll()) {
       throw new ForbiddenRequestException();
     }
@@ -98,13 +99,16 @@ class ExercisesPresenter extends BasePresenter {
    * Get a list of exercises with an optional filter
    * @GET
    * @param string $search text which will be searched in exercises names
+   * @param int $offset
+   * @param int|null $limit
    */
-  public function actionDefault(string $search = null) {
+  public function actionDefault(string $search = null, int $offset = 0, int $limit = null) {
+    $pagination = $this->getPagination($offset, $limit);
     $exercises = $this->exercises->searchByName($search);
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
-    $this->sendSuccessResponse(array_values($exercises));
+    $this->sendPaginationSuccessResponse($exercises, $pagination, []);
   }
 
   public function checkListByIds() {

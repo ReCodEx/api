@@ -92,8 +92,24 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($this->presenter->exercises->findAll(), $result['payload']);
-    Assert::count(count($this->presenter->exercises->findAll()), $result['payload']);
+    Assert::same($this->presenter->exercises->findAll(), $result['payload']['items']);
+    Assert::count(count($this->presenter->exercises->findAll()), $result['payload']['items']);
+    Assert::count($result['payload']['totalCount'], $this->presenter->exercises->findAll());
+  }
+
+  public function testListAllExercisesPagination()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'offset' => 1, 'limit' => 1]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::same($this->presenter->exercises->findAll()[1], $result['payload']['items'][0]);
+    Assert::count(1, $result['payload']['items']);
+    Assert::count($result['payload']['totalCount'], $this->presenter->exercises->findAll());
   }
 
   public function testAdminListSearchExercises()
@@ -106,7 +122,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(5, $result['payload']);
+    Assert::count(5, $result['payload']['items']);
   }
 
   public function testSupervisorListSearchExercises()
@@ -119,7 +135,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(4, $result['payload']);
+    Assert::count(4, $result['payload']['items']);
   }
 
   public function testListExercisesByIds()

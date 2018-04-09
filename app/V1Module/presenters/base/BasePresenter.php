@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Helpers\Pagination;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
 use App\Security\Identity;
@@ -254,4 +255,23 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       "payload" => $payload
     ]);
   }
+
+  protected function sendPaginationSuccessResponse(array $items,
+                                                   Pagination $pagination,
+                                                   array $filters,
+                                                   $code = IResponse::S200_OK) {
+    $this->sendSuccessResponse([
+      "items" => array_slice(array_values($items), $pagination->getOffset(), $pagination->getLimit()),
+      "totalCount" => count($items),
+      "offset" => $pagination->getOffset(),
+      "limit" => $pagination->getLimit(),
+      "orderBy" => null, // TODO
+      "filters" => $filters,
+    ], $code);
+  }
+
+  protected function getPagination(int $offset, ?int $limit): Pagination {
+    return new Pagination($offset, $limit);
+  }
+
 }
