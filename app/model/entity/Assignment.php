@@ -100,7 +100,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->attachmentFiles = $exercise->getAttachmentFiles();
   }
 
-  public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = false) {
+  public static function assignToGroup(Exercise $exercise, Group $group, $isPublic = false, DateTime $firstDeadline = null) {
     if ($exercise->getLocalizedTexts()->count() == 0) {
       throw new InvalidStateException("There are no localized descriptions of exercise");
     }
@@ -110,7 +110,7 @@ class Assignment implements JsonSerializable, IExercise
     }
 
     $assignment = new self(
-      new DateTime,
+      $firstDeadline ?? new DateTime(),
       0,
       $exercise,
       $group,
