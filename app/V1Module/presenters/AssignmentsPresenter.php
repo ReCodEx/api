@@ -325,6 +325,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
     }
 
+    if ($group->isOrganizational()) {
+      throw new BadRequestException("You cannot assign exercises in organizational groups");
+    }
+
     if ($exercise->isLocked()) {
       throw new BadRequestException("Exercise '$exerciseId' is locked");
     }
