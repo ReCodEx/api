@@ -436,6 +436,10 @@ class UsersPresenter extends BasePresenter {
     if (!$this->userAcl->canSetRole($user)) {
       throw new ForbiddenRequestException();
     }
+
+    if ($this->getCurrentUser() === $user) {
+      throw new ForbiddenRequestException("You cannot change your role");
+    }
   }
 
   /**
