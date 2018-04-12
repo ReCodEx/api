@@ -102,6 +102,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new PostRoute("$prefix", "Exercises:create");
+    $router[] = new PostRoute("$prefix/list", "Exercises:listByIds");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new DeleteRoute("$prefix/<id>", "Exercises:remove");
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
@@ -308,7 +309,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Registration:createAccount");
     $router[] = new PostRoute("$prefix/ext", "Registration:createAccountExt");
     $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
-    $router[] = new PostRoute("$prefix/list", "Users:list");
+    $router[] = new PostRoute("$prefix/list", "Users:listByIds");
 
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");

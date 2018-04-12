@@ -104,6 +104,25 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse(array_values($exercises));
   }
 
+  public function checkListByIds() {
+    if (!$this->exerciseAcl->canViewAll()) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get a list of exercises based on given ids.
+   * @POST
+   * @Param(type="post", name="ids", validation="array", description="Identifications of exercises")
+   */
+  public function actionListByIds() {
+    $exercises = $this->exercises->findByIds($this->getRequest()->getPost("ids"));
+    $exercises = array_filter($exercises, function (Exercise $exercise) {
+      return $this->exerciseAcl->canViewDetail($exercise);
+    });
+    $this->sendSuccessResponse(array_values($exercises));
+  }
+
   public function checkDetail(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);

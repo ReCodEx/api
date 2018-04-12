@@ -67,7 +67,7 @@ class UsersPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->userViewFactory->getUsers($users));
   }
 
-  public function checkList() {
+  public function checkListByIds() {
     if (!$this->userAcl->canViewList()) {
       throw new ForbiddenRequestException();
     }
@@ -78,7 +78,7 @@ class UsersPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="ids", validation="array", description="Identifications of users")
    */
-  public function actionList() {
+  public function actionListByIds() {
     $users = $this->users->findByIds($this->getRequest()->getPost("ids"));
     $users = array_filter($users, function (User $user) {
       return $this->userAcl->canViewPublicData($user);
