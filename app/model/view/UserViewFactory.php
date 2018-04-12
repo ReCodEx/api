@@ -98,6 +98,7 @@ class UserViewFactory {
    * @return array
    */
   public function getUsers(array $users): array {
+    $users = array_values($users);
     return array_map(function (User $user) {
       return $this->getUser($user);
     }, $users);

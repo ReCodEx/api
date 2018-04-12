@@ -36,6 +36,10 @@ class BaseRepository {
     return $this->repository->findOneBy($params);
   }
 
+  public function findByIds(array $ids) {
+    return $this->findBy(["id" => $ids]);
+  }
+
   /**
    * Find an entity by id and throw an exception if no such entity exists
    * @param $id

@@ -64,10 +64,26 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $users = $this->users->findAll();
-    $users = array_map(function (User $user) {
-      return $this->userViewFactory->getUser($user);
-    }, $users);
-    $this->sendSuccessResponse($users);
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($users));
+  }
+
+  public function checkList() {
+    if (!$this->userAcl->canViewList()) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get a list of users based on given ids.
+   * @POST
+   * @Param(type="post", name="ids", validation="array", description="Identifications of users")
+   */
+  public function actionList() {
+    $users = $this->users->findByIds($this->getRequest()->getPost("ids"));
+    $users = array_filter($users, function (User $user) {
+      return $this->userAcl->canViewPublicData($user);
+    });
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($users));
   }
 
   public function checkDetail(string $id) {

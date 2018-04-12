@@ -308,6 +308,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Registration:createAccount");
     $router[] = new PostRoute("$prefix/ext", "Registration:createAccountExt");
     $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
+    $router[] = new PostRoute("$prefix/list", "Users:list");
 
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
     $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");
