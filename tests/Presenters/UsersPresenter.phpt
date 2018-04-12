@@ -83,6 +83,32 @@ class TestUsersPresenter extends Tester\TestCase
     }
   }
 
+  public function testGetListUsers()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $users = $this->presenter->users->findAll();
+    $first = $users[0];
+    $second = $users[1];
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'list'],
+      ['ids' => [ $first->getId(), $second->getId() ]]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+
+    $users = $result['payload'];
+    foreach ($users as $user) {
+      Assert::true(array_key_exists("id", $user));
+      Assert::true(array_key_exists("fullName", $user));
+      Assert::true(array_key_exists("privateData", $user));
+    }
+  }
+
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

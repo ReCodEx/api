@@ -200,6 +200,13 @@ permissions:
         - viewInstances
         - viewGroups
         - viewDetail
+        - viewList
+
+    - allow: true
+      role: student
+      resource: user
+      actions:
+        - viewList
 
     - allow: true
       role: student
