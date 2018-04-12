@@ -46,6 +46,7 @@ class BoxService
       Python3CompilationBox::$PYTHON3_COMPILATION_TYPE => Python3CompilationBox::class,
       PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
       NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
+      MergeFilesBox::$MERGE_FILES_TYPE => MergeFilesBox::class,
     ];
   }
 
