@@ -241,15 +241,21 @@ class GroupsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="value", validation="bool", required=true, description="The value of the flag")
    * @param string $id An identifier of the updated group
-   * @throws InvalidArgumentException
+   * @throws BadRequestException
    * @throws NotFoundException
    */
   public function actionSetOrganizational(string $id) {
     $group = $this->groups->findOrThrow($id);
     $isOrganizational = filter_var($this->getRequest()->getPost("value"), FILTER_VALIDATE_BOOLEAN);
 
-    if ($group->getStudents()->count() > 0 && $isOrganizational) {
-      throw new InvalidArgumentException("The group already contains students");
+    if ($isOrganizational) {
+      if ($group->getStudents()->count() > 0) {
+        throw new BadRequestException("The group already contains students");
+      }
+
+      if ($group->getAssignments()->count() > 0) {
+        throw new BadRequestException("The group already contains assignments");
+      }
     }
 
     $group->setOrganizational($isOrganizational);

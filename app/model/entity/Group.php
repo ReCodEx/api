@@ -221,7 +221,7 @@ class Group
   }
 
   public function removeMembership(GroupMembership $membership) {
-    $this->getMemberships()->remove($membership);
+    $this->getMemberships()->removeElement($membership);
   }
 
   protected function getActiveMemberships() {
