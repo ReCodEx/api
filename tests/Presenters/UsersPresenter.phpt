@@ -83,7 +83,7 @@ class TestUsersPresenter extends Tester\TestCase
     }
   }
 
-  public function testGetListUsers()
+  public function testGetListUsersByIds()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $users = $this->presenter->users->findAll();
@@ -91,7 +91,7 @@ class TestUsersPresenter extends Tester\TestCase
     $second = $users[1];
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
-      ['action' => 'list'],
+      ['action' => 'listByIds'],
       ['ids' => [ $first->getId(), $second->getId() ]]
     );
     $response = $this->presenter->run($request);

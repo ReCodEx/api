@@ -122,6 +122,25 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::count(4, $result['payload']);
   }
 
+  public function testListExercisesByIds()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $exercises = $this->exercises->findAll();
+    $first = $exercises[0];
+    $second = $exercises[1];
+
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'listByIds'],
+      ['ids' => [ $first->getId(), $second->getId() ]]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(2, $result['payload']);
+  }
+
   public function testDetail()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
