@@ -353,8 +353,11 @@ permissions:
       resource: comment
       actions:
           - alter
+          - delete
       conditions:
-          - comment.isAuthor
+          or:
+              - comment.isAuthor
+              - comment.isSupervisorInGroupOfCommentedSolution
 
     - allow: true # TODO
       role: student

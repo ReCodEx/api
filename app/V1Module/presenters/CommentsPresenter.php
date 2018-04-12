@@ -135,4 +135,33 @@ class CommentsPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($comment);
   }
+
+  public function checkDelete(string $threadId, string $commentId) {
+    /** @var Comment $comment */
+    $comment = $this->comments->findOrThrow($commentId);
+
+    if ($comment->getThread()->getId() !== $threadId) {
+      throw new NotFoundException();
+    }
+
+    if (!$this->commentAcl->canDelete($comment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Delete a comment
+   * @DELETE
+   * @param string $threadId Identifier of the comment thread
+   * @param string $commentId Identifier of the comment
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionDelete(string $threadId, string $commentId) {
+    /** @var Comment $comment */
+    $comment = $this->comments->findOrThrow($commentId);
+
+    $this->comments->remove($comment, true);
+    $this->sendSuccessResponse("OK");
+  }
 }
