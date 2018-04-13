@@ -94,7 +94,7 @@ class UserStorage implements IUserStorage
     $validityThreshold = $user->getTokenValidityThreshold();
 
     $wasTokenIssuedAfterThreshold = $validityThreshold === null
-      || $token->getIssuedAt() > $validityThreshold->getTimestamp();
+      || $token->getIssuedAt() >= $validityThreshold->getTimestamp();
 
     if (!$wasTokenIssuedAfterThreshold) {
       throw new ForbiddenRequestException("The token was revoked and cannot be used anymore");
