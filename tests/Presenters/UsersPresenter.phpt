@@ -73,14 +73,30 @@ class TestUsersPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::true(count($result['payload']) > 0);
+    Assert::true(count($result['payload']['items']) > 0);
 
-    $users = $result['payload'];
+    $users = $result['payload']['items'];
     foreach ($users as $user) {
       Assert::true(array_key_exists("id", $user));
       Assert::true(array_key_exists("fullName", $user));
       Assert::true(array_key_exists("privateData", $user));
     }
+  }
+
+  public function testGetAllUsersSearch()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'default', 'search' => 'admin']);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(1, $result['payload']['items']);
+    Assert::equal($user->getName(), $result['payload']['items'][0]['fullName']);
   }
 
   public function testGetListUsersByIds()

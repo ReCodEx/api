@@ -20,4 +20,13 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
+  /**
+   * Search users firstnames and surnames based on given string.
+   * @param string|null $search
+   * @return User[]
+   */
+  public function searchByNames(?string $search): array {
+    return $this->searchBy(["firstName", "lastName"], $search);
+  }
+
 }
