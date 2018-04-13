@@ -5,7 +5,7 @@ parameters:
   accessManager:
     issuer: https://recodex.mff.cuni.cz
     audience: https://recodex.mff.cuni.cz
-    expiration: 86400  # 24 hours in seconds
+    expiration: 604800  # 7 days in seconds
     verificationKey: "recodex-123"
 
   fileServer:
