@@ -45,7 +45,7 @@ class TestSecurityPresenter extends Tester\TestCase {
     $response = $this->presenter->run(new Request("V1:Security", "POST", [
       "action" => "check"
     ], [
-      "url" => "/v1/exercise-assignments",
+      "url" => "/v1/exercises",
       "method" => "GET"
     ]));
 
@@ -62,7 +62,7 @@ class TestSecurityPresenter extends Tester\TestCase {
     $response = $this->presenter->run(new Request("V1:Security", "POST", [
       "action" => "check"
     ], [
-      "url" => "/v1/exercise-assignments",
+      "url" => "/v1/exercises",
       "method" => "GET"
     ]));
 

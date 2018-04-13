@@ -152,7 +152,6 @@ class RouterFactory {
    */
   private static function createAssignmentsRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix", "Assignments:");
     $router[] = new PostRoute("$prefix", "Assignments:create");
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
     $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");

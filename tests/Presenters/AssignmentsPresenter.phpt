@@ -89,23 +89,6 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }
   }
 
-  public function testListAssignments()
-  {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $request = new Nette\Application\Request('V1:Assignments', 'GET', ['action' => 'default']);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal(array_map(function (Assignment $assignment) {
-      return $assignment->getId();
-    }, $this->presenter->assignments->findAll()), array_map(function ($assignment) {
-      return $assignment["id"];
-    }, $result['payload']));
-  }
-
   public function testDetail()
   {
     $token = PresenterTestHelper::loginDefaultAdmin($this->container);

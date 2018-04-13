@@ -129,20 +129,6 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $runtimeEnvironments;
 
-  public function checkDefault() {
-    if (!$this->assignmentAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-  }
-
-  /**
-   * Get a list of all assignments
-   * @GET
-   */
-  public function actionDefault() {
-    $assignments = $this->assignments->findAll();
-    $this->sendSuccessResponse(array_map([$this->assignmentViewFactory, "getAssignment"], $assignments));
-  }
 
   public function checkDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
