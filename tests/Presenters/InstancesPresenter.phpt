@@ -185,43 +185,6 @@ class TestInstancesPresenter extends Tester\TestCase
     );
   }
 
-  public function testGetUsers()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $allInstances = $this->presenter->instances->findAll();
-    $instance = array_pop($allInstances);
-
-    $request = new Nette\Application\Request('V1:Instances', 'GET',
-      ['action' => 'users', 'id' => $instance->id]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    $users = $result['payload'];
-    Assert::equal(16, count($users));
-  }
-
-  public function testGetUsersSearch()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
-
-    $allInstances = $this->presenter->instances->findAll();
-    $instance = array_pop($allInstances);
-
-    $request = new Nette\Application\Request('V1:Instances', 'GET',
-      ['action' => 'users', 'id' => $instance->id, 'search' => 'admin']);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(1, $result['payload']);
-    Assert::equal($user->getName(), $result['payload'][0]['fullName']);
-  }
-
   public function testGetLicences()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);

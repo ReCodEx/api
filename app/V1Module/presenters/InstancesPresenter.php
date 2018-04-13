@@ -209,28 +209,6 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
   }
 
-  public function checkUsers(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canViewUsers($instance)) {
-      throw new ForbiddenRequestException();
-    }
-  }
-
-  /**
-   * Get a list of users registered in an instance
-   * @GET
-   * @param string $id An identifier of the instance
-   * @param string $search A result filter
-   */
-  public function actionUsers(string $id, string $search = null) {
-    $instance = $this->instances->findOrThrow($id);
-
-    $members = array_values(array_filter($instance->getMembers($search), function (User $user) {
-      return $this->userAcl->canViewPublicData($user);
-    }));
-    $this->sendSuccessResponse($this->userViewFactory->getUsers($members));
-  }
-
   public function checkLicences(string $id) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewLicences($instance)) {
