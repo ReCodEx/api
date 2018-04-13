@@ -118,13 +118,16 @@ class PipelinesPresenter extends BasePresenter {
    * Get a list of pipelines with an optional filter
    * @GET
    * @param string $search text which will be searched in pipeline names
+   * @param int $offset
+   * @param int|null $limit
    */
-  public function actionGetPipelines(string $search = null) {
+  public function actionGetPipelines(string $search = null, int $offset = 0, int $limit = null) {
+    $pagination = $this->getPagination($offset, $limit);
     $pipelines = $this->pipelines->searchByName($search);
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });
-    $this->sendSuccessResponse(array_values($pipelines));
+    $this->sendPaginationSuccessResponse($pipelines, $pagination, []);
   }
 
   /**

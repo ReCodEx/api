@@ -90,8 +90,8 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($this->presenter->pipelines->findAll(), $result['payload']);
-    Assert::count(count($this->presenter->pipelines->findAll()), $result['payload']);
+    Assert::same($this->presenter->pipelines->findAll(), $result['payload']['items']);
+    Assert::count(count($this->presenter->pipelines->findAll()), $result['payload']['items']);
   }
 
   public function testGetPipeline()

@@ -258,7 +258,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
 
   protected function sendPaginationSuccessResponse(array $items,
                                                    Pagination $pagination,
-                                                   array $filters,
+                                                   array $filters = [],
                                                    $code = IResponse::S200_OK) {
     $this->sendSuccessResponse([
       "items" => array_slice(array_values($items), $pagination->getOffset(), $pagination->getLimit()),
