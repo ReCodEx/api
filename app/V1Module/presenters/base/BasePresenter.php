@@ -265,7 +265,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       "totalCount" => count($items),
       "offset" => $pagination->getOffset(),
       "limit" => $pagination->getLimit(),
-      "orderBy" => null, // TODO
+      "orderBy" => $pagination->getOriginalOrderBy(),
       "filters" => $filters,
     ], $code);
   }
