@@ -109,6 +109,8 @@ class JavaRunBox extends ExecutionBox
     }
 
     $args = [
+      "-classpath",
+      ".:/java-jars/*",
       $runnerClass,
       "run"
     ];

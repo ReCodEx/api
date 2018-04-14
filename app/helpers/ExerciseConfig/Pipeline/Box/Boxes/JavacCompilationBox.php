@@ -106,6 +106,7 @@ class JavacCompilationBox extends CompilationBox
     $task->setCommandArguments(
       array_merge(
         $args,
+        ["-classpath", ".:/java-jars/*"],
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
