@@ -11,6 +11,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
 
@@ -31,9 +32,15 @@ class GroupViewFactory {
    */
   private $groupAcl;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl) {
+  /**
+   * @var IAssignmentPermissions
+   */
+  private $assignmentAcl;
+
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl, IAssignmentPermissions $assignmentAcl) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
+    $this->assignmentAcl = $assignmentAcl;
   }
 
 
@@ -121,10 +128,11 @@ class GroupViewFactory {
         "students" => $group->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
         "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
         "hasValidLicence" => $group->hasValidLicence(),
-        "assignments" => [
-          "all" => $group->getAssignmentsIds(),
-          "public" => $group->getAssignmentsIds($group->getPublicAssignments())
-        ],
+        "assignments" => $group->getAssignments()->filter(function (Assignment $assignment) {
+            return $this->assignmentAcl->canViewDetail($assignment);
+          })->map(function (Assignment $assignment) {
+            return $assignment->getId();
+          })->getValues(),
         "publicStats" => $group->getPublicStats(),
         "isPublic" => $group->isPublic(),
         "threshold" => $group->getThreshold()
