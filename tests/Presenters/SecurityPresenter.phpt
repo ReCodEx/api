@@ -1,6 +1,6 @@
 <?php
 
-use App\V1Module\SecurityPresenter;
+use App\V1Module\Presenters\SecurityPresenter;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
 use Nette\DI\Container;

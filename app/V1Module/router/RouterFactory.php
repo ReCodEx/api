@@ -28,8 +28,8 @@ class RouterFactory {
 
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
-    $router[] = new PostRoute("$prefix/security/check", "Security:check");
 
+    $router[] = self::createSecurityRoutes("$prefix/security");
     $router[] = self::createAuthRoutes("$prefix/login");
     $router[] = self::createBrokerReportsRoutes("$prefix/broker-reports");
     $router[] = self::createCommentsRoutes("$prefix/comments");
@@ -50,6 +50,12 @@ class RouterFactory {
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
 
+    return $router;
+  }
+
+  private static function createSecurityRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new PostRoute("$prefix/check", "Security:check");
     return $router;
   }
 
