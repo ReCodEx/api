@@ -11,6 +11,7 @@ use JsonSerializable;
  * @method bool getDarkTheme()
  * @method bool getVimMode()
  * @method bool getOpenedSidebar()
+ * @method bool getUseGravatar()
  * @method string getDefaultLanguage()
  * @method bool getNewAssignmentEmails()
  * @method bool getAssignmentDeadlineEmails()
@@ -18,6 +19,7 @@ use JsonSerializable;
  * @method setDarkTheme(bool $darkTheme)
  * @method setVimMode(bool $vimMode)
  * @method setOpenedSidebar(bool $opened)
+ * @method setUseGravatar(bool $use)
  * @method setDefaultLanguage(bool $language)
  * @method setNewAssignmentEmails(bool $opened)
  * @method setAssignmentDeadlineEmails(bool $opened)
@@ -31,12 +33,14 @@ class UserSettings implements JsonSerializable
     bool $darkTheme = true,
     bool $vimMode = false,
     string $defaultLanguage = "en",
-    bool $openedSidebar = true
+    bool $openedSidebar = true,
+    bool $useGravatar = true
   ) {
     $this->darkTheme = $darkTheme;
     $this->vimMode = $vimMode;
     $this->defaultLanguage = $defaultLanguage;
     $this->openedSidebar = $openedSidebar;
+    $this->useGravatar = $useGravatar;
 
     $this->newAssignmentEmails = true;
     $this->assignmentDeadlineEmails = true;
@@ -70,6 +74,11 @@ class UserSettings implements JsonSerializable
    */
   protected $openedSidebar;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $useGravatar;
+
 
   /*******************
    * Emails settings *
@@ -97,6 +106,7 @@ class UserSettings implements JsonSerializable
       "vimMode" => $this->vimMode,
       "defaultLanguage" => $this->defaultLanguage,
       "openedSidebar" => $this->openedSidebar,
+      "useGravatar" => $this->useGravatar,
       "newAssignmentEmails" => $this->newAssignmentEmails,
       "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
       "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails
