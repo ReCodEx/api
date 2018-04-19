@@ -35,6 +35,7 @@ class JudgeBox extends Box
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
@@ -70,6 +71,7 @@ class JudgeBox extends Box
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -79,6 +81,7 @@ class JudgeBox extends Box
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -122,6 +125,7 @@ class JudgeBox extends Box
         'recodex-judge-shuffle-rows' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-r']],    // judge ignoring order of rows
         'recodex-judge-shuffle-all' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-ir']],    // judge ignoring order of tokens on a each line and order of rows
         'recodex-judge-shuffle-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-in']],// judge ignoring order of tokens (which treats \n ...)
+        'recodex-judge-passthrough' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-passthrough', []],     // judge which writes its input file (first) to the stdout
         'diff' => ["/usr/bin/diff", []],                                                                  // diff (binary-safe) judge
       ];
     }
