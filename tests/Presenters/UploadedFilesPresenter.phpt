@@ -193,6 +193,31 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     });
   }
 
+  public function testContentEvenWeirderChars()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
+
+    // create new file upload
+    $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
+    $path = __DIR__ . "/uploads/weird.zip";
+    $uploadedFile = new UploadedFile("weird.zip", new \DateTime, filesize($path), $user, $path);
+    $this->presenter->uploadedFiles->persist($uploadedFile);
+    $this->presenter->uploadedFiles->flush();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'content', 'id' => $uploadedFile->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::true($result['payload']['malformedCharacters']);
+    Assert::true($result['payload']['tooLarge']);
+    Assert::noError(function () use ($result) {
+      Json::encode($result);
+    });
+  }
+
   public function testContentBom()
   {
     $token = PresenterTestHelper::login($this->container, $this->userLogin);
