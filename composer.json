@@ -6,10 +6,6 @@
 	"license": ["MIT"],
 	"authors": [
 		{
-			"name": "Šimon Rozsíval",
-			"homepage": "https://github.com/simonrozsival"
-		},
-		{
 			"name": "ReCodEx Team",
 			"homepage": "https://github.com/ReCodEx/api/graphs/contributors"
 		}
@@ -58,7 +54,6 @@
 		"doctrine/orm": ">=2.5.6",
 		"gedmo/doctrine-extensions": "@stable",
 		"doctrine/migrations": "^1.5",
-		"neitanod/forceutf8": "^2.0",
 		"symfony/process": "^3.3.0",
 		"limenet/git-version": "^0.1.3"
 	},

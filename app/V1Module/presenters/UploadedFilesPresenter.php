@@ -125,7 +125,7 @@ class UploadedFilesPresenter extends BasePresenter {
     $utf8bom = "\xef\xbb\xbf";
     $content = Strings::replace($content, "~^$utf8bom~");
 
-    $fixedContent = Encoding::toUTF8($content);
+    $fixedContent = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
 
     $this->sendSuccessResponse([
       "content" => $fixedContent,

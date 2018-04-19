@@ -3,6 +3,8 @@
 # https://nette.org/security-warning
 #
 parameters:
+  php:
+    mbstring.substitute_character: ?
   uploadDir: %appDir%/../uploaded_data
 
   jobConfig:
