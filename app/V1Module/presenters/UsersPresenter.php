@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Login;
@@ -275,9 +276,11 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=false)
    * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=false)
    * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=false)
+   * @Param(type="post", name="useGravatar", validation="bool", description="Flag if the UI should display gravatars or not", required=false)
    * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=false)
    * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
    * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
+   * @throws NotFoundException
    */
   public function actionUpdateSettings(string $id) {
     $req = $this->getRequest();
@@ -303,6 +306,9 @@ class UsersPresenter extends BasePresenter {
     $submissionEvaluatedEmails = $req->getPost("submissionEvaluatedEmails") !== null
       ? filter_var($req->getPost("submissionEvaluatedEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getSubmissionEvaluatedEmails();
+    $useGravatar = $req->getPost("useGravatar") !== null
+      ? filter_var($req->getPost("useGravatar"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getUseGravatar();
 
     $settings->setDarkTheme($darkTheme);
     $settings->setVimMode($vimMode);
@@ -311,6 +317,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setNewAssignmentEmails($newAssignmentEmails);
     $settings->setAssignmentDeadlineEmails($assignmentDeadlineEmails);
     $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
+    $settings->setUseGravatar($useGravatar);
 
     $this->users->persist($user);
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
