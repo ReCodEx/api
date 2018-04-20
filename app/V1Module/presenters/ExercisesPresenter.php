@@ -23,7 +23,6 @@ use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
-use Exception;
 
 /**
  * Endpoints for exercise manipulation
@@ -448,7 +447,7 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     if ($exercise->getGroups()->count() === 1) {
-      throw new ForbiddenRequestException("You cannot detach last group from exercise");
+      throw new BadRequestException("You cannot detach last group from exercise");
     }
   }
 

@@ -1,7 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
-use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
@@ -379,7 +379,7 @@ class TestExercisesPresenter extends Tester\TestCase
       ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]);
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, ForbiddenRequestException::class);
+    }, BadRequestException::class);
   }
 
   public function testDetachGroup()
