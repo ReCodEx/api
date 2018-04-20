@@ -2,10 +2,12 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\ParseException;
 use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
@@ -269,25 +271,29 @@ class ExercisesPresenter extends BasePresenter {
    * Create exercise with all default values.
    * Exercise detail can be then changed in appropriate endpoint.
    * @POST
-   * @Param(type="post", name="groupId", required=false, description="Identifier of the group to which exercise belongs to")
+   * @Param(type="post", name="groupsIds", validation="array", description="Array of identifiers of the groups to which exercise belongs to")
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws ApiException
+   * @throws ParseException
    */
   public function actionCreate() {
     $user = $this->getCurrentUser();
 
-    $group = null;
-    if ($this->getRequest()->getPost("groupId")) {
-      $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    $groups = [];
+    foreach ($this->getRequest()->getPost("groupsIds") as $groupId) {
+      $groups[] = $group = $this->groups->findOrThrow($groupId);
+      if (!$this->groupAcl->canCreateExercise($group)) {
+        throw new ForbiddenRequestException();
+      }
     }
 
-    if ($group && !$this->groupAcl->canCreateExercise($group)) {
-      throw new ForbiddenRequestException();
-    } else if (!$group && !$this->exerciseAcl->canCreate()) {
-      throw new ForbiddenRequestException();
+    if (count($groups) === 0) {
+      throw new InvalidArgumentException("groupsIds", "groups cannot be empty");
     }
 
     // create exercise and fill some predefined details
-    $exercise = Exercise::create($user, $group);
+    $exercise = Exercise::create($user, $groups);
     $localizedExercise = new LocalizedExercise(
       $user->getSettings()->getDefaultLanguage(),
       "Exercise by " . $user->getName(), "", ""
@@ -381,21 +387,19 @@ class ExercisesPresenter extends BasePresenter {
    * Fork exercise from given one into the completely new one.
    * @POST
    * @param string $id Identifier of the exercise
-   * @Param(type="post", name="groupId", required=false, description="Identifier of the group to which exercise will be forked")
+   * @Param(type="post", name="groupId", description="Identifier of the group to which exercise will be forked")
+   * @throws ApiException
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws ParseException
    */
   public function actionForkFrom(string $id) {
     $user = $this->getCurrentUser();
     $forkFrom = $this->exercises->findOrThrow($id);
 
-    $group = null;
-    if ($this->getRequest()->getPost("groupId")) {
-      $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
-    }
-
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
     if (!$this->exerciseAcl->canFork($forkFrom) ||
-        ($group && !$this->groupAcl->canCreateExercise($group)) ||
-        (!$group && !$this->exerciseAcl->canCreate())) {
+        !$this->groupAcl->canCreateExercise($group)) {
       throw new ForbiddenRequestException("Exercise cannot be forked");
     }
 
@@ -441,6 +445,10 @@ class ExercisesPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($groupId);
     if (!$this->exerciseAcl->canDetachGroup($exercise, $group)) {
       throw new ForbiddenRequestException("You are not allowed to detach the group to the exercise");
+    }
+
+    if ($exercise->getGroups()->count() === 1) {
+      throw new ForbiddenRequestException("You cannot detach last group from exercise");
     }
   }
 

@@ -248,12 +248,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->validationError = "";
   }
 
-  public static function create(User $user, ?Group $group = null): Exercise {
-    $groups = new ArrayCollection;
-    if ($group !== null) {
-      $groups->add($group);
-    }
-
+  public static function create(User $user, array $groups = []): Exercise {
     return new self(
       1,
       "",
@@ -266,14 +261,14 @@ class Exercise implements JsonSerializable, IExercise
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
-      $groups,
+      new ArrayCollection($groups),
       null,
       null,
       $user
     );
   }
 
-  public static function forkFrom(Exercise $exercise, User $user, ?Group $group) {
+  public static function forkFrom(Exercise $exercise, User $user, Group $group) {
     return new self(
       1,
       $exercise->difficulty,
@@ -286,7 +281,7 @@ class Exercise implements JsonSerializable, IExercise
       $exercise->exerciseEnvironmentConfigs,
       $exercise->pipelines,
       $exercise->exerciseTests,
-      $group ? new ArrayCollection([$group]) : new ArrayCollection,
+      new ArrayCollection([$group]),
       $exercise,
       $exercise->exerciseConfig,
       $user,

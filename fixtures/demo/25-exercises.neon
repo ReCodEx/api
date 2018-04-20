@@ -110,7 +110,7 @@ App\Model\Entity\Exercise:
         __construct:
             create:
                 - @demoGroupSupervisor2
-                - @demoGroup
+                - [@demoGroup]
         difficulty: "moderate"
         addLocalizedText:
             - @publicSupervisor2ExerciseText

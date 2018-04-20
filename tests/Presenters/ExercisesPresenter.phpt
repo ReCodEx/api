@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
@@ -210,8 +211,12 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testCreate()
   {
     PresenterTestHelper::login($this->container, $this->adminLogin);
+    $group = current($this->presenter->groups->findAll());
 
-    $request = new Nette\Application\Request('V1:Exercises', 'POST', ['action' => 'create']);
+    $request = new Nette\Application\Request('V1:Exercises', 'POST',
+      ['action' => 'create'],
+      ['groupsIds' => [$group->getId()]]
+    );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -227,6 +232,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $firstLocalizedText = $payload->getLocalizedTexts()->first();
     Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $firstLocalizedText->getName());
     Assert::notEqual(null, $payload->getExerciseConfig());
+    Assert::equal($group, $payload->getGroups()->first());
 
     // check score config
     Assert::equal("testWeights: {  }\n", $payload->getScoreConfig());
@@ -281,31 +287,6 @@ class TestExercisesPresenter extends Tester\TestCase
 
     Assert::contains($pipeline1, $payload);
     Assert::contains($pipeline2, $payload);
-  }
-
-  public function testForkFrom()
-  {
-    PresenterTestHelper::login($this->container, $this->adminLogin);
-
-    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
-    $exercise = current($this->presenter->exercises->findAll());
-
-    $request = new Nette\Application\Request('V1:Exercises', 'POST',
-      ['action' => 'forkFrom', 'id' => $exercise->getId()]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-
-    /** @var Exercise $forked */
-    $forked = $result['payload'];
-    Assert::type(\App\Model\Entity\Exercise::class, $forked);
-    Assert::true($forked->getLocalizedTexts()->forAll(function ($i, $text) use ($exercise) {
-      return $exercise->getLocalizedTexts()->contains($text);
-    }));
-    Assert::equal(1, $forked->getVersion());
-    Assert::equal($user, $forked->getAuthor());
   }
 
   public function testForkFromToGroup()
@@ -382,19 +363,39 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::true($payload->getGroups()->contains($group));
   }
 
-  public function testDetachGroup()
+  public function testLastDetachGroup()
   {
     PresenterTestHelper::login($this->container, $this->adminLogin);
 
-    $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $exercise = current($this->presenter->exercises->findAll());
     $group = current($this->presenter->groups->findAll());
 
     $exercise->addGroup($group);
     $this->presenter->exercises->flush();
 
+    Assert::count(1, $exercise->getGroups());
+
     $request = new Nette\Application\Request('V1:Exercises', 'DELETE',
       ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group->getId()]);
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, ForbiddenRequestException::class);
+  }
+
+  public function testDetachGroup()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $group1 = $this->presenter->groups->findAll()[0];
+    $group2 = $this->presenter->groups->findAll()[1];
+
+    $exercise->addGroup($group1);
+    $exercise->addGroup($group2);
+    $this->presenter->exercises->flush();
+
+    $request = new Nette\Application\Request('V1:Exercises', 'DELETE',
+      ['action' => 'detachGroup', 'id' => $exercise->getId(), 'groupId' => $group1->getId()]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -404,7 +405,7 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var Exercise $payload */
     $payload = $result['payload'];
     Assert::type(Exercise::class, $payload);
-    Assert::equal(0, $payload->getGroups()->count());
+    Assert::equal(1, $payload->getGroups()->count());
   }
 
 }
