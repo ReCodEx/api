@@ -105,7 +105,7 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   public function checkListByIds() {
-    if (!$this->exerciseAcl->canViewAll()) {
+    if (!$this->exerciseAcl->canViewList()) {
       throw new ForbiddenRequestException();
     }
   }

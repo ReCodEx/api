@@ -384,6 +384,13 @@ permissions:
           - viewLimits
           - viewScoreConfig
           - viewPipelines
+          - viewList
+
+    - allow: true
+      role: student
+      resource: exercise
+      actions:
+        - viewList
 
     - allow: true
       resource: exercise
