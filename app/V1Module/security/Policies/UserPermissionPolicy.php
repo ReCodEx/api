@@ -2,8 +2,8 @@
 namespace App\Security\Policies;
 
 
+use App\Model\Entity\Instance;
 use App\Model\Entity\User;
-use App\Model\Repository\Users;
 use App\Security\Identity;
 
 class UserPermissionPolicy implements IPermissionPolicy
@@ -19,7 +19,14 @@ class UserPermissionPolicy implements IPermissionPolicy
 
   public function isInSameInstance(Identity $identity, User $user): bool {
     $currentUser = $identity->getUserData();
-    return $currentUser !== null && $currentUser->getInstance() === $user->getInstance();
+    if ($currentUser === null) {
+      return false;
+    }
+
+    return $currentUser->getInstances()->exists(
+      function ($key, Instance $instance) use ($user) {
+        return $user->getInstances()->contains($instance);
+      });
   }
 
   public function isNotExternalAccount(Identity $identity, User $user): bool {

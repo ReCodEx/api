@@ -18,7 +18,7 @@ use forxer\Gravatar\Gravatar;
  * @method string getEmail()
  * @method string getRole()
  * @method string getAvatarUrl()
- * @method Instance getInstance()
+ * @method ArrayCollection getInstances()
  * @method Collection getExercises()
  * @method UserSettings getSettings()
  * @method setUsername(string $username)
@@ -64,7 +64,7 @@ class User
     $this->exercises = new ArrayCollection;
     $this->createdAt = new DateTime();
     $this->deletedAt = null;
-    $this->instance = $instance;
+    $this->instances = new ArrayCollection([$instance]);
     $instance->addMember($this);
     $this->settings = new UserSettings(true, false, "en");
     $this->logins = new ArrayCollection();
@@ -151,12 +151,18 @@ class User
   protected $createdAt;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Instance", inversedBy="members")
+   * @ORM\ManyToMany(targetEntity="Instance", inversedBy="members")
    */
-  protected $instance;
+  protected $instances;
 
   public function belongsTo(Instance $instance) {
-    return $this->instance->getId() === $instance->getId();
+    return $this->instances->contains($instance);
+  }
+
+  public function getInstancesIds() {
+    return $this->instances->map(function (Instance $instance) {
+      return $instance->getId();
+    });
   }
 
   /**

@@ -95,7 +95,7 @@ class Instance implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="User", mappedBy="instance")
+   * @ORM\ManyToMany(targetEntity="User", mappedBy="instances")
    */
   protected $members;
 
@@ -111,38 +111,9 @@ class Instance implements JsonSerializable
       })->toArray();
     }
 
-    $filter = Criteria::create()->where(Criteria::expr()->andX(
-      Criteria::expr()->isNull("deletedAt"),
-      Criteria::expr()->orX(
-        Criteria::expr()->contains("firstName", $search),
-        Criteria::expr()->contains("lastName", $search)
-      )
-    ));
-    $members = $this->members->matching($filter);
-    if ($members->count() > 0) {
-      return $members->toArray();
-    }
+    // TODO: removed in different branch
 
-    // weaker filter - the strict one did not match anything
-    $members = [];
-    foreach (explode(" ", $search) as $part) {
-      // skip empty parts
-      $part = trim($part);
-      if (empty($part)) {
-        continue;
-      }
-
-      $filter = Criteria::create()->where(Criteria::expr()->andX(
-        Criteria::expr()->isNull("deletedAt"),
-        Criteria::expr()->orX(
-          Criteria::expr()->contains("firstName", $part),
-          Criteria::expr()->contains("lastName", $part)
-        )
-      ));
-      $members = array_merge($members, $this->members->matching($filter)->toArray());
-    }
-
-    return $members;
+    return [$this->members->first()];
   }
 
   public function addMember(User $user) {

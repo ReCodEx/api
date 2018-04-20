@@ -321,7 +321,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testCreateLocalAccount()
   {
-    $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstance();
+    $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstances()->first();
     $user = new User("external@external.external", "firstName", "lastName", "", "", "student", $instance);
     $external = new ExternalLogin($user, "test", $user->getEmail());
 
@@ -422,7 +422,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $instance = array_pop($instances);
     Assert::type(\App\Model\Entity\Instance::class, $instance);
-    Assert::equal($user->getInstance()->getId(), $instance->getId());
+    Assert::equal($user->getInstances()->first()->getId(), $instance->getId());
   }
 
   public function testExercises()

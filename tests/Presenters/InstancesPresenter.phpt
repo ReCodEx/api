@@ -208,8 +208,7 @@ class TestInstancesPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $allInstances = $this->presenter->instances->findAll();
-    $instance = array_pop($allInstances);
+    $instance = current($this->presenter->instances->findAll());
 
     $request = new Nette\Application\Request('V1:Instances', 'GET',
       ['action' => 'users', 'id' => $instance->id, 'search' => 'admin']);

@@ -106,7 +106,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
 
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
-    $group = $user->instance->getGroups()->filter(
+    $group = $user->getInstances()->first()->getGroups()->filter(
       function (Group $group) { return !$group->isPublic; }
     )->first();
 
@@ -129,7 +129,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $user = $this->accessManager->getUser($this->accessManager->decodeToken($token));
 
     /** @var Group $group */
-    $group = $user->getInstance()->getGroups()->filter(
+    $group = $user->getInstances()->first()->getGroups()->filter(
       function (Group $group) use ($user) { return $group->isPublic() && !$group->isMemberOf($user); }
     )->first();
 
