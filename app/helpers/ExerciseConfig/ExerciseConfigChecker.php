@@ -97,7 +97,7 @@ class ExerciseConfigChecker {
       foreach ($exercise->getHardwareGroups() as $hardwareGroup) {
         $limitsEntity = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hardwareGroup);
         if ($limitsEntity === null) {
-          $exercise->setBroken(sprintf("Limits for environment %s and hardware group %s not found",
+          $exercise->setBroken(sprintf("Limits for environment '%s' and hardware group '%s' not found",
             $environment->getName(), $hardwareGroup->getId()));
           return false;
         }
@@ -107,7 +107,7 @@ class ExerciseConfigChecker {
         try {
           $limits = $this->loader->loadExerciseLimits($limitsEntity->getParsedLimits());
         } catch (ExerciseConfigException $exception) {
-          $exercise->setBroken(sprintf("Loading limits from %s failed: %s", $limitsEntity->getId(),
+          $exercise->setBroken(sprintf("Loading limits from '%s' failed: %s", $limitsEntity->getId(),
             $exception->getMessage()));
           return false;
         }
@@ -137,6 +137,12 @@ class ExerciseConfigChecker {
     try {
       foreach ($exercise->getRuntimeEnvironments() as $environment) {
         $envConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
+
+        if ($envConfig === null) {
+          $exercise->setBroken(sprintf("Environment '%s' has no configuration", $environment->getId()));
+          return false;
+        }
+
         $table = $this->loader->loadVariablesTable($envConfig->getParsedVariablesTable());
         $this->validator->validateEnvironmentConfig($exercise, $table);
 
@@ -182,6 +188,11 @@ class ExerciseConfigChecker {
 
     if ($exercise->getLocalizedTexts()->count() === 0) {
       $exercise->setBroken("There are no student descriptions");
+      return;
+    }
+
+    if ($exercise->getExerciseConfig() === null) {
+      $exercise->setBroken("There is no configuration for this exercise");
       return;
     }
 

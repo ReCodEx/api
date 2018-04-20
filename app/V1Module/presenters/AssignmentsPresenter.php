@@ -325,6 +325,10 @@ class AssignmentsPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to assign exercises to group '$groupId'.");
     }
 
+    if ($group->isOrganizational()) {
+      throw new BadRequestException("You cannot assign exercises in organizational groups");
+    }
+
     if ($exercise->isLocked()) {
       throw new BadRequestException("Exercise '$exerciseId' is locked");
     }
@@ -345,7 +349,9 @@ class AssignmentsPresenter extends BasePresenter {
 
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
-    $assignment = Assignment::assignToGroup($exercise, $group, false);
+    $deadline = new DateTime();
+    $deadline->modify("+7 days");
+    $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($assignment);
   }

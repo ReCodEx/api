@@ -102,7 +102,7 @@ class JudgeBox extends Box
     if ($this->hasInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY) &&
         !$this->getInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY)->isEmpty()) {
       // custom judge was provided
-      return [$this->getInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY)->getValue(), []];
+      return [$this->getInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR), []];
     }
 
     $judgeType = null;
@@ -160,8 +160,8 @@ class JudgeBox extends Box
       array_merge(
         $args,
         [
-          $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR),
-          $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getPrefixedValue(ConfigParams::$EVAL_DIR)
+          $this->getInputPortValue(self::$EXPECTED_OUTPUT_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
+          $this->getInputPortValue(self::$ACTUAL_OUTPUT_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR)
         ]
       )
     );

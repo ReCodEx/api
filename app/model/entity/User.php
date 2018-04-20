@@ -32,6 +32,8 @@ use forxer\Gravatar\Gravatar;
  * @method setRole(string $role)
  * @method Collection getLogins()
  * @method Collection getExternalLogins()
+ * @method setTokenValidityThreshold(DateTime $threshold)
+ * @method DateTime|null getTokenValidityThreshold()
  */
 class User
 {
@@ -154,10 +156,15 @@ class User
     return $this->instance->getId() === $instance->getId();
   }
 
-   /**
-    * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
-    */
-   protected $settings;
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $tokenValidityThreshold;
+
+  /**
+   * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
+   */
+  protected $settings;
 
   /**
    * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})

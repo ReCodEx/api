@@ -161,7 +161,7 @@ trait ExerciseData {
    */
   protected $exerciseConfig;
 
-  public function getExerciseConfig(): ExerciseConfig {
+  public function getExerciseConfig(): ?ExerciseConfig {
     return $this->exerciseConfig;
   }
 

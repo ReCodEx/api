@@ -28,8 +28,8 @@ class RouterFactory {
 
     $prefix = "v1";
     $router[] = new Route($prefix, "Default:default");
-    $router[] = new PostRoute("$prefix/security/check", "Security:check");
 
+    $router[] = self::createSecurityRoutes("$prefix/security");
     $router[] = self::createAuthRoutes("$prefix/login");
     $router[] = self::createBrokerReportsRoutes("$prefix/broker-reports");
     $router[] = self::createCommentsRoutes("$prefix/comments");
@@ -53,6 +53,12 @@ class RouterFactory {
     return $router;
   }
 
+  private static function createSecurityRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new PostRoute("$prefix/check", "Security:check");
+    return $router;
+  }
+
   /**
    * Adds all Authentication endpoints to given router.
    * @param string $prefix Route prefix
@@ -62,6 +68,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Login:default");
     $router[] = new PostRoute("$prefix/refresh", "Login:refresh");
+    $router[] = new PostRoute("$prefix/issue-restricted-token", "Login:issueRestrictedToken");
     $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeOver");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
     return $router;
@@ -89,6 +96,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Comments:default");
     $router[] = new PostRoute("$prefix/<id>", "Comments:addComment");
     $router[] = new PostRoute("$prefix/<threadId>/comment/<commentId>/toggle", "Comments:togglePrivate");
+    $router[] = new DeleteRoute("$prefix/<threadId>/comment/<commentId>", "Comments:delete");
     return $router;
   }
 
@@ -309,6 +317,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/validate-registration-data", "Registration:validateRegistrationData");
 
     $router[] = new GetRoute("$prefix/<id>", "Users:detail");
+    $router[] = new PostRoute("$prefix/<id>/invalidate-tokens", "Users:invalidateTokens");
     $router[] = new DeleteRoute("$prefix/<id>", "Users:delete");
     $router[] = new GetRoute("$prefix/<id>/groups", "Users:groups");
     $router[] = new GetRoute("$prefix/<id>/groups/all", "Users:allGroups");

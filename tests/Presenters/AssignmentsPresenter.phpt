@@ -281,6 +281,30 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }, App\Exceptions\BadRequestException::class);
   }
 
+  public function testCreateAssignmentInOrganizationalGroup()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Exercise $exercise */
+    $exercise = $this->presenter->exercises->findAll()[0];
+    /** @var Group $group */
+    $group = $this->presenter->groups->findAll()[0];
+
+    $group->setOrganizational(true);
+    $this->presenter->groups->flush();
+
+    $request = new Nette\Application\Request(
+      'V1:Assignments',
+      'POST',
+      ['action' => 'create'],
+      ['exerciseId' => $exercise->getId(), 'groupId' => $group->getId()]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, App\Exceptions\BadRequestException::class);
+  }
+
   public function testSyncWithExercise()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);

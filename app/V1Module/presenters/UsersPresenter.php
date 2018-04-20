@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Login;
@@ -13,9 +14,9 @@ use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
-use App\Security\AccessToken;
 use App\Security\ACL\IUserPermissions;
 use App\Security\Roles;
+use DateTime;
 
 /**
  * User management endpoints
@@ -143,7 +144,7 @@ class UsersPresenter extends BasePresenter {
     // change details in separate methods
     $this->changeUserEmail($user, $login, $req->getPost("email"));
     $this->changeFirstAndLastName($user, $req->getPost("firstName"), $req->getPost("lastName"));
-    $this->changeUserPassword($login, $req->getPost("oldPassword"),
+    $passwordChanged = $this->changeUserPassword($login, $req->getPost("oldPassword"),
       $req->getPost("password"), $req->getPost("passwordConfirm"));
 
     $user->setDegreesBeforeName($degreesBeforeName);
@@ -153,7 +154,10 @@ class UsersPresenter extends BasePresenter {
     $this->users->flush();
     $this->logins->flush();
 
-    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+    $this->sendSuccessResponse([
+      "user" => $this->userViewFactory->getUser($user),
+      "accessToken" => $passwordChanged ? $this->accessManager->issueRefreshedToken($this->getAccessToken()) : null
+    ]);
   }
 
   /**
@@ -228,11 +232,11 @@ class UsersPresenter extends BasePresenter {
    * @throws WrongCredentialsException
    */
   private function changeUserPassword(?Login $login, ?string $oldPassword,
-      ?string $password, ?string $passwordConfirm) {
+      ?string $password, ?string $passwordConfirm): bool {
 
     if (!$login || (!$oldPassword && !$password && !$passwordConfirm)) {
       // password was not provided, or user is not logged as local one
-      return;
+      return false;
     }
 
     if (!$password || !$passwordConfirm) {
@@ -248,9 +252,12 @@ class UsersPresenter extends BasePresenter {
       }
 
       $login->changePassword($password);
+      $login->getUser()->setTokenValidityThreshold(new DateTime());
     } else {
       throw new WrongCredentialsException("Your current password does not match");
     }
+
+    return true;
   }
 
   public function checkUpdateSettings(string $id) {
@@ -448,6 +455,7 @@ class UsersPresenter extends BasePresenter {
    * @param string $id Identifier of the user
    * @Param(type="post", name="role", validation="bool", description="Role which should be assigned to the user")
    * @throws InvalidArgumentException
+   * @throws NotFoundException
    */
   public function actionSetRole(string $id) {
     $user = $this->users->findOrThrow($id);
@@ -460,6 +468,32 @@ class UsersPresenter extends BasePresenter {
     $user->setRole($role);
     $this->users->flush();
     $this->sendSuccessResponse($user);
+  }
+
+  public function checkInvalidateTokens(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canInvalidateTokens($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Invalidate all existing tokens issued for given user
+   * @POST
+   * @param string $id Identifier of the user
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionInvalidateTokens(string $id) {
+    $user = $this->users->findOrThrow($id);
+    $user->setTokenValidityThreshold(new DateTime());
+    $this->users->flush();
+    $token = $this->getAccessToken();
+
+    $this->sendSuccessResponse([
+      "accessToken" => $this->accessManager->issueRefreshedToken($token)
+    ]);
   }
 
 }

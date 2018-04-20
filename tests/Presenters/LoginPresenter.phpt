@@ -6,6 +6,7 @@ use App\Helpers\ExternalLogin\CAS\LDAPLoginService;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Security\AccessToken;
 use App\Security\Identity;
+use App\Security\TokenScope;
 use App\V1Module\Presenters\LoginPresenter;
 use Nette\Application\Request;
 use Nette\Application\Responses\JsonResponse;
@@ -157,17 +158,16 @@ class TestLoginPresenter extends Tester\TestCase
   public function testRefresh()
   {
     $user = $this->presenter->users->getByEmail($this->userLogin);
-    $mockToken = Mockery::mock(AccessToken::class);
-    $mockToken->shouldReceive("isInScope")
-      ->with(AccessToken::SCOPE_REFRESH)
-      ->once()
-      ->andReturn(true);
-    $mockToken->shouldReceive("getUserId")
-      ->withNoArgs()
-      ->zeroOrMoreTimes()
-      ->andReturn($user->id);
+    $time = time();
+    $token = new AccessToken((object) [
+      "scopes" => [TokenScope::REFRESH, "hello", "world"],
+      "sub" => $user->getId(),
+      "exp" => $time + 1200,
+      "ref" => $time + 2400,
+      "iat" => $time - 1200
+    ]);
 
-    $this->presenter->user->login(new Identity($user, $mockToken));
+    $this->presenter->user->login(new Identity($user, $token));
 
     $request = new Request("V1:Login", "POST", ["action" => "refresh"], []);
 
@@ -182,31 +182,30 @@ class TestLoginPresenter extends Tester\TestCase
     Assert::true($this->presenter->user->isLoggedIn());
 
     $newToken = $this->presenter->accessManager->decodeToken($result["payload"]["accessToken"]);
-    Assert::true($newToken->isInScope(AccessToken::SCOPE_REFRESH));
+    Assert::true($newToken->isInScope(TokenScope::REFRESH));
+    Assert::true($newToken->isInScope("hello"));
+    Assert::true($newToken->isInScope("world"));
   }
 
-  public function testRefreshInvalidToken()
+  public function testRefreshWrongScope()
   {
     $user = $this->presenter->users->getByEmail($this->userLogin);
+    $time = time();
+    $token = new AccessToken((object) [
+      "scopes" => [],
+      "sub" => $user->getId(),
+      "exp" => $time + 1200,
+      "ref" => $time + 2400,
+      "iat" => $time - 1200
+    ]);
 
-    $mockToken = Mockery::mock(AccessToken::class);
-    $mockToken->shouldReceive("isInScope")
-      ->with(AccessToken::SCOPE_REFRESH)
-      ->once()
-      ->andReturn(false);
-    $mockToken->shouldReceive("getUserId")
-      ->withNoArgs()
-      ->zeroOrMoreTimes()
-      ->andReturn($user->id);
-
-    $this->presenter->user->login(new Identity($user, $mockToken));
+    $this->presenter->user->login(new Identity($user, $token));
     $request = new Request("V1:Login", "POST", ["action" => "refresh"], []);
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, ForbiddenRequestException::class);
   }
-
 }
 
 $testCase = new TestLoginPresenter();

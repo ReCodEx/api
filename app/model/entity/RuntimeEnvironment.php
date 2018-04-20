@@ -13,7 +13,7 @@ use App\Exceptions\ApiException;
  *
  * @method string getId()
  * @method string getName()
- * @method string getLanguage()
+ * @method string getLongName()
  * @method string getExtensions()
  * @method string getPlatform()
  * @method string getDescription()
@@ -37,7 +37,7 @@ class RuntimeEnvironment implements JsonSerializable
   /**
    * @ORM\Column(type="string")
    */
-  protected $language;
+  protected $longName;
 
   /**
    * List of extensions in YAML format. No extension is also extension.
@@ -101,7 +101,7 @@ class RuntimeEnvironment implements JsonSerializable
   ) {
     $this->id = $id;
     $this->name = $name;
-    $this->language = $language;
+    $this->longName = $language;
     $this->extensions = $extensions;
     $this->platform = $platform;
     $this->description = $description;
@@ -112,7 +112,7 @@ class RuntimeEnvironment implements JsonSerializable
     return [
       "id" => $this->id,
       "name" => $this->name,
-      "language" => $this->language,
+      "longName" => $this->longName,
       "extensions" => $this->extensions,
       "platform" => $this->platform,
       "description" => $this->description,

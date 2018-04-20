@@ -39,6 +39,19 @@ class Identity implements Nette\Security\IIdentity
     return $this->user ? [$this->user->getRole()] : [self::UNAUTHENTICATED_ROLE];
   }
 
+  /**
+   * Returns a list of roles that the user is a member of (in current session).
+   * @return array
+   */
+  function getEffectiveRoles()
+  {
+    if (!$this->token) {
+      return [];
+    }
+
+    return array_map(function (string $role) { return "scope-" . $role; }, $this->token->getScopes());
+  }
+
   function getUserData()
   {
     return $this->user;

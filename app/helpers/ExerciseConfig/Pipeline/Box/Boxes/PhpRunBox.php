@@ -38,6 +38,7 @@ class PhpRunBox extends ExecutionBox
         new Port((new PortMeta)->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta)->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta)->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta)->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta)->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),

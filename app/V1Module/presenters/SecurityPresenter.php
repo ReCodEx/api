@@ -1,8 +1,7 @@
 <?php
-namespace App\V1Module;
+namespace App\V1Module\Presenters;
 
 use App\Exceptions\InvalidArgumentException;
-use App\V1Module\Presenters\BasePresenter;
 use Exception;
 use Nette\Application\IPresenterFactory;
 use Nette\Application\IRouter;

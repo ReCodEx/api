@@ -3,10 +3,12 @@ include "../bootstrap.php";
 
 use App\Exceptions\InvalidArgumentException;
 use App\Security\AccessToken;
-use App\Security\AccessManager;
 use Tester\Assert;
 use App\Exceptions\InvalidAccessTokenException;
 
+/**
+ * @testCase
+ */
 class TestAccessToken extends Tester\TestCase
 {
 
@@ -43,11 +45,6 @@ class TestAccessToken extends Tester\TestCase
     $payload->scopes = [ "bla bla" ];
     $token = new AccessToken($payload);
     Assert::true($token->isInScope("bla bla"));
-  }
-
-  public function testPredefinedScopes() {
-    Assert::same("refresh", AccessToken::SCOPE_REFRESH);
-    Assert::same("change-password", AccessToken::SCOPE_CHANGE_PASSWORD);
   }
 
   public function testCustomClaim() {

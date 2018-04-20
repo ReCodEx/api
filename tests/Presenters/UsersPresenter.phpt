@@ -125,7 +125,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $updatedUser = $result["payload"];
+    $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
@@ -163,7 +163,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $updatedUser = $result["payload"];
+    $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
     Assert::equal($email, $updatedUser["privateData"]["email"]);
 
@@ -203,7 +203,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $updatedUser = $result["payload"];
+    $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
     Assert::true($login->passwordsMatch($password));
 
@@ -277,7 +277,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $updatedUser = $result["payload"];
+    $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName {$user->getFirstName()} {$user->getLastName()} $degreesAfterName", $updatedUser["fullName"]);
   }
 

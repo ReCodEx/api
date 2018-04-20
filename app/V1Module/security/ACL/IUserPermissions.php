@@ -17,4 +17,5 @@ interface IUserPermissions {
   function canCreateLocalAccount(User $user): bool;
   function canUpdatePersonalData(User $user): bool;
   function canSetRole(User $user): bool;
+  function canInvalidateTokens(User $user): bool;
 }

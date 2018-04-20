@@ -42,7 +42,7 @@ class Exercises extends BaseSoftDeleteRepository {
    * @return Exercise[]
    */
   public function searchByName(?string $search): array {
-    if ($search === null) {
+    if ($search === null || empty($search)) {
       return $this->findAll();
     }
 

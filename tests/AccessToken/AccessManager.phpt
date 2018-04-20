@@ -11,6 +11,9 @@ use Firebase\JWT\JWT;
 use Nette\Http\UrlScript;
 use Nette\Http\Request;
 
+/**
+ * @testCase
+ */
 class TestAccessManager extends Tester\TestCase
 {
   use MockeryTrait;
@@ -110,7 +113,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, [ "x", "y" ]);
+    $token = $manager->issueToken($user, ["x", "y"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::equal(["x", "y"], $payload->scopes);
@@ -123,7 +126,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, null, 30);
+    $token = $manager->issueToken($user, [], 30);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);
@@ -136,7 +139,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, null, 30, [ "sub" => "abcde", "xyz" => "uvw" ]);
+    $token = $manager->issueToken($user, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);

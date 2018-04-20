@@ -1,8 +1,10 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\BadRequestException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
+use App\Model\Entity\User;
 use App\V1Module\Presenters\GroupsPresenter;
 use Tester\Assert;
 
@@ -670,6 +672,100 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal(200, $result["code"]);
 
     Assert::equal([$user->getId()], $payload["primaryAdminsIds"]);
+  }
+
+  public function testSetOrganizational()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Group $group */
+    $group = $this->presenter->groups->findAll()[0];
+
+    // initial setup
+    $group->getAssignments()->clear();
+
+    /** @var User $student */
+    foreach ($group->getStudents() as $student) {
+      $group->removeMembership($student->findMembershipAsStudent($group));
+    }
+
+    $this->presenter->groups->flush();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'setOrganizational', 'id' => $group->getId()],
+      ['value' => true]
+    );
+
+    /** @var \Nette\Application\Responses\JsonResponse $response */
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result["code"]);
+  }
+
+  public function testSetOrganizationalWithStudents()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Group $group */
+    $group = null;
+    foreach ($this->presenter->groups->findAll() as $groupCandidate) {
+      if ($groupCandidate->getStudents()->count() > 0) {
+        $group = $groupCandidate;
+      }
+    }
+
+    // initial setup
+    Assert::true($group !== null);
+    $group->getAssignments()->clear();
+
+    $this->presenter->groups->flush();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'setOrganizational', 'id' => $group->getId()],
+      ['value' => true]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, BadRequestException::class);
+  }
+
+  public function testSetOrganizationalWithAssignments()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var Group $group */
+    $group = null;
+    foreach ($this->presenter->groups->findAll() as $groupCandidate) {
+      if ($groupCandidate->getAssignments()->count() > 0) {
+        $group = $groupCandidate;
+      }
+    }
+
+    Assert::true($group !== null);
+
+    // initial setup
+    /** @var User $student */
+    foreach ($group->getStudents() as $student) {
+      $membership = $student->findMembershipAsStudent($group);
+      $group->removeMembership($membership);
+    }
+
+    $this->presenter->groups->flush();
+
+    $request = new Nette\Application\Request('V1:Groups',
+      'POST',
+      ['action' => 'setOrganizational', 'id' => $group->getId()],
+      ['value' => true]
+    );
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, BadRequestException::class);
   }
 
   public function testRemoveAdmin()
