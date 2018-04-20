@@ -1,7 +1,9 @@
 <?php
 namespace App\Security;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\UnauthorizedException;
 use App\Model\Entity\User;
 use Nette\Security\IIdentity;
 use Nette\Security\IUserStorage;
@@ -86,7 +88,7 @@ class UserStorage implements IUserStorage
   }
 
   /**
-   * @throws ForbiddenRequestException
+   * @throws InvalidAccessTokenException
    * @throws InvalidArgumentException
    */
   protected function checkTokenForRevocation(AccessToken $token, User $user)
@@ -97,7 +99,7 @@ class UserStorage implements IUserStorage
       || $token->getIssuedAt() >= $validityThreshold->getTimestamp();
 
     if (!$wasTokenIssuedAfterThreshold) {
-      throw new ForbiddenRequestException("The token was revoked and cannot be used anymore");
+      throw new InvalidAccessTokenException("Your access token was revoked and cannot be used anymore");
     }
   }
 

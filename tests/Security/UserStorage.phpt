@@ -78,7 +78,7 @@ class TestUserStorage extends Tester\TestCase {
 
     Assert::exception(function () use ($userStorage) {
       $userStorage->getIdentity();
-    }, ForbiddenRequestException::class);
+    }, InvalidAccessTokenException::class);
   }
 }
 
