@@ -10,6 +10,7 @@ use App\Model\Entity\Login;
 use App\Security\AccessToken;
 
 use App\Security\TokenScope;
+use DateTime;
 use ZxcvbnPhp\Zxcvbn;
 
 /**
@@ -66,6 +67,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
 
     // actually change the password
     $login->setPasswordHash(Login::hashPassword($password));
+    $this->getCurrentUser()->setTokenValidityThreshold(new DateTime());
     $this->logins->persist($login);
     $this->logins->flush();
 
