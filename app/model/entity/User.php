@@ -26,6 +26,7 @@ use forxer\Gravatar\Gravatar;
  * @method getFirstName()
  * @method setLastName(string $lastName)
  * @method getLastName()
+ * @method setEmail(string $email)
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
@@ -57,7 +58,7 @@ class User
     $this->lastName = $lastName;
     $this->degreesBeforeName = $degreesBeforeName;
     $this->degreesAfterName = $degreesAfterName;
-    $this->setEmail($email);
+    $this->email = $email;
     $this->isVerified = false;
     $this->isAllowed = true;
     $this->memberships = new ArrayCollection;
@@ -69,6 +70,7 @@ class User
     $this->settings = new UserSettings(true, false, "en");
     $this->logins = new ArrayCollection();
     $this->externalLogins = new ArrayCollection();
+    $this->avatarUrl = null;
 
     if (empty($role)) {
       $this->role = self::STUDENT_ROLE;
@@ -117,15 +119,19 @@ class User
    */
   protected $email;
 
-  public function setEmail($email) {
-    $this->email = $email;
-    $this->avatarUrl = Gravatar::image($email, 200, "retro", "g", "png", true, false);
-  }
-
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", nullable=true)
    */
   protected $avatarUrl;
+
+  /**
+   * If true, then set gravatar image based on user email.
+   * @param bool $useGravatar
+   */
+  public function setGravatar(bool $useGravatar = true) {
+    $this->avatarUrl = !$useGravatar ? null :
+      Gravatar::image($this->email, 200, "retro", "g", "png", true, false);
+  }
 
   /**
    * @ORM\Column(type="boolean")

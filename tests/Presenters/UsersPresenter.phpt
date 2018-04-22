@@ -115,7 +115,8 @@ class TestUsersPresenter extends Tester\TestCase
         'firstName' => $firstName,
         'lastName' => $lastName,
         'degreesBeforeName' => $degreesBeforeName,
-        'degreesAfterName' => $degreesAfterName
+        'degreesAfterName' => $degreesAfterName,
+        'gravatarUrlEnabled' => false
       ]
     );
     $response = $this->presenter->run($request);
@@ -126,6 +127,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
+    Assert::null($updatedUser["avatarUrl"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
     Assert::same($updatedUser["id"], $storedUpdatedUser->getId());
@@ -153,7 +155,8 @@ class TestUsersPresenter extends Tester\TestCase
         'lastName' => $lastName,
         'degreesBeforeName' => $degreesBeforeName,
         'degreesAfterName' => $degreesAfterName,
-        'email' => $email
+        'email' => $email,
+        'gravatarUrlEnabled' => false
       ]
     );
     $response = $this->presenter->run($request);
@@ -165,6 +168,7 @@ class TestUsersPresenter extends Tester\TestCase
     $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
     Assert::equal($email, $updatedUser["privateData"]["email"]);
+    Assert::null($updatedUser["avatarUrl"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
     Assert::same($updatedUser["id"], $storedUpdatedUser->getId());
@@ -193,7 +197,8 @@ class TestUsersPresenter extends Tester\TestCase
         'degreesAfterName' => $degreesAfterName,
         'oldPassword' => $oldPassword,
         'password' => $password,
-        'passwordConfirm' => $passwordConfirm
+        'passwordConfirm' => $passwordConfirm,
+        'gravatarUrlEnabled' => false
       ]
     );
     $response = $this->presenter->run($request);
@@ -205,6 +210,7 @@ class TestUsersPresenter extends Tester\TestCase
     $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
     Assert::true($login->passwordsMatch($password));
+    Assert::null($updatedUser["avatarUrl"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());
     Assert::equal($updatedUser["id"], $storedUpdatedUser->getId());
@@ -223,7 +229,8 @@ class TestUsersPresenter extends Tester\TestCase
         'degreesBeforeName' => "degreesBeforeNameUpdated",
         'degreesAfterName' => "degreesAfterNameUpdated",
         'oldPassword' => "admin",
-        'passwordConfirm' => "newPassword"
+        'passwordConfirm' => "newPassword",
+        'gravatarUrlEnabled' => false
       ]
     );
 
@@ -245,7 +252,8 @@ class TestUsersPresenter extends Tester\TestCase
         'degreesBeforeName' => "degreesBeforeNameUpdated",
         'degreesAfterName' => "degreesAfterNameUpdated",
         'oldPassword' => "admin",
-        'password' => "newPassword"
+        'password' => "newPassword",
+        'gravatarUrlEnabled' => false
       ]
     );
 
@@ -266,7 +274,8 @@ class TestUsersPresenter extends Tester\TestCase
       ['action' => 'updateProfile', 'id' => $user->getId()],
       [
         'degreesBeforeName' => $degreesBeforeName,
-        'degreesAfterName' => $degreesAfterName
+        'degreesAfterName' => $degreesAfterName,
+        'gravatarUrlEnabled' => true
       ]
     );
 
@@ -278,6 +287,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName {$user->getFirstName()} {$user->getLastName()} $degreesAfterName", $updatedUser["fullName"]);
+    Assert::true($updatedUser["avatarUrl"] !== null);
   }
 
   public function testUpdateSettings()
