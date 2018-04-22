@@ -130,12 +130,12 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="oldPassword", required=false, validation="string:1..", description="Old password of current user")
    * @Param(type="post", name="password", required=false, validation="string:1..", description="New password of current user")
    * @Param(type="post", name="passwordConfirm", required=false, validation="string:1..", description="Confirmation of new password of current user")
+   * @Param(type="post", name="gravatarUrlEnabled", validation="bool", description="Enable or disable gravatar profile image")
    * @throws WrongCredentialsException
+   * @throws NotFoundException
    */
   public function actionUpdateProfile(string $id) {
     $req = $this->getRequest();
-    $degreesBeforeName = $req->getPost("degreesBeforeName");
-    $degreesAfterName = $req->getPost("degreesAfterName");
 
     // fill user with provided data
     $user = $this->users->findOrThrow($id);
@@ -147,8 +147,9 @@ class UsersPresenter extends BasePresenter {
     $passwordChanged = $this->changeUserPassword($login, $req->getPost("oldPassword"),
       $req->getPost("password"), $req->getPost("passwordConfirm"));
 
-    $user->setDegreesBeforeName($degreesBeforeName);
-    $user->setDegreesAfterName($degreesAfterName);
+    $user->setDegreesBeforeName($req->getPost("degreesBeforeName"));
+    $user->setDegreesAfterName($req->getPost("degreesAfterName"));
+    $user->setGravatar(filter_var($req->getPost("gravatarUrlEnabled"), FILTER_VALIDATE_BOOLEAN));
 
     // make changes permanent
     $this->users->flush();
