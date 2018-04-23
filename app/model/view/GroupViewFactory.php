@@ -4,6 +4,7 @@ namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
 use App\Helpers\Localizations;
+use App\Helpers\Pair;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
@@ -38,15 +39,15 @@ class GroupViewFactory {
 
   /**
    * Get total sum of points which given user gained in given solutions.
-   * @param array $solutions list of pairs, second item is solution, can be null
+   * @param Pair[] $solutions list of pairs, second item is solution, can be null
    * @return int
    */
   private function getPointsGainedByStudentForSolutions(array $solutions) {
     return array_reduce(
       $solutions,
-      function ($carry, array $solutionPair) {
-        $best = $solutionPair[1];
-        if ($solutionPair[1] !== null) {
+      function ($carry, Pair $solutionPair) {
+        $best = $solutionPair->value;
+        if ($best !== null) {
           $carry += $best->getTotalPoints();
         }
 
@@ -73,8 +74,8 @@ class GroupViewFactory {
        * @var Assignment $assignment
        * @var AssignmentSolution $best
        */
-      $assignment = $solutionPair[0];
-      $best = $solutionPair[1];
+      $assignment = $solutionPair->key;
+      $best = $solutionPair->value;
       $submission = $best ? $best->getLastSubmission() : null;
 
       $assignments[] = [
