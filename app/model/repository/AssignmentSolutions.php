@@ -2,6 +2,7 @@
 
 namespace App\Model\Repository;
 
+use App\Helpers\Pair;
 use App\Model\Entity\User;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\AssignmentSolution;
@@ -47,25 +48,7 @@ class AssignmentSolutions extends BaseRepository {
    * @return AssignmentSolution|null
    */
   public function findBestSolution(Assignment $assignment, User $user): ?AssignmentSolution {
-    return array_reduce(
-      $this->findValidSolutions($assignment, $user),
-      function (?AssignmentSolution $best, AssignmentSolution $solution) {
-        if ($best === null) {
-          return $solution;
-        }
-
-        if ($best->isAccepted()) {
-          return $best;
-        }
-
-        if ($solution->isAccepted()) {
-          return $solution;
-        }
-
-        return $best->getTotalPoints() < $solution->getTotalPoints() ? $solution : $best;
-      },
-      null
-    );
+    return $this->findBestSolutionsForAssignments([$assignment], $user)[$assignment->getId()]->value;
   }
 
   /**
@@ -103,21 +86,21 @@ class AssignmentSolutions extends BaseRepository {
    * Find best solutions of given assignments for user.
    * @param Assignment[] $assignments
    * @param User $user
-   * @return array list of pairs where first is assignment and second solution, indexed by assignment id
+   * @return Pair[] list of pairs where first is assignment and second solution, indexed by assignment id
    */
-  public function findBestSolutionsForAssignments(array $assignments, User $user) {
+  public function findBestSolutionsForAssignments(array $assignments, User $user): array {
     $result = [];
     foreach ($assignments as $assignment) {
-      $result[$assignment->getId()] = [$assignment, null];
+      $result[$assignment->getId()] = new Pair($assignment, null);
     }
 
     $solutions = $this->findValidSolutionsForAssignments($assignments, $user);
     foreach ($solutions as $solution) {
       $assignment = $solution->getAssignment();
-      $best = $result[$assignment->getId()][1];
+      $best = $result[$assignment->getId()]->value;
 
       if ($best === null) {
-        $result[$assignment->getId()] = [$assignment, $solution];
+        $result[$assignment->getId()]->value = $solution;
         continue;
       }
 
@@ -126,12 +109,12 @@ class AssignmentSolutions extends BaseRepository {
       }
 
       if ($solution->isAccepted()) {
-        $result[$assignment->getId()] = [$assignment, $solution];
+        $result[$assignment->getId()]->value = $solution;
         continue;
       }
 
       if ($best->getTotalPoints() < $solution->getTotalPoints()) {
-        $result[$assignment->getId()] = [$assignment, $solution];
+        $result[$assignment->getId()]->value = $solution;
       }
     }
 
