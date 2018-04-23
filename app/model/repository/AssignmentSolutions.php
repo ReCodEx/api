@@ -38,9 +38,46 @@ class AssignmentSolutions extends BaseRepository {
    * @return AssignmentSolution[]
    */
   public function findValidSolutions(Assignment $assignment, User $user) {
+    return $this->findValidSolutionsForAssignments([$assignment], $user);
+  }
+
+  /**
+   * @param Assignment $assignment
+   * @param User $user
+   * @return AssignmentSolution|null
+   */
+  public function findBestSolution(Assignment $assignment, User $user): ?AssignmentSolution {
+    return array_reduce(
+      $this->findValidSolutions($assignment, $user),
+      function (?AssignmentSolution $best, AssignmentSolution $solution) {
+        if ($best === null) {
+          return $solution;
+        }
+
+        if ($best->isAccepted()) {
+          return $best;
+        }
+
+        if ($solution->isAccepted()) {
+          return $solution;
+        }
+
+        return $best->getTotalPoints() < $solution->getTotalPoints() ? $solution : $best;
+      },
+      null
+    );
+  }
+
+  /**
+   * Get valid submissions for given assignments and user.
+   * @param Assignment[] $assignments
+   * @param User $user
+   * @return AssignmentSolution[]
+   */
+  private function findValidSolutionsForAssignments(array $assignments, User $user) {
     $solutions = $this->findBy([
       "solution.author" => $user,
-      "assignment" => $assignment,
+      "assignment" => $assignments,
     ], [
       "solution.createdAt" => "DESC"
     ]);
@@ -63,30 +100,42 @@ class AssignmentSolutions extends BaseRepository {
   }
 
   /**
-   * @param Assignment $assignment
+   * Find best solutions of given assignments for user.
+   * @param Assignment[] $assignments
    * @param User $user
-   * @return AssignmentSolution|null
+   * @return array list of pairs where first is assignment and second solution, indexed by assignment id
    */
-  public function findBestSolution(Assignment $assignment, User $user) {
-    return array_reduce(
-      $this->findValidSolutions($assignment, $user),
-      function (?AssignmentSolution $best, AssignmentSolution $solution) {
-        if ($best === null) {
-          return $solution;
-        }
+  public function findBestSolutionsForAssignments(array $assignments, User $user) {
+    $result = [];
+    foreach ($assignments as $assignment) {
+      $result[$assignment->getId()] = [$assignment, null];
+    }
 
-        if ($best->isAccepted()) {
-          return $best;
-        }
+    $solutions = $this->findValidSolutionsForAssignments($assignments, $user);
+    foreach ($solutions as $solution) {
+      $assignment = $solution->getAssignment();
+      $best = $result[$assignment->getId()][1];
 
-        if ($solution->isAccepted()) {
-          return $solution;
-        }
+      if ($best === null) {
+        $result[$assignment->getId()] = [$assignment, $solution];
+        continue;
+      }
 
-        return $best->getTotalPoints() < $solution->getTotalPoints() ? $solution : $best;
-      },
-      null
-    );
+      if ($best->isAccepted()) {
+        continue;
+      }
+
+      if ($solution->isAccepted()) {
+        $result[$assignment->getId()] = [$assignment, $solution];
+        continue;
+      }
+
+      if ($best->getTotalPoints() < $solution->getTotalPoints()) {
+        $result[$assignment->getId()] = [$assignment, $solution];
+      }
+    }
+
+    return $result;
   }
 
 }

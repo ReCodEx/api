@@ -5,6 +5,7 @@ namespace App\Model\View;
 use App\Helpers\EvaluationStatus\EvaluationStatus;
 use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
@@ -36,31 +37,16 @@ class GroupViewFactory {
 
 
   /**
-   * Get collection of completed assignments by given user.
-   * @param Group $group
-   * @param User $student
-   * @return Collection
-   */
-  private function getCompletedAssignmentsByStudent(Group $group, User $student) {
-    return $group->getAssignments()->filter(
-      function(Assignment $assignment) use ($student) {
-        return $this->assignmentSolutions->findBestSolution($assignment, $student) !== null;
-      }
-    );
-  }
-
-  /**
-   * Get total sum of points which given user gained in group.
-   * @param Group $group
-   * @param User $student
+   * Get total sum of points which given user gained in given solutions.
+   * @param array $solutions list of pairs, second item is solution, can be null
    * @return int
    */
-  private function getPointsGainedByStudent(Group $group, User $student) {
+  private function getPointsGainedByStudentForSolutions(array $solutions) {
     return array_reduce(
-      $this->getCompletedAssignmentsByStudent($group, $student)->getValues(),
-      function ($carry, Assignment $assignment) use ($student) {
-        $best = $this->assignmentSolutions->findBestSolution($assignment, $student);
-        if ($best !== null) {
+      $solutions,
+      function ($carry, array $solutionPair) {
+        $best = $solutionPair[1];
+        if ($solutionPair[1] !== null) {
           $carry += $best->getTotalPoints();
         }
 
@@ -78,12 +64,17 @@ class GroupViewFactory {
    */
   public function getStudentsStats(Group $group, User $student) {
     $maxPoints = $group->getMaxPoints();
-    $gainedPoints = $this->getPointsGainedByStudent($group, $student);
+    $solutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
+    $gainedPoints = $this->getPointsGainedByStudentForSolutions($solutions);
 
     $assignments = [];
-    /** @var Assignment $assignment */
-    foreach ($group->getAssignments() as $assignment) {
-      $best = $this->assignmentSolutions->findBestSolution($assignment, $student);
+    foreach ($solutions as $solutionPair) {
+      /**
+       * @var Assignment $assignment
+       * @var AssignmentSolution $best
+       */
+      $assignment = $solutionPair[0];
+      $best = $solutionPair[1];
       $submission = $best ? $best->getLastSubmission() : null;
 
       $assignments[] = [
