@@ -129,6 +129,22 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
   }
 
+
+  /**
+   * Local micro-view factory, which constructs a response with environment configs of given exercise.
+   */
+  private function getEnvironmentConfigs(Exercise $exercise) {
+    $configs = [];
+    foreach ($exercise->getExerciseEnvironmentConfigs() as $runtimeConfig) {
+      $configs[] = [
+        "runtimeEnvironmentId" => $runtimeConfig->getRuntimeEnvironment()->getId(),
+        "variablesTable" => $runtimeConfig->getParsedVariablesTable(),
+      ];
+    }
+    return $configs;
+  }
+
+
   /**
    * Get runtime configurations for exercise.
    * @GET
@@ -138,15 +154,7 @@ class ExercisesConfigPresenter extends BasePresenter {
   public function actionGetEnvironmentConfigs(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-
-    $configs = array();
-    foreach ($exercise->getExerciseEnvironmentConfigs() as $runtimeConfig) {
-      $runtimeConfigArr = array();
-      $runtimeConfigArr["runtimeEnvironmentId"] = $runtimeConfig->getRuntimeEnvironment()->getId();
-      $runtimeConfigArr["variablesTable"] = $runtimeConfig->getParsedVariablesTable();
-      $configs[] = $runtimeConfigArr;
-    }
-
+    $configs = $this->getEnvironmentConfigs($exercise);
     $this->sendSuccessResponse($configs);
   }
 
@@ -226,7 +234,9 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $this->configChecker->check($exercise);
     $this->exercises->flush();
-    $this->sendSuccessResponse("OK");
+
+    $configs = $this->getEnvironmentConfigs($exercise);
+    $this->sendSuccessResponse($configs);
   }
 
   public function checkGetConfiguration(string $id) {

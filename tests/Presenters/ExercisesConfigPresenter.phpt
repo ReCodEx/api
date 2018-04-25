@@ -98,35 +98,35 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $exercise = current($this->presenter->exercises->findAll());
     $environment = current($this->presenter->runtimeEnvironments->findAll());
 
-    $request = new Nette\Application\Request('V1:ExercisesConfig',
-      'POST',
-      ['action' => 'updateEnvironmentConfigs', 'id' => $exercise->id],
+    $testEnvironmentConfigs = [
       [
-        'environmentConfigs' => [
+        'runtimeEnvironmentId' => $environment->getId(),
+        'variablesTable' => [
           [
-            'runtimeEnvironmentId' => $environment->getId(),
-            'variablesTable' => [
-              [
-                'name' => 'varA',
-                'type' => 'string',
-                'value' => 'valA'
-              ],
-              [
-                'name' => 'varB',
-                'type' => 'file',
-                'value' => 'valB'
-              ]
-            ]
+            'name' => 'varA',
+            'type' => 'string',
+            'value' => 'valA'
+          ],
+          [
+            'name' => 'varB',
+            'type' => 'file',
+            'value' => 'valB'
           ]
         ]
       ]
+    ];
+
+    $request = new Nette\Application\Request('V1:ExercisesConfig',
+      'POST',
+      [ 'action' => 'updateEnvironmentConfigs', 'id' => $exercise->id ],
+      [ 'environmentConfigs' => $testEnvironmentConfigs ]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
+    Assert::equal($testEnvironmentConfigs, $result['payload']);
 
     // check runtime environments directly on exercise
     $exercise = $this->exercises->findOrThrow($exercise->getId());
