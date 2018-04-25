@@ -133,8 +133,7 @@ class ExercisesConfigPresenter extends BasePresenter {
   /**
    * Local micro-view factory, which constructs a response with environment configs of given exercise.
    */
-  private function getEnvironmentConfigs(Exercise $exercise)
-  {
+  private function getEnvironmentConfigs(Exercise $exercise) {
     $configs = [];
     foreach ($exercise->getExerciseEnvironmentConfigs() as $runtimeConfig) {
       $configs[] = [
