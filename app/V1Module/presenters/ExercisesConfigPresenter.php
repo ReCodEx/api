@@ -137,10 +137,10 @@ class ExercisesConfigPresenter extends BasePresenter {
   {
     $configs = [];
     foreach ($exercise->getExerciseEnvironmentConfigs() as $runtimeConfig) {
-      $runtimeConfigArr = [];
-      $runtimeConfigArr["runtimeEnvironmentId"] = $runtimeConfig->getRuntimeEnvironment()->getId();
-      $runtimeConfigArr["variablesTable"] = $runtimeConfig->getParsedVariablesTable();
-      $configs[] = $runtimeConfigArr;
+      $configs[] = [
+        "runtimeEnvironmentId" => $runtimeConfig->getRuntimeEnvironment()->getId(),
+        "variablesTable" => $runtimeConfig->getParsedVariablesTable(),
+      ];
     }
     return $configs;
   }
