@@ -3,6 +3,7 @@
 namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
+use App\Helpers\GroupBindings\GroupBindingAccessor;
 use App\Helpers\Localizations;
 use App\Helpers\Pair;
 use App\Model\Entity\Assignment;
@@ -37,10 +38,14 @@ class GroupViewFactory {
    */
   private $assignmentAcl;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl, IAssignmentPermissions $assignmentAcl) {
+  /** @var GroupBindingAccessor */
+  private $bindings;
+
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl, IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
+    $this->bindings = $bindings;
   }
 
 
@@ -135,7 +140,8 @@ class GroupViewFactory {
           })->getValues(),
         "publicStats" => $group->getPublicStats(),
         "isPublic" => $group->isPublic(),
-        "threshold" => $group->getThreshold()
+        "threshold" => $group->getThreshold(),
+        "bindings" => $this->bindings->getBindingsForGroup($group)
       ];
     }
 

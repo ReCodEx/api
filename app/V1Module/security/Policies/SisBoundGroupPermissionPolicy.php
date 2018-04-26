@@ -47,7 +47,7 @@ class SisBoundGroupPermissionPolicy implements IPermissionPolicy {
 
     $sisCourses = iterator_to_array($this->sisHelper->getCourses($login->getExternalId()));
 
-    foreach ($this->bindings->findByGroup($group) as $binding) {
+    foreach ($this->bindings->findGroupBindings($group) as $binding) {
       foreach ($sisCourses as $course) {
         if ($course->isOwnerStudent() && $binding->getCode() === $course->getCode()) {
           return true;

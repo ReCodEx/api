@@ -199,6 +199,7 @@ extensions:
   doctrine: Kdyby\Doctrine\DI\OrmExtension
   fixtures: Zenify\DoctrineFixtures\DI\FixturesExtension
   acl: App\Security\SecurityExtension(%tempDir%)
+  groupBindings: App\Helpers\GroupBindings\GroupBindingsExtension
 
 decorator:
   Symfony\Component\Console\Command\Command:

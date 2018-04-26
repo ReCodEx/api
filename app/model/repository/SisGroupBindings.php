@@ -1,11 +1,12 @@
 <?php
 namespace App\Model\Repository;
 
+use App\Helpers\GroupBindings\IGroupBindingProvider;
 use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
 use Kdyby\Doctrine\EntityManager;
 
-class SisGroupBindings extends BaseRepository {
+class SisGroupBindings extends BaseRepository implements IGroupBindingProvider {
   public function __construct(EntityManager $em) {
     parent::__construct($em, SisGroupBinding::class);
   }
@@ -34,10 +35,17 @@ class SisGroupBindings extends BaseRepository {
   }
 
   /**
-   * @param Group $group
-   * @return SisGroupBinding[]
+   * @return string a unique identifier of the type of the binding
    */
-  public function findByGroup(Group $group) {
+  public function getGroupBindingIdentifier(): string {
+    return "sis";
+  }
+
+  /**
+   * @param Group $group
+   * @return array all entities bound to the group (they must have __toString() implemented)
+   */
+  public function findGroupBindings(Group $group): array {
     return $this->findBy([
       "group" => $group
     ]);
