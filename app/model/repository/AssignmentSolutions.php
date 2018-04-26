@@ -86,7 +86,8 @@ class AssignmentSolutions extends BaseRepository {
    * Find best solutions of given assignments for user.
    * @param Assignment[] $assignments
    * @param User $user
-   * @return Pair[] list of pairs where first is assignment and second solution, indexed by assignment id
+   * @return Pair[] An associative array (indexed by assignment id) of pairs where the first item is
+   * an assignment entity and the second is a solution entity (the best one for the assignment)
    */
   public function findBestSolutionsForAssignments(array $assignments, User $user): array {
     $result = [];
