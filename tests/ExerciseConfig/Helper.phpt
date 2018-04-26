@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseEnvironmentConfig;
+use App\Model\Entity\Group;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
@@ -611,7 +612,7 @@ class TestExerciseConfigHelper extends Tester\TestCase
 
     $exerciseConfig = new ExerciseConfig(Yaml::dump(self::$exerciseConfig), $user);
 
-    $exercise = Exercise::create($user);
+    $exercise = Exercise::create($user, new Group("ext", new Instance()));
     $exercise->addRuntimeEnvironment($cRuntime);
     $exercise->addRuntimeEnvironment($javaRuntime);
     $exercise->addExerciseEnvironmentConfig($cEnvConfig);

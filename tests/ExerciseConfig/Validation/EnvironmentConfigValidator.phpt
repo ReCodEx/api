@@ -8,6 +8,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Validation\EnvironmentConfigValidator;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
@@ -83,7 +84,7 @@ class TestEnvironmentConfigValidator extends Tester\TestCase
    */
   private function createExercise(): Exercise {
     $user = new User("", "", "", "", "", "", new Instance());
-    $exercise = Exercise::create($user);
+    $exercise = Exercise::create($user, new Group("ext", new Instance()));
 
     $uploadedFile = new UploadedFile("input.name", new DateTime(), 234, $user);
     SupplementaryExerciseFile::fromUploadedFileAndExercise($uploadedFile, $exercise, "input.hash", "fileserver.path");

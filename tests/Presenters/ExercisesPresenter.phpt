@@ -234,7 +234,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST',
       ['action' => 'create'],
-      ['groupsIds' => [$group->getId()]]
+      ['groupId' => $group->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -378,7 +378,7 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var Exercise $payload */
     $payload = $result['payload'];
     Assert::type(Exercise::class, $payload);
-    Assert::equal(1, $payload->getGroups()->count());
+    Assert::equal(2, $payload->getGroups()->count());
     Assert::true($payload->getGroups()->contains($group));
   }
 
@@ -387,10 +387,7 @@ class TestExercisesPresenter extends Tester\TestCase
     PresenterTestHelper::login($this->container, $this->adminLogin);
 
     $exercise = current($this->presenter->exercises->findAll());
-    $group = current($this->presenter->groups->findAll());
-
-    $exercise->addGroup($group);
-    $this->presenter->exercises->flush();
+    $group = $exercise->getGroups()->first();
 
     Assert::count(1, $exercise->getGroups());
 
@@ -407,10 +404,9 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $exercise = current($this->presenter->exercises->findAll());
     $group1 = $this->presenter->groups->findAll()[0];
-    $group2 = $this->presenter->groups->findAll()[1];
+    $group2 = $exercise->getGroups()->first();
 
     $exercise->addGroup($group1);
-    $exercise->addGroup($group2);
     $this->presenter->exercises->flush();
 
     $request = new Nette\Application\Request('V1:Exercises', 'DELETE',

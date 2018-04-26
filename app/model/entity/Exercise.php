@@ -248,7 +248,7 @@ class Exercise implements JsonSerializable, IExercise
     $this->validationError = "";
   }
 
-  public static function create(User $user, array $groups = []): Exercise {
+  public static function create(User $user, Group $group): Exercise {
     return new self(
       1,
       "",
@@ -261,7 +261,7 @@ class Exercise implements JsonSerializable, IExercise
       new ArrayCollection,
       new ArrayCollection,
       new ArrayCollection,
-      new ArrayCollection($groups),
+      new ArrayCollection([$group]),
       null,
       null,
       $user

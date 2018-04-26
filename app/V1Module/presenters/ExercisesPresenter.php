@@ -289,7 +289,7 @@ class ExercisesPresenter extends BasePresenter {
    * Create exercise with all default values.
    * Exercise detail can be then changed in appropriate endpoint.
    * @POST
-   * @Param(type="post", name="groupsIds", validation="array", description="Array of identifiers of the groups to which exercise belongs to")
+   * @Param(type="post", name="groupId", description="Identifier of the group to which exercise belongs to")
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws ApiException
@@ -297,21 +297,13 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionCreate() {
     $user = $this->getCurrentUser();
-
-    $groups = [];
-    foreach ($this->getRequest()->getPost("groupsIds") as $groupId) {
-      $groups[] = $group = $this->groups->findOrThrow($groupId);
-      if (!$this->groupAcl->canCreateExercise($group)) {
-        throw new ForbiddenRequestException();
-      }
-    }
-
-    if (count($groups) === 0) {
-      throw new InvalidArgumentException("groupsIds", "groups cannot be empty");
+    $group = $this->groups->findOrThrow($this->getRequest()->getPost("groupId"));
+    if (!$this->groupAcl->canCreateExercise($group)) {
+      throw new ForbiddenRequestException();
     }
 
     // create exercise and fill some predefined details
-    $exercise = Exercise::create($user, $groups);
+    $exercise = Exercise::create($user, $group);
     $localizedExercise = new LocalizedExercise(
       $user->getSettings()->getDefaultLanguage(),
       "Exercise by " . $user->getName(), "", ""
@@ -465,7 +457,7 @@ class ExercisesPresenter extends BasePresenter {
       throw new ForbiddenRequestException("You are not allowed to detach the group to the exercise");
     }
 
-    if ($exercise->getGroups()->count() === 1) {
+    if ($exercise->getGroups()->count() < 2) {
       throw new BadRequestException("You cannot detach last group from exercise");
     }
   }

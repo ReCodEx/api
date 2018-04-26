@@ -14,6 +14,7 @@ use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Entity\ExerciseTest;
+use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
@@ -194,7 +195,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
   public function testEmpty() {
     $exerciseConfig = new ExerciseConfig();
     $user = $this->getDummyUser();
-    $exercise = Exercise::create($user);
+    $exercise = Exercise::create($user, new Group("ext", new Instance()));
 
     Assert::noError(
       function () use ($exerciseConfig, $exercise) {
@@ -238,7 +239,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
    */
   private function createExercise(): Exercise {
     $user = $this->getDummyUser();
-    $exercise = Exercise::create($user);
+    $exercise = Exercise::create($user, new Group("ext", new Instance()));
     return $exercise;
   }
 

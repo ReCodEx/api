@@ -10,6 +10,7 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Validation\ExerciseLimitsValidator;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTest;
+use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
 use App\Model\Repository\Pipelines;
@@ -101,7 +102,7 @@ class TestExerciseLimitsValidator extends Tester\TestCase
    */
   private function createExercise(): Exercise {
     $user = $this->getDummyUser();
-    $exercise = Exercise::create($user);
+    $exercise = Exercise::create($user, new Group("ext", new Instance()));
     return $exercise;
   }
 
