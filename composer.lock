@@ -1,7 +1,7 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
     "content-hash": "dd5f6f64eb3504b0fb3db534fff24492",
@@ -97,16 +97,16 @@
         },
         {
             "name": "dg/adminer-custom",
-            "version": "v1.9.2",
+            "version": "v1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/adminer-custom.git",
-                "reference": "f1982e3b59d1435e70c0f58a78d3b417a4887ccd"
+                "reference": "0602f6020afb77dae5a4ae50d7135f3fbe3e22cf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/f1982e3b59d1435e70c0f58a78d3b417a4887ccd",
-                "reference": "f1982e3b59d1435e70c0f58a78d3b417a4887ccd",
+                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/0602f6020afb77dae5a4ae50d7135f3fbe3e22cf",
+                "reference": "0602f6020afb77dae5a4ae50d7135f3fbe3e22cf",
                 "shasum": ""
             },
             "type": "library",
@@ -122,7 +122,7 @@
                 "postgresql",
                 "sqlite"
             ],
-            "time": "2017-08-30T07:41:05+00:00"
+            "time": "2018-02-21T15:58:44+00:00"
         },
         {
             "name": "doctrine/annotations",
