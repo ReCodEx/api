@@ -285,6 +285,7 @@ class SubmitPresenter extends BasePresenter {
           $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser());
+      $this->assignmentSubmissions->persist($submission, false);
       $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,
         FailureHelper::TYPE_API_ERROR,
         "Failed to generate job config for {$submission->getId()}");

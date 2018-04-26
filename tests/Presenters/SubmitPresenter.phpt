@@ -246,6 +246,66 @@ class TestSubmitPresenter extends Tester\TestCase
     Assert::same($failureCount + 1, $newFailureCount);
   }
 
+  public function testSubmissionFailureInJobConfigGeneration()
+  {
+    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $user = current($this->presenter->users->findAll());
+    $assignment = current($this->assignments->findAll());
+    $environment = $assignment->getRuntimeEnvironments()->first();
+    $ext = current($environment->getExtensionsList());
+
+    // save fake files into db
+    $file1 = new UploadedFile("file1." . $ext, new \DateTime, 0, $user, "file1." . $ext);
+    $file2 = new UploadedFile("file2." . $ext, new \DateTime, 0, $user, "file2." . $ext);
+    $this->presenter->files->persist($file1);
+    $this->presenter->files->persist($file2);
+    $this->presenter->files->flush();
+    $files = [ $file1->getId(), $file2->getId() ];
+
+    // prepare return variables for mocked objects
+    $jobId = 'jobId';
+    $archiveUrl = "archiveUrl";
+    $resultsUrl = "resultsUrl";
+    $fileserverUrl = "fileserverUrl";
+    $webSocketMonitorUrl = "webSocketMonitorUrl";
+
+    /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
+    $mockGenerator = Mockery::mock(JobConfig\Generator::class);
+    $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
+      ->andThrow(new \App\Exceptions\ExerciseConfigException());
+    $this->presenter->jobConfigGenerator = $mockGenerator;
+
+    // mock fileserver and broker proxies
+    $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
+    $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)
+      ->shouldNotReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
+      ->andReturn([$archiveUrl, $resultsUrl]);
+    $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
+    $mockBrokerProxy->shouldNotReceive("startEvaluation");
+    $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy));
+
+    // fake monitor configuration
+    $monitorConfig = new MonitorConfig([
+      "address" => $webSocketMonitorUrl
+    ]);
+    $this->presenter->monitorConfig = $monitorConfig;
+
+    $request = new Nette\Application\Request('V1:Submit', 'POST',
+      ['action' => 'submit', 'id' => $assignment->getId()],
+      ['note' => 'someNiceNoteAboutThisCrazySubmit', 'files' => $files, 'runtimeEnvironmentId' => $environment->getId()]
+    );
+
+    $failureCount = count($this->presenter->submissionFailures->findAll());
+
+    Assert::exception(function () use ($request) {
+      $this->presenter->run($request);
+    }, SubmissionFailedException::class);
+
+    $newFailureCount = count($this->presenter->submissionFailures->findAll());
+    Assert::same($failureCount + 1, $newFailureCount);
+  }
+
   public function testResubmit()
   {
     /** @var AssignmentSolutions $solutions */
