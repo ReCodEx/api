@@ -53,7 +53,7 @@ class ZipFilesResponse extends FileResponse {
     }
 
     foreach ($this->files as $localPath => $name) {
-      if ($zip->addFile($localPath, basename($name)) !== true) {
+      if ($zip->addFile($localPath, $name) !== true) {
         throw new ApiException("Error while adding file to archive");
       }
     }
