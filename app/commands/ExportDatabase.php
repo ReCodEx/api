@@ -183,6 +183,7 @@ class ExportDatabase extends Command {
       $pipelineArr = [];
       $pipelineArr["__construct"] = $constructArr;
       $pipelineArr["name"] = $pipeline->getName();
+      $pipelineArr["description"] = $pipeline->getDescription();
       $pipelineArr["pipelineConfig"] = "@" . $configId;
 
       $pipelineArr["runtimeEnvironments"] = array_map(function (RuntimeEnvironment $env) {

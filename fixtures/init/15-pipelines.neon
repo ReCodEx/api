@@ -111,6 +111,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: Compilation source file pass-through
+		description: "Single file pass-through pipeline for submitted source file and extra files given by exercise author.\n\nInput variables:\n\n* source-file - single file which will be pass through this pipeline\n* extra-files - Extra array of files for compilation and execution which will be pass through\n\nOutput variables:\n\n* source-file - single file which can be used in following pipelines\n* extra-files - array of files which can be used in following pipelines"
 		pipelineConfig: @pipelineConfig1
 		runtimeEnvironments: []
 
@@ -120,6 +121,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: Compilation source files pass-through
+		description: "Multiple files pass-through pipeline for submitted source files and extra files given by exercise author.\n\nInput variables:\n\n* source-file - array of files which will be pass through this pipeline\n* extra-files - Extra array of files for compilation and execution which will be pass through\n\nOutput variables:\n\n* source-file - array of files which can be used in following pipelines\n* extra-files - array of files which can be used in following pipelines"
 		pipelineConfig: @pipelineConfig2
 		runtimeEnvironments:
 			- @node-linux
@@ -131,6 +133,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: Data-only judging
+		description: "Data-only pipeline which will only perform judging of given source files against provided custom judge.\n\nInput variables:\n\n* source-files - array of files submitted by user, can be used in custom judge\n* input-files - array of files given by author of exercise, can be used in custom judge\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* custom-judge - author of exercise has to provide file for judging either as binary or executable script\n* run-args - array of strings which will be used as arguments for given custom judge"
 		pipelineConfig: @pipelineConfig3
 		runtimeEnvironments:
 			- @data-linux
@@ -141,6 +144,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "ELF execution & evaluation [outfile]"
+		description: "Executes given ELF binary and run judge on file outputted from execution.\n\nInput variables:\n\n* binary-file - single file which will be executed\n* run-args - array of string arguments for given binary ELF file\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used in binary file\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by binary file has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig4
 		runtimeEnvironments:
 			- @c-gcc-linux
@@ -153,6 +157,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "ELF execution & evaluation [stdout]"
+		description: "Executes given ELF binary and run judge on standard output outputted from execution.\n\nInput variables:\n\n* binary-file - single file which will be executed\n* run-args - array of string arguments for given binary ELF file\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used in binary file\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig5
 		runtimeEnvironments:
 			- @c-gcc-linux
@@ -165,6 +170,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: FreePascal Compilation
+		description: "FreePascal compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `fpc` and default options are: `-O2`, `Sg`, `-Ci`, `-Cr`, `-Ct`.\r\n\r\nInput variables:\r\n\r\n* source-files - files submitted by user which will be compiled\r\n* extra-files - files given by exercise author, will be added to compilation\r\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\r\n\r\nOutput variables:\r\n\r\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig6
 		runtimeEnvironments:
 			- @freepascal-linux
@@ -175,6 +181,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: G++ Compilation
+		description: "C++ compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `g++` and default options are: `-std=c++17`, `-O3`, `-lm`, `-pthread`.\r\n\r\nInput variables:\r\n\r\n* source-files - files submitted by user which will be compiled\r\n* extra-files - files given by exercise author, will be added to compilation\r\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\r\n\r\nOutput variables:\r\n\r\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig7
 		runtimeEnvironments:
 			- @cxx-gcc-linux
@@ -185,6 +192,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: GCC Compilation
+		description: "C compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `gcc` and default options are: `-std=gnu11`, `-O3`, `-lm`.\r\n\r\nInput variables:\r\n\r\n* source-files - files submitted by user which will be compiled\r\n* extra-files - files given by exercise author, will be added to compilation\r\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\r\n\r\nOutput variables:\r\n\r\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig8
 		runtimeEnvironments:
 			- @c-gcc-linux
@@ -195,6 +203,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Java execution & evaluation [outfile]"
+		description: "Executes Java application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\r\n\r\nInput variables:\r\n\r\n* classes - Java class files which should be executed, main class is automatically found and executed\r\n* run-args - array of string arguments for execution (not for JVM)\r\n* stdin-file - file which will be connected to standard input of execution\r\n* input-files - array of files given by author of exercise, can be used during execution\r\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\r\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\r\n* expected-output - file with expected results, will be used during judging\r\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\r\n* judge-args - array of strings which will be used as additional arguments for judge\r\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig9
 		runtimeEnvironments:
 			- @java
@@ -205,6 +214,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Java execution & evaluation [stdout]"
+		description: "Executes Java application and run judge on standard output outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\r\n\r\nInput variables:\r\n\r\n* classes - Java class files which should be executed, main class is automatically found and executed\r\n* run-args - array of string arguments for execution (not for JVM)\r\n* stdin-file - file which will be connected to standard input of execution\r\n* input-files - array of files given by author of exercise, can be used during execution\r\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\r\n* expected-output - file with expected results, will be used during judging\r\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\r\n* judge-args - array of strings which will be used as additional arguments for judge\r\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig10
 		runtimeEnvironments:
 			- @java
@@ -215,6 +225,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: Javac Compilation
+		description: "Java compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `javac`.\r\n\r\nInput variables:\r\n\r\n* source-files - files submitted by user which will be compiled\r\n* extra-files - files given by exercise author, will be added to compilation\r\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\r\n\r\nOutput variables:\r\n\r\n* classes - compiled files with bytecode which can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig11
 		runtimeEnvironments:
 			- @java
@@ -225,6 +236,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: MCS Compilation
+		description: "C# compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `csc`. During compilation there are added special `CodEx.Reader` and `CodEx.Wrapper` classes. `CodEx.Wrapper` is marked as main class and is effectively entry point in resulting assembly.\r\n\r\nInput variables:\r\n\r\n* source-files - files submitted by user which will be compiled\r\n* extra-files - files given by exercise author, will be added to compilation\r\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\r\n\r\nOutput variables:\r\n\r\n* assembly - compiled bytecode CLR assembly which can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig12
 		runtimeEnvironments:
 			- @mono
@@ -235,6 +247,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Mono execution & evaluation [outfile]"
+		description: "Executes C# application and run judge on file outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig13
 		runtimeEnvironments:
 			- @mono
@@ -245,6 +258,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Mono execution & evaluation [stdout]"
+		description: "Executes C# application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig14
 		runtimeEnvironments:
 			- @mono
@@ -255,6 +269,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Node.js execution & evaluation [outfile]"
+		description: "Executes Node.js application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig15
 		runtimeEnvironments:
 			- @node-linux
@@ -265,6 +280,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Node.js execution & evaluation [stdout]"
+		description: "Executes Node.js application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig16
 		runtimeEnvironments:
 			- @node-linux
@@ -275,6 +291,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "PHP execution & evaluation [outfile]"
+		description: "Executes PHP application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig17
 		runtimeEnvironments:
 			- @php-linux
@@ -285,6 +302,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "PHP execution & evaluation [stdout]"
+		description: "Executes PHP application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig18
 		runtimeEnvironments:
 			- @php-linux
@@ -295,6 +313,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: Python compilation
+		description: "Python compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `python3` with default options: `-m`, `compileall`.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* pyc-files - python compiles source files into pyc files which can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig19
 		runtimeEnvironments:
 			- @python3
@@ -305,6 +324,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Python execution & evaluation [outfile]"
+		description: "Executes Python application and run judge on file outputted from execution.\r\n\r\nInput variables:\r\n\r\n* pyc-files - compiled python files which will be executed\r\n* entry-point - file which will be considered as entry point and run in Python runtime\r\n* run-args - array of string arguments for execution (not for Python runtime)\r\n* stdin-file - file which will be connected to standard input of execution\r\n* input-files - array of files given by author of exercise, can be used during execution\r\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\r\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\r\n* expected-output - file with expected results, will be used during judging\r\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\r\n* judge-args - array of strings which will be used as additional arguments for judge\r\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig20
 		runtimeEnvironments:
 			- @python3
@@ -315,6 +335,7 @@ App\Model\Entity\Pipeline:
 				- @demoAdmin
 
 		name: "Python execution & evaluation [stdout]"
+		description: "Executes Python application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig21
 		runtimeEnvironments:
 			- @python3
