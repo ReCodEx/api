@@ -2,28 +2,28 @@ App\Model\Entity\RuntimeEnvironment:
 	c-gcc-linux:
 		__construct:
 			- c-gcc-linux
-			- "C (GCC)"
 			- C
+			- "C (GCC)"
 			- "[c, h]"
 			- GNU/Linux
-			- C compiled with GCC
+			- C language compiled with GCC
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{c,h}\""
 
 	cxx-gcc-linux:
 		__construct:
 			- cxx-gcc-linux
-			- "C++ (GCC)"
 			- C++
+			- "C++ (GCC)"
 			- "[cpp, h, hpp]"
 			- GNU/Linux
-			- C++ compiled with G++
+			- C++17 language compiled with GCC 7.3
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\""
 
 	freepascal-linux:
 		__construct:
 			- freepascal-linux
-			- "Pascal (FreePascal)"
 			- Pascal
+			- "Pascal (FreePascal)"
 			- "[pas, lpr]"
 			- GNU/Linux
 			- Pascal compiled with FreePascal
@@ -32,38 +32,38 @@ App\Model\Entity\RuntimeEnvironment:
 	java:
 		__construct:
 			- java
-			- "Java (OpenJDK)"
 			- Java
+			- "Java (OpenJDK)"
 			- "[java]"
 			- GNU/Linux
-			- Java
+			- Java compiled and executed in OpenJDK runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.java\""
 
 	mono:
 		__construct:
 			- mono
-			- "C# (Mono)"
 			- C#
+			- "C# (Mono)"
 			- "[cs]"
 			- GNU/Linux
-			- C# run in Mono
+			- C# compiled and executed in Mono runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.cs\""
 
 	node-linux:
 		__construct:
 			- node-linux
-			- "JS (Node.js)"
-			- JavaScript
+			- JS
+			- "JavaScript (Node.js)"
 			- "[js]"
 			- GNU/Linux
-			- JavaScript executed with Node.js runtime
+			- JavaScript executed in Node.js runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.js\""
 
 	php-linux:
 		__construct:
 			- php-linux
 			- PHP
-			- PHP
+			- "PHP: Hypertext Preprocessor"
 			- "[php]"
 			- GNU/Linux
 			- PHP scripts executed with official PHP interpreter
@@ -72,10 +72,10 @@ App\Model\Entity\RuntimeEnvironment:
 	python3:
 		__construct:
 			- python3
-			- Python 3
+			- Python
 			- Python 3
 			- "[py]"
 			- GNU/Linux
-			- "Python 3 (CPython)"
+			- Python 3 precompiled with CPython
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.py\""
 
