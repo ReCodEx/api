@@ -444,6 +444,21 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::count(count($users), $payload);
   }
 
+  public function testDownloadSolutionArchive()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $assignment = current($this->presenter->assignments->findAll());
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'downloadBestSolutionsArchive', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(App\Responses\ZipFilesResponse::class, $response);
+
+    // Check invariants
+    Assert::equal("assignment-" . $assignment->getId() . '.zip', $response->getName());
+  }
+
 }
 
 $testCase = new TestAssignmentsPresenter();

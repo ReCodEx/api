@@ -22,10 +22,12 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use DateTime;
+use Nette\Utils\Strings;
 
 /**
  * Endpoints for exercise assignment manipulation
@@ -502,4 +504,43 @@ class AssignmentsPresenter extends BasePresenter {
 
     $this->sendSuccessResponse($bestSubmissions);
   }
+
+  public function checkDownloadBestSolutionsArchive(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canViewDetail($assignment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Download the best solutions of an assignment for all students in group.
+   * @GET
+   * @param string $id Identifier of the assignment
+   * @throws NotFoundException
+   * @throws \Nette\Application\AbortException
+   * @throws \Nette\Application\BadRequestException
+   */
+  public function actionDownloadBestSolutionsArchive(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $files = [];
+
+    foreach ($assignment->getGroup()->getStudents() as $student) {
+      $solution = $this->assignmentSolutions->findBestSolution($assignment, $student);
+      if ($solution === null) {
+        continue;
+      }
+
+      if (!$this->assignmentAcl->canViewSubmissions($assignment, $student) ||
+        !$this->assignmentSolutionAcl->canViewDetail($solution)) {
+        continue;
+      }
+
+      foreach ($solution->getSolution()->getFiles() as $file) {
+        $files[$file->getLocalFilePath()] = Strings::webalize($student->getName()) . "/" . $file->getName();
+      }
+    }
+
+    $this->sendResponse(new ZipFilesResponse($files, "assignment-{$id}.zip"));
+  }
+
 }
