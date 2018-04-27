@@ -19,6 +19,16 @@ App\Model\Entity\RuntimeEnvironment:
 			- C++17 language compiled with GCC 7.3
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\""
 
+	data-linux:
+		__construct:
+			- data-linux
+			- Data
+			- Data-Only
+			- "[\"*\"]"
+			- GNU/Linux
+			- Data environment for exercises where users can submit anything and the submission is verified by a custom judge
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*\""
+
 	freepascal-linux:
 		__construct:
 			- freepascal-linux
