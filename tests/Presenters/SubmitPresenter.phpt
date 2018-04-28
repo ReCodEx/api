@@ -279,10 +279,9 @@ class TestSubmitPresenter extends Tester\TestCase
     // mock fileserver and broker proxies
     $mockFileserverProxy = Mockery::mock(App\Helpers\FileServerProxy::class);
     $mockFileserverProxy->shouldReceive("getFileserverTasksUrl")->andReturn($fileserverUrl)
-      ->shouldNotReceive("sendFiles")->withArgs([$jobId, Mockery::any(), Mockery::any()])
-      ->andReturn([$archiveUrl, $resultsUrl]);
+      ->shouldReceive("sendFiles")->withArgs([Mockery::any(), Mockery::any(), Mockery::any()])->never();
     $mockBrokerProxy = Mockery::mock(App\Helpers\BrokerProxy::class);
-    $mockBrokerProxy->shouldNotReceive("startEvaluation");
+    $mockBrokerProxy->shouldReceive("startEvaluation")->never();
     $this->presenter->submissionHelper = new SubmissionHelper(new BackendSubmitHelper($mockBrokerProxy, $mockFileserverProxy));
 
     // fake monitor configuration
