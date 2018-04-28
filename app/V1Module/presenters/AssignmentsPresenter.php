@@ -535,8 +535,9 @@ class AssignmentsPresenter extends BasePresenter {
         continue;
       }
 
+      $studentDir = Strings::webalize("{$student->getLastName()}_{$student->getFirstName()}_{$student->getId()}");
       foreach ($solution->getSolution()->getFiles() as $file) {
-        $files[$file->getLocalFilePath()] = Strings::webalize($student->getName()) . "/" . $file->getName();
+        $files[$file->getLocalFilePath()] = $studentDir . "/" . $file->getName();
       }
     }
 
