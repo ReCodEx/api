@@ -19,14 +19,7 @@ class EvaluationTaskResult extends TaskResult {
    */
   public function __construct(array $data) {
     parent::__construct($data);
-
-    // judge output is optional and only the first token is interpreted as float value between 0 and 1
-    if (!empty($this->output)) {
-      $judgeScore = current(preg_split('/\s+/', $this->output));
-      if (Validators::isNumeric($judgeScore) === true) {
-        $this->score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($judgeScore)));
-      }
-    }
+    list($this->score, $log) = self::parseJudgeOutput($this->output);
   }
 
   /**
@@ -39,4 +32,26 @@ class EvaluationTaskResult extends TaskResult {
     }
     return parent::getScore();
   }
+
+
+  /**
+   * Parse given output from judge into score and following log.
+   * @param null|string $judgeOutput
+   * @return array pair of score (?float) and remaining log from judge (?string)
+   */
+  public static function parseJudgeOutput(?string $judgeOutput): array {
+    $score = null;
+    $judgeLog = $judgeOutput;
+
+    if (!empty($judgeOutput)) {
+      $judgeScore = current(preg_split('/\s+/', $judgeOutput));
+      if (Validators::isNumeric($judgeScore) === true) {
+        $score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($judgeScore)));
+        $judgeLog = trim(substr($judgeOutput, strlen($judgeScore)));
+      }
+    }
+
+    return [$score, $judgeLog];
+  }
+
 }
