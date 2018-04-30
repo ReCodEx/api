@@ -163,7 +163,6 @@ class TestResult
     $cpuTimeRatio = null;
     $memory = null;
     $memoryRatio = null;
-    $judgeOutput = null;
     $judgeLog = null;
 
     if ($canViewRatios) {
@@ -177,7 +176,6 @@ class TestResult
       $memory = $this->usedMemory;
     }
     if ($canViewJudgeOutput) {
-      $judgeOutput = $this->judgeOutput;
       list($score, $judgeLog) = ER\EvaluationTaskResult::parseJudgeOutput($this->judgeOutput);
     }
 
@@ -198,7 +196,6 @@ class TestResult
       "wallTime" => $wallTime,
       "cpuTime" => $cpuTime,
       "memory" => $memory,
-      "judgeOutput" => $judgeOutput,
       "judgeLog" => $judgeLog
     ];
   }
