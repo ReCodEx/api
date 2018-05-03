@@ -127,7 +127,6 @@ class GroupViewFactory {
     $privateData = null;
     if ($canView) {
       $privateData = [
-        "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
         "admins" => $group->getAdminsIds(),
         "supervisors" => $group->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
         "students" => $group->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
@@ -139,7 +138,6 @@ class GroupViewFactory {
             return $assignment->getId();
           })->getValues(),
         "publicStats" => $group->getPublicStats(),
-        "isPublic" => $group->isPublic(),
         "threshold" => $group->getThreshold(),
         "bindings" => $this->bindings->getBindingsForGroup($group)
       ];
@@ -164,9 +162,9 @@ class GroupViewFactory {
       "externalId" => $group->getExternalId(),
       "organizational" => $group->isOrganizational(),
       "archived" => $group->isArchived(),
+      "public" => $group->isPublic(),
       "directlyArchived" => $group->isDirectlyArchived(),
       "localizedTexts" => $group->getLocalizedTexts()->getValues(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "primaryAdminsIds" => $group->getPrimaryAdmins()->map(function (User $user) {
         return $user->getId();
       })->getValues(),
