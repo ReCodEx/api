@@ -5,6 +5,8 @@ namespace App\V1Module\Presenters;
 use App\Model\Entity\User;
 use App\Security\AccessToken;
 use App\Security\Identity;
+use LogicException;
+use Nette\Utils\Strings;
 use ReflectionException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
@@ -216,6 +218,12 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   private function validateValue($param, $value, $validationRule, $msg = null) {
+    foreach (["int", "integer"] as $rule) {
+      if ($validationRule === $rule || Strings::startsWith($validationRule, $rule . ":")) {
+        throw new LogicException("Validation rule '$validationRule' won't work for request parameters");
+      }
+    }
+
     $value = Validators::preprocessValue($value, $validationRule);
     if (Validators::is($value, $validationRule) === false) {
       throw new InvalidArgumentException(
