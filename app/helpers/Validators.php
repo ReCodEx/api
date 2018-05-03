@@ -37,4 +37,9 @@ class Validators extends Utils\Validators {
     }
     return $value;
   }
+
+  public static function is($value, $expected) {
+
+    return parent::is($value, $expected);
+  }
 }

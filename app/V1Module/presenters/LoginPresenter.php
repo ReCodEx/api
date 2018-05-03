@@ -172,7 +172,7 @@ class LoginPresenter extends BasePresenter {
    * @POST
    * @LoggedIn
    * @Param(type="post", name="scopes", validation="list", description="A list of requested scopes")
-   * @Param(type="post", required=false, name="expiration", validation="integer", description="How long the token should be valid (in seconds)")
+   * @Param(type="post", required=false, name="expiration", validation="numericint", description="How long should the token be valid (in seconds)")
    * @throws ForbiddenRequestException
    */
   public function actionIssueRestrictedToken() {

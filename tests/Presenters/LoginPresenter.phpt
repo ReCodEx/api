@@ -38,9 +38,8 @@ class TestLoginPresenter extends Tester\TestCase
   /** @var \App\Model\Repository\Logins */
   private $logins;
 
-  public function __construct()
+  public function __construct($container)
   {
-    global $container;
     $this->container = $container;
     $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
@@ -206,7 +205,18 @@ class TestLoginPresenter extends Tester\TestCase
       $this->presenter->run($request);
     }, ForbiddenRequestException::class);
   }
+
+  public function testIssueToken()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $request = new Request("V1:Login", "POST", ["action" => "issueRestrictedToken"], ["scopes" => [TokenScope::REFRESH, "read-all"], "expiration" => "3000"]);
+    $response = $this->presenter->run($request);
+    Assert::type(JsonResponse::class, $response);
+    $payload = $response->getPayload()["payload"];
+    $token = $this->presenter->accessManager->decodeToken($payload["accessToken"]);
+    Assert::true($token->isInScope(TokenScope::REFRESH));
+    Assert::true($token->isInScope("read-all"));
+  }
 }
 
-$testCase = new TestLoginPresenter();
-$testCase->run();
+(new TestLoginPresenter($container))->run();
