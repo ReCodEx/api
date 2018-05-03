@@ -1,0 +1,41 @@
+<?php
+namespace App\Model\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use InvalidArgumentException;
+
+/**
+ * @ORM\Entity
+ * @method string getStudentHint()
+ */
+class LocalizedAssignment extends LocalizedEntity {
+  /**
+   * @ORM\ManyToOne(targetEntity="LocalizedAssignment")
+   * @ORM\JoinColumn(onDelete="SET NULL")
+   * @var LocalizedAssignment
+   */
+  protected $createdFrom;
+
+  /**
+   * @ORM\Column(type="string")
+   */
+  protected $studentHint;
+
+  public function __construct(string $locale, string $studentHint, ?LocalizedAssignment $createdFrom = null) {
+    parent::__construct($locale);
+    $this->studentHint = $studentHint;
+    $this->createdFrom = $createdFrom;
+  }
+
+  public function equals(LocalizedEntity $entity): bool {
+    return $entity instanceof LocalizedAssignment && $entity->getStudentHint() === $this->getStudentHint();
+  }
+
+  public function setCreatedFrom(LocalizedEntity $entity) {
+    if ($entity instanceof LocalizedAssignment) {
+      $this->createdFrom = $entity;
+    } else {
+      throw new InvalidArgumentException("Wrong type of entity supplied");
+    }
+  }
+}

@@ -168,6 +168,31 @@ class Assignment implements JsonSerializable, IExercise
   protected $createdAt;
 
   /**
+   * @ORM\ManyToMany(targetEntity="LocalizedAssignment", indexBy="locale")
+   * @var Collection|Selectable
+   */
+  protected $localizedAssignments;
+
+  public function getLocalizedAssignments(): Collection {
+    return $this->localizedAssignments;
+  }
+
+  public function addLocalizedAssignment(LocalizedAssignment $localizedAssignment) {
+    $this->localizedAssignments->add($localizedAssignment);
+  }
+
+  /**
+   * Get localized assignment text based on given locale.
+   * @param string $locale
+   * @return LocalizedAssignment|null
+   */
+  public function getLocalizedAssignmentByLocale(string $locale): ?LocalizedAssignment {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+    $first = $this->localizedAssignments->matching($criteria)->first();
+    return $first === false ? null : $first;
+  }
+
+  /**
    * @ORM\Column(type="smallint")
    */
   protected $submissionsCountLimit;
