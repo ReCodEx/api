@@ -43,10 +43,12 @@ class Version20180324072827 extends AbstractMigration
     $this->connection->executeQuery("DELETE FROM pipeline_runtime_environment WHERE pipeline_id = :pid AND runtime_environment_id = :nodeid",
       ["pid" => $passthroughFilePipeline, "nodeid" => $nodeid]);
 
-    $this->connection->executeQuery("INSERT INTO pipeline_runtime_environment VALUES (:pid, :envId)",
-      ["pid" => $passthroughFilesPipeline, "envId" => $phpid]);
-    $this->connection->executeQuery("INSERT INTO pipeline_runtime_environment VALUES (:pid, :envId)",
-      ["pid" => $passthroughFilesPipeline, "envId" => $nodeid]);
+    if ($passthroughFilesPipeline) {
+      $this->connection->executeQuery("INSERT INTO pipeline_runtime_environment VALUES (:pid, :envId)",
+        ["pid" => $passthroughFilesPipeline, "envId" => $phpid]);
+      $this->connection->executeQuery("INSERT INTO pipeline_runtime_environment VALUES (:pid, :envId)",
+        ["pid" => $passthroughFilesPipeline, "envId" => $nodeid]);
+    }
   }
 
   /**
