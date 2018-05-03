@@ -22,6 +22,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\AssignmentViewFactory;
 use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -58,6 +59,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutions;
+
+  /**
+   * @var AssignmentViewFactory
+   * @inject
+   */
+  public $assignmentViewFactory;
 
   /**
    * @var AssignmentSolutionViewFactory
@@ -131,7 +138,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $this->sendSuccessResponse($assignments);
+    $this->sendSuccessResponse(array_map([$this->assignmentViewFactory, "getAssignment"], $assignments));
   }
 
   public function checkDetail(string $id) {
@@ -147,7 +154,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    */
   public function actionDetail(string $id) {
-    $this->sendSuccessResponse($this->assignments->findOrThrow($id));
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($this->assignments->findOrThrow($id)));
   }
 
   public function checkUpdateDetail(string $id) {
@@ -277,7 +284,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $this->assignments->flush();
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkValidate(string $id) {
@@ -355,7 +362,7 @@ class AssignmentsPresenter extends BasePresenter {
     $deadline->modify("+7 days");
     $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
     $this->assignments->persist($assignment);
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkRemove(string $id) {
@@ -400,7 +407,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->updatedNow();
     $assignment->syncWithExercise();
     $this->assignments->flush();
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkSolutions(string $id, string $userId) {

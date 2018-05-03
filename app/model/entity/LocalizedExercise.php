@@ -73,7 +73,6 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
       "id" => $this->id,
       "locale" => $this->locale,
       "name" => $this->name,
-      "shortText" => $this->name, # BC
       "text" => $this->assignmentText,
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),

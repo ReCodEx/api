@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use JsonSerializable;
 use DateTime;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -29,6 +28,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method DateTime getFirstDeadline()
+ * @method bool getAllowSecondDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
@@ -44,7 +44,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setIsBonus(bool $bonus)
  * @method setPointsPercentualThreshold(float $threshold)
  */
-class Assignment implements JsonSerializable, IExercise
+class Assignment implements IExercise
 {
   use MagicAccessors;
   use ExerciseData;
@@ -89,6 +89,7 @@ class Assignment implements JsonSerializable, IExercise
     $this->scoreConfig = $exercise->getScoreConfig();
     $this->scoreCalculator = $exercise->getScoreCalculator();
     $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
+    $this->localizedAssignments = new ArrayCollection();
     $this->canViewLimitRatios = $canViewLimitRatios;
     $this->version = 1;
     $this->isBonus = $isBonus;
@@ -156,6 +157,10 @@ class Assignment implements JsonSerializable, IExercise
    * @ORM\Column(type="boolean")
    */
   protected $isBonus;
+
+  public function isBonus(): bool {
+    return $this->isBonus;
+  }
 
   /**
    * @ORM\Column(type="float")
@@ -300,6 +305,89 @@ class Assignment implements JsonSerializable, IExercise
     });
   }
 
+  public function setDisabledRuntimeEnvironments(array $disabledRuntimes) {
+    $this->disabledRuntimeEnvironments->clear();
+    foreach ($disabledRuntimes as $environment) {
+      $this->disabledRuntimeEnvironments->add($environment);
+    }
+  }
+
+  public function getAllRuntimeEnvironmentsIds(): array {
+    return $this->runtimeEnvironments->map(function (RuntimeEnvironment $environment) {
+      return $environment->getId();
+    })->getValues();
+  }
+
+  public function getDisabledRuntimeEnvironmentsIds(): array {
+    return $this->disabledRuntimeEnvironments->map(function (RuntimeEnvironment $environment) {
+      return $environment->getId();
+    })->getValues();
+  }
+
+  public function areRuntimeEnvironmentConfigsInSync(): bool {
+    return $this->getRuntimeEnvironments()->forAll(
+      function ($key, RuntimeEnvironment $env) {
+        $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
+        $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
+        return $ours === $theirs;
+      }
+    );
+  }
+
+  public function areHardwareGroupsInSync(): bool {
+    return $this->getHardwareGroups()->count() === $this->getExercise()->getHardwareGroups()->count()
+      && $this->getHardwareGroups()->forAll(function ($key, HardwareGroup $group) {
+        return $this->getExercise()->getHardwareGroups()->contains($group);
+      });
+  }
+
+  public function areLocalizedTextsInSync(): bool {
+    return $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
+      && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
+        $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
+        return $theirs === null || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
+      });
+  }
+
+  public function areLimitsInSync(): bool {
+    return $this->areRuntimeEnvironmentConfigsInSync() && $this->areHardwareGroupsInSync()
+      && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
+        return $this->hardwareGroups->forAll(function ($key, HardwareGroup $group) use ($env) {
+          $ours = $this->getLimitsByEnvironmentAndHwGroup($env, $group);
+          $theirs = $this->getExercise()->getLimitsByEnvironmentAndHwGroup($env, $group);
+          return $ours === $theirs;
+        });
+      });
+  }
+
+  public function areExerciseTestsInSync(): bool {
+    return $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
+      && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
+        return $this->getExercise()->getExerciseTests()->contains($test);
+      });
+  }
+
+  public function areSupplementaryFilesInSync(): bool {
+    return $this->getSupplementaryEvaluationFiles()->count() === $this->getExercise()->getSupplementaryEvaluationFiles()->count()
+      && $this->getSupplementaryEvaluationFiles()->forAll(function ($key, SupplementaryExerciseFile $file) {
+        return $this->getExercise()->getSupplementaryEvaluationFiles()->contains($file);
+      });
+  }
+
+  public function areAttachmentFilesInSync(): bool {
+    return $this->getAttachmentFiles()->count() === $this->getExercise()->getAttachmentFiles()->count()
+      && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) {
+        return $this->getExercise()->getAttachmentFiles()->contains($file);
+      });
+  }
+
+  public function areRuntimeEnvironmentsInSync(): bool {
+    return $this->runtimeEnvironments->count() === $this->getExercise()->getRuntimeEnvironments()->count()
+      && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
+        return $this->getExercise()->getRuntimeEnvironments()->contains($env);
+      });
+  }
+
   public function syncWithExercise() {
     $exercise = $this->getExercise();
 
@@ -346,123 +434,6 @@ class Assignment implements JsonSerializable, IExercise
     $this->runtimeEnvironments->clear();
     foreach ($exercise->getRuntimeEnvironments() as $env) {
       $this->runtimeEnvironments->add($env);
-    }
-  }
-
-  public function jsonSerialize() {
-    $envConfigsInSync = $this->getRuntimeEnvironments()->forAll(
-      function ($key, RuntimeEnvironment $env) {
-        $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
-        $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
-        return $ours === $theirs;
-      }
-    );
-
-    $hwGroupsInSync = $this->getHardwareGroups()->count() === $this->getExercise()->getHardwareGroups()->count()
-      && $this->getHardwareGroups()->forAll(function ($key, HardwareGroup $group) {
-        return $this->getExercise()->getHardwareGroups()->contains($group);
-      });
-
-    /** @var LocalizedExercise $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
-
-    return [
-      "id" => $this->id,
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
-      "version" => $this->version,
-      "isPublic" => $this->isPublic,
-      "createdAt" => $this->createdAt->getTimestamp(),
-      "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts->getValues(),
-      "exerciseId" => $this->exercise->getId(),
-      "groupId" => $this->group->getId(),
-      "firstDeadline" => $this->firstDeadline->getTimestamp(),
-      "secondDeadline" => $this->secondDeadline->getTimestamp(),
-      "allowSecondDeadline" => $this->allowSecondDeadline,
-      "maxPointsBeforeFirstDeadline" => $this->maxPointsBeforeFirstDeadline,
-      "maxPointsBeforeSecondDeadline" => $this->maxPointsBeforeSecondDeadline,
-      "submissionsCountLimit" => $this->submissionsCountLimit,
-      "runtimeEnvironmentIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $environment) {
-        return $environment->getId();
-      })->getValues(),
-      "disabledRuntimeEnvironmentIds" => $this->disabledRuntimeEnvironments->map(function (RuntimeEnvironment $environment) {
-        return $environment->getId();
-      })->getValues(),
-      "canViewLimitRatios" => $this->canViewLimitRatios,
-      "isBonus" => $this->isBonus,
-      "pointsPercentualThreshold" => $this->pointsPercentualThreshold,
-      "exerciseSynchronizationInfo" => [
-        "isSynchronizationPossible" => !$this->getExercise()->isBroken(),
-        "updatedAt" => [
-          "assignment" => $this->updatedAt->getTimestamp(),
-          "exercise" => $this->getExercise()->getUpdatedAt()->getTimestamp(),
-        ],
-        "exerciseConfig" => [
-          "upToDate" => $this->getExerciseConfig() === $this->getExercise()->getExerciseConfig(),
-        ],
-        "configurationType" => [
-          "upToDate" => $this->configurationType === $this->getExercise()->getConfigurationType(),
-        ],
-        "scoreConfig" => [
-          "upToDate" => $this->getScoreConfig() === $this->getExercise()->getScoreConfig(),
-        ],
-        "scoreCalculator" => [
-          "upToDate" => $this->getScoreCalculator() === $this->getExercise()->getScoreCalculator(),
-        ],
-        "exerciseEnvironmentConfigs" => [
-          "upToDate" => $envConfigsInSync
-        ],
-        "hardwareGroups" => [
-          "upToDate" => $hwGroupsInSync
-        ],
-        "localizedTexts" => [
-          "upToDate" => $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
-              && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
-            $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
-            return $theirs === null || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
-          })
-        ],
-        "limits" => [
-          "upToDate" => $envConfigsInSync && $hwGroupsInSync && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
-            return $this->hardwareGroups->forAll(function ($key, HardwareGroup $group) use ($env) {
-              $ours = $this->getLimitsByEnvironmentAndHwGroup($env, $group);
-              $theirs = $this->getExercise()->getLimitsByEnvironmentAndHwGroup($env, $group);
-              return $ours === $theirs;
-            });
-          })
-        ],
-        "exerciseTests" => [
-          "upToDate" => $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
-            && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
-              return $this->getExercise()->getExerciseTests()->contains($test);
-            })
-        ],
-        "supplementaryFiles" => [
-          "upToDate" => $this->getSupplementaryEvaluationFiles()->count() === $this->getExercise()->getSupplementaryEvaluationFiles()->count()
-            && $this->getSupplementaryEvaluationFiles()->forAll(function ($key, SupplementaryExerciseFile $file) {
-              return $this->getExercise()->getSupplementaryEvaluationFiles()->contains($file);
-            })
-        ],
-        "attachmentFiles" => [
-          "upToDate" => $this->getAttachmentFiles()->count() === $this->getExercise()->getAttachmentFiles()->count()
-            && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) {
-              return $this->getExercise()->getAttachmentFiles()->contains($file);
-            })
-        ],
-        "runtimeEnvironments" => [
-          "upToDate" => $this->runtimeEnvironments->count() === $this->getExercise()->getRuntimeEnvironments()->count()
-            && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
-              return $this->getExercise()->getRuntimeEnvironments()->contains($env);
-            })
-        ]
-      ]
-    ];
-  }
-
-  public function setDisabledRuntimeEnvironments(array $disabledRuntimes) {
-    $this->disabledRuntimeEnvironments->clear();
-    foreach ($disabledRuntimes as $environment) {
-      $this->disabledRuntimeEnvironments->add($environment);
     }
   }
 
