@@ -173,7 +173,9 @@ class UsersPresenter extends BasePresenter {
 
     $this->sendSuccessResponse([
       "user" => $this->userViewFactory->getUser($user),
-      "accessToken" => $passwordChanged ? $this->accessManager->issueRefreshedToken($this->getAccessToken()) : null
+      "accessToken" => $passwordChanged && $user === $this->getCurrentUser()
+        ? $this->accessManager->issueRefreshedToken($this->getAccessToken())
+        : null
     ]);
   }
 
@@ -515,7 +517,7 @@ class UsersPresenter extends BasePresenter {
     $token = $this->getAccessToken();
 
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueRefreshedToken($token)
+      "accessToken" => $user === $this->getCurrentUser() ? $this->accessManager->issueRefreshedToken($token) : null
     ]);
   }
 
