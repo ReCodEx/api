@@ -12,6 +12,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -170,6 +171,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="Public localized hints for the assignment", required=false)
    * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -195,8 +197,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     // localized texts cannot be empty
-    $localizedTexts = $req->getPost("localizedTexts");
-    if (count($localizedTexts) == 0) {
+    if (count($req->getPost("localizedTexts")) == 0) {
       throw new InvalidArgumentException("No entry for localized texts given.");
     }
 
@@ -255,13 +256,13 @@ class AssignmentsPresenter extends BasePresenter {
       $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
-    // go through given localizations and construct database entities
-    $localizations = [];
-    foreach ($localizedTexts as $localization) {
+    // go through localizedTexts and construct database entities
+    $localizedTexts = [];
+    foreach ($req->getPost("localizedTexts") as $localization) {
       $lang = $localization["locale"];
 
-      if (array_key_exists($lang, $localizations)) {
-        throw new InvalidArgumentException("Duplicate entry for language $lang");
+      if (array_key_exists($lang, $localizedTexts)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedTexts");
       }
 
       // create all new localized texts
@@ -273,14 +274,41 @@ class AssignmentsPresenter extends BasePresenter {
         $localizedExercise ? $localizedExercise->getDescription() : ""
       );
 
-      $localizations[$lang] = $localized;
+      $localizedTexts[$lang] = $localized;
     }
 
     // make changes to database
-    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
 
     foreach ($assignment->getLocalizedTexts() as $localizedText) {
       $this->assignments->persist($localizedText, false);
+    }
+
+    // go through localizedAssignments and construct database entities
+    $localizedAssignments = [];
+    foreach ($req->getPost("localizedAssignments") ?? [] as $localization) {
+      $lang = $localization["locale"];
+
+      if (array_key_exists($lang, $localizedAssignments)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedAssignments");
+      }
+
+      // create all new localized texts
+      $localizedAssignment = $assignment->getLocalizedAssignmentByLocale($lang);
+      $localized = new LocalizedAssignment(
+        $lang,
+        $localization["studentHint"],
+        $localizedAssignment ? $localizedAssignment->getDescription() : ""
+      );
+
+      $localizedAssignments[$lang] = $localized;
+    }
+
+    // make changes to database
+    Localizations::updateCollection($assignment->getLocalizedAssignments(), $localizedAssignments);
+
+    foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
+      $this->assignments->persist($localizedAssignment, false);
     }
 
     $this->assignments->flush();
