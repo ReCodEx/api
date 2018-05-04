@@ -143,19 +143,9 @@ class GroupViewFactory {
       ];
     }
 
-    $childGroups = $group->getChildGroups();
-    $publicChildGroups = $group->getPublicChildGroups();
-
-    if ($ignoreArchived) {
-      $childGroups = $childGroups->filter(function (Group $group) {
-        return !$group->isArchived();
-      });
-
-      $publicChildGroups = $publicChildGroups->filter(function (Group $group) {
-        return !$group->isArchived();
-      });
-    }
-
+    $childGroups = $group->getChildGroups()->filter(function (Group $group) use ($ignoreArchived) {
+      return !($ignoreArchived && $group->isArchived()) && $this->groupAcl->canViewPublicDetail($group);
+    });
 
     return [
       "id" => $group->getId(),
@@ -170,10 +160,7 @@ class GroupViewFactory {
       })->getValues(),
       "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
       "parentGroupsIds" => $group->getParentGroupsIds(),
-      "childGroups" => [
-        "all" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
-        "public" => $publicChildGroups->map(function (Group $group) { return $group->getId(); })->getValues()
-      ],
+      "childGroups" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
       "canView" => $canView,
       "privateData" => $privateData
     ];
