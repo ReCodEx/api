@@ -17,7 +17,11 @@ class GroupBindingAccessor {
   public function getBindingsForGroup(Group $group) {
     $result = [];
     foreach ($this->providers as $provider) {
-      $result[$provider->getGroupBindingIdentifier()] = $provider->findGroupBindings($group);
+      $result[$provider->getGroupBindingIdentifier()] = [];
+
+      foreach ($provider->findGroupBindings($group) as $binding) {
+        $result[$provider->getGroupBindingIdentifier()][] = (string) $binding;
+      }
     }
     return $result;
   }

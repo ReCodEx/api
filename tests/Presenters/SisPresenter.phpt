@@ -3,7 +3,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\SisHelper;
 use App\Model\Entity\ExternalLogin;
-use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
 use App\Model\Entity\SisValidTerm;
 use App\Model\Entity\User;
@@ -294,8 +293,8 @@ class TestSisPresenter extends TestCase {
     $group = $groups[0];
     $binding_1 = new SisGroupBinding($group, "code1");
     $this->em->persist($binding_1);
-    $binding_1 = new SisGroupBinding($group, "code2");
-    $this->em->persist($binding_1);
+    $binding_2 = new SisGroupBinding($group, "code2");
+    $this->em->persist($binding_2);
     $this->em->flush();
 
     /** @var GroupViewFactory $groupViewFactory */
@@ -303,6 +302,10 @@ class TestSisPresenter extends TestCase {
 
     $view = $groupViewFactory->getGroup($group);
     Assert::count(2, $view["privateData"]["bindings"]["sis"]);
+
+    sort($view["privateData"]["bindings"]["sis"]);
+    Assert::equal("code1", $view["privateData"]["bindings"]["sis"][0]);
+    Assert::equal("code2", $view["privateData"]["bindings"]["sis"][1]);
   }
 }
 
