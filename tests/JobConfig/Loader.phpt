@@ -77,6 +77,7 @@ class TestJobConfigLoader extends Tester\TestCase
     Assert::equal("errstd", $sandboxConfig->getStderr());
     Assert::equal("carboncopy-stdout-file", $sandboxConfig->getCarboncopyStdout());
     Assert::equal("carboncopy-stderr-file", $sandboxConfig->getCarboncopyStderr());
+    Assert::equal("working-dir", $sandboxConfig->getWorkingDirectory());
     Assert::count(1, $sandboxConfig->getLimitsArray());
     Assert::true($sandboxConfig->hasLimits("A"));
 
@@ -117,6 +118,7 @@ class TestJobConfigLoader extends Tester\TestCase
           "stderr" => "errstd",
           "carboncopy-stdout" => "carboncopy-stdout-file",
           "carboncopy-stderr" => "carboncopy-stderr-file",
+          "working-directory" => "working-dir",
           "limits" => [[
               "hw-group-id" => "A",
               "memory" => 123,

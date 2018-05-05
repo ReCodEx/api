@@ -390,6 +390,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
     Assert::contains("compilation.stderr", $testACompilationTask->getSandboxConfig()->getCarboncopyStderr());
     Assert::contains('${RESULT_DIR}/', $testACompilationTask->getSandboxConfig()->getCarboncopyStderr());
+    Assert::equal("testA", $testACompilationTask->getSandboxConfig()->getWorkingDirectory());
     Assert::count(0, $testACompilationTask->getSandboxConfig()->getLimitsArray());
 
     $testAExistsTask = $jobConfig->getTasks()[9];
@@ -420,6 +421,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(ConfigParams::$EVAL_DIR . "expected.A.in.hash", $testARunTask->getSandboxConfig()->getStdin());
     Assert::contains(".stderr", $testARunTask->getSandboxConfig()->getStderr());
     Assert::contains('${EVAL_DIR}/', $testARunTask->getSandboxConfig()->getStderr());
+    Assert::equal("testA", $testARunTask->getSandboxConfig()->getWorkingDirectory());
     Assert::equal(123, $testARunTask->getSandboxConfig()->getLimits("groupA")->getMemoryLimit());
     Assert::equal(456.0, $testARunTask->getSandboxConfig()->getLimits("groupA")->getWallTime());
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
@@ -437,7 +439,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testAJudgeTask->getTestId());
     Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testAJudgeTask->getSandboxConfig()->getName());
-    Assert::null($testAJudgeTask->getSandboxConfig()->getChdir());
+    Assert::equal("testA", $testAJudgeTask->getSandboxConfig()->getWorkingDirectory());
     Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
     $testBExtraTask = $jobConfig->getTasks()[12];
@@ -473,6 +475,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
+    Assert::equal("testB", $testBCompilationTask->getSandboxConfig()->getWorkingDirectory());
     Assert::count(0, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
 
     $testBExistsTask = $jobConfig->getTasks()[15];

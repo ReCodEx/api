@@ -28,6 +28,8 @@ class SandboxConfig {
   const CARBONCOPY_STDERR_KEY = "carboncopy-stderr";
   /** Change directory key */
   const CHDIR_KEY = "chdir";
+  /** Working directory key */
+  const WORKING_DIRECTORY_KEY = "working-directory";
   /** Limits collection key */
   const LIMITS_KEY = "limits";
 
@@ -47,6 +49,8 @@ class SandboxConfig {
   private $carboncopyStderr = null;
   /** @var string|null Change directory */
   protected $chdir = null;
+  /** @var string|null Working directory */
+  protected $workingDirectory = null;
   /** @var array List of limits */
   private $limits = [];
   /** @var array Additional data */
@@ -197,6 +201,24 @@ class SandboxConfig {
   }
 
   /**
+   * Get directory in which will be base working directory for executed program.
+   * @return string|null
+   */
+  public function getWorkingDirectory() {
+    return $this->workingDirectory;
+  }
+
+  /**
+   * Set directory to which will be base working directory for executed program.
+   * @param string $workingDirectory working directory
+   * @return $this
+   */
+  public function setWorkingDirectory($workingDirectory) {
+    $this->workingDirectory = $workingDirectory;
+    return $this;
+  }
+
+  /**
    * Gets limits as array.
    * @return Limits[]
    */
@@ -278,6 +300,7 @@ class SandboxConfig {
     if (!empty($this->carboncopyStdout)) { $data[self::CARBONCOPY_STDOUT_KEY] = $this->carboncopyStdout; }
     if (!empty($this->carboncopyStderr)) { $data[self::CARBONCOPY_STDERR_KEY] = $this->carboncopyStderr; }
     if (!empty($this->chdir)) { $data[self::CHDIR_KEY] = $this->chdir; }
+    if (!empty($this->workingDirectory)) { $data[self::WORKING_DIRECTORY_KEY] = $this->workingDirectory; }
 
     if (!empty($this->limits)) {
       $data[self::LIMITS_KEY] = [];

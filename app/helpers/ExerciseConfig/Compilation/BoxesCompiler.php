@@ -104,6 +104,11 @@ class BoxesCompiler {
         if (!empty($currentTestName)) {
           // set identification of test to task
           $task->setTestId($currentTestName);
+          // change evaluation directory to the one which belongs to test
+          $sandbox = $task->getSandboxConfig();
+          if ($sandbox) {
+            $sandbox->setWorkingDirectory($currentTestName);
+          }
         }
 
         // if the task is external then set limits to it
