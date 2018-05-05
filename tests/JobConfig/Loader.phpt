@@ -75,6 +75,8 @@ class TestJobConfigLoader extends Tester\TestCase
     Assert::equal("instd", $sandboxConfig->getStdin());
     Assert::equal("outstd", $sandboxConfig->getStdout());
     Assert::equal("errstd", $sandboxConfig->getStderr());
+    Assert::equal("carboncopy-stdout-file", $sandboxConfig->getCarboncopyStdout());
+    Assert::equal("carboncopy-stderr-file", $sandboxConfig->getCarboncopyStderr());
     Assert::count(1, $sandboxConfig->getLimitsArray());
     Assert::true($sandboxConfig->hasLimits("A"));
 
@@ -113,6 +115,8 @@ class TestJobConfigLoader extends Tester\TestCase
           "stdin" => "instd",
           "stdout" => "outstd",
           "stderr" => "errstd",
+          "carboncopy-stdout" => "carboncopy-stdout-file",
+          "carboncopy-stderr" => "carboncopy-stderr-file",
           "limits" => [[
               "hw-group-id" => "A",
               "memory" => 123,

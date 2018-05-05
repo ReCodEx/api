@@ -22,6 +22,10 @@ class SandboxConfig {
   const STDERR_KEY = "stderr";
   /** Output config key */
   const OUTPUT_KEY = "output";
+  /** Carboncopy stdout key */
+  const CARBONCOPY_STDOUT_KEY = "carboncopy-stdout";
+  /** Carboncopy stderr key */
+  const CARBONCOPY_STDERR_KEY = "carboncopy-stderr";
   /** Change directory key */
   const CHDIR_KEY = "chdir";
   /** Limits collection key */
@@ -37,6 +41,10 @@ class SandboxConfig {
   private $stderr = null;
   /** @var bool Output from stdout and stderr will be written to result yaml */
   private $output = false;
+  /** @var string|null Standard output carboncopy file */
+  private $carboncopyStdout = null;
+  /** @var string|null Standard error carboncopy file */
+  private $carboncopyStderr = null;
   /** @var string|null Change directory */
   protected $chdir = null;
   /** @var array List of limits */
@@ -131,6 +139,42 @@ class SandboxConfig {
    */
   public function setOutput(bool $output) {
     $this->output = $output;
+    return $this;
+  }
+
+  /**
+   * Return standard output carboncopy file.
+   * @return string|null
+   */
+  public function getCarboncopyStdout() {
+    return $this->carboncopyStdout;
+  }
+
+  /**
+   * Set output carboncopy file.
+   * @param string $stdout
+   * @return $this
+   */
+  public function setCarboncopyStdout($stdout) {
+    $this->carboncopyStdout = $stdout;
+    return $this;
+  }
+
+  /**
+   * Get standard error carboncopy file.
+   * @return string|null
+   */
+  public function getCarboncopyStderr() {
+    return $this->carboncopyStderr;
+  }
+
+  /**
+   * Set error carboncopy file.
+   * @param string $stderr
+   * @return $this
+   */
+  public function setCarboncopyStderr($stderr) {
+    $this->carboncopyStderr = $stderr;
     return $this;
   }
 
@@ -231,6 +275,8 @@ class SandboxConfig {
     if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
     if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
     if ($this->output) { $data[self::OUTPUT_KEY] = $this->output; }
+    if (!empty($this->carboncopyStdout)) { $data[self::CARBONCOPY_STDOUT_KEY] = $this->carboncopyStdout; }
+    if (!empty($this->carboncopyStderr)) { $data[self::CARBONCOPY_STDERR_KEY] = $this->carboncopyStderr; }
     if (!empty($this->chdir)) { $data[self::CHDIR_KEY] = $this->chdir; }
 
     if (!empty($this->limits)) {
