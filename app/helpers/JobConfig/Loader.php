@@ -210,10 +210,14 @@ class Loader {
       unset($data[SandboxConfig::CARBONCOPY_STDERR_KEY]);
     }
 
-
     if (isset($data[SandboxConfig::CHDIR_KEY])) {
       $sandboxConfig->setChdir(strval($data[SandboxConfig::CHDIR_KEY]));
       unset($data[SandboxConfig::CHDIR_KEY]);
+    }
+
+    if (isset($data[SandboxConfig::WORKING_DIRECTORY_KEY])) {
+      $sandboxConfig->setWorkingDirectory(strval($data[SandboxConfig::WORKING_DIRECTORY_KEY]));
+      unset($data[SandboxConfig::WORKING_DIRECTORY_KEY]);
     }
 
     // *** CONSTRUCT ALL LIMITS
