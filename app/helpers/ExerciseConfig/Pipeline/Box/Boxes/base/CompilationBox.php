@@ -3,12 +3,14 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
+use Nette\Utils\Random;
 
 
 /**
@@ -45,8 +47,14 @@ abstract class CompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
 
-    $task->setSandboxConfig((new SandboxConfig)
-      ->setName(LinuxSandbox::$ISOLATE)->setOutput(true));
+    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE)->setOutput(true);
+    $task->setSandboxConfig($sandbox);
+
+    if ($params->isDebug()) {
+      $stderrRandom = Random::generate(20) . ".compilation.stderr";
+      // all stderrs are stored as carboncopies in results directory
+      $sandbox->setCarboncopyStderr(ConfigParams::$RESULT_DIR . $stderrRandom);
+    }
 
     return $task;
   }

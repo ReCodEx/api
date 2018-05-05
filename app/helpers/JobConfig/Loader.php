@@ -200,6 +200,17 @@ class Loader {
       unset($data[SandboxConfig::OUTPUT_KEY]);
     }
 
+    if (isset($data[SandboxConfig::CARBONCOPY_STDOUT_KEY])) {
+      $sandboxConfig->setCarboncopyStdout($data[SandboxConfig::CARBONCOPY_STDOUT_KEY]);
+      unset($data[SandboxConfig::CARBONCOPY_STDOUT_KEY]);
+    }
+
+    if (isset($data[SandboxConfig::CARBONCOPY_STDERR_KEY])) {
+      $sandboxConfig->setCarboncopyStderr($data[SandboxConfig::CARBONCOPY_STDERR_KEY]);
+      unset($data[SandboxConfig::CARBONCOPY_STDERR_KEY]);
+    }
+
+
     if (isset($data[SandboxConfig::CHDIR_KEY])) {
       $sandboxConfig->setChdir(strval($data[SandboxConfig::CHDIR_KEY]));
       unset($data[SandboxConfig::CHDIR_KEY]);
