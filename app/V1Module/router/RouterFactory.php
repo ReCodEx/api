@@ -422,6 +422,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/create", "Sis:createGroup");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/bind", "Sis:bindGroup");
+    $router[] = new DeleteRoute("$prefix/remote-courses/<courseId>/bindings/<groupId>", "Sis:unbindGroup");
     return $router;
   }
 }

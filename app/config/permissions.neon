@@ -649,6 +649,7 @@ permissions:
       resource: sis
       actions:
         - bindGroup
+        - unbindGroup
       conditions:
         - group.isSupervisor
         - course.isSupervisor
