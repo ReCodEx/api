@@ -175,7 +175,7 @@ class ExercisesPresenter extends BasePresenter {
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $isLocked = filter_var($req->getPost("isLocked"), FILTER_VALIDATE_BOOLEAN);
 
-    /** @externalAssignmentLink Exercise $exercise */
+    /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
 
     $version = intval($req->getPost("version"));
