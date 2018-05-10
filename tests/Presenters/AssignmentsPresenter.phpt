@@ -379,7 +379,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testSolutions()
+  public function testUserSolutions()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -392,7 +392,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }, $solutions);
 
     $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'solutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+      ['action' => 'userSolutions', 'id' => $assignment->getId(), 'userId' => $user->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
