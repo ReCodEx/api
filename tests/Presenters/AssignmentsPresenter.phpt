@@ -429,6 +429,29 @@ class TestAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
+  public function testSolutions()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+    $assignment = $solution->getAssignment();
+    $solutions = $assignment->getAssignmentSolutions()->getValues();
+    $solutions = array_map(function (AssignmentSolution $solution) {
+      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
+    }, $solutions);
+
+    $request = new Nette\Application\Request('V1:Assignments', 'GET',
+      ['action' => 'solutions', 'id' => $assignment->getId()]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(count($solutions), $result['payload']);
+    Assert::same($solutions, $result['payload']);
+  }
+
   public function testUserSolutions()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);

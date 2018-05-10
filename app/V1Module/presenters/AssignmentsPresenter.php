@@ -440,6 +440,30 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
+  public function checkSolutions(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+    if (!$this->assignmentAcl->canViewAssignmentSolutions($assignment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get a list of solutions of all users for the assignment
+   * @GET
+   * @param string $id Identifier of the assignment
+   * @throws NotFoundException
+   */
+  public function actionSolutions(string $id) {
+    $assignment = $this->assignments->findOrThrow($id);
+
+    $solutions = array_filter($assignment->getAssignmentSolutions()->getValues(),
+      function (AssignmentSolution $solution) {
+        return $this->assignmentSolutionAcl->canViewDetail($solution);
+      });
+
+    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
+  }
+
   public function checkUserSolutions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
