@@ -13,6 +13,7 @@ use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
 use App\Helpers\ScoreCalculatorAccessor;
+use App\Helpers\Validators;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
@@ -23,6 +24,7 @@ use App\Model\Repository\Groups;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for exercise manipulation
@@ -214,11 +216,13 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new localized texts
+      $externalAssignmentLink = Arrays::get($localization, "link", null);
+      if ($externalAssignmentLink !== null && !Validators::isUrl($externalAssignmentLink)) {
+        throw new InvalidArgumentException("External assignment link is not a valid URL");
+      }
+
       $localized = new LocalizedExercise(
-        $lang,
-        $localization["name"],
-        $localization["text"],
-        $localization["description"]
+        $lang, $localization["name"], $localization["text"], $localization["description"], $externalAssignmentLink
       );
 
       $localizations[$lang] = $localized;
@@ -305,8 +309,7 @@ class ExercisesPresenter extends BasePresenter {
     // create exercise and fill some predefined details
     $exercise = Exercise::create($user, $group);
     $localizedExercise = new LocalizedExercise(
-      $user->getSettings()->getDefaultLanguage(),
-      "Exercise by " . $user->getName(), "", ""
+      $user->getSettings()->getDefaultLanguage(), "Exercise by " . $user->getName(), "", "", null
     );
     $this->exercises->persist($localizedExercise, false);
     $exercise->addLocalizedText($localizedExercise);

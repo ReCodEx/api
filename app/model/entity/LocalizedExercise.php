@@ -15,18 +15,14 @@ use JsonSerializable;
  */
 class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 {
-  public function __construct(
-    string $locale,
-    string $name,
-    string $assignmentText,
-    string $description = "",
-    LocalizedExercise $createdFrom = null
-  ) {
+  public function __construct(string $locale, string $name, string $assignmentText, string $description = "",
+                              string $externalAssignmentLink = null, LocalizedExercise $createdFrom = null) {
     parent::__construct($locale);
     $this->assignmentText = $assignmentText;
     $this->name = $name;
     $this->description = $description;
     $this->createdFrom = $createdFrom;
+    $this->externalAssignmentLink = $externalAssignmentLink;
   }
 
   /**
@@ -47,6 +43,12 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
   protected $assignmentText;
 
   /**
+   * A link to an external assignment for students
+   * @ORM\Column(type="text", nullable=true)
+   */
+  protected $externalAssignmentLink;
+
+  /**
    * @ORM\ManyToOne(targetEntity="LocalizedExercise")
    * @ORM\JoinColumn(onDelete="SET NULL")
    * @var LocalizedExercise
@@ -57,6 +59,7 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
     return $other instanceof LocalizedExercise
       && $this->description === $other->description
       && $this->assignmentText === $other->assignmentText
+      && $this->externalAssignmentLink === $other->externalAssignmentLink
       && $this->name === $other->name;
   }
 
@@ -75,6 +78,7 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
       "name" => $this->name,
       "shortText" => $this->name, # BC
       "text" => $this->assignmentText,
+      "link" => $this->externalAssignmentLink,
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
       "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
