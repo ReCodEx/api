@@ -10,6 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
@@ -27,6 +28,7 @@ use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use DateTime;
+use Nette\Utils\Arrays;
 use Nette\Utils\Strings;
 
 /**
@@ -259,11 +261,13 @@ class AssignmentsPresenter extends BasePresenter {
 
       // create all new localized texts
       $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
+      $externalAssignmentLink = Arrays::get($localization, "link", null);
+      if ($externalAssignmentLink !== null && !Validators::isUrl($externalAssignmentLink)) {
+        throw new InvalidArgumentException("External assignment link is not a valid URL");
+      }
+
       $localized = new LocalizedExercise(
-        $lang,
-        $localization["name"],
-        $localization["text"],
-        $localizedExercise ? $localizedExercise->getDescription() : ""
+        $lang, $localization["name"], $localization["text"], $localizedExercise ? $localizedExercise->getDescription() : "", $externalAssignmentLink
       );
 
       $localizations[$lang] = $localized;
