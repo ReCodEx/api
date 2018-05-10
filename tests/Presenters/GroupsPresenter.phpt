@@ -219,7 +219,7 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal('external identification of exercise', $payload["externalId"]);
     Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
     Assert::equal(true, $payload["privateData"]["publicStats"]);
-    Assert::equal(true, $payload["privateData"]["isPublic"]);
+    Assert::equal(true, $payload["public"]);
   }
 
   public function testValidateAddGroupData()
@@ -326,7 +326,7 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::equal('some neaty description', $localizedGroup->getDescription());
     Assert::equal('external identification of exercise', $payload["externalId"]);
     Assert::equal(true, $payload["privateData"]["publicStats"]);
-    Assert::equal(true, $payload["privateData"]["isPublic"]);
+    Assert::equal(true, $payload["public"]);
     Assert::equal(0.8, $payload["privateData"]["threshold"]);
   }
 

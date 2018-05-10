@@ -3,13 +3,13 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\SisHelper;
 use App\Model\Entity\ExternalLogin;
-use App\Model\Entity\Group;
 use App\Model\Entity\SisGroupBinding;
 use App\Model\Entity\SisValidTerm;
 use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Model\Repository\SisGroupBindings;
 use App\Model\Repository\SisValidTerms;
+use App\Model\View\GroupViewFactory;
 use App\V1Module\Presenters\SisPresenter;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
@@ -273,6 +273,39 @@ class TestSisPresenter extends TestCase {
     sort($returnedGroups);
 
     Assert::equal($expected, $returnedGroups);
+  }
+
+  public function testBindingsAreReturned() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var User $user */
+    $user = $this->user->getIdentity()->getUserData();
+    $login = new ExternalLogin($user, "cas-uk", "12345678");
+    $this->em->persist($login);
+
+    $term_1 = new SisValidTerm(2016, 1);
+    $term_2 = new SisValidTerm(2016, 2);
+
+    $this->em->persist($term_1);
+    $this->em->persist($term_2);
+
+    $groups = $this->groups->findAll();
+    $group = $groups[0];
+    $binding_1 = new SisGroupBinding($group, "code1");
+    $this->em->persist($binding_1);
+    $binding_2 = new SisGroupBinding($group, "code2");
+    $this->em->persist($binding_2);
+    $this->em->flush();
+
+    /** @var GroupViewFactory $groupViewFactory */
+    $groupViewFactory = $this->container->getByType(GroupViewFactory::class);
+
+    $view = $groupViewFactory->getGroup($group);
+    Assert::count(2, $view["privateData"]["bindings"]["sis"]);
+
+    sort($view["privateData"]["bindings"]["sis"]);
+    Assert::equal("code1", $view["privateData"]["bindings"]["sis"][0]);
+    Assert::equal("code2", $view["privateData"]["bindings"]["sis"][1]);
   }
 }
 

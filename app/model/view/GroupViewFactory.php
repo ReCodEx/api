@@ -3,6 +3,7 @@
 namespace App\Model\View;
 
 use App\Helpers\EvaluationStatus\EvaluationStatus;
+use App\Helpers\GroupBindings\GroupBindingAccessor;
 use App\Helpers\Localizations;
 use App\Helpers\Pair;
 use App\Model\Entity\Assignment;
@@ -11,6 +12,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
 
@@ -31,9 +33,20 @@ class GroupViewFactory {
    */
   private $groupAcl;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl) {
+  /**
+   * @var IAssignmentPermissions
+   */
+  private $assignmentAcl;
+
+  /** @var GroupBindingAccessor */
+  private $bindings;
+
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
+                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
+    $this->assignmentAcl = $assignmentAcl;
+    $this->bindings = $bindings;
   }
 
 
@@ -115,53 +128,40 @@ class GroupViewFactory {
     $privateData = null;
     if ($canView) {
       $privateData = [
-        "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
         "admins" => $group->getAdminsIds(),
         "supervisors" => $group->getSupervisors()->map(function(User $s) { return $s->getId(); })->getValues(),
         "students" => $group->getStudents()->map(function(User $s) { return $s->getId(); })->getValues(),
         "instanceId" => $group->getInstance() ? $group->getInstance()->getId() : null,
         "hasValidLicence" => $group->hasValidLicence(),
-        "assignments" => [
-          "all" => $group->getAssignmentsIds(),
-          "public" => $group->getAssignmentsIds($group->getPublicAssignments())
-        ],
+        "assignments" => $group->getAssignments()->filter(function (Assignment $assignment) {
+            return $this->assignmentAcl->canViewDetail($assignment);
+          })->map(function (Assignment $assignment) {
+            return $assignment->getId();
+          })->getValues(),
         "publicStats" => $group->getPublicStats(),
-        "isPublic" => $group->isPublic(),
-        "threshold" => $group->getThreshold()
+        "threshold" => $group->getThreshold(),
+        "bindings" => $this->bindings->getBindingsForGroup($group)
       ];
     }
 
-    $childGroups = $group->getChildGroups();
-    $publicChildGroups = $group->getPublicChildGroups();
-
-    if ($ignoreArchived) {
-      $childGroups = $childGroups->filter(function (Group $group) {
-        return !$group->isArchived();
-      });
-
-      $publicChildGroups = $publicChildGroups->filter(function (Group $group) {
-        return !$group->isArchived();
-      });
-    }
-
+    $childGroups = $group->getChildGroups()->filter(function (Group $group) use ($ignoreArchived) {
+      return !($ignoreArchived && $group->isArchived()) && $this->groupAcl->canViewPublicDetail($group);
+    });
 
     return [
       "id" => $group->getId(),
       "externalId" => $group->getExternalId(),
       "organizational" => $group->isOrganizational(),
       "archived" => $group->isArchived(),
+      "public" => $group->isPublic(),
       "directlyArchived" => $group->isDirectlyArchived(),
       "localizedTexts" => $group->getLocalizedTexts()->getValues(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
       "primaryAdminsIds" => $group->getPrimaryAdmins()->map(function (User $user) {
         return $user->getId();
       })->getValues(),
       "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
       "parentGroupsIds" => $group->getParentGroupsIds(),
-      "childGroups" => [
-        "all" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
-        "public" => $publicChildGroups->map(function (Group $group) { return $group->getId(); })->getValues()
-      ],
+      "childGroups" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
       "canView" => $canView,
       "privateData" => $privateData
     ];

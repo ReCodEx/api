@@ -40,4 +40,8 @@ class SisGroupBinding {
   public function getCode() {
     return $this->code;
   }
+
+  public function __toString() {
+    return $this->code;
+  }
 }
