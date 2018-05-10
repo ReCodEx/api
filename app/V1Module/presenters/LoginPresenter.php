@@ -181,7 +181,6 @@ class LoginPresenter extends BasePresenter {
     $scopes = $request->getPost("scopes");
 
     $forbiddenScopes = [
-      TokenScope::MASTER => "Master tokens can only be issued through the login endpoint",
       TokenScope::CHANGE_PASSWORD => "Password change tokens can only be issued through the password reset endpoint",
       TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail"
     ];
@@ -192,6 +191,21 @@ class LoginPresenter extends BasePresenter {
     }
 
     $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
+
+    $restrictedScopes = [
+      TokenScope::MASTER => $this->accessManager->getExpiration()
+    ];
+
+    foreach (array_intersect(array_keys($restrictedScopes), $scopes) as $match) {
+      if ($expiration !== null && $restrictedScopes[$match] < $expiration) {
+        throw new ForbiddenRequestException(sprintf(
+          "Cannot issue token with scope '%s' and expiration period longer than '%d' seconds",
+          $match,
+          $restrictedScopes[$match]
+        ));
+      }
+    }
+
     $user = $this->getCurrentUser();
 
     $this->sendSuccessResponse([

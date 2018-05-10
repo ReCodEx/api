@@ -53,6 +53,10 @@ class AccessManager {
     JWT::$leeway = Arrays::get($parameters, "leeway", 10); // 10 seconds
   }
 
+  public function getExpiration(): int {
+    return $this->expiration;
+  }
+
   /**
    * Parse and validate a JWT token and extract the payload.
    * @param string $token The potential JWT token
