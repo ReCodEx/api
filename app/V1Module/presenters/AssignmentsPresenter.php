@@ -440,7 +440,7 @@ class AssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
-  public function checkSolutions(string $id, string $userId) {
+  public function checkUserSolutions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
 
@@ -455,7 +455,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    * @param string $userId Identifier of the user
    */
-  public function actionSolutions(string $id, string $userId) {
+  public function actionUserSolutions(string $id, string $userId) {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
 
@@ -464,11 +464,7 @@ class AssignmentsPresenter extends BasePresenter {
         return $this->assignmentSolutionAcl->canViewDetail($solution);
     });
 
-    $solutions = array_map(function (AssignmentSolution $solution) {
-      return $this->assignmentSolutionViewFactory->getSolutionData($solution);
-    }, $solutions);
-
-    $this->sendSuccessResponse(array_values($solutions));
+    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
   }
 
   public function checkBestSolution(string $id, string $userId) {
