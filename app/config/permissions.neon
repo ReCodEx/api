@@ -254,6 +254,7 @@ permissions:
       actions:
         - viewDetail
         - viewSubmissions
+        - viewAssignmentSolutions
 
     - allow: true
       role: student
@@ -274,6 +275,7 @@ permissions:
           - submit
           - viewSubmissions
           - resubmitSubmissions
+          - viewAssignmentSolutions
       conditions:
           - assignment.isSupervisor
 
