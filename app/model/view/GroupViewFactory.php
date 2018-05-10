@@ -41,7 +41,8 @@ class GroupViewFactory {
   /** @var GroupBindingAccessor */
   private $bindings;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl, IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
+  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
+                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
