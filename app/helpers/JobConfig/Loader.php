@@ -195,6 +195,11 @@ class Loader {
       unset($data[SandboxConfig::STDERR_KEY]);
     }
 
+    if (isset($data[SandboxConfig::STDERR_TO_STDOUT_KEY])) {
+      $sandboxConfig->setStderrToStdout($data[SandboxConfig::STDERR_TO_STDOUT_KEY]);
+      unset($data[SandboxConfig::STDERR_TO_STDOUT_KEY]);
+    }
+
     if (isset($data[SandboxConfig::OUTPUT_KEY])) {
       $sandboxConfig->setOutput($data[SandboxConfig::OUTPUT_KEY]);
       unset($data[SandboxConfig::OUTPUT_KEY]);

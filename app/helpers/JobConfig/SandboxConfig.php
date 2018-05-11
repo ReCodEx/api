@@ -20,6 +20,8 @@ class SandboxConfig {
   const STDOUT_KEY = "stdout";
   /** Stderr config key */
   const STDERR_KEY = "stderr";
+  /** Stderr-to-stdout config key */
+  const STDERR_TO_STDOUT_KEY = "stderr-to-stdout";
   /** Output config key */
   const OUTPUT_KEY = "output";
   /** Carboncopy stdout key */
@@ -41,6 +43,8 @@ class SandboxConfig {
   private $stdout = null;
   /** @var string|null Standard error redirection file */
   private $stderr = null;
+  /** @var bool Output from stderr will be redirected to stdout */
+  private $stderrToStdout = false;
   /** @var bool Output from stdout and stderr will be written to result yaml */
   private $output = false;
   /** @var string|null Standard output carboncopy file */
@@ -125,6 +129,24 @@ class SandboxConfig {
    */
   public function setStderr($stderr) {
     $this->stderr = $stderr;
+    return $this;
+  }
+
+  /**
+   * Is redirection of stderr to stdout activated or not.
+   * @return bool
+   */
+  public function getStderrToStdout(): bool {
+    return $this->stderrToStdout;
+  }
+
+  /**
+   * Set redirection of stderr to stdout.
+   * @param bool $stderrToStdout
+   * @return $this
+   */
+  public function setStderrToStdout(bool $stderrToStdout) {
+    $this->stderrToStdout = $stderrToStdout;
     return $this;
   }
 
@@ -296,6 +318,7 @@ class SandboxConfig {
     if (!empty($this->stdin)) { $data[self::STDIN_KEY] = $this->stdin; }
     if (!empty($this->stdout)) { $data[self::STDOUT_KEY] = $this->stdout; }
     if (!empty($this->stderr)) { $data[self::STDERR_KEY] = $this->stderr; }
+    if ($this->stderrToStdout) { $data[self::STDERR_TO_STDOUT_KEY] = $this->stderrToStdout; }
     if ($this->output) { $data[self::OUTPUT_KEY] = $this->output; }
     if (!empty($this->carboncopyStdout)) { $data[self::CARBONCOPY_STDOUT_KEY] = $this->carboncopyStdout; }
     if (!empty($this->carboncopyStderr)) { $data[self::CARBONCOPY_STDERR_KEY] = $this->carboncopyStderr; }
