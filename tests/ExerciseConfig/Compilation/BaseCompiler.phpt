@@ -388,8 +388,9 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
     Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
-    Assert::contains("compilation.stderr", $testACompilationTask->getSandboxConfig()->getCarboncopyStderr());
-    Assert::contains('${RESULT_DIR}/', $testACompilationTask->getSandboxConfig()->getCarboncopyStderr());
+    Assert::true($testACompilationTask->getSandboxConfig()->getStderrToStdout());
+    Assert::contains("compilation.out", $testACompilationTask->getSandboxConfig()->getCarboncopyStdout());
+    Assert::contains('${RESULT_DIR}/', $testACompilationTask->getSandboxConfig()->getCarboncopyStdout());
     Assert::equal("testA", $testACompilationTask->getSandboxConfig()->getWorkingDirectory());
     Assert::count(0, $testACompilationTask->getSandboxConfig()->getLimitsArray());
 

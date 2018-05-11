@@ -51,9 +51,10 @@ abstract class CompilationBox extends Box
     $task->setSandboxConfig($sandbox);
 
     if ($params->isDebug()) {
-      $stderrRandom = Random::generate(20) . ".compilation.stderr";
-      // all stderrs are stored as carboncopies in results directory
-      $sandbox->setCarboncopyStderr(ConfigParams::$RESULT_DIR . $stderrRandom);
+      $sandbox->setStderrToStdout(true);
+      $stdoutRandom = Random::generate(20) . ".compilation.out";
+      // all outputs are stored as carboncopies in results directory
+      $sandbox->setCarboncopyStdout(ConfigParams::$RESULT_DIR . $stdoutRandom);
     }
 
     return $task;
