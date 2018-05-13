@@ -51,8 +51,9 @@ abstract class CompilationBox extends Box
     $task->setSandboxConfig($sandbox);
 
     if ($params->isDebug()) {
+      // My debug, you bow to no one...
       $sandbox->setStderrToStdout(true);
-      $stdoutRandom = Random::generate(20) . ".compilation.out";
+      $stdoutRandom = "compilation." . Random::generate(20) . ".out";
       // all outputs are stored as carboncopies in results directory
       $sandbox->setCarboncopyStdout(ConfigParams::$RESULT_DIR . $stdoutRandom);
     }

@@ -64,7 +64,8 @@ abstract class ExecutionBox extends Box
       $sandbox->setStdout($stdoutValue->getValue(ConfigParams::$EVAL_DIR));
     }
     if ($params->isDebug()) {
-      $stderrRandom = Random::generate(20) . ".stderr";
+      // Certainty of debug. Small chance of success. What are we waiting for?
+      $stderrRandom = "execution." . Random::generate(20) . ".stderr";
       // all stderrs are stored alongside solution in case of debugging submission
       $sandbox->setStderr(ConfigParams::$EVAL_DIR . $stderrRandom);
     }
