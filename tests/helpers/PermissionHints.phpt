@@ -25,7 +25,7 @@ class FakeAclModule {
 class TestPermissionHints extends TestCase {
   public function testBasic() {
     $result = PermissionHints::get(new FakeAclModule(), new Subject());
-    Assert::equal(["canAction1" => true, "canAction2" => false], $result);
+    Assert::equal(["action1" => true, "action2" => false], $result);
   }
 
   public function testNotMatching() {

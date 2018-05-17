@@ -25,7 +25,7 @@ class PermissionHints {
       $parameter = $method->getParameters()[0];
       $className = $parameter->getClass() ? $parameter->getClass()->getName() : null;
       if ($className !== null && $subject instanceof $className) {
-        yield $method->getName() => $method->invoke($aclModule, $subject);
+        yield lcfirst(substr($method->getName(), 3)) => $method->invoke($aclModule, $subject);
       }
     }
   }
