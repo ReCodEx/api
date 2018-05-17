@@ -44,7 +44,7 @@ class FailureHelper {
     $this->emailHelper = $emailHelper;
     $this->receivers = Arrays::get($params, ["emails", "to"], [ "admin@recodex.org" ]);
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.org");
-    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Failure Report - ");
+    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Failure Report -");
 
     if (!is_array($this->receivers)) {
       $this->receivers = [ $this->receivers ];

@@ -35,8 +35,8 @@ class AssignmentEmailsSender {
     $this->emailHelper = $emailHelper;
     $this->assignmentSolutions = $assignmentSolutions;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
-    $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "ReCodEx New Assignment Notification - ");
-    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "ReCodEx Assignment Deadline is Near - ");
+    $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "New Assignment -");
+    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Behind the Corner - ");
   }
 
   /**

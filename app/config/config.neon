@@ -89,43 +89,44 @@ parameters:
     siteName: "ReCodEx"  # name of frontend (ReCodEx, or KSP for unique instance for KSP course)
     githubUrl: https://github.com/ReCodEx  # URL to GitHub repository of this project
     from: "ReCodEx <noreply@recodex.mff.cuni.cz>"  # sending email address
+    subjectPrefix: "ReCodEx - "
 
   failures:  # admin messages on errors
     emails:  # additional info for sending mails
       to: "Administrator <admin@example.com>"  # admin mail address
       from: %emails.from%  # source address
-      subjectPrefix: "ReCodEx Failure Report - "  # prefix of mail subject
+      subjectPrefix: "Failure Report -"  # prefix of mail subject
 
   assignmentNotifications:
     emails:
       from: %emails.from%
-      newAssignmentPrefix: "ReCodEx New Assignment Notification - "
-      assignmentDeadlinePrefix: "ReCodEx Assignment Deadline Is Behind the Corner - "
+      newAssignmentPrefix: "New Assignment -"
+      assignmentDeadlinePrefix: "Assignment Deadline Is Behind the Corner -"
       assignmentDeadlineThreshold: 1 day
 
   submissionNotifications:
     emails:
       from: %emails.from%
-      submissionEvaluatedPrefix: "ReCodEx Submission Evaluated Notification - "
+      submissionEvaluatedPrefix: "Submission Evaluated - "
 
   failureResolutionNotifications:
     emails:
       from: %emails.from%
-      failureResolvedPrefix: "ReCodEx Submission Failure resolved - "
+      failureResolvedPrefix: "Submission Failure Resolved - "
 
   forgottenPassword:  # user messages for changing passwords
     redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"  # URL of web application where the password can be changed
     tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
     emails:  # additional info for sending mails, from is source address and subjectPrefix is prefix of mail subject
       from: %emails.from%
-      subjectPrefix: "ReCodEx Forgotten Password Request - "
+      subjectPrefix: "Forgotten Password Request - "
 
   emailVerification:
     redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"
     tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
-      subjectPrefix: "ReCodEx Email Verification Request - "
+      subjectPrefix: "Email Verification Request - "
 
   mail:  # configuration of sending mails
     smtp: true  # using SMTP server, have to be "true"

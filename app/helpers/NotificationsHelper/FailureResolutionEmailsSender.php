@@ -33,7 +33,7 @@ class FailureResolutionEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
-    $this->failureResolvedPrefix = Arrays::get($params, ["emails", "failureResolvedPrefix"], "ReCodEx Submission Failure resolved - ");
+    $this->failureResolvedPrefix = Arrays::get($params, ["emails", "failureResolvedPrefix"], "Submission Failure Resolved - ");
   }
 
   /**
