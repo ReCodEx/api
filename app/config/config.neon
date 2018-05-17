@@ -310,7 +310,6 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver
   - App\Helpers\ExerciseConfig\Helper
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
-  - App\Helpers\PermissionsResponseDecorator
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
 
