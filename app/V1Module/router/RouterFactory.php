@@ -49,6 +49,7 @@ class RouterFactory {
     $router[] = self::createJobConfigRoutes("$prefix/job-config");
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
+    $router[] = self::createEmailsRouter("$prefix/emails");
 
     return $router;
   }
@@ -422,6 +423,12 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/create", "Sis:createGroup");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/bind", "Sis:bindGroup");
+    return $router;
+  }
+
+  private static function createEmailsRouter(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new PostRoute("$prefix", "Emails:default");
     return $router;
   }
 }

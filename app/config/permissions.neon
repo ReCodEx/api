@@ -609,9 +609,9 @@ permissions:
       conditions:
           - pipeline.isAuthor
 
-      ###################
-      # Sis permissions #
-      ###################
+    ###################
+    # Sis permissions #
+    ###################
 
     - allow: true
       role: scope-read-all
