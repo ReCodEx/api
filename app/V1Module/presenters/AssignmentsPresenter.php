@@ -13,6 +13,7 @@ use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
 use App\Helpers\ScoreCalculatorAccessor;
@@ -23,6 +24,7 @@ use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\AssignmentViewFactory;
 use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -60,6 +62,12 @@ class AssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutions;
+
+  /**
+   * @var AssignmentViewFactory
+   * @inject
+   */
+  public $assignmentViewFactory;
 
   /**
    * @var AssignmentSolutionViewFactory
@@ -133,7 +141,7 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $assignments = $this->assignments->findAll();
-    $this->sendSuccessResponse($assignments);
+    $this->sendSuccessResponse(array_map([$this->assignmentViewFactory, "getAssignment"], $assignments));
   }
 
   public function checkDetail(string $id) {
@@ -149,7 +157,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    */
   public function actionDetail(string $id) {
-    $this->sendSuccessResponse($this->assignments->findOrThrow($id));
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($this->assignments->findOrThrow($id)));
   }
 
   public function checkUpdateDetail(string $id) {
@@ -165,6 +173,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
+   * @Param(type="post", name="localizedAssignments", validation="array", description="Public localized hints for the assignment", required=false)
    * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -190,8 +199,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     // localized texts cannot be empty
-    $localizedTexts = $req->getPost("localizedTexts");
-    if (count($localizedTexts) == 0) {
+    if (count($req->getPost("localizedTexts")) == 0) {
       throw new InvalidArgumentException("No entry for localized texts given.");
     }
 
@@ -250,13 +258,13 @@ class AssignmentsPresenter extends BasePresenter {
       $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
-    // go through given localizations and construct database entities
-    $localizations = [];
-    foreach ($localizedTexts as $localization) {
+    // go through localizedTexts and construct database entities
+    $localizedTexts = [];
+    foreach ($req->getPost("localizedTexts") as $localization) {
       $lang = $localization["locale"];
 
-      if (array_key_exists($lang, $localizations)) {
-        throw new InvalidArgumentException("Duplicate entry for language $lang");
+      if (array_key_exists($lang, $localizedTexts)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedTexts");
       }
 
       // create all new localized texts
@@ -270,18 +278,43 @@ class AssignmentsPresenter extends BasePresenter {
         $lang, $localization["name"], $localization["text"], $localizedExercise ? $localizedExercise->getDescription() : "", $externalAssignmentLink
       );
 
-      $localizations[$lang] = $localized;
+      $localizedTexts[$lang] = $localized;
     }
 
     // make changes to database
-    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizations);
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
 
     foreach ($assignment->getLocalizedTexts() as $localizedText) {
       $this->assignments->persist($localizedText, false);
     }
 
+    // go through localizedAssignments and construct database entities
+    $localizedAssignments = [];
+    foreach ($req->getPost("localizedAssignments") ?? [] as $localization) {
+      $lang = $localization["locale"];
+
+      if (array_key_exists($lang, $localizedAssignments)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedAssignments");
+      }
+
+      // create all new localized texts
+      $localized = new LocalizedAssignment(
+        $lang,
+        $localization["studentHint"]
+      );
+
+      $localizedAssignments[$lang] = $localized;
+    }
+
+    // make changes to database
+    Localizations::updateCollection($assignment->getLocalizedAssignments(), $localizedAssignments);
+
+    foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
+      $this->assignments->persist($localizedAssignment, false);
+    }
+
     $this->assignments->flush();
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkValidate(string $id) {
@@ -359,7 +392,7 @@ class AssignmentsPresenter extends BasePresenter {
     $deadline->modify("+7 days");
     $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
     $this->assignments->persist($assignment);
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkRemove(string $id) {
@@ -404,7 +437,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->updatedNow();
     $assignment->syncWithExercise();
     $this->assignments->flush();
-    $this->sendSuccessResponse($assignment);
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
   }
 
   public function checkSolutions(string $id, string $userId) {

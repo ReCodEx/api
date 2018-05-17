@@ -13,6 +13,7 @@ use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\Repository\SolutionEvaluations;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\AssignmentViewFactory;
 use App\V1Module\Presenters\AssignmentsPresenter;
 use Nette\Utils\Json;
 use Tester\Assert;
@@ -98,7 +99,11 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($this->presenter->assignments->findAll(), $result['payload']);
+    Assert::equal(array_map(function (Assignment $assignment) {
+      return $assignment->getId();
+    }, $this->presenter->assignments->findAll()), array_map(function ($assignment) {
+      return $assignment["id"];
+    }, $result['payload']));
   }
 
   public function testDetail()
@@ -116,7 +121,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal($assignment, $result['payload']);
+    Assert::equal($assignment->getId(), $result['payload']["id"]);
   }
 
   public function testUpdateDetail()
@@ -176,24 +181,63 @@ class TestAssignmentsPresenter extends Tester\TestCase
     // check updated assignment
     /** @var Assignment $updatedAssignment */
     $updatedAssignment = $result['payload'];
-    Assert::type(\App\Model\Entity\Assignment::class, $updatedAssignment);
-    Assert::equal($isPublic, $updatedAssignment->getIsPublic());
-    Assert::equal($firstDeadline, $updatedAssignment->getFirstDeadline()->getTimestamp());
-    Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment->getMaxPointsBeforeFirstDeadline());
-    Assert::equal($submissionsCountLimit, $updatedAssignment->getSubmissionsCountLimit());
-    Assert::equal($allowSecondDeadline, $updatedAssignment->getAllowSecondDeadline());
-    Assert::equal($canViewLimitRatios, $updatedAssignment->getCanViewLimitRatios());
-    Assert::equal($secondDeadline, $updatedAssignment->getSecondDeadline()->getTimestamp());
-    Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment->getMaxPointsBeforeSecondDeadline());
-    Assert::equal($isBonus, $updatedAssignment->getIsBonus());
-    Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment->getPointsPercentualThreshold());
+    Assert::equal($isPublic, $updatedAssignment["isPublic"]);
+    Assert::equal($firstDeadline, $updatedAssignment["firstDeadline"]);
+    Assert::equal($maxPointsBeforeFirstDeadline, $updatedAssignment["maxPointsBeforeFirstDeadline"]);
+    Assert::equal($submissionsCountLimit, $updatedAssignment["submissionsCountLimit"]);
+    Assert::equal($allowSecondDeadline, $updatedAssignment["allowSecondDeadline"]);
+    Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
+    Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
+    Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
+    Assert::equal($isBonus, $updatedAssignment["isBonus"]);
+    Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment["pointsPercentualThreshold"]);
 
     // check localized texts
-    Assert::count(1, $updatedAssignment->getLocalizedTexts());
+    Assert::count(1, $updatedAssignment["localizedTexts"]);
     $localized = current($localizedTexts);
-    $updatedLocalized = $updatedAssignment->getLocalizedTexts()->first();
-    Assert::equal($updatedLocalized->getLocale(), $localized["locale"]);
-    Assert::equal($updatedLocalized->getAssignmentText(), $localized["text"]);
+    $updatedLocalized = $updatedAssignment["localizedTexts"][0];
+    Assert::equal($updatedLocalized["locale"], $localized["locale"]);
+    Assert::equal($updatedLocalized["text"], $localized["text"]);
+  }
+
+  public function testAddStudentHints()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignments = $this->assignments->findAll();
+    /** @var Assignment $assignment */
+    $assignment = array_pop($assignments);
+    $disabledEnv = $assignment->getRuntimeEnvironments()->first();
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'updateDetail', 'id' => $assignment->getId()],
+      [
+        'isPublic' => true,
+        'version' => 1,
+        'localizedTexts' => [
+          ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        ],
+        'localizedAssignments' => [
+          ["locale" => "locA", "studentHint" => "Try hard"]
+        ],
+        'firstDeadline' => (new \DateTime())->getTimestamp(),
+        'maxPointsBeforeFirstDeadline' => 123,
+        'submissionsCountLimit' => 321,
+        'allowSecondDeadline' => true,
+        'canViewLimitRatios' => false,
+        'secondDeadline' => (new \DateTime)->getTimestamp(),
+        'maxPointsBeforeSecondDeadline' => 543,
+        'isBonus' => true,
+        'pointsPercentualThreshold' => 90,
+        'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    $updatedAssignment = PresenterTestHelper::extractPayload($response);
+    Assert::count(1, $updatedAssignment["localizedAssignments"]);
+    Assert::equal("locA", $updatedAssignment["localizedAssignments"][0]["locale"]);
+    Assert::equal("Try hard", $updatedAssignment["localizedAssignments"][0]["studentHint"]);
   }
 
   public function testDisableRuntimeEnvironments()
@@ -254,8 +298,14 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
+    /** @var AssignmentViewFactory $viewFactory */
+    $viewFactory = $this->container->getByType(AssignmentViewFactory::class);
+
     // Make sure the assignment was persisted
-    Assert::same($this->presenter->assignments->findOneBy(['id' => $result['payload']->id]), $result['payload']);
+    Assert::same(
+      $viewFactory->getAssignment($this->presenter->assignments->findOneBy(['id' => $result['payload']["id"]])),
+      $result['payload']
+    );
   }
 
   public function testCreateAssignmentFromLockedExercise()
@@ -355,7 +405,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $payload = $response->getPayload();
     $data = $payload["payload"];
 
-    Assert::same($assignment, $data);
+    Assert::same($assignment->getId(), $data["id"]);
     Assert::same($newExerciseLimits, $assignment->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup));
   }
 
