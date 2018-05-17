@@ -200,6 +200,46 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($updatedLocalized["text"], $localized["text"]);
   }
 
+  public function testAddStudentHints()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignments = $this->assignments->findAll();
+    /** @var Assignment $assignment */
+    $assignment = array_pop($assignments);
+    $disabledEnv = $assignment->getRuntimeEnvironments()->first();
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'updateDetail', 'id' => $assignment->getId()],
+      [
+        'isPublic' => true,
+        'version' => 1,
+        'localizedTexts' => [
+          ["locale" => "locA", "text" => "descA", "name" => "nameA"]
+        ],
+        'localizedAssignments' => [
+          ["locale" => "locA", "studentHint" => "Try hard"]
+        ],
+        'firstDeadline' => (new \DateTime())->getTimestamp(),
+        'maxPointsBeforeFirstDeadline' => 123,
+        'submissionsCountLimit' => 321,
+        'allowSecondDeadline' => true,
+        'canViewLimitRatios' => false,
+        'secondDeadline' => (new \DateTime)->getTimestamp(),
+        'maxPointsBeforeSecondDeadline' => 543,
+        'isBonus' => true,
+        'pointsPercentualThreshold' => 90,
+        'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    $updatedAssignment = PresenterTestHelper::extractPayload($response);
+    Assert::count(1, $updatedAssignment["localizedAssignments"]);
+    Assert::equal("locA", $updatedAssignment["localizedAssignments"][0]["locale"]);
+    Assert::equal("Try hard", $updatedAssignment["localizedAssignments"][0]["studentHint"]);
+  }
+
   public function testDisableRuntimeEnvironments()
   {
     $this->mockHttpRequest->shouldReceive("getHeader")->andReturn("application/json");

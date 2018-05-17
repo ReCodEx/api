@@ -3,12 +3,13 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use JsonSerializable;
 
 /**
  * @ORM\Entity
  * @method string getStudentHint()
  */
-class LocalizedAssignment extends LocalizedEntity {
+class LocalizedAssignment extends LocalizedEntity implements JsonSerializable {
   /**
    * @ORM\ManyToOne(targetEntity="LocalizedAssignment")
    * @ORM\JoinColumn(onDelete="SET NULL")
@@ -37,5 +38,12 @@ class LocalizedAssignment extends LocalizedEntity {
     } else {
       throw new InvalidArgumentException("Wrong type of entity supplied");
     }
+  }
+  public function jsonSerialize() {
+    return [
+      "id" => $this->id,
+      "locale" => $this->locale,
+      "studentHint" => $this->studentHint
+    ];
   }
 }

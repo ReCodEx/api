@@ -294,11 +294,9 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localizedAssignment = $assignment->getLocalizedAssignmentByLocale($lang);
       $localized = new LocalizedAssignment(
         $lang,
-        $localization["studentHint"],
-        $localizedAssignment ? $localizedAssignment->getDescription() : ""
+        $localization["studentHint"]
       );
 
       $localizedAssignments[$lang] = $localized;
