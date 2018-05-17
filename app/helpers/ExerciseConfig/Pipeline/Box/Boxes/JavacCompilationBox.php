@@ -2,16 +2,12 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use App\Helpers\JobConfig\SandboxConfig;
-use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
@@ -19,10 +15,13 @@ use App\Helpers\JobConfig\Tasks\Task;
  */
 class JavacCompilationBox extends CompilationBox
 {
+  use JavaUtilsTrait;
+
   /** Type key */
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
   public static $CLASS_FILES_PORT_KEY = "class-files";
+  public static $JAR_FILES_PORT_KEY = "jar-files";
   public static $DEFAULT_NAME = "Javac Compilation";
 
   private static $initialized = false;
@@ -31,6 +30,7 @@ class JavacCompilationBox extends CompilationBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
@@ -38,7 +38,8 @@ class JavacCompilationBox extends CompilationBox
       self::$defaultInputPorts = array(
         new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$JAR_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
@@ -66,6 +67,7 @@ class JavacCompilationBox extends CompilationBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -75,6 +77,7 @@ class JavacCompilationBox extends CompilationBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
@@ -103,10 +106,14 @@ class JavacCompilationBox extends CompilationBox
     if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
       $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
+
+    // if there were some provided jar files, lets add them to the command line args
+    $classpath = $this->constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
+    $args = array_merge($args, $classpath);
+
     $task->setCommandArguments(
       array_merge(
         $args,
-        ["-classpath", ".:/java-jars/*"],
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
           ->getValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)

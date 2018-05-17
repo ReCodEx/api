@@ -15,10 +15,13 @@ use Nette\Utils\Strings;
  */
 class JavaRunBox extends ExecutionBox
 {
+  use JavaUtilsTrait;
+
   /** Type key */
   public static $JAVA_RUNNER_TYPE = "java-runner";
   public static $JAVA_BINARY = "/usr/bin/java";
   public static $CLASS_FILES_PORT_KEY = "class-files";
+  public static $JAR_FILES_PORT_KEY = "jar-files";
   public static $DEFAULT_NAME = "Java Runner";
 
   private static $initialized = false;
@@ -37,7 +40,8 @@ class JavaRunBox extends ExecutionBox
         new Port((new PortMeta())->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$JAR_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta())->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -110,12 +114,12 @@ class JavaRunBox extends ExecutionBox
       $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
     }
 
-    $args = [
-      "-classpath",
-      ".:/java-jars/*",
-      $runnerClass,
-      "run"
-    ];
+    $args = [];
+    // if there were some provided jar files, lets add them to the command line args
+    $classpath = $this->constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
+    $args = array_merge($args, $classpath);
+
+    $args = array_merge($args, [ $runnerClass, "run" ]);
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
