@@ -67,7 +67,7 @@ class EmailHelper {
     }
 
     $latte = new Latte\Engine;
-    $latte->setTempDirectory(__DIR__ . "/../../../temp");
+    $latte->setTempDirectory(__DIR__ . "/../../../../../temp");
     $params = [
       "subject"   => $subject,
       "message"   => $text,
