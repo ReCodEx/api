@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\User;
 use App\Security\ACL\IEmailPermissions;
