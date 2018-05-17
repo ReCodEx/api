@@ -432,6 +432,8 @@ class RouterFactory {
   private static function createEmailsRouter(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Emails:default");
+    $router[] = new PostRoute("$prefix/supervisors", "Emails:sendToSupervisors");
+    $router[] = new PostRoute("$prefix/regular-users", "Emails:sendToRegularUsers");
     return $router;
   }
 }
