@@ -207,10 +207,17 @@ class CASLoginService implements IExternalLoginService {
       $ukco = LDAPHelper::getScalar(Arrays::get($info, $this->ukcoField));
       $firstName = LDAPHelper::getScalar(Arrays::get($info, $this->firstNameField));
       $lastName = LDAPHelper::getScalar(Arrays::get($info, $this->lastNameField));
-      $affiliation = LDAPHelper::getArray(Arrays::get($info, $this->affiliationField));
     } catch (InvalidArgumentException $e) {
       $this->logger->log("The user attributes received from the CAS are incomplete:\n" . var_export($data, true), ILogger::ERROR);
       throw new CASMissingInfoException("The user attributes received from the CAS are incomplete.");
+    }
+
+    try {
+      $affiliation = LDAPHelper::getArray(Arrays::get($info, $this->affiliationField));
+    } catch (InvalidArgumentException $e) {
+      // affiliation is not mandatory and can be omitted, just log it, as it is not standard behaviour
+      $this->logger->log("The user attributes received from the CAS are missing 'affiliation' for user identification '$ukco'", ILogger::WARNING);
+      $affiliation = [];
     }
 
     try {
