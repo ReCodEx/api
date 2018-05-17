@@ -32,6 +32,9 @@ class EmailHelper {
   /** @var string Address from which emails should be sent if from is not provided */
   private $from;
 
+  /** @var string Prefix of mail subject to be used */
+  private $subjectPrefix;
+
   /**
    * Constructor
    * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
@@ -44,6 +47,7 @@ class EmailHelper {
     $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
     $this->githubUrl = Arrays::get($params, "githubUrl", "https://github.com/ReCodEx");
     $this->from = Arrays::get($params, "from", "ReCodEx <noreply@recodex.mff.cuni.cz>");
+    $this->subjectPrefix = Arrays::get($params, "subjectPrefix", "ReCodEx - ");
   }
 
   /**
@@ -56,6 +60,12 @@ class EmailHelper {
    * @return bool If sending was successful or not
    */
   public function send(?string $from, array $to, string $subject, string $text, array $bcc = []) {
+    $subject = $this->subjectPrefix . $subject;
+    if ($from === null) {
+      // if from email is not provided use the default one
+      $from = $this->from;
+    }
+
     $latte = new Latte\Engine;
     $latte->setTempDirectory(__DIR__ . "/../../../temp");
     $params = [
@@ -67,11 +77,6 @@ class EmailHelper {
       "githubUrl" => $this->githubUrl
     ];
     $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
-
-    if ($from === null) {
-      // if from email is not provided use the default one
-      $from = $this->from;
-    }
 
     $message = new Message;
     $message->setFrom($from)

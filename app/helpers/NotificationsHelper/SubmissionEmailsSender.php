@@ -27,7 +27,7 @@ class SubmissionEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
-    $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "ReCodEx Submission Evaluated Notification - ");
+    $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
   }
 
   /**
