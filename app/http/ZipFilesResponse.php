@@ -61,6 +61,17 @@ class ZipFilesResponse extends FileResponse {
     if ($zip->close() !== true) {
       throw new ApiException("Archive could not be properly saved");
     }
+
+    if (count($this->files) === 0) {
+      // Well the php is interesting in handling zip archives, if you do not
+      // provide any file to it, the php will process everything correctly and
+      // successfully, creating and even closing, butt beware because if you do
+      // not provided nada files, the zip will not be created at all!!!
+      // So for further processing we need to at least create an empty file,
+      // which will omit further warnings concerning non-existing file during
+      // sending back to the user.
+      touch($this->getFile());
+    }
   }
 
   /**
