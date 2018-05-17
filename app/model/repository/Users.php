@@ -20,4 +20,8 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
+  public function findByRoles(string ...$roles): array {
+    return $this->findBy([ "role" => $roles ]);
+  }
+
 }
