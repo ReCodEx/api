@@ -1,6 +1,7 @@
 <?php
 namespace App\Model\View;
 
+use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Security\ACL\IAssignmentPermissions;
@@ -83,7 +84,8 @@ class AssignmentViewFactory {
         "runtimeEnvironments" => [
           "upToDate" => $assignment->areRuntimeEnvironmentsInSync()
         ]
-      ]
+      ],
+      "permissionHints" => PermissionHints::get($this->assignmentAcl, $assignment)
     ];
   }
 }
