@@ -107,10 +107,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     );
   }
 
-  public function checkEvaluations(string $id) {
+  public function checkDeleteSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot access this solution evaluations");
+    if (!$this->assignmentSolutionAcl->canDelete($solution)) {
+      throw new ForbiddenRequestException("You cannot delete this assignment solution");
     }
   }
 
@@ -121,13 +121,15 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionDeleteSolution(string $id) {
-    $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canDelete($solution)) {
-      throw new ForbiddenRequestException("You cannot delete this assignment solution");
-    }
-
-    $this->assignmentSolutions->remove($solution);
+    $this->assignmentSolutions->remove($this->assignmentSolutions->findOrThrow($id));
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkEvaluations(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot access this solution evaluations");
+    }
   }
 
   /**

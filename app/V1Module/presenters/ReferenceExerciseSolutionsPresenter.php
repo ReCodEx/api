@@ -140,6 +140,23 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
   }
 
+  public function checkDetail(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    if ($this->exerciseAcl->canViewDetail($solution->getExercise())) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get details of a reference solution
+   * @GET
+   * @param string $solutionId An identifier of the solution
+   * @throws NotFoundException
+   */
+  public function actionDetail(string $solutionId) {
+    $this->sendSuccessResponse($this->referenceSolutions->findOrThrow($solutionId));
+  }
+
   public function checkDeleteReferenceSolution(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
     $exercise = $solution->getExercise();
