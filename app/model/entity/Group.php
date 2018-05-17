@@ -251,6 +251,17 @@ class Group
     );
   }
 
+  /**
+   * Get all members of the group.
+   * @return ArrayCollection|Collection
+   */
+  public function getMembers() {
+    $members = $this->getActiveMemberships();
+    return $members->map(function (GroupMembership $membership) {
+      return $membership->getUser();
+    });
+  }
+
   public function getStudents() {
     return $this->getActiveMembers(GroupMembership::TYPE_STUDENT);
   }

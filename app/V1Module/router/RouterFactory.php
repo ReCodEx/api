@@ -431,6 +431,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "Emails:default");
     $router[] = new PostRoute("$prefix/supervisors", "Emails:sendToSupervisors");
     $router[] = new PostRoute("$prefix/regular-users", "Emails:sendToRegularUsers");
+    $router[] = new PostRoute("$prefix/groups/<groupId>", "Emails:sendToGroupMembers");
     return $router;
   }
 }

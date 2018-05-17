@@ -75,12 +75,6 @@ permissions:
       actions: viewPublicDetail
       conditions: group.isInSameInstance
 
-    - allow: true
-      resource: group
-      actions:
-          - setAdmin
-      conditions: group.isAdmin
-
     - allow: true # A student can join public groups
       role: student
       resource: group
@@ -125,14 +119,10 @@ permissions:
           - remove
           - addSubgroup
           - removeSupervisor
-      conditions: group.isAdmin
-
-    - allow: true
-      resource: group
-      actions:
+          - setAdmin
+          - sendEmail
           - addSupervisor
-      conditions:
-          - group.isAdmin
+      conditions: group.isAdmin
 
     - allow: true
       resource: group
