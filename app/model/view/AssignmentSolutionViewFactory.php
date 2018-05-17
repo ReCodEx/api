@@ -2,6 +2,7 @@
 
 namespace App\Model\View;
 
+use App\Helpers\PermissionHints;
 use App\Model\Repository\Comments;
 use App\Model\Entity\AssignmentSolution;
 use App\Security\ACL\IAssignmentSolutionPermissions;
@@ -77,6 +78,7 @@ class AssignmentSolutionViewFactory {
         "authoredCount" => $this->comments->getAuthoredCommentsCount($thread, $user),
         "last" => $this->comments->getThreadLastComment($thread, $user),
         ] : null,
+      "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
     ];
   }
 }
