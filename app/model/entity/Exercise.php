@@ -23,6 +23,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getExerciseEnvironmentConfigs()
  * @method User getAuthor()
  * @method int getVersion()
+ * @method DateTime getCreatedAt()
+ * @method string getDifficulty()
  * @method Collection getReferenceSolutions()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
@@ -32,7 +34,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method void addGroup(Group $group)
  * @method void removeGroup(Group $group)
  */
-class Exercise implements JsonSerializable, IExercise
+class Exercise implements IExercise
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use ExerciseData;
@@ -340,34 +342,6 @@ class Exercise implements JsonSerializable, IExercise
     return $this->getGroups()->map(function(Group $group) {
       return $group->getId();
     })->getValues();
-  }
-
-  public function jsonSerialize() {
-    /** @var LocalizedExercise $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($this->localizedTexts);
-
-    return [
-      "id" => $this->id,
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
-      "version" => $this->version,
-      "createdAt" => $this->createdAt->getTimestamp(),
-      "updatedAt" => $this->updatedAt->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts->getValues(),
-      "difficulty" => $this->difficulty,
-      "runtimeEnvironments" => $this->runtimeEnvironments->getValues(),
-      "hardwareGroups" => $this->hardwareGroups->getValues(),
-      "forkedFrom" => $this->getForkedFrom(),
-      "authorId" => $this->author->getId(),
-      "groupsIds" => $this->getGroupsIds(),
-      "isPublic" => $this->isPublic,
-      "isLocked" => $this->isLocked,
-      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
-      "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "attachmentFilesIds" => $this->getAttachmentFilesIds(),
-      "configurationType" => $this->configurationType,
-      "isBroken" => $this->isBroken,
-      "validationError" => $this->getValidationError()
-    ];
   }
 
   public function setLocked($value = true) {

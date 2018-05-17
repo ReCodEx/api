@@ -16,6 +16,7 @@ use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Model\View\ExerciseViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
@@ -98,6 +99,12 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $userViewFactory;
+
+  /**
+   * @var ExerciseViewFactory
+   * @inject
+   */
+  public $exerciseViewFactory;
 
   public function checkDefault() {
     if (!$this->groupAcl->canViewAll()) {
@@ -485,7 +492,7 @@ class GroupsPresenter extends BasePresenter {
       $group = $group->getParentGroup();
     }
 
-    $this->sendSuccessResponse($exercises);
+    $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], $exercises));
   }
 
   public function checkStats(string $id) {
