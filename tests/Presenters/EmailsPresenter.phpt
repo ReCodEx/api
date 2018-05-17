@@ -120,8 +120,8 @@ class TestEmailsPresenter extends Tester\TestCase
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $subject = "Subject supervisors - ";
-    $message = "New email message for supervisors";
+    $subject = "Subject regular users - ";
+    $message = "New email message for regular users";
 
     $emails = array_map(function (User $user) {
       return $user->getEmail();
@@ -135,6 +135,41 @@ class TestEmailsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request(
       'V1:Emails', 'POST', ['action' => 'sendToRegularUsers'],
+      [
+        "subject" => $subject,
+        "message" => $message
+      ]
+    );
+
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal("OK", $result['payload']);
+  }
+
+  public function testSendToGroupMembers()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $group = current($this->presenter->groups->findAll());
+    $subject = "Subject group - ";
+    $message = "New email message for group";
+
+    $emails = array_map(function (User $user) {
+      return $user->getEmail();
+    }, $group->getMembers()->getValues());
+
+    /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
+    $mockEmailHelper = Mockery::mock(EmailHelper::class);
+    $mockEmailHelper->shouldReceive("send")
+      ->withArgs([null, [], $subject, $message, $emails])->andReturn(true)->once();
+    $this->presenter->emailHelper = $mockEmailHelper;
+
+    $request = new Nette\Application\Request(
+      'V1:Emails', 'POST',
+      ['action' => 'sendToGroupMembers', 'groupId' => $group->getId()],
       [
         "subject" => $subject,
         "message" => $message
