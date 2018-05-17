@@ -6,6 +6,7 @@ use App\Helpers\EvaluationStatus\EvaluationStatus;
 use App\Helpers\GroupBindings\GroupBindingAccessor;
 use App\Helpers\Localizations;
 use App\Helpers\Pair;
+use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
@@ -163,7 +164,8 @@ class GroupViewFactory {
       "parentGroupsIds" => $group->getParentGroupsIds(),
       "childGroups" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
       "canView" => $canView,
-      "privateData" => $privateData
+      "privateData" => $privateData,
+      "permissionHints" => PermissionHints::get($this->groupAcl, $group)
     ];
   }
 
