@@ -269,7 +269,7 @@ permissions:
       resource: assignment
       actions:
           - viewDetail
-          - viewPrivateData
+          - viewDescription
           - update
           - remove
           - submit

@@ -22,7 +22,7 @@ class AssignmentViewFactory {
       "updatedAt" => $assignment->getUpdatedAt()->getTimestamp(),
       "localizedTexts" => $assignment->getLocalizedTexts()->map(function (LocalizedExercise $text) use ($assignment) {
         $data = $text->jsonSerialize();
-        if (!$this->assignmentAcl->canViewPrivateData($assignment)) {
+        if (!$this->assignmentAcl->canViewDescription($assignment)) {
           unset($data["description"]);
         }
         return $data;
