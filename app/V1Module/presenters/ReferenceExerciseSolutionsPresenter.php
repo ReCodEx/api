@@ -142,7 +142,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
   public function checkDetail(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
-    if ($this->exerciseAcl->canViewDetail($solution->getExercise())) {
+    if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
       throw new ForbiddenRequestException();
     }
   }
