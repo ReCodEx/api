@@ -16,7 +16,7 @@ use JsonSerializable;
 class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 {
   public function __construct(string $locale, string $name, string $assignmentText, string $description = "",
-                              string $externalAssignmentLink = null, LocalizedExercise $createdFrom = null) {
+                              ?string $externalAssignmentLink = null, ?LocalizedExercise $createdFrom = null) {
     parent::__construct($locale);
     $this->assignmentText = $assignmentText;
     $this->name = $name;
