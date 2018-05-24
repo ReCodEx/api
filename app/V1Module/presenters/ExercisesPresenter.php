@@ -209,6 +209,10 @@ class ExercisesPresenter extends BasePresenter {
 
     // go through given localizations and construct database entities
     foreach ($localizedTexts as $localization) {
+      if (!array_key_exists("locale", $localization) || !array_key_exists("name", $localization) || !array_key_exists("text", $localization)) {
+        throw new InvalidArgumentException("Malformed localized text entry");
+      }
+
       $lang = $localization["locale"];
 
       if (array_key_exists($lang, $localizations)) {
@@ -220,6 +224,8 @@ class ExercisesPresenter extends BasePresenter {
       if ($externalAssignmentLink !== null && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
+
+      $localization["description"] = $localization["description"] ?? "";
 
       $localized = new LocalizedExercise(
         $lang, $localization["name"], $localization["text"], $localization["description"], $externalAssignmentLink
