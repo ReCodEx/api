@@ -220,15 +220,15 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $externalAssignmentLink = Arrays::get($localization, "link", null);
-      if ($externalAssignmentLink !== null && !Validators::isUrl($externalAssignmentLink)) {
+      $externalAssignmentLink = Arrays::get($localization, "link", "");
+      if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
 
       $localization["description"] = $localization["description"] ?? "";
 
       $localized = new LocalizedExercise(
-        $lang, $localization["name"], $localization["text"], $localization["description"], $externalAssignmentLink
+        $lang, $localization["name"], $localization["text"], $localization["description"], $externalAssignmentLink ?: null
       );
 
       $localizations[$lang] = $localized;
