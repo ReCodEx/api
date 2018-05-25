@@ -171,6 +171,8 @@ class TestEmailsPresenter extends Tester\TestCase
       'V1:Emails', 'POST',
       ['action' => 'sendToGroupMembers', 'groupId' => $group->getId()],
       [
+        "toSupervisors" => true,
+        "toAdmins" => true,
         "subject" => $subject,
         "message" => $message
       ]

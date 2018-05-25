@@ -333,6 +333,20 @@ class Group
   /**
    * @return array
    */
+  public function getAdmins() {
+    $group = $this;
+    $admins = [];
+    while ($group !== null) {
+      $admins = array_merge($admins, $group->getPrimaryAdmins()->getValues());
+      $group = $group->getParentGroup();
+    }
+
+    return array_values(array_unique($admins));
+  }
+
+  /**
+   * @return array
+   */
   public function getAdminsIds() {
     $group = $this;
     $admins = [];
