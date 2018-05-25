@@ -51,6 +51,18 @@ class EmailHelper {
   }
 
   /**
+   * Send an email with a nice template from default email address.
+   * @param array $to Receivers of the email
+   * @param string $subject Subject of the email
+   * @param string $text Text of the message
+   * @param array $bcc Blind copy receivers
+   * @return bool If sending was successful or not
+   */
+  public function sendFromDefault(array $to, string $subject, string $text, array $bcc = []) {
+    return $this->send(null, $to, $subject, $text, $bcc);
+  }
+
+  /**
    * Send an email with a nice template.
    * @param string|null $from Sender of the email
    * @param array $to Receivers of the email
@@ -67,7 +79,6 @@ class EmailHelper {
     }
 
     $latte = new Latte\Engine;
-    $latte->setTempDirectory(__DIR__ . "/../../../../../temp");
     $params = [
       "subject"   => $subject,
       "message"   => $text,

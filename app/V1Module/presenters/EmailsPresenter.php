@@ -60,7 +60,7 @@ class EmailsPresenter extends BasePresenter {
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->send(null, [], $subject, $message, $emails);
+    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
     $this->sendSuccessResponse("OK");
   }
 
@@ -86,7 +86,7 @@ class EmailsPresenter extends BasePresenter {
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->send(null, [], $subject, $message, $emails);
+    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
     $this->sendSuccessResponse("OK");
   }
 
@@ -112,7 +112,7 @@ class EmailsPresenter extends BasePresenter {
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->send(null, [], $subject, $message, $emails);
+    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
     $this->sendSuccessResponse("OK");
   }
 
@@ -142,7 +142,7 @@ class EmailsPresenter extends BasePresenter {
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->send(null, [], $subject, $message, $emails);
+    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
     $this->sendSuccessResponse("OK");
   }
 }
