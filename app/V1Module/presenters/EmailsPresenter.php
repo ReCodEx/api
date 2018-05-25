@@ -124,21 +124,32 @@ class EmailsPresenter extends BasePresenter {
   }
 
   /**
-   * Sends an email with provided subject and message to all members of given group.
+   * Sends an email with provided subject and message to regular members of
+   * given group and optionally to supervisors and admins.
    * @POST
    * @param string $groupId
+   * @Param(type="post", name="toSupervisors", validation="bool", description="If true, then the mail will be sent to supervisors")
+   * @Param(type="post", name="toAdmins", validation="bool", description="If the mail should be sent also to admins")
    * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    * @throws NotFoundException
    */
   public function actionSendToGroupMembers(string $groupId) {
     $group = $this->groups->findOrThrow($groupId);
-    $users = $group->getMembers()->getValues();
+    $req = $this->getRequest();
+
+    $users = $group->getStudents()->getValues();
+    if ($req->getPost("toSupervisors")) {
+      $users = array_merge($users, $group->getSupervisors()->getValues());
+    }
+    if ($req->getPost("toAdmins")) {
+      $users = array_merge($users, $group->getAdmins());
+    }
+
     $emails = array_map(function (User $user) {
       return $user->getEmail();
     }, $users);
 
-    $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
