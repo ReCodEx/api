@@ -119,7 +119,7 @@ parameters:
     tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
     emails:  # additional info for sending mails, from is source address and subjectPrefix is prefix of mail subject
       from: %emails.from%
-      subjectPrefix: "Forgotten Password Request - "
+      subjectPrefix: "Password Recovery Request - "
 
   emailVerification:
     redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"

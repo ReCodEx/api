@@ -63,8 +63,8 @@ class TestEmailsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
     $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("send")
-      ->withArgs([null, [], $subject, $message, $emails])->andReturn(true)->once();
+    $mockEmailHelper->shouldReceive("sendFromDefault")
+      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
     $this->presenter->emailHelper = $mockEmailHelper;
 
     $request = new Nette\Application\Request(
@@ -96,8 +96,8 @@ class TestEmailsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
     $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("send")
-      ->withArgs([null, [], $subject, $message, $emails])->andReturn(true)->once();
+    $mockEmailHelper->shouldReceive("sendFromDefault")
+      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
     $this->presenter->emailHelper = $mockEmailHelper;
 
     $request = new Nette\Application\Request(
@@ -129,8 +129,8 @@ class TestEmailsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
     $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("send")
-      ->withArgs([null, [], $subject, $message, $emails])->andReturn(true)->once();
+    $mockEmailHelper->shouldReceive("sendFromDefault")
+      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
     $this->presenter->emailHelper = $mockEmailHelper;
 
     $request = new Nette\Application\Request(
@@ -163,8 +163,8 @@ class TestEmailsPresenter extends Tester\TestCase
 
     /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
     $mockEmailHelper = Mockery::mock(EmailHelper::class);
-    $mockEmailHelper->shouldReceive("send")
-      ->withArgs([null, [], $subject, $message, $emails])->andReturn(true)->once();
+    $mockEmailHelper->shouldReceive("sendFromDefault")
+      ->withArgs([[], $subject, $message, $emails])->andReturn(true)->once();
     $this->presenter->emailHelper = $mockEmailHelper;
 
     $request = new Nette\Application\Request(
