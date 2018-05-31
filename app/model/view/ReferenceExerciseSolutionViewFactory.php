@@ -1,12 +1,23 @@
 <?php
 namespace App\Model\View;
 
+use App\Helpers\PermissionHints;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
+use App\Security\ACL\IReferenceExerciseSolutionPermissions;
 
 class ReferenceExerciseSolutionViewFactory {
+  /**
+   * @var IReferenceExerciseSolutionPermissions
+   */
+  private $referenceSolutionAcl;
+
+  public function __construct(IReferenceExerciseSolutionPermissions $referenceSolutionAcl) {
+    $this->referenceSolutionAcl = $referenceSolutionAcl;
+  }
+
   public function getReferenceSolution(ReferenceExerciseSolution $referenceExerciseSolution) {
-    $result = [
+    return [
       "id" => $referenceExerciseSolution->getId(),
       "description" => $referenceExerciseSolution->getDescription(),
       "solution" => $referenceExerciseSolution->getSolution(),
@@ -15,10 +26,9 @@ class ReferenceExerciseSolutionViewFactory {
         function (ReferenceSolutionSubmission $evaluation) {
           return $evaluation->getId();
         }
-      )->getValues()
+      )->getValues(),
+      "permissionHints" => PermissionHints::get($this->referenceSolutionAcl, $referenceExerciseSolution)
     ];
-
-    return $result;
   }
 
   public function getReferenceSolutionList($solutions) {

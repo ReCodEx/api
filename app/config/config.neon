@@ -169,6 +169,7 @@ acl:
     assignment: App\Security\ACL\IAssignmentPermissions
     comment: App\Security\ACL\ICommentPermissions
     exercise: App\Security\ACL\IExercisePermissions
+    referenceExerciseSolution: App\Security\ACL\IReferenceExerciseSolutionPermissions
     hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
     runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions

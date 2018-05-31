@@ -429,12 +429,20 @@ permissions:
           - setLimits
           - setScoreConfig
           - update
-          - evaluateReferenceSolution
           - createPipeline
       conditions:
           or:
             - exercise.isSuperGroupAdmin
             - exercise.isAuthor
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
+          - evaluate
+      conditions:
+          or:
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
+            - referenceExerciseSolution.isExerciseAuthor
 
     - allow: true
       resource: exercise
@@ -463,17 +471,23 @@ permissions:
       resource: exercise
       actions:
           - remove
-          - deleteReferenceSolution
       conditions:
           - exercise.isAuthor
 
     - allow: true
-      resource: exercise
+      resource: referenceExerciseSolution
       actions:
-          - deleteReferenceSolution
-          - evaluateReferenceSolution
+          - delete
+          - evaluate
       conditions:
           - referenceExerciseSolution.isAuthor
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
+          - delete
+      conditions:
+          - referenceExerciseSolution.isExerciseAuthor
 
     - allow: true
       role: supervisor
