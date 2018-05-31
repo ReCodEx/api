@@ -120,7 +120,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',
       ['action' => 'setBonusPoints', 'id' => $submission->id],
-      ['bonusPoints' => 4]
+      ['bonusPoints' => 4, 'overriddenPoints' => 857]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
@@ -132,6 +132,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     $submission = $this->presenter->assignmentSolutions->get($submission->id);
     Assert::equal(4, $submission->getBonusPoints());
+    Assert::equal(857, $submission->getOverriddenPoints());
   }
 
   public function testSetAcceptedSubmission()
