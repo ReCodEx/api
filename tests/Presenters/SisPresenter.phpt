@@ -307,6 +307,76 @@ class TestSisPresenter extends TestCase {
     Assert::equal("code1", $view["privateData"]["bindings"]["sis"][0]);
     Assert::equal("code2", $view["privateData"]["bindings"]["sis"][1]);
   }
+
+  public function testBindGroup()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var User $user */
+    $user = $this->user->getIdentity()->getUserData();
+    $login = new ExternalLogin($user, "cas-uk", "12345678");
+    $this->em->persist($login);
+    $term = new SisValidTerm(2016, 2);
+    $this->em->persist($term);
+    $this->em->flush();
+
+    $this->httpHandler->append(
+      new Response(200, [], file_get_contents(self::DATA_DIR . '/teacher_simple.json'))
+    );
+
+    $courseId = '16bNSWI153x01';
+    $group = $this->groups->findAll()[0];
+
+    /** @var JsonResponse $response */
+    $response = $this->presenter->run(new Request('V1:Sis', 'POST', [
+      'action' => 'bindGroup',
+      'courseId' => $courseId
+    ], [
+      'groupId' => $group->getId()
+    ]));
+    Assert::type(JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::same(200, $result['code']);
+
+    Assert::contains($courseId, $result['payload']['privateData']['bindings']['sis']);
+  }
+
+  public function testUnbindGroup()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    /** @var User $user */
+    $user = $this->user->getIdentity()->getUserData();
+    $login = new ExternalLogin($user, "cas-uk", "12345678");
+    $this->em->persist($login);
+    $term = new SisValidTerm(2016, 2);
+    $this->em->persist($term);
+    $this->em->flush();
+
+    $this->httpHandler->append(
+      new Response(200, [], file_get_contents(self::DATA_DIR . '/teacher_simple.json'))
+    );
+
+    $courseId = '16bNSWI153x01';
+    $group = $this->groups->findAll()[0];
+
+    $binding = new SisGroupBinding($group, $courseId);
+    $this->bindings->persist($binding);
+
+    /** @var JsonResponse $response */
+    $response = $this->presenter->run(new Request('V1:Sis', 'POST', [
+      'action' => 'unbindGroup',
+      'courseId' => $courseId,
+      'groupId' => $group->getId()
+    ]));
+
+    Assert::type(JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::same(200, $result['code']);
+    Assert::null($this->bindings->findByGroupAndCode($group, $courseId));
+  }
 }
 
 (new TestSisPresenter())->run();

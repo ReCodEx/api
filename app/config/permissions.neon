@@ -254,6 +254,7 @@ permissions:
       actions:
         - viewDetail
         - viewSubmissions
+        - viewAssignmentSolutions
 
     - allow: true
       role: student
@@ -275,6 +276,7 @@ permissions:
           - submit
           - viewSubmissions
           - resubmitSubmissions
+          - viewAssignmentSolutions
       conditions:
           - assignment.isSupervisor
 
@@ -664,6 +666,7 @@ permissions:
       resource: sis
       actions:
         - bindGroup
+        - unbindGroup
       conditions:
         - group.isSupervisor
         - course.isSupervisor

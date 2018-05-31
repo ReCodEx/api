@@ -81,4 +81,17 @@ class AssignmentSolutionViewFactory {
       "permissionHints" => PermissionHints::get($this->assignmentSolutionAcl, $solution)
     ];
   }
+
+  /**
+   * Parametrized view.
+   * @param AssignmentSolution[] $solutions
+   * @return array
+   */
+  public function getUserSolutionsData(array $solutions) {
+    $solutions = array_map(function (AssignmentSolution $solution) {
+      return $this->getSolutionData($solution);
+    }, $solutions);
+    return array_values($solutions);
+  }
+
 }

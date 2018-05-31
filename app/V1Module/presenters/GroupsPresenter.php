@@ -17,6 +17,7 @@ use App\Model\Repository\GroupMemberships;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\View\ExerciseViewFactory;
+use App\Model\View\AssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
@@ -105,6 +106,12 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $exerciseViewFactory;
+
+  /**
+   * @var AssignmentViewFactory
+   * @inject
+   */
+  public $assignmentViewFactory;
 
   public function checkDefault() {
     if (!$this->groupAcl->canViewAll()) {
@@ -461,9 +468,11 @@ class GroupsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($id);
 
     $assignments = $group->getAssignments();
-    $this->sendSuccessResponse(array_values(array_filter($assignments->getValues(), function (Assignment $assignment) {
+    $this->sendSuccessResponse($assignments->filter(function (Assignment $assignment) {
       return $this->assignmentAcl->canViewDetail($assignment);
-    })));
+    })->map(function (Assignment $assignment) {
+      return $this->assignmentViewFactory->getAssignment($assignment);
+    })->getValues());
   }
 
   public function checkExercises(string $id) {

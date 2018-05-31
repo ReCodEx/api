@@ -386,6 +386,35 @@ class SisPresenter extends BasePresenter {
   }
 
   /**
+   * Delete a binding between a local group and a SIS group
+   * @DELETE
+   * @param string $courseId an identifier of a SIS course
+   * @param string $groupId an identifier of a local group
+   * @throws BadRequestException
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionUnbindGroup($courseId, $groupId) {
+    $user = $this->getCurrentUser();
+    $sisUserId = $this->getSisUserIdOrThrow($user);
+    $remoteCourse = $this->findRemoteCourseOrThrow($courseId, $sisUserId);
+    $group = $this->groups->findOrThrow($groupId);
+
+    if (!$this->sisAcl->canUnbindGroup($group, $remoteCourse)) {
+      throw new ForbiddenRequestException();
+    }
+
+    $groupBinding = $this->sisGroupBindings->findByGroupAndCode($group, $remoteCourse->getCode());
+    if (!$groupBinding) {
+      throw new NotFoundException();
+    }
+
+    $this->sisGroupBindings->remove($groupBinding);
+    $this->sendSuccessResponse("OK");
+  }
+
+  /**
    * Find groups that can be chosen as parents of a group created from given SIS group by current user
    * @GET
    * @param $courseId

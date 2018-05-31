@@ -39,6 +39,7 @@ class SisGroupContext {
 interface ISisPermissions {
   function canCreateGroup(SisGroupContext $groupContext, SisCourseRecord $course): bool;
   function canBindGroup(Group $group, SisCourseRecord $course): bool;
+  function canUnbindGroup(Group $group, SisCourseRecord $course): bool;
   function canViewCourses(SisIdWrapper $sisId): bool;
   function canCreateTerm(): bool;
   function canEditTerm(SisValidTerm $term): bool;

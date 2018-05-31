@@ -157,9 +157,10 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/<id>", "Assignments:detail");
     $router[] = new PostRoute("$prefix/<id>", "Assignments:updateDetail");
     $router[] = new DeleteRoute("$prefix/<id>", "Assignments:remove");
+    $router[] = new GetRoute("$prefix/<id>/solutions", "Assignments:solutions");
     $router[] = new GetRoute("$prefix/<id>/best-solutions", "Assignments:bestSolutions");
     $router[] = new GetRoute("$prefix/<id>/download-best-solutions", "Assignments:downloadBestSolutionsArchive");
-    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:solutions");
+    $router[] = new GetRoute("$prefix/<id>/users/<userId>/solutions", "Assignments:userSolutions");
     $router[] = new GetRoute("$prefix/<id>/users/<userId>/best-solution", "Assignments:bestSolution");
     $router[] = new PostRoute("$prefix/<id>/validate", "Assignments:validate");
     $router[] = new PostRoute("$prefix/<id>/sync-exercise", "Assignments:syncWithExercise");
@@ -248,6 +249,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
 
+    $router[] = new GetRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:detail");
     $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
     $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
     $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
@@ -422,6 +424,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/remote-courses/<courseId>/possible-parents", "Sis:possibleParents");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/create", "Sis:createGroup");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/bind", "Sis:bindGroup");
+    $router[] = new DeleteRoute("$prefix/remote-courses/<courseId>/bindings/<groupId>", "Sis:unbindGroup");
     return $router;
   }
 }
