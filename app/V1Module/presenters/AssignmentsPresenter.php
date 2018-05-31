@@ -184,6 +184,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
    * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
+   * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
    * @throws InvalidArgumentException
@@ -224,6 +225,7 @@ class AssignmentsPresenter extends BasePresenter {
     $firstDeadlineTimestamp = $req->getPost("firstDeadline");
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
+    $sendNotification = $req->getPost("sendNotification") ? filter_var($req->getPost("sendNotification"), FILTER_VALIDATE_BOOLEAN) : true;
 
     $assignment->incrementVersion();
     $assignment->updatedNow();
@@ -253,7 +255,7 @@ class AssignmentsPresenter extends BasePresenter {
       $this->solutionEvaluations->flush();
     }
 
-    if ($wasPublic === false && $isPublic === true) {
+    if ($sendNotification && $wasPublic === false && $isPublic === true) {
       // assignment is moving from non-public to public, send notification to students
       $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
@@ -351,6 +353,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws BadRequestException
    * @throws InvalidStateException
+   * @throws NotFoundException
    */
   public function actionCreate() {
     $req = $this->getRequest();
