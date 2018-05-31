@@ -347,6 +347,7 @@ services:
   - App\Model\View\AssignmentViewFactory
   - App\Model\View\AssignmentSolutionViewFactory
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
+  - App\Model\View\ReferenceExerciseSolutionViewFactory
 
 doctrine:
   user: 'root'

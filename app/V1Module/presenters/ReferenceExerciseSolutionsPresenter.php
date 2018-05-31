@@ -34,6 +34,7 @@ use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Model\View\ReferenceExerciseSolutionViewFactory;
 use App\Responses\GuzzleResponse;
 use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IExercisePermissions;
@@ -122,6 +123,12 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public $monitorConfig;
 
+  /**
+   * @var ReferenceExerciseSolutionViewFactory
+   * @inject
+   */
+  public $referenceSolutionViewFactory;
+
 
   public function checkSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -137,7 +144,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
+    $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolutionList($exercise->getReferenceSolutions()->getValues()));
   }
 
   public function checkDeleteReferenceSolution(string $solutionId) {
@@ -444,7 +451,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     return [
-      "referenceSolution" => $referenceSolution,
+      "referenceSolution" => $this->referenceSolutionViewFactory->getReferenceSolution($referenceSolution),
       "submissions" => $submissions,
       "errors" => $errors
     ];
