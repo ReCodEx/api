@@ -160,6 +160,7 @@ class TestEmailsPresenter extends Tester\TestCase
     $emails = array_map(function (User $user) {
       return $user->getEmail();
     }, $group->getMembers()->getValues());
+    $emails[] = PresenterTestHelper::ADMIN_LOGIN;
 
     /** @var Mockery\Mock | EmailHelper $mockEmailHelper */
     $mockEmailHelper = Mockery::mock(EmailHelper::class);
@@ -173,6 +174,7 @@ class TestEmailsPresenter extends Tester\TestCase
       [
         "toSupervisors" => true,
         "toAdmins" => true,
+        "toMe" => true,
         "subject" => $subject,
         "message" => $message
       ]
