@@ -130,25 +130,37 @@ class EmailsPresenter extends BasePresenter {
    * @param string $groupId
    * @Param(type="post", name="toSupervisors", validation="bool", description="If true, then the mail will be sent to supervisors")
    * @Param(type="post", name="toAdmins", validation="bool", description="If the mail should be sent also to admins")
+   * @Param(type="post", name="toMe", validation="bool", description="User wants to also receive an email")
    * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    * @throws NotFoundException
+   * @throws ForbiddenRequestException
    */
   public function actionSendToGroupMembers(string $groupId) {
+    $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($groupId);
     $req = $this->getRequest();
 
+    $toSupervisors = filter_var($req->getPost("toSupervisors"), FILTER_VALIDATE_BOOLEAN);
+    $toAdmins = filter_var($req->getPost("toAdmins"), FILTER_VALIDATE_BOOLEAN);
+    $toMe = filter_var($req->getPost("toMe"), FILTER_VALIDATE_BOOLEAN);
+
     $users = $group->getStudents()->getValues();
-    if ($req->getPost("toSupervisors")) {
+    if ($toSupervisors) {
       $users = array_merge($users, $group->getSupervisors()->getValues());
     }
-    if ($req->getPost("toAdmins")) {
+    if ($toAdmins) {
       $users = array_merge($users, $group->getAdmins());
     }
 
     $emails = array_map(function (User $user) {
       return $user->getEmail();
     }, $users);
+
+    // user requested copy of the email to his/hers email address
+    if ($toMe && !in_array($user->getEmail(), $emails)) {
+      $emails[] = $user->getEmail();
+    }
 
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
