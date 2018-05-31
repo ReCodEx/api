@@ -72,6 +72,15 @@ class GroupViewFactory {
   }
 
   /**
+   * @param Group $group
+   * @param User $user
+   * @return int
+   */
+  private function getPointsForShadowAssignments(Group $group, User $user): int {
+    // TODO
+  }
+
+  /**
    * Get the statistics of an individual student.
    * @param Group $group
    * @param User $student Student of this group
@@ -81,6 +90,7 @@ class GroupViewFactory {
     $maxPoints = $group->getMaxPoints();
     $solutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
     $gainedPoints = $this->getPointsGainedByStudentForSolutions($solutions);
+    $gainedPoints += $this->getPointsForShadowAssignments($group, $student);
 
     $assignments = [];
     foreach ($solutions as $solutionPair) {
@@ -103,6 +113,9 @@ class GroupViewFactory {
       ];
     }
 
+    // TODO: points assignments
+    $shadowAssignments = null;
+
     return [
       "userId" => $student->getId(),
       "groupId" => $group->getId(),
@@ -112,7 +125,8 @@ class GroupViewFactory {
       ],
       "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
       "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold(),
-      "assignments" => $assignments
+      "assignments" => $assignments,
+      "shadowAssignments" => $shadowAssignments
     ];
   }
 
