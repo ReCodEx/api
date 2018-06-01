@@ -220,7 +220,7 @@ class ExercisesPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $externalAssignmentLink = Arrays::get($localization, "link", "");
+      $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
       if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
