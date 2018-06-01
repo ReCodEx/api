@@ -21,6 +21,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
+use App\Model\View\ExerciseViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
@@ -87,6 +88,12 @@ class ExercisesPresenter extends BasePresenter {
    */
   public $configChecker;
 
+  /**
+   * @var ExerciseViewFactory
+   * @inject
+   */
+  public $exerciseViewFactory;
+
 
   public function checkDefault(string $search = null) {
     if (!$this->exerciseAcl->canViewAll()) {
@@ -104,7 +111,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
-    $this->sendSuccessResponse(array_values($exercises));
+    $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises)));
   }
 
   public function checkListByIds() {
@@ -123,7 +130,7 @@ class ExercisesPresenter extends BasePresenter {
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
-    $this->sendSuccessResponse(array_values($exercises));
+    $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises)));
   }
 
   public function checkDetail(string $id) {
@@ -142,7 +149,7 @@ class ExercisesPresenter extends BasePresenter {
   public function actionDetail(string $id) {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkUpdateDetail(string $id) {
@@ -246,7 +253,7 @@ class ExercisesPresenter extends BasePresenter {
     $this->configChecker->check($exercise);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkValidate($id) {
@@ -334,7 +341,7 @@ class ExercisesPresenter extends BasePresenter {
     $this->configChecker->check($exercise);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkHardwareGroups(string $id) {
@@ -378,7 +385,7 @@ class ExercisesPresenter extends BasePresenter {
     // check exercise configuration
     $this->configChecker->check($exercise);
     $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkRemove(string $id) {
@@ -428,7 +435,7 @@ class ExercisesPresenter extends BasePresenter {
     $this->configChecker->check($exercise);
     $this->exercises->flush();
 
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkAttachGroup(string $id, string $groupId) {
@@ -456,7 +463,7 @@ class ExercisesPresenter extends BasePresenter {
 
     $exercise->addGroup($group);
     $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
   public function checkDetachGroup(string $id, string $groupId) {
@@ -488,7 +495,7 @@ class ExercisesPresenter extends BasePresenter {
 
     $exercise->removeGroup($group);
     $this->exercises->flush();
-    $this->sendSuccessResponse($exercise);
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
 }

@@ -169,6 +169,7 @@ acl:
     assignment: App\Security\ACL\IAssignmentPermissions
     comment: App\Security\ACL\ICommentPermissions
     exercise: App\Security\ACL\IExercisePermissions
+    referenceExerciseSolution: App\Security\ACL\IReferenceExerciseSolutionPermissions
     hardwareGroup: App\Security\ACL\IHardwareGroupPermissions
     runtimeEnvironment: App\Security\ACL\IRuntimeEnvironmentPermissions
     submissionFailure: App\Security\ACL\ISubmissionFailurePermissions
@@ -310,7 +311,6 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver
   - App\Helpers\ExerciseConfig\Helper
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
-  - App\Helpers\PermissionsResponseDecorator
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
 
@@ -342,11 +342,13 @@ services:
   - App\Model\Repository\SisValidTerms
 
   # views factories
+  - App\Model\View\ExerciseViewFactory
   - App\Model\View\GroupViewFactory
   - App\Model\View\UserViewFactory
   - App\Model\View\AssignmentViewFactory
   - App\Model\View\AssignmentSolutionViewFactory
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
+  - App\Model\View\ReferenceExerciseSolutionViewFactory
 
 doctrine:
   user: 'root'

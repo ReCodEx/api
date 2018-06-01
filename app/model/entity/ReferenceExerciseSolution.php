@@ -16,7 +16,7 @@ use JsonSerializable;
  * @method Exercise getExercise()
  * @method Collection getSubmissions()
  */
-class ReferenceExerciseSolution implements JsonSerializable
+class ReferenceExerciseSolution
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
@@ -57,20 +57,6 @@ class ReferenceExerciseSolution implements JsonSerializable
 
   public function getFiles() {
     return $this->solution->getFiles();
-  }
-
-  public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "description" => $this->description,
-      "solution" => $this->solution,
-      "runtimeEnvironmentId" => $this->solution->getRuntimeEnvironment()->getId(),
-      "submissions" => $this->submissions->map(
-        function (ReferenceSolutionSubmission $evaluation) {
-          return $evaluation->getId();
-        }
-      )->getValues()
-    ];
   }
 
   public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {

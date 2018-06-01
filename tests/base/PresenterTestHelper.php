@@ -123,9 +123,6 @@ class PresenterTestHelper
     /** @var $presenter Nette\Application\UI\Presenter */
     $presenter = $container->createService($name);
     $presenter->autoCanonicalize = false;
-    if ($presenter instanceof App\V1Module\Presenters\BasePresenter) {
-      $presenter->responseDecorator = null;
-    }
 
     return $presenter;
   }

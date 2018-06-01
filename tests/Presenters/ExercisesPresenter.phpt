@@ -6,6 +6,7 @@ use App\Exceptions\NotFoundException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
+use App\Security\AccessManager;
 use App\V1Module\Presenters\ExercisesPresenter;
 use Tester\Assert;
 
@@ -92,7 +93,10 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($this->presenter->exercises->findAll(), $result['payload']);
+    Assert::same(
+      array_map(function (Exercise $exercise) { return $exercise->getId(); }, $this->presenter->exercises->findAll()),
+      array_map(function ($item) { return $item["id"]; }, $result['payload'])
+    );
     Assert::count(count($this->presenter->exercises->findAll()), $result['payload']);
   }
 
@@ -154,12 +158,12 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($exercise, $result['payload']);
+    Assert::same($exercise->getId(), $result['payload']['id']);
   }
 
   public function testUpdateDetail()
   {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    PresenterTestHelper::login($this->container, $this->adminLogin);
 
     $allExercises = $this->presenter->exercises->findAll();
     $exercise = array_pop($allExercises);
@@ -186,22 +190,21 @@ class TestExercisesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::equal('super hard', $result['payload']->difficulty);
-    Assert::equal(false, $result['payload']->isPublic);
+    Assert::equal('super hard', $result['payload']['difficulty']);
+    Assert::equal(false, $result['payload']['isPublic']);
 
-    $updatedLocalizedTexts = $result['payload']->localizedTexts;
+    $updatedLocalizedTexts = $result['payload']['localizedTexts'];
     Assert::count(count($exercise->localizedTexts), $updatedLocalizedTexts);
 
+    /** @var LocalizedExercise $localized */
     foreach ($exercise->localizedTexts as $localized) {
-      Assert::true($updatedLocalizedTexts->contains($localized));
+      Assert::count(1, array_filter($updatedLocalizedTexts), function (LocalizedExercise $text) use ($localized) {
+        return $text->getLocale() === $localized->getLocale();
+      });
     }
-    Assert::true($updatedLocalizedTexts->exists(function ($key, LocalizedExercise $localized) {
-      if ($localized->getLocale() == "cs"
-          && $localized->getAssignmentText() == "new descr") {
-        return true;
-      }
 
-      return false;
+    Assert::count(1, array_filter($updatedLocalizedTexts, function (LocalizedExercise $text) {
+      return $text->getLocale() === "cs" && $text->getAssignmentText() === "new descr";
     }));
   }
 
@@ -229,7 +232,12 @@ class TestExercisesPresenter extends Tester\TestCase
 
   public function testCreate()
   {
-    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    /** @var AccessManager $accessManager */
+    $accessManager = $this->container->getByType(AccessManager::class);
+    $decodedToken = $accessManager->decodeToken($token);
+
     $group = current($this->presenter->groups->findAll());
 
     $request = new Nette\Application\Request('V1:Exercises', 'POST',
@@ -245,16 +253,11 @@ class TestExercisesPresenter extends Tester\TestCase
     /** @var Exercise $payload */
     $payload = $result['payload'];
 
-    Assert::type(\App\Model\Entity\Exercise::class, $payload);
-    Assert::equal($this->adminLogin, $payload->getAuthor()->getEmail());
-    Assert::count(1, $payload->getLocalizedTexts());
-    $firstLocalizedText = $payload->getLocalizedTexts()->first();
+    Assert::equal($decodedToken->getPayload("sub"), $payload["authorId"]);
+    Assert::count(1, $payload["localizedTexts"]);
+    $firstLocalizedText = $payload["localizedTexts"][0];
     Assert::equal("Exercise by " . $this->user->identity->getUserData()->getName(), $firstLocalizedText->getName());
-    Assert::notEqual(null, $payload->getExerciseConfig());
-    Assert::equal($group, $payload->getGroups()->first());
-
-    // check score config
-    Assert::equal("testWeights: {  }\n", $payload->getScoreConfig());
+    Assert::equal($group->getId(), $payload["groupsIds"][0]);
   }
 
   public function testRemove()
@@ -327,14 +330,14 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var Exercise $forked */
     $forked = $result['payload'];
-    Assert::type(Exercise::class, $forked);
-    Assert::true($forked->getLocalizedTexts()->forAll(function ($i, $text) use ($exercise) {
-      return $exercise->getLocalizedTexts()->contains($text);
-    }));
-    Assert::equal(1, $forked->getVersion());
-    Assert::equal($user, $forked->getAuthor());
-    Assert::equal(1, $forked->getGroups()->count());
-    Assert::equal($group->getId(), $forked->getGroups()->first()->getId());
+
+    foreach ($forked["localizedTexts"] as $text) {
+      Assert::true($exercise->getLocalizedTexts()->contains($text));
+    }
+    Assert::equal(1, $forked["version"]);
+    Assert::equal($user->getId(), $forked["authorId"]);
+    Assert::equal(1, count($forked["groupsIds"]));
+    Assert::equal($group->getId(), $forked["groupsIds"][0]);
   }
 
   public function testHardwareGroups()
@@ -356,8 +359,8 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result["payload"];
-    Assert::count(1, $payload->getHardwareGroups());
-    Assert::equal("group1", $payload->getHardwareGroups()->first()->getId());
+    Assert::count(1, $payload["hardwareGroups"]);
+    Assert::equal("group1", $payload["hardwareGroups"][0]->getId());
   }
 
   public function testAttachGroup()
@@ -377,9 +380,8 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var Exercise $payload */
     $payload = $result['payload'];
-    Assert::type(Exercise::class, $payload);
-    Assert::equal(2, $payload->getGroups()->count());
-    Assert::true($payload->getGroups()->contains($group));
+    Assert::count(2, $payload["groupsIds"]);
+    Assert::contains($group->getId(), $payload["groupsIds"]);
   }
 
   public function testLastDetachGroup()
@@ -419,8 +421,7 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var Exercise $payload */
     $payload = $result['payload'];
-    Assert::type(Exercise::class, $payload);
-    Assert::equal(1, $payload->getGroups()->count());
+    Assert::count(1, $payload["groupsIds"]);
   }
 
 }

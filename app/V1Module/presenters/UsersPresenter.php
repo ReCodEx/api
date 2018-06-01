@@ -12,6 +12,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Model\View\ExerciseViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IUserPermissions;
@@ -52,6 +53,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $userAcl;
+
+  /**
+   * @var ExerciseViewFactory
+   * @inject
+   */
+  public $exerciseViewFactory;
 
   public function checkDefault() {
     if (!$this->userAcl->canViewAll()) {
@@ -460,7 +467,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionExercises(string $id) {
     $user = $this->users->findOrThrow($id);
-    $this->sendSuccessResponse($user->getExercises()->getValues());
+    $this->sendSuccessResponse(array_map([$this->exerciseViewFactory, "getExercise"], $user->getExercises()->getValues()));
   }
 
   public function checkSetRole(string $id) {
