@@ -124,11 +124,7 @@ class AssignmentSolution
    * @return int
    */
   public function getTotalPoints() {
-    $points = $this->getPoints();
-    if ($points === null) {
-      $points = 0;
-    }
-
+    $points = $this->getPoints() ?? 0;
     return $points + $this->bonusPoints;
   }
 
