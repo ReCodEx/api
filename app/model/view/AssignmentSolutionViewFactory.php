@@ -71,6 +71,7 @@ class AssignmentSolutionViewFactory {
       "maxPoints" => $solution->getMaxPoints(),
       "accepted" => $solution->getAccepted(),
       "bonusPoints" => $solution->getBonusPoints(),
+      "overriddenPoints" => $solution->getOverriddenPoints(),
       "lastSubmission" => $lastSubmission,
       "submissions" => $submissions,
       "commentsStats" => $threadCommentsCount ? [
