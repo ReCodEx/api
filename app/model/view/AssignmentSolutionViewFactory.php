@@ -70,6 +70,7 @@ class AssignmentSolutionViewFactory {
       "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
       "maxPoints" => $solution->getMaxPoints(),
       "accepted" => $solution->getAccepted(),
+      "actualPoints" => $solution->getPoints(),
       "bonusPoints" => $solution->getBonusPoints(),
       "overriddenPoints" => $solution->getOverriddenPoints(),
       "lastSubmission" => $lastSubmission,
