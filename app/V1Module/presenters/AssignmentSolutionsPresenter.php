@@ -189,7 +189,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Set new amount of bonus points for a solution
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-   * @Param(type="post", name="overriddenPoints", required=false, validation="numericint", description="Overrides points assigned to solution by the system")
+   * @Param(type="post", name="overriddenPoints", validation="null|numericint", description="Overrides points assigned to solution by the system")
    * @param string $id Identifier of the submission
    * @throws NotFoundException
    */
@@ -199,9 +199,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $solution = $this->assignmentSolutions->findOrThrow($id);
 
     $solution->setBonusPoints($newBonusPoints);
-    if ($overriddenPoints) {
-      $solution->setOverriddenPoints($overriddenPoints);
-    }
+    $solution->setOverriddenPoints($overriddenPoints === "" ? null : $overriddenPoints);
 
     $this->assignmentSolutions->flush();
     $this->sendSuccessResponse("OK");
