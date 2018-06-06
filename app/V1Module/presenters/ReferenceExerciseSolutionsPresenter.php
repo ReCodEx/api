@@ -168,7 +168,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws NotFoundException
    */
   public function actionDetail(string $solutionId) {
-    $this->sendSuccessResponse($this->referenceSolutions->findOrThrow($solutionId));
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
   }
 
   public function checkDeleteReferenceSolution(string $solutionId) {
