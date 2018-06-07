@@ -26,9 +26,12 @@ class AssignmentViewFactory {
         if (!$this->assignmentAcl->canViewDescription($assignment)) {
           unset($data["description"]);
         }
+
+        $localizedAssignment = $assignment->getLocalizedAssignmentByLocale($text->getLocale());
+        $data["studentHint"] = $localizedAssignment === null ? "" : $localizedAssignment->getStudentHint();
+
         return $data;
       })->getValues(),
-      "localizedAssignments" => $assignment->getLocalizedAssignments()->getValues(),
       "exerciseId" => $assignment->getExercise()->getId(),
       "groupId" => $assignment->getGroup()->getId(),
       "firstDeadline" => $assignment->getFirstDeadline()->getTimestamp(),

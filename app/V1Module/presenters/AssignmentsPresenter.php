@@ -173,7 +173,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
-   * @Param(type="post", name="localizedAssignments", validation="array", description="Public localized hints for the assignment", required=false)
    * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -262,6 +261,7 @@ class AssignmentsPresenter extends BasePresenter {
 
     // go through localizedTexts and construct database entities
     $localizedTexts = [];
+    $localizedAssignments = [];
     foreach ($req->getPost("localizedTexts") as $localization) {
       $lang = $localization["locale"];
 
@@ -283,6 +283,13 @@ class AssignmentsPresenter extends BasePresenter {
       );
 
       $localizedTexts[$lang] = $localized;
+
+      if (array_key_exists("studentHint", $localization)) {
+        $localizedAssignments[$lang] = new LocalizedAssignment(
+          $lang,
+          $localization["studentHint"]
+        );
+      }
     }
 
     // make changes to database
@@ -292,25 +299,6 @@ class AssignmentsPresenter extends BasePresenter {
       $this->assignments->persist($localizedText, false);
     }
 
-    // go through localizedAssignments and construct database entities
-    $localizedAssignments = [];
-    foreach ($req->getPost("localizedAssignments") ?? [] as $localization) {
-      $lang = $localization["locale"];
-
-      if (array_key_exists($lang, $localizedAssignments)) {
-        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedAssignments");
-      }
-
-      // create all new localized texts
-      $localized = new LocalizedAssignment(
-        $lang,
-        $localization["studentHint"]
-      );
-
-      $localizedAssignments[$lang] = $localized;
-    }
-
-    // make changes to database
     Localizations::updateCollection($assignment->getLocalizedAssignments(), $localizedAssignments);
 
     foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
