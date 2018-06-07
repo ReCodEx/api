@@ -2,11 +2,14 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
+use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
@@ -189,9 +192,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Set new amount of bonus points for a solution
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-   * @Param(type="post", name="overriddenPoints", validation="null|numericint", description="Overrides points assigned to solution by the system")
+   * @Param(type="post", name="overriddenPoints", description="Overrides points assigned to solution by the system")
    * @param string $id Identifier of the submission
    * @throws NotFoundException
+   * @throws InvalidArgumentException
    */
   public function actionSetBonusPoints(string $id) {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
@@ -199,7 +203,17 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $solution = $this->assignmentSolutions->findOrThrow($id);
 
     $solution->setBonusPoints($newBonusPoints);
-    $solution->setOverriddenPoints($overriddenPoints === "" ? null : $overriddenPoints);
+
+    // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty string,
+    // TODO: which immediately breaks stated validation... in the future, this behaviour has to change
+    // TODO: lucky third TODO
+    if (Validators::isNumericInt($overriddenPoints)) {
+      $solution->setOverriddenPoints($overriddenPoints);
+    } else if (empty($overriddenPoints)) {
+      $solution->setOverriddenPoints(null);
+    } else {
+      throw new InvalidArgumentException("overridenPoints", "The value '$overriddenPoints' is not null|numericint");
+    }
 
     $this->assignmentSolutions->flush();
     $this->sendSuccessResponse("OK");
