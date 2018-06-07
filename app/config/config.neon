@@ -342,6 +342,8 @@ services:
   - App\Model\Repository\Pipelines
   - App\Model\Repository\SisGroupBindings
   - App\Model\Repository\SisValidTerms
+  - App\Model\Repository\ShadowAssignments
+  - App\Model\Repository\ShadowAssignmentEvaluations
 
   # views factories
   - App\Model\View\ExerciseViewFactory

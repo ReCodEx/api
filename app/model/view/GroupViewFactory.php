@@ -11,8 +11,11 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
+use App\Model\Entity\ShadowAssignment;
+use App\Model\Entity\ShadowAssignmentEvaluation;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\ShadowAssignmentEvaluations;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
@@ -24,30 +27,29 @@ use Doctrine\Common\Collections\Collection;
  */
 class GroupViewFactory {
 
-  /**
-   * @var AssignmentSolutions
-   */
+  /** @var AssignmentSolutions */
   private $assignmentSolutions;
 
-  /**
-   * @var IGroupPermissions
-   */
+  /** @var IGroupPermissions */
   private $groupAcl;
 
-  /**
-   * @var IAssignmentPermissions
-   */
+  /** @var IAssignmentPermissions */
   private $assignmentAcl;
 
   /** @var GroupBindingAccessor */
   private $bindings;
 
+  /** @var ShadowAssignmentEvaluations */
+  private $shadowAssignmentEvaluations;
+
   public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
-                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
+                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings,
+                              ShadowAssignmentEvaluations $shadowAssignmentEvaluations) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
     $this->bindings = $bindings;
+    $this->shadowAssignmentEvaluations = $shadowAssignmentEvaluations;
   }
 
 
@@ -72,12 +74,16 @@ class GroupViewFactory {
   }
 
   /**
-   * @param Group $group
-   * @param User $user
+   * Get total sum of points which given user gained in given shadow assignments.
+   * @param ShadowAssignmentEvaluation[] $shadowEvaluations
    * @return int
    */
-  private function getPointsForShadowAssignments(Group $group, User $user): int {
-    // TODO
+  private function getPointsForShadowAssignments(array $shadowEvaluations): int {
+    return array_reduce($shadowEvaluations,
+      function ($carry, ShadowAssignmentEvaluation $evaluation) {
+        return $carry + $evaluation->getPoints();
+      },
+      0);
   }
 
   /**
@@ -88,12 +94,13 @@ class GroupViewFactory {
    */
   public function getStudentsStats(Group $group, User $student) {
     $maxPoints = $group->getMaxPoints();
-    $solutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
-    $gainedPoints = $this->getPointsGainedByStudentForSolutions($solutions);
-    $gainedPoints += $this->getPointsForShadowAssignments($group, $student);
+    $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
+    $shadowEvaluations = $this->shadowAssignmentEvaluations->findEvaluationsForAssignment($group->getShadowAssignments()->getValues(), $student);
+    $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
+    $gainedPoints += $this->getPointsForShadowAssignments($shadowEvaluations);
 
     $assignments = [];
-    foreach ($solutions as $solutionPair) {
+    foreach ($assignmentSolutions as $solutionPair) {
       /**
        * @var Assignment $assignment
        * @var AssignmentSolution $best
@@ -113,8 +120,17 @@ class GroupViewFactory {
       ];
     }
 
-    // TODO: points assignments
-    $shadowAssignments = null;
+    $shadowAssignments = [];
+    foreach ($shadowEvaluations as $evaluation) {
+      $assignment = $evaluation->getShadowAssignment();
+      $shadowAssignments[] = [
+        "id" => $assignment->getId(),
+        "points" => [
+          "total" => $assignment->getMaxPoints(),
+          "gained" => $evaluation->getPoints()
+        ]
+      ];
+    }
 
     return [
       "userId" => $student->getId(),
