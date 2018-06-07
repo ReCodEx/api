@@ -17,6 +17,7 @@ class ExerciseViewFactory {
   public function getExercise(Exercise $exercise) {
     /** @var LocalizedExercise $primaryLocalization */
     $primaryLocalization = Localizations::getPrimaryLocalization($exercise->getLocalizedTexts());
+    $forkedFrom = $exercise->getForkedFrom();
 
     return [
       "id" => $exercise->getId(),
@@ -28,7 +29,7 @@ class ExerciseViewFactory {
       "difficulty" => $exercise->getDifficulty(),
       "runtimeEnvironments" => $exercise->getRuntimeEnvironments()->getValues(),
       "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
-      "forkedFrom" => $exercise->getForkedFrom(),
+      "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
       "authorId" => $exercise->getAuthor()->getId(),
       "groupsIds" => $exercise->getGroupsIds(),
       "isPublic" => $exercise->isPublic(),
