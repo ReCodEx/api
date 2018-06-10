@@ -434,8 +434,8 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $testAJudgeTask->getDependencies());
     Assert::equal([$testACopyTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
       $testAJudgeTask->getDependencies());
-    Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-judge-normal", $testAJudgeTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "expected.out", ConfigParams::$EVAL_DIR . "actual.out"], $testAJudgeTask->getCommandArguments());
+    Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-token-judge", $testAJudgeTask->getCommandBinary());
+    Assert::equal(["--log-limit", "4k", ConfigParams::$EVAL_DIR . "expected.out", ConfigParams::$EVAL_DIR . "actual.out"], $testAJudgeTask->getCommandArguments());
     Assert::equal(TaskType::$EVALUATION, $testAJudgeTask->getType());
     Assert::equal("testA", $testAJudgeTask->getTestId());
     Assert::notEqual(null, $testAJudgeTask->getSandboxConfig());
