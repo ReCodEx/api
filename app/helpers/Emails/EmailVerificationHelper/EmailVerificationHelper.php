@@ -62,7 +62,7 @@ class EmailVerificationHelper {
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
-    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "ReCodEx Email Verification Request - ");
+    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Email Verification Request - ");
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.cz");
     $this->tokenExpiration = Arrays::get($params, ["tokenExpiration"], 10 * 60); // default value: 10 minutes
   }

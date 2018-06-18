@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Model\Entity\Exercise;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
 use App\Model\Repository\ExternalLogins;
@@ -374,7 +375,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testCreateLocalAccount()
   {
-    $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstance();
+    $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstances()->first();
     $user = new User("external@external.external", "firstName", "lastName", "", "", "student", $instance);
     $external = new ExternalLogin($user, "test", $user->getEmail());
 
@@ -475,7 +476,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $instance = array_pop($instances);
     Assert::type(\App\Model\Entity\Instance::class, $instance);
-    Assert::equal($user->getInstance()->getId(), $instance->getId());
+    Assert::equal($user->getInstances()->first()->getId(), $instance->getId());
   }
 
   public function testExercises()
@@ -493,11 +494,13 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $exercises = $result["payload"];
-    Assert::equal($user->getExercises()->getValues(), $exercises);
+    Assert::equal(
+      array_map(function (Exercise $exercise) { return $exercise->getId(); }, $user->getExercises()->getValues()),
+      array_map(function ($exercise) { return $exercise["id"]; }, $exercises)
+    );
 
     foreach ($exercises as $exercise) {
-      Assert::type(\App\Model\Entity\Exercise::class, $exercise);
-      Assert::true($exercise->isAuthor($user));
+      Assert::same($user->getId(), $exercise["authorId"]);
     }
   }
 

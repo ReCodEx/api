@@ -159,7 +159,6 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
-   * @Param(type="post", name="localizedAssignments", validation="array", description="Public localized hints for the assignment", required=false)
    * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
@@ -170,6 +169,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
    * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
    * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
+   * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
    * @param string $id Identifier of the updated assignment
    * @throws BadRequestException
    * @throws InvalidArgumentException
@@ -210,6 +210,7 @@ class AssignmentsPresenter extends BasePresenter {
     $firstDeadlineTimestamp = $req->getPost("firstDeadline");
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
+    $sendNotification = $req->getPost("sendNotification") ? filter_var($req->getPost("sendNotification"), FILTER_VALIDATE_BOOLEAN) : true;
 
     $assignment->incrementVersion();
     $assignment->updatedNow();
@@ -239,13 +240,14 @@ class AssignmentsPresenter extends BasePresenter {
       $this->solutionEvaluations->flush();
     }
 
-    if ($wasPublic === false && $isPublic === true) {
+    if ($sendNotification && $wasPublic === false && $isPublic === true) {
       // assignment is moving from non-public to public, send notification to students
       $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
     // go through localizedTexts and construct database entities
     $localizedTexts = [];
+    $localizedAssignments = [];
     foreach ($req->getPost("localizedTexts") as $localization) {
       $lang = $localization["locale"];
 
@@ -255,16 +257,25 @@ class AssignmentsPresenter extends BasePresenter {
 
       // create all new localized texts
       $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
-      $externalAssignmentLink = Arrays::get($localization, "link", null);
-      if ($externalAssignmentLink !== null && !Validators::isUrl($externalAssignmentLink)) {
+      $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
+      if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
 
       $localized = new LocalizedExercise(
-        $lang, $localization["name"], $localization["text"], $localizedExercise ? $localizedExercise->getDescription() : "", $externalAssignmentLink
+        $lang, $localization["name"], $localization["text"],
+        $localizedExercise ? $localizedExercise->getDescription() : "",
+        $externalAssignmentLink ?: null
       );
 
       $localizedTexts[$lang] = $localized;
+
+      if (array_key_exists("studentHint", $localization)) {
+        $localizedAssignments[$lang] = new LocalizedAssignment(
+          $lang,
+          $localization["studentHint"]
+        );
+      }
     }
 
     // make changes to database
@@ -274,25 +285,6 @@ class AssignmentsPresenter extends BasePresenter {
       $this->assignments->persist($localizedText, false);
     }
 
-    // go through localizedAssignments and construct database entities
-    $localizedAssignments = [];
-    foreach ($req->getPost("localizedAssignments") ?? [] as $localization) {
-      $lang = $localization["locale"];
-
-      if (array_key_exists($lang, $localizedAssignments)) {
-        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedAssignments");
-      }
-
-      // create all new localized texts
-      $localized = new LocalizedAssignment(
-        $lang,
-        $localization["studentHint"]
-      );
-
-      $localizedAssignments[$lang] = $localized;
-    }
-
-    // make changes to database
     Localizations::updateCollection($assignment->getLocalizedAssignments(), $localizedAssignments);
 
     foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
@@ -337,6 +329,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws BadRequestException
    * @throws InvalidStateException
+   * @throws NotFoundException
    */
   public function actionCreate() {
     $req = $this->getRequest();

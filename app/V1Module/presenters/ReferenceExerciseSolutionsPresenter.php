@@ -34,9 +34,11 @@ use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
+use App\Model\View\ReferenceExerciseSolutionViewFactory;
 use App\Responses\GuzzleResponse;
 use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IExercisePermissions;
+use App\Security\ACL\IReferenceExerciseSolutionPermissions;
 use Tracy\ILogger;
 
 /**
@@ -122,6 +124,18 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public $monitorConfig;
 
+  /**
+   * @var ReferenceExerciseSolutionViewFactory
+   * @inject
+   */
+  public $referenceSolutionViewFactory;
+
+  /**
+   * @var IReferenceExerciseSolutionPermissions
+   * @inject
+   */
+  public $referenceSolutionAcl;
+
 
   public function checkSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -137,13 +151,30 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $this->sendSuccessResponse($exercise->getReferenceSolutions()->getValues());
+    $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolutionList($exercise->getReferenceSolutions()->getValues()));
+  }
+
+  public function checkDetail(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    if (!$this->exerciseAcl->canViewDetail($solution->getExercise())) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get details of a reference solution
+   * @GET
+   * @param string $solutionId An identifier of the solution
+   * @throws NotFoundException
+   */
+  public function actionDetail(string $solutionId) {
+    $solution = $this->referenceSolutions->findOrThrow($solutionId);
+    $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolution($solution));
   }
 
   public function checkDeleteReferenceSolution(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
-    $exercise = $solution->getExercise();
-    if (!$this->exerciseAcl->canDeleteReferenceSolution($exercise, $solution)) {
+    if (!$this->referenceSolutionAcl->canDelete($solution)) {
       throw new ForbiddenRequestException("You cannot delete reference solution of this exercise");
     }
   }
@@ -310,7 +341,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($referenceSolution->getExercise(), $referenceSolution)) {
+    if (!$this->referenceSolutionAcl->canEvaluate($referenceSolution)) {
       throw new ForbiddenRequestException();
     }
   }
@@ -342,8 +373,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($exerciseId);
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($exercise, null)) {   // null for a solution means all solutions whatsoever
-      throw new ForbiddenRequestException();
+    foreach ($exercise->getReferenceSolutions() as $referenceSolution) {
+      if (!$this->referenceSolutionAcl->canEvaluate($referenceSolution)) {
+        throw new ForbiddenRequestException();
+      }
     }
   }
 
@@ -444,7 +477,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     }
 
     return [
-      "referenceSolution" => $referenceSolution,
+      "referenceSolution" => $this->referenceSolutionViewFactory->getReferenceSolution($referenceSolution),
       "submissions" => $submissions,
       "errors" => $errors
     ];
@@ -479,7 +512,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
     $refSolution = $submission->getReferenceSolution();
 
-    if (!$this->exerciseAcl->canEvaluateReferenceSolution($refSolution->getExercise(), $refSolution)) {
+    if (!$this->referenceSolutionAcl->canEvaluate($refSolution)) {
       throw new ForbiddenRequestException();
     }
   }

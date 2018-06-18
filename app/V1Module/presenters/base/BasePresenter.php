@@ -69,13 +69,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    */
   public $logger;
 
-
-  /**
-   * @var IResponseDecorator
-   * @inject
-   */
-  public $responseDecorator = null;
-
   /** @var object Processed parameters from annotations */
   protected $parameters;
 
@@ -241,10 +234,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       $params = $this->getRequest()->getParameters();
       unset($params[self::ACTION_KEY]);
       $this->userActions->log($this->getAction(true), $params, $code);
-    }
-
-    if ($this->responseDecorator) {
-      $payload = $this->responseDecorator->decorate($payload);
     }
 
     $resp = $this->getHttpResponse();

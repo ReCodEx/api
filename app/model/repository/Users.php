@@ -5,7 +5,6 @@ namespace App\Model\Repository;
 use Kdyby\Doctrine\EntityManager;
 
 use App\Model\Entity\User;
-use App\Exceptions\NotFoundException;
 
 
 /**
@@ -27,6 +26,10 @@ class Users extends BaseSoftDeleteRepository {
    */
   public function searchByNames(?string $search): array {
     return $this->searchBy(["firstName", "lastName"], $search);
+  }
+
+  public function findByRoles(string ...$roles): array {
+    return $this->findBy([ "role" => $roles ]);
   }
 
 }

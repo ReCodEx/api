@@ -66,7 +66,11 @@ permissions:
           - viewStudents
           - viewAdmin
       conditions:
-          - group.canAccessDetail
+          - or:
+              - group.isAdmin
+              - group.isMember
+              - group.isPublic
+              - group.isRootGroupOfInstance
           - group.isInSameInstance
 
     - allow: true
@@ -74,12 +78,6 @@ permissions:
       resource: group
       actions: viewPublicDetail
       conditions: group.isInSameInstance
-
-    - allow: true
-      resource: group
-      actions:
-          - setAdmin
-      conditions: group.isAdmin
 
     - allow: true # A student can join public groups
       role: student
@@ -125,14 +123,10 @@ permissions:
           - remove
           - addSubgroup
           - removeSupervisor
-      conditions: group.isAdmin
-
-    - allow: true
-      resource: group
-      actions:
+          - setAdmin
+          - sendEmail
           - addSupervisor
-      conditions:
-          - group.isAdmin
+      conditions: group.isAdmin
 
     - allow: true
       resource: group
@@ -431,12 +425,20 @@ permissions:
           - setLimits
           - setScoreConfig
           - update
-          - evaluateReferenceSolution
           - createPipeline
       conditions:
           or:
             - exercise.isSuperGroupAdmin
             - exercise.isAuthor
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
+          - evaluate
+      conditions:
+          or:
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
+            - referenceExerciseSolution.isExerciseAuthor
 
     - allow: true
       resource: exercise
@@ -465,17 +467,23 @@ permissions:
       resource: exercise
       actions:
           - remove
-          - deleteReferenceSolution
       conditions:
           - exercise.isAuthor
 
     - allow: true
-      resource: exercise
+      resource: referenceExerciseSolution
       actions:
-          - deleteReferenceSolution
-          - evaluateReferenceSolution
+          - delete
+          - evaluate
       conditions:
           - referenceExerciseSolution.isAuthor
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
+          - delete
+      conditions:
+          - referenceExerciseSolution.isExerciseAuthor
 
     - allow: true
       role: supervisor
@@ -612,9 +620,9 @@ permissions:
       conditions:
           - pipeline.isAuthor
 
-      ###################
-      # Sis permissions #
-      ###################
+    ###################
+    # Sis permissions #
+    ###################
 
     - allow: true
       role: scope-read-all

@@ -1,6 +1,7 @@
 <?php
 namespace App\Model\View;
 
+use App\Helpers\PermissionHints;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Security\ACL\IAssignmentPermissions;
@@ -25,9 +26,12 @@ class AssignmentViewFactory {
         if (!$this->assignmentAcl->canViewDescription($assignment)) {
           unset($data["description"]);
         }
+
+        $localizedAssignment = $assignment->getLocalizedAssignmentByLocale($text->getLocale());
+        $data["studentHint"] = $localizedAssignment === null ? "" : $localizedAssignment->getStudentHint();
+
         return $data;
       })->getValues(),
-      "localizedAssignments" => $assignment->getLocalizedAssignments()->getValues(),
       "exerciseId" => $assignment->getExercise()->getId(),
       "groupId" => $assignment->getGroup()->getId(),
       "firstDeadline" => $assignment->getFirstDeadline()->getTimestamp(),
@@ -83,7 +87,8 @@ class AssignmentViewFactory {
         "runtimeEnvironments" => [
           "upToDate" => $assignment->areRuntimeEnvironmentsInSync()
         ]
-      ]
+      ],
+      "permissionHints" => PermissionHints::get($this->assignmentAcl, $assignment)
     ];
   }
 }

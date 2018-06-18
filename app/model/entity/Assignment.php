@@ -4,7 +4,6 @@ namespace App\Model\Entity;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Evaluation\IExercise;
-use App\Helpers\Localizations;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;

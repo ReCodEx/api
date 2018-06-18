@@ -22,6 +22,8 @@ use App\Exceptions\ForbiddenRequestException;
  * @method setAccepted(bool $accepted)
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
+ * @method int getOverriddenPoints()
+ * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
  */
 class AssignmentSolution
@@ -90,10 +92,19 @@ class AssignmentSolution
   protected $bonusPoints;
 
   /**
+   * @ORM\Column(type="integer", nullable=true)
+   */
+  protected $overriddenPoints;
+
+  /**
    * Get points acquired by evaluation. If evaluation is not present return null.
    * @return int|null
    */
   public function getPoints(): ?int {
+    if ($this->overriddenPoints !== null) {
+      return $this->overriddenPoints;
+    }
+
     $lastSubmission = $this->getLastSubmission();
     if ($lastSubmission === null) {
       return null;
@@ -113,17 +124,8 @@ class AssignmentSolution
    * @return int
    */
   public function getTotalPoints() {
-    $lastSubmission = $this->getLastSubmission();
-    if ($lastSubmission === null) {
-      return 0;
-    }
-
-    $evaluation = $lastSubmission->getEvaluation();
-    if ($evaluation === null) {
-      return 0;
-    }
-
-    return $evaluation->getPoints() + $this->bonusPoints;
+    $points = $this->getPoints() ?? 0;
+    return $points + $this->bonusPoints;
   }
 
   /**
@@ -159,6 +161,7 @@ class AssignmentSolution
     $this->accepted = false;
     $this->bonusPoints = 0;
     $this->submissions = new ArrayCollection;
+    $this->overriddenPoints = null;
   }
 
   /**

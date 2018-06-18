@@ -2,11 +2,14 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
+use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\AssignmentSolutionSubmissions;
@@ -107,10 +110,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     );
   }
 
-  public function checkEvaluations(string $id) {
+  public function checkDeleteSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
-      throw new ForbiddenRequestException("You cannot access this solution evaluations");
+    if (!$this->assignmentSolutionAcl->canDelete($solution)) {
+      throw new ForbiddenRequestException("You cannot delete this assignment solution");
     }
   }
 
@@ -121,13 +124,15 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionDeleteSolution(string $id) {
-    $solution = $this->assignmentSolutions->findOrThrow($id);
-    if (!$this->assignmentSolutionAcl->canDelete($solution)) {
-      throw new ForbiddenRequestException("You cannot delete this assignment solution");
-    }
-
-    $this->assignmentSolutions->remove($solution);
+    $this->assignmentSolutions->remove($this->assignmentSolutions->findOrThrow($id));
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkEvaluations(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canViewDetail($solution)) {
+      throw new ForbiddenRequestException("You cannot access this solution evaluations");
+    }
   }
 
   /**
@@ -187,15 +192,30 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Set new amount of bonus points for a solution
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
+   * @Param(type="post", name="overriddenPoints", description="Overrides points assigned to solution by the system")
    * @param string $id Identifier of the submission
+   * @throws NotFoundException
+   * @throws InvalidArgumentException
    */
   public function actionSetBonusPoints(string $id) {
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
+    $overriddenPoints = $this->getRequest()->getPost("overriddenPoints");
     $solution = $this->assignmentSolutions->findOrThrow($id);
 
     $solution->setBonusPoints($newBonusPoints);
-    $this->assignmentSolutions->flush();
 
+    // TODO: validations 'null|numericint' for overridenPoints cannot be used, because null is converted to empty string,
+    // TODO: which immediately breaks stated validation... in the future, this behaviour has to change
+    // TODO: lucky third TODO
+    if (Validators::isNumericInt($overriddenPoints)) {
+      $solution->setOverriddenPoints($overriddenPoints);
+    } else if (empty($overriddenPoints)) {
+      $solution->setOverriddenPoints(null);
+    } else {
+      throw new InvalidArgumentException("overridenPoints", "The value '$overriddenPoints' is not null|numericint");
+    }
+
+    $this->assignmentSolutions->flush();
     $this->sendSuccessResponse("OK");
   }
 

@@ -95,7 +95,7 @@ class Instance implements JsonSerializable
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="User", mappedBy="instance")
+   * @ORM\ManyToMany(targetEntity="User", mappedBy="instances")
    */
   protected $members;
 

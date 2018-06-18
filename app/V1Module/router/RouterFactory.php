@@ -49,6 +49,7 @@ class RouterFactory {
     $router[] = self::createJobConfigRoutes("$prefix/job-config");
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
+    $router[] = self::createEmailsRouter("$prefix/emails");
 
     return $router;
   }
@@ -247,6 +248,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "ReferenceExerciseSolutions:downloadResultArchive");
 
+    $router[] = new GetRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:detail");
     $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
     $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
     $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
@@ -422,6 +424,15 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/create", "Sis:createGroup");
     $router[] = new PostRoute("$prefix/remote-courses/<courseId>/bind", "Sis:bindGroup");
     $router[] = new DeleteRoute("$prefix/remote-courses/<courseId>/bindings/<groupId>", "Sis:unbindGroup");
+    return $router;
+  }
+
+  private static function createEmailsRouter(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new PostRoute("$prefix", "Emails:default");
+    $router[] = new PostRoute("$prefix/supervisors", "Emails:sendToSupervisors");
+    $router[] = new PostRoute("$prefix/regular-users", "Emails:sendToRegularUsers");
+    $router[] = new PostRoute("$prefix/groups/<groupId>", "Emails:sendToGroupMembers");
     return $router;
   }
 }

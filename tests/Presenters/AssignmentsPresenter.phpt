@@ -198,10 +198,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'isPublic' => true,
         'version' => 1,
         'localizedTexts' => [
-          ["locale" => "locA", "text" => "descA", "name" => "nameA"]
-        ],
-        'localizedAssignments' => [
-          ["locale" => "locA", "studentHint" => "Try hard"]
+          ["locale" => "locA", "text" => "descA", "name" => "nameA", "studentHint" => "Try hard"]
         ],
         'firstDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeFirstDeadline' => 123,
@@ -218,9 +215,9 @@ class TestAssignmentsPresenter extends Tester\TestCase
 
     $response = $this->presenter->run($request);
     $updatedAssignment = PresenterTestHelper::extractPayload($response);
-    Assert::count(1, $updatedAssignment["localizedAssignments"]);
-    Assert::equal("locA", $updatedAssignment["localizedAssignments"][0]["locale"]);
-    Assert::equal("Try hard", $updatedAssignment["localizedAssignments"][0]["studentHint"]);
+    Assert::count(1, $updatedAssignment["localizedTexts"]);
+    Assert::equal("locA", $updatedAssignment["localizedTexts"][0]["locale"]);
+    Assert::equal("Try hard", $updatedAssignment["localizedTexts"][0]["studentHint"]);
   }
 
   public function testDisableRuntimeEnvironments()

@@ -251,6 +251,17 @@ class Group
     );
   }
 
+  /**
+   * Get all members of the group.
+   * @return ArrayCollection|Collection
+   */
+  public function getMembers() {
+    $members = $this->getActiveMemberships();
+    return $members->map(function (GroupMembership $membership) {
+      return $membership->getUser();
+    });
+  }
+
   public function getStudents() {
     return $this->getActiveMembers(GroupMembership::TYPE_STUDENT);
   }
@@ -317,6 +328,20 @@ class Group
     return $this->getPrimaryAdmins()->map(function (User $admin) {
       return $admin->getId();
     })->getValues();
+  }
+
+  /**
+   * @return array
+   */
+  public function getAdmins() {
+    $group = $this;
+    $admins = [];
+    while ($group !== null) {
+      $admins = array_merge($admins, $group->getPrimaryAdmins()->getValues());
+      $group = $group->getParentGroup();
+    }
+
+    return array_values(array_unique($admins));
   }
 
   /**
