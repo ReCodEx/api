@@ -51,7 +51,7 @@ class UserViewFactory {
 
       $privateData = [
         "email" => $user->getEmail(),
-        "instanceId" => $user->getInstance()->getId(),
+        "instancesIds" => $user->getInstancesIds(),
         "role" => $user->getRole(),
         "groups" => [
           "studentOf" => $studentOf->map(function (Group $group) { return $group->getId(); })->getValues(),

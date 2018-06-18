@@ -447,9 +447,7 @@ class UsersPresenter extends BasePresenter {
   public function actionInstances(string $id) {
     $user = $this->users->findOrThrow($id);
 
-    $this->sendSuccessResponse([
-      $user->getInstance() // @todo change when the user can be member of multiple instances
-    ]);
+    $this->sendSuccessResponse($user->getInstances()->getValues());
   }
 
   public function checkExercises(string $id) {
