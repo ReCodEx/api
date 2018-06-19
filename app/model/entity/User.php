@@ -165,7 +165,7 @@ class User
   public function getInstancesIds() {
     return $this->instances->map(function (Instance $instance) {
       return $instance->getId();
-    });
+    })->getValues();
   }
 
   /**
