@@ -120,21 +120,22 @@ class JudgeBox extends Box
       // TODO - shuffle-rows and shuffle-all versions are not implemented yet in recodex-token-judge
       // Note: recodex-token-judge is the new judge, which provides more verbose output for the logs
       $commonArgs = ['--log-limit', '4k', '--ignore-trailing-whitespace'];
+      $commonArgsLineEnds = ['--log-limit', '4k', '--ignore-line-ends'];
       $judgeTypes = [
         'recodex-judge-normal' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge', $commonArgs],  // default token judge (respecting newlines)
         'recodex-judge-float' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge',
           array_merge($commonArgs, ['--numeric']) ],  // judge comparing float values with some margin of error
         'recodex-judge-normal-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge',
-          array_merge($commonArgs, ['--ignore-line-ends']) ],  // default token judge (which treats \n as normal whitespace)
+          $commonArgsLineEnds ],  // default token judge (which treats \n as normal whitespace)
         'recodex-judge-float-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge',
-          array_merge($commonArgs, ['--numeric', '--ignore-line-ends']) ],  // judge comparing float values (which treats \n as normal whitespace)
+          array_merge($commonArgsLineEnds, ['--numeric']) ],  // judge comparing float values (which treats \n as normal whitespace)
 
         'recodex-judge-shuffle' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge',
           array_merge($commonArgs, ['--shuffled-tokens']) ],  // judge ignoring order of tokens on a line
         'recodex-judge-shuffle-rows' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-r']],    // judge ignoring order of rows
         'recodex-judge-shuffle-all' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-shuffle', ['-ir']],    // judge ignoring order of tokens on a each line and order of rows
         'recodex-judge-shuffle-newline' => [ConfigParams::$JUDGES_DIR . 'recodex-token-judge',
-          array_merge($commonArgs, ['--ignore-line-ends', '--shuffled-tokens']) ],  // judge ignoring order of tokens (which treats \n ...)
+          array_merge($commonArgsLineEnds, ['--shuffled-tokens']) ],  // judge ignoring order of tokens (which treats \n ...)
 
         'recodex-judge-passthrough' => [ConfigParams::$JUDGES_DIR . 'recodex-judge-passthrough', []],     // judge which writes its input file (first) to the stdout
         'diff' => ["/usr/bin/diff", []],                                                                  // diff (binary-safe) judge
