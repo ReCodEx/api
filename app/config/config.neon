@@ -179,6 +179,7 @@ acl:
     pipeline: App\Security\ACL\IPipelinePermissions
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
+    shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -194,6 +195,7 @@ acl:
     course: App\Security\Policies\SisCoursePermissionPolicy
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
+    shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -353,6 +355,7 @@ services:
   - App\Model\View\AssignmentSolutionViewFactory
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
   - App\Model\View\ReferenceExerciseSolutionViewFactory
+  - App\Model\View\ShadowAssignmentViewFactory
 
 doctrine:
   user: 'root'

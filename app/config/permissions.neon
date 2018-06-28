@@ -686,3 +686,31 @@ permissions:
         - group.isInSameInstance
         - student.isSameUser
         - group.isSisStudent
+
+    #################################
+    # Shadow Assignment permissions #
+    #################################
+
+    - allow: true
+      role: scope-read-all
+      resource: shadowAssignment
+      actions:
+        - viewDetail
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
+          - viewDetail
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      resource: assignment
+      actions:
+          - viewDetail
+          - update
+          - remove
+      conditions:
+          - assignment.isSupervisor
