@@ -116,7 +116,7 @@ class ExercisesPresenter extends BasePresenter {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
     $exercises = array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises));
-    $this->sendPaginationSuccessResponse($exercises, $pagination, []);
+    $this->sendPaginationSuccessResponse($exercises, $pagination, true);
   }
 
   public function checkListByIds() {

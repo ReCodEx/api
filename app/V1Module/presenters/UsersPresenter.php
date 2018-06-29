@@ -69,17 +69,20 @@ class UsersPresenter extends BasePresenter {
   /**
    * Get a list of all users
    * @GET
-   * @param string|null $search text which will be searched in users names
    * @param int $offset
    * @param int|null $limit
+   * @param string|null $orderBy
+   * @param array|null $filters
+   * @param string|null $locale
    */
-  public function actionDefault(string $search = null, int $offset = 0, int $limit = null) {
-    $pagination = $this->getPagination($offset, $limit);
-    $users = $this->users->searchByNames($search);
+  public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
+    $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
+      ($filters === null) ? [] : $filters, ['search', 'instanceId', 'roles']);
+    $users = $this->users->getPaginated($pagination, $totalCount);
     $users = array_map(function (User $user) {
       return $this->userViewFactory->getUser($user);
     }, $users);
-    $this->sendPaginationSuccessResponse($users, $pagination, []);
+    $this->sendPaginationSuccessResponse($users, $pagination, false, $totalCount);
   }
 
   public function checkListByIds() {
