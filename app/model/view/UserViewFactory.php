@@ -51,6 +51,7 @@ class UserViewFactory {
 
       $privateData = [
         "email" => $user->getEmail(),
+        "createdAt" => $user->getCreatedAt()->getTimestamp(),
         "instancesIds" => $user->getInstancesIds(),
         "role" => $user->getRole(),
         "groups" => [

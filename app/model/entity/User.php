@@ -336,4 +336,11 @@ class User
     return !$this->externalLogins->isEmpty();
   }
 
+  /**
+   * Return date and time when the user was created.
+   * @return DateTime
+   */
+  public function getCreatedAt(): DateTime {
+    return $this->createdAt;
+  }
 }
