@@ -124,7 +124,7 @@ class Pagination {
    */
   public function getFilter(string $name)
   {
-    if ($this->hasFilter($name)) {
+    if (!$this->hasFilter($name)) {
       throw new InternalServerErrorException("Filter $name is not present.");
     }
     return $this->filters[$name];

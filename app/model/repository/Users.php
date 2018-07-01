@@ -23,9 +23,10 @@ class Users extends BaseSoftDeleteRepository {
   }
 
   // Known order by commands and their translation to Doctrine criteria.
-  private static $allowedOrderBy = [
-    'name' =>   [ 'lastName' => Criteria::ASC, 'firstName' => Criteria::ASC ],
-    'email' =>  [ 'email' => Criteria::ASC ],
+  private static $knownOrderBy = [
+    'name' =>      [ 'u.lastName', 'u.firstName' ],
+    'email' =>     [ 'u.email' ],
+    'createdAt' => [ 'u.createdAt' ],
   ];
 
   private static function getOrderByCriteria($orderBy, $order)
@@ -60,19 +61,24 @@ class Users extends BaseSoftDeleteRepository {
       }
 
       $expr = $qb->expr()->orX();
-      foreach (["firstName", "lastName"] as $column) {
-        $expr->add($qb->expr()->contains($column, $search));
+      foreach (["u.firstName", "u.lastName"] as $column) {
+        $expr->add($qb->expr()->like($column, $qb->expr()->literal('%' . $search . '%')));
       }
       $qb->andWhere($expr);
     }
 
     if ($pagination->hasFilter("instanceId")) {
       $instanceId = trim($pagination->getFilter("instanceId"));
-      $qb->andWhere(":instanceId IN u.instances")->setParameter('instanceId', $instanceId);
-      // TODO test this!!!
+      $qb->join('u.instances', 'i')->andWhere("i.id = :instanceId")->setParameter('instanceId', $instanceId);
     }
 
-    // TODO - add roles ...
+    if ($pagination->hasFilter("roles")) {
+      $roles = $pagination->getFilter("roles");
+      if (!is_array($roles)) {
+        $roles = [ $roles ];
+      }
+      $qb->andWhere($qb->expr()->in("u.role", $roles));
+    }
 
     // Get total count of results ...
     $qb->select('count(u.id)');
@@ -80,7 +86,11 @@ class Users extends BaseSoftDeleteRepository {
     $qb->select('u');
 
     // Finalize for pagination
-    $qb->orderBy('u.lastName', 'ASC'); // TODO - fix this !!!
+    if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {
+      foreach (self::$knownOrderBy[$pagination->getOrderBy()] as $orderBy) {
+        $qb->addOrderBy($orderBy, $pagination->getOrder() ? 'ASC' : 'DESC');
+      }
+    }
 
     // Set range for pagination result...
     $qb->setFirstResult($pagination->getOffset());
@@ -90,7 +100,7 @@ class Users extends BaseSoftDeleteRepository {
 
     $query = $qb->getQuery();
     $collation = $pagination->getLocaleCollation();
-    if ($collation) { // collation correction based on given locale
+    if ($collation && $pagination->getOrderBy()) { // collation correction based on given locale
       $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker');
       $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION, $collation);
     }
