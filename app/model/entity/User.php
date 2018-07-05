@@ -61,7 +61,6 @@ class User
     $this->memberships = new ArrayCollection;
     $this->exercises = new ArrayCollection;
     $this->createdAt = new DateTime();
-    $this->deletedAt = null;
     $this->instances = new ArrayCollection([$instance]);
     $instance->addMember($this);
     $this->settings = new UserSettings(true, false, "en");

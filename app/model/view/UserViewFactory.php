@@ -61,7 +61,8 @@ class UserViewFactory {
         "settings" => $user->getSettings(),
         "emptyLocalPassword" => $emptyLocalPassword,
         "isLocal" => $user->hasLocalAccounts(),
-        "isExternal" => $user->hasExternalAccounts()
+        "isExternal" => $user->hasExternalAccounts(),
+        "isAllowed" => $user->isAllowed(),
       ];
     }
 

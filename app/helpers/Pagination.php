@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Nette\Utils\Strings;
 use App\Exceptions\InvalidArgumentException;
-
+use App\Exceptions\InternalServerErrorException;
 
 /**
  * Pagination helper structure.

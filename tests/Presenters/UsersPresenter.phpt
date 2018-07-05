@@ -75,6 +75,12 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::true(count($result['payload']['items']) > 0);
+    Assert::true(array_key_exists("offset", $result['payload']));
+    Assert::true(array_key_exists('limit', $result['payload']));
+    Assert::true(array_key_exists('totalCount', $result['payload']));
+    Assert::true(array_key_exists('orderBy', $result['payload']));
+    Assert::true(array_key_exists('filters', $result['payload']));
+    Assert::count((int)$result['payload']['totalCount'], $result['payload']['items']);
 
     $users = $result['payload']['items'];
     foreach ($users as $user) {
@@ -84,20 +90,63 @@ class TestUsersPresenter extends Tester\TestCase
     }
   }
 
-  public function testGetAllUsersSearch()
+  public function testGetAllSuperadmins()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
-      ['action' => 'default', 'search' => 'admin']);
+      ['action' => 'default', 'filters' => ['roles' => ['superadmin']]]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(1, $result['payload']['items']);
+    Assert::count(1, $result['payload']['items'], json_encode($result['payload']));
     Assert::equal($user->getName(), $result['payload']['items'][0]['fullName']);
+  }
+
+  public function testGetAllOrderBy()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'default', 'orderBy' => '!name']);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::equal($user->getName(), $result['payload']['items'][ $result['payload']['totalCount']-1 ]['fullName']);
+  }
+
+  public function testGetAllPaginated()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Get all users ordered by email
+    $requestAll = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'default', 'orderBy' => 'email']);
+    $responseAll = $this->presenter->run($requestAll);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $responseAll);
+    $resultAll = $responseAll->getPayload();
+    Assert::equal(200, $resultAll['code']);
+
+    // Get a page of users ordered by email
+    $request = new Nette\Application\Request($this->presenterPath, 'GET',
+      ['action' => 'default', 'orderBy' => 'email', 'offset' => 4, 'limit' => 3]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    // Compare the paginated result with slice from all
+    Assert::equal($result['payload']['totalCount'], $resultAll['payload']['totalCount']);
+    $offset = 4;
+    foreach ($result['payload']['items'] as $user) {
+      Assert::equal($user['id'], $resultAll['payload']['items'][$offset++]['id']);
+    }
   }
 
   public function testGetListUsersByIds()

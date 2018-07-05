@@ -12,7 +12,7 @@ trait DeleteableEntity {
    * @ORM\Column(type="datetime", nullable=true)
    * @var DateTime
    */
-  protected $deletedAt;
+  protected $deletedAt = null;
 
   public function getDeletedAt(): ?DateTime {
     return $this->deletedAt;

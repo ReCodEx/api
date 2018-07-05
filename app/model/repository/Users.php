@@ -31,16 +31,16 @@ class Users extends BaseSoftDeleteRepository {
 
   private static function getOrderByCriteria($orderBy, $order)
   {
-    if (!array_key_exists($orderBy, self::$allowedOrderBy)) {
+    if (!array_key_exists($orderBy, self::$knownOrderBy)) {
       return null;
     }
     if (!$order) {
       $res = [];
-      foreach (self::$allowedOrderBy[$orderBy] as $key => $unused) {
+      foreach (self::$knownOrderBy[$orderBy] as $key => $unused) {
         $res[$key] = Criteria::DESC;
       }
     } else {
-      return self::$allowedOrderBy[$orderBy];
+      return self::$knownOrderBy[$orderBy];
     }
   }
 
