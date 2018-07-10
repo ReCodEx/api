@@ -6,6 +6,7 @@ use Nette\Utils\Strings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InternalServerErrorException;
 
+
 /**
  * Pagination helper structure.
  */
@@ -94,7 +95,7 @@ class Pagination {
    * True if orderBy parameter was not negated.
    * @return bool
    */
-  public function getOrder(): bool {
+  public function isOrderAscending(): bool {
     return $this->order;
   }
 

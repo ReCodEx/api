@@ -108,26 +108,31 @@ class PipelinesPresenter extends BasePresenter {
     $this->sendSuccessResponse($boxes);
   }
 
-  public function checkGetPipelines(string $search = null) {
+  public function checkDefault(string $search = null) {
     if (!$this->pipelineAcl->canViewAll()) {
       throw new ForbiddenRequestException("You cannot list all pipelines.");
     }
   }
 
   /**
-   * Get a list of pipelines with an optional filter
+   * Get a list of pipelines with an optional filter, ordering, and pagination pruning.
+   * The result conforms to pagination protocol.
    * @GET
-   * @param string $search text which will be searched in pipeline names
-   * @param int $offset
-   * @param int|null $limit
+   * @param int $offset Index of the first result.
+   * @param int|null $limit Maximal number of results returned.
+   * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
+   * @param array|null $filters Named filters that prune the result.
+   * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
    */
-  public function actionGetPipelines(string $search = null, int $offset = 0, int $limit = null) {
-    $pagination = $this->getPagination($offset, $limit);
-    $pipelines = $this->pipelines->searchByName($search);
+  public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
+    $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
+      ($filters === null) ? [] : $filters, ['search']);
+
+    $pipelines = $this->pipelines->getPrepaginated($pagination);
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });
-    $this->sendPaginationSuccessResponse($pipelines, $pagination, true);
+    $this->sendPaginationSuccessResponse($pipelines, $pagination, true); // true = slice manually here
   }
 
   /**

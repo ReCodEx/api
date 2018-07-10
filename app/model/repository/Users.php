@@ -5,7 +5,6 @@ namespace App\Model\Repository;
 use App\Helpers\Pagination;
 use Kdyby\Doctrine\EntityManager;
 use Doctrine\ORM\Query;
-use Doctrine\Common\Collections\Criteria;
 use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 use App\Model\Entity\User;
 use App\Exceptions\InvalidArgumentException;
@@ -22,27 +21,12 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
-  // Known order by commands and their translation to Doctrine criteria.
+  // Known order by commands and their translation to Doctrine column names.
   private static $knownOrderBy = [
     'name' =>      [ 'u.lastName', 'u.firstName' ],
     'email' =>     [ 'u.email' ],
     'createdAt' => [ 'u.createdAt' ],
   ];
-
-  private static function getOrderByCriteria($orderBy, $order)
-  {
-    if (!array_key_exists($orderBy, self::$knownOrderBy)) {
-      return null;
-    }
-    if (!$order) {
-      $res = [];
-      foreach (self::$knownOrderBy[$orderBy] as $key => $unused) {
-        $res[$key] = Criteria::DESC;
-      }
-    } else {
-      return self::$knownOrderBy[$orderBy];
-    }
-  }
 
   /**
    * Fetch users for pagination endpoint (filtered and sorted).
@@ -88,7 +72,7 @@ class Users extends BaseSoftDeleteRepository {
     // Finalize for pagination
     if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {
       foreach (self::$knownOrderBy[$pagination->getOrderBy()] as $orderBy) {
-        $qb->addOrderBy($orderBy, $pagination->getOrder() ? 'ASC' : 'DESC');
+        $qb->addOrderBy($orderBy, $pagination->isOrderAscending() ? 'ASC' : 'DESC');
       }
     }
 

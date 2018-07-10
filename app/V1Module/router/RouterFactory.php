@@ -398,9 +398,9 @@ class RouterFactory {
    */
   private static function createPipelinesRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix/boxes", "Pipelines:getDefaultBoxes");
-    $router[] = new GetRoute("$prefix", "Pipelines:getPipelines");
+    $router[] = new GetRoute("$prefix", "Pipelines:");
     $router[] = new PostRoute("$prefix", "Pipelines:createPipeline");
+    $router[] = new GetRoute("$prefix/boxes", "Pipelines:getDefaultBoxes");
     $router[] = new PostRoute("$prefix/<id>/fork", "Pipelines:forkPipeline");
     $router[] = new GetRoute("$prefix/<id>", "Pipelines:getPipeline");
     $router[] = new PostRoute("$prefix/<id>", "Pipelines:updatePipeline");

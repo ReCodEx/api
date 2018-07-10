@@ -67,13 +67,14 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of all users
+   * Get a list of all users matching given filters in given pagination rage.
+   * The result conforms to pagination protocol.
    * @GET
-   * @param int $offset
-   * @param int|null $limit
-   * @param string|null $orderBy
-   * @param array|null $filters
-   * @param string|null $locale
+   * @param int $offset Index of the first result.
+   * @param int|null $limit Maximal number of results returned.
+   * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
+   * @param array|null $filters Named filters that prune the result.
+   * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
    */
   public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
     $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
