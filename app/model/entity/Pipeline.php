@@ -270,7 +270,7 @@ class Pipeline implements JsonSerializable
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "description" => $this->description,
-      "author" => $this->author->getId(),
+      "author" => $this->author ? $this->author->getId() : null,
       "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline(),

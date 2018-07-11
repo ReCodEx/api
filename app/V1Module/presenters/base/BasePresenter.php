@@ -259,7 +259,8 @@ class BasePresenter extends \App\Presenters\BasePresenter {
                                                    $code = IResponse::S200_OK) {
     $this->sendSuccessResponse([
       "items" => $sliceItems
-        ? array_slice(array_values($items), $pagination->getOffset(), $pagination->getLimit())
+        ? array_slice(array_values($items), $pagination->getOffset(),
+            $pagination->getLimit() ? $pagination->getLimit() : null)
         : array_values($items),
       "totalCount" => ($totalCount === null) ? count($items) : $totalCount,
       "offset" => $pagination->getOffset(),
