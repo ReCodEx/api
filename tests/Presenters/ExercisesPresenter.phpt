@@ -120,7 +120,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'An']);
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'search' => 'An' ] ]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
@@ -133,7 +133,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin);
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'search' => 'An']);
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'search' => 'An'] ]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 

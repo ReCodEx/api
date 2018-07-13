@@ -103,20 +103,33 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of exercises with an optional filter
+   * Get a list of all exercises matching given filters in given pagination rage.
+   * The result conforms to pagination protocol.
    * @GET
-   * @param string $search text which will be searched in exercises names
-   * @param int $offset
-   * @param int|null $limit
+   * @param int $offset Index of the first result.
+   * @param int|null $limit Maximal number of results returned.
+   * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
+   * @param array|null $filters Named filters that prune the result.
+   * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
    */
-  public function actionDefault(string $search = null, int $offset = 0, int $limit = null) {
-    $pagination = $this->getPagination($offset, $limit);
-    $exercises = $this->exercises->searchByName($search);
+  public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
+    $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
+      ($filters === null) ? [] : $filters, ['search', 'instanceId', 'groupsIds', 'authorsIds']);
+
+    // Get all matching exercises and filter them by ACLs...
+    $exercises = $this->exercises->getPreparedForPagination($pagination, $this->groups);
     $exercises = array_filter($exercises, function (Exercise $exercise) {
       return $this->exerciseAcl->canViewDetail($exercise);
     });
+
+    // Pre-slice the exercises, so only relevant part is sent to the view factory.
+    $totalCount = count($exercises);
+    $exercises = array_slice(array_values($exercises), $pagination->getOffset(),
+            $pagination->getLimit() ? $pagination->getLimit() : null);
+
+    // Format and post paginated output ...
     $exercises = array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises));
-    $this->sendPaginationSuccessResponse($exercises, $pagination, true);
+    $this->sendPaginationSuccessResponse($exercises, $pagination, false, $totalCount);
   }
 
   public function checkListByIds() {

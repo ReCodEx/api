@@ -126,9 +126,9 @@ class PipelinesPresenter extends BasePresenter {
    */
   public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
     $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
-      ($filters === null) ? [] : $filters, ['search']);
+      ($filters === null) ? [] : $filters, ['search', 'exerciseId', 'authorId']);
 
-    $pipelines = $this->pipelines->getPrepaginated($pagination);
+    $pipelines = $this->pipelines->getPreparedForPagination($pagination);
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });

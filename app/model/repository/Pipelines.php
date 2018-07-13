@@ -21,7 +21,7 @@ class Pipelines extends BaseSoftDeleteRepository {
     parent::__construct($em, Pipeline::class);
   }
 
-  // Known order by commands and their translation to Doctrine column names..
+  // Known order by commands and their translation to Doctrine column names.
   private static $knownOrderBy = [
     'name' =>      [ 'p.name' ],
     'createdAt' => [ 'p.createdAt' ],
@@ -34,7 +34,7 @@ class Pipelines extends BaseSoftDeleteRepository {
    * @param Pagination $pagination Pagination configuration object.
    * @return Pipeline[]
    */
-  public function getPrepaginated(Pagination $pagination): array {
+  public function getPreparedForPagination(Pagination $pagination): array {
     $qb = $this->createQueryBuilder('p'); // takes care of softdelete cases
 
     // Set filters ...
