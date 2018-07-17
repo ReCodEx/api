@@ -110,6 +110,7 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new PostRoute("$prefix", "Exercises:create");
+    $router[] = new GetRoute("$prefix/authors", "Exercises:authors");
     $router[] = new PostRoute("$prefix/list", "Exercises:listByIds");
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new DeleteRoute("$prefix/<id>", "Exercises:remove");

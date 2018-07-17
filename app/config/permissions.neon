@@ -392,6 +392,7 @@ permissions:
       resource: exercise
       actions:
           - viewAll
+          - viewAllAuthors
           - viewDetail
           - viewLimits
           - viewScoreConfig
@@ -498,6 +499,7 @@ permissions:
       resource: exercise
       actions:
           - viewAll
+          - viewAllAuthors
 
     - allow: true
       role: supervisor
@@ -560,7 +562,7 @@ permissions:
             - file.isSupplementaryInGroupUserSupervises
 
     #####################################
-    # Runtime environments permisssions #
+    # Runtime environments permissions #
     #####################################
 
     - allow: true

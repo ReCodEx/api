@@ -7,9 +7,10 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Query;
 use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 use Kdyby\Doctrine\EntityManager;
-use App\Model\Entity\Group;
-use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\Group;
+use App\Model\Entity\User;
 use App\Helpers\Pagination;
 use App\Exceptions\InvalidArgumentException;
 
@@ -60,29 +61,21 @@ class Exercises extends BaseSoftDeleteRepository {
     return $this->searchHelper($search, function ($search) {
       $qb = $this->createQueryBuilder("e");
       $sub = $this->em->createQueryBuilder()->select("le")->from(LocalizedExercise::class, "le");
-      $sub->where($sub->expr()->isMemberOf("le", "e.localizedTexts"))
+      $sub->andWhere($sub->expr()->isMemberOf("le", "e.localizedTexts"))
         ->andWhere($qb->expr()->like("le.name", $qb->expr()->literal('%' . $search . '%')));
       $qb->andWhere($qb->expr()->exists($sub->getDQL()));
-
-/*
-      $idsQueryBuilder = $this->em->createQueryBuilder()->addSelect("l.id")->from(LocalizedExercise::class, "l");
-      $idsQueryBuilder->where($idsQueryBuilder->expr()->like("l.name", ":search"));
-      $idsQueryBuilder->setParameter("search", "%" . $search . "%");
-      $textIds = array_column($idsQueryBuilder->getQuery()->getScalarResult(), "id");
-*/
-      /*
-      $criteria = [];
-      foreach ($textIds as $i => $textId) {
-        $criteria[] = $exercisesQueryBuilder->expr()->isMemberOf("?" . $i, "e.localizedTexts");
-        $exercisesQueryBuilder->setParameter($i, $textId);
-      }
-      $exercisesQueryBuilder->andWhere($exercisesQueryBuilder->expr()->orX(...$criteria));
-*/
       return $qb->getQuery()->getResult();
     });
   }
 
 
+  /**
+   * Get a list of exercises filtered and ordered for pagination.
+   * The exercises must be paginated manually, since they are tested by ACLs.
+   * @param Pagination $pagination Pagination configuration object.
+   * @param Groups Groups entity manager.
+   * @return Exercise[]
+   */
   public function getPreparedForPagination(Pagination $pagination, Groups $groups)
   {
     // Welcome to Doctrine HELL! Put your sickbags on standby!
@@ -97,7 +90,7 @@ class Exercises extends BaseSoftDeleteRepository {
       }
 
       $sub = $this->em->createQueryBuilder()->select("le")->from(LocalizedExercise::class, "le");
-      $sub->where($sub->expr()->isMemberOf("le", "e.localizedTexts"))
+      $sub->andWhere($sub->expr()->isMemberOf("le", "e.localizedTexts"))
         ->andWhere($qb->expr()->like("le.name", $qb->expr()->literal('%' . $search . '%')));
 
       $qb->andWhere($qb->expr()->exists($sub->getDQL()));
@@ -108,7 +101,7 @@ class Exercises extends BaseSoftDeleteRepository {
       $instanceId = trim($pagination->getFilter("instanceId"));
 
       $sub = $groups->createQueryBuilder("g");
-      $sub->where($qb->expr()->eq("g.instance", $qb->expr()->literal($instanceId)))
+      $sub->andWhere($qb->expr()->eq("g.instance", $qb->expr()->literal($instanceId)))
         ->andWhere($sub->expr()->isMemberOf("g", "e.groups"));
 
       $qb->andWhere($qb->expr()->exists($sub->getDQL()));
@@ -141,7 +134,7 @@ class Exercises extends BaseSoftDeleteRepository {
       $qb->andWhere($orExpr);
     }
 
-    // Add order by
+    // Add order by clause ...
     if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {
       if ($pagination->getOrderBy() === "name") {
         // Special patch, we need to load localized names from another entity ...
@@ -165,6 +158,37 @@ class Exercises extends BaseSoftDeleteRepository {
       $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker');
       $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION, $collation);
     }
+
     return $query->getResult();
+  }
+
+  /**
+   * Get distinct authors of all exercises.
+   * @param string $instanceId ID of an instance from which the authors are selected.
+   * @param string|null $groupId A group which restricts the exercies.
+   *                             Only exercises attached to that group (or any ancestral group) are considered.
+   * @return User[] List of exercises authors.
+   */
+  public function getAuthors(string $instanceId, string $groupId = null, Groups $groups)
+  {
+    $sub = $this->createQueryBuilder("e"); // takes care of softdelete cases
+    $sub->andWhere("a = e.author");
+
+    if ($groupId) {
+      // Each group of the ancestral closure has a separate OR clause ...
+      $orExpr = $sub->expr()->orX();
+      $gcounter = 0;
+      foreach ($groups->groupIdsAncestralClosure([$groupId]) as $id) {
+        $var = "group" . ++$gcounter;
+        $orExpr->add($sub->expr()->isMemberOf(":$var", "e.groups"));
+        $sub->setParameter($var, $id);
+      }
+      $sub->andWhere($orExpr);
+    }
+
+    $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
+    $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
+    $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+    return $qb->getQuery()->getResult();
   }
 }

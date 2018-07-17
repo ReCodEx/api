@@ -23,6 +23,7 @@ use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
 use App\Model\View\ExerciseViewFactory;
+use App\Model\View\UserViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
@@ -95,6 +96,11 @@ class ExercisesPresenter extends BasePresenter {
    */
   public $exerciseViewFactory;
 
+  /**
+   * @var UserViewFactory
+   * @inject
+   */
+  public $userViewFactory;
 
   public function checkDefault() {
     if (!$this->exerciseAcl->canViewAll()) {
@@ -130,6 +136,25 @@ class ExercisesPresenter extends BasePresenter {
     // Format and post paginated output ...
     $exercises = array_map([$this->exerciseViewFactory, "getExercise"], array_values($exercises));
     $this->sendPaginationSuccessResponse($exercises, $pagination, false, $totalCount);
+  }
+
+  public function checkAuthors()
+  {
+    if (!$this->exerciseAcl->canViewAllAuthors()) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * List authors of all exercises, possibly filtered by a group in which the exercises appear.
+   * @GET
+   * @param string|null $instanceId Id of an instance from which the authors are listed.
+   * @param string|null $groupId A group where the relevant exercises can be seen (assigned).
+   */
+  public function actionAuthors(string $instanceId = null, string $groupId = null)
+  {
+    $authors = $this->exercises->getAuthors($instanceId, $groupId, $this->groups);
+    $this->sendSuccessResponse($this->userViewFactory->getUsers($authors));
   }
 
   public function checkListByIds() {
