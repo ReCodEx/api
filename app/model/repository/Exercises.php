@@ -171,6 +171,9 @@ class Exercises extends BaseSoftDeleteRepository {
    */
   public function getAuthors(string $instanceId, string $groupId = null, Groups $groups)
   {
+    $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
+    $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
+
     $sub = $this->createQueryBuilder("e"); // takes care of softdelete cases
     $sub->andWhere("a = e.author");
 
@@ -181,13 +184,11 @@ class Exercises extends BaseSoftDeleteRepository {
       foreach ($groups->groupIdsAncestralClosure([$groupId]) as $id) {
         $var = "group" . ++$gcounter;
         $orExpr->add($sub->expr()->isMemberOf(":$var", "e.groups"));
-        $sub->setParameter($var, $id);
+        $qb->setParameter($var, $id);
       }
       $sub->andWhere($orExpr);
     }
 
-    $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
-    $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
     $qb->andWhere($qb->expr()->exists($sub->getDQL()));
     return $qb->getQuery()->getResult();
   }
