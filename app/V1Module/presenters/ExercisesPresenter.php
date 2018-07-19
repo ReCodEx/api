@@ -148,7 +148,7 @@ class ExercisesPresenter extends BasePresenter {
   /**
    * List authors of all exercises, possibly filtered by a group in which the exercises appear.
    * @GET
-   * @param string|null $instanceId Id of an instance from which the authors are listed.
+   * @param string $instanceId Id of an instance from which the authors are listed.
    * @param string|null $groupId A group where the relevant exercises can be seen (assigned).
    */
   public function actionAuthors(string $instanceId = null, string $groupId = null)

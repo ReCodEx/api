@@ -169,10 +169,12 @@ class Exercises extends BaseSoftDeleteRepository {
    *                             Only exercises attached to that group (or any ancestral group) are considered.
    * @return User[] List of exercises authors.
    */
-  public function getAuthors(string $instanceId, string $groupId = null, Groups $groups)
+  public function getAuthors(string $instanceId = null, string $groupId = null, Groups $groups)
   {
     $qb = $this->em->createQueryBuilder()->select("a")->from(User::class, "a");
-    $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
+    if ($instanceId) {
+      $qb->andWhere(":instance MEMBER OF a.instances")->setParameter("instance", $instanceId);
+    }
 
     $sub = $this->createQueryBuilder("e"); // takes care of softdelete cases
     $sub->andWhere("a = e.author");

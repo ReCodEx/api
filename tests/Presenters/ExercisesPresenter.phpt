@@ -52,6 +52,12 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\AttachmentFiles */
   protected $attachmentFiles;
 
+  /** @var App\Model\Repository\Instances */
+  protected $instances;
+
+  /** @var App\Model\Repository\Groups */
+  protected $groups;
+
   public function __construct()
   {
     global $container;
@@ -63,8 +69,10 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
-    $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
     $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
+    $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
+    $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
+    $this->groups = $container->getByType(\App\Model\Repository\Groups::class);
   }
 
   protected function setUp()
@@ -133,13 +141,59 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin);
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'search' => 'An'] ]);
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'search' => 'An' ] ]);
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(4, $result['payload']['items']);
+  }
+
+  public function testGetAllExercisesAuthors()
+  {
+    $instances = $this->instances->findAll();
+    $instance = reset($instances);
+
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'authors', 'instanceId' => $instance->getId()]);
+
+    Assert::count(2, $payload);
+    $emails = [ 'admin@admin.com', 'demoGroupSupervisor2@example.com' ];
+    Assert::contains($payload[0]['privateData']['email'], $emails);
+    Assert::contains($payload[1]['privateData']['email'], $emails);
+  }
+
+  public function testGetGroupExercisesAuthors()
+  {
+    $instances = $this->instances->findAll();
+    $instance = reset($instances);
+    $groups = $this->groups->findByName("en", "Demo group", $instance, null);
+    $group = reset($groups);
+
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'authors', 'groupId' => $group->getId()]);
+
+    Assert::count(2, $payload);
+    $emails = [ 'admin@admin.com', 'demoGroupSupervisor2@example.com' ];
+    Assert::contains($payload[0]['privateData']['email'], $emails);
+    Assert::contains($payload[1]['privateData']['email'], $emails);
+  }
+
+  public function testGetGroupExercisesAuthorsEmpty()
+  {
+    $instances = $this->instances->findAll();
+    $instance = reset($instances);
+    $groups = $this->groups->findByName("en", "Private group", $instance, null);
+    $group = reset($groups);
+
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'authors', 'groupId' => $group->getId()]);
+
+    Assert::count(0, $payload);
   }
 
   public function testListExercisesByIds()

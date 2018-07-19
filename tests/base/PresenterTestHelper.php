@@ -154,4 +154,27 @@ class PresenterTestHelper
   public static function jsonResponse($payload) {
     return Json::decode(Json::encode($payload), Json::FORCE_ARRAY);
   }
+
+  /**
+   * Perform regular presenter request and make common asserts.
+   * @param $presenter The presenter which should handle the request.
+   * @param $module String representing the module path (e.g., 'V1:Exercises').
+   * @param $method HTTP method of the request (GET, POST, ...).
+   * @param $params Parameters of the request.
+   * @param $expectedCode Expected HTTP response code (200 by default).
+   * @return array|null Payload subtree of JSON request.
+   * @throws Tester\AssertException
+   * @throws JsonException
+   */
+  public static function preformPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], $expectedCode = 200)
+  {
+    $request = new \Nette\Application\Request($module, $method, $params);
+    $response = $presenter->run($request);
+    Tester\Assert::type(\Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Tester\Assert::equal($expectedCode, $result['code']);
+    return array_key_exists('payload', $result) ? $result['payload'] : null;
+  }
+
 }
