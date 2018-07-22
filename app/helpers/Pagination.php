@@ -141,20 +141,4 @@ class Pagination {
   {
     return $this->locale;
   }
-
-  /**
-   * Find appropriate MySQL Collation for given locale.
-   */
-  public function getLocaleCollation()
-  {
-    static $collations = null;
-    if (!$collations) {
-      // First time initialization ...
-      $collations = [
-        'cs' => 'utf8_czech_ci'
-      ];
-    }
-
-    return (array_key_exists($this->locale, $collations)) ? $collations[$this->locale] : null;
-  }
 }

@@ -12,6 +12,7 @@ use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
 use App\Helpers\Pagination;
+use App\Model\Helpers\PaginationDbHelper;
 use App\Exceptions\InvalidArgumentException;
 
 /**
@@ -41,12 +42,6 @@ class Exercises extends BaseSoftDeleteRepository {
       $this->flush();
     }
   }
-
-  // Known order by commands and their translation to Doctrine column names.
-  private static $knownOrderBy = [
-    'name' =>      [ 'localizedName' ],
-    'createdAt' => [ 'e.createdAt' ],
-  ];
 
   /**
    * Search exercises names based on given string.
@@ -81,20 +76,6 @@ class Exercises extends BaseSoftDeleteRepository {
     // Welcome to Doctrine HELL! Put your sickbags on standby!
 
     $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
-
-    // Set name search filter...
-    if ($pagination->hasFilter("search")) {
-      $search = trim($pagination->getFilter("search"));
-      if (!$search) {
-        throw new InvalidArgumentException("filter", "search query value is empty");
-      }
-
-      $sub = $this->em->createQueryBuilder()->select("le")->from(LocalizedExercise::class, "le");
-      $sub->andWhere($sub->expr()->isMemberOf("le", "e.localizedTexts"))
-        ->andWhere($qb->expr()->like("le.name", $qb->expr()->literal('%' . $search . '%')));
-
-      $qb->andWhere($qb->expr()->exists($sub->getDQL()));
-    }
 
     // Filter by instance Id (through group membership) ...
     if ($pagination->hasFilter("instanceId")) {
@@ -134,32 +115,28 @@ class Exercises extends BaseSoftDeleteRepository {
       $qb->andWhere($orExpr);
     }
 
-    // Add order by clause ...
-    if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {
-      if ($pagination->getOrderBy() === "name") {
-        // Special patch, we need to load localized names from another entity ...
-        // Note: This requires custom COALESCE_SUB, which is actually normal COALECE function that allows subqueries inside in DQL
-        $qb->addSelect('COALESCE_SUB(
-            (SELECT le1.name FROM App\Model\Entity\LocalizedExercise AS le1 WHERE le1 MEMBER OF e.localizedTexts AND le1.locale = :locale),
-            (SELECT le2.name FROM App\Model\Entity\LocalizedExercise AS le2 WHERE le2 MEMBER OF e.localizedTexts AND le2.locale = \'en\'),
-            (SELECT MAX(le3.name) FROM App\Model\Entity\LocalizedExercise AS le3 WHERE le3 MEMBER OF e.localizedTexts)
-          ) AS HIDDEN localizedName');
-        $qb->setParameter('locale', $pagination->getLocale() ?? 'en');
-      }
-
-      foreach (self::$knownOrderBy[$pagination->getOrderBy()] as $orderBy) {
-        $qb->addOrderBy($orderBy, $pagination->isOrderAscending() ? 'ASC' : 'DESC');
-      }
+    if ($pagination->getOrderBy() === "name") {
+      // Special patch, we need to load localized names from another entity ...
+      // Note: This requires custom COALESCE_SUB, which is actually normal COALECE function that allows subqueries inside in DQL
+      $qb->addSelect('COALESCE_SUB(
+          (SELECT le1.name FROM App\Model\Entity\LocalizedExercise AS le1 WHERE le1 MEMBER OF e.localizedTexts AND le1.locale = :locale),
+          (SELECT le2.name FROM App\Model\Entity\LocalizedExercise AS le2 WHERE le2 MEMBER OF e.localizedTexts AND le2.locale = \'en\'),
+          (SELECT MAX(le3.name) FROM App\Model\Entity\LocalizedExercise AS le3 WHERE le3 MEMBER OF e.localizedTexts)
+        ) AS HIDDEN localizedName');
+      $qb->setParameter('locale', $pagination->getLocale() ?? 'en');
     }
 
-    $query = $qb->getQuery();
-    $collation = $pagination->getLocaleCollation();
-    if ($collation && $pagination->getOrderBy()) { // collation correction based on given locale
-      $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker');
-      $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION, $collation);
-    }
-
-    return $query->getResult();
+    // Apply common pagination stuff (search and ordering) and yield the results ...
+    $paginationDbHelper = new PaginationDbHelper(
+      [ // known order by columns
+        'name' =>      [ 'localizedName' ], // HIDDEN column created by special patch
+        'createdAt' => [ 'e.createdAt' ],
+      ],
+      [ 'name' ], // search column names
+      LocalizedExercise::class // search is performed on external localized texts
+    );
+    $paginationDbHelper->apply($qb, $pagination);
+    return $paginationDbHelper->getResult($qb, $pagination);
   }
 
   /**

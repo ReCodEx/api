@@ -3,6 +3,7 @@
 namespace App\Model\Repository;
 
 use App\Helpers\Pagination;
+use App\Model\Helpers\PaginationDbHelper;
 use Kdyby\Doctrine\EntityManager;
 use Doctrine\ORM\Query;
 use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
@@ -21,13 +22,6 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findOneBy([ "email" => $email ]);
   }
 
-  // Known order by commands and their translation to Doctrine column names.
-  private static $knownOrderBy = [
-    'name' =>      [ 'u.lastName', 'u.firstName' ],
-    'email' =>     [ 'u.email' ],
-    'createdAt' => [ 'u.createdAt' ],
-  ];
-
   /**
    * Fetch users for pagination endpoint (filtered and sorted).
    * @param Pagination $pagination The object holding pagination metadata.
@@ -37,25 +31,13 @@ class Users extends BaseSoftDeleteRepository {
   {
     $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
 
-    // Set filters ...
-    if ($pagination->hasFilter("search")) {
-      $search = trim($pagination->getFilter("search"));
-      if (!$search) {
-        throw new InvalidArgumentException("filter", "search query value is empty");
-      }
-
-      $expr = $qb->expr()->orX();
-      foreach (["u.firstName", "u.lastName"] as $column) {
-        $expr->add($qb->expr()->like($column, $qb->expr()->literal('%' . $search . '%')));
-      }
-      $qb->andWhere($expr);
-    }
-
+    // Filter by instance ID ...
     if ($pagination->hasFilter("instanceId")) {
       $instanceId = trim($pagination->getFilter("instanceId"));
       $qb->andWhere(':instanceId MEMBER OF u.instances')->setParameter('instanceId', $instanceId);
     }
 
+    // Filter by selected roles ...
     if ($pagination->hasFilter("roles")) {
       $roles = $pagination->getFilter("roles");
       if (!is_array($roles)) {
@@ -64,17 +46,21 @@ class Users extends BaseSoftDeleteRepository {
       $qb->andWhere($qb->expr()->in("u.role", $roles));
     }
 
+    // Apply common pagination stuff (search and ordering) and yield the results ...
+    $paginationDbHelper = new PaginationDbHelper(
+      [ // known order by columns
+        'name' =>      [ 'u.lastName', 'u.firstName' ],
+        'email' =>     [ 'u.email' ],
+        'createdAt' => [ 'u.createdAt' ],
+      ],
+      [ 'firstName', 'lastName' ] // search column names
+    );
+    $paginationDbHelper->apply($qb, $pagination);
+
     // Get total count of results ...
     $qb->select('count(u.id)');
     $totalCount = (int)$qb->getQuery()->getSingleScalarResult();
     $qb->select('DISTINCT u');
-
-    // Finalize for pagination
-    if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {
-      foreach (self::$knownOrderBy[$pagination->getOrderBy()] as $orderBy) {
-        $qb->addOrderBy($orderBy, $pagination->isOrderAscending() ? 'ASC' : 'DESC');
-      }
-    }
 
     // Set range for pagination result...
     $qb->setFirstResult($pagination->getOffset());
@@ -82,13 +68,7 @@ class Users extends BaseSoftDeleteRepository {
       $qb->setMaxResults($pagination->getLimit());
     }
 
-    $query = $qb->getQuery();
-    $collation = $pagination->getLocaleCollation();
-    if ($collation && $pagination->getOrderBy()) { // collation correction based on given locale
-      $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker');
-      $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION, $collation);
-    }
-    return $query->getResult();
+    return $paginationDbHelper->getResult($qb, $pagination);
   }
 
 
