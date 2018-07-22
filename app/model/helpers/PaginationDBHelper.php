@@ -41,6 +41,11 @@ class PaginationDbHelper
    */
   private function addSearchCondition(QueryBuilder $qb, string $searchToken, string $alias)
   {
+    // Sanitize search token ...
+    $searchToken = trim($searchToken);
+    if (!$searchToken) return;
+    $searchToken = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $searchToken);
+
     // Build OR expression with LIKE matching subexpressions...
     $expr = $qb->expr()->orX();
     foreach ($this->searchCols as $column) {
