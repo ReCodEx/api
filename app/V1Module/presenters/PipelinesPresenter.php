@@ -132,7 +132,7 @@ class PipelinesPresenter extends BasePresenter {
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });
-    $this->sendPaginationSuccessResponse($pipelines, $pagination, true); // true = slice manually here
+    $this->sendPaginationSuccessResponse($pipelines, $pagination, true); // true = needs to be sliced inside
   }
 
   /**

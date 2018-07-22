@@ -53,7 +53,7 @@ class Users extends BaseSoftDeleteRepository {
 
     if ($pagination->hasFilter("instanceId")) {
       $instanceId = trim($pagination->getFilter("instanceId"));
-      $qb->join('u.instances', 'i')->andWhere("i.id = :instanceId")->setParameter('instanceId', $instanceId);
+      $qb->andWhere(':instanceId MEMBER OF u.instances')->setParameter('instanceId', $instanceId);
     }
 
     if ($pagination->hasFilter("roles")) {
@@ -67,7 +67,7 @@ class Users extends BaseSoftDeleteRepository {
     // Get total count of results ...
     $qb->select('count(u.id)');
     $totalCount = (int)$qb->getQuery()->getSingleScalarResult();
-    $qb->select('u');
+    $qb->select('DISTINCT u');
 
     // Finalize for pagination
     if ($pagination->getOrderBy() && !empty(self::$knownOrderBy[$pagination->getOrderBy()])) {

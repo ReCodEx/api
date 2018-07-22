@@ -166,7 +166,7 @@ class PresenterTestHelper
    * @throws Tester\AssertException
    * @throws JsonException
    */
-  public static function preformPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], $expectedCode = 200)
+  public static function performPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], $expectedCode = 200)
   {
     $request = new \Nette\Application\Request($module, $method, $params);
     $response = $presenter->run($request);

@@ -156,7 +156,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $instance = reset($instances);
 
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
       ['action' => 'authors', 'instanceId' => $instance->getId()]);
 
     Assert::count(2, $payload);
@@ -173,7 +173,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $group = reset($groups);
 
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
       ['action' => 'authors', 'groupId' => $group->getId()]);
 
     Assert::count(2, $payload);
@@ -190,7 +190,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $group = reset($groups);
 
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
-    $payload = PresenterTestHelper::preformPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
       ['action' => 'authors', 'groupId' => $group->getId()]);
 
     Assert::count(0, $payload);

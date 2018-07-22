@@ -269,11 +269,6 @@ class BasePresenter extends \App\Presenters\BasePresenter {
       "filters" => $pagination->getRawFilters(),
     ], $code);
   }
-/*
-  protected function getPagination(int $offset, ?int $limit, string $orderBy = null, array $filters = []): Pagination {
-    return new Pagination($offset, $limit, $orderBy, $filters);
-  }
-*/
 
   protected function getPagination(...$params): Pagination {
     return new Pagination(...$params);
