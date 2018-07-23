@@ -67,19 +67,23 @@ class UsersPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of all users
+   * Get a list of all users matching given filters in given pagination rage.
+   * The result conforms to pagination protocol.
    * @GET
-   * @param string|null $search text which will be searched in users names
-   * @param int $offset
-   * @param int|null $limit
+   * @param int $offset Index of the first result.
+   * @param int|null $limit Maximal number of results returned.
+   * @param string|null $orderBy Name of the column (column concept). The '!' prefix indicate descending order.
+   * @param array|null $filters Named filters that prune the result.
+   * @param string|null $locale Currently set locale (used to augment order by clause if necessary),
    */
-  public function actionDefault(string $search = null, int $offset = 0, int $limit = null) {
-    $pagination = $this->getPagination($offset, $limit);
-    $users = $this->users->searchByNames($search);
+  public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
+    $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
+      ($filters === null) ? [] : $filters, ['search', 'instanceId', 'roles']);
+    $users = $this->users->getPaginated($pagination, $totalCount);
     $users = array_map(function (User $user) {
       return $this->userViewFactory->getUser($user);
     }, $users);
-    $this->sendPaginationSuccessResponse($users, $pagination, []);
+    $this->sendPaginationSuccessResponse($users, $pagination, false, $totalCount);
   }
 
   public function checkListByIds() {

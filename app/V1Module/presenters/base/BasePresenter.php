@@ -245,22 +245,33 @@ class BasePresenter extends \App\Presenters\BasePresenter {
     ]);
   }
 
+  /**
+   * Special response for paginated contents. Sends items over with metadata about pagination, ordering, and filters.
+   * @param array $items Items to be sent.
+   * @param Pagination $pagination Object holding pagination metadata and ordering.
+   * @param bool $sliceItems If true, a slice of items array is created using pagination data.
+   *                         Otherwise, the items are expected to be already sliced.
+   */
   protected function sendPaginationSuccessResponse(array $items,
                                                    Pagination $pagination,
-                                                   array $filters = [],
+                                                   bool $sliceItems = false,
+                                                   int $totalCount = null,
                                                    $code = IResponse::S200_OK) {
     $this->sendSuccessResponse([
-      "items" => array_slice(array_values($items), $pagination->getOffset(), $pagination->getLimit()),
-      "totalCount" => count($items),
+      "items" => $sliceItems
+        ? array_slice(array_values($items), $pagination->getOffset(),
+            $pagination->getLimit() ? $pagination->getLimit() : null)
+        : array_values($items),
+      "totalCount" => ($totalCount === null) ? count($items) : $totalCount,
       "offset" => $pagination->getOffset(),
       "limit" => $pagination->getLimit(),
       "orderBy" => $pagination->getOriginalOrderBy(),
-      "filters" => $filters,
+      "filters" => $pagination->getRawFilters(),
     ], $code);
   }
 
-  protected function getPagination(int $offset, ?int $limit): Pagination {
-    return new Pagination($offset, $limit);
+  protected function getPagination(...$params): Pagination {
+    return new Pagination(...$params);
   }
 
 }

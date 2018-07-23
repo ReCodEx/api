@@ -47,4 +47,12 @@ class BaseSoftDeleteRepository extends BaseRepository {
     $params->andWhere(Criteria::expr()->isNull($this->softDeleteColumn));
     return $this->repository->matching($params);
   }
+
+  public function createQueryBuilder(string $alias, string $indexBy = null)
+  {
+    $qb = $this->repository->createQueryBuilder($alias, $indexBy);
+    $softDeleteColumn = $alias ? "$alias.$this->softDeleteColumn" : $this->softDeleteColumn;
+    $qb->andWhere($qb->expr()->isNull($softDeleteColumn));
+    return $qb;
+  }
 }

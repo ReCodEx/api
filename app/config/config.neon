@@ -363,6 +363,9 @@ doctrine:
   types:
     bit: Doctrine\DBAL\Types\BooleanType
     datetime: DoctrineExtensions\DBAL\Types\UTCDateTimeType
+  dql:
+    string:
+      coalesce_sub: DoctrineExtensions\Query\Functions\CoalesceSubselectsFunction
 
 fixtures:
   locale: "en_US"

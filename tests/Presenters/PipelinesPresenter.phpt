@@ -83,7 +83,7 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:Pipelines',
       'GET',
-      ['action' => 'getPipelines']
+      ['action' => 'default']
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);

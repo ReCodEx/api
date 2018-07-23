@@ -51,6 +51,7 @@ class UserViewFactory {
 
       $privateData = [
         "email" => $user->getEmail(),
+        "createdAt" => $user->getCreatedAt()->getTimestamp(),
         "instancesIds" => $user->getInstancesIds(),
         "role" => $user->getRole(),
         "groups" => [
@@ -60,7 +61,8 @@ class UserViewFactory {
         "settings" => $user->getSettings(),
         "emptyLocalPassword" => $emptyLocalPassword,
         "isLocal" => $user->hasLocalAccounts(),
-        "isExternal" => $user->hasExternalAccounts()
+        "isExternal" => $user->hasExternalAccounts(),
+        "isAllowed" => $user->isAllowed(),
       ];
     }
 

@@ -103,4 +103,23 @@ class Groups extends BaseSoftDeleteRepository  {
     return $groupsQb->getQuery()->getResult();
   }
 
+
+  /**
+   * Get a set of group IDs and produce a set of group IDs which have the
+   * original set as a subset and every group has its parent in the set as well.
+   * @param string[] $groupIds Initial set of group IDs
+   */
+  public function groupIdsAncestralClosure(array $groupIds)
+  {
+    $res = [];
+    foreach ($groupIds as $groupId) {
+      if (array_key_exists($groupId, $res)) continue;
+      $res[$groupId] = true;
+      $group = $this->findOrThrow($groupId);
+      foreach ($group->getParentGroupsIds() as $id) {
+        $res[$id] = true;
+      }
+    }
+    return array_keys($res);
+  }
 }

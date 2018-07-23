@@ -8,6 +8,7 @@ use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IExercisePermissions {
   function canViewAll(): bool;
+  function canViewAllAuthors(): bool;
   function canViewList(): bool;
   function canViewDetail(Exercise $exercise): bool;
   function canUpdate(Exercise $exercise): bool;

@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use Nette\Utils\Strings;
+use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InternalServerErrorException;
 
 
 /**
@@ -21,7 +23,7 @@ class Pagination {
   private $limit;
 
   /**
-   * @var bool
+   * @var bool True if the items should be in ascending order, false means descending order.
    */
   private $order;
 
@@ -36,17 +38,43 @@ class Pagination {
   private $originalOrderBy;
 
   /**
-   * Pagination constructor.
-   * @param int $offset
-   * @param int|null $limit
-   * @param string|null $orderBy
+   * @var array
    */
-  public function __construct(int $offset = 0, int $limit = null, string $orderBy = null) {
+  private $filters;
+
+  /**
+   * @var string|null
+   */
+  private $locale;
+
+
+  /**
+   * Pagination constructor.
+   * @param int $offset Index of the first item to be returned.
+   * @param int|null $limit Total amount of items being returned.
+   * @param string|null $locale Selected locale ('en', 'cs, ...) which could affect ordering and possibly some filters.
+   * @param string|null $orderBy String representing the ordering (typically a column name).
+   *                             If the ordering identifier is prefixed with '!', DESC ordering is used instead of ASC.
+   * @param array $filters Array of filters and their values. Filters are endpoint-specific.
+   * @param array|null $knownFilters Array of known filter names. If present, unknown filters will trigger exception.
+   */
+  public function __construct(int $offset = 0, int $limit = null, string $locale = null, string $orderBy = null, array $filters = [], array $knownFilters = null) {
     $this->offset = $offset < 0 ? 0 : $offset;
     $this->limit = $limit < 0 ? null : $limit;
     $this->originalOrderBy = $orderBy;
+    $this->locale = $locale;
     $this->order = !Strings::startsWith($orderBy, "!");
     $this->orderBy = $this->order ? $orderBy : Strings::substring($orderBy, 1);
+
+    if ($knownFilters !== null) {
+      $knownFilters = array_flip($knownFilters);
+      foreach ($filters as $name => $unused) {
+        if (!array_key_exists($name, $knownFilters)) {
+          throw new InvalidArgumentException("filter", "unknown filter '$name'");
+        }
+      }
+    }
+    $this->filters = $filters;
   }
 
   /**
@@ -67,7 +95,7 @@ class Pagination {
    * True if orderBy parameter was not negated.
    * @return bool
    */
-  public function getOrder(): bool {
+  public function isOrderAscending(): bool {
     return $this->order;
   }
 
@@ -83,4 +111,34 @@ class Pagination {
     return $this->originalOrderBy;
   }
 
+  /**
+   * True if filter of given name is present.
+   */
+  public function hasFilter(string $name)
+  {
+    return array_key_exists($name, $this->filters);
+  }
+
+  /**
+   * Return the filter value.
+   * @throws InternalServerErrorException If the filter is not present.
+   */
+  public function getFilter(string $name)
+  {
+    if (!$this->hasFilter($name)) {
+      throw new InternalServerErrorException("Filter $name is not present.");
+    }
+    return $this->filters[$name];
+  }
+
+  public function getRawFilters()
+  {
+    return $this->filters;
+  }
+
+
+  public function getLocale()
+  {
+    return $this->locale;
+  }
 }
