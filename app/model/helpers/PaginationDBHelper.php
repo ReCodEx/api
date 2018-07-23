@@ -5,6 +5,8 @@ namespace App\Model\Helpers;
 use App\Helpers\Pagination;
 use Doctrine\ORM\QueryBuilder;
 use App\Exceptions\InvalidArgumentException;
+use Doctrine\ORM\Query;
+use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 
 /**
  * Helper class that adds common features (search and order by) to query builder

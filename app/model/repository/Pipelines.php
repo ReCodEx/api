@@ -5,7 +5,6 @@ namespace App\Model\Repository;
 use Doctrine\Common\Collections\Collection;
 use Kdyby\Doctrine\EntityManager;
 use Doctrine\ORM\Query;
-use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 use App\Model\Entity\Pipeline;
 use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;

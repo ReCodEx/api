@@ -6,7 +6,6 @@ use App\Helpers\Pagination;
 use App\Model\Helpers\PaginationDbHelper;
 use Kdyby\Doctrine\EntityManager;
 use Doctrine\ORM\Query;
-use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 use App\Model\Entity\User;
 use App\Exceptions\InvalidArgumentException;
 

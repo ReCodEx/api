@@ -5,7 +5,6 @@ namespace App\Model\Repository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Query;
-use DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
