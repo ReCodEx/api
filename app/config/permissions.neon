@@ -238,6 +238,14 @@ permissions:
       conditions:
         - user.isSameUser
 
+    - allow: true
+      role: supervisor
+      resource: user
+      actions:
+          - viewDetail
+      conditions: user.isSupervisorOfJoinedGroup
+
+
     ##########################
     # Assignment permissions #
     ##########################
