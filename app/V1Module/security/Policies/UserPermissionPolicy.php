@@ -48,7 +48,9 @@ class UserPermissionPolicy implements IPermissionPolicy
     return $user->getRole() === Roles::SUPERVISOR_ROLE;
   }
 
-  // Logged user is supervisor of any group of which the tested user is member ...
+  /**
+   * Logged user is supervisor of any group of which the tested user is member.
+   */
   public function isSupervisorOfJoinedGroup(Identity $identity, User $user): bool {
     $currentUser = $identity->getUserData();
     if ($currentUser === null) {
