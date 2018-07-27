@@ -551,7 +551,7 @@ class ExercisesPresenter extends BasePresenter {
   public function checkAttachPipeline(string $id, string $pipelineId) {
     $exercise = $this->exercises->findOrThrow($id);
     $pipeline = $this->pipelines->findOrThrow($pipelineId);
-    if (!$this->exerciseAcl->canAttachPipeline($exercise, $pipeline)) {
+    if (!$this->exerciseAcl->canAttachPipeline($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to attach the pipeline to the exercise");
     }
   }
@@ -579,7 +579,7 @@ class ExercisesPresenter extends BasePresenter {
   public function checkDetachPipeline(string $id, string $pipelineId) {
     $exercise = $this->exercises->findOrThrow($id);
     $pipeline = $this->pipelines->findOrThrow($pipelineId);
-    if (!$this->exerciseAcl->canDetachPipeline($exercise, $pipeline)) {
+    if (!$this->exerciseAcl->canDetachPipeline($exercise)) {
       throw new ForbiddenRequestException("You are not allowed to detach the pipeline from the exercise");
     }
   }
