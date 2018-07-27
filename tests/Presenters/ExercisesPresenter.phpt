@@ -497,6 +497,40 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::count(1, $payload["groupsIds"]);
   }
 
+  public function testAttachPipeline()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $pipeline = current($this->presenter->pipelines->findAll());
+
+    /** @var Exercise $payload */
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'POST',
+      ['action' => 'attachPipeline', 'id' => $exercise->getId(), 'pipelineId' => $pipeline->getId()]);
+
+    Assert::equal($exercise->getId(), $payload["id"]);
+    $this->presenter->exercises->refresh($exercise);
+    Assert::true($exercise->getPipelines()->contains($pipeline));
+  }
+
+  public function testDetachPipeline()
+  {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $pipeline = current($this->presenter->pipelines->findAll());
+    $exercise->addPipeline($pipeline);
+    $this->presenter->exercises->flush();
+    Assert::true($exercise->getPipelines()->contains($pipeline));
+
+    /** @var Exercise $payload */
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'POST',
+      ['action' => 'detachPipeline', 'id' => $exercise->getId(), 'pipelineId' => $pipeline->getId()]);
+
+    Assert::equal($exercise->getId(), $payload["id"]);
+    $this->presenter->exercises->refresh($exercise);
+    Assert::false($exercise->getPipelines()->contains($pipeline));
+  }
 }
 
 $testCase = new TestExercisesPresenter();
