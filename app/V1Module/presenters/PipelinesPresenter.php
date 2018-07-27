@@ -148,15 +148,22 @@ class PipelinesPresenter extends BasePresenter {
       $exercise = $this->exercises->findOrThrow($this->getRequest()->getPost("exerciseId"));
     }
 
-    if (!$this->pipelineAcl->canCreate() ||
-        ($exercise && !$this->exerciseAcl->canCreatePipeline($exercise))) {
+    if (!$this->pipelineAcl->canCreate()) {
       throw new ForbiddenRequestException("You are not allowed to create pipeline.");
+    }
+    if ($exercise && !$this->exerciseAcl->canAttachPipeline($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to attach newly created pipeline to given exercise.");
     }
 
     // create pipeline entity, persist it and return it
-    $pipeline = Pipeline::create($this->getCurrentUser(), $exercise);
+    $pipeline = Pipeline::create($this->getCurrentUser());
     $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
     $this->pipelines->persist($pipeline);
+    if ($exercise) {
+      $exercise->addPipeline($pipeline);
+      $this->exercises->persist($exercise);
+      $this->pipelines->refresh($pipeline); // this is needed so pipeline contains the newly added exercise
+    }
 
     $this->sendSuccessResponse($pipeline);
   }
@@ -175,14 +182,21 @@ class PipelinesPresenter extends BasePresenter {
     $exercise = $exerciseId ? $this->exercises->findOrThrow($exerciseId) : null;
     $pipeline = $this->pipelines->findOrThrow($id);
 
-    if (!$this->pipelineAcl->canFork($pipeline) ||
-        ($exercise && !$this->exerciseAcl->canCreatePipeline($exercise))) {
+    if (!$this->pipelineAcl->canFork($pipeline)) {
       throw new ForbiddenRequestException("You are not allowed to fork pipeline.");
+    }
+    if ($exercise && !$this->exerciseAcl->canAttachPipeline($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to attach forked pipeline to given exercise.");
     }
 
     // fork pipeline entity, persist it and return it
-    $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline, $exercise);
+    $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline);
     $this->pipelines->persist($pipeline);
+    if ($exercise) {
+      $exercise->addPipeline($pipeline);
+      $this->exercises->persist($exercise);
+      $this->pipelines->refresh($pipeline); // this is needed so pipeline contains the newly added exercise
+    }
     $this->sendSuccessResponse($pipeline);
   }
 

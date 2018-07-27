@@ -356,15 +356,18 @@ class TestExercisesPresenter extends Tester\TestCase
 
     // prepare pipelines into exercise
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
-    $exercise = current($this->exercises->findAll());
     $pipeline = current($this->pipelines->findAll());
-    $pipeline1 = Pipeline::forkFrom($user, $pipeline, $exercise);
-    $pipeline2 = Pipeline::forkFrom($user, $pipeline, $exercise);
+    $pipeline1 = Pipeline::forkFrom($user, $pipeline);
     $pipeline1->setId("testGetPipelines1");
+    $pipeline2 = Pipeline::forkFrom($user, $pipeline);
     $pipeline2->setId("testGetPipelines2");
+    $exercise = current($this->exercises->findAll());
+    $exercise->addPipeline($pipeline1);
+    $exercise->addPipeline($pipeline2);
     $this->pipelines->persist($pipeline1, false);
     $this->pipelines->persist($pipeline2, false);
     $this->pipelines->flush();
+    $this->exercises->persist($exercise);
 
     $request = new Nette\Application\Request("V1:Exercises", 'GET',
       ['action' => 'getPipelines', 'id' => $exercise->getId()]);

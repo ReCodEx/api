@@ -20,7 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
  * @method int getVersion()
- * @method Exercise getExercise()
+ * @method ArrayCollection getExercises()
  * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
@@ -84,7 +84,7 @@ class Pipeline implements JsonSerializable
   protected $createdFrom;
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", inversedBy="pipelines")
+   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="pipelines")
    */
   protected $exercises;
 
@@ -123,12 +123,11 @@ class Pipeline implements JsonSerializable
    * @param Collection $supplementaryEvaluationFiles
    * @param User $author
    * @param Pipeline|null $createdFrom
-   * @param Collection $exercises
    * @param Collection|null $runtimeEnvironments
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, ?Pipeline $createdFrom = null, Collection $exercises = null, ?Collection $runtimeEnvironments = null) {
+      User $author, ?Pipeline $createdFrom = null, ?Collection $runtimeEnvironments = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -138,7 +137,7 @@ class Pipeline implements JsonSerializable
     $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
     $this->createdFrom = $createdFrom;
-    $this->exercises = $exercises;
+    $this->exercises = new ArrayCollection();
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->parameters = new ArrayCollection();
     $this->runtimeEnvironments = new ArrayCollection();
@@ -149,19 +148,16 @@ class Pipeline implements JsonSerializable
     }
   }
 
-  public function addExercise(Exercise $exercise) {
-    $this->exercises->add($exercise);
-  }
-
   /**
    * Get array of identifications of exercises using this pipeline.
    * @return array
    */
   public function getExercisesIds() {
-    return $this->exercises->map(
-      function(Exercise $exercise) {
-        return $exercise->getId();
-      })->getValues();
+    return $this->exercises->filter(function (Exercise $exercise) {
+      return $exercise->getDeletedAt() === null;
+    })->map(function(Exercise $exercise) {
+      return $exercise->getId();
+    })->getValues();
   }
 
 
@@ -205,10 +201,9 @@ class Pipeline implements JsonSerializable
   /**
    * Create empty pipeline entity.
    * @param User $user
-   * @param Collection $exercises
    * @return Pipeline
    */
-  public static function create(User $user, Collection $exercises = null): Pipeline {
+  public static function create(User $user): Pipeline {
     return new self(
       "",
       1,
@@ -216,20 +211,17 @@ class Pipeline implements JsonSerializable
       new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
       new ArrayCollection,
       $user,
-      null,
-      $exercises
+      null
     );
   }
 
   /**
-   * Fork pipeline entity into new one which belongs to given exercise.
+   * Fork pipeline entity into new one.
    * @param User $user
    * @param Pipeline $pipeline
-   * @param Exercise|null $exercise
    * @return Pipeline
    */
-  public static function forkFrom(User $user, Pipeline $pipeline,
-    Collection $exercises = null): Pipeline {
+  public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
     return new self(
       $pipeline->getName(),
       $pipeline->getVersion(),
@@ -237,8 +229,7 @@ class Pipeline implements JsonSerializable
       $pipeline->getPipelineConfig(),
       $pipeline->getSupplementaryEvaluationFiles(),
       $user,
-      $pipeline,
-      $exercises
+      $pipeline
     );
   }
 

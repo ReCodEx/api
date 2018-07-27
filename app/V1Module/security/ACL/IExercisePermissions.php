@@ -20,7 +20,8 @@ interface IExercisePermissions {
   function canViewScoreConfig(Exercise $exercise): bool;
   function canSetScoreConfig(Exercise $exercise): bool;
   function canAddReferenceSolution(Exercise $exercise): bool;
-  function canCreatePipeline(Exercise $exercise): bool;
+  function canAttachPipeline(Exercise $exercise): bool;
+  function canDetachPipeline(Exercise $exercise): bool;
   function canViewPipelines(Exercise $exercise): bool;
   function canAttachGroup(Exercise $exercise, Group $group): bool;
   function canDetachGroup(Exercise $exercise, Group $group): bool;

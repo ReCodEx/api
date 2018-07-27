@@ -133,7 +133,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::type(\App\Model\Entity\Pipeline::class, $payload);
     Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
     Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
-    Assert::null($payload->getExercise());
+    Assert::count(0, $payload->getExercises());
   }
 
   public function testForkPipeline() {
@@ -159,7 +159,7 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::type(\App\Model\Entity\Pipeline::class, $payload);
     Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
     Assert::equal($pipeline->getName(), $payload->getName());
-    Assert::equal($exercise, $payload->getExercise());
+    Assert::true($payload->getExercises()->contains($exercise));
   }
 
   public function testRemovePipeline()

@@ -33,6 +33,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setConfigurationType($type)
  * @method void addGroup(Group $group)
  * @method void removeGroup(Group $group)
+ * @method void addPipeline(Pipeline $pipeline)
+ * @method void removePipeline(Pipeline $pipeline)
  */
 class Exercise implements IExercise
 {
@@ -181,7 +183,7 @@ class Exercise implements IExercise
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
+   * @ORM\ManyToMany(targetEntity="Pipeline", inversedBy="exercises")
    */
   protected $pipelines;
 
