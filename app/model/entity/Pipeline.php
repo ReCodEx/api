@@ -84,9 +84,9 @@ class Pipeline implements JsonSerializable
   protected $createdFrom;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="pipelines")
+   * @ORM\ManyToMany(targetEntity="Exercise", inversedBy="pipelines")
    */
-  protected $exercise;
+  protected $exercises;
 
   /**
    * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
@@ -123,12 +123,12 @@ class Pipeline implements JsonSerializable
    * @param Collection $supplementaryEvaluationFiles
    * @param User $author
    * @param Pipeline|null $createdFrom
-   * @param Exercise|null $exercise
+   * @param Collection $exercises
    * @param Collection|null $runtimeEnvironments
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, ?Pipeline $createdFrom = null, ?Exercise $exercise = null, ?Collection $runtimeEnvironments = null) {
+      User $author, ?Pipeline $createdFrom = null, Collection $exercises = null, ?Collection $runtimeEnvironments = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -138,7 +138,7 @@ class Pipeline implements JsonSerializable
     $this->pipelineConfig = $pipelineConfig;
     $this->author = $author;
     $this->createdFrom = $createdFrom;
-    $this->exercise = $exercise;
+    $this->exercises = $exercises;
     $this->supplementaryEvaluationFiles = $supplementaryEvaluationFiles;
     $this->parameters = new ArrayCollection();
     $this->runtimeEnvironments = new ArrayCollection();
@@ -148,6 +148,22 @@ class Pipeline implements JsonSerializable
       }
     }
   }
+
+  public function addExercise(Exercise $exercise) {
+    $this->exercises->add($exercise);
+  }
+
+  /**
+   * Get array of identifications of exercises using this pipeline.
+   * @return array
+   */
+  public function getExercisesIds() {
+    return $this->exercises->map(
+      function(Exercise $exercise) {
+        return $exercise->getId();
+      })->getValues();
+  }
+
 
   /**
    * Add supplementary file which should be accessible within pipeline.
@@ -189,10 +205,10 @@ class Pipeline implements JsonSerializable
   /**
    * Create empty pipeline entity.
    * @param User $user
-   * @param Exercise|null $exercise
+   * @param Collection $exercises
    * @return Pipeline
    */
-  public static function create(User $user, Exercise $exercise = null): Pipeline {
+  public static function create(User $user, Collection $exercises = null): Pipeline {
     return new self(
       "",
       1,
@@ -201,7 +217,7 @@ class Pipeline implements JsonSerializable
       new ArrayCollection,
       $user,
       null,
-      $exercise
+      $exercises
     );
   }
 
@@ -213,7 +229,7 @@ class Pipeline implements JsonSerializable
    * @return Pipeline
    */
   public static function forkFrom(User $user, Pipeline $pipeline,
-      ?Exercise $exercise): Pipeline {
+    Collection $exercises = null): Pipeline {
     return new self(
       $pipeline->getName(),
       $pipeline->getVersion(),
@@ -222,7 +238,7 @@ class Pipeline implements JsonSerializable
       $pipeline->getSupplementaryEvaluationFiles(),
       $user,
       $pipeline,
-      $exercise
+      $exercises
     );
   }
 
@@ -271,7 +287,7 @@ class Pipeline implements JsonSerializable
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "description" => $this->description,
       "author" => $this->author ? $this->author->getId() : null,
-      "exerciseId" => $this->exercise ? $this->exercise->getId() : null,
+      "exercisesIds" => $this->getExercisesIds(),
       "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
       "pipeline" => $this->pipelineConfig->getParsedPipeline(),
       "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),

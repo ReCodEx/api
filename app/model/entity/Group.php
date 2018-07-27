@@ -153,7 +153,7 @@ class Group
   /**
    * @ORM\Column(type="boolean")
    */
-  protected $isOrganizational;
+  protected $isOrganizational = false;
 
   public function isOrganizational(): bool {
     return $this->isOrganizational;
