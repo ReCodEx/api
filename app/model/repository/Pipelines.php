@@ -30,6 +30,18 @@ class Pipelines extends BaseSoftDeleteRepository {
   public function getPreparedForPagination(Pagination $pagination): array {
     $qb = $this->createQueryBuilder('p'); // takes care of softdelete cases
 
+    // Only pipelines of given author ...
+    if ($pagination->hasFilter("authorId")) {
+      $authorId = $pagination->getFilter("authorId");
+      $qb->andWhere($qb->expr()->eq("p.author", $qb->expr()->literal($authorId)));
+    }
+
+    // Only pipelines attached to given exercise ...
+    if ($pagination->hasFilter("exerciseId")) {
+      $exerciseId = $pagination->getFilter("exerciseId");
+      $qb->andWhere(":exerciseId MEMBER OF p.exercises")->setParameter('exerciseId', $exerciseId);
+    }
+
     // Apply common pagination stuff (search and ordering) and yield the results ...
     $paginationDbHelper = new PaginationDbHelper(
       [ // known order by columns
