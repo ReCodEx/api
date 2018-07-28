@@ -434,7 +434,8 @@ permissions:
           - setLimits
           - setScoreConfig
           - update
-          - createPipeline
+          - attachPipeline
+          - detachPipeline
       conditions:
           or:
             - exercise.isSuperGroupAdmin

@@ -181,7 +181,7 @@ class Exercise implements IExercise
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="Pipeline", mappedBy="exercise")
+   * @ORM\ManyToMany(targetEntity="Pipeline", inversedBy="exercises")
    */
   protected $pipelines;
 
@@ -189,6 +189,16 @@ class Exercise implements IExercise
     return $this->pipelines->filter(function (Pipeline $pipeline) {
       return !$pipeline->isDeleted();
     });
+  }
+
+  public function addPipeline(Pipeline $pipeline) {
+    $this->pipelines->add($pipeline);
+    $pipeline->getAllExercises()->add($this);
+  }
+
+  public function removePipeline(Pipeline $pipeline) {
+    $this->pipelines->removeElement($pipeline);
+    $pipeline->getAllExercises()->removeElement($this);
   }
 
   /**

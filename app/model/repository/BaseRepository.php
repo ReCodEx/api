@@ -72,6 +72,10 @@ class BaseRepository {
     $this->em->flush();
   }
 
+  public function refresh($entity) {
+    $this->em->refresh($entity);
+  }
+
   public function matching(Criteria $params) {
     return $this->repository->matching($params);
   }
