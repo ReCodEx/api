@@ -72,8 +72,7 @@ class BaseRepository {
     $this->em->flush();
   }
 
-  public function refresh($entity)
-  {
+  public function refresh($entity) {
     $this->em->refresh($entity);
   }
 

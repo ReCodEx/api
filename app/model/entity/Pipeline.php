@@ -20,7 +20,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
  * @method int getVersion()
- * @method ArrayCollection getExercises()
  * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
@@ -123,11 +122,12 @@ class Pipeline implements JsonSerializable
    * @param Collection $supplementaryEvaluationFiles
    * @param User $author
    * @param Pipeline|null $createdFrom
+   * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @param Collection|null $runtimeEnvironments
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, ?Pipeline $createdFrom = null, ?Collection $runtimeEnvironments = null) {
+      User $author, ?Pipeline $createdFrom = null, Exercise $exercise = null, Collection $runtimeEnvironments = null) {
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
 
@@ -146,6 +146,27 @@ class Pipeline implements JsonSerializable
         $this->runtimeEnvironments->add($runtimeEnvironment);
       }
     }
+    if ($exercise) {
+      $exercise->addPipeline($this);
+    }
+  }
+
+  /**
+   * Get filtered collection of not-deleted exercises.
+   * @return ArrayCollection
+   */
+  public function getExercises() {
+    return $this->exercises->filter(function (Exercise $exercise) {
+      return $exercise->getDeletedAt() === null;
+    });
+  }
+
+  /**
+   * Get filtered collection of all exercises including delted ones.
+   * @return ArrayCollection
+   */
+  public function getAllExercises() {
+    return $this->exercises;
   }
 
   /**
@@ -153,13 +174,10 @@ class Pipeline implements JsonSerializable
    * @return array
    */
   public function getExercisesIds() {
-    return $this->exercises->filter(function (Exercise $exercise) {
-      return $exercise->getDeletedAt() === null;
-    })->map(function(Exercise $exercise) {
+    return $this->getExercises()->map(function(Exercise $exercise) {
       return $exercise->getId();
     })->getValues();
   }
-
 
   /**
    * Add supplementary file which should be accessible within pipeline.
@@ -201,9 +219,10 @@ class Pipeline implements JsonSerializable
   /**
    * Create empty pipeline entity.
    * @param User $user
+   * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @return Pipeline
    */
-  public static function create(User $user): Pipeline {
+  public static function create(User $user, Exercise $exercise = null): Pipeline {
     return new self(
       "",
       1,
@@ -211,7 +230,8 @@ class Pipeline implements JsonSerializable
       new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
       new ArrayCollection,
       $user,
-      null
+      null,
+      $exercise
     );
   }
 
@@ -219,9 +239,10 @@ class Pipeline implements JsonSerializable
    * Fork pipeline entity into new one.
    * @param User $user
    * @param Pipeline $pipeline
+   * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @return Pipeline
    */
-  public static function forkFrom(User $user, Pipeline $pipeline): Pipeline {
+  public static function forkFrom(User $user, Pipeline $pipeline, Exercise $exercise = null): Pipeline {
     return new self(
       $pipeline->getName(),
       $pipeline->getVersion(),
@@ -229,7 +250,8 @@ class Pipeline implements JsonSerializable
       $pipeline->getPipelineConfig(),
       $pipeline->getSupplementaryEvaluationFiles(),
       $user,
-      $pipeline
+      $pipeline,
+      $exercise
     );
   }
 

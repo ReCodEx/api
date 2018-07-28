@@ -156,15 +156,9 @@ class PipelinesPresenter extends BasePresenter {
     }
 
     // create pipeline entity, persist it and return it
-    $pipeline = Pipeline::create($this->getCurrentUser());
+    $pipeline = Pipeline::create($this->getCurrentUser(), $exercise);
     $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
     $this->pipelines->persist($pipeline);
-    if ($exercise) {
-      $exercise->addPipeline($pipeline);
-      $this->exercises->persist($exercise);
-      $this->pipelines->refresh($pipeline); // this is needed so pipeline contains the newly added exercise
-    }
-
     $this->sendSuccessResponse($pipeline);
   }
 
@@ -190,13 +184,8 @@ class PipelinesPresenter extends BasePresenter {
     }
 
     // fork pipeline entity, persist it and return it
-    $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline);
+    $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline, $exercise);
     $this->pipelines->persist($pipeline);
-    if ($exercise) {
-      $exercise->addPipeline($pipeline);
-      $this->exercises->persist($exercise);
-      $this->pipelines->refresh($pipeline); // this is needed so pipeline contains the newly added exercise
-    }
     $this->sendSuccessResponse($pipeline);
   }
 

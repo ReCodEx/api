@@ -33,8 +33,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setConfigurationType($type)
  * @method void addGroup(Group $group)
  * @method void removeGroup(Group $group)
- * @method void addPipeline(Pipeline $pipeline)
- * @method void removePipeline(Pipeline $pipeline)
  */
 class Exercise implements IExercise
 {
@@ -191,6 +189,16 @@ class Exercise implements IExercise
     return $this->pipelines->filter(function (Pipeline $pipeline) {
       return !$pipeline->isDeleted();
     });
+  }
+
+  public function addPipeline(Pipeline $pipeline) {
+    $this->pipelines->add($pipeline);
+    $pipeline->getAllExercises()->add($this);
+  }
+
+  public function removePipeline(Pipeline $pipeline) {
+    $this->pipelines->removeElement($pipeline);
+    $pipeline->getAllExercises()->removeElement($this);
   }
 
   /**
