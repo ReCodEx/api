@@ -108,7 +108,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::equal(1, count($payload));
+    Assert::equal(2, count($payload));
     Assert::type(ReferenceSolutionSubmission::class, $payload[0]);
   }
 
@@ -159,6 +159,22 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     Assert::exception(function () use ($solutionId) {
       $this->referenceSolutions->findOrThrow($solutionId);
     }, NotFoundException::class);
+  }
+
+  public function testDeleteReferenceSolutionEvaluation()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $evaluations = $this->referenceSolutionEvaluations->findAll();
+    $evaluation = reset($evaluations);
+    $evaluationsCount = count($evaluations);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ReferenceExerciseSolutions', 'DELETE', [
+      'action' => 'deleteEvaluation', 'evaluationId' => $evaluation->getId() ]);
+
+    $remainingEvaluations = $this->referenceSolutionEvaluations->findAll();
+    Assert::count($evaluationsCount-1, $remainingEvaluations);
+    Assert::notContains($evaluation->getId(), array_map(function($eval) { return $eval->getId(); }, $remainingEvaluations));
   }
 
   public function testPreSubmit()

@@ -1,5 +1,5 @@
 App\Model\Entity\SolutionEvaluation:
-    "evaluation{1..2}":
+    "evaluation{1..4}":
         __construct: false
         evaluatedAt: "<dateTime()>"
         initFailed: false
@@ -36,7 +36,14 @@ App\Model\Entity\AssignmentSolution:
 App\Model\Entity\AssignmentSolutionSubmission:
     "submission{1..2}":
         __construct:
-            - "@solution<current()>"
+            - "@solution1"
+            - "jobConfigPath"
+            - @submitUser1
+        resultsUrl: localhost/results/hehe.zip
+        evaluation: "@evaluation<current()>"
+    "submission{3..4}":
+        __construct:
+            - "@solution2"
             - "jobConfigPath"
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip

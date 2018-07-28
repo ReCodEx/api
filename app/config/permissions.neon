@@ -354,6 +354,7 @@ permissions:
           - viewEvaluationDetails
           - viewEvaluationValues
           - viewEvaluationJudgeOutput
+          - deleteEvaluation
           - viewResubmissions
           - delete
           - setBonusPoints
@@ -441,15 +442,6 @@ permissions:
             - exercise.isAuthor
 
     - allow: true
-      resource: referenceExerciseSolution
-      actions:
-          - evaluate
-      conditions:
-          or:
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
-            - referenceExerciseSolution.isExerciseAuthor
-
-    - allow: true
       resource: exercise
       actions:
           - attachGroup
@@ -482,8 +474,19 @@ permissions:
     - allow: true
       resource: referenceExerciseSolution
       actions:
+          - evaluate
+          - deleteEvaluation
+      conditions:
+          or:
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
+            - referenceExerciseSolution.isExerciseAuthor
+
+    - allow: true
+      resource: referenceExerciseSolution
+      actions:
           - delete
           - evaluate
+          - deleteEvaluation
       conditions:
           - referenceExerciseSolution.isAuthor
 

@@ -99,7 +99,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
         'GET',
-        ['action' => 'evaluation', 'id' => $submission->id]
+        ['action' => 'evaluation', 'evaluationId' => $submission->id]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
@@ -109,6 +109,23 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::same($submission->getId(), $result['payload']['id']);
   }
+
+  public function testDeleteEvaluation()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
+    $submission = reset($allSubmissions);
+    $submissionsCount = count($allSubmissions);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:AssignmentSolutions', 'DELETE', [
+      'action' => 'deleteEvaluation', 'evaluationId' => $submission->getId() ]);
+
+    $remainingSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
+    Assert::count($submissionsCount-1, $remainingSubmissions);
+    Assert::notContains($submission->getId(), array_map(function($eval) { return $eval->getId(); }, $remainingSubmissions));
+  }
+
 
   public function testSetBonusPoints()
   {
@@ -227,7 +244,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'GET',
-      ['action' => 'downloadResultArchive', 'id' => $submission->id]
+      ['action' => 'downloadResultArchive', 'evaluationId' => $submission->id]
     );
     $response = $this->presenter->run($request);
     Assert::same(App\Responses\GuzzleResponse::class, get_class($response));

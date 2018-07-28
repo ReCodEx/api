@@ -149,7 +149,7 @@ App\Model\Entity\ReferenceExerciseSolution:
             - @CRuntime
 
 App\Model\Entity\SolutionEvaluation:
-    demoReferenceExerciseSolutionEvaluationEvaluation:
+    "demoReferenceExerciseSolutionEvaluationEvaluation{1..2}":
         __construct: false
         evaluatedAt: "<dateTime()>"
         initFailed: false
@@ -158,13 +158,13 @@ App\Model\Entity\SolutionEvaluation:
         initiationOutputs: ""
 
 App\Model\Entity\ReferenceSolutionSubmission:
-    demoReferenceExerciseSolutionEvaluation:
+    "demoReferenceExerciseSolutionEvaluation{1..2}":
         __construct:
             - @demoReferenceExerciseSolution
             - @demoHWGroup
             - "jobConfigPath"
             - @demoAdmin
-        evaluation: @demoReferenceExerciseSolutionEvaluationEvaluation
+        evaluation: "@demoReferenceExerciseSolutionEvaluationEvaluation<current()>"
         resultsUrl: "chacha cheche chichi chocho"
 
 App\Model\Entity\AttachmentFile:
