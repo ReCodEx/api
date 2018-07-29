@@ -2,11 +2,18 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\Localizations;
+use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Helpers\Validators;
+use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\ShadowAssignments;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Security\ACL\IShadowAssignmentPermissions;
+use Nette\Utils\Arrays;
 
 /**
  * Endpoints for points assignment manipulation
@@ -32,6 +39,12 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    */
   public $shadowAssignmentViewFactory;
 
+  /**
+   * @var AssignmentEmailsSender
+   * @inject
+   */
+  public $assignmentEmailsSender;
+
 
   public function checkDetail(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
@@ -48,6 +61,93 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
+    $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+  }
+
+  public function checkUpdateDetail(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    if (!$this->shadowAssignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot update this shadow assignment.");
+    }
+  }
+
+  /**
+   * Update details of an shadow assignment
+   * @POST
+   * @param string $id Identifier of the updated assignment
+   * @Param(type="post", name="version", validation="numericint", description="Version of the edited assignment")
+   * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
+   * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
+   * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
+   * @Param(type="post", name="maxPoints", validation="numericint", description="A maximum of points that user can be awarded")
+   * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
+   * @throws BadRequestException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionUpdateDetail(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+
+    $req = $this->getRequest();
+    $version = intval($req->getPost("version"));
+    if ($version !== $assignment->getVersion()) {
+      throw new BadRequestException("The shadow assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}.");
+    }
+
+    // localized texts cannot be empty
+    if (count($req->getPost("localizedTexts")) == 0) {
+      throw new InvalidArgumentException("No entry for localized texts given.");
+    }
+
+    // old values of some attributes
+    $wasPublic = $assignment->isPublic();
+    $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
+    $sendNotification = $req->getPost("sendNotification") ? filter_var($req->getPost("sendNotification"), FILTER_VALIDATE_BOOLEAN) : true;
+
+    $assignment->incrementVersion();
+    $assignment->updatedNow();
+    $assignment->setIsPublic($isPublic);
+    $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setMaxPoints($req->getPost("maxPoints"));
+
+    if ($sendNotification && $wasPublic === false && $isPublic === true) {
+      // assignment is moving from non-public to public, send notification to students
+      $this->assignmentEmailsSender->assignmentCreated($assignment);
+    }
+
+    // go through localizedTexts and construct database entities
+    $localizedTexts = [];
+    foreach ($req->getPost("localizedTexts") as $localization) {
+      $lang = $localization["locale"];
+
+      if (array_key_exists($lang, $localizedTexts)) {
+        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedTexts");
+      }
+
+      // create all new localized texts
+      $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
+      $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
+      if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
+        throw new InvalidArgumentException("External assignment link is not a valid URL");
+      }
+
+      $localized = new LocalizedExercise(
+        $lang, $localization["name"], $localization["text"],
+        $localizedExercise ? $localizedExercise->getDescription() : "",
+        $externalAssignmentLink ?: null
+      );
+
+      $localizedTexts[$lang] = $localized;
+    }
+
+    // make changes to database
+    Localizations::updateCollection($assignment->getLocalizedTexts(), $localizedTexts);
+
+    foreach ($assignment->getLocalizedTexts() as $localizedText) {
+      $this->shadowAssignments->persist($localizedText, false);
+    }
+
+    $this->shadowAssignments->flush();
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
   }
 }

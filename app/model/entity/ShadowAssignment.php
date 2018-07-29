@@ -22,6 +22,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getVersion()
  * @method setIsPublic(bool $public)
  * @method setIsBonus(bool $bonus)
+ * @method setMaxPoints(int $points)
  */
 class ShadowAssignment
 {
