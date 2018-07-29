@@ -42,7 +42,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setIsBonus(bool $bonus)
  * @method setPointsPercentualThreshold(float $threshold)
  */
-class Assignment implements IExercise
+class Assignment implements IExercise, IAssignment
 {
   use MagicAccessors;
   use ExerciseData;
@@ -136,7 +136,7 @@ class Assignment implements IExercise
    */
   protected $isPublic;
 
-  public function isPublic() {
+  public function isPublic(): bool {
     return $this->isPublic;
   }
 

@@ -23,7 +23,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setIsBonus(bool $bonus)
  * @method setMaxPoints(int $points)
  */
-class ShadowAssignment
+class ShadowAssignment implements IAssignment
 {
   use MagicAccessors;
   use UpdateableEntity;
@@ -71,7 +71,7 @@ class ShadowAssignment
    */
   protected $isPublic;
 
-  public function isPublic() {
+  public function isPublic(): bool {
     return $this->isPublic;
   }
 
@@ -108,7 +108,7 @@ class ShadowAssignment
    * @param string $locale
    * @return LocalizedExercise|null
    */
-  public function getLocalizedTextByLocale(string $locale) {
+  public function getLocalizedTextByLocale(string $locale): ?LocalizedExercise {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
     $first = $this->localizedTexts->matching($criteria)->first();
     return $first === false ? null : $first;
