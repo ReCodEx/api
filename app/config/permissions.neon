@@ -714,3 +714,10 @@ permissions:
           - remove
       conditions:
           - assignment.isSupervisor
+
+    - allow: true
+      resource: group
+      actions:
+          - createShadowAssignment
+      conditions:
+          - group.isSupervisor

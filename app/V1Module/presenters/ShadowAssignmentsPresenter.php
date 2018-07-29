@@ -5,13 +5,17 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\ShadowAssignment;
+use App\Model\Repository\Groups;
 use App\Model\Repository\ShadowAssignments;
 use App\Model\View\ShadowAssignmentViewFactory;
+use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use Nette\Utils\Arrays;
 
@@ -44,6 +48,19 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentEmailsSender;
+
+  /**
+   * @var Groups
+   * @inject
+   */
+  public $groups;
+
+  /**
+   * @var IGroupPermissions
+   * @inject
+   */
+  public $groupAcl;
+
 
 
   public function checkDetail(string $id) {
@@ -125,7 +142,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       }
 
       // create all new localized texts
-      $localizedExercise = $assignment->getExercise()->getLocalizedTextByLocale($lang);
+      $localizedExercise = $assignment->getLocalizedTextByLocale($lang);
       $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
       if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
@@ -149,5 +166,50 @@ class ShadowAssignmentsPresenter extends BasePresenter {
 
     $this->shadowAssignments->flush();
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+  }
+
+  /**
+   * Create new shadow assignment in given group.
+   * @POST
+   * @Param(type="post", name="groupId", description="Identifier of the group")
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   * @throws NotFoundException
+   */
+  public function actionCreate() {
+    $req = $this->getRequest();
+    $group = $this->groups->findOrThrow($req->getPost("groupId"));
+
+    if (!$this->groupAcl->canCreateShadowAssignment($group)) {
+      throw new ForbiddenRequestException("You are not allowed to create assignment in given group.");
+    }
+
+    if ($group->isOrganizational()) {
+      throw new BadRequestException("You cannot create assignment in organizational groups");
+    }
+
+    $assignment = ShadowAssignment::assignToGroup($group);
+    $this->shadowAssignments->persist($assignment);
+    $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
+  }
+
+  public function checkRemove(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+
+    if (!$this->shadowAssignmentAcl->canRemove($assignment)) {
+      throw new ForbiddenRequestException("You cannot remove this shadow assignment.");
+    }
+  }
+
+  /**
+   * Delete shadow assignment
+   * @DELETE
+   * @param string $id Identifier of the assignment to be removed
+   * @throws NotFoundException
+   */
+  public function actionRemove(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    $this->shadowAssignments->remove($assignment);
+    $this->sendSuccessResponse("OK");
   }
 }

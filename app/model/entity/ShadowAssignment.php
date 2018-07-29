@@ -16,7 +16,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method Group getGroup()
  * @method DateTime getCreatedAt()
  * @method int getMaxPoints()
  * @method setIsPublic(bool $public)
@@ -138,6 +137,10 @@ class ShadowAssignment implements IAssignment
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="shadowAssignments")
    */
   protected $group;
+
+  public function getGroup(): Group {
+    return $this->group;
+  }
 
   /**
    * @ORM\OneToMany(targetEntity="ShadowAssignmentEvaluation", mappedBy="assignment")

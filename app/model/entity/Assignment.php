@@ -23,7 +23,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
- * @method Group getGroup()
  * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method DateTime getFirstDeadline()
@@ -274,6 +273,10 @@ class Assignment implements IExercise, IAssignment
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
    */
   protected $group;
+
+  public function getGroup(): Group {
+    return $this->group;
+  }
 
   /**
    * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")
