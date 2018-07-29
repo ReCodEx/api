@@ -10,7 +10,7 @@ roles:
     - name: supervisor
       parents: supervisor-student
 
-    - name: supervisor-empowered
+    - name: empowered-supervisor
       parents: supervisor
 
 
