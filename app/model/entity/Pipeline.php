@@ -19,7 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getDescription()
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
- * @method int getVersion()
  * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
@@ -32,6 +31,7 @@ class Pipeline implements JsonSerializable
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use UpdateableEntity;
   use DeleteableEntity;
+  use VersionableEntity;
 
   /**
    * @ORM\Id
@@ -44,18 +44,6 @@ class Pipeline implements JsonSerializable
    * @ORM\Column(type="string")
    */
   protected $name;
-
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $version;
-
-  /**
-   * Increment version number.
-   */
-  public function incrementVersion() {
-    $this->version++;
-  }
 
   /**
    * @ORM\Column(type="text")

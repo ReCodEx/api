@@ -22,7 +22,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
  * @method User getAuthor()
- * @method int getVersion()
  * @method DateTime getCreatedAt()
  * @method string getDifficulty()
  * @method Collection getReferenceSolutions()
@@ -40,6 +39,7 @@ class Exercise implements IExercise
   use ExerciseData;
   use UpdateableEntity;
   use DeleteableEntity;
+  use VersionableEntity;
 
   /**
    * @ORM\Id
@@ -47,18 +47,6 @@ class Exercise implements IExercise
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $version;
-
-  /**
-   * Increment version number.
-   */
-  public function incrementVersion() {
-    $this->version++;
-  }
 
   /**
    * @ORM\Column(type="datetime")

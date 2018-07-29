@@ -31,7 +31,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
- * @method int getVersion()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setIsPublic(bool $public)
@@ -49,6 +48,7 @@ class Assignment implements IExercise
   use ExerciseData;
   use UpdateableEntity;
   use DeleteableEntity;
+  use VersionableEntity;
 
   private function __construct(
     DateTime $firstDeadline,
@@ -130,18 +130,6 @@ class Assignment implements IExercise
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $version;
-
-  /**
-   * Increment version number.
-   */
-  public function incrementVersion() {
-    $this->version++;
-  }
 
   /**
    * @ORM\Column(type="boolean")

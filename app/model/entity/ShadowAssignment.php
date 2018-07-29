@@ -19,7 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method Group getGroup()
  * @method DateTime getCreatedAt()
  * @method int getMaxPoints()
- * @method int getVersion()
  * @method setIsPublic(bool $public)
  * @method setIsBonus(bool $bonus)
  * @method setMaxPoints(int $points)
@@ -29,6 +28,7 @@ class ShadowAssignment
   use MagicAccessors;
   use UpdateableEntity;
   use DeleteableEntity;
+  use VersionableEntity;
 
   private function __construct(
     int $maxPoints,
@@ -65,18 +65,6 @@ class ShadowAssignment
    * @ORM\GeneratedValue(strategy="UUID")
    */
   protected $id;
-
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $version;
-
-  /**
-   * Increment version number.
-   */
-  public function incrementVersion() {
-    $this->version++;
-  }
 
   /**
    * @ORM\Column(type="boolean")
