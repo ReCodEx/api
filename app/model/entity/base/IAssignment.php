@@ -12,6 +12,6 @@ interface IAssignment {
   function isBonus(): bool;
   function getVersion(): int;
   function getLocalizedTexts(): Collection;
-  function getLocalizedTextByLocale(string $locale): ?LocalizedExercise;
+  function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;
 
 }

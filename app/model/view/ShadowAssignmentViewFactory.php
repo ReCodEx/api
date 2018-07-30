@@ -2,7 +2,7 @@
 namespace App\Model\View;
 
 use App\Helpers\PermissionHints;
-use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\LocalizedShadowAssignment;
 use App\Model\Entity\ShadowAssignment;
 use App\Security\ACL\IShadowAssignmentPermissions;
 
@@ -22,9 +22,8 @@ class ShadowAssignmentViewFactory {
       "isPublic" => $assignment->isPublic(),
       "createdAt" => $assignment->getCreatedAt()->getTimestamp(),
       "updatedAt" => $assignment->getUpdatedAt()->getTimestamp(),
-      "localizedTexts" => $assignment->getLocalizedTexts()->map(function (LocalizedExercise $text) {
-        $data = $text->jsonSerialize();
-        return $data;
+      "localizedTexts" => $assignment->getLocalizedTexts()->map(function (LocalizedShadowAssignment $text) {
+        return $text->jsonSerialize();
       })->getValues(),
       "groupId" => $assignment->getGroup()->getId(),
       "isBonus" => $assignment->isBonus(),

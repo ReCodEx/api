@@ -11,6 +11,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\LocalizedExercise;
+use App\Model\Entity\LocalizedShadowAssignment;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentEvaluation;
 use App\Model\Repository\Groups;
@@ -21,6 +22,7 @@ use App\Model\View\ShadowAssignmentViewFactory;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IShadowAssignmentEvaluationPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
+use DateTime;
 use Nette\Utils\Arrays;
 
 /**
@@ -160,19 +162,17 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       $lang = $localization["locale"];
 
       if (array_key_exists($lang, $localizedTexts)) {
-        throw new InvalidArgumentException("Duplicate entry for language $lang in localizedTexts");
+        throw new InvalidArgumentException("Duplicate entry for language '$lang' in localizedTexts");
       }
 
       // create all new localized texts
-      $localizedExercise = $assignment->getLocalizedTextByLocale($lang);
       $externalAssignmentLink = trim(Arrays::get($localization, "link", ""));
       if ($externalAssignmentLink !== "" && !Validators::isUrl($externalAssignmentLink)) {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
 
-      $localized = new LocalizedExercise(
+      $localized = new LocalizedShadowAssignment(
         $lang, $localization["name"], $localization["text"],
-        $localizedExercise ? $localizedExercise->getDescription() : "",
         $externalAssignmentLink ?: null
       );
 
@@ -292,6 +292,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as evaluatee for evaluation")
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
    * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
+   * @Param(type="post", name="evaluatedAt", validation="timestamp", required=false, description="Datetime when the evaluation was evaluated, whatever that might means")
    * @throws NotFoundException
    * @throws ForbiddenRequestException
    * @throws BadRequestException
@@ -302,13 +303,16 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $points = $req->getPost("points");
     $note = $req->getPost("note");
 
+    $evaluatedAt = $req->getPost("evaluatedAt") ?: null;
+    $evaluatedAt = $evaluatedAt ? DateTime::createFromFormat('U', $evaluatedAt) : null;
+
     $assignment = $this->shadowAssignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
     if (!$assignment->getGroup()->isStudentOf($user)) {
       throw new BadRequestException("User is not member of the group");
     }
 
-    $evaluation = new ShadowAssignmentEvaluation($points, $note, $assignment, $this->getCurrentUser(), $user);
+    $evaluation = new ShadowAssignmentEvaluation($points, $note, $assignment, $this->getCurrentUser(), $user, $evaluatedAt);
     $this->shadowAssignmentEvaluations->persist($evaluation);
     $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));
   }
@@ -326,6 +330,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @param string $evaluationId Identifier of the shadow assignment evaluation
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
    * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
+   * @Param(type="post", name="evaluatedAt", validation="timestamp", required=false, description="Datetime when the evaluation was evaluated, whatever that might means")
    * @throws NotFoundException
    */
   public function actionUpdateEvaluation(string $evaluationId) {
@@ -335,8 +340,13 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $points = $req->getPost("points");
     $note = $req->getPost("note");
 
+    $evaluatedAt = $req->getPost("evaluatedAt") ?: null;
+    $evaluatedAt = $evaluatedAt ? DateTime::createFromFormat('U', $evaluatedAt) : null;
+
+    $evaluation->updatedNow();
     $evaluation->setPoints($points);
     $evaluation->setNote($note);
+    $evaluation->setEvaluatedAt($evaluatedAt);
 
     $this->shadowAssignmentEvaluations->flush();
     $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));

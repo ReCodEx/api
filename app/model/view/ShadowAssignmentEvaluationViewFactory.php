@@ -20,7 +20,9 @@ class ShadowAssignmentEvaluationViewFactory {
       'points' => $evaluation->getPoints(),
       'note' => $evaluation->getNote(),
       'author' => $evaluation->getAuthor(),
-      'evaluatee' => $evaluation->getEvaluatee()
+      'evaluatee' => $evaluation->getEvaluatee(),
+      'createdAt' => $evaluation->getCreatedAt(),
+      'updatedAt' => $evaluation->getUpdatedAt()
     ];
   }
 

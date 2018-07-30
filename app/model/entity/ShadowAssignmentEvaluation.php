@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+use DateTime;
 
 /**
  * @ORM\Entity
@@ -14,19 +15,27 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method User getAuthor()
  * @method User getEvaluatee()
  * @method int getPoints()
+ * @method DateTime getCreatedAt()
+ * @method DateTime getEvaluatedAt()
  * @method setPoints(int $points)
  * @method setNote(string $note)
+ * @method void setEvaluatedAt(DateTime $evaluatedAt)
  */
 class ShadowAssignmentEvaluation
 {
   use MagicAccessors;
+  use UpdateableEntity;
 
-  public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author, User $evaluatee) {
+  public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author,
+                              User $evaluatee, DateTime $evaluatedAt) {
     $this->points = $points;
     $this->shadowAssignment = $shadowAssignment;
     $this->note = $note;
     $this->author = $author;
     $this->evaluatee = $evaluatee;
+    $this->createdAt = new DateTime;
+    $this->updatedAt = new DateTime;
+    $this->evaluatedAt = $evaluatedAt;
   }
 
   /**
@@ -61,5 +70,15 @@ class ShadowAssignmentEvaluation
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $evaluatee;
+
+  /**
+   * @ORM\Column(type="datetime")
+   */
+  protected $createdAt;
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $evaluatedAt;
 
 }

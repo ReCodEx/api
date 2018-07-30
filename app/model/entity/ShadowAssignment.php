@@ -90,7 +90,7 @@ class ShadowAssignment implements IAssignment
   protected $createdAt;
 
   /**
-   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
+   * @ORM\ManyToMany(targetEntity="LocalizedShadowAssignment", indexBy="locale")
    * @var Collection|Selectable
    */
   protected $localizedTexts;
@@ -99,7 +99,7 @@ class ShadowAssignment implements IAssignment
     return $this->localizedTexts;
   }
 
-  public function addLocalizedText(LocalizedExercise $localizedText) {
+  public function addLocalizedText(LocalizedShadowAssignment $localizedText) {
     $this->localizedTexts->add($localizedText);
   }
 
@@ -108,7 +108,7 @@ class ShadowAssignment implements IAssignment
    * @param string $locale
    * @return LocalizedExercise|null
    */
-  public function getLocalizedTextByLocale(string $locale): ?LocalizedExercise {
+  public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
     $first = $this->localizedTexts->matching($criteria)->first();
     return $first === false ? null : $first;
