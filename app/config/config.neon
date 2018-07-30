@@ -180,6 +180,7 @@ acl:
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
+    shadowAssignmentEvaluation: App\Security\ACL\IShadowAssignmentEvaluationPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -196,6 +197,7 @@ acl:
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
+    shadowAssignmentEvaluation: App\Security\Policies\ShadowAssignmentEvaluationPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -356,6 +358,7 @@ services:
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
   - App\Model\View\ReferenceExerciseSolutionViewFactory
   - App\Model\View\ShadowAssignmentViewFactory
+  - App\Model\View\ShadowAssignmentEvaluationViewFactory
 
 doctrine:
   user: 'root'

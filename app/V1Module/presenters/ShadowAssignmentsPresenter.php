@@ -12,10 +12,13 @@ use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\ShadowAssignment;
+use App\Model\Entity\ShadowAssignmentEvaluation;
 use App\Model\Repository\Groups;
 use App\Model\Repository\ShadowAssignments;
+use App\Model\View\ShadowAssignmentEvaluationViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Security\ACL\IGroupPermissions;
+use App\Security\ACL\IShadowAssignmentEvaluationPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use Nette\Utils\Arrays;
 
@@ -38,10 +41,22 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   public $shadowAssignmentAcl;
 
   /**
+   * @var IShadowAssignmentEvaluationPermissions
+   * @inject
+   */
+  public $shadowAssignmentEvaluationAcl;
+
+  /**
    * @var ShadowAssignmentViewFactory
    * @inject
    */
   public $shadowAssignmentViewFactory;
+
+  /**
+   * @var ShadowAssignmentEvaluationViewFactory
+   * @inject
+   */
+  public $shadowAssignmentEvaluationViewFactory;
 
   /**
    * @var AssignmentEmailsSender
@@ -211,5 +226,29 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $assignment = $this->shadowAssignments->findOrThrow($id);
     $this->shadowAssignments->remove($assignment);
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkEvaluations(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    if (!$this->shadowAssignmentAcl->canViewEvaluations($assignment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get a list of evaluations of all users for the assignment
+   * @GET
+   * @param string $id Identifier of the assignment
+   * @throws NotFoundException
+   */
+  public function actionEvaluations(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+
+    $evaluations = array_filter($assignment->getShadowAssignmentEvaluations()->getValues(),
+      function (ShadowAssignmentEvaluation $evaluation) {
+        return $this->shadowAssignmentEvaluationAcl->canViewDetail($evaluation);
+      });
+
+    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluations($evaluations));
   }
 }

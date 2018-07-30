@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method DateTime getCreatedAt()
  * @method int getMaxPoints()
+ * @method Collection getShadowAssignmentEvaluations()
  * @method setIsPublic(bool $public)
  * @method setIsBonus(bool $bonus)
  * @method setMaxPoints(int $points)
