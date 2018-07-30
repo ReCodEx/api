@@ -15,6 +15,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method User getEvaluatee()
  * @method int getPoints()
  * @method setPoints(int $points)
+ * @method setNote(string $note)
  */
 class ShadowAssignmentEvaluation
 {

@@ -21,4 +21,13 @@ class ShadowAssignmentEvaluationPermissionPolicy implements IPermissionPolicy {
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
+  public function isEvaluatee(Identity $identity, ShadowAssignmentEvaluation $evaluation) {
+    $user = $identity->getUserData();
+    if ($user === null) {
+      return false;
+    }
+
+    return $evaluation->getEvaluatee() === $user;
+  }
+
 }

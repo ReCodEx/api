@@ -50,6 +50,7 @@ class RouterFactory {
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
     $router[] = self::createEmailsRouter("$prefix/emails");
+    $router[] = self::createShadowAssignmentsRoutes("$prefix/shadow-assignments");
 
     return $router;
   }
@@ -438,6 +439,25 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/supervisors", "Emails:sendToSupervisors");
     $router[] = new PostRoute("$prefix/regular-users", "Emails:sendToRegularUsers");
     $router[] = new PostRoute("$prefix/groups/<groupId>", "Emails:sendToGroupMembers");
+    return $router;
+  }
+
+  /**
+   * Adds all ShadowAssignments endpoints to given router.
+   * @param string $prefix Route prefix
+   * @return RouteList All endpoint routes
+   */
+  private static function createShadowAssignmentsRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new GetRoute("$prefix/<id>", "ShadowAssignments:detail");
+    $router[] = new PostRoute("$prefix/<id>", "ShadowAssignments:updateDetail");
+    $router[] = new PostRoute("$prefix", "ShadowAssignments:create");
+    $router[] = new DeleteRoute("$prefix/<id>", "ShadowAssignments:remove");
+    $router[] = new GetRoute("$prefix/<id>/evaluations", "ShadowAssignments:evaluations");
+    $router[] = new PostRoute("$prefix/<id>/evaluations", "ShadowAssignments:createEvaluation");
+    $router[] = new GetRoute("$prefix/evaluations/<evaluationId>", "ShadowAssignments:evaluation");
+    $router[] = new PostRoute("$prefix/evaluations/<evaluationId>", "ShadowAssignments:updateEvaluation");
+    $router[] = new DeleteRoute("$prefix/evaluations/<evaluationId>", "ShadowAssignments:removeEvaluation");
     return $router;
   }
 }

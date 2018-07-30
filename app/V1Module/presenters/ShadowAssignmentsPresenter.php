@@ -277,4 +277,87 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $evaluation = $this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation);
     $this->sendSuccessResponse($evaluation);
   }
+
+  public function checkCreateEvaluation(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    if (!$this->shadowAssignmentAcl->canCreateEvaluation($assignment)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Create new evaluation for shadow assignment and user.
+   * @POST
+   * @param string $id Identifier of the shadow assignment
+   * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as evaluatee for evaluation")
+   * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
+   * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
+   * @throws NotFoundException
+   * @throws ForbiddenRequestException
+   * @throws BadRequestException
+   */
+  public function actionCreateEvaluation(string $id) {
+    $req = $this->getRequest();
+    $userId = $req->getPost("userId");
+    $points = $req->getPost("points");
+    $note = $req->getPost("note");
+
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    $user = $this->users->findOrThrow($userId);
+    if (!$assignment->getGroup()->isStudentOf($user)) {
+      throw new BadRequestException("User is not member of the group");
+    }
+
+    $evaluation = new ShadowAssignmentEvaluation($points, $note, $assignment, $this->getCurrentUser(), $user);
+    $this->shadowAssignmentEvaluations->persist($evaluation);
+    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));
+  }
+
+  public function checkUpdateEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    if (!$this->shadowAssignmentEvaluationAcl->canUpdate($evaluation)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Update detail of shadow assignment evaluation.
+   * @POST
+   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
+   * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
+   * @throws NotFoundException
+   */
+  public function actionUpdateEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+
+    $req = $this->getRequest();
+    $points = $req->getPost("points");
+    $note = $req->getPost("note");
+
+    $evaluation->setPoints($points);
+    $evaluation->setNote($note);
+
+    $this->shadowAssignmentEvaluations->flush();
+    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));
+  }
+
+  public function checkRemoveEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    if (!$this->shadowAssignmentEvaluationAcl->canRemove($evaluation)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Remove evaluation of shadow assignment.
+   * @DELETE
+   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @throws NotFoundException
+   */
+  public function actionRemoveEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    $this->shadowAssignmentEvaluations->remove($evaluation);
+    $this->sendSuccessResponse("OK");
+  }
 }

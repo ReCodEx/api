@@ -714,7 +714,7 @@ permissions:
           - viewEvaluations
           - update
           - remove
-          - addEvaluation
+          - createEvaluation
       conditions:
           - assignment.isSupervisor
 
@@ -734,6 +734,13 @@ permissions:
       resource: shadowAssignmentEvaluation
       actions:
         - viewDetail
+
+    - allow: true
+      resource: shadowAssignmentEvaluation
+      actions:
+          - viewDetail
+      conditions:
+          - evaluation.isEvaluatee
 
     - allow: true
       resource: shadowAssignmentEvaluation

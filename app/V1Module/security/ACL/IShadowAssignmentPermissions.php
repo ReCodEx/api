@@ -8,5 +8,5 @@ interface IShadowAssignmentPermissions {
   function canUpdate(ShadowAssignment $assignment): bool;
   function canRemove(ShadowAssignment $assignment): bool;
   function canViewEvaluations(ShadowAssignment $assignment): bool;
-  function canAddEvaluation(ShadowAssignment $assignment): bool;
+  function canCreateEvaluation(ShadowAssignment $assignment): bool;
 }
