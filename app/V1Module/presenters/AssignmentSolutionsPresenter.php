@@ -157,8 +157,8 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submissions);
   }
 
-  public function checkEvaluation(string $id) {
-    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+  public function checkEvaluation(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
     $solution = $submission->getAssignmentSolution();
     if (!$this->assignmentSolutionAcl->canViewEvaluation($solution)) {
       throw new ForbiddenRequestException("You cannot access this evaluation");
@@ -168,17 +168,40 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   /**
    * Get information about the evaluation of a submission
    * @GET
-   * @param string $id Identifier of the submission
+   * @param string $evaluationId Identifier of the submission
    * @throws InternalServerErrorException
    */
-  public function actionEvaluation(string $id) {
-    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+  public function actionEvaluation(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
 
     // try to load evaluation if not present
     $this->evaluationLoadingHelper->loadEvaluation($submission);
 
     $submissionData = $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission);
     $this->sendSuccessResponse($submissionData);
+  }
+
+  public function checkDeleteEvaluation(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
+    $solution = $submission->getAssignmentSolution();
+    if (!$this->assignmentSolutionAcl->canDeleteEvaluation($solution)) {
+      throw new ForbiddenRequestException("You cannot delete this evaluation");
+    }
+    if ($solution->getSubmissions()->count() < 2) {
+      throw new BadRequestException("You cannot delete last evaluation of a solution");
+    }
+  }
+
+  /**
+   * Remove evaluation (submission) permanently.
+   * @DELETE
+   * @param string $evaluationId Identifier of the submission
+   */
+  public function actionDeleteEvaluation(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
+    $this->assignmentSolutionSubmissions->remove($submission);
+    $this->assignmentSolutionSubmissions->flush();
+    $this->sendSuccessResponse("OK");
   }
 
   public function checkSetBonusPoints(string $id) {
@@ -301,23 +324,23 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendResponse(new ZipFilesResponse($files, "solution-{$id}.zip"));
   }
 
-  public function checkDownloadResultArchive(string $id) {
-    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+  public function checkDownloadResultArchive(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
     if (!$this->assignmentSolutionAcl->canDownloadResultArchive($submission->getAssignmentSolution())) {
-      throw new ForbiddenRequestException("You cannot access result archive for this submission");
+      throw new ForbiddenRequestException("You cannot access the result archive for this submission");
     }
   }
 
   /**
    * Download result archive from backend for particular submission.
    * @GET
-   * @param string $id
+   * @param string $evaluationId
    * @throws NotFoundException
    * @throws InternalServerErrorException
    * @throws \Nette\Application\AbortException
    */
-  public function actionDownloadResultArchive(string $id) {
-    $submission = $this->assignmentSolutionSubmissions->findOrThrow($id);
+  public function actionDownloadResultArchive(string $evaluationId) {
+    $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
     $this->evaluationLoadingHelper->loadEvaluation($submission);
 
     if (!$submission->hasEvaluation()) {
@@ -326,10 +349,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
     $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
     if ($stream === null) {
-      throw new NotFoundException("Archive for submission '$id' not found on remote fileserver");
+      throw new NotFoundException("Archive for submission '$evaluationId' not found on remote fileserver");
     }
 
-    $this->sendResponse(new GuzzleResponse($stream, "results-{$id}.zip", "application/zip"));
+    $this->sendResponse(new GuzzleResponse($stream, "results-{$evaluationId}.zip", "application/zip"));
   }
 
 }

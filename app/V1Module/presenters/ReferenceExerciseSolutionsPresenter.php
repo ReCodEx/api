@@ -151,7 +151,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    */
   public function actionSolutions(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
-    $this->sendSuccessResponse($this->referenceSolutionViewFactory->getReferenceSolutionList($exercise->getReferenceSolutions()->getValues()));
+    $this->sendSuccessResponse(
+      $this->referenceSolutionViewFactory->getReferenceSolutionList($exercise->getReferenceSolutions()->getValues())
+    );
   }
 
   public function checkDetail(string $solutionId) {
@@ -237,6 +239,29 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse($submission);
   }
 
+  public function checkDeleteEvaluation(string $evaluationId) {
+    $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+    $solution = $submission->getReferenceSolution();
+    if (!$this->referenceSolutionAcl->canDeleteEvaluation($solution)) {
+      throw new ForbiddenRequestException("You cannot delete this evaluation");
+    }
+    if ($solution->getSubmissions()->count() < 2) {
+      throw new BadRequestException("You cannot delete last evaluation of a solution");
+    }
+  }
+
+  /**
+   * Remove reference solution evaluation (submission) permanently.
+   * @DELETE
+   * @param string $evaluationId Identifier of the reference solution submission
+   */
+  public function actionDeleteEvaluation(string $evaluationId) {
+    $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+    $this->referenceSubmissions->remove($submission);
+    $this->referenceSubmissions->flush();
+    $this->sendSuccessResponse("OK");
+  }
+
   public function checkPreSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
     if (!$this->exerciseAcl->canAddReferenceSolution($exercise)) {
@@ -247,8 +272,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
   /**
    * Pre submit action which will, based on given files, detect possible runtime
    * environments for the exercise. Also it can be further used for entry
-   * points and other important things that should be provided by user during
-   * submit.
+   * points and other important things that should be provided by user during submit.
    * @POST
    * @param string $exerciseId identifier of exercise
    * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
