@@ -16,7 +16,11 @@ class ShadowAssignmentEvaluationViewFactory {
 
   public function getEvaluation(ShadowAssignmentEvaluation $evaluation) {
     return [
-      'id' => $evaluation->getId()
+      'id' => $evaluation->getId(),
+      'points' => $evaluation->getPoints(),
+      'note' => $evaluation->getNote(),
+      'author' => $evaluation->getAuthor(),
+      'evaluatee' => $evaluation->getEvaluatee()
     ];
   }
 

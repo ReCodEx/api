@@ -14,6 +14,7 @@ use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentEvaluation;
 use App\Model\Repository\Groups;
+use App\Model\Repository\ShadowAssignmentEvaluations;
 use App\Model\Repository\ShadowAssignments;
 use App\Model\View\ShadowAssignmentEvaluationViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
@@ -33,6 +34,12 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @inject
    */
   public $shadowAssignments;
+
+  /**
+   * @var ShadowAssignmentEvaluations
+   * @inject
+   */
+  public $shadowAssignmentEvaluations;
 
   /**
    * @var IShadowAssignmentPermissions
@@ -250,5 +257,24 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       });
 
     $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluations($evaluations));
+  }
+
+  public function checkEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    if (!$this->shadowAssignmentEvaluationAcl->canViewDetail($evaluation)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get shadow assignment evaluation detail.
+   * @GET
+   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @throws NotFoundException
+   */
+  public function actionEvaluation(string $evaluationId) {
+    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    $evaluation = $this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation);
+    $this->sendSuccessResponse($evaluation);
   }
 }

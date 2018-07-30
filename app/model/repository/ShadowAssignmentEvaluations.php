@@ -25,7 +25,7 @@ class ShadowAssignmentEvaluations extends BaseRepository {
   public function findEvaluationsForAssignment(array $shadowAssignments, User $user): array {
     return $this->findBy([
       "author" => $user,
-      "assignment" => $shadowAssignments,
+      "shadowAssignment" => $shadowAssignments,
     ]);
   }
 

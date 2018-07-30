@@ -12,6 +12,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method string getNote()
  * @method ShadowAssignment getShadowAssignment()
  * @method User getAuthor()
+ * @method User getEvaluatee()
  * @method int getPoints()
  * @method setPoints(int $points)
  */
@@ -19,11 +20,12 @@ class ShadowAssignmentEvaluation
 {
   use MagicAccessors;
 
-  public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author) {
+  public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author, User $evaluatee) {
     $this->points = $points;
     $this->shadowAssignment = $shadowAssignment;
     $this->note = $note;
     $this->author = $author;
+    $this->evaluatee = $evaluatee;
   }
 
   /**
@@ -53,5 +55,10 @@ class ShadowAssignmentEvaluation
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  /**
+   * @ORM\ManyToOne(targetEntity="User")
+   */
+  protected $evaluatee;
 
 }

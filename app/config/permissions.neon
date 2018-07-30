@@ -714,6 +714,7 @@ permissions:
           - viewEvaluations
           - update
           - remove
+          - addEvaluation
       conditions:
           - assignment.isSupervisor
 
