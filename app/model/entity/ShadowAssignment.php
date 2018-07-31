@@ -144,8 +144,14 @@ class ShadowAssignment implements IAssignment
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="ShadowAssignmentEvaluation", mappedBy="assignment")
+   * @ORM\OneToMany(targetEntity="ShadowAssignmentEvaluation", mappedBy="shadowAssignment")
    */
   protected $shadowAssignmentEvaluations;
+
+  public function getEvaluationByUser(User $user) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("evaluatee", $user));
+    $first = $this->shadowAssignmentEvaluations->matching($criteria)->first();
+    return $first === false ? null : $first;
+  }
 
 }

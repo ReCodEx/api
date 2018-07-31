@@ -312,6 +312,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("User is not member of the group");
     }
 
+    if ($assignment->getEvaluationByUser($user)) {
+      throw new BadRequestException("Given user already has a shadow assignment evaluation");
+    }
+
     $evaluation = new ShadowAssignmentEvaluation($points, $note, $assignment, $this->getCurrentUser(), $user, $evaluatedAt);
     $this->shadowAssignmentEvaluations->persist($evaluation);
     $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));

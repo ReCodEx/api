@@ -496,10 +496,11 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::count(count($expectedStudentIn), $stats);
 
     foreach ($stats as $stat) {
-      Assert::count(6, $stat);
+      Assert::count(7, $stat);
       Assert::true(array_key_exists("userId", $stat));
       Assert::true(array_key_exists("groupId", $stat));
       Assert::true(array_key_exists("assignments", $stat));
+      Assert::true(array_key_exists("shadowAssignments", $stat));
       Assert::true(array_key_exists("points", $stat));
       Assert::true(array_key_exists("hasLimit", $stat));
       Assert::true(array_key_exists("passesLimit", $stat));

@@ -3,26 +3,19 @@
 namespace App\Model\View;
 
 use App\Model\Entity\ShadowAssignmentEvaluation;
-use App\Security\ACL\IShadowAssignmentPermissions;
 
 class ShadowAssignmentEvaluationViewFactory {
-
-  /** @var IShadowAssignmentPermissions */
-  public $shadowAssignmentAcl;
-
-  public function __construct(IShadowAssignmentPermissions $shadowAssignmentAcl) {
-    $this->shadowAssignmentAcl = $shadowAssignmentAcl;
-  }
 
   public function getEvaluation(ShadowAssignmentEvaluation $evaluation) {
     return [
       'id' => $evaluation->getId(),
       'points' => $evaluation->getPoints(),
       'note' => $evaluation->getNote(),
-      'author' => $evaluation->getAuthor(),
-      'evaluatee' => $evaluation->getEvaluatee(),
-      'createdAt' => $evaluation->getCreatedAt(),
-      'updatedAt' => $evaluation->getUpdatedAt()
+      'authorId' => $evaluation->getAuthor()->getId(),
+      'evaluateeId' => $evaluation->getEvaluatee()->getId(),
+      'createdAt' => $evaluation->getCreatedAt()->getTimestamp(),
+      'updatedAt' => $evaluation->getUpdatedAt()->getTimestamp(),
+      'evaluatedAt' => $evaluation->getEvaluatedAt() ? $evaluation->getEvaluatedAt()->getTimestamp() : null
     ];
   }
 

@@ -27,6 +27,7 @@ class ShadowAssignmentViewFactory {
       })->getValues(),
       "groupId" => $assignment->getGroup()->getId(),
       "isBonus" => $assignment->isBonus(),
+      "maxPoints" => $assignment->getMaxPoints(),
       "permissionHints" => PermissionHints::get($this->shadowAssignmentAcl, $assignment)
     ];
   }
