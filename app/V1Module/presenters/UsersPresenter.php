@@ -173,10 +173,10 @@ class UsersPresenter extends BasePresenter {
 
     // fill user with provided data
     $user = $this->users->findOrThrow($id);
-    $login = $this->logins->findCurrent();
+    $login = $user->getLogin();
 
     // change details in separate methods
-    $this->changeUserEmail($user, $login, $req->getPost("email"));
+    $this->changeUserEmail($user, $req->getPost("email"));
     $this->changeFirstAndLastName($user, $req->getPost("firstName"), $req->getPost("lastName"));
     $passwordChanged = $this->changeUserPassword($login, $req->getPost("oldPassword"),
       $req->getPost("password"), $req->getPost("passwordConfirm"));
@@ -200,12 +200,11 @@ class UsersPresenter extends BasePresenter {
   /**
    * Change email if any given of the provided user.
    * @param User $user
-   * @param Login|null $login
    * @param null|string $email
    * @throws BadRequestException
    * @throws InvalidArgumentException
    */
-  private function changeUserEmail(User $user, ?Login $login, ?string $email) {
+  private function changeUserEmail(User $user, ?string $email) {
     $email = trim($email);
     if ($email === null || strlen($email) === 0) {
       return;
@@ -227,8 +226,8 @@ class UsersPresenter extends BasePresenter {
       $user->setEmail($email);
 
       // do not forget to change local login (if any)
-      if ($login) {
-        $login->setUsername($email);
+      if ($user->getLogin()) {
+        $user->getLogin()->setUsername($email);
       }
 
       // email has to be re-verified

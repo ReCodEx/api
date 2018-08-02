@@ -31,7 +31,8 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
- * @method Collection getLogins()
+ * @method Login getLogin()
+ * @method setLogin(Login $login)
  * @method Collection getExternalLogins()
  * @method setTokenValidityThreshold(DateTime $threshold)
  * @method DateTime|null getTokenValidityThreshold()
@@ -64,7 +65,7 @@ class User
     $this->instances = new ArrayCollection([$instance]);
     $instance->addMember($this);
     $this->settings = new UserSettings(true, false, "en");
-    $this->logins = new ArrayCollection();
+    $this->login = null;
     $this->externalLogins = new ArrayCollection();
     $this->avatarUrl = null;
 
@@ -294,17 +295,9 @@ class User
   protected $externalLogins;
 
   /**
-   * @ORM\OneToMany(targetEntity="Login", mappedBy="user", cascade={"all"})
+   * @ORM\OneToOne(targetEntity="Login", mappedBy="user", cascade={"all"})
    */
-  protected $logins;
-
-  /**
-   * Add login to user.
-   * @param Login $login
-   */
-  public function addLogin(Login $login) {
-    $this->logins->add($login);
-  }
+  protected $login;
 
 
   /**
@@ -324,7 +317,7 @@ class User
    * @return bool
    */
   public function hasLocalAccounts(): bool {
-    return !$this->logins->isEmpty();
+    return $this->login !== null;
   }
 
   /**
