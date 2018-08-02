@@ -440,18 +440,18 @@ class Group
   }
 
   public function getMaxPoints(): int {
-    $points = array_reduce(
+    $pointsAss = array_reduce(
       $this->getAssignments()->getValues(),
       function ($carry, Assignment $assignment) { return $carry + $assignment->getGroupPoints(); },
       0
     );
-    $points = array_reduce(
+    $pointsShadow = array_reduce(
       $this->getShadowAssignments()->getValues(),
       function ($carry, ShadowAssignment $shadowAssignment) { return $carry + $shadowAssignment->getGroupPoints(); },
-      $points
+      0
     );
 
-    return $points;
+    return $pointsAss + $pointsShadow;
   }
 
   public function getLocalizedTextByLocale(string $locale): ?LocalizedGroup {

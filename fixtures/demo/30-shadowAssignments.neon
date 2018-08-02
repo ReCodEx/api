@@ -1,7 +1,7 @@
 App\Model\Entity\ShadowAssignment:
     demoShadowAssignment:
         __construct:
-            assignToGroup:
+            createInGroup:
                 - @demoGroup
                 - true
 

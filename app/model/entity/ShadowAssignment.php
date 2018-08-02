@@ -47,7 +47,7 @@ class ShadowAssignment implements IAssignment
     $this->updatedAt = new \DateTime;
   }
 
-  public static function assignToGroup(Group $group, $isPublic = false) {
+  public static function createInGroup(Group $group, $isPublic = false) {
     $assignment = new self(
       0,
       $group,

@@ -210,7 +210,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("You cannot create assignment in organizational groups");
     }
 
-    $assignment = ShadowAssignment::assignToGroup($group);
+    $assignment = ShadowAssignment::createInGroup($group);
     $this->shadowAssignments->persist($assignment);
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
   }
