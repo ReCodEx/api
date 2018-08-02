@@ -302,7 +302,7 @@ class TestUsersPresenter extends Tester\TestCase
 
     $updatedUser = $result["payload"]["user"];
     Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $updatedUser["fullName"]);
-    Assert::true($login->passwordsMatch($password));
+    Assert::true($login->passwordsMatchOrEmpty($password));
     Assert::null($updatedUser["avatarUrl"]);
 
     $storedUpdatedUser = $this->users->get($user->getId());

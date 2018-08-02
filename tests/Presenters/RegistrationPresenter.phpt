@@ -112,7 +112,7 @@ class TestRegistrationPresenter extends Tester\TestCase
     // check created login
     $login = $this->logins->findByUserId($user["id"]);
     Assert::equal($user["id"], $login->getUser()->getId());
-    Assert::true($login->passwordsMatch($password));
+    Assert::true($login->passwordsMatchOrEmpty($password));
   }
 
   public function testCreateAccountIcorrectInstance()

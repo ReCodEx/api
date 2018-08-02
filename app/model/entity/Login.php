@@ -80,15 +80,29 @@ class Login
   }
 
   /**
+   * Verify that the given password matches the stored password. If the current
+   * password is empty and given one too, the passwords are considered to match.
+   * @param string $password The password given by the user
+   * @return bool
+   */
+  public function passwordsMatchOrEmpty($password) {
+    if (empty($this->passwordHash) && empty($password)) {
+      // quite special situation, but can happen if user registered using CAS
+      // and already have existing local account
+      return true;
+    }
+
+    return $this->passwordsMatch($password);
+  }
+
+  /**
    * Verify that the given password matches the stored password.
    * @param string $password The password given by the user
    * @return bool
    */
   public function passwordsMatch($password) {
-    if (empty($this->passwordHash) && empty($password)) {
-      // quite special situation, but can happen if user registered using CAS
-      // and already have existing local account
-      return true;
+    if (empty($this->passwordHash)) {
+      return false;
     }
 
     if (Passwords::verify($password, $this->passwordHash)) {

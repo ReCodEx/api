@@ -281,8 +281,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     // passwords need to be handled differently
-    if ($login->passwordsMatch($oldPassword)) {
-      // old password was provided, just check it against the one from db
+    if ($login->passwordsMatchOrEmpty($oldPassword)) {
+      // check if new passwords match each other
       if ($password !== $passwordConfirm) {
         throw new WrongCredentialsException("Provided passwords do not match");
       }
