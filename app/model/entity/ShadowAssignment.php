@@ -16,19 +16,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method DateTime getCreatedAt()
- * @method int getMaxPoints()
  * @method Collection getShadowAssignmentEvaluations()
- * @method setIsPublic(bool $public)
- * @method setIsBonus(bool $bonus)
  * @method setMaxPoints(int $points)
  */
-class ShadowAssignment implements IAssignment
+class ShadowAssignment extends AssignmentBase
 {
   use MagicAccessors;
-  use UpdateableEntity;
-  use DeleteableEntity;
-  use VersionableEntity;
 
   private function __construct(
     int $maxPoints,
@@ -67,29 +60,6 @@ class ShadowAssignment implements IAssignment
   protected $id;
 
   /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isPublic;
-
-  public function isPublic(): bool {
-    return $this->isPublic;
-  }
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isBonus;
-
-  public function isBonus(): bool {
-    return $this->isBonus;
-  }
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
-
-  /**
    * @ORM\ManyToMany(targetEntity="LocalizedShadowAssignment", indexBy="locale")
    * @var Collection|Selectable
    */
@@ -119,19 +89,8 @@ class ShadowAssignment implements IAssignment
    */
   protected $maxPoints;
 
-  /**
-   * Assignment can be marked as bonus, then we do not want to add its points
-   * to overall maximum points of group. This function will return 0 if
-   * assignment is marked as bonus one, otherwise it will return result of
-   * $this->getMaxPoints() function.
-   * @return int
-   */
-  public function getGroupPoints(): int {
-    if ($this->isBonus) {
-      return 0;
-    } else {
-      return $this->getMaxPoints();
-    }
+  public function getMaxPoints(): int {
+    return $this->maxPoints;
   }
 
   /**
