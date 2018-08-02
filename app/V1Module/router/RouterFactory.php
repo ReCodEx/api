@@ -335,6 +335,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/<id>", "Users:updateProfile");
     $router[] = new PostRoute("$prefix/<id>/settings", "Users:updateSettings");
     $router[] = new PostRoute("$prefix/<id>/create-local", "Users:createLocalAccount");
+    $router[] = new PostRoute("$prefix/<id>/role", "Users:setRole");
     return $router;
   }
 

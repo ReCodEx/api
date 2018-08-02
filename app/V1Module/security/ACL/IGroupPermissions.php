@@ -31,6 +31,6 @@ interface IGroupPermissions
   function canCreateExercise(Group $group): bool;
   function canViewPublicDetail(Group $group): bool;
   function canAddStudentToArchivedGroup($group, $user): bool;
-  function canSupervise(Group $group): bool;
+  function canBecomeSupervisor(Group $group): bool;
   function canSendEmail(Group $group): bool;
 }

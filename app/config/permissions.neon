@@ -4,8 +4,15 @@ roles:
     - name: student
       parents: unauthenticated
 
-    - name: supervisor
+    - name: supervisor-student
       parents: student
+
+    - name: supervisor
+      parents: supervisor-student
+
+    - name: empowered-supervisor
+      parents: supervisor
+
 
     - name: superadmin
 permissions:
@@ -130,9 +137,9 @@ permissions:
 
     - allow: true
       resource: group
-      role: supervisor
+      role: supervisor-student
       actions:
-          - supervise
+          - becomeSupervisor
 
     ########################
     # Instance permissions #
@@ -145,7 +152,6 @@ permissions:
         - viewAll
         - viewDetail
         - viewGroups
-        - viewUsers
         - viewLicences
 
     - allow: true
@@ -156,27 +162,15 @@ permissions:
         - viewDetail
 
     - allow: true
-      role: supervisor
-      resource: instance
-      actions: addGroup
-      conditions: instance.isMember
-
-    - allow: true
       role: student
       resource: instance
       actions:
           - viewGroups
 
     - allow: true
-      role: supervisor
-      resource: instance
-      actions: []
-
-    - allow: true
       role: superadmin # TODO instance admin role
       resource: instance
       actions:
-          - viewUsers
           - viewLicences
       conditions:
           - instance.isMember
@@ -239,7 +233,7 @@ permissions:
         - user.isSameUser
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: user
       actions:
           - viewDetail
@@ -499,7 +493,7 @@ permissions:
           - referenceExerciseSolution.isExerciseAuthor
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: exercise
       actions:
           - viewDetail
@@ -507,14 +501,14 @@ permissions:
           - exercise.isPublic
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: exercise
       actions:
           - viewAll
           - viewAllAuthors
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: group
       actions:
           - createExercise
@@ -553,7 +547,7 @@ permissions:
             - file.isRelatedToAssignment
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: uploadedFile
       actions:
           - download
@@ -563,7 +557,7 @@ permissions:
           - file.isExerciseOrAssignmentPublic
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: uploadedFile
       actions:
           - viewDetail
@@ -600,7 +594,7 @@ permissions:
           - viewAll
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: hardwareGroup
       actions:
           - viewAll
@@ -617,14 +611,14 @@ permissions:
           - viewAll
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: pipeline
       actions:
           - viewDetail
           - viewAll
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: pipeline
       actions:
           - update
@@ -646,7 +640,7 @@ permissions:
         - viewCourses
 
     - allow: true
-      role: supervisor
+      role: supervisor-student
       resource: sis
       actions:
         - createTerm

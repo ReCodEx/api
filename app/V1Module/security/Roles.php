@@ -13,7 +13,9 @@ class Roles
   use Nette\SmartObject;
 
   public const STUDENT_ROLE = "student";
+  public const SUPERVISOR_STUDENT_ROLE = "supervisor-student";
   public const SUPERVISOR_ROLE = "supervisor";
+  public const EMPOWERED_SUPERVISOR_ROLE = "empowered-supervisor";
   public const SUPERADMIN_ROLE = "superadmin";
 
   /**
@@ -21,7 +23,9 @@ class Roles
    */
   public const ROLES = [
     self::STUDENT_ROLE,
+    self::SUPERVISOR_STUDENT_ROLE,
     self::SUPERVISOR_ROLE,
+    self::EMPOWERED_SUPERVISOR_ROLE.
     self::SUPERADMIN_ROLE
   ];
 
