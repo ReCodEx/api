@@ -316,7 +316,7 @@ class User
    * Returns true if the user entity is associated with a local login entity.
    * @return bool
    */
-  public function hasLocalAccounts(): bool {
+  public function hasLocalAccount(): bool {
     return $this->login !== null;
   }
 

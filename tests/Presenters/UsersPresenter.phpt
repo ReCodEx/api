@@ -426,6 +426,7 @@ class TestUsersPresenter extends Tester\TestCase
   {
     $instance = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN)->getInstances()->first();
     $user = new User("external@external.external", "firstName", "lastName", "", "", "student", $instance);
+    $user->setVerified();
     $external = new ExternalLogin($user, "test", $user->getEmail());
 
     $this->users->persist($user);
@@ -434,7 +435,7 @@ class TestUsersPresenter extends Tester\TestCase
     PresenterTestHelper::login($this->container, $user->getEmail());
 
     // pre-test condition
-    Assert::equal(false, $user->hasLocalAccounts());
+    Assert::equal(false, $user->hasLocalAccount());
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
       ['action' => 'createLocalAccount', 'id' => $user->getId()]

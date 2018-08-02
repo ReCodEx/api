@@ -60,7 +60,7 @@ class UserViewFactory {
         ],
         "settings" => $user->getSettings(),
         "emptyLocalPassword" => $emptyLocalPassword,
-        "isLocal" => $user->hasLocalAccounts(),
+        "isLocal" => $user->hasLocalAccount(),
         "isExternal" => $user->hasExternalAccounts(),
         "isAllowed" => $user->isAllowed(),
       ];

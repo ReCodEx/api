@@ -23,7 +23,7 @@ class Logins extends BaseRepository {
   }
 
   /**
-   *
+   * Find one login entity by the username column, if not found, raise an exception.
    * @param string $username
    * @return Login
    * @throws NotFoundException
@@ -35,6 +35,15 @@ class Logins extends BaseRepository {
     }
 
     return $login;
+  }
+
+  /**
+   * Find one login entity by the username column.
+   * @param string $username
+   * @return Login|null
+   */
+  public function getByUsername(string $username): ?Login {
+    return $this->findOneBy([ "username" => $username ]);
   }
 
   /**
