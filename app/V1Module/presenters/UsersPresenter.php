@@ -365,8 +365,12 @@ class UsersPresenter extends BasePresenter {
       throw new ForbiddenRequestException();
     }
 
-    if ($user->hasLocalAccounts()) {
+    if ($user->hasLocalAccount()) {
       throw new BadRequestException("User is already registered locally");
+    }
+
+    if (!$user->isVerified()) {
+      throw new BadRequestException("Email address has to be verified before creating local account");
     }
   }
 
