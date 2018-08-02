@@ -648,7 +648,7 @@ class GroupsPresenter extends BasePresenter {
       new Identity($user, null)
     );
 
-    if (!$this->groupAcl->canAddSupervisor($group, $user) || !$userAcl->canSupervise($group)) {
+    if (!$this->groupAcl->canAddSupervisor($group, $user) || !$userAcl->canBecomeSupervisor($group)) {
       throw new ForbiddenRequestException();
     }
   }
