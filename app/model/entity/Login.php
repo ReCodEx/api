@@ -39,7 +39,7 @@ class Login
   protected $passwordHash;
 
   /**
-   * @ORM\ManyToOne(targetEntity="User", inversedBy="logins")
+   * @ORM\OneToOne(targetEntity="User", inversedBy="login")
    */
   protected $user;
 
@@ -121,7 +121,7 @@ class Login
     if (!empty($password)) { $login->passwordHash = self::hashPassword($password); }
     $login->user = $user;
 
-    $user->addLogin($login);
+    $user->setLogin($login);
     return $login;
   }
 

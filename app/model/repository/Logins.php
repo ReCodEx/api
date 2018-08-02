@@ -4,30 +4,13 @@ namespace App\Model\Repository;
 
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
-use Nette\Security as NS;
 use App\Model\Entity\User;
 use App\Exceptions\NotFoundException;
 
 class Logins extends BaseRepository {
 
-  /** @var NS\User */
-  private $userSession;
-
-  public function __construct(EntityManager $em, NS\User $user) {
+  public function __construct(EntityManager $em) {
     parent::__construct($em, Login::class);
-    $this->userSession = $user;
-  }
-
-  /**
-   * Find currently logged in user's login.
-   * @return Login|null
-   */
-  public function findCurrent() {
-    if ($this->userSession->isLoggedIn() === false) {
-      return null;
-    }
-
-    return $this->findByUserId($this->userSession->getId());
   }
 
   /**

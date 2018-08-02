@@ -63,7 +63,7 @@ class ForgottenPasswordPresenter extends BasePresenter {
 
     // try to find login according to username and process request
     $password = $req->getPost("password");
-    $login = $this->logins->findCurrent();
+    $login = $this->getCurrentUser()->getLogin();
 
     // actually change the password
     $login->setPasswordHash(Login::hashPassword($password));
