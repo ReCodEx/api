@@ -40,16 +40,16 @@ class GroupViewFactory {
   private $bindings;
 
   /** @var ShadowAssignmentPointsRepository */
-  private $shadowAssignmentEvaluations;
+  private $shadowAssignmentPointsRepository;
 
   public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
                               IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings,
-                              ShadowAssignmentPointsRepository $shadowAssignmentEvaluations) {
+                              ShadowAssignmentPointsRepository $shadowAssignmentPointsRepository) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
     $this->bindings = $bindings;
-    $this->shadowAssignmentEvaluations = $shadowAssignmentEvaluations;
+    $this->shadowAssignmentPointsRepository = $shadowAssignmentPointsRepository;
   }
 
 
@@ -75,13 +75,13 @@ class GroupViewFactory {
 
   /**
    * Get total sum of points which given user gained in given shadow assignments.
-   * @param ShadowAssignmentPoints[] $shadowEvaluations
+   * @param ShadowAssignmentPoints[] $shadowPointsList
    * @return int
    */
-  private function getPointsForShadowAssignments(array $shadowEvaluations): int {
-    return array_reduce($shadowEvaluations,
-      function ($carry, ShadowAssignmentPoints $evaluation) {
-        return $carry + $evaluation->getPoints();
+  private function getPointsForShadowAssignments(array $shadowPointsList): int {
+    return array_reduce($shadowPointsList,
+      function ($carry, ShadowAssignmentPoints $points) {
+        return $carry + $points->getPoints();
       },
       0);
   }
@@ -95,9 +95,9 @@ class GroupViewFactory {
   public function getStudentsStats(Group $group, User $student) {
     $maxPoints = $group->getMaxPoints();
     $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
-    $shadowEvaluations = $this->shadowAssignmentEvaluations->findEvaluationsForAssignment($group->getShadowAssignments()->getValues(), $student);
+    $shadowPointsList = $this->shadowAssignmentPointsRepository->findPointsForAssignments($group->getShadowAssignments()->getValues(), $student);
     $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
-    $gainedPoints += $this->getPointsForShadowAssignments($shadowEvaluations);
+    $gainedPoints += $this->getPointsForShadowAssignments($shadowPointsList);
 
     $assignments = [];
     foreach ($assignmentSolutions as $solutionPair) {
@@ -121,13 +121,13 @@ class GroupViewFactory {
     }
 
     $shadowAssignments = [];
-    foreach ($shadowEvaluations as $evaluation) {
-      $assignment = $evaluation->getShadowAssignment();
+    foreach ($shadowPointsList as $shadowPoints) {
+      $assignment = $shadowPoints->getShadowAssignment();
       $shadowAssignments[] = [
         "id" => $assignment->getId(),
         "points" => [
           "total" => $assignment->getMaxPoints(),
-          "gained" => $evaluation->getPoints()
+          "gained" => $shadowPoints->getPoints()
         ]
       ];
     }

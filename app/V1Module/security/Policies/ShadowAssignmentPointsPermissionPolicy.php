@@ -9,8 +9,8 @@ class ShadowAssignmentPointsPermissionPolicy implements IPermissionPolicy {
     return ShadowAssignmentPoints::class;
   }
 
-  public function isSupervisor(Identity $identity, ShadowAssignmentPoints $evaluation) {
-    $assignment = $evaluation->getShadowAssignment();
+  public function isSupervisor(Identity $identity, ShadowAssignmentPoints $points) {
+    $assignment = $points->getShadowAssignment();
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
 
@@ -21,13 +21,13 @@ class ShadowAssignmentPointsPermissionPolicy implements IPermissionPolicy {
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
-  public function isAwardee(Identity $identity, ShadowAssignmentPoints $evaluation) {
+  public function isAwardee(Identity $identity, ShadowAssignmentPoints $points) {
     $user = $identity->getUserData();
     if ($user === null) {
       return false;
     }
 
-    return $evaluation->getAwardee() === $user;
+    return $points->getAwardee() === $user;
   }
 
 }

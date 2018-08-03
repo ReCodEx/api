@@ -24,8 +24,8 @@ class ShadowAssignmentPointsViewFactory {
    * @return array
    */
   public function getPointsList(array $pointsList) {
-    return array_map(function (ShadowAssignmentPoints $evaluation) {
-      return $this->getPoints($evaluation);
+    return array_map(function (ShadowAssignmentPoints $points) {
+      return $this->getPoints($points);
     }, $pointsList);
   }
 }

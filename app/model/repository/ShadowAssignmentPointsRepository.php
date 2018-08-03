@@ -17,12 +17,12 @@ class ShadowAssignmentPointsRepository extends BaseRepository {
   }
 
   /**
-   * Find best solutions of given assignments for user.
+   * Find points for given user of given assignments.
    * @param ShadowAssignment[] $shadowAssignments
    * @param User $user
    * @return ShadowAssignmentPoints[]
    */
-  public function findEvaluationsForAssignment(array $shadowAssignments, User $user): array {
+  public function findPointsForAssignments(array $shadowAssignments, User $user): array {
     return $this->findBy([
       "author" => $user,
       "shadowAssignment" => $shadowAssignments,

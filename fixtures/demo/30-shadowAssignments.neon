@@ -6,7 +6,7 @@ App\Model\Entity\ShadowAssignment:
                 - true
 
 App\Model\Entity\ShadowAssignmentPoints:
-     "demoShadowEvaluation{1..2}":
+     "demoShadowPoints{1..2}":
         __construct:
             - 10
             - "Note"
