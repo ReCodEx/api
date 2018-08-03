@@ -8,6 +8,7 @@ use DateTime;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"shadow_assignment_id", "awardee_id"})})
  *
  * @method string getId()
  * @method string getNote()

@@ -25,7 +25,7 @@ class ShadowAssignmentPointsRepository extends BaseRepository {
   public function findPointsForAssignments(array $shadowAssignments, User $user): array {
     return $this->findBy([
       "author" => $user,
-      "shadowAssignment" => $shadowAssignments,
+      "shadowAssignment" => $shadowAssignments, // doctrine will handle given array with IN operator
     ]);
   }
 
