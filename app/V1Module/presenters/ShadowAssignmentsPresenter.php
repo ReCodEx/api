@@ -13,14 +13,14 @@ use App\Helpers\Validators;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\LocalizedShadowAssignment;
 use App\Model\Entity\ShadowAssignment;
-use App\Model\Entity\ShadowAssignmentEvaluation;
+use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Repository\Groups;
-use App\Model\Repository\ShadowAssignmentEvaluations;
+use App\Model\Repository\ShadowAssignmentPointsRepository;
 use App\Model\Repository\ShadowAssignments;
-use App\Model\View\ShadowAssignmentEvaluationViewFactory;
+use App\Model\View\ShadowAssignmentPointsViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
 use App\Security\ACL\IGroupPermissions;
-use App\Security\ACL\IShadowAssignmentEvaluationPermissions;
+use App\Security\ACL\IShadowAssignmentPointsPermissions;
 use App\Security\ACL\IShadowAssignmentPermissions;
 use DateTime;
 use Nette\Utils\Arrays;
@@ -38,10 +38,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   public $shadowAssignments;
 
   /**
-   * @var ShadowAssignmentEvaluations
+   * @var ShadowAssignmentPointsRepository
    * @inject
    */
-  public $shadowAssignmentEvaluations;
+  public $shadowAssignmentPointsRepository;
 
   /**
    * @var IShadowAssignmentPermissions
@@ -50,10 +50,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   public $shadowAssignmentAcl;
 
   /**
-   * @var IShadowAssignmentEvaluationPermissions
+   * @var IShadowAssignmentPointsPermissions
    * @inject
    */
-  public $shadowAssignmentEvaluationAcl;
+  public $shadowAssignmentPointsAcl;
 
   /**
    * @var ShadowAssignmentViewFactory
@@ -62,10 +62,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   public $shadowAssignmentViewFactory;
 
   /**
-   * @var ShadowAssignmentEvaluationViewFactory
+   * @var ShadowAssignmentPointsViewFactory
    * @inject
    */
-  public $shadowAssignmentEvaluationViewFactory;
+  public $shadowAssignmentPointsViewFactory;
 
   /**
    * @var AssignmentEmailsSender
@@ -235,76 +235,76 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  public function checkEvaluations(string $id) {
+  public function checkPointsList(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
-    if (!$this->shadowAssignmentAcl->canViewEvaluations($assignment)) {
+    if (!$this->shadowAssignmentAcl->canViewPointsList($assignment)) {
       throw new ForbiddenRequestException();
     }
   }
 
   /**
-   * Get a list of evaluations of all users for the assignment
+   * Get a list of points of all users for the assignment
    * @GET
    * @param string $id Identifier of the assignment
    * @throws NotFoundException
    */
-  public function actionEvaluations(string $id) {
+  public function actionPointsList(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
 
-    $evaluations = array_filter($assignment->getShadowAssignmentEvaluations()->getValues(),
-      function (ShadowAssignmentEvaluation $evaluation) {
-        return $this->shadowAssignmentEvaluationAcl->canViewDetail($evaluation);
+    $pointsList = array_filter($assignment->getShadowAssignmentPointsCollection()->getValues(),
+      function (ShadowAssignmentPoints $points) {
+        return $this->shadowAssignmentPointsAcl->canViewDetail($points);
       });
 
-    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluations($evaluations));
+    $this->sendSuccessResponse($this->shadowAssignmentPointsViewFactory->getPointsList($pointsList));
   }
 
-  public function checkEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
-    if (!$this->shadowAssignmentEvaluationAcl->canViewDetail($evaluation)) {
+  public function checkPoints(string $pointsId) {
+    $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    if (!$this->shadowAssignmentPointsAcl->canViewDetail($points)) {
       throw new ForbiddenRequestException();
     }
   }
 
   /**
-   * Get shadow assignment evaluation detail.
+   * Get shadow assignment points detail.
    * @GET
-   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @param string $pointsId Identifier of the shadow assignment points
    * @throws NotFoundException
    */
-  public function actionEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
-    $evaluation = $this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation);
-    $this->sendSuccessResponse($evaluation);
+  public function actionPoints(string $pointsId) {
+    $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    $points = $this->shadowAssignmentPointsViewFactory->getPoints($points);
+    $this->sendSuccessResponse($points);
   }
 
-  public function checkCreateEvaluation(string $id) {
+  public function checkCreatePoints(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
-    if (!$this->shadowAssignmentAcl->canCreateEvaluation($assignment)) {
+    if (!$this->shadowAssignmentAcl->canCreatePoints($assignment)) {
       throw new ForbiddenRequestException();
     }
   }
 
   /**
-   * Create new evaluation for shadow assignment and user.
+   * Create new points for shadow assignment and user.
    * @POST
    * @param string $id Identifier of the shadow assignment
-   * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as evaluatee for evaluation")
+   * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as awardee for points")
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
-   * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
-   * @Param(type="post", name="evaluatedAt", validation="timestamp", required=false, description="Datetime when the evaluation was evaluated, whatever that might means")
+   * @Param(type="post", name="note", validation="string", description="Note about newly created points")
+   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that might means")
    * @throws NotFoundException
    * @throws ForbiddenRequestException
    * @throws BadRequestException
    */
-  public function actionCreateEvaluation(string $id) {
+  public function actionCreatePoints(string $id) {
     $req = $this->getRequest();
     $userId = $req->getPost("userId");
     $points = $req->getPost("points");
     $note = $req->getPost("note");
 
-    $evaluatedAt = $req->getPost("evaluatedAt") ?: null;
-    $evaluatedAt = $evaluatedAt ? DateTime::createFromFormat('U', $evaluatedAt) : null;
+    $awardedAt = $req->getPost("awardedAt") ?: null;
+    $awardedAt = $awardedAt ? DateTime::createFromFormat('U', $awardedAt) : null;
 
     $assignment = $this->shadowAssignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
@@ -312,66 +312,66 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       throw new BadRequestException("User is not member of the group");
     }
 
-    if ($assignment->getEvaluationByUser($user)) {
-      throw new BadRequestException("Given user already has a shadow assignment evaluation");
+    if ($assignment->getPointsByUser($user)) {
+      throw new BadRequestException("Given user already has shadow assignment points");
     }
 
-    $evaluation = new ShadowAssignmentEvaluation($points, $note, $assignment, $this->getCurrentUser(), $user, $evaluatedAt);
-    $this->shadowAssignmentEvaluations->persist($evaluation);
-    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));
+    $pointsEntity = new ShadowAssignmentPoints($points, $note, $assignment, $this->getCurrentUser(), $user, $awardedAt);
+    $this->shadowAssignmentPointsRepository->persist($pointsEntity);
+    $this->sendSuccessResponse($this->shadowAssignmentPointsViewFactory->getPoints($pointsEntity));
   }
 
-  public function checkUpdateEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
-    if (!$this->shadowAssignmentEvaluationAcl->canUpdate($evaluation)) {
+  public function checkUpdatePoints(string $pointsId) {
+    $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    if (!$this->shadowAssignmentPointsAcl->canUpdate($points)) {
       throw new ForbiddenRequestException();
     }
   }
 
   /**
-   * Update detail of shadow assignment evaluation.
+   * Update detail of shadow assignment points.
    * @POST
-   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @param string $pointsId Identifier of the shadow assignment points
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
-   * @Param(type="post", name="note", validation="string", description="Note about newly created evaluation")
-   * @Param(type="post", name="evaluatedAt", validation="timestamp", required=false, description="Datetime when the evaluation was evaluated, whatever that might means")
+   * @Param(type="post", name="note", validation="string", description="Note about newly created points")
+   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that might means")
    * @throws NotFoundException
    */
-  public function actionUpdateEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+  public function actionUpdatePoints(string $pointsId) {
+    $pointsEntity = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
 
     $req = $this->getRequest();
     $points = $req->getPost("points");
     $note = $req->getPost("note");
 
-    $evaluatedAt = $req->getPost("evaluatedAt") ?: null;
-    $evaluatedAt = $evaluatedAt ? DateTime::createFromFormat('U', $evaluatedAt) : null;
+    $awardedAt = $req->getPost("awardedAt") ?: null;
+    $awardedAt = $awardedAt ? DateTime::createFromFormat('U', $awardedAt) : null;
 
-    $evaluation->updatedNow();
-    $evaluation->setPoints($points);
-    $evaluation->setNote($note);
-    $evaluation->setEvaluatedAt($evaluatedAt);
+    $pointsEntity->updatedNow();
+    $pointsEntity->setPoints($points);
+    $pointsEntity->setNote($note);
+    $pointsEntity->setAwardedAt($awardedAt);
 
-    $this->shadowAssignmentEvaluations->flush();
-    $this->sendSuccessResponse($this->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation));
+    $this->shadowAssignmentPointsRepository->flush();
+    $this->sendSuccessResponse($this->shadowAssignmentPointsViewFactory->getPoints($pointsEntity));
   }
 
-  public function checkRemoveEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
-    if (!$this->shadowAssignmentEvaluationAcl->canRemove($evaluation)) {
+  public function checkRemovePoints(string $pointsId) {
+    $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    if (!$this->shadowAssignmentPointsAcl->canRemove($points)) {
       throw new ForbiddenRequestException();
     }
   }
 
   /**
-   * Remove evaluation of shadow assignment.
+   * Remove points of shadow assignment.
    * @DELETE
-   * @param string $evaluationId Identifier of the shadow assignment evaluation
+   * @param string $pointsId Identifier of the shadow assignment points
    * @throws NotFoundException
    */
-  public function actionRemoveEvaluation(string $evaluationId) {
-    $evaluation = $this->shadowAssignmentEvaluations->findOrThrow($evaluationId);
-    $this->shadowAssignmentEvaluations->remove($evaluation);
+  public function actionRemovePoints(string $pointsId) {
+    $points = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    $this->shadowAssignmentPointsRepository->remove($points);
     $this->sendSuccessResponse("OK");
   }
 }

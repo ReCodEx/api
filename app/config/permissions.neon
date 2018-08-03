@@ -696,7 +696,7 @@ permissions:
       resource: shadowAssignment
       actions:
         - viewDetail
-        - viewEvaluations
+        - viewPointsList
 
     - allow: true
       role: student
@@ -711,10 +711,10 @@ permissions:
       resource: shadowAssignment
       actions:
           - viewDetail
-          - viewEvaluations
+          - viewPointsList
           - update
           - remove
-          - createEvaluation
+          - createPoints
       conditions:
           - assignment.isSupervisor
 
@@ -725,28 +725,28 @@ permissions:
       conditions:
           - group.isSupervisor
 
-    ############################################
-    # Shadow Assignment Evaluation permissions #
-    ############################################
+    ########################################
+    # Shadow Assignment Points permissions #
+    ########################################
 
     - allow: true
       role: scope-read-all
-      resource: shadowAssignmentEvaluation
+      resource: shadowAssignmentPoints
       actions:
         - viewDetail
 
     - allow: true
-      resource: shadowAssignmentEvaluation
+      resource: shadowAssignmentPoints
       actions:
           - viewDetail
       conditions:
-          - evaluation.isEvaluatee
+          - assignmentPoints.isAwardee
 
     - allow: true
-      resource: shadowAssignmentEvaluation
+      resource: shadowAssignmentPoints
       actions:
           - viewDetail
           - update
           - remove
       conditions:
-          - evaluation.isSupervisor
+          - assignmentPoints.isSupervisor

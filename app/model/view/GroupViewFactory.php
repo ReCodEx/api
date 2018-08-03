@@ -12,10 +12,10 @@ use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\ShadowAssignment;
-use App\Model\Entity\ShadowAssignmentEvaluation;
+use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
-use App\Model\Repository\ShadowAssignmentEvaluations;
+use App\Model\Repository\ShadowAssignmentPointsRepository;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
@@ -39,12 +39,12 @@ class GroupViewFactory {
   /** @var GroupBindingAccessor */
   private $bindings;
 
-  /** @var ShadowAssignmentEvaluations */
+  /** @var ShadowAssignmentPointsRepository */
   private $shadowAssignmentEvaluations;
 
   public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
                               IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings,
-                              ShadowAssignmentEvaluations $shadowAssignmentEvaluations) {
+                              ShadowAssignmentPointsRepository $shadowAssignmentEvaluations) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
@@ -75,12 +75,12 @@ class GroupViewFactory {
 
   /**
    * Get total sum of points which given user gained in given shadow assignments.
-   * @param ShadowAssignmentEvaluation[] $shadowEvaluations
+   * @param ShadowAssignmentPoints[] $shadowEvaluations
    * @return int
    */
   private function getPointsForShadowAssignments(array $shadowEvaluations): int {
     return array_reduce($shadowEvaluations,
-      function ($carry, ShadowAssignmentEvaluation $evaluation) {
+      function ($carry, ShadowAssignmentPoints $evaluation) {
         return $carry + $evaluation->getPoints();
       },
       0);

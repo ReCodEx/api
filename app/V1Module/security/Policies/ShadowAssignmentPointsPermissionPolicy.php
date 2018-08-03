@@ -1,15 +1,15 @@
 <?php
 namespace App\Security\Policies;
 
-use App\Model\Entity\ShadowAssignmentEvaluation;
+use App\Model\Entity\ShadowAssignmentPoints;
 use App\Security\Identity;
 
-class ShadowAssignmentEvaluationPermissionPolicy implements IPermissionPolicy {
+class ShadowAssignmentPointsPermissionPolicy implements IPermissionPolicy {
   public function getAssociatedClass() {
-    return ShadowAssignmentEvaluation::class;
+    return ShadowAssignmentPoints::class;
   }
 
-  public function isSupervisor(Identity $identity, ShadowAssignmentEvaluation $evaluation) {
+  public function isSupervisor(Identity $identity, ShadowAssignmentPoints $evaluation) {
     $assignment = $evaluation->getShadowAssignment();
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
@@ -21,13 +21,13 @@ class ShadowAssignmentEvaluationPermissionPolicy implements IPermissionPolicy {
     return $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
-  public function isEvaluatee(Identity $identity, ShadowAssignmentEvaluation $evaluation) {
+  public function isAwardee(Identity $identity, ShadowAssignmentPoints $evaluation) {
     $user = $identity->getUserData();
     if ($user === null) {
       return false;
     }
 
-    return $evaluation->getEvaluatee() === $user;
+    return $evaluation->getAwardee() === $user;
   }
 
 }

@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method Collection getShadowAssignmentEvaluations()
+ * @method Collection getShadowAssignmentPointsCollection()
  * @method setMaxPoints(int $points)
  */
 class ShadowAssignment extends AssignmentBase
@@ -31,7 +31,7 @@ class ShadowAssignment extends AssignmentBase
   ) {
     $this->group = $group;
     $this->maxPoints = $maxPoints;
-    $this->shadowAssignmentEvaluations = new ArrayCollection;
+    $this->shadowAssignmentPointsCollection = new ArrayCollection;
     $this->isPublic = $isPublic;
     $this->localizedTexts = new ArrayCollection();
     $this->version = 1;
@@ -103,13 +103,13 @@ class ShadowAssignment extends AssignmentBase
   }
 
   /**
-   * @ORM\OneToMany(targetEntity="ShadowAssignmentEvaluation", mappedBy="shadowAssignment")
+   * @ORM\OneToMany(targetEntity="ShadowAssignmentPoints", mappedBy="shadowAssignment")
    */
-  protected $shadowAssignmentEvaluations;
+  protected $shadowAssignmentPointsCollection;
 
-  public function getEvaluationByUser(User $user) {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("evaluatee", $user));
-    $first = $this->shadowAssignmentEvaluations->matching($criteria)->first();
+  public function getPointsByUser(User $user) {
+    $criteria = Criteria::create()->where(Criteria::expr()->eq("awardee", $user));
+    $first = $this->shadowAssignmentPointsCollection->matching($criteria)->first();
     return $first === false ? null : $first;
   }
 

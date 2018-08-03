@@ -13,29 +13,29 @@ use DateTime;
  * @method string getNote()
  * @method ShadowAssignment getShadowAssignment()
  * @method User getAuthor()
- * @method User getEvaluatee()
+ * @method User getAwardee()
  * @method int getPoints()
  * @method DateTime getCreatedAt()
- * @method DateTime getEvaluatedAt()
+ * @method ?DateTime getAwardedAt()
  * @method setPoints(int $points)
  * @method setNote(string $note)
- * @method void setEvaluatedAt(DateTime $evaluatedAt)
+ * @method void setAwardedAt(?DateTime $awardedAt)
  */
-class ShadowAssignmentEvaluation
+class ShadowAssignmentPoints
 {
   use MagicAccessors;
   use UpdateableEntity;
 
   public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author,
-                              User $evaluatee, DateTime $evaluatedAt) {
+                              User $awardee, ?DateTime $awardedAt) {
     $this->points = $points;
     $this->shadowAssignment = $shadowAssignment;
     $this->note = $note;
     $this->author = $author;
-    $this->evaluatee = $evaluatee;
+    $this->awardee = $awardee;
     $this->createdAt = new DateTime;
     $this->updatedAt = new DateTime;
-    $this->evaluatedAt = $evaluatedAt;
+    $this->awardedAt = $awardedAt;
   }
 
   /**
@@ -69,7 +69,7 @@ class ShadowAssignmentEvaluation
   /**
    * @ORM\ManyToOne(targetEntity="User")
    */
-  protected $evaluatee;
+  protected $awardee;
 
   /**
    * @ORM\Column(type="datetime")
@@ -79,6 +79,6 @@ class ShadowAssignmentEvaluation
   /**
    * @ORM\Column(type="datetime", nullable=true)
    */
-  protected $evaluatedAt;
+  protected $awardedAt;
 
 }

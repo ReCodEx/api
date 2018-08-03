@@ -3,7 +3,6 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
-use App\Model\Entity\Group;
 use App\V1Module\Presenters\ShadowAssignmentsPresenter;
 use Tester\Assert;
 use App\Helpers\JobConfig;
@@ -161,30 +160,30 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testEvaluations()
+  public function testPointsList()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $evaluation = current($this->presenter->shadowAssignmentEvaluations->findAll());
-    $assignment = $evaluation->getShadowAssignment();
-    $evaluations = $assignment->getShadowAssignmentEvaluations()->getValues();
-    $evaluations = array_map(function (\App\Model\Entity\ShadowAssignmentEvaluation $evaluation) {
-      return $this->presenter->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation);
-    }, $evaluations);
+    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
+    $assignment = $points->getShadowAssignment();
+    $pointsList = $assignment->getShadowAssignmentPointsCollection()->getValues();
+    $pointsList = array_map(function (\App\Model\Entity\ShadowAssignmentPoints $points) {
+      return $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
+    }, $pointsList);
 
     $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'evaluations', 'id' => $assignment->getId()]
+      ['action' => 'pointsList', 'id' => $assignment->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(count($evaluations), $result['payload']);
-    Assert::same($evaluations, $result['payload']);
+    Assert::count(count($pointsList), $result['payload']);
+    Assert::same($pointsList, $result['payload']);
   }
 
-  public function testCreateEvaluation()
+  public function testCreatePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $assignment = current($this->presenter->shadowAssignments->findAll());
@@ -194,12 +193,12 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
       'POST',
-      ['action' => 'createEvaluation', 'id' => $assignment->getId()],
+      ['action' => 'createPoints', 'id' => $assignment->getId()],
       [
         'userId' => $user->getId(),
         'points' => 1287,
         'note' => "some testing note",
-        'evaluatedAt' => $timestamp
+        'awardedAt' => $timestamp
       ]
     );
 
@@ -209,46 +208,46 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $evaluation = $result['payload'];
-    Assert::equal(1287, $evaluation['points']);
-    Assert::equal("some testing note", $evaluation['note']);
-    Assert::equal($this->user->getId(), $evaluation['authorId']);
-    Assert::equal($user->getId(), $evaluation['evaluateeId']);
-    Assert::equal($timestamp, $evaluation['evaluatedAt']);
+    $points = $result['payload'];
+    Assert::equal(1287, $points['points']);
+    Assert::equal("some testing note", $points['note']);
+    Assert::equal($this->user->getId(), $points['authorId']);
+    Assert::equal($user->getId(), $points['awardeeId']);
+    Assert::equal($timestamp, $points['awardedAt']);
   }
 
-  public function testEvaluation()
+  public function testPoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
-    $evaluation = current($this->presenter->shadowAssignmentEvaluations->findAll());
-    $evaluationData = $this->presenter->shadowAssignmentEvaluationViewFactory->getEvaluation($evaluation);
+    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
+    $pointsData = $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
 
     $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'evaluation', 'evaluationId' => $evaluation->getId()]
+      ['action' => 'points', 'pointsId' => $points->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($evaluationData, $result['payload']);
+    Assert::same($pointsData, $result['payload']);
   }
 
-  public function testUpdateEvaluation()
+  public function testUpdatePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
-    $shadowEvaluation = current($this->presenter->shadowAssignmentEvaluations->findAll());
+    $shadowPoints = current($this->presenter->shadowAssignmentPointsRepository->findAll());
     $timestamp = time();
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
       'POST',
-      ['action' => 'updateEvaluation', 'evaluationId' => $shadowEvaluation->getId()],
+      ['action' => 'updatePoints', 'pointsId' => $shadowPoints->getId()],
       [
         'points' => 147,
         'note' => "update some testing note",
-        'evaluatedAt' => $timestamp
+        'awardedAt' => $timestamp
       ]
     );
 
@@ -258,21 +257,21 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $evaluation = $result['payload'];
-    Assert::equal(147, $evaluation['points']);
-    Assert::equal("update some testing note", $evaluation['note']);
-    Assert::equal($this->user->getId(), $evaluation['authorId']);
-    Assert::equal($shadowEvaluation->getEvaluatee()->getId(), $evaluation['evaluateeId']);
-    Assert::equal($timestamp, $evaluation['evaluatedAt']);
+    $points = $result['payload'];
+    Assert::equal(147, $points['points']);
+    Assert::equal("update some testing note", $points['note']);
+    Assert::equal($this->user->getId(), $points['authorId']);
+    Assert::equal($shadowPoints->getAwardee()->getId(), $points['awardeeId']);
+    Assert::equal($timestamp, $points['awardedAt']);
   }
 
-  public function testRemoveEvaluation()
+  public function testRemovePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
-    $evaluationId = current($this->presenter->shadowAssignmentEvaluations->findAll())->getId();
+    $pointsId = current($this->presenter->shadowAssignmentPointsRepository->findAll())->getId();
 
     $request = new Nette\Application\Request('V1:ShadowAssignments', 'DELETE',
-      ['action' => 'removeEvaluation', 'evaluationId' => $evaluationId]
+      ['action' => 'removePoints', 'pointsId' => $pointsId]
     );
     $response = $this->presenter->run($request);
     Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
@@ -280,8 +279,8 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
-    Assert::exception(function () use ($evaluationId) {
-      $this->presenter->shadowAssignmentEvaluations->findOrThrow($evaluationId);
+    Assert::exception(function () use ($pointsId) {
+      $this->presenter->shadowAssignmentPointsRepository->findOrThrow($pointsId);
     }, NotFoundException::class);
   }
 }
