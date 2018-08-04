@@ -457,7 +457,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
       return [
-        "referenceSolution" => $referenceSolution,
+        "referenceSolution" => $this->referenceSolutionViewFactory->getReferenceSolution($referenceSolution),
         "submissions" => [],
         "errors" => $hwGroups->map(function (HardwareGroup $group) { return $group->getId(); })
       ];
