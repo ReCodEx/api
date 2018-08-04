@@ -376,7 +376,7 @@ class TestSubmitPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal($solutionCount, count($solutions->findAll()));
-    Assert::equal($submissionCount, $solution->getSubmissions()->count());
+    Assert::equal($submissionCount+1, $solution->getSubmissions()->count());
   }
 
   public function testResubmitAll()

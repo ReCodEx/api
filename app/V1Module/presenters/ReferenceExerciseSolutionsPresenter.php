@@ -498,6 +498,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     if (count($errors) > 0) {
       $this->referenceSubmissions->flush();
+      $this->referenceSolutions->refresh($referenceSolution); // special case, it would be tedious update the entity manually
     }
 
     return [

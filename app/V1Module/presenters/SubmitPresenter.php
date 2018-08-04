@@ -129,13 +129,11 @@ class SubmitPresenter extends BasePresenter {
    */
   public $assignmentSolutionSubmissionViewFactory;
 
-
   /**
    * @var ExerciseConfigHelper
    * @inject
    */
   public $exerciseConfigHelper;
-
 
   /**
    * Determine if given user can submit solutions to assignment.
@@ -321,6 +319,9 @@ class SubmitPresenter extends BasePresenter {
     // If the submission was accepted we now have the URL where to look for the results later -> persist it
     $submission->setResultsUrl($resultsUrl);
     $this->assignmentSubmissions->persist($submission);
+
+    // The solution needs to reload submissions (it is tedious and error prone to update them manually)
+    $this->solutions->refresh($solution);
 
     return [
       "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
