@@ -159,12 +159,11 @@ class PresenterTestHelper
    * Perform regular presenter request and make common asserts.
    * @param $presenter The presenter which should handle the request.
    * @param $module String representing the module path (e.g., 'V1:Exercises').
-   * @param $method HTTP method of the request (GET, POST, ...).
-   * @param $params Parameters of the request.
-   * @param $expectedCode Expected HTTP response code (200 by default).
+   * @param string $method HTTP method of the request (GET, POST, ...).
+   * @param array $params Parameters of the request.
+   * @param int $expectedCode Expected HTTP response code (200 by default).
    * @return array|null Payload subtree of JSON request.
-   * @throws Tester\AssertException
-   * @throws JsonException
+   * @throws Exception
    */
   public static function performPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], $expectedCode = 200)
   {

@@ -156,7 +156,7 @@ class AssignmentsPresenter extends BasePresenter {
   /**
    * Update details of an assignment
    * @POST
-   * @Param(type="post", name="version", validation="numericint", description="Version of the edited exercise")
+   * @Param(type="post", name="version", validation="numericint", description="Version of the edited assignment")
    * @Param(type="post", name="isPublic", validation="bool", description="Is the assignment ready to be displayed to students?")
    * @Param(type="post", name="localizedTexts", validation="array", description="A description of the assignment")
    * @Param(type="post", name="firstDeadline", validation="timestamp", description="First deadline for submission of the assignment")

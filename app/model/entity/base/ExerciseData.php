@@ -34,7 +34,7 @@ trait ExerciseData {
    * @param string $locale
    * @return LocalizedExercise|null
    */
-  public function getLocalizedTextByLocale(string $locale) {
+  public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
     $first = $this->localizedTexts->matching($criteria)->first();
     return $first === false ? null : $first;

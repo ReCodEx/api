@@ -23,32 +23,25 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
- * @method Group getGroup()
- * @method DateTime getCreatedAt()
  * @method Exercise getExercise()
  * @method DateTime getFirstDeadline()
  * @method bool getAllowSecondDeadline()
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
- * @method int getVersion()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
- * @method setIsPublic(bool $public)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
  * @method setMaxPointsBeforeSecondDeadline(int $points)
  * @method setSubmissionsCountLimit(int $limit)
  * @method setAllowSecondDeadline(bool $allow)
  * @method setCanViewLimitRatios(bool $canView)
- * @method setIsBonus(bool $bonus)
  * @method setPointsPercentualThreshold(float $threshold)
  */
-class Assignment implements IExercise
+class Assignment extends AssignmentBase implements IExercise
 {
   use MagicAccessors;
   use ExerciseData;
-  use UpdateableEntity;
-  use DeleteableEntity;
 
   private function __construct(
     DateTime $firstDeadline,
@@ -132,44 +125,9 @@ class Assignment implements IExercise
   protected $id;
 
   /**
-   * @ORM\Column(type="integer")
-   */
-  protected $version;
-
-  /**
-   * Increment version number.
-   */
-  public function incrementVersion() {
-    $this->version++;
-  }
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isPublic;
-
-  public function isPublic() {
-    return $this->isPublic;
-  }
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isBonus;
-
-  public function isBonus(): bool {
-    return $this->isBonus;
-  }
-
-  /**
    * @ORM\Column(type="float")
    */
   protected $pointsPercentualThreshold;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
 
   /**
    * @ORM\ManyToMany(targetEntity="LocalizedAssignment", indexBy="locale")
@@ -238,7 +196,7 @@ class Assignment implements IExercise
    */
   protected $maxPointsBeforeSecondDeadline;
 
-  public function getMaxPoints(DateTime $time = null) {
+  public function getMaxPoints(DateTime $time = null): int {
     if ($time === null || $time < $this->firstDeadline) {
       return $this->maxPointsBeforeFirstDeadline;
     } else if ($this->allowSecondDeadline && $time < $this->secondDeadline) {
@@ -256,22 +214,6 @@ class Assignment implements IExercise
     return $this->maxPointsBeforeFirstDeadline !== 0 || $this->maxPointsBeforeSecondDeadline !== 0;
   }
 
-
-  /**
-   * Assignment can be marked as bonus, then we do not want to add its points
-   * to overall maximum points of group. This function will return 0 if
-   * assignment is marked as bonus one, otherwise it will return result of
-   * $this->getMaxPoints() function.
-   * @return int
-   */
-  public function getGroupPoints(): int {
-    if ($this->isBonus) {
-      return 0;
-    } else {
-      return $this->getMaxPoints();
-    }
-  }
-
   /**
    * @ORM\Column(type="boolean")
    */
@@ -286,6 +228,10 @@ class Assignment implements IExercise
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
    */
   protected $group;
+
+  public function getGroup(): Group {
+    return $this->group;
+  }
 
   /**
    * @ORM\OneToMany(targetEntity="AssignmentSolution", mappedBy="assignment")

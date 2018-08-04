@@ -2,8 +2,12 @@
 
 namespace App\Helpers\Notifications;
 
+use App\Exceptions\BadRequestException;
+use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\AssignmentBase;
+use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
 use Latte;
@@ -42,10 +46,10 @@ class AssignmentEmailsSender {
   /**
    * Assignment was created, send emails to users who wanted to know this
    * situation.
-   * @param Assignment $assignment
+   * @param AssignmentBase $assignment
    * @return boolean
    */
-  public function assignmentCreated(Assignment $assignment): bool {
+  public function assignmentCreated(AssignmentBase $assignment): bool {
     $subject = $this->newAssignmentPrefix . $assignment->getLocalizedTexts()->first()->getName();
 
     $recipients = array();
@@ -72,19 +76,30 @@ class AssignmentEmailsSender {
 
   /**
    * Prepare and format body of the new assignment mail
-   * @param Assignment $assignment
+   * @param AssignmentBase $assignment
    * @return string Formatted mail body to be sent
+   * @throws InvalidStateException
    */
-  private function createNewAssignmentBody(Assignment $assignment): string {
+  private function createNewAssignmentBody(AssignmentBase $assignment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine;
-    return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
-      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
-      "dueDate" => $assignment->getFirstDeadline(),
-      "attempts" => $assignment->getSubmissionsCountLimit(),
-      "points" => $assignment->getMaxPointsBeforeFirstDeadline()
-    ]);
+    if ($assignment instanceof Assignment) {
+      return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
+        "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
+        "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
+        "dueDate" => $assignment->getFirstDeadline(),
+        "attempts" => $assignment->getSubmissionsCountLimit(),
+        "points" => $assignment->getMaxPointsBeforeFirstDeadline()
+      ]);
+    } else if ($assignment instanceof ShadowAssignment) {
+      return $latte->renderToString(__DIR__ . "/newShadowAssignmentEmail.latte", [
+        "name" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
+        "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
+        "maxPoints" => $assignment->getMaxPoints(),
+      ]);
+    } else {
+      throw new InvalidStateException("Unknown type of assignment");
+    }
   }
 
   /**

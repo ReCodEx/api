@@ -16,6 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @method string getId()
  * @method addAssignment(Assignment $assignment)
+ * @method addShadowAssignment(ShadowAssignment $assignment)
  * @method addChildGroup(Group $group)
  * @method string getExternalId()
  * @method string getDescription()
@@ -48,6 +49,7 @@ class Group
     $this->isPublic = $isPublic;
     $this->childGroups = new ArrayCollection;
     $this->assignments = new ArrayCollection;
+    $this->shadowAssignments = new ArrayCollection;
     $this->exercises = new ArrayCollection;
     $this->localizedTexts = new ArrayCollection();
 
@@ -413,12 +415,43 @@ class Group
     });
   }
 
+  /**
+   * @ORM\OneToMany(targetEntity="ShadowAssignment", mappedBy="group")
+   */
+  protected $shadowAssignments;
+
+  /**
+   * Map collection of shadow assignments to an array of its ID's
+   * @return string[]
+   */
+  public function getShadowAssignmentsIds(): array {
+    return $this->shadowAssignments->map(function (ShadowAssignment $a) {
+      return $a->getId();
+    })->getValues();
+  }
+
+  /**
+   * @return Collection
+   */
+  public function getShadowAssignments() {
+    return $this->shadowAssignments->filter(function (ShadowAssignment $pointsAssignment) {
+      return $pointsAssignment->getDeletedAt() === null;
+    });
+  }
+
   public function getMaxPoints(): int {
-    return array_reduce(
+    $pointsAss = array_reduce(
       $this->getAssignments()->getValues(),
       function ($carry, Assignment $assignment) { return $carry + $assignment->getGroupPoints(); },
       0
     );
+    $pointsShadow = array_reduce(
+      $this->getShadowAssignments()->getValues(),
+      function ($carry, ShadowAssignment $shadowAssignment) { return $carry + $shadowAssignment->getGroupPoints(); },
+      0
+    );
+
+    return $pointsAss + $pointsShadow;
   }
 
   public function getLocalizedTextByLocale(string $locale): ?LocalizedGroup {

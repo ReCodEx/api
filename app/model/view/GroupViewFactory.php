@@ -11,8 +11,11 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
+use App\Model\Entity\ShadowAssignment;
+use App\Model\Entity\ShadowAssignmentPoints;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
+use App\Model\Repository\ShadowAssignmentPointsRepository;
 use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
@@ -24,30 +27,29 @@ use Doctrine\Common\Collections\Collection;
  */
 class GroupViewFactory {
 
-  /**
-   * @var AssignmentSolutions
-   */
+  /** @var AssignmentSolutions */
   private $assignmentSolutions;
 
-  /**
-   * @var IGroupPermissions
-   */
+  /** @var IGroupPermissions */
   private $groupAcl;
 
-  /**
-   * @var IAssignmentPermissions
-   */
+  /** @var IAssignmentPermissions */
   private $assignmentAcl;
 
   /** @var GroupBindingAccessor */
   private $bindings;
 
+  /** @var ShadowAssignmentPointsRepository */
+  private $shadowAssignmentPointsRepository;
+
   public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
-                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings) {
+                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings,
+                              ShadowAssignmentPointsRepository $shadowAssignmentPointsRepository) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
     $this->bindings = $bindings;
+    $this->shadowAssignmentPointsRepository = $shadowAssignmentPointsRepository;
   }
 
 
@@ -72,6 +74,19 @@ class GroupViewFactory {
   }
 
   /**
+   * Get total sum of points which given user gained in given shadow assignments.
+   * @param ShadowAssignmentPoints[] $shadowPointsList
+   * @return int
+   */
+  private function getPointsForShadowAssignments(array $shadowPointsList): int {
+    return array_reduce($shadowPointsList,
+      function ($carry, ShadowAssignmentPoints $points) {
+        return $carry + $points->getPoints();
+      },
+      0);
+  }
+
+  /**
    * Get the statistics of an individual student.
    * @param Group $group
    * @param User $student Student of this group
@@ -79,11 +94,13 @@ class GroupViewFactory {
    */
   public function getStudentsStats(Group $group, User $student) {
     $maxPoints = $group->getMaxPoints();
-    $solutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
-    $gainedPoints = $this->getPointsGainedByStudentForSolutions($solutions);
+    $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
+    $shadowPointsList = $this->shadowAssignmentPointsRepository->findPointsForAssignments($group->getShadowAssignments()->getValues(), $student);
+    $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
+    $gainedPoints += $this->getPointsForShadowAssignments($shadowPointsList);
 
     $assignments = [];
-    foreach ($solutions as $solutionPair) {
+    foreach ($assignmentSolutions as $solutionPair) {
       /**
        * @var Assignment $assignment
        * @var AssignmentSolution $best
@@ -103,6 +120,18 @@ class GroupViewFactory {
       ];
     }
 
+    $shadowAssignments = [];
+    foreach ($shadowPointsList as $shadowPoints) {
+      $assignment = $shadowPoints->getShadowAssignment();
+      $shadowAssignments[] = [
+        "id" => $assignment->getId(),
+        "points" => [
+          "total" => $assignment->getMaxPoints(),
+          "gained" => $shadowPoints->getPoints()
+        ]
+      ];
+    }
+
     return [
       "userId" => $student->getId(),
       "groupId" => $group->getId(),
@@ -112,7 +141,8 @@ class GroupViewFactory {
       ],
       "hasLimit" => $group->getThreshold() !== null && $group->getThreshold() > 0,
       "passesLimit" => $group->getThreshold() === null ? true : $gainedPoints >= $maxPoints * $group->getThreshold(),
-      "assignments" => $assignments
+      "assignments" => $assignments,
+      "shadowAssignments" => $shadowAssignments
     ];
   }
 

@@ -680,3 +680,67 @@ permissions:
         - group.isInSameInstance
         - student.isSameUser
         - group.isSisStudent
+
+    #################################
+    # Shadow Assignment permissions #
+    #################################
+
+    - allow: true
+      role: scope-read-all
+      resource: shadowAssignment
+      actions:
+        - viewDetail
+        - viewPointsList
+
+    - allow: true
+      role: student
+      resource: shadowAssignment
+      actions:
+          - viewDetail
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      resource: shadowAssignment
+      actions:
+          - viewDetail
+          - viewPointsList
+          - update
+          - remove
+          - createPoints
+      conditions:
+          - assignment.isSupervisor
+
+    - allow: true
+      resource: group
+      actions:
+          - createShadowAssignment
+      conditions:
+          - group.isSupervisor
+
+    ########################################
+    # Shadow Assignment Points permissions #
+    ########################################
+
+    - allow: true
+      role: scope-read-all
+      resource: shadowAssignmentPoints
+      actions:
+        - viewDetail
+
+    - allow: true
+      resource: shadowAssignmentPoints
+      actions:
+          - viewDetail
+      conditions:
+          - assignmentPoints.isAwardee
+
+    - allow: true
+      resource: shadowAssignmentPoints
+      actions:
+          - viewDetail
+          - update
+          - remove
+      conditions:
+          - assignmentPoints.isSupervisor

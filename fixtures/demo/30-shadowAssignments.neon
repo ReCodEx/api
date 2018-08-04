@@ -1,0 +1,16 @@
+App\Model\Entity\ShadowAssignment:
+    "demoShadowAssignment{1..2}":
+        __construct:
+            createInGroup:
+                - @demoGroup
+                - true
+
+App\Model\Entity\ShadowAssignmentPoints:
+     "demoShadowPoints{1..2}":
+        __construct:
+            - 10
+            - "Note"
+            - "@demoShadowAssignment<current()>"
+            - @demoAdmin
+            - @demoUser1
+            - "<date()>"
