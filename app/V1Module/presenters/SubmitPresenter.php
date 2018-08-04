@@ -33,6 +33,7 @@ use App\Model\Repository\Solutions;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\AssignmentSolutionViewFactory;
+use App\Model\View\AssignmentSolutionSubmissionViewFactory;
 
 use App\Security\ACL\IAssignmentPermissions;
 use Exception;
@@ -121,6 +122,13 @@ class SubmitPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutionViewFactory;
+
+  /**
+   * @var AssignmentSolutionSubmissionViewFactory
+   * @inject
+   */
+  public $assignmentSolutionSubmissionViewFactory;
+
 
   /**
    * @var ExerciseConfigHelper
@@ -315,7 +323,8 @@ class SubmitPresenter extends BasePresenter {
     $this->assignmentSubmissions->persist($submission);
 
     return [
-      "submission" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
+      "solution" => $this->assignmentSolutionViewFactory->getSolutionData($solution),
+      "submission" => $this->assignmentSolutionSubmissionViewFactory->getSubmissionData($submission),
       "webSocketChannel" => [
         "id" => $generatorResult->getJobConfig()->getJobId(),
         "monitorUrl" => $this->monitorConfig->getAddress(),
@@ -332,9 +341,9 @@ class SubmitPresenter extends BasePresenter {
   }
 
   /**
-   * Resubmit a submission (for example in case of broker failure)
+   * Resubmit a solution (i.e., create a new submission)
    * @POST
-   * @param string $id Identifier of the submission
+   * @param string $id Identifier of the solution
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
