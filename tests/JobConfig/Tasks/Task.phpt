@@ -69,7 +69,7 @@ class TestTaskBase extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testMissingRequiredFields() {
@@ -148,5 +148,5 @@ class TestTaskBase extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTaskBase;
+$testCase = new TestTaskBase();
 $testCase->run();

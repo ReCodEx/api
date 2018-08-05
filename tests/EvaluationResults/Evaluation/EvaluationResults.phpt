@@ -63,7 +63,7 @@ class TestEvaluationResults extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testMissingParams() {
@@ -297,5 +297,5 @@ class TestEvaluationResults extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestEvaluationResults;
+$testCase = new TestEvaluationResults();
 $testCase->run();

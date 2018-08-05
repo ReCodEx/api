@@ -138,10 +138,10 @@ class EmailVerificationHelper {
   private function createBody(User $user, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
-    $expiresAfter = (new DateTime)->add(new DateInterval("PT{$exp}S"));
+    $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/verificationEmail.latte", [
       "email" => $user->getEmail(),
       "link" => "{$this->redirectUrl}#{$token}",

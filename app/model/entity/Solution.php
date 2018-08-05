@@ -80,9 +80,9 @@ class Solution implements JsonSerializable
    */
   public function __construct(User $author, RuntimeEnvironment $runtimeEnvironment) {
     $this->author = $author;
-    $this->files = new ArrayCollection;
+    $this->files = new ArrayCollection();
     $this->evaluated = false;
-    $this->createdAt = new DateTime;
+    $this->createdAt = new DateTime();
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->solutionParams = "";
   }

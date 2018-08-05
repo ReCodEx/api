@@ -45,7 +45,7 @@ class SisCourseRecord implements JsonSerializable {
    * @return SisCourseRecord
    */
   public static function fromArray($sisUserId, $data) {
-    $result = new static;
+    $result = new static();
     $result->sisUserId = $sisUserId;
 
     $result->code = $data["id"];

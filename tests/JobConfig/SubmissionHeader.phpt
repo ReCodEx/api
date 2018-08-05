@@ -20,7 +20,7 @@ class TestSubmissionHeader extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testValidConstructionRequired() {
@@ -146,5 +146,5 @@ class TestSubmissionHeader extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestSubmissionHeader;
+$testCase = new TestSubmissionHeader();
 $testCase->run();

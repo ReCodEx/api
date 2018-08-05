@@ -190,7 +190,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       throw new InvalidArgumentException("No entry for runtime configurations given.");
     }
 
-    $runtimeEnvironments = new ArrayCollection;
+    $runtimeEnvironments = new ArrayCollection();
     // go through given configurations and construct database entities
     foreach ($environmentConfigs as $environmentConfig) {
       $environmentId = $environmentConfig["runtimeEnvironmentId"];

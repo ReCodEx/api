@@ -27,10 +27,10 @@ class TestFileInBox extends Tester\TestCase
   public function __construct() {
     $inputVariable = new Variable(VariableTypes::$REMOTE_FILE_TYPE, "", "remote.in");
 
-    $outputPort = (new Port((new PortMeta)->setName(FileInBox::$FILE_IN_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)));
+    $outputPort = (new Port((new PortMeta())->setName(FileInBox::$FILE_IN_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)));
     $outputPort->setVariableValue(new Variable(VariableTypes::$FILE_TYPE, "", "input.in"));
 
-    $meta = (new BoxMeta)->addOutputPort($outputPort);
+    $meta = (new BoxMeta())->addOutputPort($outputPort);
     $this->box = new FileInBox($meta);
     $this->box->setInputVariable($inputVariable);
     $this->box->validateMetadata();

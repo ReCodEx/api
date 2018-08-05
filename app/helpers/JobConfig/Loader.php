@@ -19,7 +19,7 @@ class Loader {
    * @throws JobConfigLoadingException
    */
   public function loadSubmissionHeader($data): SubmissionHeader {
-    $header = new SubmissionHeader;
+    $header = new SubmissionHeader();
 
     if (!isset($data[SubmissionHeader::JOB_ID_KEY])) {
       throw new JobConfigLoadingException("Submission header does not contain the required field '" . SubmissionHeader::JOB_ID_KEY . "'");
@@ -57,7 +57,7 @@ class Loader {
    * @throws JobConfigLoadingException
    */
   public function loadBoundDirectoryConfig($data, $taskId = ""): BoundDirectoryConfig {
-    $boundDir = new BoundDirectoryConfig;
+    $boundDir = new BoundDirectoryConfig();
 
     if (!isset($data[BoundDirectoryConfig::SRC_KEY])) {
       throw new JobConfigLoadingException("Task '" . $taskId . "': bound directory does not contain required field '" . BoundDirectoryConfig::SRC_KEY . "'");
@@ -90,7 +90,7 @@ class Loader {
    * @throws JobConfigLoadingException
    */
   public function loadLimits($data, $taskId = ""): Limits {
-    $limits = new Limits;
+    $limits = new Limits();
 
     if (!is_array($data)) {
       throw new JobConfigLoadingException("Task '" . $taskId . "': limits are not array");
@@ -170,7 +170,7 @@ class Loader {
    * @throws JobConfigLoadingException
    */
   public function loadSandboxConfig($data, $taskId = ""): SandboxConfig {
-    $sandboxConfig = new SandboxConfig;
+    $sandboxConfig = new SandboxConfig();
 
     if (!isset($data[SandboxConfig::NAME_KEY])) {
       throw new JobConfigLoadingException("Task '" . $taskId . "': sandbox section does not contain required field '" . SandboxConfig::NAME_KEY . "'");
@@ -247,7 +247,7 @@ class Loader {
    * @throws JobConfigLoadingException
    */
   public function loadTask($data): Task {
-    $task = new Task;
+    $task = new Task();
     $taskId = "";
 
     // *** LOAD MANDATORY ITEMS

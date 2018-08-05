@@ -91,5 +91,5 @@ class TestSimpleScoreCalculator extends Tester\TestCase
   }
 }
 
-$testCase = new TestSimpleScoreCalculator;
+$testCase = new TestSimpleScoreCalculator();
 $testCase->run();

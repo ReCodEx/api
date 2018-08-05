@@ -96,5 +96,5 @@ class TestStats extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestStats;
+$testCase = new TestStats();
 $testCase->run();

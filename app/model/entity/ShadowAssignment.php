@@ -31,13 +31,13 @@ class ShadowAssignment extends AssignmentBase
   ) {
     $this->group = $group;
     $this->maxPoints = $maxPoints;
-    $this->shadowAssignmentPointsCollection = new ArrayCollection;
+    $this->shadowAssignmentPointsCollection = new ArrayCollection();
     $this->isPublic = $isPublic;
     $this->localizedTexts = new ArrayCollection();
     $this->version = 1;
     $this->isBonus = $isBonus;
-    $this->createdAt = new \DateTime;
-    $this->updatedAt = new \DateTime;
+    $this->createdAt = new \DateTime();
+    $this->updatedAt = new \DateTime();
   }
 
   public static function createInGroup(Group $group, $isPublic = false) {

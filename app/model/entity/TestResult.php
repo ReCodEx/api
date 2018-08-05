@@ -55,7 +55,7 @@ class TestResult
     $this->message = $result->getMessage();
     $this->judgeOutput = $result->getJudgeOutput();
 
-    $this->tasks = new ArrayCollection;
+    $this->tasks = new ArrayCollection();
     foreach ($result->getExecutionResults() as $executionResult) {
       $stats = $executionResult->getStats();
       $newTask = new TaskResult($executionResult->getId(), $stats->getUsedWallTime(),

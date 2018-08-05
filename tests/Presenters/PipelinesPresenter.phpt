@@ -337,8 +337,8 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $file1 = new UploadedFile($filename1, new \DateTime, 0, $user, $filename1);
-    $file2 = new UploadedFile($filename2, new \DateTime, 0, $user, $filename2);
+    $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user, $filename1);
+    $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user, $filename2);
     $this->presenter->uploadedFiles->persist($file1);
     $this->presenter->uploadedFiles->persist($file2);
     $this->presenter->uploadedFiles->flush();

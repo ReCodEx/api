@@ -79,14 +79,14 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   public function startup() {
     parent::startup();
     $this->application->errorPresenter = "V1:ApiError";
-    $this->parameters = new \stdClass;
+    $this->parameters = new \stdClass();
 
     try {
       $presenterReflection = new Reflection\ClassType(get_class($this));
       $actionMethodName = $this->formatActionMethod($this->getAction());
       $actionReflection = $presenterReflection->getMethod($actionMethodName);
     } catch (ReflectionException $e) {
-      throw new NotImplementedException;
+      throw new NotImplementedException();
     }
 
     $this->tryCall($this->formatPermissionCheckMethod($this->getAction()), $this->params);

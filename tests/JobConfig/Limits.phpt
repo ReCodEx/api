@@ -45,7 +45,7 @@ class TestLimits extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testSerialization() {
@@ -120,5 +120,5 @@ class TestLimits extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestLimits;
+$testCase = new TestLimits();
 $testCase->run();

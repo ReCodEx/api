@@ -154,11 +154,11 @@ class Instance implements JsonSerializable
   }
 
   public static function createInstance(array $localizedTexts, bool $isOpen, User $admin = null) {
-    $instance = new Instance;
+    $instance = new Instance();
     $instance->isOpen = $isOpen;
     $instance->isAllowed = true; //@todo - find out who should set this and how
     $instance->needsLicence = true;
-    $now = new \DateTime;
+    $now = new \DateTime();
     $instance->createdAt = $now;
     $instance->updatedAt = $now;
     $instance->admin = $admin;

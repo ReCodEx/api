@@ -74,10 +74,10 @@ class Comment implements JsonSerializable
   }
 
   public static function createComment(CommentThread $thread, User $user, string $text, bool $isPrivate = false) {
-    $comment = new Comment;
+    $comment = new Comment();
     $comment->commentThread = $thread;
     $comment->user = $user;
-    $comment->postedAt = new \DateTime;
+    $comment->postedAt = new \DateTime();
     $comment->text = $text;
     $comment->isPrivate = $isPrivate;
     $thread->addComment($comment);

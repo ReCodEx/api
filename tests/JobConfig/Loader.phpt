@@ -19,7 +19,7 @@ class TestJobConfigLoader extends Tester\TestCase
   private $loader;
 
   public function __construct() {
-    $this->loader = new Loader;
+    $this->loader = new Loader();
   }
 
   public function testBadFormat() {
@@ -133,5 +133,5 @@ class TestJobConfigLoader extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestJobConfigLoader;
+$testCase = new TestJobConfigLoader();
 $testCase->run();

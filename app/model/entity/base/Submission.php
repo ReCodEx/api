@@ -61,7 +61,7 @@ abstract class Submission implements IEvaluable
 
 
   public function __construct(User $submittedBy, string $jobConfigPath) {
-    $this->submittedAt = new DateTime;
+    $this->submittedAt = new DateTime();
     $this->submittedBy = $submittedBy;
     $this->jobConfigPath = $jobConfigPath;
   }

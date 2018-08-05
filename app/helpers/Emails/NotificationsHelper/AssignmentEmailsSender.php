@@ -82,7 +82,7 @@ class AssignmentEmailsSender {
    */
   private function createNewAssignmentBody(AssignmentBase $assignment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     if ($assignment instanceof Assignment) {
       return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
         "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
@@ -146,7 +146,7 @@ class AssignmentEmailsSender {
    */
   private function createAssignmentDeadlineBody(Assignment $assignment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     $localizedGroup = $assignment->getGroup()->getLocalizedTexts()->first();
     return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
       "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO

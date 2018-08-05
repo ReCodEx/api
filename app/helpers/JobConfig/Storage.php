@@ -42,7 +42,7 @@ class Storage {
 
   public function __construct(string $jobConfigDir, $humanReadable = false) {
     $this->jobConfigDir = $jobConfigDir;
-    $this->jobLoader = new Loader;
+    $this->jobLoader = new Loader();
     $this->humanReadable = $humanReadable;
   }
 

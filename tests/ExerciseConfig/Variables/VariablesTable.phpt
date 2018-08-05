@@ -48,7 +48,7 @@ class TestVariablesTable extends Tester\TestCase
   }
 
   public function testVariablesOperations() {
-    $table = new VariablesTable;
+    $table = new VariablesTable();
     $variable = (new Variable("string"))->setName("varA")->setValue("valA");
 
     $table->set($variable);
@@ -80,5 +80,5 @@ class TestVariablesTable extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestVariablesTable;
+$testCase = new TestVariablesTable();
 $testCase->run();

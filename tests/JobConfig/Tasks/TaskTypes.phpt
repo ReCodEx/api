@@ -32,7 +32,7 @@ class TestTaskTypes extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testBadTaskTypes() {
@@ -71,5 +71,5 @@ class TestTaskTypes extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTaskTypes;
+$testCase = new TestTaskTypes();
 $testCase->run();

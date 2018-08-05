@@ -19,7 +19,7 @@ trait UpdateableEntity {
   }
 
   public function updatedNow() {
-    $this->updatedAt = new DateTime;
+    $this->updatedAt = new DateTime();
   }
 
 }

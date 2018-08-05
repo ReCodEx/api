@@ -49,5 +49,5 @@ class TestTaskResult extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTaskResult;
+$testCase = new TestTaskResult();
 $testCase->run();

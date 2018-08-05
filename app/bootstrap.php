@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$configurator = new Nette\Configurator;
+$configurator = new Nette\Configurator();
 
 $configurator->enableDebugger(__DIR__ . '/../log');
 // $configurator->setDebugMode(false);

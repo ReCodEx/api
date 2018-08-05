@@ -89,5 +89,5 @@ class LdapConnectTest extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new LdapConnectTest;
+$testCase = new LdapConnectTest();
 $testCase->run();

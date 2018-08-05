@@ -133,7 +133,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $submissionsCountLimit = 321;
     $allowSecondDeadline = true;
     $canViewLimitRatios = false;
-    $secondDeadline = (new \DateTime)->getTimestamp();
+    $secondDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeSecondDeadline = 543;
     $isBonus = true;
     $pointsPercentualThreshold = 90;
@@ -205,7 +205,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'submissionsCountLimit' => 321,
         'allowSecondDeadline' => true,
         'canViewLimitRatios' => false,
-        'secondDeadline' => (new \DateTime)->getTimestamp(),
+        'secondDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeSecondDeadline' => 543,
         'isBonus' => true,
         'pointsPercentualThreshold' => 90,
@@ -243,7 +243,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'submissionsCountLimit' => 321,
         'allowSecondDeadline' => true,
         'canViewLimitRatios' => false,
-        'secondDeadline' => (new \DateTime)->getTimestamp(),
+        'secondDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeSecondDeadline' => 543,
         'isBonus' => true,
         'pointsPercentualThreshold' => 90,

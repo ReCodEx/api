@@ -230,5 +230,5 @@ class TestPipelineValidator extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestPipelineValidator;
+$testCase = new TestPipelineValidator();
 $testCase->run();

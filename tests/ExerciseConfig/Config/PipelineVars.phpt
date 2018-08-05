@@ -44,7 +44,7 @@ class TestPipelineVars extends Tester\TestCase
   }
 
   public function testVariablesOperations() {
-    $pipeline = new PipelineVars;
+    $pipeline = new PipelineVars();
     $variable = (new Variable("string"))->setName("variableA")->setValue("valA");
 
     $pipeline->getVariablesTable()->set($variable);
@@ -71,5 +71,5 @@ class TestPipelineVars extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestPipelineVars;
+$testCase = new TestPipelineVars();
 $testCase->run();

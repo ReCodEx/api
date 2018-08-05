@@ -122,7 +122,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->logins->getUser($this->userLogin, $this->userPassword);
-    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $uploadedFile = new UploadedFile($filename, new \DateTime(), 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -147,7 +147,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $uploadedFile = new UploadedFile($filename, new \DateTime(), 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -175,7 +175,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $uploadedFile = new UploadedFile($filename, new \DateTime(), 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -200,7 +200,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     // create new file upload
     $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
     $path = __DIR__ . "/uploads/weird.zip";
-    $uploadedFile = new UploadedFile("weird.zip", new \DateTime, filesize($path), $user, $path);
+    $uploadedFile = new UploadedFile("weird.zip", new \DateTime(), filesize($path), $user, $path);
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -234,7 +234,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
 
     // create new file upload
     $user = $this->presenter->accessManager->getUser($this->presenter->accessManager->decodeToken($token));
-    $uploadedFile = new UploadedFile($filename, new \DateTime, 1, $user, $vfsFile->url());
+    $uploadedFile = new UploadedFile($filename, new \DateTime(), 1, $user, $vfsFile->url());
     $this->presenter->uploadedFiles->persist($uploadedFile);
     $this->presenter->uploadedFiles->flush();
 
@@ -270,7 +270,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     $user = current($this->presenter->users->findAll());
     $file = ['name' => "filename", 'type' => 'type', 'size' => 1, 'tmp_name' => 'tmpname'];
     $fileUpload = new Nette\Http\FileUpload($file);
-    $uploadedFile = new UploadedFile('name', new \DateTime, 1, $user, 'filepath');
+    $uploadedFile = new UploadedFile('name', new \DateTime(), 1, $user, 'filepath');
 
     // mock file storage
     $mockFileStorage = Mockery::mock(UploadedFileStorage::class);
@@ -362,7 +362,7 @@ class TestUploadedFilesPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
     $file = new \App\Model\Entity\SupplementaryExerciseFile("hefty name",
-      new DateTime, 1, "hash", "fileserverPath", $user);
+      new DateTime(), 1, "hash", "fileserverPath", $user);
     $this->presenter->supplementaryFiles->persist($file);
     $this->presenter->supplementaryFiles->flush();
 

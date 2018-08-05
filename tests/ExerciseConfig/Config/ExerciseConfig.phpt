@@ -89,8 +89,8 @@ class TestExerciseConfig extends Tester\TestCase
   }
 
   public function testTestsOperations() {
-    $conf = new ExerciseConfig;
-    $test = new Test;
+    $conf = new ExerciseConfig();
+    $test = new Test();
 
     $conf->addTest("testA", $test);
     Assert::count(1, $conf->getTests());
@@ -103,7 +103,7 @@ class TestExerciseConfig extends Tester\TestCase
   }
 
   public function testEnvironmentsOperations() {
-    $conf = new ExerciseConfig;
+    $conf = new ExerciseConfig();
 
     $conf->addEnvironment("newEnvironment");
     Assert::count(1, $conf->getEnvironments());
@@ -131,5 +131,5 @@ class TestExerciseConfig extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfig;
+$testCase = new TestExerciseConfig();
 $testCase->run();

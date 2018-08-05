@@ -128,7 +128,7 @@ class TestBox extends Tester\TestCase
   }
 
   public function testBoxMetaOperations() {
-    $boxMeta = new BoxMeta;
+    $boxMeta = new BoxMeta();
 
     Assert::equal(null, $boxMeta->getName());
     Assert::equal(null, $boxMeta->getType());
@@ -143,8 +143,8 @@ class TestBox extends Tester\TestCase
   }
 
   public function testPortsOperations() {
-    $boxMeta = new BoxMeta;
-    $portMeta = new PortMeta;
+    $boxMeta = new BoxMeta();
+    $portMeta = new PortMeta();
     $portMeta->setName("newlyAddedPort")->setType(VariableTypes::$STRING_TYPE);
     $port = new Port($portMeta);
 
@@ -182,5 +182,5 @@ class TestBox extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestBox;
+$testCase = new TestBox();
 $testCase->run();

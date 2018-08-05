@@ -89,7 +89,7 @@ class CompilationParams {
   public static function create(array $files = [], bool $debug = false, SolutionParams $solutionParams = null): CompilationParams {
     $params = new CompilationParams();
     $params->files = $files;
-    $params->solutionParams = $solutionParams ?: new SolutionParams;
+    $params->solutionParams = $solutionParams ?: new SolutionParams();
     $params->debug = $debug;
     return $params;
   }

@@ -68,7 +68,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise variable is not array");
     }
 
-    $table = new VariablesTable;
+    $table = new VariablesTable();
 
     foreach ($data as $value) {
       $table->set($this->loadVariable($value));
@@ -136,7 +136,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise test '$testId' is not array");
     }
 
-    $test = new Test;
+    $test = new Test();
 
     if (!isset($data[Test::ENVIRONMENTS_KEY]) || !is_array($data[Test::ENVIRONMENTS_KEY])) {
       throw new ExerciseConfigException("Exercise test '$testId' does not have any defined environments");
@@ -159,7 +159,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise configuration is not array");
     }
 
-    $config = new ExerciseConfig;
+    $config = new ExerciseConfig();
 
     if (!isset($data[ExerciseConfig::ENVIRONMENTS_KEY]) || !is_array($data[ExerciseConfig::ENVIRONMENTS_KEY])) {
       throw new ExerciseConfigException("Exercise configuration does not have any environments");
@@ -190,7 +190,7 @@ class Loader {
       throw new ExerciseConfigException("Test '" . $testId . "': limits are not array");
     }
 
-    $limits = new Limits;
+    $limits = new Limits();
 
     // *** LOAD OPTIONAL DATAS
 
@@ -229,7 +229,7 @@ class Loader {
       throw new ExerciseConfigException("Exercise limits are not array");
     }
 
-    $limits = new ExerciseLimits;
+    $limits = new ExerciseLimits();
 
     foreach ($data as $testId => $testVal) {
       $limits->addLimits($testId, $this->loadLimits($testVal, $testId));
@@ -250,7 +250,7 @@ class Loader {
       throw new ExerciseConfigException("Pipeline port is not array");
     }
 
-    $port = new PortMeta;
+    $port = new PortMeta();
     $port->setName($name);
 
     if (!isset($data[PortMeta::TYPE_KEY])) {
@@ -276,7 +276,7 @@ class Loader {
       throw new ExerciseConfigException("Box is not array");
     }
 
-    $boxMeta = new BoxMeta;
+    $boxMeta = new BoxMeta();
 
     if (!isset($data[BoxMeta::NAME_KEY])) {
       throw new ExerciseConfigException("Box metadatas do not have name specified");
@@ -318,7 +318,7 @@ class Loader {
       throw new ExerciseConfigException("Pipeline is not array");
     }
 
-    $pipeline = new Pipeline;
+    $pipeline = new Pipeline();
 
     if (isset($data[Pipeline::VARIABLES_KEY]) && is_array($data[Pipeline::VARIABLES_KEY])) {
       $pipeline->setVariablesTable($this->loadVariablesTable($data[Pipeline::VARIABLES_KEY]));

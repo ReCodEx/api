@@ -77,7 +77,7 @@ class BrokerReportsPresenter extends BasePresenter {
       && $password === $this->brokerConfig->getAuthPassword();
 
     if (!$isAuthCorrect) {
-      throw new WrongCredentialsException;
+      throw new WrongCredentialsException();
     }
 
     parent::startup();

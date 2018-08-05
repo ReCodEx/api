@@ -33,10 +33,10 @@ class FetchFilesBox extends FetchBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }

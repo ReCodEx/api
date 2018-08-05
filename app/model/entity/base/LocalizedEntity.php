@@ -33,7 +33,7 @@ abstract class LocalizedEntity
 
   public function __construct(string $locale) {
     $this->locale = $locale;
-    $this->createdAt = new DateTime;
+    $this->createdAt = new DateTime();
   }
 
   public abstract function equals(LocalizedEntity $entity): bool;

@@ -35,10 +35,10 @@ class RenameBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$RENAME_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$RENAME_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$RENAME_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$RENAME_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }

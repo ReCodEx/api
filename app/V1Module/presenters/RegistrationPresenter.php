@@ -188,7 +188,7 @@ class RegistrationPresenter extends BasePresenter {
     $password = $req->getPost("password");
 
     $user = $this->users->getByEmail($email);
-    $zxcvbn = new Zxcvbn;
+    $zxcvbn = new Zxcvbn();
     $passwordStrength = $zxcvbn->passwordStrength($password, [ $email, $emailParts[0] ]);
 
     $this->sendSuccessResponse([

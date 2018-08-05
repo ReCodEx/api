@@ -54,7 +54,7 @@ class LdapUserUtils {
         $this->anonymousManager = $this->connect();
         $this->anonymousManager->bind();
       } catch (\Exception $e) {
-        throw new LdapConnectException;
+        throw new LdapConnectException();
       }
     }
 
@@ -104,16 +104,16 @@ class LdapUserUtils {
           throw new WrongCredentialsException("This account cannot be used for authentication to ReCodEx. The password is probably not verified.");
 
         case self::ERROR_WRONG_CREDENTIALS:  // wrong password
-          throw new WrongCredentialsException;
+          throw new WrongCredentialsException();
 
         case self::ERROR_NO_SUCH_OBJECT:  // wrong username (ukco)
-          throw new WrongCredentialsException;
+          throw new WrongCredentialsException();
 
         case self::ERROR_TOO_MANY_UNSUCCESSFUL_TRIES:
           throw new WrongCredentialsException("Too many unsuccessful tries. You won't be able to log in for a short amount of time.");
 
         default:
-          throw new LdapConnectException;
+          throw new LdapConnectException();
       }
     }
 
@@ -165,13 +165,13 @@ class LdapUserUtils {
     try {
       $manager = new Manager($this->ldapConfig, new Driver());
     } catch (\InvalidArgumentException $e) {
-      throw new LdapConnectException;
+      throw new LdapConnectException();
     }
 
     try {
       $manager->connect();
     } catch (ConnectionException $e) {
-      throw new LdapConnectException;
+      throw new LdapConnectException();
     }
 
     return $manager;
@@ -185,7 +185,7 @@ class LdapUserUtils {
   public static function getErrorCode(string $msg): int {
     list($code) = Strings::match($msg, "/-?\d+/");
     if ($code === null) {
-      throw new LdapConnectException; // The bind exception didn't yield correct error message
+      throw new LdapConnectException(); // The bind exception didn't yield correct error message
     }
 
     return intval($code);

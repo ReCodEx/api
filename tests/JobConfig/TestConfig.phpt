@@ -17,9 +17,9 @@ class TestTestResult extends Tester\TestCase
   private $executionTask;
 
   protected function setUp() {
-    $this->evaluationTask = (new Task)->setId("X")->setTestId("A")->setType("evaluation");
-    $this->executionTask = (new Task)->setId("Y")->setTestId("A")->setType("execution")
-            ->setSandboxConfig((new SandboxConfig)->setName("sandboxName"));
+    $this->evaluationTask = (new Task())->setId("X")->setTestId("A")->setType("evaluation");
+    $this->executionTask = (new Task())->setId("Y")->setTestId("A")->setType("execution")
+            ->setSandboxConfig((new SandboxConfig())->setName("sandboxName"));
   }
 
   public function testMissingExecutionOrEvaluationTask() {
@@ -27,10 +27,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          (new Task)->setId("A"),
-          (new Task)->setId("B"),
-          (new Task)->setId("C"),
-          (new Task)->setId("D")
+          (new Task())->setId("A"),
+          (new Task())->setId("B"),
+          (new Task())->setId("C"),
+          (new Task())->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -39,10 +39,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->executionTask,
-          (new Task)->setId("C"),
-          (new Task)->setId("D")
+          (new Task())->setId("C"),
+          (new Task())->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -51,10 +51,10 @@ class TestTestResult extends Tester\TestCase
       new TestConfig(
         "some ID",
         [
-          (new Task)->setId("A"),
-          (new Task)->setId("B"),
+          (new Task())->setId("A"),
+          (new Task())->setId("B"),
           $this->evaluationTask,
-          (new Task)->setId("D")
+          (new Task())->setId("D")
         ]
       );
     }, JobConfigLoadingException::CLASS);
@@ -64,11 +64,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-        (new Task)->setId("A"),
+        (new Task())->setId("A"),
         $this->executionTask,
-        (new Task)->setId("C"),
+        (new Task())->setId("C"),
         $this->evaluationTask,
-        (new Task)->setId("D")
+        (new Task())->setId("D")
       ]
     );
 
@@ -79,11 +79,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->executionTask,
-          (new Task)->setId("C"),
+          (new Task())->setId("C"),
           $this->evaluationTask,
-          (new Task)->setId("D")
+          (new Task())->setId("D")
       ]
     );
 
@@ -96,5 +96,5 @@ class TestTestResult extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTestResult;
+$testCase = new TestTestResult();
 $testCase->run();

@@ -38,5 +38,5 @@ class TestSkippedStats extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestSkippedStats;
+$testCase = new TestSkippedStats();
 $testCase->run();

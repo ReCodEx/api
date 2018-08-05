@@ -55,5 +55,5 @@ class TestEvaluationTask extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestEvaluationTask;
+$testCase = new TestEvaluationTask();
 $testCase->run();

@@ -24,13 +24,13 @@ class TestFetchFilesBox extends Tester\TestCase
   private $box;
 
   public function __construct() {
-    $inputPort = (new Port((new PortMeta)->setName(FetchFilesBox::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)));
+    $inputPort = (new Port((new PortMeta())->setName(FetchFilesBox::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_ARRAY_TYPE)));
     $inputPort->setVariableValue(new Variable(VariableTypes::$REMOTE_FILE_ARRAY_TYPE, "", ["1.in", "2.in"]));
 
-    $outputPort = (new Port((new PortMeta)->setName(FetchFilesBox::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)));
+    $outputPort = (new Port((new PortMeta())->setName(FetchFilesBox::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)));
     $outputPort->setVariableValue(new Variable(VariableTypes::$FILE_ARRAY_TYPE, "", ["1.in", "2.in"]));
 
-    $meta = (new BoxMeta)->addInputPort($inputPort)->addOutputPort($outputPort);
+    $meta = (new BoxMeta())->addInputPort($inputPort)->addOutputPort($outputPort);
     $this->box = new FetchFilesBox($meta);
     $this->box->validateMetadata();
   }
@@ -59,5 +59,5 @@ class TestFetchFilesBox extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestFetchFilesBox;
+$testCase = new TestFetchFilesBox();
 $testCase->run();

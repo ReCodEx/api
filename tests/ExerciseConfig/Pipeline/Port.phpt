@@ -84,7 +84,7 @@ class TestPort extends Tester\TestCase
   }
 
   public function testPortsOperations() {
-    $port = new PortMeta;
+    $port = new PortMeta();
 
     Assert::equal(null, $port->getName());
     Assert::equal(null, $port->getType());
@@ -109,5 +109,5 @@ class TestPort extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestPort;
+$testCase = new TestPort();
 $testCase->run();

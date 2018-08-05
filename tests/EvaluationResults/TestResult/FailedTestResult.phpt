@@ -70,18 +70,18 @@ class TestFailedTestResult extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testOKTest() {
     $cfg = new TestConfig(
       "some ID",
       [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->builder->loadTask(self::$execCfg),
-          (new Task)->setId("C"),
+          (new Task())->setId("C"),
           $this->builder->loadTask(self::$evalCfg),
-          (new Task)->setId("D")
+          (new Task())->setId("D")
       ]
     );
 
@@ -102,5 +102,5 @@ class TestFailedTestResult extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestFailedTestResult;
+$testCase = new TestFailedTestResult();
 $testCase->run();
