@@ -157,11 +157,15 @@ class TestSubmitPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::count(2, $result['payload']);
+    Assert::count(3, $result['payload']);
+
+    $solution = $result['payload']['solution'];
+    Assert::type('array', $solution);
+    Assert::equal($assignment->getId(), $solution['exerciseAssignmentId']);
 
     $submission = $result['payload']['submission'];
     Assert::type('array', $submission);
-    Assert::equal($assignment->getId(), $submission['exerciseAssignmentId']);
+    Assert::equal($solution['id'], $submission['assignmentSolutionId']);
 
     $webSocketChannel = $result['payload']['webSocketChannel'];
     Assert::count(3, $webSocketChannel);
@@ -372,7 +376,7 @@ class TestSubmitPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal($solutionCount, count($solutions->findAll()));
-    Assert::equal($submissionCount, $solution->getSubmissions()->count());
+    Assert::equal($submissionCount+1, $solution->getSubmissions()->count());
   }
 
   public function testResubmitAll()

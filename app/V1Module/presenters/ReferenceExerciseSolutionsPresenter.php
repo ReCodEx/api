@@ -457,7 +457,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
       return [
-        "referenceSolution" => $referenceSolution,
+        "referenceSolution" => $this->referenceSolutionViewFactory->getReferenceSolution($referenceSolution),
         "submissions" => [],
         "errors" => $hwGroups->map(function (HardwareGroup $group) { return $group->getId(); })
       ];
@@ -498,6 +498,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     if (count($errors) > 0) {
       $this->referenceSubmissions->flush();
+      $this->referenceSolutions->refresh($referenceSolution); // special case, it would be tedious update the entity manually
     }
 
     return [

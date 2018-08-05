@@ -19,6 +19,7 @@ class ReferenceExerciseSolutionViewFactory {
   public function getReferenceSolution(ReferenceExerciseSolution $referenceExerciseSolution) {
     return [
       "id" => $referenceExerciseSolution->getId(),
+      "exerciseId" => $referenceExerciseSolution->getExercise()->getId(),
       "description" => $referenceExerciseSolution->getDescription(),
       "solution" => $referenceExerciseSolution->getSolution(),
       "runtimeEnvironmentId" => $referenceExerciseSolution->getSolution()->getRuntimeEnvironment()->getId(),
