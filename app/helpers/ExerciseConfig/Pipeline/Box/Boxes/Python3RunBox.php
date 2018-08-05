@@ -33,6 +33,7 @@ class Python3RunBox extends ExecutionBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta())->setName(self::$RUNNER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$PYC_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -101,7 +102,9 @@ class Python3RunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
 
-    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue()];
+    $runner = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
+    $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
+    $args = [$runner, $entry];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
