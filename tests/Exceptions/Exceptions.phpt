@@ -305,5 +305,5 @@ class TestExceptions extends Tester\TestCase
 
 }
 
-$testCase = new TestExceptions;
+$testCase = new TestExceptions();
 $testCase->run();

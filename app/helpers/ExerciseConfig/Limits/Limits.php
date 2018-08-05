@@ -33,7 +33,7 @@ class Limits implements JsonSerializable {
 
   public static function create(float $wallTime, float $cpuTime, int $memory, int $parallel): Limits
   {
-    $result = new static;
+    $result = new static();
     $result->setWallTime($wallTime);
     $result->setCpuTime($cpuTime);
     $result->setMemoryLimit($memory);
@@ -120,7 +120,7 @@ class Limits implements JsonSerializable {
    * @return JobLimits
    */
   public function compile(string $hwGroupId): JobLimits {
-    return (new JobLimits)->setId($hwGroupId)
+    return (new JobLimits())->setId($hwGroupId)
       ->setWallTime($this->wallTime)
       ->setTimeLimit($this->cpuTime)
       ->setMemoryLimit($this->memory)

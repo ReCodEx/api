@@ -26,5 +26,5 @@ class TestExerciseConfigLoader extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfigLoader;
+$testCase = new TestExerciseConfigLoader();
 $testCase->run();

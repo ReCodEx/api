@@ -222,8 +222,8 @@ class Exercise implements IExercise
       bool $isLocked = true, string $scoreCalculator = null,
       string $scoreConfig = "", string $configurationType = "simpleExerciseConfig") {
     $this->version = $version;
-    $this->createdAt = new DateTime;
-    $this->updatedAt = new DateTime;
+    $this->createdAt = new DateTime();
+    $this->updatedAt = new DateTime();
     $this->localizedTexts = $localizedTexts;
     $this->difficulty = $difficulty;
     $this->runtimeEnvironments = $runtimeEnvironments;
@@ -252,15 +252,15 @@ class Exercise implements IExercise
     return new self(
       1,
       "",
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
-      new ArrayCollection,
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
+      new ArrayCollection(),
       new ArrayCollection([$group]),
       null,
       null,

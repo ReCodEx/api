@@ -20,7 +20,7 @@ class ForgottenPassword
   ) {
     $this->user = $user;
     $this->sentTo = $sentTo;
-    $this->requestedAt = new DateTime;
+    $this->requestedAt = new DateTime();
     $this->redirectUrl = $redirectUrl;
     $this->IPaddress = $IPaddress;
   }

@@ -76,5 +76,5 @@ class TestLimits extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestLimits;
+$testCase = new TestLimits();
 $testCase->run();

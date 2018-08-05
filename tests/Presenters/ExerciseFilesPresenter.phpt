@@ -83,8 +83,8 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
     $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $file1 = new UploadedFile($filename1, new \DateTime, 0, $user, $filename1);
-    $file2 = new UploadedFile($filename2, new \DateTime, 0, $user, $filename2);
+    $file1 = new UploadedFile($filename1, new \DateTime(), 0, $user, $filename1);
+    $file2 = new UploadedFile($filename2, new \DateTime(), 0, $user, $filename2);
     $this->presenter->uploadedFiles->persist($file1);
     $this->presenter->uploadedFiles->persist($file2);
     $this->presenter->uploadedFiles->flush();
@@ -139,7 +139,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
     $files = [];
     for ($i = 0; $i < $fileLimit * 2; $i++) {
-      $files[] = $file = new UploadedFile("...", new \DateTime, 0, $user, "...");
+      $files[] = $file = new UploadedFile("...", new \DateTime(), 0, $user, "...");
       $this->presenter->uploadedFiles->persist($file);
     }
 
@@ -184,7 +184,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
 
     $files = [];
     for ($i = 0; $i < 10; $i++) {
-      $files[] = $file = new UploadedFile("...", new \DateTime, 1024, $user, "...");
+      $files[] = $file = new UploadedFile("...", new \DateTime(), 1024, $user, "...");
       $this->presenter->uploadedFiles->persist($file);
     }
 

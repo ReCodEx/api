@@ -63,7 +63,7 @@ class ReferenceExerciseSolution
     $this->exercise = $exercise;
     $this->description = $description;
     $this->solution = new Solution($user, $runtime);
-    $this->submissions = new ArrayCollection;
+    $this->submissions = new ArrayCollection();
   }
 
   public function getRuntimeEnvironment() {

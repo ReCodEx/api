@@ -47,7 +47,7 @@ abstract class CompilationBox extends Box
     $task->setType(TaskType::$INITIATION);
     $task->setFatalFailure(true);
 
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE)->setOutput(true);
+    $sandbox = (new SandboxConfig())->setName(LinuxSandbox::$ISOLATE)->setOutput(true);
     $task->setSandboxConfig($sandbox);
 
     if ($params->isDebug()) {

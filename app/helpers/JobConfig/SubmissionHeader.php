@@ -32,7 +32,7 @@ class SubmissionHeader {
    * Construct basic instance of SubmissionHeader.
    */
   public function __construct() {
-    $this->jobId = new JobId;
+    $this->jobId = new JobId();
   }
 
   /**

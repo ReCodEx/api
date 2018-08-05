@@ -42,15 +42,15 @@ class Group
       bool $isPublic = false,
       bool $isOrganizational = false) {
     $this->externalId = $externalId;
-    $this->memberships = new ArrayCollection;
-    $this->primaryAdmins = new ArrayCollection;
+    $this->memberships = new ArrayCollection();
+    $this->primaryAdmins = new ArrayCollection();
     $this->instance = $instance;
     $this->publicStats = $publicStats;
     $this->isPublic = $isPublic;
-    $this->childGroups = new ArrayCollection;
-    $this->assignments = new ArrayCollection;
-    $this->shadowAssignments = new ArrayCollection;
-    $this->exercises = new ArrayCollection;
+    $this->childGroups = new ArrayCollection();
+    $this->assignments = new ArrayCollection();
+    $this->shadowAssignments = new ArrayCollection();
+    $this->exercises = new ArrayCollection();
     $this->localizedTexts = new ArrayCollection();
 
     if ($admin !== null) {

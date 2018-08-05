@@ -34,8 +34,8 @@ class ShadowAssignmentPoints
     $this->note = $note;
     $this->author = $author;
     $this->awardee = $awardee;
-    $this->createdAt = new DateTime;
-    $this->updatedAt = new DateTime;
+    $this->createdAt = new DateTime();
+    $this->updatedAt = new DateTime();
     $this->awardedAt = $awardedAt;
   }
 

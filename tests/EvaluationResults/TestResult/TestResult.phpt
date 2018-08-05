@@ -75,7 +75,7 @@ class TestTestResult extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new JobConfigBuilder;
+    $this->builder = new JobConfigBuilder();
   }
 
 
@@ -95,11 +95,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->builder->loadTask(self::$execCfg),
-          (new Task)->setId("C"),
+          (new Task())->setId("C"),
           $this->builder->loadTask(self::$evalCfg),
-          (new Task)->setId("D")
+          (new Task())->setId("D")
       ]
     );
 
@@ -131,11 +131,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->builder->loadTask($execCfg),
-          (new Task)->setId("C"),
+          (new Task())->setId("C"),
           $this->builder->loadTask(self::$evalCfg),
-          (new Task)->setId("D")
+          (new Task())->setId("D")
       ]
     );
 
@@ -161,11 +161,11 @@ class TestTestResult extends Tester\TestCase
     $cfg = new TestConfig(
       "some ID",
       [
-          (new Task)->setId("A"),
+          (new Task())->setId("A"),
           $this->builder->loadTask(self::$execCfg),
-          (new Task)->setId("C"),
+          (new Task())->setId("C"),
           $this->builder->loadTask(self::$evalCfg),
-          (new Task)->setId("D")
+          (new Task())->setId("D")
       ]
     );
 
@@ -192,5 +192,5 @@ class TestTestResult extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTestResult;
+$testCase = new TestTestResult();
 $testCase->run();

@@ -8,7 +8,7 @@ Tester\Environment::setup();
 
 $appDir = __DIR__ . '/../app';
 
-$configurator = new Nette\Configurator;
+$configurator = new Nette\Configurator();
 $configurator->setDebugMode(false);
 $configurator->setTempDirectory(TEMP_DIR);
 $configurator->addParameters(['appDir' => $appDir]);

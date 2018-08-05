@@ -78,7 +78,7 @@ class EmailHelper {
       $from = $this->from;
     }
 
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     $params = [
       "subject"   => $subject,
       "message"   => $text,
@@ -89,7 +89,7 @@ class EmailHelper {
     ];
     $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
 
-    $message = new Message;
+    $message = new Message();
     $message->setFrom($from)
       ->setSubject($subject)
       ->setHtmlBody($html);

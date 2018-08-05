@@ -89,11 +89,11 @@ class SolutionEvaluation
    * @param EvaluationResults $results The interpreted results
    */
   public function __construct(EvaluationResults $results) {
-    $this->evaluatedAt = new \DateTime;
+    $this->evaluatedAt = new \DateTime();
     $this->initFailed = !$results->initOK();
     $this->score = 0;
     $this->points = 0;
-    $this->testResults = new ArrayCollection;
+    $this->testResults = new ArrayCollection();
     $this->initiationOutputs = $results->getInitiationOutputs();
 
     // set test results

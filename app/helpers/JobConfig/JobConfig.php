@@ -31,7 +31,7 @@ class JobConfig {
    * Construct basic instance of JobConfig.
    */
   public function __construct($humanReadable = false) {
-    $this->submissionHeader = new SubmissionHeader;
+    $this->submissionHeader = new SubmissionHeader();
     $this->humanReadable = $humanReadable;
   }
 
@@ -212,7 +212,7 @@ class JobConfig {
             $sandboxConfig->getLimits($hwGroupId)->toArray(),
             $limits[$task->getId()]
           );
-          $sandboxConfig->setLimits((new Loader)->loadLimits($newTaskLimits)); // $hwGroupId is inherited from current limits
+          $sandboxConfig->setLimits((new Loader())->loadLimits($newTaskLimits)); // $hwGroupId is inherited from current limits
         }
       }
     }

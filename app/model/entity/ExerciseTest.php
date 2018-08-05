@@ -58,8 +58,8 @@ class ExerciseTest implements JsonSerializable
    * @param User $author
    */
   public function __construct(string $name, string $description, User $author) {
-    $this->createdAt = new DateTime;
-    $this->updatedAt = new DateTime;
+    $this->createdAt = new DateTime();
+    $this->updatedAt = new DateTime();
 
     $this->name = $name;
     $this->description = $description;

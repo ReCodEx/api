@@ -55,7 +55,7 @@ class UserActions {
     // construct content for logger
     $content = [
       $identity->getUserData() !== null ? $identity->getUserData()->getId() : "null",
-      (new DateTime)->getTimestamp(),
+      (new DateTime())->getTimestamp(),
       $action,
       Json::encode($params),
       $code,

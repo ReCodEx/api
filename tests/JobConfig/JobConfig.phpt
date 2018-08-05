@@ -32,7 +32,7 @@ class TestJobConfig extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testSerialization() {
@@ -116,7 +116,7 @@ class TestJobConfig extends Tester\TestCase
   public function testSetLimits() {
     $taskId = "Y";
     $hwGroup = "A";
-    $limits = (new Limits)->setId($hwGroup)->setTimeLimit(987.0)->setMemoryLimit(654);
+    $limits = (new Limits())->setId($hwGroup)->setTimeLimit(987.0)->setMemoryLimit(654);
     $testLimits = [ $taskId => $limits->toArray() ];
 
     $jobConfig = $this->builder->loadJobConfig(self::$jobConfig);
@@ -135,5 +135,5 @@ class TestJobConfig extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestJobConfig;
+$testCase = new TestJobConfig();
 $testCase->run();

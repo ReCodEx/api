@@ -30,37 +30,37 @@ class TestTestDirectoriesResolver extends Tester\TestCase
 
     $varA = new Variable(VariableTypes::$FILE_TYPE, "varA", "valA");
     $portA = (new Port(PortMeta::create("portA", VariableTypes::$FILE_TYPE)))->setVariableValue($varA);
-    $A = (new Node)->setBox((new CustomBox("A"))->addOutputPort($portA));
+    $A = (new Node())->setBox((new CustomBox("A"))->addOutputPort($portA));
 
     $varB = new Variable(VariableTypes::$FILE_TYPE, "varB", "valB");
     $portB = (new Port(PortMeta::create("portB", VariableTypes::$FILE_TYPE)))->setVariableValue($varB);
-    $B = (new Node)->setBox((new CustomBox("B"))->addOutputPort($portB));
+    $B = (new Node())->setBox((new CustomBox("B"))->addOutputPort($portB));
     $B->setTestId("1");
 
     $varC = new Variable(VariableTypes::$FILE_ARRAY_TYPE, "varC", ["valC1", "valC2"]);
     $portC = (new Port(PortMeta::create("portC", VariableTypes::$FILE_ARRAY_TYPE)))->setVariableValue($varC);
-    $C = (new Node)->setBox((new CustomBox("C"))->addOutputPort($portC));
+    $C = (new Node())->setBox((new CustomBox("C"))->addOutputPort($portC));
     $C->setTestId("1");
 
     $varD = new Variable(VariableTypes::$REMOTE_FILE_TYPE, "varD", "valD");
     $portD = (new Port(PortMeta::create("portD", VariableTypes::$FILE_TYPE)))->setVariableValue($varD);
-    $D = (new Node)->setBox((new CustomBox("D"))->addOutputPort($portD));
+    $D = (new Node())->setBox((new CustomBox("D"))->addOutputPort($portD));
     $D->setTestId("1");
 
     $varE = new Variable(VariableTypes::$FILE_TYPE, "varE", "valE");
     $portE = (new Port(PortMeta::create("portE", VariableTypes::$FILE_TYPE)))->setVariableValue($varE);
-    $E = (new Node)->setBox((new CustomBox("E"))->addOutputPort($portE));
+    $E = (new Node())->setBox((new CustomBox("E"))->addOutputPort($portE));
 
     $varF1 = new Variable(VariableTypes::$FILE_TYPE, "varF1", "valF1");
     $varF2 = new Variable(VariableTypes::$FILE_TYPE, "varF2", "valF2");
     $portF1 = (new Port(PortMeta::create("portF1", VariableTypes::$FILE_TYPE)))->setVariableValue($varF1);
     $portF2 = (new Port(PortMeta::create("portF2", VariableTypes::$FILE_TYPE)))->setVariableValue($varF2);
-    $F = (new Node)->setBox((new CustomBox("F"))->addOutputPort($portF1)->addOutputPort($portF2));
+    $F = (new Node())->setBox((new CustomBox("F"))->addOutputPort($portF1)->addOutputPort($portF2));
     $F->setTestId("2");
 
     $varG = new Variable(VariableTypes::$STRING_TYPE, "varG", "valG");
     $portG = (new Port(PortMeta::create("portG", VariableTypes::$STRING_TYPE)))->setVariableValue($varG);
-    $G = (new Node)->setBox((new CustomBox("G"))->addOutputPort($portG));
+    $G = (new Node())->setBox((new CustomBox("G"))->addOutputPort($portG));
     $G->setTestId("2");
 
     /*

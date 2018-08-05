@@ -121,10 +121,10 @@ class ForgottenPasswordHelper {
   private function createBody(Login $login, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
-    $expiresAfter = (new DateTime)->add(new DateInterval("PT{$exp}S"));
+    $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/resetPasswordEmail.latte", [
       "username" => $login->getUsername(),
       "link" => "{$this->redirectUrl}#{$token}",

@@ -635,5 +635,5 @@ EOS;
 }
 
 # Testing methods run
-$testCase = new TestEvaluationResultsLoader;
+$testCase = new TestEvaluationResultsLoader();
 $testCase->run();

@@ -116,8 +116,8 @@ class Pipeline implements JsonSerializable
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
       User $author, ?Pipeline $createdFrom = null, Exercise $exercise = null, Collection $runtimeEnvironments = null) {
-    $this->createdAt = new DateTime;
-    $this->updatedAt = new DateTime;
+    $this->createdAt = new DateTime();
+    $this->updatedAt = new DateTime();
 
     $this->name = $name;
     $this->version = $version;
@@ -215,8 +215,8 @@ class Pipeline implements JsonSerializable
       "",
       1,
       "",
-      new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline, $user),
-      new ArrayCollection,
+      new PipelineConfig((string) new \App\Helpers\ExerciseConfig\Pipeline(), $user),
+      new ArrayCollection(),
       $user,
       null,
       $exercise

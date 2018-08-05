@@ -570,5 +570,5 @@ EOS;
 }
 
 # Testing methods run
-$testCase = new TestJobConfigStorage;
+$testCase = new TestJobConfigStorage();
 $testCase->run();

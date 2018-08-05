@@ -66,13 +66,13 @@ class GroupMembership implements JsonSerializable
 
     switch ($status) {
       case self::STATUS_REQUESTED:
-        $this->requestedAt = new \DateTime;
+        $this->requestedAt = new \DateTime();
         break;
       case self::STATUS_ACTIVE:
-        $this->joinedAt = new \DateTime;
+        $this->joinedAt = new \DateTime();
         break;
       case self::STATUS_REJECTED:
-        $this->rejectedAt = new \DateTime;
+        $this->rejectedAt = new \DateTime();
         break;
       default:
         throw new InvalidMembershipException("Unsupported membership status '$status'");
@@ -92,10 +92,10 @@ class GroupMembership implements JsonSerializable
 
     switch ($type) {
       case self::TYPE_STUDENT:
-        $this->studentSince = new \DateTime;
+        $this->studentSince = new \DateTime();
         break;
       case self::TYPE_SUPERVISOR:
-        $this->supervisorSince = new \DateTime;
+        $this->supervisorSince = new \DateTime();
         break;
       default:
         throw new InvalidMembershipException("Unsuported membership type '$type'");

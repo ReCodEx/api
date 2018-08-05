@@ -89,5 +89,5 @@ class TestExerciseLimits extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseLimits;
+$testCase = new TestExerciseLimits();
 $testCase->run();

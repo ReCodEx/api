@@ -55,12 +55,12 @@ class TestDirectoriesResolver {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
     $variable->setValue($testName);
 
-    $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
+    $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
-    $boxMeta = (new BoxMeta)->setName(MkdirBox::$MKDIR_TYPE);
+    $boxMeta = (new BoxMeta())->setName(MkdirBox::$MKDIR_TYPE);
     $box = (new MkdirBox($boxMeta))->setInputPort($port);
 
-    $node = (new Node)->setBox($box)->setTestId($testId);
+    $node = (new Node())->setBox($box)->setTestId($testId);
     return $node;
   }
 
@@ -75,12 +75,12 @@ class TestDirectoriesResolver {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
     $variable->setValue($testName);
 
-    $port = (new Port((new PortMeta)->setType($variable->getType())))->setVariableValue($variable);
+    $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
-    $boxMeta = (new BoxMeta)->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
+    $boxMeta = (new BoxMeta())->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
     $box = (new DumpResultsBox($boxMeta))->setInputPort($port);
 
-    $node = (new Node)->setBox($box)->setTestId($testId);
+    $node = (new Node())->setBox($box)->setTestId($testId);
     return $node;
   }
 

@@ -63,7 +63,7 @@ class TestEnvironment extends Tester\TestCase
 
   public function testPipelinesOperations() {
     $environment = new Environment();
-    $pipeline = new PipelineVars;
+    $pipeline = new PipelineVars();
     $pipeline->setName("pipelineA");
 
     $environment->addPipeline($pipeline);
@@ -87,5 +87,5 @@ class TestEnvironment extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestEnvironment;
+$testCase = new TestEnvironment();
 $testCase->run();

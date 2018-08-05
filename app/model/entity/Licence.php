@@ -52,7 +52,7 @@ class Licence implements JsonSerializable
    */
   public function isValid(\DateTime $when = null) {
     if ($when === null) {
-      $when = new \DateTime;
+      $when = new \DateTime();
     }
     return $this->isValid && $this->validUntil >= $when;
   }

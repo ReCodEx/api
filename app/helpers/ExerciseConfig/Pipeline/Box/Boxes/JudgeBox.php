@@ -41,11 +41,11 @@ class JudgeBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$JUDGE_TYPE_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
-        new Port((new PortMeta)->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta)->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta)->setName(self::$CUSTOM_JUDGE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$JUDGE_TYPE_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
+        new Port((new PortMeta())->setName(self::$ACTUAL_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$EXPECTED_OUTPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$CUSTOM_JUDGE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array();
     }
@@ -182,7 +182,7 @@ class JudgeBox extends Box
       )
     );
 
-    $sandbox = (new SandboxConfig)->setName(LinuxSandbox::$ISOLATE);
+    $sandbox = (new SandboxConfig())->setName(LinuxSandbox::$ISOLATE);
     $sandbox->setOutput(true);
     $task->setSandboxConfig($sandbox);
 

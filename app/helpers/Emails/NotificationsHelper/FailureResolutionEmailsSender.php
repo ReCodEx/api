@@ -58,7 +58,7 @@ class FailureResolutionEmailsSender {
   }
 
   private function createFailureResolvedBody(SubmissionFailure $failure, string $title): string {
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/failureResolved.latte", [
       "title" => $title,
       "date" => $failure->getCreatedAt(),

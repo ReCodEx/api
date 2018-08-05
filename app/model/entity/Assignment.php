@@ -68,7 +68,7 @@ class Assignment extends AssignmentBase implements IExercise
     $this->allowSecondDeadline = $allowSecondDeadline;
     $this->secondDeadline = $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
-    $this->assignmentSolutions = new ArrayCollection;
+    $this->assignmentSolutions = new ArrayCollection();
     $this->isPublic = $isPublic;
     $this->runtimeEnvironments = new ArrayCollection($exercise->getRuntimeEnvironments()->toArray());
     $this->disabledRuntimeEnvironments = new ArrayCollection();
@@ -86,8 +86,8 @@ class Assignment extends AssignmentBase implements IExercise
     $this->version = 1;
     $this->isBonus = $isBonus;
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
-    $this->createdAt = new \DateTime;
-    $this->updatedAt = new \DateTime;
+    $this->createdAt = new \DateTime();
+    $this->updatedAt = new \DateTime();
     $this->configurationType = $exercise->getConfigurationType();
     $this->supplementaryEvaluationFiles = $exercise->getSupplementaryEvaluationFiles();
     $this->attachmentFiles = $exercise->getAttachmentFiles();
@@ -176,7 +176,7 @@ class Assignment extends AssignmentBase implements IExercise
 
   public function isAfterDeadline(\DateTime $now = null) {
     if ($now === null) {
-      $now = new \DateTime;
+      $now = new \DateTime();
     }
 
     if ($this->allowSecondDeadline) {

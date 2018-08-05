@@ -25,7 +25,7 @@ class TestExternalTask extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testMissingRequiredFields() {
@@ -50,5 +50,5 @@ class TestExternalTask extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExternalTask;
+$testCase = new TestExternalTask();
 $testCase->run();

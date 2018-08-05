@@ -19,7 +19,7 @@ class RouterFactory
    */
   public static function createRouter()
   {
-    $router = new RouteList;
+    $router = new RouteList();
     $router[] = V1Module\RouterFactory::createRouter();
     return $router;
   }

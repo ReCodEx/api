@@ -59,8 +59,8 @@ class User
     $this->email = $email;
     $this->isVerified = false;
     $this->isAllowed = true;
-    $this->memberships = new ArrayCollection;
-    $this->exercises = new ArrayCollection;
+    $this->memberships = new ArrayCollection();
+    $this->exercises = new ArrayCollection();
     $this->createdAt = new DateTime();
     $this->instances = new ArrayCollection([$instance]);
     $instance->addMember($this);

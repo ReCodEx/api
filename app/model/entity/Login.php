@@ -129,7 +129,7 @@ class Login
       throw new InvalidArgumentException("email", "Username must be a valid email address.");
     }
 
-    $login = new Login;
+    $login = new Login();
     $login->username = $email;
     $login->passwordHash = "";
     if (!empty($password)) { $login->passwordHash = self::hashPassword($password); }

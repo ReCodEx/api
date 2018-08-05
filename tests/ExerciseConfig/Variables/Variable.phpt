@@ -185,5 +185,5 @@ class TestVariable extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestVariable;
+$testCase = new TestVariable();
 $testCase->run();

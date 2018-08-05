@@ -74,7 +74,7 @@ class ExerciseLimits implements JsonSerializable
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->hardwareGroup = $hardwareGroup;
     $this->limits = $limits;
-    $this->createdAt = new DateTime;
+    $this->createdAt = new DateTime();
     $this->createdFrom = $createdFrom;
     $this->author = $author;
   }

@@ -35,7 +35,7 @@ class FilesInBox extends DataInBox
       self::$initialized = true;
       self::$defaultInputPorts = array();
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta)->setName(self::$FILES_IN_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$FILES_IN_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }

@@ -78,25 +78,25 @@ class TestVariablesResolver extends Tester\TestCase
     $submitRefReferenceVarA = (new Variable("file"))->setName("test-a-submit-ref-reference-variable")->setValue('$test-a-submit-reference-variable');
     $submitReferenceVarA = (new Variable("file"))->setName("test-a-submit-reference-variable")->setValue('$submitFileRef');
 
-    $this->envVarTableA = (new VariablesTable)->set($outputReferencedVarA)->set($testRemoteInputVarA)->set($testInputArrayVarA)->set($submitReferenceVarA);
-    $this->exerVarTableA = (new VariablesTable)->set($referencedVarA);
-    $this->pipeVarTableA = (new VariablesTable)->set($testInputVarA)->set($testInputArrayVarA)->set($testOutputVarA)->set($preExecVarA)->set($submitRefReferenceVarA);
+    $this->envVarTableA = (new VariablesTable())->set($outputReferencedVarA)->set($testRemoteInputVarA)->set($testInputArrayVarA)->set($submitReferenceVarA);
+    $this->exerVarTableA = (new VariablesTable())->set($referencedVarA);
+    $this->pipeVarTableA = (new VariablesTable())->set($testInputVarA)->set($testInputArrayVarA)->set($testOutputVarA)->set($preExecVarA)->set($submitRefReferenceVarA);
 
-    $outPortA = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarA->getName()));
-    $dataInNodeA = new PortNode((new CustomBox)->setName("in")->addOutputPort($outPortA));
+    $outPortA = new Port((new PortMeta())->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarA->getName()));
+    $dataInNodeA = new PortNode((new CustomBox())->setName("in")->addOutputPort($outPortA));
 
-    $outPortArrayA = new Port((new PortMeta)->setName("data-in-arr")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputArrayVarA->getName()));
-    $dataInNodeArrayA = new PortNode((new CustomBox)->setName("in-arr")->addOutputPort($outPortArrayA));
+    $outPortArrayA = new Port((new PortMeta())->setName("data-in-arr")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputArrayVarA->getName()));
+    $dataInNodeArrayA = new PortNode((new CustomBox())->setName("in-arr")->addOutputPort($outPortArrayA));
 
-    $preExecPortA = new Port((new PortMeta)->setName("pre-data")->setType(VariableTypes::$FILE_TYPE)->setVariable($preExecVarA->getName()));
-    $preExecNodeA = new PortNode((new CustomBox)->setName("pre-exec")->addOutputPort($preExecPortA));
+    $preExecPortA = new Port((new PortMeta())->setName("pre-data")->setType(VariableTypes::$FILE_TYPE)->setVariable($preExecVarA->getName()));
+    $preExecNodeA = new PortNode((new CustomBox())->setName("pre-exec")->addOutputPort($preExecPortA));
 
-    $inRefPortA = new Port((new PortMeta)->setName("in-ref")->setType(VariableTypes::$FILE_TYPE)->setVariable($submitRefReferenceVarA->getName()));
-    $inPortA = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarA->getName()));
-    $execNodeA = new PortNode((new CustomBox)->setName("exec")
+    $inRefPortA = new Port((new PortMeta())->setName("in-ref")->setType(VariableTypes::$FILE_TYPE)->setVariable($submitRefReferenceVarA->getName()));
+    $inPortA = new Port((new PortMeta())->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarA->getName()));
+    $execNodeA = new PortNode((new CustomBox())->setName("exec")
       ->addInputPort($preExecPortA)->addInputPort($outPortA)->addInputPort($outPortArrayA)->addInputPort($inRefPortA)->addOutputPort($inPortA));
 
-    $dataOutNodeA = new PortNode((new CustomBox)->setName("out")->addInputPort($inPortA));
+    $dataOutNodeA = new PortNode((new CustomBox())->setName("out")->addInputPort($inPortA));
 
     // make connections in A tree
     $dataInNodeA->addChild($outPortA->getName(), $execNodeA);
@@ -128,32 +128,32 @@ class TestVariablesResolver extends Tester\TestCase
     $testInputVarBC = (new Variable("file"))->setName("test-bc-input")->setValue("input.BC");
     $testRemoteInputVarBC = (new Variable("remote-file"))->setName("test-bc-remote-input")->setValue("input.BC.name");
 
-    $this->envVarTableB = (new VariablesTable)->set($testRemoteInputVarBA);
-    $this->exerVarTableB = (new VariablesTable)->set($testInputVarBB);
-    $this->pipeVarTableB = (new VariablesTable)->set($testInputVarBA)
+    $this->envVarTableB = (new VariablesTable())->set($testRemoteInputVarBA);
+    $this->exerVarTableB = (new VariablesTable())->set($testInputVarBB);
+    $this->pipeVarTableB = (new VariablesTable())->set($testInputVarBA)
       ->set($testInputVarBB)->set($testOutputVarBA)->set($testOutputVarBB)
       ->set($testOnlyInputVarB)->set($testInputVarBC)->set($testRemoteInputVarBC);
 
-    $outPortBA = new Port((new PortMeta)->setName("data-in-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBA->getName()));
-    $dataInNodeBA = new PortNode((new CustomBox)->setName("inBA")->addOutputPort($outPortBA));
+    $outPortBA = new Port((new PortMeta())->setName("data-in-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBA->getName()));
+    $dataInNodeBA = new PortNode((new CustomBox())->setName("inBA")->addOutputPort($outPortBA));
 
-    $outPortBB = new Port((new PortMeta)->setName("data-in-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBB->getName()));
-    $dataInNodeBB = new PortNode((new CustomBox)->setName("inBB")->addOutputPort($outPortBB));
+    $outPortBB = new Port((new PortMeta())->setName("data-in-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBB->getName()));
+    $dataInNodeBB = new PortNode((new CustomBox())->setName("inBB")->addOutputPort($outPortBB));
 
-    $inPortBC = new Port((new PortMeta)->setName("data-in-remote-c")->setType(VariableTypes::$REMOTE_FILE_TYPE)->setVariable($testRemoteInputVarBC->getName()));
-    $outPortBC = new Port((new PortMeta)->setName("data-in-c")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBC->getName()));
-    $dataInNodeBC = new PortNode((new CustomBox)->setName("inBC")->addInputPort($inPortBC)->addOutputPort($outPortBC));
+    $inPortBC = new Port((new PortMeta())->setName("data-in-remote-c")->setType(VariableTypes::$REMOTE_FILE_TYPE)->setVariable($testRemoteInputVarBC->getName()));
+    $outPortBC = new Port((new PortMeta())->setName("data-in-c")->setType(VariableTypes::$FILE_TYPE)->setVariable($testInputVarBC->getName()));
+    $dataInNodeBC = new PortNode((new CustomBox())->setName("inBC")->addInputPort($inPortBC)->addOutputPort($outPortBC));
 
-    $onlyInPortB = new Port((new PortMeta)->setName("data-only-in")->setType(VariableTypes::$STRING_TYPE)->setVariable($testOnlyInputVarB->getName()));
-    $inPortBA = new Port((new PortMeta)->setName("data-out-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBA->getName()));
-    $inPortBB = new Port((new PortMeta)->setName("data-out-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBB->getName()));
-    $execNodeB = new PortNode((new CustomBox)->setName("execB")
+    $onlyInPortB = new Port((new PortMeta())->setName("data-only-in")->setType(VariableTypes::$STRING_TYPE)->setVariable($testOnlyInputVarB->getName()));
+    $inPortBA = new Port((new PortMeta())->setName("data-out-a")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBA->getName()));
+    $inPortBB = new Port((new PortMeta())->setName("data-out-b")->setType(VariableTypes::$FILE_TYPE)->setVariable($testOutputVarBB->getName()));
+    $execNodeB = new PortNode((new CustomBox())->setName("execB")
       ->addInputPort($onlyInPortB)->addInputPort($outPortBA)
       ->addInputPort($outPortBB)->addOutputPort($inPortBA)
       ->addOutputPort($inPortBB)->addInputPort($outPortBC));
 
-    $dataOutNodeBA = new PortNode((new CustomBox)->setName("outBA")->addInputPort($inPortBA));
-    $dataOutNodeBB = new PortNode((new CustomBox)->setName("outBB")->addInputPort($inPortBB));
+    $dataOutNodeBA = new PortNode((new CustomBox())->setName("outBA")->addInputPort($inPortBA));
+    $dataOutNodeBB = new PortNode((new CustomBox())->setName("outBB")->addInputPort($inPortBB));
 
     // make connections in B tree
     $dataInNodeBA->addChild($outPortBA->getName(), $execNodeB);
@@ -202,7 +202,7 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testVariableNamesNotMatchesInInputBox() {
     Assert::exception(function () {
-      $newPort = new Port((new PortMeta)->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
+      $newPort = new Port((new PortMeta())->setName("data-in")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getInputNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
 
@@ -214,7 +214,7 @@ class TestVariablesResolver extends Tester\TestCase
 
   public function testVariableNamesNotMatchesInOtherBox() {
     Assert::exception(function () {
-      $newPort = new Port((new PortMeta)->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
+      $newPort = new Port((new PortMeta())->setName("data-out")->setType(VariableTypes::$FILE_TYPE)->setVariable("something which does not exist"));
       $box = current($this->treeArray[0]->getOtherNodes())->getBox();
       $box->clearOutputPorts()->addOutputPort($newPort);
 

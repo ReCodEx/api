@@ -70,7 +70,7 @@ class ExerciseEnvironmentConfig
     $this->runtimeEnvironment = $runtimeEnvironment;
     $this->variablesTable = $variablesTable;
     $this->createdFrom = $createdFrom;
-    $this->createdAt = new \DateTime;
+    $this->createdAt = new \DateTime();
     $this->author = $author;
   }
 

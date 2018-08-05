@@ -85,9 +85,9 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     $this->hashName = $hashName;
     $this->fileServerPath = $fileServerPath;
 
-    $this->exercises = new ArrayCollection;
-    $this->assignments = new ArrayCollection;
-    $this->pipelines = new ArrayCollection;
+    $this->exercises = new ArrayCollection();
+    $this->assignments = new ArrayCollection();
+    $this->pipelines = new ArrayCollection();
 
     if ($exercise) {
       $this->exercises->add($exercise);

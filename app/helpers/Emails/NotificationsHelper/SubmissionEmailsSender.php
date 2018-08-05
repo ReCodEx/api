@@ -61,7 +61,7 @@ class SubmissionEmailsSender {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine;
+    $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
       "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
       "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO

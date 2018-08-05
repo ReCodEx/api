@@ -145,7 +145,7 @@ class CASLoginService implements IExternalLoginService {
    * @throws WrongCredentialsException
    */
   private function validateTicket(string $ticket, string $clientUrl) {
-    $client = new Client;
+    $client = new Client();
     $url = $this->getValidationUrl($ticket, $clientUrl);
     $req = new Request('GET', $url);
     $res = $client->send($req);

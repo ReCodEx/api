@@ -95,7 +95,7 @@ class AccessManager {
     /** @var User $user */
     $user = $this->users->get($token->getUserId());
     if (!$user || $user->isAllowed() === false) {
-      throw new ForbiddenRequestException;
+      throw new ForbiddenRequestException();
     }
 
     return $user;

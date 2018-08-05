@@ -160,7 +160,7 @@ class AssignmentSolution
   private function __construct() {
     $this->accepted = false;
     $this->bonusPoints = 0;
-    $this->submissions = new ArrayCollection;
+    $this->submissions = new ArrayCollection();
     $this->overriddenPoints = null;
   }
 
@@ -176,7 +176,7 @@ class AssignmentSolution
     Assignment $assignment,
     Solution $solution
   ) {
-    $entity = new AssignmentSolution;
+    $entity = new AssignmentSolution();
     $entity->assignment = $assignment;
     $entity->note = $note;
     $entity->solution = $solution;

@@ -47,9 +47,9 @@ class CommentThread implements JsonSerializable
   }
 
   public static function createThread($id) {
-    $thread = new CommentThread;
+    $thread = new CommentThread();
     $thread->id = $id;
-    $thread->comments = new ArrayCollection;
+    $thread->comments = new ArrayCollection();
     return $thread;
   }
 

@@ -58,7 +58,7 @@ class BoxService
   public function getAllBoxes(): array {
     $boxes = array();
     foreach ($this->boxes as $boxClass) {
-      $box = new $boxClass(new BoxMeta);
+      $box = new $boxClass(new BoxMeta());
       $box->fillDefaults();
       $boxes[] = $box;
     }

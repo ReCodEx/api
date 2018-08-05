@@ -33,7 +33,7 @@ class MkdirBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta)->setName(self::$MKDIR_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$MKDIR_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array();
     }

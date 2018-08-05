@@ -48,7 +48,7 @@ class ReportedErrors
     $this->type = $type;
     $this->recipients = $recipients;
     $this->subject = $subject;
-    $this->sentAt = new \DateTime;
+    $this->sentAt = new \DateTime();
     $this->description = $description;
   }
 }

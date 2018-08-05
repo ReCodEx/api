@@ -69,8 +69,8 @@ class TestTest extends Tester\TestCase
   }
 
   public function testEnvironmentsOperations() {
-    $test = new Test;
-    $environment = new Environment;
+    $test = new Test();
+    $environment = new Environment();
 
     $test->addEnvironment("environmentA", $environment);
     Assert::type(Environment::class, $test->getEnvironment("environmentA"));
@@ -95,5 +95,5 @@ class TestTest extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestTest;
+$testCase = new TestTest();
 $testCase->run();

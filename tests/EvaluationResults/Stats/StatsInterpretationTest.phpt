@@ -31,7 +31,7 @@ class TestStatsInterpretation extends Tester\TestCase
   private $builder;
 
   public function __construct() {
-    $this->builder = new Loader;
+    $this->builder = new Loader();
   }
 
   public function testWallTimeUnused() {
@@ -168,5 +168,5 @@ class TestStatsInterpretation extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestStatsInterpretation;
+$testCase = new TestStatsInterpretation();
 $testCase->run();

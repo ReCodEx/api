@@ -84,10 +84,10 @@ class TestPipeline extends Tester\TestCase
   }
 
   public function testBoxesOperations() {
-    $boxMeta = new BoxMeta;
+    $boxMeta = new BoxMeta();
     $boxMeta->setName("boxA");
 
-    $pipeline = new Pipeline;
+    $pipeline = new Pipeline();
     $box = new FileInBox($boxMeta);
 
     $pipeline->set($box);
@@ -132,5 +132,5 @@ class TestPipeline extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestPipeline;
+$testCase = new TestPipeline();
 $testCase->run();
