@@ -114,13 +114,20 @@ permissions:
 
     - allow: true
       resource: group
+      role: supervisor-student
       actions:
-          - addStudent
-          - removeStudent
           - viewExercises
           - viewStats
           - viewStudentStats
           - viewPublicDetail
+      conditions: group.isSupervisor
+
+    - allow: true
+      resource: group
+      role: supervisor
+      actions:
+          - addStudent
+          - removeStudent
       conditions: group.isSupervisor
 
     - allow: true
@@ -189,6 +196,7 @@ permissions:
         - viewGroups
         - viewDetail
         - viewList
+        - viewAll
 
     - allow: true
       role: student
@@ -238,6 +246,14 @@ permissions:
       actions:
           - viewDetail
       conditions: user.isSupervisorOfJoinedGroup
+
+    - allow: true
+      role: supervisor
+      resource: user
+      actions:
+          - viewDetail
+          - viewAll
+
 
 
     ##########################
