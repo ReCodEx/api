@@ -36,6 +36,12 @@ abstract class FetchBox extends Box
    */
   protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array {
 
+    // variable is empty, this means there is no request to rename fetched
+    // files, therefore we have to fill variable with remote file names
+    if ($local->isEmpty()) {
+      $local->setValue($remote->getValue());
+    }
+
     // prepare arrays which will be processed
     $remoteFiles = array_values($remote->getValueAsArray());
     $files = array_values($local->getTestPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
