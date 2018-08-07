@@ -70,7 +70,6 @@ permissions:
           - viewDetail
           - viewSubgroups
           - viewSupervisors
-          - viewStudents
           - viewAdmin
       conditions:
           - or:
@@ -126,12 +125,13 @@ permissions:
       resource: group
       role: supervisor
       actions:
-          - addStudent
+          - addStudent  # requires permissions to read all users' private data
           - removeStudent
       conditions: group.isSupervisor
 
     - allow: true
       resource: group
+      role: supervisor-student
       actions:
           - update
           - remove
@@ -139,7 +139,13 @@ permissions:
           - removeSupervisor
           - setAdmin
           - sendEmail
-          - addSupervisor
+      conditions: group.isAdmin
+
+    - allow: true
+      resource: group
+      role: supervisor
+      actions:
+          - addSupervisor  # requires permissions to read all users' private data
       conditions: group.isAdmin
 
     - allow: true
