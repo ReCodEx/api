@@ -96,7 +96,9 @@ class Version20180805075758 extends AbstractMigration
 
   /**
    * @param Schema $schema
+   * @throws \Doctrine\DBAL\Migrations\IrreversibleMigrationException
    */
   public function down(Schema $schema) {
+    $this->throwIrreversibleMigrationException();
   }
 }
