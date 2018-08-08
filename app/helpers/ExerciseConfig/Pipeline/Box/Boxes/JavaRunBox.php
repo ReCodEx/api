@@ -18,7 +18,6 @@ class JavaRunBox extends ExecutionBox
   /** Type key */
   public static $JAVA_RUNNER_TYPE = "java-runner";
   public static $JAVA_BINARY = "/usr/bin/java";
-  public static $RUNNER_FILE_PORT_KEY = "runner";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $DEFAULT_NAME = "Java Runner";
 
@@ -28,6 +27,7 @@ class JavaRunBox extends ExecutionBox
 
   /**
    * Static initializer.
+   * @throws ExerciseConfigException
    */
   public static function init() {
     if (!self::$initialized) {
@@ -66,6 +66,7 @@ class JavaRunBox extends ExecutionBox
   /**
    * Get default input ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
     self::init();
@@ -75,6 +76,7 @@ class JavaRunBox extends ExecutionBox
   /**
    * Get default output ports for this box.
    * @return array
+   * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
     self::init();
