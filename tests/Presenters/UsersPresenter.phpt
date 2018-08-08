@@ -4,8 +4,10 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\Login;
 use App\Model\Entity\ExternalLogin;
 use App\Model\Entity\User;
+use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Users;
 use App\Security\Roles;
@@ -33,6 +35,9 @@ class TestUsersPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Users */
   protected $users;
 
+  /** @var App\Model\Repository\Logins */
+  protected $logins;
+
   /** @var App\Model\Repository\ExternalLogins */
   protected $externalLogins;
 
@@ -46,6 +51,7 @@ class TestUsersPresenter extends Tester\TestCase
     $this->em = PresenterTestHelper::getEntityManager($container);
     $this->user = $container->getByType(\Nette\Security\User::class);
     $this->users = $container->getByType(Users::class);
+    $this->logins = $container->getByType(Logins::class);
     $this->externalLogins = $container->getByType(ExternalLogins::class);
   }
 
@@ -571,6 +577,7 @@ class TestUsersPresenter extends Tester\TestCase
     $victim = "user2@example.com";
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail($victim);
+    Assert::type(Login::class, $this->logins->getByUsername($victim));
 
     $request = new Nette\Application\Request($this->presenterPath, 'DELETE',
       ['action' => 'delete', 'id' => $user->getId()]
@@ -581,6 +588,7 @@ class TestUsersPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::null($this->users->getByEmail($victim));
+    Assert::null($this->logins->getByUsername($victim));
   }
 
   public function testSetRoleUser() {
