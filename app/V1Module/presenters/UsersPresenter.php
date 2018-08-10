@@ -565,7 +565,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionSetAllowed(string $id) {
     $user = $this->users->findOrThrow($id);
-    $isAllowed = filter_var($req->getPost("isAllowed"), FILTER_VALIDATE_BOOLEAN);
+    $isAllowed = filter_var($this->getRequest()->getPost("isAllowed"), FILTER_VALIDATE_BOOLEAN);
     $user->setIsAllowed($isAllowed);
     $this->users->flush();
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
