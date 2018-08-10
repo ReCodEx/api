@@ -161,13 +161,14 @@ class PresenterTestHelper
    * @param $module String representing the module path (e.g., 'V1:Exercises').
    * @param string $method HTTP method of the request (GET, POST, ...).
    * @param array $params Parameters of the request.
+   * @param array $params Body of the request (must be POST).
    * @param int $expectedCode Expected HTTP response code (200 by default).
    * @return array|null Payload subtree of JSON request.
    * @throws Exception
    */
-  public static function performPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], $expectedCode = 200)
+  public static function performPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], array $post = [], $expectedCode = 200)
   {
-    $request = new \Nette\Application\Request($module, $method, $params);
+    $request = new \Nette\Application\Request($module, $method, $params, $post);
     $response = $presenter->run($request);
     Tester\Assert::type(\Nette\Application\Responses\JsonResponse::class, $response);
 

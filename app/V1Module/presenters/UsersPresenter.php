@@ -505,7 +505,7 @@ class UsersPresenter extends BasePresenter {
    * Set a given role to the given user.
    * @POST
    * @param string $id Identifier of the user
-   * @Param(type="post", name="role", validation="bool", description="Role which should be assigned to the user")
+   * @Param(type="post", name="role", validation="string:1..", description="Role which should be assigned to the user")
    * @throws InvalidArgumentException
    * @throws NotFoundException
    */
@@ -519,7 +519,7 @@ class UsersPresenter extends BasePresenter {
 
     $user->setRole($role);
     $this->users->flush();
-    $this->sendSuccessResponse($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
 
   public function checkInvalidateTokens(string $id) {
@@ -548,4 +548,25 @@ class UsersPresenter extends BasePresenter {
     ]);
   }
 
+  public function checkSetAllowed(string $id) {
+    $user = $this->users->findOrThrow($id);
+    if (!$this->userAcl->canSetIsAllowed($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Set "isAllowed" flag of the given user. The flag determines whether a user may perform any operation of the API.
+   * @POST
+   * @param string $id Identifier of the user
+   * @Param(type="post", name="isAllowed", validation="bool", description="Whether the user is allowed (active) or not.")
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   */
+  public function actionSetAllowed(string $id) {
+    $user = $this->users->findOrThrow($id);
+    $user->setIsAllowed((bool)$this->getRequest()->getPost("isAllowed"));
+    $this->users->flush();
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+  }
 }

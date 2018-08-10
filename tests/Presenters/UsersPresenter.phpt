@@ -620,6 +620,20 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(Roles::SUPERVISOR_ROLE, $this->users->getByEmail($victim)->getRole());
   }
 
+  public function testSetAllowedUser() {
+    $victim = "user2@example.com";
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail($victim);
+    Assert::true($user->isAllowed());
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, $this->presenterPath, 'POST',
+      [ 'action' => 'setAllowed', 'id' => $user->getId() ], [ 'isAllowed' => 0 ]
+    );
+
+    Assert::same($user->getId(), $payload['id']);
+    Assert::false($payload['privateData']['isAllowed']);
+    Assert::false($this->users->getByEmail($victim)->isAllowed());
+  }
 }
 
 (new TestUsersPresenter())->run();
