@@ -149,19 +149,12 @@ class VariablesResolver {
 
       /** @var DataInBox $inputBox */
       $inputBox = $node->getBox();
-
-      // input data box should have only one output port, that is why current is sufficient
       $outputPort = current($inputBox->getOutputPorts());
       $variableName = $outputPort->getVariable();
-      $child = current($node->getChildren());
-      if ($child === false) {
-        throw new ExerciseConfigException("Input port not found for variable {$variableName}");
-      }
 
-      $inputPortName = array_search($node, $child->getParents());
-      if ($inputPortName === false) {
-        // input node not found in parents of the next one
-        throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
+      // input data box should have only one output port, but there can be multiple children
+      if (count($node->getChildren()) === 0) {
+        throw new ExerciseConfigException("Input ports not found for variable '{$variableName}'");
       }
 
       // variable value in local pipeline config
@@ -193,7 +186,17 @@ class VariablesResolver {
       // assign variable to both nodes
       $inputBox->setInputVariable($inputVariable);
       $outputPort->setVariableValue($variable);
-      $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
+
+      // handle children and assignment of the variable to their ports
+      foreach ($node->getChildren() as $child) {
+        $inputPortName = array_search($node, $child->getParents());
+        if ($inputPortName === false) {
+          // input node not found in parents of the next one
+          throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
+        }
+
+        $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
+      }
     }
   }
 
