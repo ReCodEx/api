@@ -44,10 +44,10 @@ class EvaluationTaskResult extends TaskResult {
     $judgeLog = $judgeOutput;
 
     if (!empty($judgeOutput)) {
-      $judgeScore = current(preg_split('/\s+/', $judgeOutput));
-      if (Validators::isNumeric($judgeScore) === true) {
-        $score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($judgeScore)));
-        $judgeLog = trim(substr($judgeOutput, strlen($judgeScore)));
+      $splitted = preg_split('/\s+/', $judgeOutput, 2);
+      if (Validators::isNumeric($splitted[0]) === true) {
+        $score = min(TaskResult::MAX_SCORE, max(TaskResult::MIN_SCORE, floatval($splitted[0])));
+        $judgeLog = empty($splitted[1]) ? '' : trim($splitted[1]);
       }
     }
 

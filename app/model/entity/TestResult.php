@@ -52,8 +52,8 @@ class TestResult
     $this->usedCpuTimeRatio = $result->getUsedCpuTimeRatio();
     $this->usedCpuTime = $result->getUsedCpuTime();
     $this->cpuTimeExceeded = !$result->isCpuTimeOK();
-    $this->message = $result->getMessage();
-    $this->judgeOutput = $result->getJudgeOutput();
+    $this->message = substr($result->getMessage(), 0, 255);  // maximal size of varchar
+    $this->judgeOutput = substr($result->getJudgeOutput(), 0, 65536); // the size corresponds to the length of the column
 
     $this->tasks = new ArrayCollection();
     foreach ($result->getExecutionResults() as $executionResult) {
@@ -147,7 +147,7 @@ class TestResult
   protected $message;
 
   /**
-   * @ORM\Column(type="string", nullable=true)
+   * @ORM\Column(type="text", length=65536, nullable=true)
    */
   protected $judgeOutput;
 

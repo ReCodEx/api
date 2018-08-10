@@ -110,7 +110,7 @@ class TestResult {
    */
   public function getStats(): array {
     return array_map(
-      function (TaskResult $result) {return $result->getStats(); },
+      function (TaskResult $result) { return $result->getStats(); },
       $this->executionResults
     );
   }
