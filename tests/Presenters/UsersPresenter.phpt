@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Helpers\AnonymizationHelper;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Login;
 use App\Model\Entity\ExternalLogin;
@@ -41,6 +42,9 @@ class TestUsersPresenter extends Tester\TestCase
   /** @var App\Model\Repository\ExternalLogins */
   protected $externalLogins;
 
+  /** @var App\Helpers\AnonymizationHelper */
+  protected $annonymizationHelper;
+
   /** @var  Nette\DI\Container */
   protected $container;
 
@@ -53,6 +57,7 @@ class TestUsersPresenter extends Tester\TestCase
     $this->users = $container->getByType(Users::class);
     $this->logins = $container->getByType(Logins::class);
     $this->externalLogins = $container->getByType(ExternalLogins::class);
+    $this->anonymizationHelper = $container->getByType(AnonymizationHelper::class);
   }
 
   protected function setUp()
@@ -577,6 +582,7 @@ class TestUsersPresenter extends Tester\TestCase
     $victim = "user2@example.com";
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail($victim);
+    $userId = $user->getId();
     Assert::type(Login::class, $this->logins->getByUsername($victim));
 
     $request = new Nette\Application\Request($this->presenterPath, 'DELETE',
@@ -589,6 +595,11 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::null($this->users->getByEmail($victim));
     Assert::null($this->logins->getByUsername($victim));
+
+    $deletedUser = $this->users->findOneByEvenIfDeleted([ 'id' => $userId ]);
+    Assert::true($deletedUser->isDeleted());
+    $suffix = $this->anonymizationHelper->getDeletedEmailSuffix();
+    Assert::same($suffix, substr($deletedUser->getEmail(), -strlen($suffix)));  // negative offset ~ suffix instead of prefix
   }
 
   public function testSetRoleUser() {

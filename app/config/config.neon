@@ -149,6 +149,9 @@ parameters:
     directory: %appDir%/../migrations # directory, where all migrations are stored
     namespace: Migrations # namespace of migration classes
 
+  anonymization:
+    anonymizedName: "@@anonymized"  # String used as replacement for anonymized name a user
+    deletedEmailSuffix: "@@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
 
 application:
   errorPresenter: V1:ApiError
@@ -319,6 +322,7 @@ services:
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
+  - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
 
   # models - repositories
   - App\Model\Repository\Comments

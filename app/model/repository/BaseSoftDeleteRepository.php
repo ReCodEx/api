@@ -35,6 +35,10 @@ class BaseSoftDeleteRepository extends BaseRepository {
     ]));
   }
 
+  public function findOneByEvenIfDeleted($params) {
+    return $this->repository->findOneBy($params);
+  }
+
   public function findOrThrow($id) {
     $entity = $this->findOneBy(['id' => $id]);
     if (!$entity) {

@@ -66,7 +66,7 @@ class ForgottenPasswordHelper {
    * @param AccessManager $accessManager
    * @param array $params Parameters from configuration file
    */
-  public function __construct(EntityManager $em, EmailHelper $emailHelper, AccessManager $accessManager , array $params) {
+  public function __construct(EntityManager $em, EmailHelper $emailHelper, AccessManager $accessManager, array $params) {
     $this->em = $em;
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
