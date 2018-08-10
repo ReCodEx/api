@@ -10,9 +10,9 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
-use App\Model\Repository\ExternalLogins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
+use App\Helpers\AnonymizationHelper;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
@@ -32,16 +32,16 @@ class UsersPresenter extends BasePresenter {
   public $logins;
 
   /**
-   * @var ExternalLogins
-   * @inject
-   */
-  public $externalLogins;
-
-  /**
    * @var EmailVerificationHelper
    * @inject
    */
   public $emailVerificationHelper;
+
+  /**
+   * @var AnonymizationHelper
+   * @inject
+   */
+  public $anonymizationHelper;
 
   /**
    * @var GroupViewFactory
@@ -144,22 +144,7 @@ class UsersPresenter extends BasePresenter {
    */
   public function actionDelete(string $id) {
     $user = $this->users->findOrThrow($id);
-
-    // Since users are only softdeleted, let us prepare the record for deletion first...
-    $user->setEmail($user->getEmail() . "@deleted.recodex.mff.cuni.cz"); // two @ in the addres made it invalid
-    $this->users->flush();
-
-    // All accounts related to the user are void.
-    if ($user->hasLocalAccount()) {
-      $login = $user->getLogin();
-      $user->setLogin(null);
-      $this->logins->remove($login);
-    }
-
-    foreach ($user->getExternalLogins() as $extLogin) {
-      $this->externalLogins->remove($extLogin);
-    }
-
+    $this->anonymizationHelper->prepareUserForSoftDelete($user);
     $this->users->remove($user);
     $this->sendSuccessResponse("OK");
   }
