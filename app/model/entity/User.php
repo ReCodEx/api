@@ -31,6 +31,7 @@ use forxer\Gravatar\Gravatar;
  * @method setDegreesBeforeName(string $degrees)
  * @method setDegreesAfterName(string $degrees)
  * @method setRole(string $role)
+ * @method setIsAllowed(bool $isAllowed)
  * @method Login getLogin()
  * @method setLogin(Login $login)
  * @method Collection getExternalLogins()
