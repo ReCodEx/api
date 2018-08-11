@@ -97,16 +97,16 @@
         },
         {
             "name": "dg/adminer-custom",
-            "version": "v1.13.0",
+            "version": "v1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/adminer-custom.git",
-                "reference": "0602f6020afb77dae5a4ae50d7135f3fbe3e22cf"
+                "reference": "fe6d5800d85aef697d110a83aaa863bbd2c2b965"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/0602f6020afb77dae5a4ae50d7135f3fbe3e22cf",
-                "reference": "0602f6020afb77dae5a4ae50d7135f3fbe3e22cf",
+                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/fe6d5800d85aef697d110a83aaa863bbd2c2b965",
+                "reference": "fe6d5800d85aef697d110a83aaa863bbd2c2b965",
                 "shasum": ""
             },
             "type": "library",
@@ -122,7 +122,7 @@
                 "postgresql",
                 "sqlite"
             ],
-            "time": "2018-02-21T15:58:44+00:00"
+            "time": "2018-06-29T10:30:14+00:00"
         },
         {
             "name": "doctrine/annotations",
