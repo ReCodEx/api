@@ -553,6 +553,10 @@ class UsersPresenter extends BasePresenter {
     if (!$this->userAcl->canSetIsAllowed($user)) {
       throw new ForbiddenRequestException();
     }
+
+    if ($this->getCurrentUser() === $user) {
+      throw new ForbiddenRequestException("You cannot change the allow flag of your self");
+    }
   }
 
   /**
