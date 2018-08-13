@@ -15,8 +15,6 @@ use Nette\Utils\Strings;
  */
 class JavaRunBox extends ExecutionBox
 {
-  use JavaUtilsTrait;
-
   /** Type key */
   public static $JAVA_RUNNER_TYPE = "java-runner";
   public static $JAVA_BINARY = "/usr/bin/java";
@@ -116,7 +114,7 @@ class JavaRunBox extends ExecutionBox
 
     $args = [];
     // if there were some provided jar files, lets add them to the command line args
-    $classpath = $this->constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
+    $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
     $args = array_merge($args, [ $runnerClass, "run" ]);
