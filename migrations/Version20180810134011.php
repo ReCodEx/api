@@ -28,7 +28,7 @@ class Version20180810134011 extends AbstractMigration
    * @throws DBALException
    */
   private function updatePipelines(): array {
-    $changedPipelines = [];
+    $changedCompilationPipelines = [];
     $pipelinesResult = $this->connection->executeQuery("SELECT * FROM pipeline");
     foreach ($pipelinesResult as $pipeline) {
       $pipelineConfig = $this->connection->executeQuery("SELECT * FROM pipeline_config WHERE id = '{$pipeline["pipeline_config_id"]}'")->fetch();
@@ -38,7 +38,7 @@ class Version20180810134011 extends AbstractMigration
       foreach ($config["boxes"] as &$box) {
         if ($box["type"] === self::$JAVAC_BOX) {
           $changed = true;
-          $changedPipelines[] = $pipeline["id"];
+          $changedCompilationPipelines[] = $pipeline["id"];
 
           $box["portsIn"][self::$JAR_FILES_PORT] = [
             "type" => self::$FILES_TYPE,
@@ -107,7 +107,7 @@ class Version20180810134011 extends AbstractMigration
           ["id" => $pipelineConfig["id"], "config" => Yaml::dump($config)]);
       }
     }
-    return $changedPipelines;
+    return $changedCompilationPipelines;
   }
 
   /**

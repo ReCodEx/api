@@ -15,8 +15,6 @@ use App\Helpers\ExerciseConfig\VariableTypes;
  */
 class JavacCompilationBox extends CompilationBox
 {
-  use JavaUtilsTrait;
-
   /** Type key */
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
@@ -108,7 +106,7 @@ class JavacCompilationBox extends CompilationBox
     }
 
     // if there were some provided jar files, lets add them to the command line args
-    $classpath = $this->constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
+    $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
     $task->setCommandArguments(
