@@ -179,7 +179,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
 
     $req = $this->getRequest();
-    $version = intval($req->getPost("version"));
+    $version = (int)$req->getPost("version");
     if ($version !== $assignment->getVersion()) {
       throw new BadRequestException("The assignment was edited in the meantime and the version has changed. Current version is {$assignment->getVersion()}.");
     }
@@ -201,16 +201,19 @@ class AssignmentsPresenter extends BasePresenter {
     $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $oldFirstDeadlinePoints = $assignment->getMaxPointsBeforeFirstDeadline();
-    $firstDeadlinePoints = $req->getPost("maxPointsBeforeFirstDeadline");
+    $firstDeadlinePoints = (int)$req->getPost("maxPointsBeforeFirstDeadline");
     $oldSecondDeadlinePoints = $assignment->getMaxPointsBeforeSecondDeadline();
-    $secondDeadlinePoints = $req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
+    $secondDeadlinePoints = (int)$req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
     $oldThreshold = $assignment->getPointsPercentualThreshold();
-    $threshold = $req->getPost("pointsPercentualThreshold") !== null ? $req->getPost("pointsPercentualThreshold") / 100 : $assignment->getPointsPercentualThreshold();
+    $threshold = $req->getPost("pointsPercentualThreshold") !== null
+      ? (int)$req->getPost("pointsPercentualThreshold") / 100
+      : $assignment->getPointsPercentualThreshold();
     $oldFirstDeadlineTimestamp = $assignment->getFirstDeadline()->getTimestamp();
-    $firstDeadlineTimestamp = $req->getPost("firstDeadline");
+    $firstDeadlineTimestamp = (int)$req->getPost("firstDeadline");
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
-    $secondDeadlineTimestamp = $req->getPost("secondDeadline") ?: 0;
-    $sendNotification = $req->getPost("sendNotification") ? filter_var($req->getPost("sendNotification"), FILTER_VALIDATE_BOOLEAN) : true;
+    $secondDeadlineTimestamp = (int)$req->getPost("secondDeadline") ?: 0;
+    $sendNotification = $req->getPost("sendNotification");
+    $sendNotification = $sendNotification !== null ? filter_var($sendNotification, FILTER_VALIDATE_BOOLEAN) : true;
 
     $assignment->incrementVersion();
     $assignment->updatedNow();
