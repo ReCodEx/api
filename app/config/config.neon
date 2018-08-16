@@ -90,6 +90,8 @@ parameters:
     githubUrl: https://github.com/ReCodEx  # URL to GitHub repository of this project
     from: "ReCodEx <noreply@recodex.mff.cuni.cz>"  # sending email address
     subjectPrefix: "ReCodEx - "
+    debugMode: false  # in debug mode, no messages are sent via SMPT
+    archivingDir: ""  # a directory where copies of all emails sent are stored (in text files)
 
   failures:  # admin messages on errors
     emails:  # additional info for sending mails

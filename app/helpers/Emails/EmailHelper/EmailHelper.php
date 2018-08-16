@@ -35,6 +35,12 @@ class EmailHelper {
   /** @var string Prefix of mail subject to be used */
   private $subjectPrefix;
 
+  /** @var bool Whether the ReCodEx mailing subsystem is in debug mode. Debug mode prevents sending anything via SMTP. */
+  private $debugMode;
+
+  /** @var string Path to archivation directory. If set, copies of all emails are logged there in text files. */
+  private $archivingDir;
+
   /**
    * Constructor
    * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
@@ -48,6 +54,8 @@ class EmailHelper {
     $this->githubUrl = Arrays::get($params, "githubUrl", "https://github.com/ReCodEx");
     $this->from = Arrays::get($params, "from", "ReCodEx <noreply@recodex.mff.cuni.cz>");
     $this->subjectPrefix = Arrays::get($params, "subjectPrefix", "ReCodEx - ");
+    $this->debugMode = Arrays::get($params, "debugMode", false);
+    $this->archivingDir = Arrays::get($params, "archivingDir", "");
   }
 
   /**
@@ -89,6 +97,7 @@ class EmailHelper {
     ];
     $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
 
+    // Prepare the message ...
     $message = new Message();
     $message->setFrom($from)
       ->setSubject($subject)
@@ -102,14 +111,43 @@ class EmailHelper {
       $message->addBcc($receiver);
     }
 
-    try {
-      $this->mailer->send($message);
-      return true;
-    } catch (SendException $e) {
-      // silent error
+    // Send it via SMTP ...
+    if (!$this->debugMode) {
+      try {
+        $this->mailer->send($message);
+      } catch (SendException $e) {
+        $lastMailerException = $e;
+      }
     }
 
-    return false;
-  }
+    // Archive a copy of the message into a file ...
+    if ($this->archivingDir) {
+      if (!file_exists($this->archivingDir)) {
+        mkdir($this->archivingDir, 0775, true); // make sure logging directory exists
+      }
 
+      // Logging is not that important, all following opertions fail silently.
+      if (file_exists($this->archivingDir) && is_writeable($this->archivingDir)) {
+        $fileName = $this->archivingDir . "/" . (new \DateTime())->format("Y-m-d-His") . ".emaildump";
+        if (($fp = fopen($fileName, "a"))) {
+          $data = [
+            '----- BEGIN MAIL -----',
+            $_SERVER['REQUEST_URI'],
+          ];
+          if (!empty($lastMailerException)) {
+            $data[] = $lastMailerException->getMessage();
+          }
+
+          $data[] = '-----';
+          $data[] = $message->generateMessage();
+          $data[] = "----- END MAIL -----\n"; // trailing separator (in case multiple emails are logged)
+
+          fwrite($fp, join("\n", $data));
+          fclose($fp);
+        }
+      }
+    }
+
+    return empty($lastMailerException);
+  }
 }

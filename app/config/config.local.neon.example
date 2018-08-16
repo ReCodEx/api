@@ -39,6 +39,8 @@ parameters:
     apiUrl: https://recodex.mff.cuni.cz:4000
     footerUrl: https://recodex.mff.cuni.cz
     from: "ReCodEx <noreply@example.com>"
+    #debugMode: true  # uncomment for debugging
+    #archivingDir: "%appDir%/../log/email-debug"  # uncomment for debugging
 
   failures:
     emails:
