@@ -7,6 +7,7 @@ use Nette\Mail\Message;
 use Nette\Mail\SendException;
 use Nette\Utils\Arrays;
 use Latte;
+use Exception;
 
 /**
  * Wrapper for email communication. It can send messages with predefined values
@@ -70,6 +71,38 @@ class EmailHelper {
     return $this->send(null, $to, $subject, $text, $bcc);
   }
 
+
+  /**
+   * Save mail copy into a text file in archiving directory.
+   * @param Message $message Message to be serialized into the file.
+   * @param Exception $lastMailerException Exception thrown from the sender (if any). Its message is logged as well.
+   */
+  private function archiveMailCopy(Message $message, Exception $lastMailerException = null)
+  {
+    if (!file_exists($this->archivingDir)) {
+      mkdir($this->archivingDir, 0775, true); // make sure logging directory exists
+    }
+
+    // Logging is not that important, all following opertions fail silently.
+    if (file_exists($this->archivingDir) && is_writeable($this->archivingDir)) {
+      $data = [
+        '----- BEGIN MAIL -----',
+        $_SERVER['REQUEST_URI'],
+      ];
+      if (!empty($lastMailerException)) {
+        $data[] = $lastMailerException->getMessage();
+      }
+
+      $data[] = '-----';
+      $data[] = $message->generateMessage();
+      $data[] = "----- END MAIL -----\n"; // trailing separator (in case multiple emails are logged)
+
+      $fileName = $this->archivingDir . "/" . (new \DateTime())->format("Y-m-d-His") . ".emaildump";
+      file_put_contents($fileName, join("\n", $data), FILE_APPEND);
+    }
+  }
+
+
   /**
    * Send an email with a nice template.
    * @param string|null $from Sender of the email
@@ -112,6 +145,7 @@ class EmailHelper {
     }
 
     // Send it via SMTP ...
+    $lastMailerException = null;
     if (!$this->debugMode) {
       try {
         $this->mailer->send($message);
@@ -122,30 +156,7 @@ class EmailHelper {
 
     // Archive a copy of the message into a file ...
     if ($this->archivingDir) {
-      if (!file_exists($this->archivingDir)) {
-        mkdir($this->archivingDir, 0775, true); // make sure logging directory exists
-      }
-
-      // Logging is not that important, all following opertions fail silently.
-      if (file_exists($this->archivingDir) && is_writeable($this->archivingDir)) {
-        $fileName = $this->archivingDir . "/" . (new \DateTime())->format("Y-m-d-His") . ".emaildump";
-        if (($fp = fopen($fileName, "a"))) {
-          $data = [
-            '----- BEGIN MAIL -----',
-            $_SERVER['REQUEST_URI'],
-          ];
-          if (!empty($lastMailerException)) {
-            $data[] = $lastMailerException->getMessage();
-          }
-
-          $data[] = '-----';
-          $data[] = $message->generateMessage();
-          $data[] = "----- END MAIL -----\n"; // trailing separator (in case multiple emails are logged)
-
-          fwrite($fp, join("\n", $data));
-          fclose($fp);
-        }
-      }
+      $this->archiveMailCopy($message, $lastMailerException);
     }
 
     return empty($lastMailerException);

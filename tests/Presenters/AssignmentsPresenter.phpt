@@ -152,7 +152,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'secondDeadline' => $secondDeadline,
         'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
         'isBonus' => $isBonus,
-        'pointsPercentualThreshold' => $pointsPercentualThreshold
+        'pointsPercentualThreshold' => $pointsPercentualThreshold,
       ]
     );
     $response = $this->presenter->run($request);
@@ -181,6 +181,53 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $updatedLocalized = $updatedAssignment["localizedTexts"][0];
     Assert::equal($updatedLocalized["locale"], $localized["locale"]);
     Assert::equal($updatedLocalized["text"], $localized["text"]);
+  }
+
+  public function testUpdateDetailWithoutNotifications()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $assignments = $this->assignments->findAll();
+    $assignment = array_pop($assignments);
+    $assignment->setIsPublic(false); // for testing of notification emails
+
+    /** @var Mockery\Mock | AssignmentEmailsSender $mockAssignmentEmailsSender */
+    $mockAssignmentEmailsSender = Mockery::mock(JobConfig\JobConfig::class);
+    $mockAssignmentEmailsSender->shouldReceive()->never(); // this is the main assertion of this test (no mail is sent)
+    $this->presenter->assignmentEmailsSender = $mockAssignmentEmailsSender;
+
+    $mockEvaluations = Mockery::mock(SolutionEvaluations::class);
+    $mockEvaluations->shouldReceive("flush")->once();
+    $this->presenter->solutionEvaluations = $mockEvaluations;
+
+    $request = new Nette\Application\Request('V1:Assignments', 'POST',
+      ['action' => 'updateDetail', 'id' => $assignment->getId()],
+      [
+        'isPublic' => true,
+        'version' => 1,
+        'sendNotification' => false,
+        'localizedTexts' => [
+          [ "locale" => "locA", "text" => "descA", "name" => "nameA" ]
+        ],
+        'firstDeadline' => (new \DateTime())->getTimestamp(),
+        'maxPointsBeforeFirstDeadline' => 42,
+        'submissionsCountLimit' => 10,
+        'allowSecondDeadline' => false,
+        'canViewLimitRatios' => false,
+        'isBonus' => false,
+        'pointsPercentualThreshold' => 50,
+      ]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    // check updated assignment
+    /** @var Assignment $updatedAssignment */
+    $updatedAssignment = $result['payload'];
+    Assert::true($updatedAssignment["isPublic"]);
   }
 
   public function testAddStudentHints()
