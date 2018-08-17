@@ -295,6 +295,8 @@ class SubmitPresenter extends BasePresenter {
       $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,
         FailureHelper::TYPE_API_ERROR,
         "Failed to generate job config for {$submission->getId()}");
+      // this return is here just to fool static analysis,
+      // submissionFailed method throws an exception and therefore following return is never reached
       return [];
     }
 

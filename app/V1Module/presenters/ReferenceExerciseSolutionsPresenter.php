@@ -17,6 +17,7 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Helper as ExerciseConfigHelper;
+use App\Helpers\FailureHelper;
 use App\Helpers\FileServerProxy;
 use App\Helpers\MonitorConfig;
 use App\Helpers\SubmissionHelper;
@@ -32,6 +33,7 @@ use App\Model\Repository\Exercises;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Model\Repository\ReferenceSolutionSubmissions;
+use App\Model\Repository\SubmissionFailures;
 use App\Model\Repository\UploadedFiles;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Model\View\ReferenceExerciseSolutionViewFactory;
@@ -135,6 +137,18 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $referenceSolutionAcl;
+
+  /**
+   * @var SubmissionFailures
+   * @inject
+   */
+  public $submissionFailures;
+
+  /**
+   * @var FailureHelper
+   * @inject
+   */
+  public $failureHelper;
 
 
   public function checkSolutions(string $exerciseId) {
@@ -325,6 +339,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws SubmissionEvaluationFailedException
    * @throws ParseException
    * @throws BadRequestException
+   * @throws SubmissionFailedException
    */
   public function actionSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -412,6 +427,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws ParseException
    * @throws BadRequestException
+   * @throws SubmissionFailedException
+   * @throws NotFoundException
    */
   public function actionResubmitAll($exerciseId) {
     $req = $this->getRequest();
@@ -438,6 +455,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @return array
    * @throws ForbiddenRequestException
    * @throws ParseException
+   * @throws SubmissionFailedException
    */
   private function finishSubmission(
       ReferenceExerciseSolution $referenceSolution,
@@ -456,11 +474,15 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $generatorResult = $this->jobConfigGenerator
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
-      return [
-        "referenceSolution" => $this->referenceSolutionViewFactory->getReferenceSolution($referenceSolution),
-        "submissions" => [],
-        "errors" => $hwGroups->map(function (HardwareGroup $group) { return $group->getId(); })
-      ];
+      $submission = new ReferenceSolutionSubmission($referenceSolution, null, "", $this->getCurrentUser());
+      $this->referenceSubmissions->persist($submission, false);
+
+      $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_CONFIG_ERROR, $e->getMessage(), $submission);
+      $this->submissionFailures->persist($failure);
+
+      $reportMessage = "Failed to generate job config for reference submission '{$submission->getId()}''";
+      $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
+      throw new SubmissionFailedException($e->getMessage());
     }
 
     foreach ($hwGroups->getValues() as $hwGroup) {
@@ -491,8 +513,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       } catch (SubmissionFailedException $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
         $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $submission);
-        $this->referenceSubmissions->persist($failure, false);
-        $errors[] = $hwGroup->getId();
+        $this->submissionFailures->persist($failure, false);
+        $errors[$hwGroup->getId()] = $e->getMessage();
       }
     }
 

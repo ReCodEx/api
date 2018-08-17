@@ -61,7 +61,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
   }
 
   public function __construct(ReferenceExerciseSolution $referenceSolution,
-      HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
+      ?HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
     parent::__construct($submittedBy, $jobConfigPath);
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
