@@ -218,9 +218,13 @@ class Variable implements JsonSerializable
    * Get test prefixed value as array if it is not array already.
    * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
-   * @return array|string
+   * @return array
    */
   public function getTestPrefixedValueAsArray(string $prefix = "") {
+    if ($this->isEmpty()) {
+      return [];
+    }
+
     $value = $this->getTestPrefixedValue($prefix);
     if (!is_array($value)) {
       $value = [$value];
@@ -250,9 +254,13 @@ class Variable implements JsonSerializable
 
   /**
    * Get value of the variable as array if it is not an array already.
-   * @return array|string
+   * @return array
    */
   public function getValueAsArray() {
+    if ($this->isEmpty()) {
+      return [];
+    }
+
     $value = $this->getValue();
     if (!is_array($value)) {
       $value = [$value];
