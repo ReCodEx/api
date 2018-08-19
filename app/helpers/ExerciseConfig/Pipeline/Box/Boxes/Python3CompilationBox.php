@@ -110,7 +110,7 @@ class Python3CompilationBox extends CompilationBox
     }
 
     // check if file produced by compilation was successfully created
-    $pycFiles = $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->getTestPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
+    $pycFiles = $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
     $exists = $this->compileExistsTask($pycFiles);
 
     return [$task, $exists];

@@ -44,10 +44,11 @@ class Variable implements JsonSerializable
   protected $value = null;
 
   /**
-   * Name of the test to which variable belongs to.
+   * Name of the directory where this variable will be stored.
+   * @note Relevant only for file types.
    * @var string
    */
-  protected $testName = null;
+  protected $directory = null;
 
   /**
    * Determines if variable is array or not.
@@ -194,15 +195,15 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Get test prefixed value or values.
+   * Get value or values prefixed with directory.
    * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
    * @return array|string
    */
-  public function getTestPrefixedValue(string $prefix = "") {
+  public function getDirPrefixedValue(string $prefix = "") {
     $value = $this->getValue();
-    if ($this->testName !== null) {
-      $prefix = $prefix . $this->testName . ConfigParams::$PATH_DELIM;
+    if ($this->directory !== null) {
+      $prefix = $prefix . $this->directory . ConfigParams::$PATH_DELIM;
     }
 
     if (is_scalar($value)) {
@@ -215,17 +216,17 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Get test prefixed value as array if it is not array already.
+   * Get value prefixed with directory or array if it is not array already.
    * This method should be used in boxes compilation.
    * @param string $prefix another prefix which can be added to values
    * @return array
    */
-  public function getTestPrefixedValueAsArray(string $prefix = "") {
+  public function getDirPrefixedValueAsArray(string $prefix = "") {
     if ($this->isEmpty()) {
       return [];
     }
 
-    $value = $this->getTestPrefixedValue($prefix);
+    $value = $this->getDirPrefixedValue($prefix);
     if (!is_array($value)) {
       $value = [$value];
     }
@@ -281,21 +282,21 @@ class Variable implements JsonSerializable
   }
 
   /**
-   * Set test name to which variable belongs to.
+   * Set directory name to which variable belongs to.
    * @param string $prefix
    * @return Variable
    */
-  public function setTestName(string $prefix): Variable {
-    $this->testName = $prefix;
+  public function setDirectory(string $prefix): Variable {
+    $this->directory = $prefix;
     return $this;
   }
 
   /**
-   * Get test name to which variable belongs to.
+   * Get directory name to which variable belongs to.
    * @return string
    */
-  public function getTestName(): string {
-    return $this->testName;
+  public function getDirectory(): string {
+    return $this->directory;
   }
 
   /**

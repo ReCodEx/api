@@ -22,11 +22,12 @@ use App\Helpers\ExerciseConfig\VariableTypes;
  * directory. Mkdir tasks will be also constructed and added to resulting tree.
  * @note Should be called after optimisation.
  */
-class TestDirectoriesResolver {
+class DirectoriesResolver {
 
   /**
    * Resolve test directory for a single node. Only output ports are processed
-   * in all nodes, because output ports should be files which ones are
+   * in all nodes, because output ports should be files which ones are emitted
+   * further.
    * @param Node $node
    * @param CompilationContext $context
    */
@@ -39,7 +40,7 @@ class TestDirectoriesResolver {
     foreach ($node->getBox()->getOutputPorts() as $outputPort) {
       $variableValue = $outputPort->getVariableValue();
       if ($variableValue && $variableValue->isFile()) {
-        $outputPort->getVariableValue()->setTestName($testName);
+        $outputPort->getVariableValue()->setDirectory($testName);
       }
     }
   }

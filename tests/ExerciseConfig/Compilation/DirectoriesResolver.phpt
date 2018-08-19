@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
+use App\Helpers\ExerciseConfig\Compilation\DirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
@@ -17,13 +17,13 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
 
-class TestTestDirectoriesResolver extends Tester\TestCase
+class TestDirectoriesResolver extends Tester\TestCase
 {
-  /** @var TestDirectoriesResolver */
+  /** @var DirectoriesResolver */
   private $resolver;
 
   public function __construct() {
-    $this->resolver = new TestDirectoriesResolver();
+    $this->resolver = new DirectoriesResolver();
   }
 
   public function testCorrect() {
@@ -126,7 +126,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal(null, $A->getTestId());
     Assert::equal("A", $A->getBox()->getName());
     Assert::count(1, $A->getBox()->getOutputPorts());
-    Assert::equal("valA", current($A->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("valA", current($A->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $B->getParents());
     Assert::equal([$A], $B->getParents());
@@ -137,7 +137,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal("1", $B->getTestId());
     Assert::equal("B", $B->getBox()->getName());
     Assert::count(1, $B->getBox()->getOutputPorts());
-    Assert::equal("testA/valB", current($B->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("testA/valB", current($B->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $C->getParents());
     Assert::equal([$B], $C->getParents());
@@ -148,7 +148,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal("1", $C->getTestId());
     Assert::equal("C", $C->getBox()->getName());
     Assert::count(1, $C->getBox()->getOutputPorts());
-    Assert::equal(["testA/valC1", "testA/valC2"], current($C->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal(["testA/valC1", "testA/valC2"], current($C->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $D->getParents());
     Assert::equal([$C], $D->getParents());
@@ -158,7 +158,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal("1", $D->getTestId());
     Assert::equal("D", $D->getBox()->getName());
     Assert::count(1, $D->getBox()->getOutputPorts());
-    Assert::equal("valD", current($D->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("valD", current($D->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $E->getParents());
     Assert::equal([$C], $E->getParents());
@@ -167,7 +167,7 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal(null, $E->getTestId());
     Assert::equal("E", $E->getBox()->getName());
     Assert::count(1, $E->getBox()->getOutputPorts());
-    Assert::equal("valE", current($E->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("valE", current($E->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $F->getParents());
     Assert::equal([$A], $F->getParents());
@@ -178,8 +178,8 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal("2", $F->getTestId());
     Assert::equal("F", $F->getBox()->getName());
     Assert::count(2, $F->getBox()->getOutputPorts());
-    Assert::equal("testB/valF1", $F->getBox()->getOutputPorts()["portF1"]->getVariableValue()->getTestPrefixedValue());
-    Assert::equal("testB/valF2", $F->getBox()->getOutputPorts()["portF2"]->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("testB/valF1", $F->getBox()->getOutputPorts()["portF1"]->getVariableValue()->getDirPrefixedValue());
+    Assert::equal("testB/valF2", $F->getBox()->getOutputPorts()["portF2"]->getVariableValue()->getDirPrefixedValue());
 
     Assert::count(1, $G->getParents());
     Assert::equal([$F], $G->getParents());
@@ -189,11 +189,11 @@ class TestTestDirectoriesResolver extends Tester\TestCase
     Assert::equal("2", $G->getTestId());
     Assert::equal("G", $G->getBox()->getName());
     Assert::count(1, $G->getBox()->getOutputPorts());
-    Assert::equal("valG", current($G->getBox()->getOutputPorts())->getVariableValue()->getTestPrefixedValue());
+    Assert::equal("valG", current($G->getBox()->getOutputPorts())->getVariableValue()->getDirPrefixedValue());
   }
 
 }
 
 # Testing methods run
-$testCase = new TestTestDirectoriesResolver();
+$testCase = new TestDirectoriesResolver();
 $testCase->run();
