@@ -193,7 +193,6 @@ class GroupViewFactory {
       "parentGroupId" => $group->getParentGroup() ? $group->getParentGroup()->getId() : null,
       "parentGroupsIds" => $group->getParentGroupsIds(),
       "childGroups" => $childGroups->map(function (Group $group) { return $group->getId(); })->getValues(),
-      "canView" => $canView,
       "privateData" => $privateData,
       "permissionHints" => PermissionHints::get($this->groupAcl, $group)
     ];
