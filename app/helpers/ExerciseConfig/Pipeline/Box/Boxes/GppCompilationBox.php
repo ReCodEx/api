@@ -117,7 +117,7 @@ class GppCompilationBox extends CompilationBox
     );
 
     // check if file produced by compilation was successfully created
-    $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR);
+    $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR);
     $exists = $this->compileExistsTask([$binary]);
 
     return [$task, $exists];

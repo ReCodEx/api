@@ -10,7 +10,7 @@ use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
 use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Compilation\PipelinesMerger;
-use App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver;
+use App\Helpers\ExerciseConfig\Compilation\DirectoriesResolver;
 use App\Helpers\ExerciseConfig\Compilation\VariablesResolver;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
@@ -255,9 +255,9 @@ class TestBaseCompiler extends Tester\TestCase
     $boxesSorter = new BoxesSorter();
     $boxesOptimizer = new BoxesOptimizer();
     $boxesCompiler = new BoxesCompiler();
-    $testDirectoriesResolver = new TestDirectoriesResolver();
+    $directoriesResolver = new DirectoriesResolver();
     $this->compiler = new BaseCompiler($pipelinesMerger, $boxesSorter,
-      $boxesOptimizer, $boxesCompiler, $testDirectoriesResolver);
+      $boxesOptimizer, $boxesCompiler, $directoriesResolver);
   }
 
   protected function tearDown() {

@@ -35,9 +35,9 @@ class BaseCompiler {
   private $boxesCompiler;
 
   /**
-   * @var TestDirectoriesResolver
+   * @var DirectoriesResolver
    */
-  private $testDirectoriesResolver;
+  private $directoriesResolver;
 
   /**
    * ExerciseConfigValidator constructor.
@@ -45,16 +45,16 @@ class BaseCompiler {
    * @param BoxesSorter $boxesSorter
    * @param BoxesOptimizer $boxesOptimizer
    * @param BoxesCompiler $boxesCompiler
-   * @param TestDirectoriesResolver $testDirectoriesResolver
+   * @param DirectoriesResolver $directoriesResolver
    */
   public function __construct(PipelinesMerger $pipelinesMerger,
-      BoxesSorter $boxesSorter, BoxesOptimizer $boxesOptimizer,
-      BoxesCompiler $boxesCompiler, TestDirectoriesResolver $testDirectoriesResolver) {
+                              BoxesSorter $boxesSorter, BoxesOptimizer $boxesOptimizer,
+                              BoxesCompiler $boxesCompiler, DirectoriesResolver $directoriesResolver) {
     $this->pipelinesMerger = $pipelinesMerger;
     $this->boxesSorter = $boxesSorter;
     $this->boxesOptimizer = $boxesOptimizer;
     $this->boxesCompiler = $boxesCompiler;
-    $this->testDirectoriesResolver = $testDirectoriesResolver;
+    $this->directoriesResolver = $directoriesResolver;
   }
 
 
@@ -69,7 +69,7 @@ class BaseCompiler {
     $tests = $this->pipelinesMerger->merge($context, $params);
     $sortedTests = $this->boxesSorter->sort($tests);
     $optimized = $this->boxesOptimizer->optimize($sortedTests);
-    $testDirectories = $this->testDirectoriesResolver->resolve($optimized, $context, $params);
+    $testDirectories = $this->directoriesResolver->resolve($optimized, $context, $params);
     $jobConfig = $this->boxesCompiler->compile($testDirectories, $context, $params);
     return $jobConfig;
   }

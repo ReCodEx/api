@@ -103,8 +103,8 @@ class RenameBox extends Box
     $task->setPriority(Priorities::$DEFAULT);
     $task->setCommandBinary(TaskCommands::$RENAME);
     $task->setCommandArguments([
-      $this->getInputPortValue(self::$RENAME_PORT_IN_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $this->getOutputPortValue(self::$RENAME_PORT_OUT_KEY)->getTestPrefixedValue(ConfigParams::$SOURCE_DIR)
+      $this->getInputPortValue(self::$RENAME_PORT_IN_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $this->getOutputPortValue(self::$RENAME_PORT_OUT_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR)
     ]);
     return [$task];
   }

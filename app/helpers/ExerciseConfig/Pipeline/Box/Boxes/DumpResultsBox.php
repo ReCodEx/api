@@ -106,8 +106,8 @@ class DumpResultsBox extends Box
 
     $port = current($this->getInputPorts());
     $task->setCommandArguments([
-      $port->getVariableValue()->getTestPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $port->getVariableValue()->getTestPrefixedValue(ConfigParams::$RESULT_DIR),
+      $port->getVariableValue()->getDirPrefixedValue(ConfigParams::$SOURCE_DIR),
+      $port->getVariableValue()->getDirPrefixedValue(ConfigParams::$RESULT_DIR),
       ConfigParams::$DUMPDIR_LIMIT
     ]);
 
