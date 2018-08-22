@@ -115,7 +115,7 @@ class Pipeline implements JsonSerializable
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
-      User $author, ?Pipeline $createdFrom = null, Exercise $exercise = null, Collection $runtimeEnvironments = null) {
+      ?User $author = null, ?Pipeline $createdFrom = null, Exercise $exercise = null, Collection $runtimeEnvironments = null) {
     $this->createdAt = new DateTime();
     $this->updatedAt = new DateTime();
 
@@ -206,11 +206,11 @@ class Pipeline implements JsonSerializable
 
   /**
    * Create empty pipeline entity.
-   * @param User $user
+   * @param User|null $user The author of the pipeline (null for universal pipelines).
    * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @return Pipeline
    */
-  public static function create(User $user, Exercise $exercise = null): Pipeline {
+  public static function create(?User $user, ?Exercise $exercise = null): Pipeline {
     return new self(
       "",
       1,
