@@ -154,7 +154,7 @@ class ExportDatabase extends Command {
     $pipelines = [];
 
     $index = 0;
-    foreach ($this->pipelines->findBy([], ["name" => "ASC"]) as $pipeline) {
+    foreach ($this->pipelines->findBy(["author" => null], ["name" => "ASC"]) as $pipeline) {
       /** @var Pipeline $pipeline */
 
       $index++;
@@ -178,7 +178,7 @@ class ExportDatabase extends Command {
 
       $constructArr = [];
       $constructArr["create"] = [];
-      $constructArr["create"][] = "@demoAdmin";
+      $constructArr["create"][] = null;
 
       $pipelineArr = [];
       $pipelineArr["__construct"] = $constructArr;
