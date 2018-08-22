@@ -25,7 +25,7 @@ class Roles
     self::STUDENT_ROLE,
     self::SUPERVISOR_STUDENT_ROLE,
     self::SUPERVISOR_ROLE,
-    self::EMPOWERED_SUPERVISOR_ROLE.
+    self::EMPOWERED_SUPERVISOR_ROLE,
     self::SUPERADMIN_ROLE
   ];
 
