@@ -4,7 +4,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
-
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 
 /**
  * Internal exercise configuration compilation service. Handles optimisation
@@ -14,6 +14,73 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
  * identification of test should be cleared.
  */
 class BoxesOptimizer {
+
+  /**
+   * Determine if given ports can be optimized or not.
+   * @param Port $first could not be null
+   * @param Port $second could not be null
+   * @return bool
+   */
+  private static function canPortsBeOptimized(Port $first, Port $second) {
+    $variableValue = $first->getVariableValue();
+    $otherVariableValue = $second->getVariableValue();
+    if ($variableValue === null && $otherVariableValue === null) {
+      return true;
+    }
+
+    if ($variableValue === null || $otherVariableValue === null ||
+      $variableValue->getValue() !== $variableValue->getValue()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Compare two given nodes and determine if they can be optimized.
+   * @param Node $first
+   * @param Node $second
+   * @return bool
+   */
+  private static function canNodesBeOptimized(Node $first, Node $second): bool {
+    if ($first->getBox() === null || $second->getBox() === null) {
+      return false;
+    }
+
+    $firstBox = $first->getBox();
+    $secondBox = $second->getBox();
+
+    // check box types
+    if ($firstBox->getType() !== $secondBox->getType()) {
+      return false;
+    }
+
+    // check ports counts
+    if (count($firstBox->getInputPorts()) !== count($secondBox->getInputPorts()) ||
+      count($firstBox->getOutputPorts()) !== count($secondBox->getOutputPorts())) {
+      return false;
+    }
+
+    // check input ports for equality
+    foreach ($firstBox->getInputPorts() as $port) {
+      $otherPort = $secondBox->getInputPort($port->getName());
+      if ($otherPort === null ||
+        self::canPortsBeOptimized($port, $otherPort) === false) {
+        return false;
+      }
+    }
+
+    // check output ports for equality
+    foreach ($firstBox->getOutputPorts() as $port) {
+      $otherPort = $secondBox->getOutputPort($port->getName());
+      if ($otherPort === null ||
+        self::canPortsBeOptimized($port, $otherPort) === false) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   /**
    * In-place optimisation of the given tree.
@@ -35,7 +102,54 @@ class BoxesOptimizer {
     // usually the same thing for all tests is compilation which is the first
     // set of tasks in the tree.
 
-    // TODO: implementation
+    // processing queue simulating breadth-first search
+    $queue = [$rootNode];
+    while (!empty($queue)) {
+      $node = array_shift($queue); /** @var Node $node */
+      $children = $node->getChildren();
+
+      if (count($children) < 2) {
+        // there is nothing to optimize if node has only one or none children
+        continue;
+      }
+
+      // go through all children from currently processed node
+      // all children are taken as a base for further comparisons
+      while (!empty($children)) {
+        $child = array_shift($children);
+        $compChildren = $children;
+
+        // base $child has to be compared against all other children
+        // if the children are equal, then they should be optimised
+        while(!empty($compChildren)) {
+          $compared = array_shift($compChildren);
+
+          // children can be optimized... so do it
+          if (self::canNodesBeOptimized($child, $compared)) {
+            // delete the children from the base children array
+            $children = array_diff($children, [$compared]);
+            $child->setTestId(null); // clear the test identification
+            // TODO: set directory
+
+            foreach ($compared->getChildren() as $comparedChild) {
+              $comparedChild->removeParent($compared);
+              $comparedChild->addParent($child);
+              $child->addChild($comparedChild);
+            }
+
+            foreach ($compared->getParents() as $comparedParent) {
+              $comparedParent->removeChild($compared);
+              $comparedParent->addChild($child);
+              $child->addParent($comparedParent);
+            }
+          }
+        }
+      }
+
+      // do not forget to add newly created children from current node to
+      // processing queue
+      array_merge($queue, $node->getChildren());
+    }
   }
 
   /**

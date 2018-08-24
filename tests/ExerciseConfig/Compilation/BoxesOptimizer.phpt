@@ -5,18 +5,20 @@ include '../../bootstrap.php';
 use App\Helpers\ExerciseConfig\Compilation\BoxesOptimizer;
 use Tester\Assert;
 
-
+/**
+ * @testCase
+ */
 class TestBoxesOptimizer extends Tester\TestCase
 {
   /** @var BoxesOptimizer */
   private $optimizer;
 
   public function __construct() {
-    $this->optimizer = null;
+    $this->optimizer = new BoxesOptimizer();
   }
 
   public function testTrue() {
-    Assert::true(true);
+    Assert::true(false);
     // @todo
   }
 

@@ -161,7 +161,9 @@ class Node {
    * @param Node $parent
    */
   public function addParent(Node $parent) {
-    $this->parents[] = $parent;
+    if (array_search($parent, $this->parents, true) === false) {
+      $this->parents[] = $parent;
+    }
   }
 
   /**
@@ -187,7 +189,9 @@ class Node {
    * @param Node $child
    */
   public function addChild(Node $child) {
-    $this->children[] = $child;
+    if (array_search($child, $this->children, true) === false) {
+      $this->children[] = $child;
+    }
   }
 
   /**
