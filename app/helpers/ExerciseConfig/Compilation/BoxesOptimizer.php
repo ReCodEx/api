@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use Nette\Utils\Arrays;
 
 /**
  * Internal exercise configuration compilation service. Handles optimisation
@@ -22,6 +23,10 @@ class BoxesOptimizer {
    * @return bool
    */
   private static function canPortsBeOptimized(Port $first, Port $second) {
+    if ($first->getType() !== $second->getType()) {
+      return false;
+    }
+
     $variableValue = $first->getVariableValue();
     $otherVariableValue = $second->getVariableValue();
     if ($variableValue === null && $otherVariableValue === null) {
@@ -57,7 +62,7 @@ class BoxesOptimizer {
 
     // check ports counts
     if (count($firstBox->getInputPorts()) !== count($secondBox->getInputPorts()) ||
-      count($firstBox->getOutputPorts()) !== count($secondBox->getOutputPorts())) {
+        count($firstBox->getOutputPorts()) !== count($secondBox->getOutputPorts())) {
       return false;
     }
 
@@ -65,7 +70,7 @@ class BoxesOptimizer {
     foreach ($firstBox->getInputPorts() as $port) {
       $otherPort = $secondBox->getInputPort($port->getName());
       if ($otherPort === null ||
-        self::canPortsBeOptimized($port, $otherPort) === false) {
+          self::canPortsBeOptimized($port, $otherPort) === false) {
         return false;
       }
     }
@@ -74,7 +79,7 @@ class BoxesOptimizer {
     foreach ($firstBox->getOutputPorts() as $port) {
       $otherPort = $secondBox->getOutputPort($port->getName());
       if ($otherPort === null ||
-        self::canPortsBeOptimized($port, $otherPort) === false) {
+          self::canPortsBeOptimized($port, $otherPort) === false) {
         return false;
       }
     }
@@ -117,19 +122,22 @@ class BoxesOptimizer {
       // all children are taken as a base for further comparisons
       while (!empty($children)) {
         $child = array_shift($children);
-        $compChildren = $children;
+        $copyChildren = $children;
 
         // base $child has to be compared against all other children
         // if the children are equal, then they should be optimised
-        while(!empty($compChildren)) {
-          $compared = array_shift($compChildren);
+        while(!empty($copyChildren)) {
+          $compared = array_shift($copyChildren);
 
           // children can be optimized... so do it
           if (self::canNodesBeOptimized($child, $compared)) {
             // delete the children from the base children array
-            $children = array_diff($children, [$compared]);
+            $children = array_filter($children, function ($n) use ($compared) {
+              return $n === $compared;
+            });
             $child->setTestId(null); // clear the test identification
             // TODO: set directory
+            // TODO: dependencies setting
 
             foreach ($compared->getChildren() as $comparedChild) {
               $comparedChild->removeParent($compared);
@@ -165,6 +173,7 @@ class BoxesOptimizer {
     foreach ($tests as $testName => $test) {
       foreach ($test->getRootNodes() as $node) {
         $rootNode->addChild($node);
+        $node->addParent($rootNode);
       }
     }
 
@@ -180,6 +189,7 @@ class BoxesOptimizer {
     // temporary and therefore we can use only its children
     $tree = new RootedTree();
     foreach ($rootNode->getChildren() as $node) {
+      $node->removeParent($rootNode);
       $tree->addRootNode($node);
     }
     return $tree;
