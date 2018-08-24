@@ -173,6 +173,7 @@ class Node {
   public function removeParent(Node $parent) {
     if(($key = array_search($parent, $this->parents)) !== false){
       unset($this->parents[$key]);
+      $this->parents = array_values($this->parents);
     }
   }
 
@@ -201,6 +202,7 @@ class Node {
   public function removeChild(Node $child) {
     if(($key = array_search($child, $this->children)) !== false){
       unset($this->children[$key]);
+      $this->children = array_values($this->children);
     }
   }
 
@@ -217,7 +219,9 @@ class Node {
    * @param Node $dependency
    */
   public function addDependency(Node $dependency) {
-    $this->dependencies[] = $dependency;
+    if (array_search($dependency, $this->dependencies, true) === false) {
+      $this->dependencies[] = $dependency;
+    }
   }
 
 }
