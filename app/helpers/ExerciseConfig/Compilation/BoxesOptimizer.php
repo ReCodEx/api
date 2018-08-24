@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 
 
@@ -16,9 +17,9 @@ class BoxesOptimizer {
 
   /**
    * In-place optimisation of the given tree.
-   * @param RootedTree $tree
+   * @param Node $rootNode
    */
-  private function optimizeTree(RootedTree $tree) {
+  private function optimizeTree(Node $rootNode) {
     // Ok, here it goes...
     // The whole optimisation is based on following heuristic. We were given a
     // rooted tree which can have multiple root nodes. The tree is traversed by
@@ -29,7 +30,7 @@ class BoxesOptimizer {
     // four nodes are contracted into 2 nodes. These two nodes then contain
     // subtrees from the 2 nodes of which they are composed. After this,
     // the procedure is repeated for all nodes from subtrees.
-    // Therefore this heuristics is capable only optimise the begging of the
+    // Therefore this heuristics is capable only optimise the beginning of the
     // trees and not the ends. This is generally fine for our usage, because
     // usually the same thing for all tests is compilation which is the first
     // set of tasks in the tree.
@@ -45,10 +46,11 @@ class BoxesOptimizer {
    * @return RootedTree
    */
   public function optimize(array $tests): RootedTree {
-    $tree = new RootedTree();
+    // create new root node which contains all root nodes from given subtrees
+    $rootNode = new Node();
     foreach ($tests as $testName => $test) {
-      foreach ($test->getRootNodes() as $rootNode) {
-        $tree->addRootNode($rootNode);
+      foreach ($test->getRootNodes() as $node) {
+        $rootNode->addChild($node);
       }
     }
 
@@ -58,7 +60,14 @@ class BoxesOptimizer {
     // ere the sun rises!
     // Optimize! Optimize! OPTIMIZE!
 
-    $this->optimizeTree($tree);
+    $this->optimizeTree($rootNode);
+
+    // based on created root node create a rooted tree, root node was only
+    // temporary and therefore we can use only its children
+    $tree = new RootedTree();
+    foreach ($rootNode->getChildren() as $node) {
+      $tree->addRootNode($node);
+    }
     return $tree;
   }
 
