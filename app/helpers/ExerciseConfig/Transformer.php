@@ -30,9 +30,9 @@ class Transformer {
    */
   private function fromPipelines(array $pipelines): array {
     $pipelinesArr = array();
-    foreach ($pipelines as $pipelineId => $pipeline) {
+    foreach ($pipelines as $pipeline) {
       $pipelineArr = array();
-      $pipelineArr["name"] = $pipelineId;
+      $pipelineArr["name"] = $pipeline->getId();
       $pipelineArr["variables"] = array();
 
       foreach ($pipeline->getVariablesTable()->getAll() as $variable) {

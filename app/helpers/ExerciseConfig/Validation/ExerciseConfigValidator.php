@@ -116,7 +116,8 @@ class ExerciseConfigValidator {
 
     // load pipeline configurations from database
     $pipelineConfigs = [];
-    foreach (array_keys($pipelines) as $pipelineId) {
+    foreach ($pipelines as $pipeline) {
+      $pipelineId = $pipeline->getId();
       $pipelineEntity = $this->pipelines->get($pipelineId);
       if ($pipelineEntity === null) {
         throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
@@ -132,7 +133,8 @@ class ExerciseConfigValidator {
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
      */
-    foreach ($pipelines as $pipelineId => $pipelineVars) {
+    foreach ($pipelines as $pipelineVars) {
+      $pipelineId = $pipelineVars->getId();
       $expectedVariablesNames = array_map(function (Variable $variable) {
         return $variable->getName();
       }, $expectedVariables[$pipelineId]);
