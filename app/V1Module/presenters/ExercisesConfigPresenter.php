@@ -347,13 +347,6 @@ class ExercisesConfigPresenter extends BasePresenter {
     /** @var Exercise $exercise */
     $exercise = $this->exercises->findOrThrow($id);
 
-    // prepare pipeline configurations
-    $pipelines = [];
-    foreach ($pipelinesIds as $pipelineId) {
-      $pipelineConfig = $this->pipelines->findOrThrow($pipelineId)->getPipelineConfig();
-      $pipelines[$pipelineId] = $this->exerciseConfigLoader->loadPipeline($pipelineConfig->getParsedPipeline());
-    }
-
     // prepare environment configuration if needed
     if ($runtimeEnvironmentId !== null) {
         $environment = $this->runtimeEnvironments->findOrThrow($runtimeEnvironmentId);
@@ -364,7 +357,7 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     // compute result and send it back
-    $result = $this->exerciseConfigHelper->getVariablesForExercise($pipelines, $environmentVariables);
+    $result = $this->exerciseConfigHelper->getVariablesForExercise($pipelinesIds, $environmentVariables);
     $this->sendSuccessResponse($result);
   }
 
