@@ -64,7 +64,7 @@ class TestEnvironment extends Tester\TestCase
   public function testPipelinesOperations() {
     $environment = new Environment();
     $pipeline = new PipelineVars();
-    $pipeline->setName("pipelineA");
+    $pipeline->setId("pipelineA");
 
     $environment->addPipeline($pipeline);
     Assert::type(PipelineVars::class, $environment->getPipeline("pipelineA"));

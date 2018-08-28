@@ -93,7 +93,7 @@ class Loader {
     if (!isset($data[PipelineVars::NAME_KEY])) {
       throw new ExerciseConfigException("Exercise pipeline does not have name specified");
     }
-    $pipeline->setName($data[PipelineVars::NAME_KEY]);
+    $pipeline->setId($data[PipelineVars::NAME_KEY]);
 
     if (isset($data[PipelineVars::VARIABLES_KEY]) && is_array($data[PipelineVars::VARIABLES_KEY])) {
       $pipeline->setVariablesTable($this->loadVariablesTable($data[PipelineVars::VARIABLES_KEY]));
