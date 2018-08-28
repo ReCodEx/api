@@ -48,7 +48,7 @@ class Environment implements JsonSerializable {
    * @return $this
    */
   public function addPipeline(PipelineVars $pipeline): Environment {
-    $this->pipelines[$pipeline->getName()] = $pipeline;
+    $this->pipelines[$pipeline->getId()] = $pipeline;
     return $this;
   }
 

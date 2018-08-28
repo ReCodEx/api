@@ -17,10 +17,10 @@ class PipelineVars implements JsonSerializable {
 
 
   /**
-   * Identifier of pipeline
+   * Identifier of pipeline (UUID of db entity).
    * @var string
    */
-  protected $name;
+  protected $id;
 
   /**
    * Variables table structure.
@@ -38,17 +38,17 @@ class PipelineVars implements JsonSerializable {
    * Get identification of pipeline.
    * @return string
    */
-  public function getName(): ?string {
-    return $this->name;
+  public function getId(): ?string {
+    return $this->id;
   }
 
   /**
    * Set identification of pipeline.
-   * @param string $name
+   * @param string $id
    * @return PipelineVars
    */
-  public function setName(string $name): PipelineVars {
-    $this->name = $name;
+  public function setId(string $id): PipelineVars {
+    $this->id = $id;
     return $this;
   }
 
@@ -77,7 +77,7 @@ class PipelineVars implements JsonSerializable {
    */
   public function toArray(): array {
     $data = [];
-    $data[self::NAME_KEY] = $this->name;
+    $data[self::NAME_KEY] = $this->id;
     $data[self::VARIABLES_KEY] = $this->variablesTable->toArray();
     return $data;
   }

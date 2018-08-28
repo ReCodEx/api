@@ -112,7 +112,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testMissingEnvironmentPipeline() {
     $notExisting = new PipelineVars();
-    $notExisting->setName("not existing pipeline");
+    $notExisting->setId("not existing pipeline");
 
     $environment = new Environment();
     $environment->addPipeline($notExisting);
@@ -141,7 +141,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testDifferentNumberOfTests() {
     $existing = new PipelineVars();
-    $existing->setName("existing pipeline");
+    $existing->setId("existing pipeline");
 
     $environment = new Environment();
     $environment->addPipeline($existing);
@@ -167,7 +167,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testDifferentTestIds() {
     $existing = new PipelineVars();
-    $existing->setName("existing pipeline");
+    $existing->setId("existing pipeline");
 
     $environment = new Environment();
     $environment->addPipeline($existing);
@@ -206,7 +206,7 @@ class TestExerciseConfigValidator extends Tester\TestCase
 
   public function testCorrect() {
     $existing = new PipelineVars();
-    $existing->setName("existing pipeline");
+    $existing->setId("existing pipeline");
 
     $environment = new Environment();
     $environment->addPipeline($existing);
