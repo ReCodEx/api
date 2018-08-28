@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\Wildcards;
 use App\Model\Repository\Pipelines;
@@ -152,6 +153,7 @@ class Helper {
    * @param string[] $files
    * @return string[]
    * @throws ExerciseConfigException
+   * @throws NotFoundException
    */
   public function getEnvironmentsForFiles(IExercise $exercise, array $files): array {
     $envStatuses = [];
@@ -180,7 +182,8 @@ class Helper {
 
         // load all pipelines for this test and environment
         $pipelines = [];
-        foreach ($env->getPipelines() as $pipelineId => $pipeline) {
+        foreach ($env->getPipelines() as $pipeline) {
+          $pipelineId = $pipeline->getId();
           $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
           $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
           $pipelines[$pipelineId] = $pipelineConfig;
@@ -204,6 +207,7 @@ class Helper {
           if ($variable === null) {
             // if variable was not found in environment config, peek into exercise config
             $variable = $env->getPipeline($input[0])->getVariablesTable()->get($varName);
+            // TODO: get pipeline has to be removed and something else used...
           }
 
           // somethings fishy here
@@ -305,7 +309,7 @@ class Helper {
           throw new ExerciseConfigException("Environment '{$environment->getId()}' not found in test '$testId'");
         }
 
-        foreach ($env->getPipelines() as $pipelineId => $pipeline) {
+        foreach ($env->getPipelines() as $pipeline) {
           $variables = $this->findSubmitVariablesInVariablesTable($pipeline->getVariablesTable());
           $envResults[$environment->getId()] = array_merge($envResults[$environment->getId()], $variables);
         }

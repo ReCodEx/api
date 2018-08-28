@@ -259,7 +259,6 @@ class PipelinesMerger {
 
   /**
    * Process pipeline, which means creating its tree.
-   * @param string $pipelineId
    * @param string $testId
    * @param PipelineVars $pipelineVars
    * @param CompilationContext $context
@@ -267,8 +266,9 @@ class PipelinesMerger {
    * @return MergeTree new instance of merge tree
    * @throws ExerciseConfigException
    */
-  private function processPipeline(string $pipelineId, string $testId, PipelineVars $pipelineVars,
+  private function processPipeline(string $testId, PipelineVars $pipelineVars,
       CompilationContext $context, CompilationParams $params): MergeTree {
+    $pipelineId = $pipelineVars->getId();
 
     // get database entity and then structured pipeline configuration
     try {
@@ -315,10 +315,10 @@ class PipelinesMerger {
     // go through all pipelines and merge their data boxes into resulting array
     // which has all variables tables set
     $tree = new MergeTree();
-    foreach ($testPipelines as $pipelineId => $pipelineVars) {
+    foreach ($testPipelines as $pipelineVars) {
 
       // process pipeline and merge it to already existing tree
-      $pipelineTree = $this->processPipeline($pipelineId, $testId, $pipelineVars, $context, $params);
+      $pipelineTree = $this->processPipeline($testId, $pipelineVars, $context, $params);
       // merge given tree and currently created pipeline tree
       $tree = $this->mergeTrees($tree, $pipelineTree);
     }

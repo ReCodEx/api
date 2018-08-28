@@ -31,15 +31,18 @@ class Environment implements JsonSerializable {
 
   /**
    * Get pipeline for the given name.
-   * @param string $name
+   * @note There can be multiple pipelines with the same identification.
+   * This method will find only the first one.
+   * @param string $id
    * @return PipelineVars|null
    */
-  public function getPipeline(string $name): ?PipelineVars {
-    if (!array_key_exists($name, $this->pipelines)) {
-      return null;
+  public function getPipeline(string $id): ?PipelineVars {
+    foreach ($this->pipelines as $pipeline) {
+      if ($pipeline->getId() === $id) {
+        return $pipeline;
+      }
     }
-
-    return $this->pipelines[$name];
+    return null;
   }
 
   /**
@@ -48,7 +51,7 @@ class Environment implements JsonSerializable {
    * @return $this
    */
   public function addPipeline(PipelineVars $pipeline): Environment {
-    $this->pipelines[$pipeline->getId()] = $pipeline;
+    $this->pipelines[] = $pipeline;
     return $this;
   }
 
@@ -58,7 +61,10 @@ class Environment implements JsonSerializable {
    * @return $this
    */
   public function removePipeline(string $id): Environment {
-    unset($this->pipelines[$id]);
+    $this->pipelines = array_filter($this->pipelines,
+      function (PipelineVars $pipeline) use ($id) {
+        return $pipeline->getId() !== $id;
+    });
     return $this;
   }
 
