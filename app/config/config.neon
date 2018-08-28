@@ -321,6 +321,7 @@ services:
   - App\Helpers\ExerciseConfig\Compilation\VariablesResolver
   - App\Helpers\ExerciseConfig\Compilation\TestDirectoriesResolver
   - App\Helpers\ExerciseConfig\Helper
+  - App\Helpers\ExerciseConfig\PipelinesCache
   - App\Helpers\SisHelper(%sis.apiBase%, %sis.faculty%, %sis.secret%)
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker

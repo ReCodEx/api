@@ -25,6 +25,11 @@ class Helper {
   private $pipelines;
 
   /**
+   * @var PipelinesCache
+   */
+  private $pipelineCache;
+
+  /**
    * Constructor
    * @param Loader $loader
    * @param Pipelines $pipelines
@@ -44,8 +49,6 @@ class Helper {
   private function joinPipelinesAndGetInputVariables(array $pipelines, array& $inputs, array& $references) {
     $outputs = []; // pairs of pipeline identifier and port indexed by variable name
     foreach ($pipelines as $pipelineId => $pipeline) {
-      $result[$pipelineId] = [];
-
       // load pipeline input variables
       $localInputs = [];
       foreach ($pipeline->getDataInBoxes() as $dataInBox) {
