@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\Wildcards;
 use App\Model\Repository\Pipelines;
 
@@ -20,47 +21,47 @@ class Helper {
   private $loader;
 
   /**
-   * @var Pipelines
-   */
-  private $pipelines;
-
-  /**
    * @var PipelinesCache
    */
-  private $pipelineCache;
+  private $pipelinesCache;
 
   /**
    * Constructor
    * @param Loader $loader
-   * @param Pipelines $pipelines
+   * @param PipelinesCache $pipelinesCache
    */
-  public function __construct(Loader $loader, Pipelines $pipelines) {
+  public function __construct(Loader $loader, PipelinesCache $pipelinesCache) {
     $this->loader = $loader;
-    $this->pipelines = $pipelines;
+    $this->pipelinesCache = $pipelinesCache;
   }
 
 
   /**
    * Join pipelines and find variables which needs to be defined by either environment config or exercise config.
-   * @param Pipeline[] $pipelines indexed by pipeline id
-   * @param array $inputs Pairs of pipeline identifier and port indexed by variable name
-   * @param array $references Pairs of pipeline identifier and variable indexed by variable name
+   * @param string[] $pipelinesIds identifications of pipelines
+   * @param array $inputs same length array as given pipelines, sub-arrays contain ports indexed by variable name
+   * @param array $references same length array as given pipelines, sub-arrays contain variables indexed by variable name
+   * @throws ExerciseConfigException
+   * @throws NotFoundException
    */
-  private function joinPipelinesAndGetInputVariables(array $pipelines, array& $inputs, array& $references) {
-    $outputs = []; // pairs of pipeline identifier and port indexed by variable name
-    foreach ($pipelines as $pipelineId => $pipeline) {
+  private function joinPipelinesAndGetInputVariables(array $pipelinesIds, array& $inputs, array& $references) {
+    $lastOutputs = [];
+    foreach ($pipelinesIds as $pipelineId) {
+      $pipeline = $this->pipelinesCache->getPipelineConfig($pipelineId);
+
       // load pipeline input variables
       $localInputs = [];
       foreach ($pipeline->getDataInBoxes() as $dataInBox) {
         foreach ($dataInBox->getOutputPorts() as $outputPort) {
-          $localInputs[$outputPort->getVariable()] = [$pipelineId, $outputPort];
+          $localInputs[$outputPort->getVariable()] = $outputPort;
         }
       }
 
       // find reference variables and add them to inputs
+      $localReferences = [];
       foreach ($pipeline->getVariablesTable()->getAll() as $variable) {
         if ($variable->isReference()) {
-          $references[$variable->getName()] = [$pipelineId, $variable];
+          $localReferences[$variable->getName()] = $variable;
         }
       }
 
@@ -68,12 +69,12 @@ class Helper {
       $localOutputs = [];
       foreach ($pipeline->getDataOutBoxes() as $dataOutBox) {
         foreach ($dataOutBox->getInputPorts() as $inputPort) {
-          $localOutputs[$inputPort->getVariable()] = [$pipelineId, $inputPort];
+          $localOutputs[] = $inputPort->getVariable();
         }
       }
 
       // remove variables which join pipelines
-      foreach (array_keys($outputs) as $variableName) {
+      foreach ($lastOutputs as $variableName) {
         if (!array_key_exists($variableName, $localInputs)) {
           // output variable cannot be found in local input variables, this
           // means that output variable is not joining with any input variable,
@@ -81,13 +82,13 @@ class Helper {
           continue;
         }
 
-        unset($outputs[$variableName]);
         unset($localInputs[$variableName]);
       }
 
-      // merge variables
-      $inputs = array_merge($inputs, $localInputs);
-      $outputs = array_merge($outputs, $localOutputs);
+      // apply local variables to output ones
+      $inputs[] = $localInputs;
+      $references[] = $localReferences;
+      $lastOutputs = $localOutputs;
     }
   }
 
@@ -95,57 +96,71 @@ class Helper {
    * Get variables which exercise configuration should include for given
    * pipelines. During computations pipelines are merged and variables checked
    * against environment configuration. Only inputs are returned as result.
-   * @param Pipeline[] $pipelines indexed by pipeline id
+   * @param string[] $pipelinesIds identifications of pipelines
    * @param VariablesTable $environmentVariables
    * @return array
    * @throws ExerciseConfigException
+   * @throws NotFoundException
    */
-  public function getVariablesForExercise(array $pipelines, VariablesTable $environmentVariables): array {
+  public function getVariablesForExercise(array $pipelinesIds, VariablesTable $environmentVariables): array {
 
     // process input variables from pipelines
     $inputs = []; // pairs of pipeline identifier and port indexed by variable name
     $references = []; // pairs of pipeline identifier and variable indexed by variable name
-    $this->joinPipelinesAndGetInputVariables($pipelines, $inputs, $references);
-
-    // initialize results array
-    $result = [];
-    foreach ($pipelines as $pipelineId => $pipeline) {
-      $result[$pipelineId] = [];
-    }
+    $this->joinPipelinesAndGetInputVariables($pipelinesIds, $inputs, $references);
 
     // go through inputs and assign them to result
-    foreach ($inputs as $variableName => $pair) {
-      if ($environmentVariables->get($variableName)) {
-        // variable is defined in environment variables
-        continue;
+    $result = [];
+    for ($i = 0; $i < count($pipelinesIds); $i++) {
+      $pipelineId = $pipelinesIds[$i];
+      $inputPorts = $inputs[$i];
+      $referenceVariables = $references[$i];
+
+      // declare temporary result holder for this loop sake
+      $pipelineVariables = [];
+
+      // go through input ports
+      foreach ($inputPorts as $variableName => $inputPort) {
+        if ($environmentVariables->get($variableName)) {
+          // variable is defined in environment variables
+          continue;
+        }
+
+        if ($inputPort->isFile() && $inputPort->isArray()) {
+          // port is file and also array, in exercise config if there should be
+          // defined file as variable it is expected to be remote file, so the
+          // remote file type is offered back to web-app
+          $variable = (new Variable(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))->setName($variableName);
+        } else if ($inputPort->isFile() && !$inputPort->isArray()) {
+          // port is file and not an array, in exercise config if there should be
+          // defined file as variable it is expected to be remote file, so the
+          // remote file type is offered back to web-app
+          $variable = (new Variable(VariableTypes::$REMOTE_FILE_TYPE))->setName($variableName);
+        } else {
+          $variable = (new Variable($inputPort->getType()))->setName($variableName);
+        }
+        $pipelineVariables[] = $variable;
       }
 
-      $port = $pair[1];
-      if ($port->isFile() && $port->isArray()) {
-        // port is file and also array, in exercise config if there should be
-        // defined file as variable it is expected to be remote file, so the
-        // remote file type is offered back to web-app
-        $variable = (new Variable(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))->setName($variableName);
-      } else if ($port->isFile() && !$port->isArray()) {
-        // port is file and not an array, in exercise config if there should be
-        // defined file as variable it is expected to be remote file, so the
-        // remote file type is offered back to web-app
-        $variable = (new Variable(VariableTypes::$REMOTE_FILE_TYPE))->setName($variableName);
-      } else {
-        $variable = (new Variable($port->getType()))->setName($variableName);
-      }
-      $result[$pair[0]][] = $variable;
-    }
-    foreach ($references as $pair) {
-      $variableName = $pair[1]->getReference();
-      if ($environmentVariables->get($variableName)) {
-        // variable is defined in environment variables
-        continue;
+      // go through reference variables
+      foreach ($referenceVariables as $referenceVariable) {
+        $variableName = $referenceVariable->getReference();
+        if ($environmentVariables->get($variableName)) {
+          // variable is defined in environment variables
+          continue;
+        }
+
+        $variable = (new Variable($referenceVariable->getType()))->setName($variableName);
+        $pipelineVariables[] = $variable;
       }
 
-      $variable = (new Variable($pair[1]->getType()))->setName($variableName);
-      $result[$pair[0]][] = $variable;
+      // generate proper result structure
+      $result[] = [
+        "id" => $pipelineId,
+        "variables" => $pipelineVariables
+      ];
     }
+
     return $result;
   }
 
@@ -185,75 +200,78 @@ class Helper {
 
         // load all pipelines for this test and environment
         $pipelines = [];
+        $pipelinesIds = [];
         foreach ($env->getPipelines() as $pipeline) {
-          $pipelineId = $pipeline->getId();
-          $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
-          $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
-          $pipelines[$pipelineId] = $pipelineConfig;
+          $pipelines[] = $pipeline;
+          $pipelinesIds[] = $pipeline->getId();
         }
 
         // join pipelines and return inputs from all of them
         $inputs = []; // pairs of pipeline identifier and port indexed by variable name
         $references = []; // pairs of pipeline identifier and variable indexed by variable name
-        $this->joinPipelinesAndGetInputVariables($pipelines, $inputs, $references);
+        $this->joinPipelinesAndGetInputVariables($pipelinesIds, $inputs, $references);
 
-        // go through all inputs, references are no use to us
-        foreach ($inputs as $varName => $input) {
-          if (!$input[1]->isFile()) {
-            continue;
-          }
+        for ($i = 0; $i < count($pipelines); $i++) {
+          $pipeline = $pipelines[$i];
+          $inputPorts = $inputs[$i];
 
-          // now we have only file input ports... use them... for the glory of ReCodEx
+          // go through all inputs, references are no use to us
+          foreach ($inputPorts as $varName => $inputPort) {
+            if (!$inputPort->isFile()) {
+              continue;
+            }
 
-          // try to find variable in environment config variable table
-          $variable = $envConfig->get($varName);
-          if ($variable === null) {
-            // if variable was not found in environment config, peek into exercise config
-            $variable = $env->getPipeline($input[0])->getVariablesTable()->get($varName);
-            // TODO: get pipeline has to be removed and something else used...
-          }
+            // now we have only file input ports... use them... for the glory of ReCodEx
 
-          // somethings fishy here
-          if ($variable === null) {
-            throw new ExerciseConfigException("Variable '{$varName}' not found in environment or exercise config");
-          }
+            // try to find variable in environment config variable table
+            $variable = $envConfig->get($varName);
+            if ($variable === null) {
+              // if variable was not found in environment config, peek into exercise config
+              $variable = $pipeline->getVariablesTable()->get($varName);
+            }
 
-          // we only seek for the local file variables, not the remote ones...
-          // although port might be of type file, variables assigned to it
-          // may have remote-file type in case the file should be downloaded
-          if (!$variable->isFile()) {
-            continue;
-          }
+            // somethings fishy here
+            if ($variable === null) {
+              throw new ExerciseConfigException("Variable '{$varName}' not found in environment or exercise config");
+            }
 
-          // everything is gonna be ok... now we can do wildcard matching against all variable values
-          $matched = true;
-          if (false) {
-            // just to screw with phpstan which has bug current 0.7 version
-            // well... this is just ugly hack :-) I am quite surprised that it
-            // worked, but good for me I guess ¯\_(ツ)_/¯
-            $matched = false;
-          }
+            // we only seek for the local file variables, not the remote ones...
+            // although port might be of type file, variables assigned to it
+            // may have remote-file type in case the file should be downloaded
+            if (!$variable->isFile()) {
+              continue;
+            }
 
-          foreach ($variable->getValueAsArray() as $value) {
-            $matchedValue = false;
-            foreach ($files as $file) {
-              if (Wildcards::match($value, $file)) {
-                $matchedValue = true;
+            // everything is gonna be ok... now we can do wildcard matching against all variable values
+            $matched = true;
+            if (false) {
+              // just to screw with phpstan which has bug current 0.7 version
+              // well... this is just ugly hack :-) I am quite surprised that it
+              // worked, but good for me I guess ¯\_(ツ)_/¯
+              $matched = false;
+            }
+
+            foreach ($variable->getValueAsArray() as $value) {
+              $matchedValue = false;
+              foreach ($files as $file) {
+                if (Wildcards::match($value, $file)) {
+                  $matchedValue = true;
+                  break;
+                }
+              }
+
+              // none of the files matched wildcard in value
+              if ($matchedValue === false) {
+                $matched = false;
                 break;
               }
             }
 
-            // none of the files matched wildcard in value
-            if ($matchedValue === false) {
-              $matched = false;
-              break;
+            // none of the files matched the wildcard from variable values,
+            // this means whole environment could not be matched
+            if ($matched === false) {
+              $envStatuses[$environment->getId()] = false;
             }
-          }
-
-          // none of the files matched the wildcard from variable values,
-          // this means whole environment could not be matched
-          if ($matched === false) {
-            $envStatuses[$environment->getId()] = false;
           }
         }
       }

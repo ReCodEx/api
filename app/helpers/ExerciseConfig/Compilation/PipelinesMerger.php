@@ -6,16 +6,13 @@ use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
-use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline;
 use App\Helpers\ExerciseConfig\Pipeline\Box\JoinPipelinesBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
-use App\Helpers\ExerciseConfig\VariablesTable;
-use App\Model\Repository\Pipelines;
-
 
 /**
  * Helper pair class.
@@ -58,9 +55,9 @@ class VariablePair {
 class PipelinesMerger {
 
   /**
-   * @var Pipelines
+   * @var PipelinesCache
    */
-  private $pipelines;
+  private $pipelinesCache;
 
   /**
    * @var Loader
@@ -74,13 +71,13 @@ class PipelinesMerger {
 
   /**
    * PipelinesMerger constructor.
-   * @param Pipelines $pipelines
+   * @param PipelinesCache $pipelinesCache
    * @param Loader $loader
    * @param VariablesResolver $variablesResolver
    */
-  public function __construct(Pipelines $pipelines, Loader $loader,
-      VariablesResolver $variablesResolver) {
-    $this->pipelines = $pipelines;
+  public function __construct(PipelinesCache $pipelinesCache, Loader $loader,
+                              VariablesResolver $variablesResolver) {
+    $this->pipelinesCache = $pipelinesCache;
     $this->loader = $loader;
     $this->variablesResolver = $variablesResolver;
   }
@@ -272,8 +269,8 @@ class PipelinesMerger {
 
     // get database entity and then structured pipeline configuration
     try {
-      $pipelineEntity = $this->pipelines->findOrThrow($pipelineId);
-      $pipelineConfig = $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+      $pipelineEntity = $this->pipelinesCache->getPipeline($pipelineId);
+      $pipelineConfig = $this->pipelinesCache->getPipelineConfig($pipelineId);
       $pipelineFiles = $pipelineEntity->getHashedSupplementaryFiles();
     } catch (NotFoundException $e) {
       throw new ExerciseConfigException("Pipeline '$pipelineId' not found in environment");
