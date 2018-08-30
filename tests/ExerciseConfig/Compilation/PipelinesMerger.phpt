@@ -15,11 +15,9 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileOutBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\FilesInBox;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\VariablesTable;
-use App\Model\Repository\Pipelines;
 use Tester\Assert;
 
 
@@ -34,18 +32,13 @@ class TestPipelinesMerger extends Tester\TestCase
   /** @var Loader */
   private $loader;
 
-  /** @var Mockery\Mock | Pipelines */
-  private $mockPipelines;
+  /** @var Mockery\Mock | PipelinesCache */
+  private $mockPipelinesCache;
 
   /** @var Mockery\Mock | \App\Model\Entity\Pipeline */
   private $mockCompilationPipeline;
   /** @var Mockery\Mock | \App\Model\Entity\Pipeline */
   private $mockTestPipeline;
-
-  /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockCompilationPipelineConfig;
-  /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockTestPipelineConfig;
 
   /** @var PipelinesMerger */
   private $merger;
@@ -63,20 +56,16 @@ class TestPipelinesMerger extends Tester\TestCase
 
   private function setUpMocks() {
     // mock pipelines repository
-    $this->mockPipelines = Mockery::mock(Pipelines::class);
+    $this->mockPipelinesCache = Mockery::mock(PipelinesCache::class);
     // construct all services
     $this->boxService = new BoxService();
     $this->loader = new Loader($this->boxService);
-    $this->merger = new PipelinesMerger($this->mockPipelines, $this->loader, new VariablesResolver());
+    $this->merger = new PipelinesMerger($this->mockPipelinesCache, new VariablesResolver());
 
     // mock entities and stuff
-    $this->mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
     $this->mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $this->mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockCompilationPipelineConfig);
     $this->mockCompilationPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
-    $this->mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
     $this->mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $this->mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockTestPipelineConfig);
     $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
   }
 
@@ -215,10 +204,12 @@ class TestPipelinesMerger extends Tester\TestCase
 
 
   public function testEmptyTests() {
-    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
-    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
     Assert::exception(function () {
       $context = CompilationContext::create(new ExerciseConfig(), new VariablesTable(), [], self::$exerciseFiles, self::$testsNames, self::$environment);
@@ -236,10 +227,12 @@ class TestPipelinesMerger extends Tester\TestCase
     // create all needed stuff
     $config = $this->loader->loadExerciseConfig(self::$config);
     $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
-    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
     Assert::exception(function () use ($config, $envVariablesTable) {
       $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
@@ -250,7 +243,7 @@ class TestPipelinesMerger extends Tester\TestCase
   public function testNonExistingPipeline() {
     $config = $this->loader->loadExerciseConfig(self::$config);
     $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-    $this->mockPipelines->shouldReceive("findOrThrow")->withAnyArgs()->andThrow(NotFoundException::class);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->withAnyArgs()->andThrow(NotFoundException::class);
 
     Assert::exception(function () use ($config, $envVariablesTable) {
       $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
@@ -408,10 +401,12 @@ class TestPipelinesMerger extends Tester\TestCase
   public function testCorrect() {
     $config = $this->loader->loadExerciseConfig(self::$config);
     $envVariablesTable = $this->loader->loadVariablesTable(self::$envVariablesTable);
-    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
-    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
 
     $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
     $tests = $this->merger->merge($context, CompilationParams::create());

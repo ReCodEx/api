@@ -264,14 +264,14 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     Assert::count(2, $result['payload']);
 
     $payload = $result['payload'];
-    Assert::true(array_key_exists("compilationPipeline", $payload));
-    Assert::true(array_key_exists("testPipeline", $payload));
-    Assert::count(0, $payload["compilationPipeline"]);
+    Assert::equal("compilationPipeline", $payload[0]["id"]);
+    Assert::equal("testPipeline", $payload[1]["id"]);
+    Assert::count(0, $payload[0]["variables"]);
 
-    $testPipeline = $payload["testPipeline"];
-    Assert::count(2, $testPipeline);
-    Assert::equal("input-file", $testPipeline[0]->getName());
-    Assert::equal("expected-output", $testPipeline[1]->getName());
+    $testPipelineVars = $payload[1]["variables"];
+    Assert::count(2, $testPipelineVars);
+    Assert::equal("input-file", $testPipelineVars[0]->getName());
+    Assert::equal("expected-output", $testPipelineVars[1]->getName());
   }
 
   public function testGetHardwareGroupLimits()
