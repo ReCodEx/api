@@ -16,13 +16,12 @@ use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CompilationBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\GccCompilationBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
-use App\Model\Repository\Pipelines;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use Tester\Assert;
 
 
@@ -38,18 +37,13 @@ class TestBaseCompiler extends Tester\TestCase
   /** @var Loader */
   private $loader;
 
-  /** @var Mockery\Mock | Pipelines */
-  private $mockPipelines;
+  /** @var Mockery\Mock | PipelinesCache */
+  private $mockPipelinesCache;
 
   /** @var Mockery\Mock | \App\Model\Entity\Pipeline */
   private $mockCompilationPipeline;
   /** @var Mockery\Mock | \App\Model\Entity\Pipeline */
   private $mockTestPipeline;
-
-  /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockCompilationPipelineConfig;
-  /** @var Mockery\Mock | \App\Model\Entity\PipelineConfig */
-  private $mockTestPipelineConfig;
 
 
   private static $exerciseConfig = [
@@ -238,27 +232,26 @@ class TestBaseCompiler extends Tester\TestCase
    */
   public function __construct() {
 
-    // mock entities and stuff
-    $this->mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $this->mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $this->mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockCompilationPipelineConfig);
-    $this->mockCompilationPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
-    $this->mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $this->mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $this->mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($this->mockTestPipelineConfig);
-    $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
-
-    $this->mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
-    $this->mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
-
-    $this->mockPipelines = Mockery::mock(Pipelines::class);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
-    $this->mockPipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($this->mockTestPipeline);
-
     // constructions of compiler components
     $this->loader = new Loader(new BoxService());
     $variablesResolver = new VariablesResolver();
-    $pipelinesMerger = new PipelinesMerger($this->mockPipelines, $this->loader, $variablesResolver);
+
+    // mock entities and stuff
+    $this->mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $this->mockCompilationPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
+    $this->mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
+    $this->mockTestPipeline->shouldReceive("getHashedSupplementaryFiles")->andReturn(self::$pipelineFiles);
+
+    $this->mockPipelinesCache = Mockery::mock(PipelinesCache::class);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("compilationPipeline")->andReturn($this->mockCompilationPipeline);
+    $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn($this->mockTestPipeline);
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")->twice()
+      ->andReturn($this->loader->loadPipeline(self::$compilationPipeline), $this->loader->loadPipeline(self::$compilationPipeline));
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")->once()
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
+
+    // constructions of compiler components
+    $pipelinesMerger = new PipelinesMerger($this->mockPipelinesCache, $variablesResolver);
     $boxesSorter = new BoxesSorter();
     $boxesOptimizer = new BoxesOptimizer();
     $boxesCompiler = new BoxesCompiler();
@@ -266,6 +259,11 @@ class TestBaseCompiler extends Tester\TestCase
     $this->compiler = new BaseCompiler($pipelinesMerger, $boxesSorter,
       $boxesOptimizer, $boxesCompiler, $testDirectoriesResolver);
   }
+
+  protected function tearDown() {
+    Mockery::close();
+  }
+
 
   public function testCorrect() {
     $exerciseConfig = $this->loader->loadExerciseConfig(self::$exerciseConfig);

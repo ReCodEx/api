@@ -1,13 +1,15 @@
 <?php
 
-$container = include '../../bootstrap.php';
+include '../../bootstrap.php';
 
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
 use App\Helpers\ExerciseConfig\Validation\ExerciseConfigValidator;
@@ -18,7 +20,6 @@ use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
-use App\Model\Repository\Pipelines;
 use Nette\DI\Container;
 use Tester\Assert;
 
@@ -29,43 +30,31 @@ use Tester\Assert;
 class TestExerciseConfigValidator extends Tester\TestCase
 {
   /**
-   * @var Mockery\Mock | Pipelines
+   * @var Mockery\Mock | PipelinesCache
    */
-  private $mockPipelines;
+  private $mockPipelinesCache;
 
-  /**
-   * @var Mockery\Mock | \App\Model\Entity\Pipeline
-   */
-  private $mockPipelineEntity;
-
-  /**
-   * @var Mockery\Mock | \App\Model\Entity\PipelineConfig
-   */
-  private $mockPipelineConfigEntity;
+  const EMPTY_PIPELINE_CONFIG = [
+    "boxes" => [],
+    "variables" => []
+  ];
 
   /**
    * @var ExerciseConfigValidator
    */
   private $validator;
 
-  private $container;
+  /**
+   * @var Loader
+   */
+  private $loader;
 
-  public function __construct(Container $container) {
-    $this->mockPipelines = Mockery::mock(Pipelines::class);
+  public function __construct() {
+    $this->mockPipelinesCache = Mockery::mock(PipelinesCache::class);
 
-    $loader = new Loader(new BoxService());
-    $helper = new Helper($loader, Mockery::mock(Pipelines::class));
-    $this->validator = new ExerciseConfigValidator($this->mockPipelines, $loader, $helper);
-    $this->container = $container;
-
-    $this->mockPipelineConfigEntity = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $this->mockPipelineConfigEntity->shouldReceive("getParsedPipeline")->andReturn([
-      "boxes" => [],
-      "variables" => []
-    ]);
-
-    $this->mockPipelineEntity = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $this->mockPipelineEntity->shouldReceive("getPipelineConfig")->andReturn($this->mockPipelineConfigEntity);
+    $this->loader = new Loader(new BoxService());
+    $helper = new Helper($this->loader, $this->mockPipelinesCache);
+    $this->validator = new ExerciseConfigValidator($this->loader, $helper);
   }
 
 
@@ -130,8 +119,10 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["not existing pipeline"])->andReturn(null);
-    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelinesCache->shouldReceive("getPipelineConfig")->withArgs(["not existing pipeline"])
+      ->andThrow(NotFoundException::class);
+    $this->mockPipelinesCache->shouldReceive("getPipelineConfig")->withArgs(["existing pipeline"])
+      ->andReturn($this->loader->loadPipeline(self::EMPTY_PIPELINE_CONFIG));
 
     // missing in environments
     Assert::exception(function () use ($exerciseConfig, $exercise) {
@@ -158,7 +149,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelinesCache->shouldReceive("getPipelineConfig")->withArgs(["existing pipeline"])
+      ->andReturn($this->loader->loadPipeline(self::EMPTY_PIPELINE_CONFIG));
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
@@ -185,7 +177,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelinesCache->shouldReceive("getPipelineConfig")->withArgs(["existing pipeline"])
+      ->andReturn($this->loader->loadPipeline(self::EMPTY_PIPELINE_CONFIG));
 
     Assert::exception(function () use ($exerciseConfig, $exercise) {
       $this->validator->validate($exerciseConfig, $exercise);
@@ -224,7 +217,8 @@ class TestExerciseConfigValidator extends Tester\TestCase
     $this->addSingleEnvironmentToExercise($exercise);
 
     // setup mock pipelines
-    $this->mockPipelines->shouldReceive("get")->withArgs(["existing pipeline"])->andReturn($this->mockPipelineEntity);
+    $this->mockPipelinesCache->shouldReceive("getPipelineConfig")->withArgs(["existing pipeline"])
+      ->andReturn($this->loader->loadPipeline(self::EMPTY_PIPELINE_CONFIG));
 
     Assert::noError(
       function () use ($exerciseConfig, $exercise) {
@@ -295,5 +289,5 @@ class TestExerciseConfigValidator extends Tester\TestCase
 }
 
 # Testing methods run
-$testCase = new TestExerciseConfigValidator($container);
+$testCase = new TestExerciseConfigValidator();
 $testCase->run();

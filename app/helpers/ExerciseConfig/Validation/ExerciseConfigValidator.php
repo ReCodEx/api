@@ -3,16 +3,16 @@
 namespace App\Helpers\ExerciseConfig\Validation;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseEnvironmentConfig;
-use App\Model\Entity\ExerciseTest;
-use App\Model\Repository\Pipelines;
 
 
 /**
@@ -26,23 +26,16 @@ class ExerciseConfigValidator {
   private $loader;
 
   /**
-   * @var Pipelines
-   */
-  private $pipelines;
-
-  /**
    * @var Helper
    */
   private $helper;
 
   /**
    * ExerciseConfigValidator constructor.
-   * @param Pipelines $pipelines
    * @param Loader $loader
    * @param Helper $helper
    */
-  public function __construct(Pipelines $pipelines, Loader $loader, Helper $helper) {
-    $this->pipelines = $pipelines;
+  public function __construct(Loader $loader, Helper $helper) {
     $this->loader = $loader;
     $this->helper = $helper;
   }
@@ -115,29 +108,28 @@ class ExerciseConfigValidator {
     $exerciseFiles = $exercise->getHashedSupplementaryFiles();
 
     // load pipeline configurations from database
-    $pipelineConfigs = [];
+    $pipelinesIds = [];
     foreach ($pipelines as $pipeline) {
       $pipelineId = $pipeline->getId();
-      $pipelineEntity = $this->pipelines->get($pipelineId);
-      if ($pipelineEntity === null) {
-        throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
-      }
-      $pipelineConfig = $pipelineEntity->getPipelineConfig();
-      $pipelineConfigs[$pipelineId] = $this->loader->loadPipeline($pipelineConfig->getParsedPipeline());
+      $pipelinesIds[] = $pipelineId;
     }
 
     // find expected variables for each pipeline
-    $expectedVariables = $this->helper->getVariablesForExercise($pipelineConfigs, $environmentVariables);
+    $expectedVariables = $this->helper->getVariablesForExercise($pipelinesIds, $environmentVariables);
 
     /**
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
      */
-    foreach ($pipelines as $pipelineVars) {
+    for ($i = 0; $i < count($pipelines); $i++) {
+      $pipelineVars = $pipelines[$i];
       $pipelineId = $pipelineVars->getId();
+      $expected = $expectedVariables[$i]["variables"];
+
+      // get names of expected variables for this pipeline
       $expectedVariablesNames = array_map(function (Variable $variable) {
         return $variable->getName();
-      }, $expectedVariables[$pipelineId]);
+      }, $expected);
       $variables = $pipelineVars->getVariablesTable();
 
       foreach ($variables->getAll() as $variable) {

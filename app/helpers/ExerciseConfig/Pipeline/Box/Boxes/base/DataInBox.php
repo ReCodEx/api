@@ -42,7 +42,7 @@ abstract class DataInBox extends Box
   }
 
   /**
-   * Set remote variable corresponding to this box.
+   * Clone and set remote variable corresponding to this box.
    * @param Variable|null $variable
    */
   public function setInputVariable(?Variable $variable) {

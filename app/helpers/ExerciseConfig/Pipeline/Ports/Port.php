@@ -120,7 +120,7 @@ class Port implements JsonSerializable
   }
 
   /**
-   * Set variable value.
+   * Clone and set variable value.
    * @param Variable $variableValue
    * @return Port
    */

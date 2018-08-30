@@ -42,12 +42,15 @@ class Helper {
    * @param array $inputs same length array as given pipelines, sub-arrays contain ports indexed by variable name
    * @param array $references same length array as given pipelines, sub-arrays contain variables indexed by variable name
    * @throws ExerciseConfigException
-   * @throws NotFoundException
    */
   private function joinPipelinesAndGetInputVariables(array $pipelinesIds, array& $inputs, array& $references) {
     $lastOutputs = [];
     foreach ($pipelinesIds as $pipelineId) {
-      $pipeline = $this->pipelinesCache->getPipelineConfig($pipelineId);
+      try {
+        $pipeline = $this->pipelinesCache->getPipelineConfig($pipelineId);
+      } catch (NotFoundException $e) {
+        throw new ExerciseConfigException("Pipeline '$pipelineId' not found");
+      }
 
       // load pipeline input variables
       $localInputs = [];
@@ -100,7 +103,6 @@ class Helper {
    * @param VariablesTable $environmentVariables
    * @return array
    * @throws ExerciseConfigException
-   * @throws NotFoundException
    */
   public function getVariablesForExercise(array $pipelinesIds, VariablesTable $environmentVariables): array {
 
@@ -171,7 +173,6 @@ class Helper {
    * @param string[] $files
    * @return string[]
    * @throws ExerciseConfigException
-   * @throws NotFoundException
    */
   public function getEnvironmentsForFiles(IExercise $exercise, array $files): array {
     $envStatuses = [];

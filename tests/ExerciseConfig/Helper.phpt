@@ -6,6 +6,7 @@ use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
+use App\Helpers\ExerciseConfig\PipelinesCache;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Model\Entity\Exercise;
@@ -15,7 +16,6 @@ use App\Model\Entity\Group;
 use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
-use App\Model\Repository\Pipelines;
 use Mockery\Mock;
 use Symfony\Component\Yaml\Yaml;
 use Tester\Assert;
@@ -32,25 +32,19 @@ class TestExerciseConfigHelper extends Tester\TestCase
   /** @var Loader */
   private $loader;
 
-  /** @var Pipelines|Mock */
-  private $pipelines;
+  /** @var PipelinesCache|Mock */
+  private $pipelinesCache;
 
   public function __construct() {
-    $mockCompilationPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $mockCompilationPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $mockCompilationPipeline->shouldReceive("getPipelineConfig")->andReturn($mockCompilationPipelineConfig);
-    $mockTestPipelineConfig = Mockery::mock(\App\Model\Entity\PipelineConfig::class);
-    $mockTestPipeline = Mockery::mock(\App\Model\Entity\Pipeline::class);
-    $mockTestPipeline->shouldReceive("getPipelineConfig")->andReturn($mockTestPipelineConfig);
-    $mockCompilationPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$compilationPipeline);
-    $mockTestPipelineConfig->shouldReceive("getParsedPipeline")->andReturn(self::$testPipeline);
-
-    $this->pipelines = Mockery::mock(Pipelines::class);
-    $this->pipelines->shouldReceive("findOrThrow")->with("compilationPipeline")->andReturn($mockCompilationPipeline);
-    $this->pipelines->shouldReceive("findOrThrow")->with("testPipeline")->andReturn($mockTestPipeline);
-
     $this->loader = new Loader(new BoxService());
-    $this->helper = new Helper($this->loader, $this->pipelines);
+
+    $this->pipelinesCache = Mockery::mock(PipelinesCache::class);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("compilationPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$compilationPipeline));
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with("testPipeline")
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
+
+    $this->helper = new Helper($this->loader, $this->pipelinesCache);
   }
 
 
@@ -228,14 +222,16 @@ class TestExerciseConfigHelper extends Tester\TestCase
       ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise([$pipelineId => $pipeline], new VariablesTable());
-    Assert::count(1, $result);
-    Assert::true(array_key_exists($pipelineId, $result));
-    Assert::count(1, $result[$pipelineId]);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineId)->andReturn($pipeline);
 
-    Assert::equal("data-in", $result[$pipelineId][0]->getName());
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineId][0]->getType());
-    Assert::equal("", $result[$pipelineId][0]->getValue());
+    $result = $this->helper->getVariablesForExercise([$pipelineId], new VariablesTable());
+    Assert::count(1, $result);
+    Assert::equal($pipelineId, $result[0]["id"]);
+    Assert::count(1, $result[0]["variables"]);
+
+    Assert::equal("data-in", $result[0]["variables"][0]->getName());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[0]["variables"][0]->getType());
+    Assert::equal("", $result[0]["variables"][0]->getValue());
   }
 
   public function testVariablesForExerciseEmptyAfterJoin() {
@@ -264,18 +260,16 @@ class TestExerciseConfigHelper extends Tester\TestCase
       ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise(
-      [
-        $pipelineAid => $pipelineA,
-        $pipelineBid => $pipelineB
-      ],
-      new VariablesTable());
-    Assert::count(2, $result);
-    Assert::true(array_key_exists($pipelineAid, $result));
-    Assert::true(array_key_exists($pipelineBid, $result));
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineAid)->andReturn($pipelineA);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineBid)->andReturn($pipelineB);
 
-    Assert::count(0, $result[$pipelineAid]);
-    Assert::count(0, $result[$pipelineBid]);
+    $result = $this->helper->getVariablesForExercise([$pipelineAid, $pipelineBid], new VariablesTable());
+    Assert::count(2, $result);
+    Assert::equal($pipelineAid, $result[0]["id"]);
+    Assert::equal($pipelineBid, $result[1]["id"]);
+
+    Assert::count(0, $result[0]["variables"]);
+    Assert::count(0, $result[1]["variables"]);
   }
 
   public function testVariablesForExerciseReferences() {
@@ -326,23 +320,21 @@ class TestExerciseConfigHelper extends Tester\TestCase
       ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise(
-      [
-        $pipelineAid => $pipelineA,
-        $pipelineBid => $pipelineB
-      ],
-      new VariablesTable());
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineAid)->andReturn($pipelineA);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineBid)->andReturn($pipelineB);
+
+    $result = $this->helper->getVariablesForExercise([$pipelineAid, $pipelineBid], new VariablesTable());
     Assert::count(2, $result);
-    Assert::true(array_key_exists($pipelineAid, $result));
-    Assert::true(array_key_exists($pipelineBid, $result));
+    Assert::equal($pipelineAid, $result[0]["id"]);
+    Assert::equal($pipelineBid, $result[1]["id"]);
 
-    Assert::count(2, $result[$pipelineAid]);
-    Assert::count(0, $result[$pipelineBid]);
+    Assert::count(2, $result[0]["variables"]);
+    Assert::count(0, $result[1]["variables"]);
 
-    Assert::equal("actualFile", $result[$pipelineAid][0]->getName());
-    Assert::equal("expectedFile", $result[$pipelineAid][1]->getName());
-    Assert::equal(VariableTypes::$FILE_TYPE, $result[$pipelineAid][0]->getType());
-    Assert::equal(VariableTypes::$FILE_TYPE, $result[$pipelineAid][1]->getType());
+    Assert::equal("actualFile", $result[0]["variables"][0]->getName());
+    Assert::equal("expectedFile", $result[0]["variables"][1]->getName());
+    Assert::equal(VariableTypes::$FILE_TYPE, $result[0]["variables"][0]->getType());
+    Assert::equal(VariableTypes::$FILE_TYPE, $result[0]["variables"][1]->getType());
   }
 
   public function testVariablesForExerciseNonEmptyJoin() {
@@ -383,24 +375,22 @@ class TestExerciseConfigHelper extends Tester\TestCase
       ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise(
-      [
-        $pipelineAid => $pipelineA,
-        $pipelineBid => $pipelineB
-      ],
-      new VariablesTable());
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineAid)->andReturn($pipelineA);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineBid)->andReturn($pipelineB);
+
+    $result = $this->helper->getVariablesForExercise([$pipelineAid, $pipelineBid], new VariablesTable());
     Assert::count(2, $result);
-    Assert::true(array_key_exists($pipelineAid, $result));
-    Assert::true(array_key_exists($pipelineBid, $result));
+    Assert::equal($pipelineAid, $result[0]["id"]);
+    Assert::equal($pipelineBid, $result[1]["id"]);
 
-    Assert::count(1, $result[$pipelineAid]);
-    Assert::count(1, $result[$pipelineBid]);
+    Assert::count(1, $result[0]["variables"]);
+    Assert::count(1, $result[1]["variables"]);
 
-    Assert::equal("input", $result[$pipelineAid][0]->getName());
-    Assert::equal("test", $result[$pipelineBid][0]->getName());
+    Assert::equal("input", $result[0]["variables"][0]->getName());
+    Assert::equal("test", $result[1]["variables"][0]->getName());
 
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineBid][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[0]["variables"][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[1]["variables"][0]->getType());
   }
 
   public function testVariablesForExerciseVariableFromVariablesTable() {
@@ -444,21 +434,19 @@ class TestExerciseConfigHelper extends Tester\TestCase
       [ "name" => "test", "type" => "file", "value" => "test.in" ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise(
-      [
-        $pipelineAid => $pipelineA,
-        $pipelineBid => $pipelineB
-      ],
-      $variablesTable);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineAid)->andReturn($pipelineA);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineBid)->andReturn($pipelineB);
+
+    $result = $this->helper->getVariablesForExercise([$pipelineAid, $pipelineBid], $variablesTable);
     Assert::count(2, $result);
-    Assert::true(array_key_exists($pipelineAid, $result));
-    Assert::true(array_key_exists($pipelineBid, $result));
+    Assert::equal($pipelineAid, $result[0]["id"]);
+    Assert::equal($pipelineBid, $result[1]["id"]);
 
-    Assert::count(1, $result[$pipelineAid]);
-    Assert::count(0, $result[$pipelineBid]);
+    Assert::count(1, $result[0]["variables"]);
+    Assert::count(0, $result[1]["variables"]);
 
-    Assert::equal("input", $result[$pipelineAid][0]->getName());
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
+    Assert::equal("input", $result[0]["variables"][0]->getName());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[0]["variables"][0]->getType());
   }
 
   public function testVariablesForExerciseComplexJoin() {
@@ -539,29 +527,27 @@ class TestExerciseConfigHelper extends Tester\TestCase
       [ "name" => "environment", "type" => "file", "value" => "environment" ]
     ]);
 
-    $result = $this->helper->getVariablesForExercise(
-      [
-        $pipelineAid => $pipelineA,
-        $pipelineBid => $pipelineB,
-        $pipelineCid => $pipelineC
-      ],
-      $variablesTable);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineAid)->andReturn($pipelineA);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineBid)->andReturn($pipelineB);
+    $this->pipelinesCache->shouldReceive("getPipelineConfig")->with($pipelineCid)->andReturn($pipelineC);
+
+    $result = $this->helper->getVariablesForExercise([$pipelineAid, $pipelineBid, $pipelineCid], $variablesTable);
     Assert::count(3, $result);
-    Assert::true(array_key_exists($pipelineAid, $result));
-    Assert::true(array_key_exists($pipelineBid, $result));
-    Assert::true(array_key_exists($pipelineCid, $result));
+    Assert::equal($pipelineAid, $result[0]["id"]);
+    Assert::equal($pipelineBid, $result[1]["id"]);
+    Assert::equal($pipelineCid, $result[2]["id"]);
 
-    Assert::count(1, $result[$pipelineAid]);
-    Assert::count(0, $result[$pipelineBid]);
-    Assert::count(2, $result[$pipelineCid]);
+    Assert::count(1, $result[0]["variables"]);
+    Assert::count(0, $result[1]["variables"]);
+    Assert::count(2, $result[2]["variables"]);
 
-    Assert::equal("input", $result[$pipelineAid][0]->getName());
-    Assert::equal("non-environment-a", $result[$pipelineCid][0]->getName());
-    Assert::equal("non-environment-b", $result[$pipelineCid][1]->getName());
+    Assert::equal("input", $result[0]["variables"][0]->getName());
+    Assert::equal("non-environment-a", $result[2]["variables"][0]->getName());
+    Assert::equal("non-environment-b", $result[2]["variables"][1]->getName());
 
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineAid][0]->getType());
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][0]->getType());
-    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[$pipelineCid][1]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[0]["variables"][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[2]["variables"][0]->getType());
+    Assert::equal(VariableTypes::$REMOTE_FILE_TYPE, $result[2]["variables"][1]->getType());
   }
 
   public function testEnvironmentsForFilesNotMatched() {

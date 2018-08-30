@@ -76,4 +76,17 @@ class PipelinesCache {
     $this->loadPipeline($id);
     return $this->cache[$id][1];
   }
+
+  /**
+   * Get newly created pipeline configuration and not the cached one.
+   * @param string $id identification of pipeline entity
+   * @return Pipeline
+   * @throws ExerciseConfigException
+   * @throws NotFoundException
+   */
+  public function getNewPipelineConfig(string $id): Pipeline {
+    $this->loadPipeline($id);
+    $pipelineEntity = $this->cache[$id][0];
+    return $this->loader->loadPipeline($pipelineEntity->getPipelineConfig()->getParsedPipeline());
+  }
 }
