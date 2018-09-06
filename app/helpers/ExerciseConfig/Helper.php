@@ -113,8 +113,7 @@ class Helper {
 
     // go through inputs and assign them to result
     $result = [];
-    for ($i = 0; $i < count($pipelinesIds); $i++) {
-      $pipelineId = $pipelinesIds[$i];
+    foreach ($pipelinesIds as $i => $pipelineId) {
       $inputPorts = $inputs[$i];
       $referenceVariables = $references[$i];
 
@@ -128,16 +127,12 @@ class Helper {
           continue;
         }
 
-        if ($inputPort->isFile() && $inputPort->isArray()) {
-          // port is file and also array, in exercise config if there should be
-          // defined file as variable it is expected to be remote file, so the
-          // remote file type is offered back to web-app
-          $variable = (new Variable(VariableTypes::$REMOTE_FILE_ARRAY_TYPE))->setName($variableName);
-        } else if ($inputPort->isFile() && !$inputPort->isArray()) {
-          // port is file and not an array, in exercise config if there should be
-          // defined file as variable it is expected to be remote file, so the
-          // remote file type is offered back to web-app
-          $variable = (new Variable(VariableTypes::$REMOTE_FILE_TYPE))->setName($variableName);
+        if ($inputPort->isFile()) {
+          // port is file, in exercise config if there should be defined file
+          // as variable it is expected to be remote file, so the remote file
+          // type is offered back to web-app
+          $type = $inputPort->isArray() ? VariableTypes::$REMOTE_FILE_ARRAY_TYPE : VariableTypes::$REMOTE_FILE_TYPE;
+          $variable = (new Variable($type))->setName($variableName);
         } else {
           $variable = (new Variable($inputPort->getType()))->setName($variableName);
         }
@@ -212,8 +207,7 @@ class Helper {
         $references = []; // pairs of pipeline identifier and variable indexed by variable name
         $this->joinPipelinesAndGetInputVariables($pipelinesIds, $inputs, $references);
 
-        for ($i = 0; $i < count($pipelines); $i++) {
-          $pipeline = $pipelines[$i];
+        foreach ($pipelines as $i => $pipeline) {
           $inputPorts = $inputs[$i];
 
           // go through all inputs, references are no use to us
@@ -231,7 +225,7 @@ class Helper {
               $variable = $pipeline->getVariablesTable()->get($varName);
             }
 
-            // somethings fishy here
+            // somethings beavery here
             if ($variable === null) {
               throw new ExerciseConfigException("Variable '{$varName}' not found in environment or exercise config");
             }

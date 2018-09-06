@@ -30,7 +30,7 @@ class Environment implements JsonSerializable {
   }
 
   /**
-   * Get pipeline for the given name.
+   * Get pipeline of the given ID.
    * @note There can be multiple pipelines with the same identification.
    * This method will find only the first one.
    * @param string $id
