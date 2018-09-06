@@ -121,8 +121,7 @@ class ExerciseConfigValidator {
      * @var string $pipelineId
      * @var PipelineVars $pipelineVars
      */
-    for ($i = 0; $i < count($pipelines); $i++) {
-      $pipelineVars = $pipelines[$i];
+    foreach ($pipelines as $i => $pipelineVars) {
       $pipelineId = $pipelineVars->getId();
       $expected = $expectedVariables[$i]["variables"];
 
