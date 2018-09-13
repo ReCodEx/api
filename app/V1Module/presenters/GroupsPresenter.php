@@ -6,6 +6,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
@@ -18,9 +19,11 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\AssignmentViewFactory;
+use App\Model\View\ShadowAssignmentViewFactory;
 use App\Model\View\GroupViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IShadowAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\Identity;
@@ -78,6 +81,12 @@ class GroupsPresenter extends BasePresenter {
   public $assignmentAcl;
 
   /**
+   * @var IShadowAssignmentPermissions
+   * @inject
+   */
+  public $shadowAssignmentAcl;
+
+  /**
    * @var Loader
    * @inject
    */
@@ -112,6 +121,12 @@ class GroupsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentViewFactory;
+
+  /**
+   * @var ShadowAssignmentViewFactory
+   * @inject
+   */
+  public $shadowAssignmentViewFactory;
 
   public function checkDefault() {
     if (!$this->groupAcl->canViewAll()) {
@@ -472,6 +487,32 @@ class GroupsPresenter extends BasePresenter {
       return $this->assignmentAcl->canViewDetail($assignment);
     })->map(function (Assignment $assignment) {
       return $this->assignmentViewFactory->getAssignment($assignment);
+    })->getValues());
+  }
+
+  public function checkShadowAssignments(string $id) {
+    /** @var Group $group */
+    $group = $this->groups->findOrThrow($id);
+
+    if (!$this->groupAcl->canViewAssignments($group)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get all shadow assignments for a group
+   * @GET
+   * @param string $id Identifier of the group
+   */
+  public function actionShadowAssignments(string $id) {
+    /** @var Group $group */
+    $group = $this->groups->findOrThrow($id);
+
+    $assignments = $group->getShadowAssignments();
+    $this->sendSuccessResponse($assignments->filter(function (ShadowAssignment $assignment) {
+      return $this->shadowAssignmentAcl->canViewDetail($assignment);
+    })->map(function (ShadowAssignment $assignment) {
+      return $this->shadowAssignmentViewFactory->getAssignment($assignment);
     })->getValues());
   }
 

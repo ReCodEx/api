@@ -158,10 +158,10 @@ class PresenterTestHelper
   /**
    * Perform regular presenter request and make common asserts.
    * @param $presenter The presenter which should handle the request.
-   * @param $module String representing the module path (e.g., 'V1:Exercises').
+   * @param string $module String representing the module path (e.g., 'V1:Exercises').
    * @param string $method HTTP method of the request (GET, POST, ...).
    * @param array $params Parameters of the request.
-   * @param array $params Body of the request (must be POST).
+   * @param array $post Body of the request (must be POST).
    * @param int $expectedCode Expected HTTP response code (200 by default).
    * @return array|null Payload subtree of JSON request.
    * @throws Exception
@@ -177,4 +177,25 @@ class PresenterTestHelper
     return array_key_exists('payload', $result) ? $result['payload'] : null;
   }
 
+  /**
+   * Traverse a list of objects, assoc. arrays, or string IDs and convert it into an array indexed by the IDs.
+   * @param array $list List of entities to be processed.
+   * @return array Indexed by IDs, values are trues.
+   * @throws Exception
+   */
+  public static function extractIdsMap(array $list)
+  {
+    $res = [];
+    foreach ($list as $item) {
+      if (is_array($item) && !empty($item['id'])) {
+        $res[$item['id']] = true;
+      } else if (is_object($item) && !empty($item->id)) {
+        $res[$item->id] = true;
+      } else {
+        Tester\Assert::match('#^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$#', $item);
+        $res[(string)$item->id] = true;
+      }
+    }
+    return $res;
+  }
 }

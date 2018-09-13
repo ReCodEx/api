@@ -462,20 +462,33 @@ class TestGroupsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
     $groups = $this->presenter->groups->findAll();
-    $group = array_pop($groups);
+    foreach ($groups as $group) {
+      $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+        ['action' => 'assignments', 'id' => $group->getId()]
+      );
 
-    $request = new Nette\Application\Request('V1:Groups',
-      'GET',
-      ['action' => 'assignments', 'id' => $group->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+      $correctIds = PresenterTestHelper::extractIdsMap($group->getAssignments()->toArray());
+      $payloadIds = PresenterTestHelper::extractIdsMap($payload);
 
-    $result = $response->getPayload();
-    $payload = $result['payload'];
-    Assert::equal(200, $result['code']);
+      Assert::equal($correctIds, $payloadIds);
+    }
+  }
 
-    Assert::equal($group->getAssignments()->toArray(), $payload); // admin can access everything
+  public function testShadowAssignments()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = $this->presenter->groups->findAll();
+    foreach ($groups as $group) {
+      $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+        ['action' => 'shadowAssignments', 'id' => $group->getId()]
+      );
+
+      $correctIds = PresenterTestHelper::extractIdsMap($group->getShadowAssignments()->toArray());
+      $payloadIds = PresenterTestHelper::extractIdsMap($payload);
+
+      Assert::equal($correctIds, $payloadIds);
+    }
   }
 
   public function testExercises()
