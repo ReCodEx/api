@@ -212,6 +212,7 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>/admin/<userId>", "Groups:removeAdmin");
 
     $router[] = new GetRoute("$prefix/<id>/assignments", "Groups:assignments");
+    $router[] = new GetRoute("$prefix/<id>/shadow-assignments", "Groups:shadowAssignments");
     $router[] = new GetRoute("$prefix/<id>/exercises", "Groups:exercises");
 
     return $router;
