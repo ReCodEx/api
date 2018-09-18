@@ -55,6 +55,7 @@ permissions:
           - viewAdmin
           - viewStudentStats
           - viewStats
+          - viewAll
 
     - allow: true
       role: student
@@ -152,7 +153,15 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
+          - viewAll
           - becomeSupervisor
+
+    - allow: true
+      resource: group
+      role: empowered-supervisor
+      actions:
+          - archive
+      conditions: group.isAdmin
 
     ########################
     # Instance permissions #
