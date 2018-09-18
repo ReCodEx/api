@@ -21,6 +21,12 @@ class PaginationDbHelper
     'cs' => 'utf8_czech_ci'
   ];
 
+  /**
+   * Non-string columns may not have collation in order by clause. This is actually a hack, since detecting column type is rather complicated.
+   * Column names on this list are passed on to the collation injector, so they are avoided in the injection process.
+   */
+  private static $forbiddenColumns = [ 'created_at' ];
+
 
   /**
    * @var array|null
@@ -131,6 +137,7 @@ class PaginationDbHelper
     if ($locale && !empty(self::$knownCollations[$locale]) && $pagination->getOrderBy()) { // collation correction based on given locale
       $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'DoctrineExtensions\Query\OrderByCollationInjectionMysqlWalker');
       $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION, self::$knownCollations[$locale]);
+      $query->setHint(OrderByCollationInjectionMysqlWalker::HINT_COLLATION_FORBIDDEN_COLUMNS, self::$forbiddenColumns);
     }
 
     return $query->getResult();
