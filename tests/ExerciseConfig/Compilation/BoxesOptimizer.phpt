@@ -8,6 +8,8 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\CustomBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Variable;
+use App\Helpers\ExerciseConfig\VariableTypes;
 use Tester\Assert;
 
 /**
@@ -122,22 +124,96 @@ class TestBoxesOptimizer extends Tester\TestCase
   }
 
   public function testThreeComplexTrees() {
-    $treeA = new RootedTree();
-    $treeB = new RootedTree();
-    $treeC = new RootedTree();
-
     $tests = [
-      "A" => $treeA,
-      "B" => $treeB,
-      "C" => $treeC
+      "A" => $this->buildCompileExecJudgeTree("A"),
+      "B" => $this->buildCompileExecJudgeTree("B"),
+      "C" => $this->buildCompileExecJudgeTree("C")
     ];
 
     $tree = $this->optimizer->optimize($tests);
+    Assert::count(1, $tree->getRootNodes());
 
-    // @todo
-    Assert::true(false);
+    $srcNode = $tree->getRootNodes()[0];
+    Assert::equal("source", $srcNode->getBox()->getName());
+    Assert::equal(null, $srcNode->getTestId());
+    Assert::count(0, $srcNode->getParents());
+    Assert::count(1, $srcNode->getChildren());
+
+    $compNode = $srcNode->getChildren()[0];
+    Assert::equal("compilation", $compNode->getBox()->getName());
+    Assert::equal(null, $compNode->getTestId());
+    Assert::count(1, $compNode->getParents());
+    Assert::count(3, $compNode->getChildren());
+
+    foreach ($compNode->getChildren() as $inNode) {
+
+      $testId = $inNode->getTestId();
+      Assert::equal("input", $inNode->getBox()->getName());
+      Assert::notEqual(null, $inNode->getTestId());
+      Assert::count(1, $inNode->getParents());
+      Assert::count(1, $inNode->getChildren());
+
+      $execNode = $inNode->getChildren()[0];
+      Assert::equal("execution", $execNode->getBox()->getName());
+      Assert::equal($testId, $execNode->getTestId());
+      Assert::count(1, $execNode->getParents());
+      Assert::count(1, $execNode->getChildren());
+
+      $expectedNode = $execNode->getChildren()[0];
+      Assert::equal("expectedOut", $expectedNode->getBox()->getName());
+      Assert::equal($testId, $expectedNode->getTestId());
+      Assert::count(1, $expectedNode->getParents());
+      Assert::count(1, $expectedNode->getChildren());
+
+      $judgeNode = $expectedNode->getChildren()[0];
+      Assert::equal("judge", $judgeNode->getBox()->getName());
+      Assert::equal($testId, $judgeNode->getTestId());
+      Assert::count(1, $judgeNode->getParents());
+      Assert::count(0, $judgeNode->getChildren());
+    }
   }
 
+
+  private function buildCompileExecJudgeTree(string $testId): RootedTree {
+    $tree = new RootedTree();
+
+    $sourceVar = new Variable(VariableTypes::$STRING_TYPE, "src", "source.src");
+    $inputVar = new Variable(VariableTypes::$STRING_TYPE, "in", "input{$testId}.in");
+    $binaryVar = new Variable(VariableTypes::$STRING_TYPE, "binary", "a.out");
+    $outVar = new Variable(VariableTypes::$STRING_TYPE, "out", "file.out");
+    $expectedOutVar = new Variable(VariableTypes::$STRING_TYPE, "eOut", "expected{$testId}.out");
+
+    $source = (new Node())->setTestId($testId)->setBox((new CustomBox("source"))
+      ->addOutputPort((new Port(PortMeta::create("src", "string")))->setVariableValue($sourceVar)));
+    $compilation = (new Node())->setTestId($testId)->setBox((new CustomBox("compilation"))
+      ->addInputPort((new Port(PortMeta::create("src", "string")))->setVariableValue($sourceVar))
+      ->addOutputPort((new Port(PortMeta::create("binary", "string")))->setVariableValue($binaryVar)));
+    $input = (new Node())->setTestId($testId)->setBox((new CustomBox("input"))
+      ->addOutputPort((new Port(PortMeta::create("in", "string")))->setVariableValue($inputVar)));
+    $execution = (new Node())->setTestId($testId)->setBox((new CustomBox("execution"))
+      ->addInputPort((new Port(PortMeta::create("in", "string")))->setVariableValue($inputVar))
+      ->addInputPort((new Port(PortMeta::create("binary", "string")))->setVariableValue($binaryVar))
+      ->addOutputPort((new Port(PortMeta::create("out", "string")))->setVariableValue($outVar)));
+    $expectedOut = (new Node())->setTestId($testId)->setBox((new CustomBox("expectedOut"))
+      ->addOutputPort((new Port(PortMeta::create("expectedOut", "string")))->setVariableValue($expectedOutVar)));
+    $judge = (new Node())->setTestId($testId)->setBox((new CustomBox("judge"))
+      ->addInputPort((new Port(PortMeta::create("out", "string")))->setVariableValue($outVar))
+      ->addInputPort((new Port(PortMeta::create("expectedOut", "string")))->setVariableValue($expectedOutVar)));
+
+    // relations definitions
+    $source->addChild($compilation);
+    $compilation->addParent($source);
+    $compilation->addChild($input);
+    $input->addParent($compilation);
+    $input->addChild($execution);
+    $execution->addParent($input);
+    $execution->addChild($expectedOut);
+    $expectedOut->addParent($execution);
+    $expectedOut->addChild($judge);
+    $judge->addParent($expectedOut);
+
+    return $tree->addRootNode($source);
+  }
 }
 
 # Testing methods run

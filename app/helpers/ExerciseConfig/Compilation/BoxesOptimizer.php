@@ -34,7 +34,7 @@ class BoxesOptimizer {
     }
 
     if ($variableValue === null || $otherVariableValue === null ||
-      $variableValue->getValue() !== $variableValue->getValue()) {
+      $variableValue->getValue() !== $otherVariableValue->getValue()) {
       return false;
     }
 
@@ -156,7 +156,7 @@ class BoxesOptimizer {
 
       // do not forget to add newly created children from current node to
       // processing queue
-      array_merge($queue, $node->getChildren());
+      $queue = array_merge($queue, $node->getChildren());
     }
   }
 
