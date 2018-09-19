@@ -20,7 +20,8 @@ class OrderByCollationInjectionMysqlWalker extends SqlWalker
   private function isForbidden($orderByItemTokens)
   {
     $forbiddenColumns = $this->getQuery()->getHint(self::HINT_COLLATION_FORBIDDEN_COLUMNS);
-    if ($forbiddenColumns && count($orderByItemTokens) == 2 && preg_match('/[.](?<name>[^.]+)$/', $orderByItemTokens[0], $matches)) {
+    if ($forbiddenColumns && count($orderByItemTokens) == 2 &&
+        preg_match('/[.](?<name>[^.]+)$/', $orderByItemTokens[0], $matches)) {
       $name = strtolower($matches['name']);
       foreach ($forbiddenColumns as $col) {
         if (strtolower($col) === $name) {

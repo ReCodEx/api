@@ -22,8 +22,10 @@ class PaginationDbHelper
   ];
 
   /**
-   * Non-string columns may not have collation in order by clause. This is actually a hack, since detecting column type is rather complicated.
-   * Column names on this list are passed on to the collation injector, so they are avoided in the injection process.
+   * Non-string columns may not have collation in order by clause.
+   * This is actually a hack, since detecting column type is rather complicated.
+   * Column names on this list are passed on to the collation injector,
+   * so they are avoided in the injection process.
    */
   private static $forbiddenColumns = [ 'created_at' ];
 
