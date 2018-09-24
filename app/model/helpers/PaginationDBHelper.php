@@ -90,7 +90,27 @@ class PaginationDbHelper
   }
 
   /**
-   * Apply the helper on a query bulider (add common clauses).
+   * Apply only the search filter on a query builder.
+   * @param QueryBuilder $qb Query builder being augmented.
+   * @param strring $search Search query string.
+   * @param string|null $alias Alias of the main table use in the query builder. If null, alias is auto-detected.
+   */
+  public function applySearchFilter(QueryBuilder $qb, string $search, string $alias = null)
+  {
+    // Make sure we know the alias of the main table.
+    if (!$alias) {
+      $aliases = $qb->getRootAliases();
+      $alias = reset($aliases);
+    }
+
+    $tokens = preg_split('/\s+/', $search, PREG_SPLIT_NO_EMPTY);
+    foreach ($tokens as $token) {
+      $this->addSearchCondition($qb, $token, $alias);
+    }
+  }
+
+  /**
+   * Apply the helper on a query bulider (add common clauses) using pagination metadata.
    * @param QueryBuilder $qb Query builder being augmented.
    * @param Pagination $pagination Pagination object which holds the filter and order by parameters.
    * @param string|null $alias Alias of the main table use in the query builder. If null, alias is auto-detected.
@@ -109,11 +129,7 @@ class PaginationDbHelper
       if (!$search) {
         throw new InvalidArgumentException("filter", "search query value is empty");
       }
-
-      $tokens = preg_split('/\s+/', $search);
-      foreach ($tokens as $token) {
-        $this->addSearchCondition($qb, $token, $alias);
-      }
+      $this->applySearchFilter($qb, $search, $alias);
     }
 
     // Set final ordering ...

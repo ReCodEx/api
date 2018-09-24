@@ -2,9 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Localizations;
-use App\Model\Entity\Group;
 use App\Model\Entity\Instance;
-use App\Model\Entity\LocalizedGroup;
 use App\V1Module\Presenters\InstancesPresenter;
 use Tester\Assert;
 use App\Model\Entity\Licence;
@@ -158,31 +156,6 @@ class TestInstancesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
     Assert::equal(1, count($this->presenter->instances->findAll()));
-  }
-
-  public function testGetGroups()
-  {
-    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
-
-    $allInstances = $this->presenter->instances->findAll();
-    $instance = array_pop($allInstances);
-
-    $request = new Nette\Application\Request('V1:Instances', 'GET', ['action' => 'groups', 'id' => $instance->id]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    $groups = $result['payload'];
-    Assert::equal(4, count($groups));
-    Assert::equal(
-      ["Frankenstein University, Atlantida", "Demo group", "Demo child group", "Private group"],
-      array_map(function ($group) {
-        /** @var LocalizedGroup $localizedEntity */
-        $localizedEntity = current($group["localizedTexts"]);
-        return $localizedEntity ? $localizedEntity->getName() : "NO NAME";
-      }, $groups)
-    );
   }
 
   public function testGetLicences()

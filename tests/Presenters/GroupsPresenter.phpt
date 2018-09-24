@@ -20,6 +20,9 @@ class TestGroupsPresenter extends Tester\TestCase
   private $adminLogin = "admin@admin.com";
   private $adminPassword = "admin";
 
+  private $groupSupervisorLogin = "demoGroupSupervisor@example.com";
+  private $groupSupervisorPassword = "password";
+
   /** @var GroupsPresenter */
   protected $presenter;
 
@@ -75,30 +78,66 @@ class TestGroupsPresenter extends Tester\TestCase
     return $group;
   }
 
-  public function testUserCannotListAllGroups()
+  public function testListAllGroupsBySupervisor()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
-
-    /** @var \Nette\Application\Responses\JsonResponse $response */
-    Assert::exception(function () {
-      $request = new Nette\Application\Request('V1:Groups', 'GET', ['action' => 'default']);
-      $this->presenter->run($request);
-    }, App\Exceptions\ForbiddenRequestException::class);
+    $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin, $this->groupSupervisorPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default']);
+    Assert::equal(1, count($payload));
   }
 
-  public function testAdminCanListAllGroups()
+  public function testListAllGroupsByAdmin()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default']);
+    Assert::equal(4, count($payload));
+  }
 
-    $request = new Nette\Application\Request('V1:Groups', 'GET', ['action' => 'default']);
+  public function testSearchGroupByName()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default', 'search' => 'child']);
+    Assert::equal(1, count($payload));
+  }
 
-    /** @var \Nette\Application\Responses\JsonResponse $response */
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+  public function testSearchGroupByNameIncludingAncestors()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default', 'search' => 'child', 'ancestors' => true]);
+    Assert::equal(3, count($payload));
+  }
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result["code"]);
-    Assert::equal(4, count($result["payload"]));
+  public function testListGroupIncludingArchived()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default', 'archived' => true]);
+    Assert::equal(6, count($payload));
+  }
+
+  public function testListGroupOnlyArchived()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default', 'onlyArchived' => true]);
+    Assert::equal(2, count($payload));
+    foreach ($payload as $group) {
+      Assert::truthy($group["archived"]);
+    }
+  }
+
+  public function testListGroupOnlyArchivedButNotLongAgo()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin, $this->adminPassword);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
+      ['action' => 'default', 'onlyArchived' => true, 'archivedAgeLimit' => 365]); // no longer than year ago
+    Assert::equal(1, count($payload));
+    foreach ($payload as $group) {
+      Assert::truthy($group["archived"]);
+    }
   }
 
   public function testUserCannotJoinPrivateGroup()
@@ -486,7 +525,6 @@ class TestGroupsPresenter extends Tester\TestCase
 
       $correctIds = PresenterTestHelper::extractIdsMap($group->getShadowAssignments()->toArray());
       $payloadIds = PresenterTestHelper::extractIdsMap($payload);
-
       Assert::equal($correctIds, $payloadIds);
     }
   }
@@ -495,21 +533,22 @@ class TestGroupsPresenter extends Tester\TestCase
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
 
-    $groups = $this->presenter->groups->findAll();
-    $group = array_pop($groups);
+    // Find the only group with exercises....
+    $group = null;
+    foreach ($this->presenter->groups->findAll() as $g) {
+      if (count($g->getExercises()) > 0) {
+        $group = $g;
+        break;
+      }
+    }
 
-    $request = new Nette\Application\Request('V1:Groups',
-      'GET',
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
       ['action' => 'exercises', 'id' => $group->getId()]
     );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $result = $response->getPayload();
-    $payload = $result['payload'];
-    Assert::equal(200, $result['code']);
-
-    Assert::equal($group->getExercises()->toArray(), $payload); // admin can access everything
+    $correctIds = PresenterTestHelper::extractIdsMap($group->getExercises()->toArray());
+    $payloadIds = PresenterTestHelper::extractIdsMap($payload);
+    Assert::equal($correctIds, $payloadIds);
   }
 
   public function testStats()

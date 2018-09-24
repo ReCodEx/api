@@ -8,7 +8,6 @@ use App\Model\Entity\Licence;
 interface IInstancePermissions {
   function canViewAll(): bool;
   function canViewDetail(Instance $instance): bool;
-  function canViewGroups(Instance $instance): bool;
   function canViewLicences(Instance $instance): bool;
   function canAddLicence(Instance $instance): bool;
   function canUpdateLicence(Licence $licence): bool;

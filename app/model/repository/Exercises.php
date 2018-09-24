@@ -106,7 +106,7 @@ class Exercises extends BaseSoftDeleteRepository {
       // Each group has a separate OR clause ...
       $orExpr = $qb->expr()->orX();
       $gcounter = 0;
-      foreach ($groups->groupIdsAncestralClosure($groupsIds) as $id) {
+      foreach ($groups->groupsIdsAncestralClosure($groupsIds) as $id) {
         $var = "group" . ++$gcounter;
         $orExpr->add($qb->expr()->isMemberOf(":$var", "e.groups"));
         $qb->setParameter($var, $id);
@@ -159,7 +159,7 @@ class Exercises extends BaseSoftDeleteRepository {
       // Each group of the ancestral closure has a separate OR clause ...
       $orExpr = $sub->expr()->orX();
       $gcounter = 0;
-      foreach ($groups->groupIdsAncestralClosure([$groupId]) as $id) {
+      foreach ($groups->groupsIdsAncestralClosure([$groupId]) as $id) {
         $var = "group" . ++$gcounter;
         $orExpr->add($sub->expr()->isMemberOf(":$var", "e.groups"));
         $qb->setParameter($var, $id);

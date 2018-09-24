@@ -153,7 +153,6 @@ permissions:
       resource: group
       role: supervisor-student
       actions:
-          - viewAll
           - becomeSupervisor
 
     - allow: true
@@ -173,7 +172,6 @@ permissions:
       actions:
         - viewAll
         - viewDetail
-        - viewGroups
         - viewLicences
 
     - allow: true
@@ -182,12 +180,6 @@ permissions:
       actions:
         - viewAll
         - viewDetail
-
-    - allow: true
-      role: student
-      resource: instance
-      actions:
-          - viewGroups
 
     - allow: true
       role: superadmin # TODO instance admin role
