@@ -187,28 +187,6 @@ class InstancesPresenter extends BasePresenter {
     $this->sendSuccessResponse($instance);
   }
 
-  public function checkGroups(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    if (!$this->instanceAcl->canViewGroups($instance)) {
-      throw new ForbiddenRequestException();
-    }
-  }
-
-  /**
-   * Get a list of all groups which user can view in an instance
-   * @GET
-   * @param string $id An identifier of the instance
-   * @throws ForbiddenRequestException
-   */
-  public function actionGroups(string $id) {
-    $instance = $this->instances->findOrThrow($id);
-    $groups = array_values(array_filter($instance->getGroups()->getValues(),
-      function (Group $group) {
-        return $this->groupAcl->canViewPublicDetail($group);
-      }));
-    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
-  }
-
   public function checkLicences(string $id) {
     $instance = $this->instances->findOrThrow($id);
     if (!$this->instanceAcl->canViewLicences($instance)) {

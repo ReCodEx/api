@@ -128,33 +128,27 @@ class GroupsPresenter extends BasePresenter {
    */
   public $shadowAssignmentViewFactory;
 
-  public function checkDefault() {
-    if (!$this->groupAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
-    }
-  }
-
   /**
-   * Get a list of all non-archived groups
+   * Get a list of all groups a user can see. The return set is filtered by parameters.
    * @GET
+   * @param string|null $instanceId Only groups of this instance are returned.
+   * @param bool|null $ancestors If true, returns an ancestral closure of the initial result set.
+   *  Included ancestral groups do not respect other filters (archived, search, ...).
+   * @param string|null $search Search string. Only groups containing this string as
+   *  a substring of their names are returned.
+   * @param bool|null $archived Include also archived groups in the result.
+   * @param bool|null $onlyArchived Automatically implies $archived flag and returns only archived groups.
+   * @param int|null $archivedAgeLimit Only works in combination with archived;
+   *  restricts maximal age (how long the groups have been in archive) in days.
    */
-  public function actionDefault() {
-    $groups = $this->groups->findUnarchived();
-    $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups));
-  }
-
-  public function checkAll() {
-    if (!$this->groupAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
+  public function actionDefault(string $instanceId = null, bool $ancestors = false,
+    string $search = null, bool $archived = false, bool $onlyArchived = false, int $archivedAgeLimit = null)
+  {
+    $user = $this->groupAcl->canViewAll() ? null : $this->getCurrentUser(); // user for membership restriction
+    $groups = $this->groups->findFiltered($user, $instanceId, $search, $archived, $onlyArchived, $archivedAgeLimit);
+    if ($ancestors) {
+      $groups = $this->groups->groupsAncestralClosure($groups);
     }
-  }
-
-  /**
-   * Get a list of all groups
-   * @GET
-   */
-  public function actionAll() {
-    $groups = $this->groups->findAll();
     $this->sendSuccessResponse($this->groupViewFactory->getGroups($groups, false));
   }
 

@@ -14,6 +14,17 @@ App\Model\Entity\LocalizedGroup:
             - "en"
             - Private group
             - A group meant solely for the purpose of demonstration of private groups
+    demoArchivedGroupText:
+        __construct:
+            - "en"
+            - "Archived group"
+            - "Old group which already has been archived"
+    demoArchivedXOGroupText:
+        __construct:
+            - "en"
+            - "Archived group (Extra Old)"
+            - "Very old group which already has been archived long time ago (in a galaxy far far away)"
+
 App\Model\Entity\Group:
     demoGroup:
         __construct:
@@ -40,6 +51,26 @@ App\Model\Entity\Group:
             - FALSE
         addLocalizedText:
             - @demoPrivateGroupText
+    demoArchivedGroup:
+        __construct:
+            - OLD002
+            - @demoInstance
+            - @demoAdmin
+            - @demoGroup
+        addLocalizedText:
+            - @demoArchivedGroupText
+        archive:
+            - "<dateTimeBetween('-10 months', '-1 months')>"
+    demoArchivedXOGroup:
+        __construct:
+            - OLD001
+            - @demoInstance
+            - @demoAdmin
+            - @demoGroup
+        addLocalizedText:
+            - @demoArchivedXOGroupText
+        archive:
+            - "<dateTimeBetween('-5 years', '-3 years')>"
 
 App\Model\Entity\User:
     'demoGroupMember{1..10}':

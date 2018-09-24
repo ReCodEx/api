@@ -479,8 +479,13 @@ class TestUsersPresenter extends Tester\TestCase
 
     Assert::true(array_key_exists("supervisor", $result["payload"]));
     $supervisorIn = $result["payload"]["supervisor"];
-    $expectedSupervisorIn = $user->getGroupsAsSupervisor()->getValues();
-    Assert::equal($this->presenter->groupViewFactory->getGroups($expectedSupervisorIn), $supervisorIn);
+
+    $groupsAsSupervisor = $user->getGroupsAsSupervisor()->filter(function ($group) {
+      return !$group->isArchived();
+    })->getValues();
+    $correctIds = PresenterTestHelper::extractIdsMap($groupsAsSupervisor);
+    $payloadIds = PresenterTestHelper::extractIdsMap($supervisorIn);
+    Assert::equal(count($correctIds), count($payloadIds));
   }
 
   public function testStudentGroups()
