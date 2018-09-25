@@ -170,11 +170,14 @@ class Groups extends BaseSoftDeleteRepository  {
     $res = [];
     foreach ($groups as $group) {
       $groupId = $group->getId();
-      if (array_key_exists($groupId, $res)) continue;
+      if (array_key_exists($groupId, $res)) { // @neloop made me do that
+        continue;
+      }
       $res[$groupId] = $group;
       foreach ($group->getParentGroupsIds() as $id) {
-        if (array_key_exists($id, $res)) break;
-        $res[$id] = $this->findOrThrow($id);
+        if (!array_key_exists($id, $res)) {
+          $res[$id] = $this->findOrThrow($id);
+        }
       }
     }
     return array_values($res);
@@ -189,7 +192,9 @@ class Groups extends BaseSoftDeleteRepository  {
   {
     $res = [];
     foreach ($groupIds as $groupId) {
-      if (array_key_exists($groupId, $res)) continue;
+      if (array_key_exists($groupId, $res)) { // @neloop made me do that
+        continue;
+      }
       $res[$groupId] = true;
       $group = $this->findOrThrow($groupId);
       foreach ($group->getParentGroupsIds() as $id) {
