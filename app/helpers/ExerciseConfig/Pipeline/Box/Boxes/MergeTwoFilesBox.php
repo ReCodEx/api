@@ -13,14 +13,14 @@ use App\Helpers\ExerciseConfig\VariableTypes;
  * Box which will take two file arrays on its input and join them to one merged
  * array.
  */
-class MergeFilesBox extends Box
+class MergeTwoFilesBox extends Box
 {
   /** Type key */
-  public static $MERGE_FILES_TYPE = "merge-files";
+  public static $MERGE_TWO_FILES_TYPE = "merge-two-files";
   public static $IN1_PORT_KEY = "in1";
   public static $IN2_PORT_KEY = "in2";
   public static $OUT_PORT_KEY = "out";
-  public static $DEFAULT_NAME = "Merge files";
+  public static $DEFAULT_NAME = "Merge two files to array";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -34,8 +34,8 @@ class MergeFilesBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$IN1_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$IN2_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$IN1_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$IN2_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
@@ -58,7 +58,7 @@ class MergeFilesBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$MERGE_FILES_TYPE;
+    return self::$MERGE_TWO_FILES_TYPE;
   }
 
   /**
@@ -98,9 +98,9 @@ class MergeFilesBox extends Box
    */
   public function compile(CompilationParams $params): array {
     // will not produce tasks, only merge files during compilation
-    $in1 = $this->getInputPortValue(self::$IN1_PORT_KEY)->getValueAsArray();
-    $in2 = $this->getInputPortValue(self::$IN2_PORT_KEY)->getValueAsArray();
-    $out = array_merge($in1, $in2);
+    $in1 = $this->getInputPortValue(self::$IN1_PORT_KEY)->getValue();
+    $in2 = $this->getInputPortValue(self::$IN2_PORT_KEY)->getValue();
+    $out = [ $in1, $in2 ];
     $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue($out);
     return [];
   }
