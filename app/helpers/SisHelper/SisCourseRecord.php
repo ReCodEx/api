@@ -53,11 +53,15 @@ class SisCourseRecord implements JsonSerializable {
     $result->affiliation = $data["affiliation"];
     $result->year = $data["year"];
     $result->term = $data["semester"];
-    $result->dayOfWeek = intval($data["day_of_week"]) - 1;
-    $minutes = intval($data["time"]);
-    $result->time = (new DateTime())
-      ->setTime(floor($minutes / 60), $minutes % 60)
-      ->format("H:i");
+    $result->dayOfWeek = $data["day_of_week"] !== null ? intval($data["day_of_week"]) - 1 : null;
+    if ($data["time"] !== null) {
+      $minutes = intval($data["time"]);
+      $result->time = (new DateTime())
+        ->setTime(floor($minutes / 60), $minutes % 60)
+        ->format("H:i");
+    } else {
+      $result->time = null;
+    }
     $result->fortnightly = $data["fortnight"];
     $result->oddWeeks = $data["firstweek"] == 1;
     $result->type = array_key_exists($data["type"], static::$typeMap) ? static::$typeMap[$data["type"]] : "unknown";
