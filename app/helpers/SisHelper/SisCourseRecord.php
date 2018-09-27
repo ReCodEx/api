@@ -30,6 +30,8 @@ class SisCourseRecord implements JsonSerializable {
 
   private $time;
 
+  private $room;
+
   private $fortnightly;
 
   private $oddWeeks;
@@ -62,6 +64,7 @@ class SisCourseRecord implements JsonSerializable {
     } else {
       $result->time = null;
     }
+    $result->room = $data["room"];
     $result->fortnightly = $data["fortnight"];
     $result->oddWeeks = $data["firstweek"] == 1;
     $result->type = array_key_exists($data["type"], static::$typeMap) ? static::$typeMap[$data["type"]] : "unknown";
@@ -131,6 +134,13 @@ class SisCourseRecord implements JsonSerializable {
   /**
    * @return mixed
    */
+  public function getRoom() {
+    return $this->room;
+  }
+
+  /**
+   * @return mixed
+   */
   public function isFortnightly() {
     return $this->fortnightly;
   }
@@ -150,6 +160,7 @@ class SisCourseRecord implements JsonSerializable {
       'annotations' => $this->annotations,
       'dayOfWeek' => $this->dayOfWeek,
       'time' => $this->time,
+      'room' => $this->room,
       'fortnightly' => $this->fortnightly,
       'oddWeeks' => $this->oddWeeks,
       'type' => $this->type
