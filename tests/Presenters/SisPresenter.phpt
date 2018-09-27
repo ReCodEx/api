@@ -162,12 +162,12 @@ class TestSisPresenter extends TestCase {
 
     $en = $group["localizedTexts"][0];
     Assert::notSame(null, $en);
-    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks)", $en->getName());
+    Assert::same("Advanced Technologies for Web Applications (Wed, 15:40, Even weeks, SW1)", $en->getName());
     Assert::same("The Lorem ipsum", $en->getDescription());
 
     $cs = $group["localizedTexts"][1];
     Assert::notSame(null, $cs);
-    Assert::same("Pokrocile technologie webovych aplikaci (St, 15:40, Sudé týdny)", $cs->getName());
+    Assert::same("Pokrocile technologie webovych aplikaci (St, 15:40, Sudé týdny, SW1)", $cs->getName());
     Assert::same("Lorem ipsum", $cs->getDescription());
 
     $groupEntity = $this->presenter->groups->findOrThrow($group["id"]);

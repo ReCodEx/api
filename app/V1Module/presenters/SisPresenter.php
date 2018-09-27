@@ -334,12 +334,14 @@ class SisPresenter extends BasePresenter {
 
     foreach (["en", "cs"] as $language) {
       // Assemble new group name from course data....
-      if ($remoteCourse->getDayOfWeek() !== null && $remoteCourse->getTime() !== null) {
+      if ($remoteCourse->getDayOfWeek() !== null &&
+          $remoteCourse->getTime() !== null &&
+          $remoteCourse->getRoom() !== null) {
         $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
         if ($remoteCourse->isFortnightly()) {
           $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
         }
-        $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
+        $caption = sprintf("%s (%s, %s)", $remoteCourse->getCaption($language), $timeInfo, $remoteCourse->getRoom());
       } else {
         $caption = $remoteCourse->getCaption($language);
       }
