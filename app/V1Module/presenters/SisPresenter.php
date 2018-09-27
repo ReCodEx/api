@@ -333,11 +333,16 @@ class SisPresenter extends BasePresenter {
     $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
 
     foreach (["en", "cs"] as $language) {
-      $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
-      if ($remoteCourse->isFortnightly()) {
-        $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
+      // Assemble new group name from course data....
+      if ($remoteCourse->getDayOfWeek() !== null && $remoteCourse->getTime() !== null) {
+        $timeInfo = $this->dayToString($remoteCourse->getDayOfWeek(), $language) . ", " . $remoteCourse->getTime();
+        if ($remoteCourse->isFortnightly()) {
+          $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
+        }
+        $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
+      } else {
+        $caption = $remoteCourse->getCaption($language);
       }
-      $caption = sprintf("%s (%s)", $remoteCourse->getCaption($language), $timeInfo);
 
       $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
       $group->addLocalizedText($localization);
