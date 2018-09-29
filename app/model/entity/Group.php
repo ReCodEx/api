@@ -145,6 +145,26 @@ class Group
     return false;
   }
 
+
+  /**
+   * Get the archiving date of this group (or the nearest archived parent).
+   * If the group is not archived, null is returned.
+   * @return DateTime|null
+   */
+  public function getArchivationDate(): ?DateTime {
+    $group = $this;
+
+    while ($group !== null) {
+      if ($group->isDirectlyArchived()) {
+        return $group->archivationDate;
+      }
+
+      $group = $group->getParentGroup();
+    }
+
+    return null;
+  }
+
   /**
    * @return bool true only if the group itself (and not its parent) was marked as archived
    */
