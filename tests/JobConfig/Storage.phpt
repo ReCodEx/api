@@ -27,7 +27,7 @@ class TestJobConfigStorage extends Tester\TestCase
     @unlink($this->jobConfigFileName); // the file might not already exist
   }
 
-  public function testArchivation() {
+  public function testArchiving() {
     $oldContents = file_get_contents($this->jobConfigFileName);
     $newFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
     $newContents = file_get_contents($newFilePath);
@@ -39,7 +39,7 @@ class TestJobConfigStorage extends Tester\TestCase
     unlink($newFilePath);
   }
 
-  public function testArchivationMultipleTimes() {
+  public function testArchivingMultipleTimes() {
     // first make sure the file is real
     Assert::true(is_file($this->jobConfigFileName));
 

@@ -2,6 +2,8 @@
 
 namespace App\Model\Repository;
 
+use DateTime;
+use DateInterval;
 use App\Model\Entity\Instance;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\Group;
@@ -106,6 +108,36 @@ class Groups extends BaseSoftDeleteRepository  {
     return $groupsQb->getQuery()->getResult();
   }
 
+
+  /**
+   * Filter the groups so that only non-archived groups remain.
+   * @param Group[] $groups Groups to be filtered.
+   * @return Group[]
+   */
+  private function filterGroupsNonArchived(array $groups)
+  {
+    return array_filter($groups, function(Group $group) {
+      return !$group->isArchived();
+    });
+  }
+
+  /**
+   * Filter the archived groups according to given flags.
+   * @param bool $onlyArchived If true, only archived groups are allowed to remain in the result.
+   * @param DateTime|null $minDate If set, archived groups are tested against their date of archiving.
+   *   If the date is older than $minDate, the group will not apear in the result.
+   * @param Group[] $groups Groups to be filtered.
+   * @return Group[]
+   */
+  private function filterGroupsArchived(array $groups, bool $onlyArchived, ?DateTime $minDate = null)
+  {
+    return array_filter($groups, function(Group $group) use($onlyArchived, $minDate) {
+      $archivationDate = $group->getArchivationDate();
+      return (!$onlyArchived || $archivationDate !== null) &&
+        ($minDate === null || $archivationDate === null || $minDate <= $archivationDate);
+    });
+  }
+
   /**
    * Returns a set of groups based on given filtering conditions.
    * @param User|null $user If not null, only groups in which this user is involved (has active membership) in
@@ -143,21 +175,23 @@ class Groups extends BaseSoftDeleteRepository  {
       $paginationDbHelper->applySearchFilter($qb, $search);
     }
 
+    $groups = $qb->getQuery()->getResult();
+
     // Filtering by archived flags...
     $archived = $archived || $onlyArchived;
     if (!$archived) {
-      $qb->andWhere($qb->expr()->isNull('g.archivationDate'));
-    } else if ($onlyArchived) {
-      $qb->andWhere($qb->expr()->isNotNull('g.archivationDate'));
+      $groups = $this->filterGroupsNonArchived($groups);
+    } else if ($onlyArchived || $archivedAgeLimit) {
+      if ($archivedAgeLimit) {
+        $minDate = new DateTime();
+        $minDate->sub(DateInterval::createFromDateString("$archivedAgeLimit days"));
+      } else {
+        $minDate = null;
+      }
+      $groups = $this->filterGroupsArchived($groups, $onlyArchived, $minDate);
     }
 
-    if ($archived && $archivedAgeLimit) {
-      $minDate = new \DateTime();
-      $minDate->sub(\DateInterval::createFromDateString("$archivedAgeLimit days"));
-      $qb->andWhere('g.archivationDate >= :minDate')->setParameter('minDate', $minDate);
-    }
-
-    return $qb->getQuery()->getResult();
+    return $groups;
   }
 
   /**

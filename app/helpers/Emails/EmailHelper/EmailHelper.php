@@ -39,7 +39,7 @@ class EmailHelper {
   /** @var bool Whether the ReCodEx mailing subsystem is in debug mode. Debug mode prevents sending anything via SMTP. */
   private $debugMode;
 
-  /** @var string Path to archivation directory. If set, copies of all emails are logged there in text files. */
+  /** @var string Path to archive directory. If set, copies of all emails are logged there in text files. */
   private $archivingDir;
 
   /**
