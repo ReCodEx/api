@@ -94,7 +94,7 @@ class SisPresenter extends BasePresenter {
       $terms[] = [
         'year' => $term->getYear(),
         'term' => $term->getTerm(),
-        'starting' => $term->isAdvertised($now)
+        'isAdvertised' => $term->isAdvertised($now)
       ];
     }
 

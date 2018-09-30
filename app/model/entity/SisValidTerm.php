@@ -71,13 +71,11 @@ class SisValidTerm implements JsonSerializable {
     }
 
     $advertiseUntil = $this->advertiseUntil;
-
     if ($advertiseUntil === null) {
-      $advertiseUntil = clone $this->beginning;
-      $advertiseUntil->modify("+30 days");
+      $advertiseUntil = $this->end;
     }
 
-    return $now > $this->beginning && $now < $this->end && $now < $advertiseUntil;
+    return $now >= $this->beginning && $now <= $advertiseUntil;
   }
 
   function jsonSerialize() {
