@@ -49,6 +49,7 @@ class BoxService
       MergeFilesBox::$MERGE_FILES_TYPE => MergeFilesBox::class,
       MergeTwoFilesBox::$MERGE_TWO_FILES_TYPE => MergeTwoFilesBox::class,
       MergeFileAndFilesBox::$MERGE_FILE_AND_FILES_TYPE => MergeFileAndFilesBox::class,
+      CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
     ];
   }
 
