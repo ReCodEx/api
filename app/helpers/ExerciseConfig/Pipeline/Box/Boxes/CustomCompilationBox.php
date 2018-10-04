@@ -101,47 +101,11 @@ class CustomCompilationBox extends CompilationBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary($this->getInputPortValue(self::$COMPILER_EXEC_PORT_KEY)->getValue());
 
-    // Get files that should be injected into args....
-    $binaryFile = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
-    $injections = [
-      self::$SOURCE_FILES_PORT_KEY =>
-        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-      self::$EXTRA_FILES_PORT_KEY =>
-        $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-      self::$BINARY_FILE_PORT_KEY => [ $binaryFile ],
-    ];
-
     // Process args
-    $rawArgs = [];
-    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
-      $rawArgs = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
-    }
-
     $args = [];
-    foreach ($rawArgs as $arg) {
-      if (substr($arg, 0, 2) === '$@') {
-        $name = substr($arg, 2);
-        if ($injections[$name]) {
-          array_push($args, ...$injections[$name]);
-          unset($injections[$name]);
-        }
-      } else {
-        $args[] = $arg;
-      }
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
-
-    // If no placeholders were found, append the files in typical manner....
-    if (!empty($injections[self::$SOURCE_FILES_PORT_KEY])) {
-      array_push($args, ...$injections[self::$SOURCE_FILES_PORT_KEY]);
-    }
-    if (!empty($injections[self::$EXTRA_FILES_PORT_KEY])) {
-      array_push($args, ...$injections[self::$EXTRA_FILES_PORT_KEY]);
-    }
-    if (!empty($injections[self::$BINARY_FILE_PORT_KEY])) {
-      $args[] = "-o";
-      $args[] = $binaryFile;
-    }
-
     $task->setCommandArguments($args);
 
     // check if file produced by compilation was successfully created

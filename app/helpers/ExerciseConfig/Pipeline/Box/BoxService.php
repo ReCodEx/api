@@ -46,9 +46,11 @@ class BoxService
       Python3CompilationBox::$PYTHON3_COMPILATION_TYPE => Python3CompilationBox::class,
       PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
       NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
-      MergeFilesBox::$MERGE_FILES_TYPE => MergeFilesBox::class,
-      MergeTwoFilesBox::$MERGE_TWO_FILES_TYPE => MergeTwoFilesBox::class,
-      MergeFileAndFilesBox::$MERGE_FILE_AND_FILES_TYPE => MergeFileAndFilesBox::class,
+      MergeFilesBox::$MERGE_TYPE => MergeFilesBox::class,
+      MergeStringsBox::$MERGE_TYPE => MergeStringsBox::class,
+      FileToArrayBox::$SCALAR_TO_ARRAY_TYPE => FileToArrayBox::class,
+      StringToArrayBox::$SCALAR_TO_ARRAY_TYPE => StringToArrayBox::class,
+      FilesNamesBox::$BOX_TYPE => FilesNamesBox::class,
       CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
     ];
   }

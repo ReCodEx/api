@@ -7,20 +7,20 @@ use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Exception;
 
 
 /**
- * Box which will take two file arrays on its input and join them to one merged
- * array.
+ * Base for conversion boxes which take a scalar and produce a single-item array.
  */
-class MergeTwoFilesBox extends Box
+class ScalarToArrayBox extends Box
 {
+  public static $SCALAR_TO_ARRAY_TYPE = null;
+  public static $DEFAULT_NAME = null;
+
   /** Type key */
-  public static $MERGE_TWO_FILES_TYPE = "merge-two-files";
-  public static $IN1_PORT_KEY = "in1";
-  public static $IN2_PORT_KEY = "in2";
+  public static $IN_PORT_KEY = "in";
   public static $OUT_PORT_KEY = "out";
-  public static $DEFAULT_NAME = "Merge two files to array";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -29,16 +29,24 @@ class MergeTwoFilesBox extends Box
   /**
    * Static initializer.
    * @throws ExerciseConfigException
+   * @throws Exception
    */
   public static function init() {
+    throw new Exception("Unimplemented init method in ScalarToArrayBox derived class.");
+  }
+
+  /**
+   * Static initializer.
+   * @throws ExerciseConfigException
+   */
+  public static function initScalarToArray(string $scalarType, string $arrayType) {
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$IN1_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta())->setName(self::$IN2_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$IN_PORT_KEY)->setType($scalarType)),
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType($arrayType))
       );
     }
   }
@@ -49,6 +57,7 @@ class MergeTwoFilesBox extends Box
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
+    static::init();
     parent::__construct($meta);
   }
 
@@ -58,7 +67,7 @@ class MergeTwoFilesBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$MERGE_TWO_FILES_TYPE;
+    return self::$SCALAR_TO_ARRAY_TYPE;
   }
 
   /**
@@ -67,7 +76,7 @@ class MergeTwoFilesBox extends Box
    * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
-    self::init();
+    static::init();
     return self::$defaultInputPorts;
   }
 
@@ -77,7 +86,7 @@ class MergeTwoFilesBox extends Box
    * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
-    self::init();
+    static::init();
     return self::$defaultOutputPorts;
   }
 
@@ -97,11 +106,9 @@ class MergeTwoFilesBox extends Box
    * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    // will not produce tasks, only merge files during compilation
-    $in1 = $this->getInputPortValue(self::$IN1_PORT_KEY)->getValue();
-    $in2 = $this->getInputPortValue(self::$IN2_PORT_KEY)->getValue();
-    $out = [ $in1, $in2 ];
-    $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue($out);
+    // will not produce tasks, only convert scalar value into single-item array
+    $in = $this->getInputPortValue(self::$IN_PORT_KEY)->getValue();
+    $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue([ $in ]);
     return [];
   }
 }
