@@ -12,7 +12,8 @@ use Exception;
 
 
 /**
- * Base for conversion boxes which take a scalar and produce a single-item array.
+ * Takes array of files and produces array of strings with file names (including the path).
+ * This can be useful when injecting files into command line arguments.
  */
 class FilesNamesBox extends Box
 {
@@ -98,7 +99,7 @@ class FilesNamesBox extends Box
    * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    // will not produce tasks, only convert scalar value into single-item array
+    // will not produce tasks, only convert array of files into their relative paths
     $in = $this->getInputPortValue(self::$IN_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
     $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue($in);
     return [];

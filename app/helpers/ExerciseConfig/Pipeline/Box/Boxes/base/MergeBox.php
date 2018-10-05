@@ -13,11 +13,8 @@ use Exception;
 /**
  * Base class for merging boxes. They take two arrays and produce concatenated array.
  */
-class MergeBox extends Box
+abstract class MergeBox extends Box
 {
-  public static $MERGE_TYPE = null;
-  public static $DEFAULT_NAME = null;
-
   /** Type key */
   public static $IN1_PORT_KEY = "in1";
   public static $IN2_PORT_KEY = "in2";
@@ -65,14 +62,6 @@ class MergeBox extends Box
 
 
   /**
-   * Get type of this box.
-   * @return string
-   */
-  public function getType(): string {
-    return self::$MERGE_TYPE;
-  }
-
-  /**
    * Get default input ports for this box.
    * @return array
    * @throws ExerciseConfigException
@@ -90,14 +79,6 @@ class MergeBox extends Box
   public function getDefaultOutputPorts(): array {
     static::init();
     return self::$defaultOutputPorts;
-  }
-
-  /**
-   * Get default name of this box.
-   * @return string
-   */
-  public function getDefaultName(): string {
-    return self::$DEFAULT_NAME;
   }
 
 
