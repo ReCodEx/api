@@ -21,6 +21,12 @@ class Node {
   private $box;
 
   /**
+   * Directory in which box of this node should be executed and located.
+   * @var string
+   */
+  private $directory = null;
+
+  /**
    * Identification of test to which this box belongs to.
    * @var string
    */
@@ -84,6 +90,25 @@ class Node {
    */
   public function setBox(Box $box): Node {
     $this->box = $box;
+    return $this;
+  }
+
+  /**
+   * Directory to which this nodes box belongs to.
+   * @note Should be set for all nodes during compilation.
+   * @return null|string
+   */
+  public function getDirectory(): ?string {
+    return $this->directory;
+  }
+
+  /**
+   * Set the directory of this node.
+   * @param string $directory
+   * @return Node
+   */
+  public function setDirectory(string $directory): Node {
+    $this->directory = $directory;
     return $this;
   }
 

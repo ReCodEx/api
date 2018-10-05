@@ -136,8 +136,6 @@ class BoxesOptimizer {
               return $n === $compared;
             });
             $child->setTestId(null); // clear the test identification
-            // TODO: set directory
-            // TODO: dependencies setting
 
             foreach ($compared->getChildren() as $comparedChild) {
               $comparedChild->removeParent($compared);
