@@ -16,10 +16,9 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 
 /**
- * Internal exercise configuration compilation service. Handles tests in
- * execution and their separation into appropriate sub-directories. This mainly
- * means modification of file variables and prefixing them with proper
- * directory. Mkdir tasks will be also constructed and added to resulting tree.
+ * Internal exercise configuration compilation service. Handles creation of the directories used during execution and
+ * creating dumping boxes for all created directories. Alongside that for optimized boxes the name of the directory in
+ * which they will be processed has to be found.
  * @note Should be called after optimisation.
  */
 class DirectoriesResolver {
@@ -88,22 +87,22 @@ class DirectoriesResolver {
   /**
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
-   * @param Node[][] $testNodes indexed with testId
+   * @param Node[][] $directoriesNodes indexed with testId
    * @param CompilationContext $context
    * @param CompilationParams $params
    * @return RootedTree
    * @throws ExerciseConfigException
    */
-  private function addDirectories(RootedTree $tree, array $testNodes,
+  private function addDirectories(RootedTree $tree, array $directoriesNodes,
       CompilationContext $context, CompilationParams $params): RootedTree {
-    if (count($testNodes) === 0) {
+    if (count($directoriesNodes) === 0) {
       return $tree;
     }
 
     // go through all tests
     $lastMkdirNode = null;
     $result = new RootedTree();
-    foreach ($testNodes as $testId => $nodes) {
+    foreach ($directoriesNodes as $testId => $nodes) {
       $testName = $context->getTestsNames()[$testId];
 
       if ($lastMkdirNode === null) {
@@ -148,7 +147,20 @@ class DirectoriesResolver {
    * @throws ExerciseConfigException
    */
   public function resolve(RootedTree $tree, CompilationContext $context, CompilationParams $params): RootedTree {
-    $testNodes = [];
+    // Let's break it down...
+    // DirectoriesResolver works in cooperation with BoxesOptimizer which optimizes the flow of the tasks and marks the
+    // nodes which were optimized (this effectively means settings the test-id to null). Directories resolver then
+    // goes through the tree and creates the directories needed for execution. If the test-id is set, it is easy and
+    // straightforward, if it is not set the directories have to be smartly named and generated.
+    // The algorithm follows... The tree is searched with breadth-first approach. Every node is processed in
+    // the following way. If the node belongs to the test, the test identification is recorded and children of this node
+    // are processed. If the node was optimised (has null test-id) then it is needed further processing. We need to
+    // figure out the name of the directory which will be created for this optimized node and its sub-nodes. The name of
+    // the directory is composed of categories of boxes in the most left sub-branch which does not have test-id set.
+    // Once the name is known, it is used as a directory for the processed node and all the sub-nodes in the most left
+    // branch of the tree. After that, children of the node are processed.
+
+    $directoriesNodes = [];
     $stack = array_reverse($tree->getRootNodes());
     while (!empty($stack)) {
       $current = array_pop($stack);
@@ -156,10 +168,10 @@ class DirectoriesResolver {
       if ($testId !== null) {
         // all nodes of each tests are saved and further dependencies
         // on mkdir tasks are set on them
-        if (!array_key_exists($testId, $testNodes)) {
-          $testNodes[$testId] = [];
+        if (!array_key_exists($testId, $directoriesNodes)) {
+          $directoriesNodes[$testId] = [];
         }
-        $testNodes[$testId][] = $current;
+        $directoriesNodes[$testId][] = $current;
       }
 
       // process current node
@@ -171,7 +183,7 @@ class DirectoriesResolver {
       }
     }
 
-    return $this->addDirectories($tree, $testNodes, $context, $params);
+    return $this->addDirectories($tree, $directoriesNodes, $context, $params);
   }
 
 }
