@@ -7,7 +7,6 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DumpResultsBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
@@ -24,77 +23,77 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 class DirectoriesResolver {
 
   /**
-   * Resolve test directory for a single node. Only output ports are processed
-   * in all nodes, because output ports should be files which ones are emitted
-   * further.
+   * Process single node in context of directories resolver.
+   * Basically we need to track directories which should be created.
    * @param Node $node
-   * @param CompilationContext $context
+   * @param string $directoryName
+   * @param array $directoriesNodes
    */
-  private function processNode(Node $node, CompilationContext $context) {
-    if ($node->getTestId() === null) {
-      return;
+  private function processNode(Node $node, string $directoryName, array &$directoriesNodes) {
+    // all nodes for each directory are saved and further dependencies
+    // on mkdir tasks are set on them
+    if (!array_key_exists($directoryName, $directoriesNodes)) {
+      $directoriesNodes[$directoryName] = [];
     }
+    $directoriesNodes[$directoryName][] = $node;
+  }
 
-    $testName = $context->getTestsNames()[$node->getTestId()];
-    foreach ($node->getBox()->getOutputPorts() as $outputPort) {
-      $variableValue = $outputPort->getVariableValue();
-      if ($variableValue && $variableValue->isFile()) {
-        $outputPort->getVariableValue()->setDirectory($testName);
-      }
-    }
+  /**
+   * Go through the tree from current node and determine the name of the directory in which the node should be
+   * executed in. The name is composed of categories of the boxes.
+   * @param Node $current
+   * @return string
+   */
+  private function findOptimizedNodesDirectory(Node $current): string {
+    // TODO
   }
 
   /**
    * Based on given information create mkdir box and node.
-   * @param string $testId
-   * @param string $testName
+   * @param string $directory
    * @return Node
    * @throws ExerciseConfigException
    */
-  private function createMkdirNode(string $testId, string $testName): Node {
+  private function createMkdirNode(string $directory): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
-    $variable->setValue($testName);
+    $variable->setValue($directory);
 
     $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
     $boxMeta = (new BoxMeta())->setName(MkdirBox::$MKDIR_TYPE);
     $box = (new MkdirBox($boxMeta))->setInputPort($port);
 
-    $node = (new Node())->setBox($box)->setTestId($testId);
-    return $node;
+    return (new Node())->setBox($box)->setDirectory($directory);
   }
 
   /**
    * Based on given information create test dump result box and node.
-   * @param string $testId
-   * @param string $testName
+   * @param string $directory
    * @return Node
    * @throws ExerciseConfigException
    */
-  private function createDumpResultsNode(string $testId, string $testName): Node {
+  private function createDumpResultsNode(string $directory): Node {
     $variable = new Variable(VariableTypes::$STRING_TYPE);
-    $variable->setValue($testName);
+    $variable->setValue($directory);
 
     $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
     $boxMeta = (new BoxMeta())->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
     $box = (new DumpResultsBox($boxMeta))->setInputPort($port);
 
-    $node = (new Node())->setBox($box)->setTestId($testId);
-    return $node;
+    return (new Node())->setBox($box)->setDirectory($directory);
   }
 
   /**
    * Add mkdir tasks for all directories at the beginning of the tree.
    * @param RootedTree $tree
    * @param Node[][] $directoriesNodes indexed with testId
-   * @param CompilationContext $context
    * @param CompilationParams $params
    * @return RootedTree
    * @throws ExerciseConfigException
    */
   private function addDirectories(RootedTree $tree, array $directoriesNodes,
-      CompilationContext $context, CompilationParams $params): RootedTree {
+      CompilationParams $params): RootedTree {
     if (count($directoriesNodes) === 0) {
       return $tree;
     }
@@ -102,14 +101,12 @@ class DirectoriesResolver {
     // go through all tests
     $lastMkdirNode = null;
     $result = new RootedTree();
-    foreach ($directoriesNodes as $testId => $nodes) {
-      $testName = $context->getTestsNames()[$testId];
-
+    foreach ($directoriesNodes as $directoryName => $nodes) {
       if ($lastMkdirNode === null) {
-        $lastMkdirNode = $this->createMkdirNode($testId, $testName);
+        $lastMkdirNode = $this->createMkdirNode($directoryName);
         $result->addRootNode($lastMkdirNode);
       } else {
-        $mkdirNode = $this->createMkdirNode($testId, $testName);
+        $mkdirNode = $this->createMkdirNode($directoryName);
         $mkdirNode->addParent($lastMkdirNode);
         $lastMkdirNode->addChild($mkdirNode);
         $lastMkdirNode = $mkdirNode;
@@ -121,7 +118,7 @@ class DirectoriesResolver {
       }
 
       if ($params->isDebug()) {
-        $dumpResultsNode = $this->createDumpResultsNode($testId, $testName);
+        $dumpResultsNode = $this->createDumpResultsNode($directoryName);
         $dumpResultsNode->addParent($lastMkdirNode);
         $dumpResultsNode->addDependency($lastMkdirNode);
         $lastMkdirNode->addChild($dumpResultsNode);
@@ -136,6 +133,15 @@ class DirectoriesResolver {
     }
 
     return $result;
+  }
+
+  /**
+   * Go through the whole tree and where needed add copy tasks which copies files between directories.
+   * @param RootedTree $tree
+   * @return RootedTree
+   */
+  private function addCopyTasks(RootedTree $tree): RootedTree {
+    // TODO
   }
 
   /**
@@ -159,31 +165,45 @@ class DirectoriesResolver {
     // the directory is composed of categories of boxes in the most left sub-branch which does not have test-id set.
     // Once the name is known, it is used as a directory for the processed node and all the sub-nodes in the most left
     // branch of the tree. After that, children of the node are processed.
+    // The last step of the resolution is making sure that files are within the right directories. This is done through
+    // once again searching the tree and finding of if files needs to be copied from one directory to another. Therefore
+    // if the node from which the file came from was in different directory we need to copy the file into the directory
+    // of current node.
 
+    // stack is holding pair of a node and a name of a directory
+    // the directory which is applied only if the node is without test-id (hence optimised)
     $directoriesNodes = [];
-    $stack = array_reverse($tree->getRootNodes());
+    $stack = array_map(function (Node $node) { return [$node, null]; }, array_reverse($tree->getRootNodes()));
     while (!empty($stack)) {
-      $current = array_pop($stack);
+      $currentPair = array_pop($stack);
+      $current = $currentPair[0];
+      $currentName = $currentPair[1];
+
       $testId = $current->getTestId();
       if ($testId !== null) {
-        // all nodes of each tests are saved and further dependencies
-        // on mkdir tasks are set on them
-        if (!array_key_exists($testId, $directoriesNodes)) {
-          $directoriesNodes[$testId] = [];
-        }
-        $directoriesNodes[$testId][] = $current;
+        $testName = $context->getTestsNames()[$testId];
+        $this->processNode($current, $testName, $directoriesNodes);
+        $currentName = null;
+      } else {
+        // if the name is not set, we have to find it
+        $currentName = $currentName ?? $this->findOptimizedNodesDirectory($current);
+        $this->processNode($current, $currentName, $directoriesNodes);
       }
 
-      // process current node
-      $this->processNode($current, $context);
-
-      // add children of current node into stack
-      foreach (array_reverse($current->getChildren()) as $child) {
-        $stack[] = $child;
+      // add children of current node into stack, the first children deserves better heritage from its father
+      // (because its the favourite child!), therefore it inherits the privilege to use the name of the directory,
+      // other children are not so lucky
+      if (count($current->getChildren()) > 0) {
+        $stack[] = [reset($current->getChildren()), $currentName];
+        foreach (array_slice($current->getChildren(), 1) as $child) {
+          $stack[] = [$child, null];
+        }
       }
     }
 
-    return $this->addDirectories($tree, $directoriesNodes, $context, $params);
+    $tree = $this->addDirectories($tree, $directoriesNodes, $params);
+    $tree = $this->addCopyTasks($tree);
+    return $tree;
   }
 
 }
