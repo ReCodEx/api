@@ -29,12 +29,6 @@ class CompilationParams {
    */
   private $debug = false;
 
-  /**
-   * Current test identification used during compilation.
-   * @var string
-   */
-  private $currentTestName = null;
-
 
   /**
    * Get files submitted by user.
@@ -59,23 +53,6 @@ class CompilationParams {
    */
   public function isDebug(): bool {
     return $this->debug;
-  }
-
-  /**
-   * Get current test identification which might be set and used during
-   * compilation.
-   * @return null|string
-   */
-  public function getCurrentTestName(): ?string {
-    return $this->currentTestName;
-  }
-
-  /**
-   * Set current test identification for the next compilation period.
-   * @param null|string $testId
-   */
-  public function setCurrentTestName(?string $testId) {
-    $this->currentTestName = $testId;
   }
 
   /**

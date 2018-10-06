@@ -81,7 +81,6 @@ class BoxesCompiler {
       }
 
       // compile box into set of tasks
-      $params->setCurrentTestName($currentTestName);
       $tasks = $current->getBox() ? $current->getBox()->compile($params) : [];
 
       // construct dependencies
