@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
@@ -25,6 +26,10 @@ abstract class FetchBox extends Box
     parent::__construct($meta);
   }
 
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
+  }
 
   /**
    * Compile task from given information.

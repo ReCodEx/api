@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -105,6 +106,10 @@ class CustomBox extends Box
    */
   public function getType(): string {
     return self::$CUSTOM_BOX_TYPE;
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
   }
 
   /**

@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
@@ -39,6 +40,10 @@ abstract class ExecutionBox extends Box
     parent::__construct($meta);
   }
 
+
+  public function getCategory(): string {
+    return BoxCategories::$EXECUTION;
+  }
 
   /**
    * Base compilation which creates task, set its type to execution and create

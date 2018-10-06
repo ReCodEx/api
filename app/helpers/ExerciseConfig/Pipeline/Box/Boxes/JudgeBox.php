@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\LinuxSandbox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
@@ -66,6 +67,10 @@ class JudgeBox extends Box
    */
   public function getType(): string {
     return self::$JUDGE_TYPE;
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$EVALUATION;
   }
 
   /**

@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
@@ -65,6 +66,10 @@ class MkdirBox extends Box
    */
   public function getType(): string {
     return self::$MKDIR_TYPE;
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
   }
 
   /**

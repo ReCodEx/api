@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -32,6 +33,10 @@ class MergeFilesBox extends MergeBox
    */
   public function getType(): string {
     return self::$BOX_TYPE;
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
   }
 
   /**

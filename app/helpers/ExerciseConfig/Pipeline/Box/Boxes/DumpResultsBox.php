@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
@@ -46,6 +47,10 @@ class DumpResultsBox extends Box
    */
   public function __construct(BoxMeta $meta) {
     parent::__construct($meta);
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
   }
 
   /**
