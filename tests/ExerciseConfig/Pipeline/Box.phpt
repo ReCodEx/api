@@ -166,17 +166,22 @@ class TestBox extends Tester\TestCase
 
   public function testCorrect() {
     $box = $this->loader->loadBox(self::$config);
+
     Assert::type(FileInBox::class, $box);
     Assert::equal("file", $box->getName());
     Assert::count(0, $box->getInputPorts());
     Assert::count(1, $box->getOutputPorts());
     Assert::true(array_key_exists("input", $box->getOutputPorts()));
+    Assert::null($box->getDirectory());
+
+    $box->setDirectory("directory");
 
     /** @var PortMeta $port */
     $port = $box->getOutputPorts()["input"];
     Assert::equal(VariableTypes::$FILE_TYPE, $port->getType());
     Assert::equal("input", $port->getName());
     Assert::equal("out_data_file", $port->getVariable());
+    Assert::equal("directory", $box->getDirectory());
   }
 
 }

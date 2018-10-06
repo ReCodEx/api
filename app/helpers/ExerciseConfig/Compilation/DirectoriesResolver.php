@@ -61,9 +61,9 @@ class DirectoriesResolver {
     $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
     $boxMeta = (new BoxMeta())->setName(MkdirBox::$MKDIR_TYPE);
-    $box = (new MkdirBox($boxMeta))->setInputPort($port);
+    $box = (new MkdirBox($boxMeta))->setInputPort($port)->setDirectory($directory);
 
-    return (new Node())->setBox($box)->setDirectory($directory);
+    return (new Node())->setBox($box);
   }
 
   /**
@@ -79,9 +79,9 @@ class DirectoriesResolver {
     $port = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
 
     $boxMeta = (new BoxMeta())->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
-    $box = (new DumpResultsBox($boxMeta))->setInputPort($port);
+    $box = (new DumpResultsBox($boxMeta))->setInputPort($port)->setDirectory($directory);
 
-    return (new Node())->setBox($box)->setDirectory($directory);
+    return (new Node())->setBox($box);
   }
 
   /**
@@ -194,7 +194,7 @@ class DirectoriesResolver {
       // (because its the favourite child!), therefore it inherits the privilege to use the name of the directory,
       // other children are not so lucky
       if (count($current->getChildren()) > 0) {
-        $stack[] = [reset($current->getChildren()), $currentName];
+        $stack[] = [current($current->getChildren()), $currentName];
         foreach (array_slice($current->getChildren(), 1) as $child) {
           $stack[] = [$child, null];
         }

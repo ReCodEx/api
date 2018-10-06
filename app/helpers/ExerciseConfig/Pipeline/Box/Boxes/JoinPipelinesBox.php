@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
@@ -69,6 +70,10 @@ class JoinPipelinesBox extends Box
    */
   public function getType(): string {
     return self::$JOIN_PIPELINES_BOX_TYPE;
+  }
+
+  public function getCategory(): string {
+    return BoxCategories::$INNER;
   }
 
   /**

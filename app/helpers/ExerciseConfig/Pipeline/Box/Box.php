@@ -6,10 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
-use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Variable;
-use App\Helpers\ExerciseConfig\VariablesTable;
-use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
 use JsonSerializable;
 use Symfony\Component\Yaml\Yaml;
@@ -32,6 +29,13 @@ abstract class Box implements JsonSerializable
    * @var BoxMeta
    */
   protected $meta;
+
+  /**
+   * Directory in which box will be executed.
+   * @note Set only during compilation after DirectoriesResolver service execution.
+   * @var string
+   */
+  private $directory = null;
 
   /**
    * Box constructor.
@@ -62,10 +66,16 @@ abstract class Box implements JsonSerializable
   public abstract function getDefaultName(): string;
 
   /**
-   * Get type of this box.
+   * Get type identifier of this box.
    * @return string
    */
   public abstract function getType(): string;
+
+  /**
+   * Get human readable category of this box.
+   * @return string
+   */
+  public abstract function getCategory(): string;
 
   /**
    * Compile box into set of low-level tasks.
@@ -133,6 +143,24 @@ abstract class Box implements JsonSerializable
    */
   public function getName(): ?string {
     return $this->meta->getName();
+  }
+
+  /**
+   * Get directory in which this box will be executed.
+   * @return null|string
+   */
+  public function getDirectory(): ?string {
+    return $this->directory;
+  }
+
+  /**
+   * Set directory of this box.
+   * @param string $directory
+   * @return Box
+   */
+  public function setDirectory(string $directory): Box {
+    $this->directory = $directory;
+    return $this;
   }
 
   /**

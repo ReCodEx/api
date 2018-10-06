@@ -23,24 +23,20 @@ class TestNode extends Tester\TestCase
     Assert::equal($test, $node->getTestId());
   }
 
-  public function testPipelineAndTestAndDirectory() {
+  public function testPipelineAndTest() {
     $portNode = new PortNode(new CustomBox());
     $node = new Node($portNode);
 
     Assert::null($node->getPipelineId());
     Assert::null($node->getTestId());
-    Assert::null($node->getDirectory());
 
     $pipeline = "pipeline";
     $test = "test";
-    $directory = "directory";
     $node->setPipelineId($pipeline);
     $node->setTestId($test);
-    $node->setDirectory($directory);
 
     Assert::equal($pipeline, $node->getPipelineId());
     Assert::equal($test, $node->getTestId());
-    Assert::equal($directory, $node->getDirectory());
   }
 
   public function testTasks() {
