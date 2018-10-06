@@ -108,6 +108,84 @@ class Groups extends BaseSoftDeleteRepository  {
     return $groupsQb->getQuery()->getResult();
   }
 
+  /**
+   * Fetch all groups in which the given user has membership.
+   * @param User $user The user whos memberships are considered.
+   * @param string $type Type of the membership (GroupMembership::TYPE_*).
+   * @param bool $onlyActive Only active memberships are considered (no requests nor rejections).
+   * @return Group[] Array indexed by group IDs.
+   */
+  private function fetchGroupsByMembership(User $user, string $type = GroupMembership::TYPE_ALL, bool $onlyActive = true)
+  {
+    $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+    $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
+    $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
+    $sub->andWhere($sub->expr()->eq('gm.user', $sub->expr()->literal($user->getId())));
+    if ($onlyActive) {
+      $sub->andWhere($sub->expr()->eq('gm.status', $sub->expr()->literal(GroupMembership::STATUS_ACTIVE)));
+    }
+    if ($type !== GroupMembership::TYPE_ALL) {
+      $sub->andWhere($sub->expr()->eq('gm.type', $sub->expr()->literal($type)));
+    }
+    $qb->andWhere($qb->expr()->exists($sub->getDQL()));
+
+    $res = [];
+    foreach ($qb->getQuery()->getResult() as $group) {
+      $res[$group->getId()] = $group;
+    }
+    return $res;
+  }
+
+  /**
+   * Fetch all groups of which the given user is (primary) admin.
+   * @param User $user The user whos admin rights are considered.
+   * @return Group[] Array indexed by group IDs.
+   */
+  private function fetchGroupsByPrimaryAdminOf(User $user)
+  {
+    $qb = $this->createQueryBuilder('g'); // takes care of softdelete cases
+    $qb->andWhere(":user MEMBER OF g.primaryAdmins")->setParameter('user', $user->getId());
+
+    $res = [];
+    foreach ($qb->getQuery()->getResult() as $group) {
+      $res[$group->getId()] = $group;
+    }
+    return $res;
+  }
+
+  /**
+   * Filter list of groups so that only groups affiliated to given user
+   * (by direct membership or by admin rights) remain in the result.
+   * @param User $user User whos affiliation is considered.
+   * @param Group[] List of groups to be filtered.
+   * @return Group[]
+   */
+  private function filterGroupsByUser(User $user, array $groups)
+  {
+    $memberOf = $this->fetchGroupsByMembership($user);
+    $adminOf = $this->fetchGroupsByPrimaryAdminOf($user);
+
+    return array_filter($groups, function(Group $group) use($memberOf, &$adminOf) {
+      $id = $group->getId();
+
+      // The group is directly associated with the user...
+      if (array_key_exists($id, $memberOf) || array_key_exists($id, $adminOf)) {
+        return true;
+      }
+
+      // Or the user has admin rights to one of the ancestors...
+      $parent = $group->getParentGroup();
+      while ($parent) {
+        if (array_key_exists($parent->getId(), $adminOf)) {
+          $groups[$id] = true;  // marker that this group has inherited admin rights (performance optimization)
+          return true;
+        }
+        $parent = $parent->getParentGroup();
+      }
+
+      return false; // this group should be filtered out
+    });
+  }
 
   /**
    * Filter the groups so that only non-archived groups remain.
@@ -160,15 +238,6 @@ class Groups extends BaseSoftDeleteRepository  {
       $qb->andWhere(':instanceId = g.instance')->setParameter('instanceId', $instanceId);
     }
 
-    // Filter by user membership...
-    if ($user) {
-      $sub = $qb->getEntityManager()->createQueryBuilder()->select("gm")->from(GroupMembership::class, "gm");
-      $sub->andWhere($sub->expr()->eq('gm.user', $sub->expr()->literal($user->getId())));
-      $sub->andWhere($sub->expr()->eq('gm.status', $sub->expr()->literal(GroupMembership::STATUS_ACTIVE)));
-      $sub->andWhere($sub->expr()->eq('gm.group', 'g'));
-      $qb->andWhere($qb->expr()->exists($sub->getDQL()));
-    }
-
     // Filter by search string...
     if ($search) {
       $paginationDbHelper = new PaginationDbHelper([], [ 'name' ], LocalizedGroup::class);
@@ -176,6 +245,11 @@ class Groups extends BaseSoftDeleteRepository  {
     }
 
     $groups = $qb->getQuery()->getResult();
+
+    // Filter by user membership...
+    if ($user) {
+      $groups = $this->filterGroupsByUser($user, $groups);
+    }
 
     // Filtering by archived flags...
     $archived = $archived || $onlyArchived;
