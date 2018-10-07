@@ -51,7 +51,6 @@ abstract class CompilationBox extends Box
     $task = new Task();
     $task->setPriority(Priorities::$INITIATION);
     $task->setType(TaskType::$INITIATION);
-    $task->setFatalFailure(true);
 
     $sandbox = (new SandboxConfig())->setName(LinuxSandbox::$ISOLATE)->setOutput(true);
     $task->setSandboxConfig($sandbox);
@@ -75,7 +74,6 @@ abstract class CompilationBox extends Box
     $task = new Task();
     $task->setPriority(Priorities::$INITIATION);
     $task->setType(TaskType::$INITIATION);
-    $task->setFatalFailure(true);
 
     $task->setCommandBinary(TaskCommands::$EXISTS);
     $task->setCommandArguments(array_merge([ self::$EXISTS_FAILED_MSG ], $files));
