@@ -157,6 +157,13 @@ class Node {
   }
 
   /**
+   * Clear parents of node.
+   */
+  public function clearParents() {
+    $this->parents = [];
+  }
+
+  /**
    * Add parent of this node.
    * @param Node $parent
    */

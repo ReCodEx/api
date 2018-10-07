@@ -92,6 +92,26 @@ class CopyBox extends Box
     return self::$DEFAULT_NAME;
   }
 
+  /**
+   * Set input port of this box.
+   * @param Port $port
+   * @return CopyBox
+   */
+  public function setInputPort(Port $port): CopyBox {
+    $this->meta->setInputPorts([$port]);
+    return $this;
+  }
+
+  /**
+   * Set output port of this box.
+   * @param Port $port
+   * @return CopyBox
+   */
+  public function setOutputPort(Port $port): CopyBox {
+    $this->meta->setOutputPorts([$port]);
+    return $this;
+  }
+
 
   /**
    * Compile box into set of low-level tasks.

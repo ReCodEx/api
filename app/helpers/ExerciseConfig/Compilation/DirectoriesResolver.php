@@ -5,13 +5,16 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
+use App\Helpers\ExerciseConfig\Pipeline\Box\CopyBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DumpResultsBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Nette\Utils\Random;
 
 
 /**
@@ -30,6 +33,11 @@ class DirectoriesResolver {
    * @param array $directoriesNodes
    */
   private function processNode(Node $node, string $directoryName, array &$directoriesNodes) {
+    // set the directory to the current box in node
+    if ($node->getBox()) {
+      $node->getBox()->setDirectory($directoryName);
+    }
+
     // all nodes for each directory are saved and further dependencies
     // on mkdir tasks are set on them
     if (!array_key_exists($directoryName, $directoriesNodes)) {
@@ -53,7 +61,18 @@ class DirectoriesResolver {
    * @return string
    */
   private function findOptimizedNodesDirectory(Node $current): string {
-    // TODO
+    $name = "";
+    while ($current->getTestId() === null) {
+      $name .= $current->getBox() ? $current->getBox()->getCategory() : "";
+      $name .= "_"; // delimiter
+
+      if (count($current->getChildren()) < 1) {
+        break;
+      }
+      $current = current($current->getChildren());
+    }
+
+    return $name . Random::generate(10);
   }
 
   /**
@@ -88,6 +107,27 @@ class DirectoriesResolver {
 
     $boxMeta = (new BoxMeta())->setName(DumpResultsBox::$DUMP_RESULTS_TYPE);
     $box = (new DumpResultsBox($boxMeta))->setInputPort($port)->setDirectory($directory);
+
+    return (new Node())->setBox($box);
+  }
+
+  /**
+   * Based on given information create copy box and node.
+   * @param Variable $variable
+   * @param string $newDirectory
+   * @return Node
+   * @throws ExerciseConfigException
+   */
+  private function createCopyNode(Variable $variable, string $newDirectory): Node {
+    $outVariable = new Variable($variable->getType());
+    $outVariable->setDirectory($newDirectory);
+    $outVariable->setValue($variable->getValue());
+
+    $inputPort = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
+    $outputPort = (new Port((new PortMeta())->setType($outVariable->getType())))->setVariableValue($outVariable);
+
+    $boxMeta = (new BoxMeta())->setName(CopyBox::$COPY_TYPE);
+    $box = (new CopyBox($boxMeta))->setInputPort($inputPort)->setOutputPort($outputPort)->setDirectory($newDirectory);
 
     return (new Node())->setBox($box);
   }
@@ -144,12 +184,49 @@ class DirectoriesResolver {
   }
 
   /**
-   * Go through the whole tree and where needed add copy tasks which copies files between directories.
+   * Go through the whole tree (breadth-first) and where needed add copy tasks which copies files between directories.
    * @param RootedTree $tree
-   * @return RootedTree
+   * @throws ExerciseConfigException
    */
-  private function addCopyTasks(RootedTree $tree): RootedTree {
-    // TODO
+  private function addCopyTasks(RootedTree $tree) {
+    $stack = array_reverse($tree->getRootNodes());
+    while (!empty($stack)) {
+      $current = array_pop($stack); /** @var $current Node */
+
+      $box = $current->getBox(); /** @var $box Box */
+      if ($box) {
+        foreach ($box->getInputPorts() as $port) {
+          if (!$port->getVariableValue()->isFile() ||
+              $port->getVariableValue()->getDirectory() === $box->getDirectory()) {
+            continue;
+          }
+
+          // the directory of incoming files is different than directory of current box
+          // therefore we have to copy the files to the current directory
+          $copy = $this->createCopyNode($port->getVariableValue(), $box->getDirectory());
+          $copy->addChild($current);
+          foreach ($current->getParents() as $parent) {
+            $copy->addParent($parent);
+            $parent->removeChild($current);
+            $parent->addChild($copy);
+          }
+          foreach ($current->getDependencies() as $dependency) {
+            $copy->addDependency($dependency);
+          }
+          $current->clearParents();
+          $current->addParent($copy);
+
+          // we also have to plug newly created output variable from copy box to the current input port...
+          // this is needed because we need to have valid information in current box about directory of the variable
+          $port->setVariableValue(current($copy->getBox()->getOutputPorts())->getVariableValue());
+        }
+      }
+
+      // all children has to be crawled too
+      foreach ($current->getChildren() as $child) {
+        $stack[] = $child;
+      }
+    }
   }
 
   /**
@@ -210,7 +287,7 @@ class DirectoriesResolver {
     }
 
     $tree = $this->addDirectories($tree, $directoriesNodes, $params);
-    $tree = $this->addCopyTasks($tree);
+    $this->addCopyTasks($tree);
     return $tree;
   }
 
