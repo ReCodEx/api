@@ -18,6 +18,7 @@ use App\Helpers\JobConfig\Tasks\Task;
  */
 class BoxesCompiler {
 
+  public static $ORDER_STARTING_POINT = 0;
   public static $ID_DELIM = ".";
 
 
@@ -69,7 +70,7 @@ class BoxesCompiler {
       CompilationContext $context, CompilationParams $params) {
     // stack for DFS, better stay in order by reversing original root nodes
     $stack = array_reverse($rootedTree->getRootNodes());
-    $order = 65536; // if there is more tasks this will fail spectacularly
+    $order = self::$ORDER_STARTING_POINT;
 
     // main processing loop
     while (!empty($stack)) {
@@ -103,11 +104,12 @@ class BoxesCompiler {
         if (!empty($currentTestName)) {
           // set identification of test to task
           $task->setTestId($currentTestName);
-          // change evaluation directory to the one which belongs to test
-          $sandbox = $task->getSandboxConfig();
-          if ($sandbox) {
-            $sandbox->setWorkingDirectory($currentTestName);
-          }
+        }
+
+        // change evaluation directory to the one which belongs to test
+        $sandbox = $task->getSandboxConfig();
+        if ($current->getBox() && $sandbox) {
+          $sandbox->setWorkingDirectory($current->getBox()->getDirectory());
         }
 
         // if the task is external then set limits to it
@@ -117,7 +119,7 @@ class BoxesCompiler {
         $jobConfig->addTask($task);
 
         // update helper vars
-        $order--;
+        $order++;
       }
 
       // add children of current node into stack
