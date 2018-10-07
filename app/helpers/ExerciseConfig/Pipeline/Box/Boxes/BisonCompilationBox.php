@@ -15,7 +15,7 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box that comp
+ * Box that compile Bison format into C/C++ sources.
  */
 class BisonCompilationBox extends CompilationBox
 {
@@ -27,8 +27,8 @@ class BisonCompilationBox extends CompilationBox
   public static $OUTPUT_FILES_PORT_KEY  = "output";
 
   private static $initialized = false;
-  private static $defaultInputPorts;
   private static $defaultOutputPorts;
+  private static $defaultInputPorts;
 
   /**
    * Static initializer.
@@ -47,7 +47,6 @@ class BisonCompilationBox extends CompilationBox
   }
 
   /**
-   * JudgeNormalBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {

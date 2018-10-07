@@ -49,8 +49,8 @@ class BoxService
       NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
       MergeFilesBox::$BOX_TYPE => MergeFilesBox::class,
       MergeStringsBox::$BOX_TYPE => MergeStringsBox::class,
-      FileToArrayBox::$SCALAR_TO_ARRAY_TYPE => FileToArrayBox::class,
-      StringToArrayBox::$SCALAR_TO_ARRAY_TYPE => StringToArrayBox::class,
+      FileToArrayBox::$BOX_TYPE => FileToArrayBox::class,
+      StringToArrayBox::$BOX_TYPE => StringToArrayBox::class,
       FilesNamesBox::$BOX_TYPE => FilesNamesBox::class,
       CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
     ];
