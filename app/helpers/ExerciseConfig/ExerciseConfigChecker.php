@@ -50,9 +50,10 @@ class ExerciseConfigChecker {
    * @throws ApiException
    */
   private function conjureSubmittedFiles(RuntimeEnvironment $environment): array {
-    $extension = current($environment->getExtensionsList());
-    $random = Random::generate(20);
-    return ["recodex.{$random}.{$extension}"];
+    return array_map(function($extension) {
+      $random = Random::generate(20);
+      return "recodex.{$random}.{$extension}";
+    }, $environment->getExtensionsList());
   }
 
   /**
@@ -75,7 +76,7 @@ class ExerciseConfigChecker {
           if (strpos($variable["type"], "string") === 0) {
             $result->addVariable(new SubmitVariable(["name" => $variable["name"], "value" => Random::generate()]));
           } else if (strpos($variable["type"], "file") === 0) {
-            $result->addVariable(new SubmitVariable(["name" => $variable["name"], "value" => current($submitFiles)]));
+            $result->addVariable(new SubmitVariable(["name" => $variable["name"], "value" => reset($submitFiles)]));
           } else {
             // Uh-oh
             throw new ExerciseConfigException("I should not generate this error. I really should not. Uh-oh... here we go");
