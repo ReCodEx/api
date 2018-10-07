@@ -34,6 +34,7 @@ class BoxService
       JudgeBox::$JUDGE_TYPE => JudgeBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
+      BisonCompilationBox::$BOX_TYPE => BisonCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       MonoCompilationBox::$MCS_TYPE => MonoCompilationBox::class,
