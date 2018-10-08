@@ -7,7 +7,8 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
-use App\Helpers\ExerciseConfig\Pipeline\Box\CopyBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\CopyFileBox;
+use App\Helpers\ExerciseConfig\Pipeline\Box\CopyFilesBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\MkdirBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DumpResultsBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -126,8 +127,13 @@ class DirectoriesResolver {
     $inputPort = (new Port((new PortMeta())->setType($variable->getType())))->setVariableValue($variable);
     $outputPort = (new Port((new PortMeta())->setType($outVariable->getType())))->setVariableValue($outVariable);
 
-    $boxMeta = (new BoxMeta())->setName(CopyBox::$COPY_TYPE);
-    $box = (new CopyBox($boxMeta))->setInputPort($inputPort)->setOutputPort($outputPort)->setDirectory($newDirectory);
+    if ($variable->isArray()) {
+      $boxMeta = (new BoxMeta())->setName(CopyFilesBox::$COPY_TYPE);
+      $box = (new CopyFilesBox($boxMeta))->setInputPort($inputPort)->setOutputPort($outputPort)->setDirectory($newDirectory);
+    } else {
+      $boxMeta = (new BoxMeta())->setName(CopyFileBox::$COPY_TYPE);
+      $box = (new CopyFileBox($boxMeta))->setInputPort($inputPort)->setOutputPort($outputPort)->setDirectory($newDirectory);
+    }
 
     return (new Node())->setBox($box);
   }

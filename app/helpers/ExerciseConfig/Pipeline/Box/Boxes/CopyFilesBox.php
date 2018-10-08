@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
@@ -9,21 +10,23 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
+use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which will copy given file. If the filename is same for the input and
- * output box will compile to no-op.
+ * Box which will copy given files. If the filenames are same for the input and
+ * output, box will compile to no-op.
+ * @note Internal box which should not be necessary in pipelines.
  */
-class CopyBox extends Box
+class CopyFilesBox extends Box
 {
   /** Type key */
-  public static $COPY_TYPE = "copy";
+  public static $COPY_TYPE = "copy-files";
   public static $COPY_PORT_IN_KEY = "in";
   public static $COPY_PORT_OUT_KEY = "out";
-  public static $DEFAULT_NAME = "Copy";
+  public static $DEFAULT_NAME = "Copy multiple files";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -36,17 +39,17 @@ class CopyBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta())->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
+        new Port((new PortMeta())->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
       );
     }
   }
 
 
   /**
-   * DataInBox constructor.
+   * Constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
@@ -95,9 +98,9 @@ class CopyBox extends Box
   /**
    * Set input port of this box.
    * @param Port $port
-   * @return CopyBox
+   * @return CopyFilesBox
    */
-  public function setInputPort(Port $port): CopyBox {
+  public function setInputPort(Port $port): CopyFilesBox {
     $this->meta->setInputPorts([$port]);
     return $this;
   }
@@ -105,9 +108,9 @@ class CopyBox extends Box
   /**
    * Set output port of this box.
    * @param Port $port
-   * @return CopyBox
+   * @return CopyFilesBox
    */
-  public function setOutputPort(Port $port): CopyBox {
+  public function setOutputPort(Port $port): CopyFilesBox {
     $this->meta->setOutputPorts([$port]);
     return $this;
   }
@@ -117,21 +120,41 @@ class CopyBox extends Box
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    if ($this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getDirPrefixedValue() ===
-        $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getDirPrefixedValue()) {
+    /**
+     * @var Variable $inputVariable
+     * @var Variable $outputVariable
+     */
+    $inputVariable = current($this->getInputPorts())->getVariableValue();
+    $outputVariable = current($this->getOutputPorts())->getVariableValue();
+
+    // check for emptiness or same values, in those cases nothing has to be done
+    if (($inputVariable->getDirectory() === $outputVariable->getDirectory()) ||
+      ($inputVariable->isEmpty() && $outputVariable->isEmpty())) {
       return [];
     }
 
-    $task = new Task();
-    $task->setPriority(Priorities::$DEFAULT);
-    $task->setCommandBinary(TaskCommands::$COPY);
-    $task->setCommandArguments([
-      $this->getInputPortValue(self::$COPY_PORT_IN_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR),
-      $this->getOutputPortValue(self::$COPY_PORT_OUT_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR)
-    ]);
-    return [$task];
+    if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
+      throw new ExerciseConfigException("Different count of files (source vs dest) in copy box");
+    }
+
+    $inputs = array_values($inputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
+    $outputs = array_values($outputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
+
+    $tasks = [];
+    for ($i = 0; $i < count($inputs); ++$i) {
+      $task = new Task();
+      $task->setPriority(Priorities::$DEFAULT);
+      $task->setCommandBinary(TaskCommands::$COPY);
+      $task->setCommandArguments([
+        $inputs[$i],
+        $outputs[$i]
+      ]);
+      $tasks[] = $task;
+    }
+    return $tasks;
   }
 
 }
