@@ -295,7 +295,7 @@ class Variable implements JsonSerializable
    * Get directory name to which variable belongs to.
    * @return string
    */
-  public function getDirectory(): string {
+  public function getDirectory(): ?string {
     return $this->directory;
   }
 
