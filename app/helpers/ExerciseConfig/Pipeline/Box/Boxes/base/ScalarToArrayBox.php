@@ -13,11 +13,8 @@ use Exception;
 /**
  * Base for conversion boxes which take a scalar and produce a single-item array.
  */
-class ScalarToArrayBox extends Box
+abstract class ScalarToArrayBox extends Box
 {
-  public static $SCALAR_TO_ARRAY_TYPE = null;
-  public static $DEFAULT_NAME = null;
-
   /** Type key */
   public static $IN_PORT_KEY = "in";
   public static $OUT_PORT_KEY = "out";
@@ -63,14 +60,6 @@ class ScalarToArrayBox extends Box
 
 
   /**
-   * Get type of this box.
-   * @return string
-   */
-  public function getType(): string {
-    return self::$SCALAR_TO_ARRAY_TYPE;
-  }
-
-  /**
    * Get default input ports for this box.
    * @return array
    * @throws ExerciseConfigException
@@ -88,14 +77,6 @@ class ScalarToArrayBox extends Box
   public function getDefaultOutputPorts(): array {
     static::init();
     return self::$defaultOutputPorts;
-  }
-
-  /**
-   * Get default name of this box.
-   * @return string
-   */
-  public function getDefaultName(): string {
-    return self::$DEFAULT_NAME;
   }
 
 
