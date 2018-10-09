@@ -18,6 +18,8 @@ class CustomBox extends Box
 {
   /** Type key */
   public static $CUSTOM_BOX_TYPE = "custom";
+  /** Special custom box category */
+  public static $CATEGORY = "custom";
 
   /**
    * For testing purposes.
@@ -109,7 +111,7 @@ class CustomBox extends Box
   }
 
   public function getCategory(): string {
-    return BoxCategories::$INNER;
+    return self::$CATEGORY;
   }
 
   /**
