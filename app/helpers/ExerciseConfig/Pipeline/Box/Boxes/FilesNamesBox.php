@@ -3,24 +3,26 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Exception;
 
 
 /**
- * Box which will take two file arrays on its input and join them to one merged
- * array.
+ * Takes array of files and produces array of strings with file names (including the path).
+ * This can be useful when injecting files into command line arguments.
  */
-class MergeTwoFilesBox extends Box
+class FilesNamesBox extends Box
 {
+  public static $BOX_TYPE = "files-names";
+  public static $DEFAULT_NAME = "Files names";
+
   /** Type key */
-  public static $MERGE_TWO_FILES_TYPE = "merge-two-files";
-  public static $IN1_PORT_KEY = "in1";
-  public static $IN2_PORT_KEY = "in2";
+  public static $IN_PORT_KEY = "in";
   public static $OUT_PORT_KEY = "out";
-  public static $DEFAULT_NAME = "Merge two files to array";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -34,11 +36,10 @@ class MergeTwoFilesBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$IN1_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta())->setName(self::$IN2_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$IN_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$OUT_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE))
       );
     }
   }
@@ -49,6 +50,7 @@ class MergeTwoFilesBox extends Box
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
+    self::init();
     parent::__construct($meta);
   }
 
@@ -58,7 +60,7 @@ class MergeTwoFilesBox extends Box
    * @return string
    */
   public function getType(): string {
-    return self::$MERGE_TWO_FILES_TYPE;
+    return self::$BOX_TYPE;
   }
 
   /**
@@ -97,11 +99,9 @@ class MergeTwoFilesBox extends Box
    * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    // will not produce tasks, only merge files during compilation
-    $in1 = $this->getInputPortValue(self::$IN1_PORT_KEY)->getValue();
-    $in2 = $this->getInputPortValue(self::$IN2_PORT_KEY)->getValue();
-    $out = [ $in1, $in2 ];
-    $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue($out);
+    // will not produce tasks, only convert array of files into their relative paths
+    $in = $this->getInputPortValue(self::$IN_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
+    $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue($in);
     return [];
   }
 }

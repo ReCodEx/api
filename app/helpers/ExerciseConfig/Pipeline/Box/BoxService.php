@@ -34,6 +34,7 @@ class BoxService
       JudgeBox::$JUDGE_TYPE => JudgeBox::class,
       GccCompilationBox::$GCC_TYPE => GccCompilationBox::class,
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
+      BisonCompilationBox::$BOX_TYPE => BisonCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       MonoCompilationBox::$MCS_TYPE => MonoCompilationBox::class,
@@ -46,9 +47,12 @@ class BoxService
       Python3CompilationBox::$PYTHON3_COMPILATION_TYPE => Python3CompilationBox::class,
       PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
       NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
-      MergeFilesBox::$MERGE_FILES_TYPE => MergeFilesBox::class,
-      MergeTwoFilesBox::$MERGE_TWO_FILES_TYPE => MergeTwoFilesBox::class,
-      MergeFileAndFilesBox::$MERGE_FILE_AND_FILES_TYPE => MergeFileAndFilesBox::class,
+      MergeFilesBox::$BOX_TYPE => MergeFilesBox::class,
+      MergeStringsBox::$BOX_TYPE => MergeStringsBox::class,
+      FileToArrayBox::$BOX_TYPE => FileToArrayBox::class,
+      StringToArrayBox::$BOX_TYPE => StringToArrayBox::class,
+      FilesNamesBox::$BOX_TYPE => FilesNamesBox::class,
+      CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
     ];
   }
 

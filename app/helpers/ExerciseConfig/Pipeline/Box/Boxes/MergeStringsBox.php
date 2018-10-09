@@ -10,20 +10,20 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 
 /**
- * Box which will take two file arrays on its input and join them to one merged
+ * Box which will take two string arrays on its input and join them to one merged
  * array.
  */
-class MergeFilesBox extends MergeBox
+class MergeStringsBox extends MergeBox
 {
-  public static $BOX_TYPE = "merge-files";
-  public static $DEFAULT_NAME = "Merge files";
+  public static $BOX_TYPE = "merge-strings";
+  public static $DEFAULT_NAME = "Merge strings";
 
   /**
    * Static initializer.
    * @throws ExerciseConfigException
    */
   public static function init() {
-    static::initMerger(VariableTypes::$FILE_ARRAY_TYPE);
+      static::initMerger(VariableTypes::$STRING_ARRAY_TYPE);
   }
 
   /**

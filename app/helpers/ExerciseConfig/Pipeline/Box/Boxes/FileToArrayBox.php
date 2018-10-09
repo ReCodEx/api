@@ -10,20 +10,19 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 
 /**
- * Box which will take two file arrays on its input and join them to one merged
- * array.
+ * Box which converts a file into a single-item array of files.
  */
-class MergeFilesBox extends MergeBox
+class FileToArrayBox extends ScalarToArrayBox
 {
-  public static $BOX_TYPE = "merge-files";
-  public static $DEFAULT_NAME = "Merge files";
+  public static $BOX_TYPE = "file-to-array";
+  public static $DEFAULT_NAME = "File to array";
 
   /**
    * Static initializer.
    * @throws ExerciseConfigException
    */
   public static function init() {
-    static::initMerger(VariableTypes::$FILE_ARRAY_TYPE);
+    static::initScalarToArray(VariableTypes::$FILE_TYPE, VariableTypes::$FILE_ARRAY_TYPE);
   }
 
   /**
