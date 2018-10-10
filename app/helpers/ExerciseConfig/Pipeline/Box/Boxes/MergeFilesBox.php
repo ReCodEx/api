@@ -35,10 +35,6 @@ class MergeFilesBox extends MergeBox
     return self::$BOX_TYPE;
   }
 
-  public function getCategory(): string {
-    return BoxCategories::$INNER;
-  }
-
   /**
    * Get default name of this box.
    * @return string

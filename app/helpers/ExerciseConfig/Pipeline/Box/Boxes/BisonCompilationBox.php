@@ -113,7 +113,7 @@ class BisonCompilationBox extends CompilationBox
     // Set output names correctly and create task that will check their existence
     $output = $this->getOutputPortValue(self::$OUTPUT_FILES_PORT_KEY);
     $output->setValue([ "${inputBaseName}.cpp", "${inputBaseName}.hpp", "stack.hh" ]);
-    $exists = $this->compileExistsTask($output->getTestPrefixedValue(ConfigParams::$SOURCE_DIR));
+    $exists = $this->compileExistsTask($output->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
 
     return [$task, $exists];
   }
