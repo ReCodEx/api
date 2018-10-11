@@ -16,8 +16,9 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 class Python3CompilationBox extends CompilationBox
 {
   /** Type key */
-  public static $PYTHON3_COMPILATION_TYPE = "python3c";
-  public static $PYTHON3_BINARY = "/usr/bin/python3";
+  public static $BOX_TYPE = "python3c";
+  public static $PYTHON3_BINARY = "/usr/bin/env";
+  public static $PYTHON3_VERSION = "python3";
   public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $PYC_EXT = ".pyc";
   public static $DEFAULT_NAME = "Python3 Compilation";
@@ -57,7 +58,7 @@ class Python3CompilationBox extends CompilationBox
    * @return string
    */
   public function getType(): string {
-    return self::$PYTHON3_COMPILATION_TYPE;
+    return self::$BOX_TYPE;
   }
 
   /**
@@ -97,7 +98,7 @@ class Python3CompilationBox extends CompilationBox
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
-    $task->setCommandArguments(["-m", "compileall", "-b", "."]);
+    $task->setCommandArguments([self::$PYTHON3_VERSION, "-m", "compileall", "-b", "."]);
 
     // determine name of pyc file and set it to variable
     $pycFilenames = [];
