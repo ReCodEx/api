@@ -16,8 +16,9 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 class Python3RunBox extends ExecutionBox
 {
   /** Type key */
-  public static $PYTHON3_TYPE = "python3";
-  public static $PYTHON3_BINARY = "/usr/bin/python3";
+  public static $BOX_TYPE = "python3";
+  public static $PYTHON3_BINARY = "/usr/bin/env";
+  public static $PYTHON3_VERSION = "python3";
   public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $DEFAULT_NAME = "Python3 Execution";
 
@@ -61,7 +62,7 @@ class Python3RunBox extends ExecutionBox
    * @return string
    */
   public function getType(): string {
-    return self::$PYTHON3_TYPE;
+    return self::$BOX_TYPE;
   }
 
   /**
@@ -104,7 +105,7 @@ class Python3RunBox extends ExecutionBox
 
     $runner = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
     $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
-    $args = [$runner, $entry];
+    $args = [self::$PYTHON3_VERSION, $runner, $entry];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
     }
