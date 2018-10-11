@@ -11,6 +11,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\JobConfig\SandboxConfig;
 use App\Helpers\JobConfig\Tasks\Task;
 use Nette\Utils\Random;
+use Exception;
 
 
 /**
@@ -75,6 +76,29 @@ abstract class CompilationBox extends Box
     $task->setCommandArguments(array_merge([ self::$EXISTS_FAILED_MSG ], $files));
 
     return $task;
+  }
+
+
+  /**
+   * Get value of given port (assuming file[] type) and return its value filtered.
+   * @param string $portName The port identifier.
+   * @param string $baseDir Base directory (file prefix).
+   * @param $filter String (regular expression) or callable (filtering function).
+   * @return mixed List of files (paths).
+   */
+  protected function getInputPortFilesFiltered(string $portName, string $baseDir, $filter)
+  {
+    $files = $this->getInputPortValue($portName)->getValue($baseDir);
+    if (is_string($filter)) {
+      $realFilter = function($file) use ($filter) {
+        return preg_match($filter, $file);
+      };
+    } else if (is_callable($filter)) {
+      $realFilter = $filter;
+    } else {
+      throw new Exception("Invalid type of file filter."); // this should never happen
+    }
+    return array_filter($files, $realFilter);
   }
 
 }

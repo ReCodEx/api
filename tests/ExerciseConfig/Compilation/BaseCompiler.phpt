@@ -85,14 +85,14 @@ class TestBaseCompiler extends Tester\TestCase
     ]
   ];
   private static $envVariablesTable = [
-    [ "name" => "source_files", "type" => "file[]", "value" => "source" ],
+    [ "name" => "source_files", "type" => "file[]", "value" => "source.cpp" ],
     [ "name" => "expected_output", "type" => "file", "value" => '$expected-a-out' ]
   ];
   private static $environment = "envA";
   private static $compilationPipeline = [
     "variables" => [
-      ["name" => "source_files", "type" => "file[]", "value" => ["source"]],
-      ["name" => "extra_files", "type" => "file[]", "value" => ["extra"]],
+      ["name" => "source_files", "type" => "file[]", "value" => ["source.cpp"]],
+      ["name" => "extra_files", "type" => "file[]", "value" => ["extra.cpp"]],
       ["name" => "binary_file", "type" => "file", "value" => "a.out"]
     ],
     "boxes" => [
@@ -219,10 +219,10 @@ class TestBaseCompiler extends Tester\TestCase
     "expected.B.out" => "expected.B.out.hash",
     "expected.B.in" => "expected.B.in.hash"
   ];
-  private static $submitFiles = [ "source" ];
+  private static $submitFiles = [ "source.cpp" ];
   private static $solutionParams = [
     "variables" => [
-        ["name" => "expected-a-out", "value" => "source"]
+        ["name" => "expected-a-out", "value" => "source.cpp"]
       ]
   ];
 
@@ -348,7 +348,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testACopyTask->getDependencies());
     Assert::equal([$testAMkdir->getId()], $testACopyTask->getDependencies());
     Assert::equal("cp", $testACopyTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testACopyTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testACopyTask->getCommandArguments());
     Assert::null($testACopyTask->getType());
     Assert::equal("testA", $testACopyTask->getTestId());
     Assert::null($testACopyTask->getSandboxConfig());
@@ -359,7 +359,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testAExtraTask->getDependencies());
     Assert::equal([$testAMkdir->getId()], $testAExtraTask->getDependencies());
     Assert::equal("cp", $testAExtraTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . "testA/extra"], $testAExtraTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra.cpp", ConfigParams::$SOURCE_DIR . "testA/extra.cpp"], $testAExtraTask->getCommandArguments());
     Assert::null($testAExtraTask->getType());
     Assert::equal("testA", $testAExtraTask->getTestId());
     Assert::null($testAExtraTask->getSandboxConfig());
@@ -370,7 +370,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testASourceTask->getDependencies());
     Assert::equal([$testAMkdir->getId()], $testASourceTask->getDependencies());
     Assert::equal("cp", $testASourceTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testA/source"], $testASourceTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testA/source.cpp"], $testASourceTask->getCommandArguments());
     Assert::null($testASourceTask->getType());
     Assert::equal("testA", $testASourceTask->getTestId());
     Assert::null($testASourceTask->getSandboxConfig());
@@ -381,7 +381,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $testACompilationTask->getDependencies());
     Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testACompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testACompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testACompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source.cpp", ConfigParams::$EVAL_DIR . "extra.cpp", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testACompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testACompilationTask->getType());
     Assert::equal("testA", $testACompilationTask->getTestId());
     Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
@@ -449,7 +449,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testBExtraTask->getDependencies());
     Assert::equal([$testBMkdir->getId()], $testBExtraTask->getDependencies());
     Assert::equal(TaskCommands::$COPY, $testBExtraTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . "testB/extra"], $testBExtraTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra.cpp", ConfigParams::$SOURCE_DIR . "testB/extra.cpp"], $testBExtraTask->getCommandArguments());
     Assert::null($testBExtraTask->getType());
     Assert::equal("testB", $testBExtraTask->getTestId());
     Assert::null($testBExtraTask->getSandboxConfig());
@@ -460,7 +460,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testBSourceTask->getDependencies());
     Assert::equal([$testBMkdir->getId()], $testBSourceTask->getDependencies());
     Assert::equal(TaskCommands::$COPY, $testBSourceTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testB/source"], $testBSourceTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testB/source.cpp"], $testBSourceTask->getCommandArguments());
     Assert::null($testBSourceTask->getType());
     Assert::equal("testB", $testBSourceTask->getTestId());
     Assert::null($testBSourceTask->getSandboxConfig());
@@ -471,7 +471,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $testBCompilationTask->getDependencies());
     Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBCompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $testBCompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testBCompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source.cpp", ConfigParams::$EVAL_DIR . "extra.cpp", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testBCompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $testBCompilationTask->getType());
     Assert::equal("testB", $testBCompilationTask->getTestId());
     Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
