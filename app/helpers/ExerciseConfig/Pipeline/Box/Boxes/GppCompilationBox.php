@@ -23,6 +23,7 @@ class GppCompilationBox extends CompilationBox
   public static $GPP_TYPE = "g++";
   public static $GPP_BINARY = "/usr/bin/g++";
   public static $DEFAULT_NAME = "G++ Compilation";
+  public static $CPP_EXT_FILTER = '/[.](cpp|c|cc)$/i';
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -105,10 +106,8 @@ class GppCompilationBox extends CompilationBox
     $task->setCommandArguments(
       array_merge(
         $args,
-        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
-          ->getValue(ConfigParams::$EVAL_DIR),
-        $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)
-          ->getValue(ConfigParams::$EVAL_DIR),
+        $this->getInputPortFilesFiltered(self::$SOURCE_FILES_PORT_KEY, ConfigParams::$EVAL_DIR, self::$CPP_EXT_FILTER),
+        $this->getInputPortFilesFiltered(self::$EXTRA_FILES_PORT_KEY, ConfigParams::$EVAL_DIR, self::$CPP_EXT_FILTER),
         [
           "-o",
           $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)
