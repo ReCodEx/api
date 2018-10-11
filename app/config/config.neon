@@ -70,7 +70,10 @@ parameters:
         firstName: "givenname"
         lastName: "sn"
         affiliation: "edupersonscopedaffiliation"
+        studentAffiliations:
+          - "student@mff.cuni.cz"
         supervisorAffiliations:
+          - "faculty@mff.cuni.cz"
           - "staff@mff.cuni.cz"
           - "employee@mff.cuni.cz"
       ldap:
