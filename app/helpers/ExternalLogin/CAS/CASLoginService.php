@@ -62,7 +62,10 @@ class CASLoginService implements IExternalLoginService {
   /** @var string Name of JSON field containing user last name */
   private $lastNameField;
 
-  /** @var array Array containing identifier which registers person as a supervisor in retrieved affiliation */
+  /** @var array Array containing identifiers which registers person as a submit in retrieved affiliation */
+  private $studentAffiliations;
+
+  /** @var array Array containing identifiers which registers person as a supervisor in retrieved affiliation */
   private $supervisorAffiliations;
 
   /** @var string The base URI for the validation of login tickets */
@@ -85,6 +88,7 @@ class CASLoginService implements IExternalLoginService {
     // The field names of user's information stored in the CAS LDAP
     $this->ukcoField = Arrays::get($fields, "ukco", "cunipersonalid");
     $this->affiliationField = Arrays::get($fields, "affiliation", "edupersonscopedaffiliation");
+    $this->studentAffiliations = Arrays::get($fields, "studentAffiliations", []);
     $this->supervisorAffiliations = Arrays::get($fields, "supervisorAffiliations", []);
     $this->emailField = Arrays::get($fields, "email", "mail");
     $this->firstNameField = Arrays::get($fields, "firstName", "givenname");
@@ -230,6 +234,12 @@ class CASLoginService implements IExternalLoginService {
 
     // we do not get information about the degrees of the user
     $role = $this->getUserRole($affiliation);
+    if (!$role) {
+      $aff = join(', ', $affiliation);
+      $this->logger->log("Given 'affiliation' attributes ($aff) for user '$ukco' does not correspond to any role.", ILogger::ERROR);
+      throw new CASMissingInfoException("The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student not to an employee of MFF.");
+    }
+
     return new UserData($ukco, $emails, $firstName, $lastName, "", "", $role);
   }
 
@@ -239,6 +249,12 @@ class CASLoginService implements IExternalLoginService {
    * @return null|string
    */
   private function getUserRole(array $affiliation): ?string {
+    foreach ($this->studentAffiliations as $studentAffiliation) {
+      if (array_search($studentAffiliation, $affiliation) !== false) {
+        return Roles::STUDENT_ROLE;
+      }
+    }
+
     foreach ($this->supervisorAffiliations as $supervisorAffiliation) {
       if (array_search($supervisorAffiliation, $affiliation) !== false) {
         return Roles::SUPERVISOR_ROLE;
