@@ -285,7 +285,11 @@ class ExercisesPresenter extends BasePresenter {
       $localization["description"] = $localization["description"] ?? "";
 
       $localized = new LocalizedExercise(
-        $lang, $localization["name"], $localization["text"], $localization["description"], $externalAssignmentLink ?: null
+        $lang,
+        trim(Arrays::get($localization, "name", "")),
+        trim(Arrays::get($localization, "text", "")),
+        trim(Arrays::get($localization, "description", "")),
+        $externalAssignmentLink ?: null
       );
 
       $localizations[$lang] = $localized;

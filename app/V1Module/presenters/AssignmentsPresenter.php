@@ -265,18 +265,18 @@ class AssignmentsPresenter extends BasePresenter {
         throw new InvalidArgumentException("External assignment link is not a valid URL");
       }
 
-      $localized = new LocalizedExercise(
-        $lang, $localization["name"], $localization["text"],
+      $localizedTexts[$lang] = new LocalizedExercise(
+        $lang,
+        trim(Arrays::get($localization, "name", "")),
+        trim(Arrays::get($localization, "text", "")),
         $localizedExercise ? $localizedExercise->getDescription() : "",
         $externalAssignmentLink ?: null
       );
 
-      $localizedTexts[$lang] = $localized;
-
       if (array_key_exists("studentHint", $localization)) {
         $localizedAssignments[$lang] = new LocalizedAssignment(
           $lang,
-          $localization["studentHint"]
+          trim(Arrays::get($localization, "studentHint", ""))
         );
       }
     }
