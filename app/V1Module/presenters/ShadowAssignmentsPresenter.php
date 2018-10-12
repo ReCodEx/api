@@ -172,7 +172,9 @@ class ShadowAssignmentsPresenter extends BasePresenter {
       }
 
       $localized = new LocalizedShadowAssignment(
-        $lang, $localization["name"], $localization["text"],
+        $lang,
+        trim(Arrays::get($localization, "name", "")),
+        trim(Arrays::get($localization, "text", "")),
         $externalAssignmentLink ?: null
       );
 
