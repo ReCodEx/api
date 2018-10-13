@@ -231,4 +231,15 @@ class Node {
     }
   }
 
+  /**
+   * Remove given dependency from dependencies array.
+   * @param Node $dependency
+   */
+  public function removeDependency(Node $dependency) {
+    if(($key = array_search($dependency, $this->dependencies)) !== false){
+      unset($this->dependencies[$key]);
+      $this->dependencies = array_values($this->dependencies);
+    }
+  }
+
 }
