@@ -64,8 +64,8 @@ class DirectoriesResolver {
   private function findOptimizedNodesDirectory(Node $current): string {
     $name = "";
     while ($current->getTestId() === null) {
-      $name .= $current->getBox() ? $current->getBox()->getCategory() : "";
-      $name .= "_"; // delimiter
+      $category = $current->getBox() ? $current->getBox()->getCategory() : "";
+      $name .= !empty($category) ? $category . "_" : "";
 
       if (count($current->getChildren()) < 1) {
         break;
@@ -202,7 +202,7 @@ class DirectoriesResolver {
       $box = $current->getBox(); /** @var $box Box */
       if ($box) {
         foreach ($box->getInputPorts() as $port) {
-          if (!$port->getVariableValue()->isFile() ||
+          if (!$port->getVariableValue() || !$port->getVariableValue()->isFile() ||
               $port->getVariableValue()->getDirectory() === $box->getDirectory()) {
             continue;
           }
@@ -221,6 +221,7 @@ class DirectoriesResolver {
           }
           $current->clearParents();
           $current->addParent($copy);
+          $current->addDependency($copy);
 
           // we also have to plug newly created output variable from copy box to the current input port...
           // this is needed because we need to have valid information in current box about directory of the variable

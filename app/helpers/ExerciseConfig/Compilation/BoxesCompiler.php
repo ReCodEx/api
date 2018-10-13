@@ -26,12 +26,11 @@ class BoxesCompiler {
    * Helper function which will create identification of task.
    * @param Node $node
    * @param string $postfix
-   * @param CompilationContext $context
    * @return string
    */
-  private function createTaskIdentification(Node $node, string $postfix, CompilationContext $context): string {
-    $testName = $context->getTestsNames()[$node->getTestId()];
-    return $testName . self::$ID_DELIM . $node->getPipelineId() .
+  private function createTaskIdentification(Node $node, string $postfix): string {
+    $directoryName = $node->getBox()->getDirectory();
+    return $directoryName . self::$ID_DELIM . $node->getPipelineId() .
       self::$ID_DELIM . $node->getBox()->getName() . self::$ID_DELIM . $postfix;
   }
 
@@ -42,7 +41,7 @@ class BoxesCompiler {
    * @param ExerciseLimits[] $exerciseLimits indexed by hwgroup
    */
   private function setLimits(Node $node, Task $task, array $exerciseLimits) {
-    if (!$task->getSandboxConfig() ||
+    if (!$task->getSandboxConfig() || !$node->getTestId() ||
         $task->getType() !== TaskType::$EXECUTION) {
       return;
     }
@@ -93,7 +92,7 @@ class BoxesCompiler {
       // set additional attributes to the tasks
       foreach ($tasks as $task) {
         // create and set task identification
-        $taskId = $this->createTaskIdentification($current, $order, $context);
+        $taskId = $this->createTaskIdentification($current, $order);
         $current->addTaskId($taskId);
         $task->setId($taskId);
 
