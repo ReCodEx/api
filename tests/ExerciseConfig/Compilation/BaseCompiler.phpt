@@ -22,6 +22,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\PipelinesCache;
+use Nette\Utils\Strings;
 use Tester\Assert;
 
 
@@ -70,6 +71,9 @@ class TestBaseCompiler extends Tester\TestCase
           "envA" => [
             "pipelines" => [
               [ "name" => "compilationPipeline", "variables" => [] ],
+              [ "name" => "testPipeline", "variables" => [
+                [ "name" => "input-file", "type" => "remote-file", "value" => "expected.B.in" ]
+              ] ]
             ]
           ],
           "envB" => [
@@ -247,8 +251,8 @@ class TestBaseCompiler extends Tester\TestCase
     $this->mockPipelinesCache->shouldReceive("getPipeline")->with("testPipeline")->andReturn($this->mockTestPipeline);
     $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("compilationPipeline")->twice()
       ->andReturn($this->loader->loadPipeline(self::$compilationPipeline), $this->loader->loadPipeline(self::$compilationPipeline));
-    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")->once()
-      ->andReturn($this->loader->loadPipeline(self::$testPipeline));
+    $this->mockPipelinesCache->shouldReceive("getNewPipelineConfig")->with("testPipeline")->twice()
+      ->andReturn($this->loader->loadPipeline(self::$testPipeline), $this->loader->loadPipeline(self::$testPipeline));
 
     // constructions of compiler components
     $pipelinesMerger = new PipelinesMerger($this->mockPipelinesCache, $variablesResolver);
@@ -278,36 +282,44 @@ class TestBaseCompiler extends Tester\TestCase
     $params = CompilationParams::create(self::$submitFiles, true, new SolutionParams(self::$solutionParams));
     $jobConfig = $this->compiler->compile($context, $params);
 
+    foreach ($jobConfig->getTasks() as $task) {
+      var_dump($task->getId());
+    }
+
     // check general properties
     Assert::equal(["groupA", "groupB"], $jobConfig->getSubmissionHeader()->getHardwareGroups());
-    Assert::equal(16, $jobConfig->getTasksCount());
+    Assert::equal(20, $jobConfig->getTasksCount());
 
     ////////////////////////////////////////////////////////////////////////////
     // check order of all tasks and right attributes
     //
     $it = 0;
 
-    $testAMkdir = $jobConfig->getTasks()[0];
-    Assert::equal("testA..mkdir." . $it++, $testAMkdir->getId());
-    Assert::equal(Priorities::$DEFAULT, $testAMkdir->getPriority());
-    Assert::count(0, $testAMkdir->getDependencies());
-    Assert::equal("mkdir", $testAMkdir->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "testA"], $testAMkdir->getCommandArguments());
-    Assert::null($testAMkdir->getType());
-    Assert::equal("testA", $testAMkdir->getTestId());
-    Assert::null($testAMkdir->getSandboxConfig());
+    $initiationMkdir = $jobConfig->getTasks()[0];
+    Assert::true(Strings::startsWith($initiationMkdir->getId(), "initiation_"));
+    Assert::true(Strings::endsWith($initiationMkdir->getId(), "..mkdir." . $it++));
+    Assert::equal(Priorities::$DEFAULT, $initiationMkdir->getPriority());
+    Assert::count(0, $initiationMkdir->getDependencies());
+    Assert::equal("mkdir", $initiationMkdir->getCommandBinary());
+    Assert::count(1, $initiationMkdir->getCommandArguments());
+    Assert::true(Strings::startsWith($initiationMkdir->getCommandArguments()[0], ConfigParams::$SOURCE_DIR . "initiation_"));
+    Assert::null($initiationMkdir->getType());
+    Assert::equal(null, $initiationMkdir->getTestId());
+    Assert::null($initiationMkdir->getSandboxConfig());
 
-    $dumpTestAMkdir = $jobConfig->getTasks()[1];
-    Assert::equal("testA..dump-results." . $it++, $dumpTestAMkdir->getId());
-    Assert::equal(Priorities::$DUMP_RESULTS, $dumpTestAMkdir->getPriority());
-    Assert::count(1, $dumpTestAMkdir->getDependencies());
-    Assert::equal([$testAMkdir->getId()], $dumpTestAMkdir->getDependencies());
-    Assert::equal("dumpdir", $dumpTestAMkdir->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "testA", ConfigParams::$RESULT_DIR . "testA", ConfigParams::$DUMPDIR_LIMIT],
-      $dumpTestAMkdir->getCommandArguments());
-    Assert::null($dumpTestAMkdir->getType());
-    Assert::equal("testA", $dumpTestAMkdir->getTestId());
-    Assert::null($dumpTestAMkdir->getSandboxConfig());
+    $initiationDir = Strings::substring($initiationMkdir->getCommandArguments()[0], Strings::length(ConfigParams::$SOURCE_DIR));
+
+    $dumpInitiationMkdir = $jobConfig->getTasks()[1];
+    Assert::equal($initiationDir . "..dump-results." . $it++, $dumpInitiationMkdir->getId());
+    Assert::equal(Priorities::$DUMP_RESULTS, $dumpInitiationMkdir->getPriority());
+    Assert::count(1, $dumpInitiationMkdir->getDependencies());
+    Assert::equal([$initiationMkdir->getId()], $dumpInitiationMkdir->getDependencies());
+    Assert::equal("dumpdir", $dumpInitiationMkdir->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . $initiationDir, ConfigParams::$RESULT_DIR . $initiationDir, ConfigParams::$DUMPDIR_LIMIT],
+      $dumpInitiationMkdir->getCommandArguments());
+    Assert::null($dumpInitiationMkdir->getType());
+    Assert::equal(null, $dumpInitiationMkdir->getTestId());
+    Assert::null($dumpInitiationMkdir->getSandboxConfig());
 
     $testBMkdir = $jobConfig->getTasks()[2];
     Assert::equal("testB..mkdir." . $it++, $testBMkdir->getId());
@@ -316,7 +328,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("mkdir", $testBMkdir->getCommandBinary());
     Assert::equal([ConfigParams::$SOURCE_DIR . "testB"], $testBMkdir->getCommandArguments());
     Assert::null($testBMkdir->getType());
-    Assert::equal("testB", $testBMkdir->getTestId());
+    Assert::equal(null, $testBMkdir->getTestId());
     Assert::null($testBMkdir->getSandboxConfig());
 
     $dumpTestBMkdir = $jobConfig->getTasks()[3];
@@ -328,10 +340,82 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal([ConfigParams::$SOURCE_DIR . "testB", ConfigParams::$RESULT_DIR . "testB", ConfigParams::$DUMPDIR_LIMIT],
       $dumpTestBMkdir->getCommandArguments());
     Assert::null($dumpTestBMkdir->getType());
-    Assert::equal("testB", $dumpTestBMkdir->getTestId());
+    Assert::equal(null, $dumpTestBMkdir->getTestId());
     Assert::null($dumpTestBMkdir->getSandboxConfig());
 
-    $testAInputTask = $jobConfig->getTasks()[4];
+    $testAMkdir = $jobConfig->getTasks()[4];
+    Assert::equal("testA..mkdir.". $it++, $testAMkdir->getId());
+    Assert::equal(Priorities::$DEFAULT, $testAMkdir->getPriority());
+    Assert::count(0, $testAMkdir->getDependencies());
+    Assert::equal("mkdir", $testAMkdir->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "testA"], $testAMkdir->getCommandArguments());
+    Assert::null($testAMkdir->getType());
+    Assert::equal(null, $testAMkdir->getTestId());
+    Assert::null($testAMkdir->getSandboxConfig());
+
+    $dumpTestAMkdir = $jobConfig->getTasks()[5];
+    Assert::equal("testA..dump-results." . $it++, $dumpTestAMkdir->getId());
+    Assert::equal(Priorities::$DUMP_RESULTS, $dumpTestAMkdir->getPriority());
+    Assert::count(1, $dumpTestAMkdir->getDependencies());
+    Assert::equal([$testAMkdir->getId()], $dumpTestAMkdir->getDependencies());
+    Assert::equal("dumpdir", $dumpTestAMkdir->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "testA", ConfigParams::$RESULT_DIR . "testA", ConfigParams::$DUMPDIR_LIMIT],
+      $dumpTestAMkdir->getCommandArguments());
+    Assert::null($dumpTestAMkdir->getType());
+    Assert::equal(null, $dumpTestAMkdir->getTestId());
+    Assert::null($dumpTestAMkdir->getSandboxConfig());
+
+    $initiationExtraTask = $jobConfig->getTasks()[6];
+    Assert::equal($initiationDir . ".compilationPipeline.extra." . $it++, $initiationExtraTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $initiationExtraTask->getPriority());
+    Assert::count(1, $initiationExtraTask->getDependencies());
+    Assert::equal([$initiationMkdir->getId()], $initiationExtraTask->getDependencies());
+    Assert::equal("cp", $initiationExtraTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . $initiationDir . "/extra"], $initiationExtraTask->getCommandArguments());
+    Assert::null($initiationExtraTask->getType());
+    Assert::equal(null, $initiationExtraTask->getTestId());
+    Assert::null($initiationExtraTask->getSandboxConfig());
+
+    $initiationSourceTask = $jobConfig->getTasks()[7];
+    Assert::equal($initiationDir . ".compilationPipeline.source." . $it++, $initiationSourceTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $initiationSourceTask->getPriority());
+    Assert::count(1, $initiationSourceTask->getDependencies());
+    Assert::equal([$initiationMkdir->getId()], $initiationSourceTask->getDependencies());
+    Assert::equal("cp", $initiationSourceTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . $initiationDir . "/source"], $initiationSourceTask->getCommandArguments());
+    Assert::null($initiationSourceTask->getType());
+    Assert::equal(null, $initiationSourceTask->getTestId());
+    Assert::null($initiationSourceTask->getSandboxConfig());
+
+    $initiationCompilationTask = $jobConfig->getTasks()[8];
+    Assert::equal($initiationDir . ".compilationPipeline.compilation." . $it++, $initiationCompilationTask->getId());
+    Assert::equal(Priorities::$INITIATION, $initiationCompilationTask->getPriority());
+    Assert::count(3, $initiationCompilationTask->getDependencies());
+    Assert::equal([$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId()], $initiationCompilationTask->getDependencies());
+    Assert::equal(GccCompilationBox::$GCC_BINARY, $initiationCompilationTask->getCommandBinary());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $initiationCompilationTask->getCommandArguments());
+    Assert::equal(TaskType::$INITIATION, $initiationCompilationTask->getType());
+    Assert::equal(null, $initiationCompilationTask->getTestId());
+    Assert::notEqual(null, $initiationCompilationTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $initiationCompilationTask->getSandboxConfig()->getName());
+    Assert::true($initiationCompilationTask->getSandboxConfig()->getStderrToStdout());
+    Assert::contains(".out", $initiationCompilationTask->getSandboxConfig()->getCarboncopyStdout());
+    Assert::contains('${RESULT_DIR}/compilation.', $initiationCompilationTask->getSandboxConfig()->getCarboncopyStdout());
+    Assert::equal($initiationDir, $initiationCompilationTask->getSandboxConfig()->getWorkingDirectory());
+    Assert::count(0, $initiationCompilationTask->getSandboxConfig()->getLimitsArray());
+
+    $initiationExistsTask = $jobConfig->getTasks()[9];
+    Assert::equal($initiationDir . ".compilationPipeline.compilation." . $it++, $initiationExistsTask->getId());
+    Assert::equal(Priorities::$INITIATION, $initiationExistsTask->getPriority());
+    Assert::count(3, $initiationExistsTask->getDependencies());
+    Assert::equal([$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId()], $initiationExistsTask->getDependencies());
+    Assert::equal(TaskCommands::$EXISTS, $initiationExistsTask->getCommandBinary());
+    Assert::equal([CompilationBox::$EXISTS_FAILED_MSG, ConfigParams::$SOURCE_DIR . $initiationDir . "/a.out"], $initiationExistsTask->getCommandArguments());
+    Assert::equal(TaskType::$INITIATION, $initiationExistsTask->getType());
+    Assert::equal(null, $initiationExistsTask->getTestId());
+    Assert::null($initiationExistsTask->getSandboxConfig());
+
+    $testAInputTask = $jobConfig->getTasks()[10];
     Assert::equal("testA.testPipeline.input-file." . $it++, $testAInputTask->getId());
     Assert::equal(Priorities::$DEFAULT, $testAInputTask->getPriority());
     Assert::count(1, $testAInputTask->getDependencies());
@@ -342,73 +426,16 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testAInputTask->getTestId());
     Assert::null($testAInputTask->getSandboxConfig());
 
-    $testACopyTask = $jobConfig->getTasks()[5];
-    Assert::equal("testA.testPipeline.test." . $it++, $testACopyTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testACopyTask->getPriority());
-    Assert::count(1, $testACopyTask->getDependencies());
-    Assert::equal([$testAMkdir->getId()], $testACopyTask->getDependencies());
-    Assert::equal("cp", $testACopyTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testACopyTask->getCommandArguments());
-    Assert::null($testACopyTask->getType());
-    Assert::equal("testA", $testACopyTask->getTestId());
-    Assert::null($testACopyTask->getSandboxConfig());
+    $testACopyTask = $jobConfig->getTasks()[11];
+    Assert::equal("testA..copy-file." . $it++, $testACopyTask->getId());
+    // TODO
 
-    $testAExtraTask = $jobConfig->getTasks()[6];
-    Assert::equal("testA.compilationPipeline.extra." . $it++, $testAExtraTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testAExtraTask->getPriority());
-    Assert::count(1, $testAExtraTask->getDependencies());
-    Assert::equal([$testAMkdir->getId()], $testAExtraTask->getDependencies());
-    Assert::equal("cp", $testAExtraTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "extra.cpp", ConfigParams::$SOURCE_DIR . "testA/extra.cpp"], $testAExtraTask->getCommandArguments());
-    Assert::null($testAExtraTask->getType());
-    Assert::equal("testA", $testAExtraTask->getTestId());
-    Assert::null($testAExtraTask->getSandboxConfig());
-
-    $testASourceTask = $jobConfig->getTasks()[7];
-    Assert::equal("testA.compilationPipeline.source." . $it++, $testASourceTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testASourceTask->getPriority());
-    Assert::count(1, $testASourceTask->getDependencies());
-    Assert::equal([$testAMkdir->getId()], $testASourceTask->getDependencies());
-    Assert::equal("cp", $testASourceTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testA/source.cpp"], $testASourceTask->getCommandArguments());
-    Assert::null($testASourceTask->getType());
-    Assert::equal("testA", $testASourceTask->getTestId());
-    Assert::null($testASourceTask->getSandboxConfig());
-
-    $testACompilationTask = $jobConfig->getTasks()[8];
-    Assert::equal("testA.compilationPipeline.compilation." . $it++, $testACompilationTask->getId());
-    Assert::equal(Priorities::$INITIATION, $testACompilationTask->getPriority());
-    Assert::count(3, $testACompilationTask->getDependencies());
-    Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testACompilationTask->getDependencies());
-    Assert::equal(GccCompilationBox::$GCC_BINARY, $testACompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "source.cpp", ConfigParams::$EVAL_DIR . "extra.cpp", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testACompilationTask->getCommandArguments());
-    Assert::equal(TaskType::$INITIATION, $testACompilationTask->getType());
-    Assert::equal("testA", $testACompilationTask->getTestId());
-    Assert::notEqual(null, $testACompilationTask->getSandboxConfig());
-    Assert::equal(LinuxSandbox::$ISOLATE, $testACompilationTask->getSandboxConfig()->getName());
-    Assert::true($testACompilationTask->getSandboxConfig()->getStderrToStdout());
-    Assert::contains(".out", $testACompilationTask->getSandboxConfig()->getCarboncopyStdout());
-    Assert::contains('${RESULT_DIR}/compilation.', $testACompilationTask->getSandboxConfig()->getCarboncopyStdout());
-    Assert::equal("testA", $testACompilationTask->getSandboxConfig()->getWorkingDirectory());
-    Assert::count(0, $testACompilationTask->getSandboxConfig()->getLimitsArray());
-
-    $testAExistsTask = $jobConfig->getTasks()[9];
-    Assert::equal("testA.compilationPipeline.compilation." . $it++, $testAExistsTask->getId());
-    Assert::equal(Priorities::$INITIATION, $testAExistsTask->getPriority());
-    Assert::count(3, $testAExistsTask->getDependencies());
-    Assert::equal([$testASourceTask->getId(), $testAExtraTask->getId(), $testAMkdir->getId()], $testAExistsTask->getDependencies());
-    Assert::equal(TaskCommands::$EXISTS, $testAExistsTask->getCommandBinary());
-    Assert::equal([CompilationBox::$EXISTS_FAILED_MSG, ConfigParams::$SOURCE_DIR . "testA/a.out"], $testAExistsTask->getCommandArguments());
-    Assert::equal(TaskType::$INITIATION, $testAExistsTask->getType());
-    Assert::equal("testA", $testAExistsTask->getTestId());
-    Assert::null($testAExistsTask->getSandboxConfig());
-
-    $testARunTask = $jobConfig->getTasks()[10];
+    $testARunTask = $jobConfig->getTasks()[12];
     Assert::equal("testA.testPipeline.run." . $it++, $testARunTask->getId());
     Assert::equal(Priorities::$EXECUTION, $testARunTask->getPriority());
-    Assert::count(4, $testARunTask->getDependencies());
-    Assert::equal([$testAInputTask->getId(), $testACompilationTask->getId(),
-      $testAExistsTask->getId(), $testAMkdir->getId()], $testARunTask->getDependencies());
+    Assert::count(6, $testARunTask->getDependencies());
+    Assert::equal([$testAInputTask->getId(), $initiationCompilationTask->getId(), $initiationExistsTask->getId(),
+      $initiationMkdir->getId(), $testAMkdir->getId(), $testACopyTask->getId()], $testARunTask->getDependencies());
     Assert::equal(ConfigParams::$EVAL_DIR . "a.out", $testARunTask->getCommandBinary());
     Assert::equal([], $testARunTask->getCommandArguments());
     Assert::equal(TaskType::$EXECUTION, $testARunTask->getType());
@@ -426,11 +453,22 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal(654, $testARunTask->getSandboxConfig()->getLimits("groupB")->getMemoryLimit());
     Assert::equal(321.0, $testARunTask->getSandboxConfig()->getLimits("groupB")->getTimeLimit());
 
-    $testAJudgeTask = $jobConfig->getTasks()[11];
+    $testATestTask = $jobConfig->getTasks()[13];
+    Assert::equal("testA.testPipeline.test." . $it++, $testATestTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testATestTask->getPriority());
+    Assert::count(1, $testATestTask->getDependencies());
+    Assert::equal([$testAMkdir->getId()], $testATestTask->getDependencies());
+    Assert::equal("cp", $testATestTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
+    Assert::null($testATestTask->getType());
+    Assert::equal("testA", $testATestTask->getTestId());
+    Assert::null($testATestTask->getSandboxConfig());
+
+    $testAJudgeTask = $jobConfig->getTasks()[14];
     Assert::equal("testA.testPipeline.judge." . $it++, $testAJudgeTask->getId());
     Assert::equal(Priorities::$EVALUATION, $testAJudgeTask->getPriority());
     Assert::count(3, $testAJudgeTask->getDependencies());
-    Assert::equal([$testACopyTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
+    Assert::equal([$testATestTask->getId(), $testARunTask->getId(), $testAMkdir->getId()],
       $testAJudgeTask->getDependencies());
     Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-token-judge", $testAJudgeTask->getCommandBinary());
     Assert::equal(["--log-limit", "4k", "--ignore-trailing-whitespace",
@@ -443,52 +481,66 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal("testA", $testAJudgeTask->getSandboxConfig()->getWorkingDirectory());
     Assert::count(0, $testAJudgeTask->getSandboxConfig()->getLimitsArray());
 
-    $testBExtraTask = $jobConfig->getTasks()[12];
-    Assert::equal("testB.compilationPipeline.extra." . $it++, $testBExtraTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testBExtraTask->getPriority());
-    Assert::count(1, $testBExtraTask->getDependencies());
-    Assert::equal([$testBMkdir->getId()], $testBExtraTask->getDependencies());
-    Assert::equal(TaskCommands::$COPY, $testBExtraTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "extra.cpp", ConfigParams::$SOURCE_DIR . "testB/extra.cpp"], $testBExtraTask->getCommandArguments());
-    Assert::null($testBExtraTask->getType());
-    Assert::equal("testB", $testBExtraTask->getTestId());
-    Assert::null($testBExtraTask->getSandboxConfig());
+    $testBInputTask = $jobConfig->getTasks()[15];
+    Assert::equal("testB.testPipeline.input-file." . $it++, $testBInputTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testBInputTask->getPriority());
+    Assert::count(1, $testBInputTask->getDependencies());
+    Assert::equal([$testBMkdir->getId()], $testBInputTask->getDependencies());
+    Assert::equal("fetch", $testBInputTask->getCommandBinary());
+    Assert::equal(["expected.B.in.hash", ConfigParams::$SOURCE_DIR . "testB/expected.B.in.hash"], $testBInputTask->getCommandArguments());
+    Assert::null($testBInputTask->getType());
+    Assert::equal("testB", $testBInputTask->getTestId());
+    Assert::null($testBInputTask->getSandboxConfig());
 
-    $testBSourceTask = $jobConfig->getTasks()[13];
-    Assert::equal("testB.compilationPipeline.source." . $it++, $testBSourceTask->getId());
-    Assert::equal(Priorities::$DEFAULT, $testBSourceTask->getPriority());
-    Assert::count(1, $testBSourceTask->getDependencies());
-    Assert::equal([$testBMkdir->getId()], $testBSourceTask->getDependencies());
-    Assert::equal(TaskCommands::$COPY, $testBSourceTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testB/source.cpp"], $testBSourceTask->getCommandArguments());
-    Assert::null($testBSourceTask->getType());
-    Assert::equal("testB", $testBSourceTask->getTestId());
-    Assert::null($testBSourceTask->getSandboxConfig());
+    $testBCopyTask = $jobConfig->getTasks()[16];
+    Assert::equal("testB..copy-file." . $it++, $testBCopyTask->getId());
+    // TODO
 
-    $testBCompilationTask = $jobConfig->getTasks()[14];
-    Assert::equal("testB.compilationPipeline.compilation." . $it++, $testBCompilationTask->getId());
-    Assert::equal(Priorities::$INITIATION, $testBCompilationTask->getPriority());
-    Assert::count(3, $testBCompilationTask->getDependencies());
-    Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBCompilationTask->getDependencies());
-    Assert::equal(GccCompilationBox::$GCC_BINARY, $testBCompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "source.cpp", ConfigParams::$EVAL_DIR . "extra.cpp", "-o", ConfigParams::$EVAL_DIR . "a.out"], $testBCompilationTask->getCommandArguments());
-    Assert::equal(TaskType::$INITIATION, $testBCompilationTask->getType());
-    Assert::equal("testB", $testBCompilationTask->getTestId());
-    Assert::notEqual(null, $testBCompilationTask->getSandboxConfig());
-    Assert::equal(LinuxSandbox::$ISOLATE, $testBCompilationTask->getSandboxConfig()->getName());
-    Assert::equal("testB", $testBCompilationTask->getSandboxConfig()->getWorkingDirectory());
-    Assert::count(0, $testBCompilationTask->getSandboxConfig()->getLimitsArray());
+    $testBRunTask = $jobConfig->getTasks()[17];
+    Assert::equal("testB.testPipeline.run." . $it++, $testBRunTask->getId());
+    Assert::equal(Priorities::$EXECUTION, $testBRunTask->getPriority());
+    Assert::count(3, $testBRunTask->getDependencies());
+    Assert::equal([$testBInputTask->getId(), $testBMkdir->getId(), $testBCopyTask->getId()], $testBRunTask->getDependencies());
+    Assert::equal(ConfigParams::$EVAL_DIR . "a.out", $testBRunTask->getCommandBinary());
+    Assert::equal([], $testBRunTask->getCommandArguments());
+    Assert::equal(TaskType::$EXECUTION, $testBRunTask->getType());
+    Assert::equal("testB", $testBRunTask->getTestId());
+    Assert::notEqual(null, $testBRunTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testBRunTask->getSandboxConfig()->getName());
+    Assert::null($testBRunTask->getSandboxConfig()->getChdir());
+    Assert::count(0, $testBRunTask->getSandboxConfig()->getLimitsArray());
+    Assert::equal(ConfigParams::$EVAL_DIR . "expected.B.in.hash", $testBRunTask->getSandboxConfig()->getStdin());
+    Assert::contains(".stderr", $testBRunTask->getSandboxConfig()->getStderr());
+    Assert::contains('${EVAL_DIR}/', $testBRunTask->getSandboxConfig()->getStderr());
+    Assert::equal("testB", $testBRunTask->getSandboxConfig()->getWorkingDirectory());
 
-    $testBExistsTask = $jobConfig->getTasks()[15];
-    Assert::equal("testB.compilationPipeline.compilation." . $it++, $testBExistsTask->getId());
-    Assert::equal(Priorities::$INITIATION, $testBExistsTask->getPriority());
-    Assert::count(3, $testBExistsTask->getDependencies());
-    Assert::equal([$testBSourceTask->getId(), $testBExtraTask->getId(), $testBMkdir->getId()], $testBExistsTask->getDependencies());
-    Assert::equal(TaskCommands::$EXISTS, $testBExistsTask->getCommandBinary());
-    Assert::equal([CompilationBox::$EXISTS_FAILED_MSG, ConfigParams::$SOURCE_DIR . "testB/a.out"], $testBExistsTask->getCommandArguments());
-    Assert::equal(TaskType::$INITIATION, $testBExistsTask->getType());
-    Assert::equal("testB", $testBExistsTask->getTestId());
-    Assert::null($testBExistsTask->getSandboxConfig());
+    $testBTestTask = $jobConfig->getTasks()[18];
+    Assert::equal("testB.testPipeline.test." . $it++, $testBTestTask->getId());
+    Assert::equal(Priorities::$DEFAULT, $testBTestTask->getPriority());
+    Assert::count(1, $testBTestTask->getDependencies());
+    Assert::equal([$testBMkdir->getId()], $testBTestTask->getDependencies());
+    Assert::equal("cp", $testBTestTask->getCommandBinary());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testB/expected.out"], $testBTestTask->getCommandArguments());
+    Assert::null($testBTestTask->getType());
+    Assert::equal("testB", $testBTestTask->getTestId());
+    Assert::null($testBTestTask->getSandboxConfig());
+
+    $testBJudgeTask = $jobConfig->getTasks()[19];
+    Assert::equal("testB.testPipeline.judge." . $it++, $testBJudgeTask->getId());
+    Assert::equal(Priorities::$EVALUATION, $testBJudgeTask->getPriority());
+    Assert::count(3, $testBJudgeTask->getDependencies());
+    Assert::equal([$testBTestTask->getId(), $testBRunTask->getId(), $testBMkdir->getId()],
+      $testBJudgeTask->getDependencies());
+    Assert::equal(ConfigParams::$JUDGES_DIR . "recodex-token-judge", $testBJudgeTask->getCommandBinary());
+    Assert::equal(["--log-limit", "4k", "--ignore-trailing-whitespace",
+      ConfigParams::$EVAL_DIR . "expected.out", ConfigParams::$EVAL_DIR . "actual.out"],
+      $testBJudgeTask->getCommandArguments());
+    Assert::equal(TaskType::$EVALUATION, $testBJudgeTask->getType());
+    Assert::equal("testB", $testBJudgeTask->getTestId());
+    Assert::notEqual(null, $testBJudgeTask->getSandboxConfig());
+    Assert::equal(LinuxSandbox::$ISOLATE, $testBJudgeTask->getSandboxConfig()->getName());
+    Assert::equal("testB", $testBJudgeTask->getSandboxConfig()->getWorkingDirectory());
+    Assert::count(0, $testBJudgeTask->getSandboxConfig()->getLimitsArray());
   }
 
 }

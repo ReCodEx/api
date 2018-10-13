@@ -211,8 +211,8 @@ class TestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$ABcopy], $B->getParents());
     Assert::count(1, $B->getChildren());
     Assert::equal([$C], $B->getChildren());
-    Assert::count(1, $B->getDependencies());
-    Assert::equal([$mkdirA], $B->getDependencies());
+    Assert::count(2, $B->getDependencies());
+    Assert::equal([$mkdirA, $ABcopy], $B->getDependencies());
     Assert::equal("1", $B->getTestId());
     Assert::equal("testA", $B->getBox()->getDirectory());
     Assert::equal("B", $B->getBox()->getName());
@@ -270,8 +270,8 @@ class TestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$CEcopy], $E->getParents());
     Assert::count(1, $E->getChildren());
     Assert::equal([$H], $E->getChildren());
-    Assert::count(1, $E->getDependencies());
-    Assert::equal([$mkdirCustomB], $E->getDependencies());
+    Assert::count(2, $E->getDependencies());
+    Assert::equal([$mkdirCustomB, $CEcopy], $E->getDependencies());
     Assert::equal(null, $E->getTestId());
     Assert::equal($Edir, $E->getBox()->getDirectory());
     Assert::equal("E", $E->getBox()->getName());
@@ -297,8 +297,8 @@ class TestDirectoriesResolver extends Tester\TestCase
     Assert::equal([$AFcopy], $F->getParents());
     Assert::count(1, $F->getChildren());
     Assert::equal([$G], $F->getChildren());
-    Assert::count(1, $F->getDependencies());
-    Assert::equal([$mkdirB], $F->getDependencies());
+    Assert::count(2, $F->getDependencies());
+    Assert::equal([$mkdirB, $AFcopy], $F->getDependencies());
     Assert::equal("2", $F->getTestId());
     Assert::equal("testB", $F->getBox()->getDirectory());
     Assert::equal("F", $F->getBox()->getName());

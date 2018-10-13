@@ -4,8 +4,9 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use Nette\Utils\Arrays;
+use App\Helpers\ExerciseConfig\Variable;
 
 /**
  * Internal exercise configuration compilation service. Handles optimisation
@@ -15,6 +16,29 @@ use Nette\Utils\Arrays;
  * identification of test should be cleared.
  */
 class BoxesOptimizer {
+
+  /**
+   * Determine if given variables can be optimized or not.
+   * @param Variable|null $first
+   * @param Variable|null $second
+   * @return bool
+   */
+  private static function canVariablesBeOptimized(?Variable $first, ?Variable $second) {
+    if ($first === null && $second === null) {
+      return true;
+    }
+
+    if ($first === null || $second === null ||
+      $first->getValue() !== $second->getValue()) {
+      return false;
+    }
+
+    if ($first->getType() !== $second->getType()) {
+      return false;
+    }
+
+    return true;
+  }
 
   /**
    * Determine if given ports can be optimized or not.
@@ -29,12 +53,7 @@ class BoxesOptimizer {
 
     $variableValue = $first->getVariableValue();
     $otherVariableValue = $second->getVariableValue();
-    if ($variableValue === null && $otherVariableValue === null) {
-      return true;
-    }
-
-    if ($variableValue === null || $otherVariableValue === null ||
-      $variableValue->getValue() !== $otherVariableValue->getValue()) {
+    if (self::canVariablesBeOptimized($variableValue, $otherVariableValue) === false) {
       return false;
     }
 
@@ -82,6 +101,12 @@ class BoxesOptimizer {
           self::canPortsBeOptimized($port, $otherPort) === false) {
         return false;
       }
+    }
+
+    // special case if boxes are of data type, then they have special input variable which has to be checked as well
+    if ($firstBox instanceof DataInBox && $secondBox instanceof DataInBox &&
+        self::canVariablesBeOptimized($firstBox->getInputVariable(), $secondBox->getInputVariable()) === false) {
+      return false;
     }
 
     return true;
@@ -137,6 +162,11 @@ class BoxesOptimizer {
             });
             $child->setTestId(null); // clear the test identification
 
+            // resolve dependencies transfer from compared to child
+            foreach ($compared->getDependencies() as $dependency) {
+              $child->addDependency($dependency);
+            }
+
             foreach ($compared->getChildren() as $comparedChild) {
               $comparedChild->removeParent($compared);
               $comparedChild->addParent($child);
@@ -153,8 +183,12 @@ class BoxesOptimizer {
       }
 
       // do not forget to add newly created children from current node to
-      // processing queue
-      $queue = array_merge($queue, $node->getChildren());
+      // processing queue, only if the node was optimised... otherwise we should not proceed
+      foreach ($node->getChildren() as $child) {
+        if ($child->getTestId() === null) {
+          $queue[] = $child;
+        }
+      }
     }
   }
 
