@@ -7,6 +7,7 @@ use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Compilation\Tree\RootedTree;
+use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 
 
 /**
@@ -24,6 +25,15 @@ class BoxesSorter {
    * @throws ExerciseConfigException
    */
   private function topologicalSort(MergeTree $mergeTree): array {
+    // Okey, let's make this crystal clear...
+    // This is not ordinary topological sorting algorithm, it is based on a bit reversed idea and adds priority nodes
+    // which will be processed beforehand. This is done because of optimisation which needs a specific order of given
+    // nodes. It is recommended to have input type nodes close to its children, therefore not having input nodes
+    // at the beginning of outputted nodes order but close to their actual usage. The algorithm of sorting takes this
+    // into account by reversing the tree search (going from bottom to up of the tree) and having priorities when adding
+    // parents into execution stack. Nodes of types other then input ones are preferred and processed earlier, which
+    // effectively means having input nodes closer to their children.
+
     // Stack will hold pair of values, first one will be in-processing flag,
     // second one actual node of tree. in-processing flag is used to detect
     // cycles in the tree
@@ -32,7 +42,7 @@ class BoxesSorter {
 
     // fill initial values in the stack, last element is the top of the stack
     // reverse is here for the purpose of preferred order in initial stack
-    foreach (array_reverse($mergeTree->getAllNodes()) as $node) {
+    foreach ($mergeTree->getAllReversedNodes() as $node) {
       $stack[] = array(false, $node);
     }
 
@@ -40,7 +50,7 @@ class BoxesSorter {
     while(!empty($stack)) {
       $stackElement = array_pop($stack);
       $inProcessing = $stackElement[0];
-      $node = $stackElement[1];
+      $node = $stackElement[1]; /** @var PortNode $node */
 
       // all children of node were successfully processed... finish it
       if ($inProcessing) {
@@ -56,7 +66,7 @@ class BoxesSorter {
           continue;
         }
 
-        throw new ExerciseConfigException("Cycle in tree detected in node {$node->getBox()->getName()}.");
+        throw new ExerciseConfigException("Cycle in tree detected in node '{$node->getBox()->getName()}'.");
       }
 
       // visit current node
@@ -64,13 +74,20 @@ class BoxesSorter {
       // do not forget to re-stack current node with in-processing flag
       $stack[] = array(true, $node);
 
-      // process all children and stack them
-      foreach ($node->getChildren() as $child) {
-        $stack[] = array(false, $child);
+      // process all parents, if the parent is input node add it to stack instantly, otherwise the parent should be
+      // added later, effectively being processed earlier
+      $nodesToAdd = [];
+      foreach ($node->getParents() as $parent) {
+        if ($parent->getBox() instanceof DataInBox) {
+          $stack[] = array(false, $parent);
+        } else {
+          $nodesToAdd[] = array(false, $parent);
+        }
       }
+      $stack = array_merge($stack, $nodesToAdd);
     }
 
-    return array_reverse($queue);
+    return $queue;
   }
 
   /**

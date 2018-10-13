@@ -39,6 +39,18 @@ class MergeTree {
   }
 
   /**
+   * Merge all nodes from this tree, reverse them and return them.
+   * @return PortNode[]
+   */
+  public function getAllReversedNodes(): array {
+    return array_merge(
+      array_reverse($this->inputNodes),
+      array_reverse($this->otherNodes),
+      array_reverse($this->outputNodes)
+    );
+  }
+
+  /**
    * Get nodes which are not input or output ones.
    * @return PortNode[]
    */
