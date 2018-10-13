@@ -190,7 +190,7 @@ class DirectoriesResolver {
   }
 
   /**
-   * Go through the whole tree (breadth-first) and where needed add copy tasks which copies files between directories.
+   * Go through the whole tree (depth-first) and where needed add copy tasks which copies files between directories.
    * @param RootedTree $tree
    * @throws ExerciseConfigException
    */
@@ -250,7 +250,7 @@ class DirectoriesResolver {
     // nodes which were optimized (this effectively means settings the test-id to null). Directories resolver then
     // goes through the tree and creates the directories needed for execution. If the test-id is set, it is easy and
     // straightforward, if it is not set the directories have to be smartly named and generated.
-    // The algorithm follows... The tree is searched with breadth-first approach. Every node is processed in
+    // The algorithm follows... The tree is searched with depth-first approach. Every node is processed in
     // the following way. If the node belongs to the test, the test identification is recorded and children of this node
     // are processed. If the node was optimised (has null test-id) then it is needed further processing. We need to
     // figure out the name of the directory which will be created for this optimized node and its sub-nodes. The name of

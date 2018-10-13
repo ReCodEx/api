@@ -113,6 +113,40 @@ class BoxesOptimizer {
   }
 
   /**
+   * This function should be called after optimisation to repair dependencies of nodes. Therefore it goes through whole
+   * tree and processes every node.
+   * @param Node $rootNode
+   * @param array $dependencies
+   */
+  private function repairDependencies(Node $rootNode, array $dependencies) {
+    // prepare dependencies into better structures
+    $oldDeps = [];
+    $newDeps = [];
+    foreach ($dependencies as $dependency) {
+      $oldDeps[] = $dependency[0];
+      $newDeps[] = $dependency[1];
+    }
+
+    // go through the given tree
+    $stack = [$rootNode];
+    while (!empty($stack)) {
+      $node = array_pop($stack); /** @var Node $node */
+
+      // process dependencies and potentially replace them
+      foreach ($node->getDependencies() as $dependency) {
+        $searchIt = array_search($dependency, $oldDeps);
+        if ($searchIt !== false) {
+          $node->removeDependency($dependency);
+          $node->addDependency($newDeps[$searchIt]);
+        }
+      }
+
+      // add all children to stack
+      $stack = array_merge($stack, $node->getChildren());
+    }
+  }
+
+  /**
    * In-place optimisation of the given tree.
    * @param Node $rootNode
    */
@@ -132,6 +166,8 @@ class BoxesOptimizer {
     // usually the same thing for all tests is compilation which is the first
     // set of tasks in the tree.
 
+    // array of pairs holding old node replaced by second node
+    $dependencies = [];
     // processing queue simulating breadth-first search
     $queue = [$rootNode];
     while (!empty($queue)) {
@@ -162,11 +198,6 @@ class BoxesOptimizer {
             });
             $child->setTestId(null); // clear the test identification
 
-            // resolve dependencies transfer from compared to child
-            foreach ($compared->getDependencies() as $dependency) {
-              $child->addDependency($dependency);
-            }
-
             foreach ($compared->getChildren() as $comparedChild) {
               $comparedChild->removeParent($compared);
               $comparedChild->addParent($child);
@@ -178,6 +209,14 @@ class BoxesOptimizer {
               $comparedParent->addChild($child);
               $child->addParent($comparedParent);
             }
+
+            // resolve dependencies transfer from compared to child
+            foreach ($compared->getDependencies() as $dependency) {
+              $child->addDependency($dependency);
+            }
+
+            // store which node was replaced which, this is useful for correction of dependencies
+            $dependencies[] = [$compared, $child];
           }
         }
       }
@@ -190,6 +229,9 @@ class BoxesOptimizer {
         }
       }
     }
+
+    // after optimisation we have to repair dependencies which might be removed
+    $this->repairDependencies($rootNode, $dependencies);
   }
 
   /**
