@@ -367,7 +367,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $initiationExtraTask->getDependencies());
     Assert::equal([$initiationMkdir->getId()], $initiationExtraTask->getDependencies());
     Assert::equal("cp", $initiationExtraTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "extra", ConfigParams::$SOURCE_DIR . $initiationDir . "/extra"], $initiationExtraTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "extra.cpp", ConfigParams::$SOURCE_DIR . $initiationDir . "/extra.cpp"], $initiationExtraTask->getCommandArguments());
     Assert::null($initiationExtraTask->getType());
     Assert::equal(null, $initiationExtraTask->getTestId());
     Assert::null($initiationExtraTask->getSandboxConfig());
@@ -378,7 +378,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $initiationSourceTask->getDependencies());
     Assert::equal([$initiationMkdir->getId()], $initiationSourceTask->getDependencies());
     Assert::equal("cp", $initiationSourceTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . $initiationDir . "/source"], $initiationSourceTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . $initiationDir . "/source.cpp"], $initiationSourceTask->getCommandArguments());
     Assert::null($initiationSourceTask->getType());
     Assert::equal(null, $initiationSourceTask->getTestId());
     Assert::null($initiationSourceTask->getSandboxConfig());
@@ -389,7 +389,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(3, $initiationCompilationTask->getDependencies());
     Assert::equal([$initiationSourceTask->getId(), $initiationExtraTask->getId(), $initiationMkdir->getId()], $initiationCompilationTask->getDependencies());
     Assert::equal(GccCompilationBox::$GCC_BINARY, $initiationCompilationTask->getCommandBinary());
-    Assert::equal([ConfigParams::$EVAL_DIR . "source", ConfigParams::$EVAL_DIR . "extra", "-o", ConfigParams::$EVAL_DIR . "a.out"], $initiationCompilationTask->getCommandArguments());
+    Assert::equal([ConfigParams::$EVAL_DIR . "source.cpp", ConfigParams::$EVAL_DIR . "extra.cpp", "-o", ConfigParams::$EVAL_DIR . "a.out"], $initiationCompilationTask->getCommandArguments());
     Assert::equal(TaskType::$INITIATION, $initiationCompilationTask->getType());
     Assert::equal(null, $initiationCompilationTask->getTestId());
     Assert::notEqual(null, $initiationCompilationTask->getSandboxConfig());
@@ -464,7 +464,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testATestTask->getDependencies());
     Assert::equal([$testAMkdir->getId()], $testATestTask->getDependencies());
     Assert::equal("cp", $testATestTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testA/expected.out"], $testATestTask->getCommandArguments());
     Assert::null($testATestTask->getType());
     Assert::equal("testA", $testATestTask->getTestId());
     Assert::null($testATestTask->getSandboxConfig());
@@ -535,7 +535,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::count(1, $testBTestTask->getDependencies());
     Assert::equal([$testBMkdir->getId()], $testBTestTask->getDependencies());
     Assert::equal("cp", $testBTestTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . "source", ConfigParams::$SOURCE_DIR . "testB/expected.out"], $testBTestTask->getCommandArguments());
+    Assert::equal([ConfigParams::$SOURCE_DIR . "source.cpp", ConfigParams::$SOURCE_DIR . "testB/expected.out"], $testBTestTask->getCommandArguments());
     Assert::null($testBTestTask->getType());
     Assert::equal("testB", $testBTestTask->getTestId());
     Assert::null($testBTestTask->getSandboxConfig());
