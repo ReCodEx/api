@@ -17,6 +17,12 @@ use Nette\Utils\Arrays;
 class PortNode {
 
   /**
+   * Node structure created based on this node.
+   * @var Node
+   */
+  private $node;
+
+  /**
    * Box connected to this node.
    * @var Box
    */
@@ -93,6 +99,22 @@ class PortNode {
    */
   public function getBox(): Box {
     return $this->box;
+  }
+
+  /**
+   * Get node corresponding to this PortNode.
+   * @return Node|null
+   */
+  public function getNode(): ?Node {
+    return $this->node;
+  }
+
+  /**
+   * Set node corresponding to this PortNode.
+   * @param Node $node
+   */
+  public function setNode(Node $node) {
+    $this->node = $node;
   }
 
 

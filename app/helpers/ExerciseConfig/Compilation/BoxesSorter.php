@@ -123,7 +123,7 @@ class BoxesSorter {
 
       // find and assign dependencies
       foreach ($sorted[$i]->getParents() as $parent) {
-        $index = array_search($parent, $sorted);
+        $index = array_search($parent, $sorted, true);
         if ($index === false) {
           throw new ExerciseConfigException("Malformed internal compilation structure. PortNode not found.");
         }

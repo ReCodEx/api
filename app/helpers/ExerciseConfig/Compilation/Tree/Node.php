@@ -15,6 +15,12 @@ use App\Helpers\ExerciseConfig\VariablesTable;
 class Node {
 
   /**
+   * PortNode from which was this node created.
+   * @var PortNode
+   */
+  private $portNode;
+
+  /**
    * Box connected to this node.
    * @var Box
    */
@@ -63,10 +69,23 @@ class Node {
    */
   public function __construct(PortNode $node = null) {
     if ($node) {
+      $this->portNode = $node;
+      $node->setNode($this);
+
       $this->box = $node->getBox();
       $this->pipelineId = $node->getPipelineId();
       $this->testId = $node->getTestId();
     }
+  }
+
+
+  /**
+   * Return PortNode from which this node was created.
+   * @note PortNode structure will not be updated during compilation, therefore it might contain old relations.
+   * @return PortNode|null
+   */
+  public function getPortNode(): ?PortNode {
+    return $this->portNode;
   }
 
   /**
@@ -178,7 +197,7 @@ class Node {
    * @param Node $parent
    */
   public function removeParent(Node $parent) {
-    if(($key = array_search($parent, $this->parents)) !== false){
+    if(($key = array_search($parent, $this->parents, true)) !== false){
       unset($this->parents[$key]);
       $this->parents = array_values($this->parents);
     }
@@ -207,7 +226,7 @@ class Node {
    * @param Node $child
    */
   public function removeChild(Node $child) {
-    if(($key = array_search($child, $this->children)) !== false){
+    if(($key = array_search($child, $this->children, true)) !== false){
       unset($this->children[$key]);
       $this->children = array_values($this->children);
     }
@@ -236,7 +255,7 @@ class Node {
    * @param Node $dependency
    */
   public function removeDependency(Node $dependency) {
-    if(($key = array_search($dependency, $this->dependencies)) !== false){
+    if(($key = array_search($dependency, $this->dependencies, true)) !== false){
       unset($this->dependencies[$key]);
       $this->dependencies = array_values($this->dependencies);
     }

@@ -113,36 +113,47 @@ class BoxesOptimizer {
   }
 
   /**
-   * This function should be called after optimisation to repair dependencies of nodes. Therefore it goes through whole
-   * tree and processes every node.
-   * @param Node $rootNode
-   * @param array $dependencies
+   * This function should be called after optimisation of two nodes to repair dependencies and variables.
+   * @param Node $node
+   * @param Node $removedNode
    */
-  private function repairDependencies(Node $rootNode, array $dependencies) {
-    // prepare dependencies into better structures
-    $oldDeps = [];
-    $newDeps = [];
-    foreach ($dependencies as $dependency) {
-      $oldDeps[] = $dependency[0];
-      $newDeps[] = $dependency[1];
+  private function repairDependencies(Node $node, Node $removedNode) {
+    // resolve dependencies transfer from compared to child
+    foreach ($removedNode->getDependencies() as $dependency) {
+      $node->addDependency($dependency);
     }
 
-    // go through the given tree
-    $stack = [$rootNode];
-    while (!empty($stack)) {
-      $node = array_pop($stack); /** @var Node $node */
+    // in this case, the node was probably created in tests, omit it completely
+    if ($removedNode->getPortNode() === null) {
+      return;
+    }
 
-      // process dependencies and potentially replace them
-      foreach ($node->getDependencies() as $dependency) {
-        $searchIt = array_search($dependency, $oldDeps);
+    // repair dependencies of all children
+    foreach ($removedNode->getPortNode()->getChildren() as $child) {
+      $child->getNode()->removeDependency($removedNode);
+      $child->getNode()->addDependency($node);
+    }
+
+    // repair variables
+    // first we need to prepare old and new ones and then replace them in children
+    $oldVars = [];
+    $newVars = [];
+    foreach ($removedNode->getBox()->getOutputPorts() as $outputPort) {
+      $variable = $outputPort->getVariableValue();
+      if ($variable) {
+        $oldVars[] = $variable;
+        $newVars[] = $node->getBox()->getOutputPort($outputPort->getName())->getVariableValue();
+      }
+    }
+
+    // repair variables in all children of removed node
+    foreach ($removedNode->getPortNode()->getChildren() as $child) {
+      foreach ($child->getBox()->getInputPorts() as $inputPort) {
+        $searchIt = array_search($inputPort->getVariableValue(), $oldVars, true);
         if ($searchIt !== false) {
-          $node->removeDependency($dependency);
-          $node->addDependency($newDeps[$searchIt]);
+          $inputPort->setVariableValue($newVars[$searchIt]);
         }
       }
-
-      // add all children to stack
-      $stack = array_merge($stack, $node->getChildren());
     }
   }
 
@@ -166,8 +177,6 @@ class BoxesOptimizer {
     // usually the same thing for all tests is compilation which is the first
     // set of tasks in the tree.
 
-    // array of pairs holding old node replaced by second node
-    $dependencies = [];
     // processing queue simulating breadth-first search
     $queue = [$rootNode];
     while (!empty($queue)) {
@@ -210,13 +219,7 @@ class BoxesOptimizer {
               $child->addParent($comparedParent);
             }
 
-            // resolve dependencies transfer from compared to child
-            foreach ($compared->getDependencies() as $dependency) {
-              $child->addDependency($dependency);
-            }
-
-            // store which node was replaced which, this is useful for correction of dependencies
-            $dependencies[] = [$compared, $child];
+            $this->repairDependencies($child, $compared);
           }
         }
       }
@@ -229,9 +232,6 @@ class BoxesOptimizer {
         }
       }
     }
-
-    // after optimisation we have to repair dependencies which might be removed
-    $this->repairDependencies($rootNode, $dependencies);
   }
 
   /**
