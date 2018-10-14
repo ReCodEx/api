@@ -136,6 +136,12 @@ class CopyFilesBox extends Box
       return [];
     }
 
+    // output variable is empty, that means it was not known during creation of copy box
+    // so set it now from the input variable
+    if ($outputVariable->isEmpty()) {
+      $outputVariable->setValue($inputVariable->getValue());
+    }
+
     if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
       throw new ExerciseConfigException("Different count of files (source vs dest) in copy box");
     }

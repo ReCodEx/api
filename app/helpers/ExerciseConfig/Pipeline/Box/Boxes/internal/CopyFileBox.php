@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
@@ -119,6 +120,7 @@ class CopyFileBox extends Box
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
     /**
@@ -132,6 +134,12 @@ class CopyFileBox extends Box
     if (($inputVariable->getDirectory() === $outputVariable->getDirectory()) ||
       ($inputVariable->isEmpty() && $outputVariable->isEmpty())) {
       return [];
+    }
+
+    // output variable is empty, that means it was not known during creation of copy box
+    // so set it now from the input variable
+    if ($outputVariable->isEmpty()) {
+      $outputVariable->setValue($inputVariable->getValue());
     }
 
     $task = new Task();
