@@ -84,7 +84,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
     $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
-    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ], true)->andReturn($userData);
     $serviceA->shouldReceive("getServiceId")->andReturn("x");
 
     $externalLogins = Mockery::mock(ExternalLogins::class);
@@ -102,10 +102,10 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateFindUser() {
-    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "", "", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
-    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ], true)->andReturn($userData);
     $serviceA->shouldReceive("getServiceId")->andReturn("x");
 
     $instance = Mockery::mock(Instance::class);
@@ -123,10 +123,10 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateTryConnectFailed() {
-    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "", "", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
-    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ], true)->andReturn($userData);
     $serviceA->shouldReceive("getServiceId")->andReturn("x");
 
     $instance = Mockery::mock(Instance::class);
@@ -149,10 +149,10 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
   }
 
   public function testAuthenticateTryConnectCorrect() {
-    $userData = new UserData("123", ["a@b.cd"], "A", "B", "", "");
+    $userData = new UserData("123", ["a@b.cd"], "", "", "", "");
 
     $serviceA = Mockery::mock(IExternalLoginService::class);
-    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ])->andReturn($userData);
+    $serviceA->shouldReceive("getUser")->with([ "a" => "b" ], true)->andReturn($userData);
     $serviceA->shouldReceive("getServiceId")->andReturn("x");
 
     $instance = Mockery::mock(Instance::class);

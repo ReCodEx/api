@@ -102,11 +102,12 @@ class CASLoginService implements IExternalLoginService {
   /**
    * Read user's data from the identity provider, if the ticket provided by the user is valid
    * @param array $credentials
+   * @param bool $onlyAuthenticate If true, only ID is required to be valid in returned user data.
    * @return UserData Information known about this user
    * @throws AppInvalidArgumentException
    * @throws CASMissingInfoException
    */
-  public function getUser($credentials): UserData {
+  public function getUser($credentials, bool $onlyAuthenticate = false): UserData {
     $ticket = Arrays::get($credentials, "ticket", null);
     $clientUrl = Arrays::get($credentials, "clientUrl", null);
 
@@ -115,7 +116,7 @@ class CASLoginService implements IExternalLoginService {
     }
 
     $info = $this->validateTicket($ticket, $clientUrl);
-    return $this->getUserData($ticket, $info);
+    return $this->getUserData($ticket, $info, $onlyAuthenticate);
   }
 
   /**
@@ -195,11 +196,12 @@ class CASLoginService implements IExternalLoginService {
    * Convert the data from the JSON response to the UserData container.
    * @param $ticket
    * @param $data
+   * @param bool $onlyAuthenticate
    * @return UserData
    * @throws CASMissingInfoException
    * @throws WrongCredentialsException
    */
-  private function getUserData($ticket, $data): UserData {
+  private function getUserData($ticket, $data, bool $onlyAuthenticate = false): UserData {
     try {
       $info = Arrays::get($data, ["authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
@@ -217,19 +219,23 @@ class CASLoginService implements IExternalLoginService {
     }
 
     try {
-      $affiliation = LDAPHelper::getArray(Arrays::get($info, $this->affiliationField));
-    } catch (InvalidArgumentException $e) {
-      // affiliation is not mandatory and can be omitted, just log it, as it is not standard behaviour
-      $this->logger->log("The user attributes received from the CAS are missing 'affiliation' for user identification '$ukco'", ILogger::WARNING);
-      $affiliation = [];
-    }
-
-    try {
       // Email is separated, because it is more common error (so the user gets more accurate exception message).
       $emails = LDAPHelper::getArray(Arrays::get($info, $this->emailField));
     } catch (InvalidArgumentException $e) {
       $this->logger->log("The user attributes received from the CAS are incomplete (email missing):\n" . var_export($data, true), ILogger::ERROR);
       throw new CASMissingInfoException("The user attributes received from the CAS do not contain an email address, which is required.");
+    }
+
+    if ($onlyAuthenticate) {
+      return new UserData($ukco, $emails, "", "", "", "");
+    }
+
+    try {
+      $affiliation = LDAPHelper::getArray(Arrays::get($info, $this->affiliationField));
+    } catch (InvalidArgumentException $e) {
+      // affiliation is not mandatory and can be omitted, just log it, as it is not standard behaviour
+      $this->logger->log("The user attributes received from the CAS are missing 'affiliation' for user identification '$ukco'", ILogger::WARNING);
+      $affiliation = [];
     }
 
     // we do not get information about the degrees of the user
