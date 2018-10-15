@@ -24,8 +24,9 @@ interface IExternalLoginService {
   /**
    * Read user's data from the identity provider, if the credentials provided by the user are correct.
    * @param array $credentials
+   * @param bool $onlyAuthenticate If true, only identifiers are relevant (external ID, email). No need fetching real name, role, ...
    * @return UserData Information known about this user
    */
-  function getUser($credentials): ?UserData;
+  function getUser($credentials, bool $onlyAuthenticate = false): ?UserData;
 
 }

@@ -78,9 +78,9 @@ class ExternalServiceAuthenticator {
    * @throws WrongCredentialsException
    * @throws InvalidStateException
    */
-  public function authenticate(IExternalLoginService $service, ...$credentials) {
+  public function authenticate(IExternalLoginService $service, $credentials) {
     $user = null;
-    $userData = $service->getUser(...$credentials);
+    $userData = $service->getUser($credentials, true); // true = only ID
     try {
       $user = $this->findUser($service, $userData);
     } catch (WrongCredentialsException $e) {
@@ -101,13 +101,13 @@ class ExternalServiceAuthenticator {
    * Register and authenticate user against given external authentication service.
    * @param IExternalLoginService $service
    * @param Instance $instance
-   * @param array ...$credentials
+   * @param array $credentials
    * @return User
    * @throws WrongCredentialsException
    * @throws InvalidStateException
    */
-  public function register(IExternalLoginService $service, Instance $instance, ...$credentials): User {
-    $userData = $service->getUser(...$credentials); // throws if the user cannot be logged in
+  public function register(IExternalLoginService $service, Instance $instance, $credentials): User {
+    $userData = $service->getUser($credentials); // throws if the user cannot be logged in
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
 
     if ($user !== null) {

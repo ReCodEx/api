@@ -72,6 +72,7 @@ parameters:
         affiliation: "edupersonscopedaffiliation"
         studentAffiliations:
           - "student@mff.cuni.cz"
+          - "interrupted-student@mff.cuni.cz"
         supervisorAffiliations:
           - "faculty@mff.cuni.cz"
           - "staff@mff.cuni.cz"

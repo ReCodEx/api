@@ -106,12 +106,13 @@ class LDAPLoginService implements IExternalLoginService {
   /**
    * Read user's data from the CAS UK, if the credentials provided by the user are correct.
    * @param array $credentials
+   * @param bool $onlyAuthenticate If true, only ID is required to be valid in returned user data.
    * @return UserData Information known about this user
    * @throws InvalidArgumentException
    * @internal param string $username Email or identification number of the person
    * @internal param string $password User's password
    */
-  public function getUser($credentials): UserData {
+  public function getUser($credentials, bool $onlyAuthenticate = false): UserData {
     $username = Arrays::get($credentials, "username", null);
     $password= Arrays::get($credentials, "password", null);
 
@@ -121,7 +122,8 @@ class LDAPLoginService implements IExternalLoginService {
 
     $ukco = $this->ensureUKCO($username);
     $data = $this->ldap->getUser($ukco, $password); // throws when the credentials are wrong
-    return $this->getUserData($ukco, $data);
+
+    return $this->getUserData($ukco, $data, $onlyAuthenticate);
   }
 
   /**
@@ -130,10 +132,15 @@ class LDAPLoginService implements IExternalLoginService {
    * @param $data
    * @return UserData
    */
-  public function getUserData($ukco, Node $data): UserData {
+  public function getUserData($ukco, Node $data, bool $onlyAuthenticate = false): UserData {
     $email = LDAPHelper::getArray($this->getValue($data->get($this->emailField))); // throws when field is invalid or empty
-    $firstName = LDAPHelper::getScalar($this->getValue($data->get($this->firstNameField))); // throws when field is invalid or empty
-    $lastName = LDAPHelper::getScalar($this->getValue($data->get($this->lastNameField))); // throws when field is invalid or empty
+
+    if ($onlyAuthenticate) {
+      $firstName = $lastName = "";
+    } else {
+      $firstName = LDAPHelper::getScalar($this->getValue($data->get($this->firstNameField))); // throws when field is invalid or empty
+      $lastName = LDAPHelper::getScalar($this->getValue($data->get($this->lastNameField))); // throws when field is invalid or empty
+    }
 
     // we do not get this information about the degrees of the user
     return new UserData($ukco, $email, $firstName, $lastName, "", "");
