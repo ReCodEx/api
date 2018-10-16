@@ -23,7 +23,7 @@ class GccCompilationBox extends CompilationBox
   public static $GCC_TYPE = "gcc";
   public static $GCC_BINARY = "/usr/bin/gcc";
   public static $DEFAULT_NAME = "GCC Compilation";
-  public static $CPP_EXT_FILTER = '/[.](cpp|c|cc)$/i';
+  public static $CPP_EXT_FILTER = '/[.](cpp|c|cc|o|obj|a|so)$/i';
 
   private static $initialized = false;
   private static $defaultInputPorts;

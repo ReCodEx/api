@@ -23,7 +23,7 @@ class GppCompilationBox extends CompilationBox
   public static $GPP_TYPE = "g++";
   public static $GPP_BINARY = "/usr/bin/g++";
   public static $DEFAULT_NAME = "G++ Compilation";
-  public static $CPP_EXT_FILTER = '/[.](cpp|c|cc)$/i';
+  public static $CPP_EXT_FILTER = '/[.](cpp|c|cc|o|obj|a|so)$/i';
 
   private static $initialized = false;
   private static $defaultInputPorts;
