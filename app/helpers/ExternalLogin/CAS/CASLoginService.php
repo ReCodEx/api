@@ -243,7 +243,7 @@ class CASLoginService implements IExternalLoginService {
     if (!$role) {
       $aff = join(', ', $affiliation);
       $this->logger->log("Given 'affiliation' attributes ($aff) for user '$ukco' does not correspond to any role.", ILogger::ERROR);
-      throw new CASMissingInfoException("The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student not to an employee of MFF.");
+      throw new CASMissingInfoException("The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student nor to an employee of MFF.");
     }
 
     return new UserData($ukco, $emails, $firstName, $lastName, "", "", $role);
