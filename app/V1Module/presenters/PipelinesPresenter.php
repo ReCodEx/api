@@ -333,11 +333,23 @@ class PipelinesPresenter extends BasePresenter {
     $files = $this->uploadedFiles->findAllById($this->getRequest()->getPost("files"));
     $supplementaryFiles = [];
     $deletedFiles = [];
+    $currentSupplementaryFiles = [];
+
+    /** @var SupplementaryExerciseFile $file */
+    foreach ($pipeline->getSupplementaryEvaluationFiles() as $file) {
+      $currentSupplementaryFiles[$file->getName()] = $file;
+    }
 
     /** @var UploadedFile $file */
     foreach ($files as $file) {
       if (get_class($file) !== UploadedFile::class) {
         throw new ForbiddenRequestException("File {$file->getId()} was already used somewhere else");
+      }
+
+      if (array_key_exists($file->getName(), $currentSupplementaryFiles)) {
+        /** @var SupplementaryExerciseFile $currentFile */
+        $currentFile = $currentSupplementaryFiles[$file->getName()];
+        $pipeline->getSupplementaryEvaluationFiles()->removeElement($currentFile);
       }
 
       $supplementaryFiles[] = $pipelineFile = $this->supplementaryFileStorage->storePipelineFile($file, $pipeline);
@@ -346,6 +358,8 @@ class PipelinesPresenter extends BasePresenter {
       $deletedFiles[] = $file;
     }
 
+    $pipeline->updatedNow();
+    $this->pipelines->flush();
     $this->uploadedFiles->flush();
 
     /** @var UploadedFile $file */

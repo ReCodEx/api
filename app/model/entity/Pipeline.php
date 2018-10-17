@@ -19,7 +19,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getDescription()
  * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
- * @method ArrayCollection getSupplementaryEvaluationFiles()
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
@@ -77,6 +76,7 @@ class Pipeline implements JsonSerializable
 
   /**
    * @ORM\ManyToMany(targetEntity="SupplementaryExerciseFile", inversedBy="pipelines")
+   * @var Collection
    */
   protected $supplementaryEvaluationFiles;
 
@@ -165,6 +165,10 @@ class Pipeline implements JsonSerializable
     return $this->getExercises()->map(function(Exercise $exercise) {
       return $exercise->getId();
     })->getValues();
+  }
+
+  public function getSupplementaryEvaluationFiles(): Collection {
+    return $this->supplementaryEvaluationFiles;
   }
 
   /**
