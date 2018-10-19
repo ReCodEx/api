@@ -15,6 +15,7 @@ use App\Helpers\ExerciseFileStorage;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\PipelineConfig;
 use App\Model\Entity\UploadedFile;
+use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\UploadedFiles;
 use App\Security\ACL\IExercisePermissions;
@@ -79,6 +80,12 @@ class PipelinesPresenter extends BasePresenter {
    * @inject
    */
   public $uploadedFiles;
+
+  /**
+   * @var SupplementaryExerciseFiles
+   * @inject
+   */
+  public $supplementaryFiles;
 
   /**
    * @var ExerciseFileStorage
@@ -387,6 +394,31 @@ class PipelinesPresenter extends BasePresenter {
   public function actionGetSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
     $this->sendSuccessResponse($pipeline->getSupplementaryEvaluationFiles()->getValues());
+  }
+
+  public function checkDeleteSupplementaryFile(string $id, string $fileId) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+    if (!$this->pipelineAcl->canUpdate($pipeline)) {
+      throw new ForbiddenRequestException("You cannot delete supplementary files for this pipeline.");
+    }
+  }
+
+  /**
+   * Delete supplementary pipeline file with given id
+   * @DELETE
+   * @param string $id identification of pipeline
+   * @param string $fileId identification of file
+   * @throws ForbiddenRequestException
+   */
+  public function actionDeleteSupplementaryFile(string $id, string $fileId) {
+    $pipeline = $this->pipelines->findOrThrow($id);
+    $file = $this->supplementaryFiles->findOrThrow($fileId);
+
+    $pipeline->updatedNow();
+    $pipeline->getSupplementaryEvaluationFiles()->removeElement($file);
+    $this->pipelines->flush();
+
+    $this->sendSuccessResponse("OK");
   }
 
 }
