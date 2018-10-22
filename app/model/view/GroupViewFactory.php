@@ -17,6 +17,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\ShadowAssignmentPointsRepository;
 use App\Security\ACL\IAssignmentPermissions;
+use App\Security\ACL\IShadowAssignmentPermissions;
 use App\Security\ACL\IGroupPermissions;
 use Doctrine\Common\Collections\Collection;
 
@@ -36,18 +37,25 @@ class GroupViewFactory {
   /** @var IAssignmentPermissions */
   private $assignmentAcl;
 
+  /** @var IShadowAssignmentPermissions */
+  private $shadowAssignmentAcl;
+
   /** @var GroupBindingAccessor */
   private $bindings;
 
   /** @var ShadowAssignmentPointsRepository */
   private $shadowAssignmentPointsRepository;
 
-  public function __construct(AssignmentSolutions $assignmentSolutions, IGroupPermissions $groupAcl,
-                              IAssignmentPermissions $assignmentAcl, GroupBindingAccessor $bindings,
+  public function __construct(AssignmentSolutions $assignmentSolutions,
+                              IGroupPermissions $groupAcl,
+                              IAssignmentPermissions $assignmentAcl,
+                              IShadowAssignmentPermissions $shadowAssignmentAcl,
+                              GroupBindingAccessor $bindings,
                               ShadowAssignmentPointsRepository $shadowAssignmentPointsRepository) {
     $this->assignmentSolutions = $assignmentSolutions;
     $this->groupAcl = $groupAcl;
     $this->assignmentAcl = $assignmentAcl;
+    $this->shadowAssignmentAcl = $shadowAssignmentAcl;
     $this->bindings = $bindings;
     $this->shadowAssignmentPointsRepository = $shadowAssignmentPointsRepository;
   }
@@ -167,6 +175,11 @@ class GroupViewFactory {
         "assignments" => $group->getAssignments()->filter(function (Assignment $assignment) {
             return $this->assignmentAcl->canViewDetail($assignment);
           })->map(function (Assignment $assignment) {
+            return $assignment->getId();
+          })->getValues(),
+        "shadowAssignments" => $group->getShadowAssignments()->filter(function (ShadowAssignment $assignment) {
+            return $this->shadowAssignmentAcl->canViewDetail($assignment);
+          })->map(function (ShadowAssignment $assignment) {
             return $assignment->getId();
           })->getValues(),
         "publicStats" => $group->getPublicStats(),
