@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\Notifications\SolutionCommentsEmailsSender;
 use App\V1Module\Presenters\CommentsPresenter;
 use Tester\Assert;
 
@@ -36,12 +37,13 @@ class TestCommentsPresenter extends Tester\TestCase
   protected function setUp()
   {
     PresenterTestHelper::fillDatabase($this->container);
-
     $this->presenter = PresenterTestHelper::createPresenter($this->container, CommentsPresenter::class);
   }
 
   protected function tearDown()
   {
+    Mockery::close();
+
     if ($this->user->isLoggedIn()) {
       $this->user->logout(true);
     }
@@ -49,7 +51,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
   public function testGetCommentsInNormalThread()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'mainThread']);
     $response = $this->presenter->run($request);
@@ -68,7 +70,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
   public function testGetCommentsInEmptyThread()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request('V1:Comments', 'GET', ['action' => 'default', 'id' => 'emptyThread']);
     $response = $this->presenter->run($request);
@@ -82,7 +84,7 @@ class TestCommentsPresenter extends Tester\TestCase
 
   public function testAddCommentIntoExistingThread()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request(
       'V1:Comments',
@@ -104,9 +106,69 @@ class TestCommentsPresenter extends Tester\TestCase
     Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
   }
 
+  public function testAddCommentIntoExistingAssignmentSolutionThread()
+  {
+    PresenterTestHelper::login($this->container, $this->userLogin);
+    $assignmentSolution = current($this->presenter->assignmentSolutions->findAll());
+
+    // mock emails sender
+    $mockSolutionCommentsEmailsSender = Mockery::mock(SolutionCommentsEmailsSender::class);
+    $mockSolutionCommentsEmailsSender->shouldReceive("assignmentSolutionComment")->once();
+    $this->presenter->solutionCommentsEmailsSender = $mockSolutionCommentsEmailsSender;
+
+    $request = new Nette\Application\Request(
+      'V1:Comments',
+      'POST',
+      ['action' => 'addComment', 'id' => $assignmentSolution->getId()],
+      ['text' => 'some comment text', 'isPrivate' => 'false']
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $comment = $result['payload'];
+    Assert::false($comment->isPrivate);
+    Assert::equal("some comment text", $comment->text);
+    Assert::equal($assignmentSolution->getId(), $comment->commentThread->id);
+
+    // Make sure the assignment was persisted
+    Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+  }
+
+  public function testAddCommentIntoExistingReferenceSolutionThread()
+  {
+    PresenterTestHelper::login($this->container, $this->userLogin);
+    $referenceSolution = current($this->presenter->referenceExerciseSolutions->findAll());
+
+    // mock emails sender
+    $mockSolutionCommentsEmailsSender = Mockery::mock(SolutionCommentsEmailsSender::class);
+    $mockSolutionCommentsEmailsSender->shouldReceive("referenceSolutionComment")->once();
+    $this->presenter->solutionCommentsEmailsSender = $mockSolutionCommentsEmailsSender;
+
+    $request = new Nette\Application\Request(
+      'V1:Comments',
+      'POST',
+      ['action' => 'addComment', 'id' => $referenceSolution->getId()],
+      ['text' => 'some comment text', 'isPrivate' => 'false']
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    $comment = $result['payload'];
+    Assert::false($comment->isPrivate);
+    Assert::equal("some comment text", $comment->text);
+    Assert::equal($referenceSolution->getId(), $comment->commentThread->id);
+
+    // Make sure the assignment was persisted
+    Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+  }
+
   public function testAddCommentIntoNonexistingThread()
   {
-    $token = PresenterTestHelper::login($this->container, $this->userLogin, $this->userPassword);
+    $token = PresenterTestHelper::login($this->container, $this->userLogin);
 
     $request = new Nette\Application\Request(
       'V1:Comments',
