@@ -101,7 +101,7 @@ parameters:
     emails:  # additional info for sending mails
       to: "Administrator <admin@example.com>"  # admin mail address
       from: %emails.from%  # source address
-      subjectPrefix: "Failure Report -"  # prefix of mail subject
+      subjectPrefix: "Failure Report - "  # prefix of mail subject
 
   assignmentNotifications:
     emails:
@@ -119,6 +119,12 @@ parameters:
     emails:
       from: %emails.from%
       failureResolvedPrefix: "Submission Failure Resolved - "
+
+  solutionCommentsNotifications:
+    emails:
+      from: %emails.from%
+      assignmentSolutionCommentPrefix: "Assignment Solution Comment - "
+      referenceSolutionCommentPrefix: "Reference Solution Comment - "
 
   forgottenPassword:  # user messages for changing passwords
     redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"  # URL of web application where the password can be changed
@@ -306,6 +312,7 @@ services:
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
+  - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, %solutionCommentsNotifications%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer

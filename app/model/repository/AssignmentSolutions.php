@@ -11,6 +11,7 @@ use App\Model\Entity\Assignment;
 
 /**
  * @method AssignmentSolution findOrThrow($id)
+ * @method AssignmentSolution get($id)
  */
 class AssignmentSolutions extends BaseRepository {
 
