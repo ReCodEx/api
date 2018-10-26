@@ -10,6 +10,7 @@ use JsonSerializable;
  * @ORM\Entity
  * @method User getUser()
  * @method CommentThread getCommentThread()
+ * @method \DateTime getPostedAt()
  */
 class Comment implements JsonSerializable
 {
@@ -23,11 +24,13 @@ class Comment implements JsonSerializable
   protected $id;
 
   /**
+   * @var CommentThread
    * @ORM\ManyToOne(targetEntity="CommentThread", inversedBy="comments")
    */
   protected $commentThread;
 
   /**
+   * @var User
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $user;
@@ -42,6 +45,10 @@ class Comment implements JsonSerializable
    */
   public function togglePrivate() {
     $this->isPrivate = !$this->isPrivate;
+  }
+
+  public function isPrivate(): bool {
+    return $this->isPrivate;
   }
 
   public function getThread() {

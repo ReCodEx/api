@@ -4,9 +4,12 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
+use App\Helpers\Notifications\SolutionCommentsEmailsSender;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Comments;
+use App\Model\Repository\ReferenceExerciseSolutions;
 use App\Security\ACL\ICommentPermissions;
 
 /**
@@ -28,6 +31,24 @@ class CommentsPresenter extends BasePresenter {
   public $commentAcl;
 
   /**
+   * @var AssignmentSolutions
+   * @inject
+   */
+  public $assignmentSolutions;
+
+  /**
+   * @var ReferenceExerciseSolutions
+   * @inject
+   */
+  public $referenceExerciseSolutions;
+
+  /**
+   * @var SolutionCommentsEmailsSender
+   * @inject
+   */
+  public $solutionCommentsEmailsSender;
+
+  /**
    * @param string $id
    * @return CommentThread
    */
@@ -35,7 +56,7 @@ class CommentsPresenter extends BasePresenter {
     $thread = $this->comments->getThread($id);
     if (!$thread) {
       $thread = CommentThread::createThread($id);
-      $this->comments->persistThread($thread);
+      $this->comments->persist($thread, false);
     }
 
     return $thread;
@@ -97,9 +118,18 @@ class CommentsPresenter extends BasePresenter {
     $isPrivate = filter_var($this->getRequest()->getPost("isPrivate"), FILTER_VALIDATE_BOOLEAN);
     $comment = Comment::createComment($thread, $user, $text, $isPrivate);
 
-    $this->comments->persistComment($comment);
-    $this->comments->persistThread($thread);
+    $this->comments->persist($comment, false);
+    $this->comments->persist($thread, false);
     $this->comments->flush();
+
+    // send email to all participants in comment thread
+    if ($solution = $this->assignmentSolutions->get($id)) {
+      $this->solutionCommentsEmailsSender->assignmentSolutionComment($solution, $comment);
+    } else if ($solution = $this->referenceExerciseSolutions->get($id)) {
+      $this->solutionCommentsEmailsSender->referenceSolutionComment($solution, $comment);
+    } else {
+      // Nothing to do here...
+    }
 
     $this->sendSuccessResponse($comment);
   }
@@ -122,7 +152,6 @@ class CommentsPresenter extends BasePresenter {
    * @POST
    * @param string $threadId Identifier of the comment thread
    * @param string $commentId Identifier of the comment
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    */
   public function actionTogglePrivate(string $threadId, string $commentId) {
@@ -130,7 +159,7 @@ class CommentsPresenter extends BasePresenter {
     $comment = $this->comments->findOrThrow($commentId);
 
     $comment->togglePrivate();
-    $this->comments->persistComment($comment);
+    $this->comments->persist($comment);
     $this->comments->flush();
 
     $this->sendSuccessResponse($comment);

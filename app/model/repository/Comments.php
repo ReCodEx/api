@@ -25,21 +25,16 @@ class Comments extends BaseRepository {
     return $this->threads->find($id);
   }
 
-  public function persistComment(Comment $comment) {
-    $this->persist($comment);
-  }
-
-  public function persistThread(CommentThread $thread) {
-    $this->persist($thread);
-  }
-
   /**
    * Get the number of visible comments for given user.
    * The method requires the user entity, since it does not use ACL mechanism and compares
    * the authorship of comments directly as a performance optimization (we need only the count, not all entities).
-   * @param $threadId Id of the comments thread.
-   * @param $userId Id of the viewer or null (if nobody is logged in).
+   * @param CommentThread $thread
+   * @param User $user
    * @param bool $allVisible True = all coments visible for the user, false = comments made by the user.
+   * @return int
+   * @throws \Doctrine\ORM\NoResultException
+   * @throws \Doctrine\ORM\NonUniqueResultException
    */
   private function getCommentsCount(CommentThread $thread, User $user, bool $allVisible)
   {

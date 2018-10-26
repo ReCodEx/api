@@ -31,6 +31,15 @@ class CommentThread implements JsonSerializable
     $this->comments->add($comment);
   }
 
+  /**
+   * @return Comment[]
+   */
+  public function findAllPublic(): array {
+    $publicComments = Criteria::create()
+      ->where(Criteria::expr()->eq("isPrivate", false));
+    return $this->comments->matching($publicComments)->getValues();
+  }
+
   public function filterPublic(User $currentUser) {
     $publicComments = Criteria::create()
       ->where(Criteria::expr()->eq("isPrivate", false))
