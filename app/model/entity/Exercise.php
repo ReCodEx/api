@@ -217,8 +217,8 @@ class Exercise implements IExercise
       Collection $hardwareGroups, Collection $supplementaryEvaluationFiles,
       Collection $attachmentFiles, Collection $exerciseLimits,
       Collection $exerciseEnvironmentConfigs, Collection $pipelines,
-      Collection $exerciseTests, Collection $groups = null, ?Exercise $exercise,
-      ?ExerciseConfig $exerciseConfig = null, User $user, bool $isPublic = false,
+      Collection $exerciseTests, Collection $groups, ?Exercise $exercise,
+      ?ExerciseConfig $exerciseConfig, User $user, bool $isPublic = false,
       bool $isLocked = true, string $scoreCalculator = null,
       string $scoreConfig = "", string $configurationType = "simpleExerciseConfig") {
     $this->version = $version;
@@ -288,7 +288,8 @@ class Exercise implements IExercise
       $exercise->isPublic,
       true,
       $exercise->scoreCalculator,
-      $exercise->scoreConfig
+      $exercise->scoreConfig,
+      $exercise->configurationType
     );
   }
 
