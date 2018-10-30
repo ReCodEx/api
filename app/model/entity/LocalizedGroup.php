@@ -66,7 +66,6 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable {
       "name" => $this->name,
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
-      "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];
   }
 }

@@ -69,7 +69,6 @@ class LocalizedShadowAssignment extends LocalizedEntity implements JsonSerializa
       "text" => $this->assignmentText,
       "link" => $this->externalAssignmentLink ?? "",
       "createdAt" => $this->createdAt->getTimestamp(),
-      "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];
   }
 }
