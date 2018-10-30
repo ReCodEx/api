@@ -80,7 +80,6 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
       "link" => $this->externalAssignmentLink ?? "",
       "description" => $this->description,
       "createdAt" => $this->createdAt->getTimestamp(),
-      "createdFrom" => $this->createdFrom ? $this->createdFrom->getId() : ""
     ];
   }
 }
