@@ -105,6 +105,28 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getAssignment($assignment));
   }
 
+  public function checkValidate(string $id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    if (!$this->shadowAssignmentAcl->canUpdate($assignment)) {
+      throw new ForbiddenRequestException("You cannot access this shadow assignment.");
+    }
+  }
+
+  /**
+   * Check if the version of the shadow assignment is up-to-date.
+   * @POST
+   * @Param(type="post", name="version", validation="numericint", description="Version of the shadow assignment.")
+   * @param string $id Identifier of the shadow assignment
+   * @throws ForbiddenRequestException
+   */
+  public function actionValidate($id) {
+    $assignment = $this->shadowAssignments->findOrThrow($id);
+    $version = intval($this->getHttpRequest()->getPost("version"));
+    $this->sendSuccessResponse([
+      "versionIsUpToDate" => $assignment->getVersion() === $version
+    ]);
+  }
+
   public function checkUpdateDetail(string $id) {
     $assignment = $this->shadowAssignments->findOrThrow($id);
     if (!$this->shadowAssignmentAcl->canUpdate($assignment)) {
