@@ -250,17 +250,20 @@ class DirectoriesResolver {
     // nodes which were optimized (this effectively means settings the test-id to null). Directories resolver then
     // goes through the tree and creates the directories needed for execution. If the test-id is set, it is easy and
     // straightforward, if it is not set the directories have to be smartly named and generated.
-    // The algorithm follows... The tree is searched with depth-first approach. Every node is processed in
-    // the following way. If the node belongs to the test, the test identification is recorded and children of this node
-    // are processed. If the node was optimised (has null test-id) then it is needed further processing. We need to
-    // figure out the name of the directory which will be created for this optimized node and its sub-nodes. The name of
-    // the directory is composed of categories of boxes in the most left sub-branch which does not have test-id set.
-    // Once the name is known, it is used as a directory for the processed node and all the sub-nodes in the most left
-    // branch of the tree. After that, children of the node are processed.
-    // The last step of the resolution is making sure that files are within the right directories. This is done through
-    // once again searching the tree and finding of if files needs to be copied from one directory to another. Therefore
-    // if the node from which the file came from was in different directory we need to copy the file into the directory
-    // of current node.
+    // The algorithm follows...
+    //   - The tree is searched with depth-first approach. Every node is processed in the following way.
+    //   - If the node belongs to the test, the test identification is recorded and children of this node are processed.
+    //   - If the node was optimised (has null test-id) then it is needed further processing.
+    //   - We need to figure out the name of the directory which will be created for this optimized node and its
+    //     sub-nodes. The name of the directory is composed of categories of boxes in the most left sub-branch which
+    //     does not have test-id set.
+    //   - Once the name is known, it is used as a directory for the processed node and all the sub-nodes in the most
+    //     left branch of the tree.
+    //   - After that, children of the node are processed.
+    //   - The last step of the resolution is making sure that files are within the right directories. This is done
+    //     through once again searching the tree and finding of if files needs to be copied from one directory to
+    //     another. Therefore if the node from which the file came from was in different directory we need to copy
+    //     the file into the directory of current node.
 
     // stack is holding pair of a node and a name of a directory
     // the directory which is applied only if the node is without test-id (hence optimised)
