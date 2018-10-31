@@ -2,15 +2,16 @@
 
 namespace App\Model\Entity;
 
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 
 /**
  * @ORM\Entity
  * @method User getUser()
  * @method CommentThread getCommentThread()
- * @method \DateTime getPostedAt()
+ * @method DateTime getPostedAt()
+ * @method string getText()
  */
 class Comment implements JsonSerializable
 {
@@ -84,7 +85,7 @@ class Comment implements JsonSerializable
     $comment = new Comment();
     $comment->commentThread = $thread;
     $comment->user = $user;
-    $comment->postedAt = new \DateTime();
+    $comment->postedAt = new DateTime();
     $comment->text = $text;
     $comment->isPrivate = $isPrivate;
     $thread->addComment($comment);
