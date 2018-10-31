@@ -106,7 +106,8 @@ class SolutionCommentsEmailsSender {
       "assignment" => $solution->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
-      "date" => $comment->getPostedAt()
+      "date" => $comment->getPostedAt(),
+      "comment" => $comment->getText()
     ]);
   }
 
@@ -133,7 +134,8 @@ class SolutionCommentsEmailsSender {
       "exercise" => $solution->getExercise()->getLocalizedTexts()->first()->getName(), // TODO
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
-      "date" => $comment->getPostedAt()
+      "date" => $comment->getPostedAt(),
+      "comment" => $comment->getText()
     ]);
   }
 }
