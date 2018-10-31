@@ -203,7 +203,7 @@ class BoxesOptimizer {
           if (self::canNodesBeOptimized($child, $compared)) {
             // delete the children from the base children array
             $children = array_filter($children, function ($n) use ($compared) {
-              return $n === $compared;
+              return $n !== $compared;
             });
             $child->setTestId(null); // clear the test identification
 
@@ -252,8 +252,8 @@ class BoxesOptimizer {
     }
 
     // The hell of optimisation awaits...
-    // Forth, and fear no darkness! Arise! Arise, Riders of ReCodEx! Spears
-    // shall be shaken, shields shall be splintered! A sword day... a red day...
+    // Forth, and fear no darkness! Arise! Arise, Coders of ReCodEx! Mice
+    // shall be shaken, keys shall be splintered! A code day... a red day...
     // ere the sun rises!
     // Optimize! Optimize! OPTIMIZE!
 
