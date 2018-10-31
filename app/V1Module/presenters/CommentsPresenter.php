@@ -123,10 +123,12 @@ class CommentsPresenter extends BasePresenter {
     $this->comments->flush();
 
     // send email to all participants in comment thread
-    if ($solution = $this->assignmentSolutions->get($id)) {
-      $this->solutionCommentsEmailsSender->assignmentSolutionComment($solution, $comment);
-    } else if ($solution = $this->referenceExerciseSolutions->get($id)) {
-      $this->solutionCommentsEmailsSender->referenceSolutionComment($solution, $comment);
+    $assignmentSolution = $this->assignmentSolutions->get($id);
+    $referenceSolution = $this->referenceExerciseSolutions->get($id);
+    if ($assignmentSolution) {
+      $this->solutionCommentsEmailsSender->assignmentSolutionComment($assignmentSolution, $comment);
+    } else if ($referenceSolution) {
+      $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
     } else {
       // Nothing to do here...
     }

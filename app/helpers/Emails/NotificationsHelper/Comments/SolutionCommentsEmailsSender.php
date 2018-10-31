@@ -49,22 +49,19 @@ class SolutionCommentsEmailsSender {
 
     $baseSolution = $solution->getSolution();
     $subject = $this->assignmentSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
-    $recipients = [$baseSolution->getAuthor()->getEmail()];
+
+    $recipients = [];
+    $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
     foreach ($comment->getThread()->findAllPublic() as $pComment) {
       $user = $pComment->getUser();
       if (!$user->getSettings()->getSolutionCommentsEmails()) {
         continue;
       }
-      $recipients[] = $user->getEmail();
+      $recipients[$user->getEmail()] = $user;
     }
 
-    // make user emails unique, so the emails won't be multiplied
-    $recipients = array_unique($recipients);
-
     // filter out the author of the comment, it is pointless to send email to that user
-    $recipients = array_filter($recipients, function (string $email) use ($comment) {
-      return $email !== $comment->getUser()->getEmail();
-    });
+    unset($recipients[$comment->getUser()->getEmail()]);
 
     if (count($recipients) === 0) {
       return true;
@@ -82,7 +79,7 @@ class SolutionCommentsEmailsSender {
       [],
       $subject,
       $body,
-      $recipients
+      array_keys($recipients)
     );
   }
 
