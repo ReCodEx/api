@@ -286,8 +286,10 @@ class DirectoriesResolver {
       // (because its the favourite child!), therefore it inherits the privilege to use the name of the directory,
       // other children are not so lucky
       if (count($current->getChildren()) > 0) {
-        $stack[] = [current($current->getChildren()), $currentName];
-        foreach (array_slice($current->getChildren(), 1) as $child) {
+        $children = $current->getChildren();
+        $first = array_shift($children);
+        $stack[] = [$first, $currentName];
+        foreach ($children as $child) {
           $stack[] = [$child, null];
         }
       }
