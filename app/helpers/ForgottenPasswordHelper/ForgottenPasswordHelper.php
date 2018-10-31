@@ -31,7 +31,7 @@ class ForgottenPasswordHelper {
   private $emailHelper;
 
   /**
-   * Sender address of all mails, something like "noreply@recodex.cz"
+   * Sender address of all mails, something like "noreply@recodex.mff.cuni.cz"
    * @var string
    */
   private $sender;
@@ -70,9 +70,9 @@ class ForgottenPasswordHelper {
     $this->em = $em;
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
-    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Password Recovery Request - ");
-    $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.cz");
+    $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
     $this->tokenExpiration = Arrays::get($params, ["tokenExpiration"], 10 * 60); // default value: 10 minutes
   }
 

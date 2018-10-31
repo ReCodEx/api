@@ -30,7 +30,7 @@ class SolutionCommentsEmailsSender {
    */
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->assignmentSolutionCommentPrefix = Arrays::get($params, ["emails", "assignmentSolutionCommentPrefix"], "Assignment Solution Comment - ");
     $this->referenceSolutionCommentPrefix = Arrays::get($params, ["emails", "referenceSolutionCommentPrefix"], "Reference Solution Comment - ");
   }
