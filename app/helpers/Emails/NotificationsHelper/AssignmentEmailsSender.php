@@ -38,7 +38,7 @@ class AssignmentEmailsSender {
   public function __construct(EmailHelper $emailHelper, AssignmentSolutions $assignmentSolutions, array $params) {
     $this->emailHelper = $emailHelper;
     $this->assignmentSolutions = $assignmentSolutions;
-    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.cz");
+    $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "New Assignment -");
     $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Behind the Corner - ");
   }

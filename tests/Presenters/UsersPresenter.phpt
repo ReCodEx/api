@@ -246,7 +246,7 @@ class TestUsersPresenter extends Tester\TestCase
     $lastName = "lastNameUpdated";
     $degreesBeforeName = "degreesBeforeNameUpdated";
     $degreesAfterName = "degreesAfterNameUpdated";
-    $email = "new-email@recodex.cz";
+    $email = "new-email@recodex.mff.cuni.cz";
 
     $emailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
     $emailVerificationHelper->shouldReceive("process")->with($user)->andReturn()->once();

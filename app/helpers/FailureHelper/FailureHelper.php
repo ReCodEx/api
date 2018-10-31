@@ -24,7 +24,7 @@ class FailureHelper {
   /** @var array List of email addresses which will receive the reports */
   private $receivers;
 
-  /** @var string Sender address of all mails, something like "noreply@recodex.cz" */
+  /** @var string Sender address of all mails, something like "noreply@recodex.mff.cuni.cz" */
   private $sender;
 
   /** @var string Prefix of mail subject to be used */

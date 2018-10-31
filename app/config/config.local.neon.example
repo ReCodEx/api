@@ -38,7 +38,7 @@ parameters:
   emails:
     apiUrl: https://recodex.mff.cuni.cz:4000
     footerUrl: https://recodex.mff.cuni.cz
-    from: "ReCodEx <noreply@example.com>"
+    from: "ReCodEx <noreply@recodex.mff.cuni.cz>"
     #debugMode: true  # in debug mode, no messages are sent via SMPT
     #archivingDir: "%appDir%/../log/email-debug"  # a directory where copies of all emails sent are stored (in text files)
 
