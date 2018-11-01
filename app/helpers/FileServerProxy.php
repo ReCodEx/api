@@ -97,13 +97,16 @@ class FileServerProxy {
    * @throws  SubmissionEvaluationFailedException when results are not available
    */
   public function downloadResults(string $url) {
-    $zip = $this->getRequest($url);
+    $result = $this->downloadFile($url);
 
-    if ($zip === null) {
+    if (!$result) {
       return null; // Results are probably not ready yet
     }
 
-    return $this->getResultYmlContent($zip);
+    $content = $this->getResultYmlContent($result);
+    unlink($result);
+
+    return $content;
   }
 
   /**
@@ -127,16 +130,13 @@ class FileServerProxy {
 
   /**
    * Extracts the contents of the downloaded ZIP file and return unparsed YAML results
-   * @param   string $zipFileContent    Content of the zip file
+   * @param   string $zipPath Location of the downloaded ZIP file
    * @return  string Content of the results file
    * @throws  SubmissionEvaluationFailedException when archive is corrupted or malformed
    */
-  private function getResultYmlContent(string $zipFileContent): string {
-    // the contents must be saved to a tmp file first
-    $tmpFile = tempnam(sys_get_temp_dir(), "ReC");
-    file_put_contents($tmpFile, $zipFileContent);
+  private function getResultYmlContent(string $zipPath): string {
     $zip = new ZipArchive();
-    if ($zip->open($tmpFile) !== true) {
+    if ($zip->open($zipPath) !== true) {
       throw new SubmissionEvaluationFailedException("Cannot open results from remote file server.");
     }
 
@@ -147,7 +147,6 @@ class FileServerProxy {
 
     // a bit of a cleanup
     $zip->close();
-    unlink($tmpFile);
 
     return $yml;
   }
