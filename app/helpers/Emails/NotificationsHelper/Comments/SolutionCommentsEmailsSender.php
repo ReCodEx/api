@@ -6,6 +6,7 @@ use App\Helpers\EmailHelper;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
 use App\Model\Entity\ReferenceExerciseSolution;
+use App\Model\Entity\User;
 use Latte;
 use Nette\Utils\Arrays;
 
@@ -54,14 +55,16 @@ class SolutionCommentsEmailsSender {
     $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
     foreach ($comment->getThread()->findAllPublic() as $pComment) {
       $user = $pComment->getUser();
-      if (!$user->getSettings()->getSolutionCommentsEmails()) {
-        continue;
-      }
       $recipients[$user->getEmail()] = $user;
     }
 
     // filter out the author of the comment, it is pointless to send email to that user
     unset($recipients[$comment->getUser()->getEmail()]);
+
+    // filter out users which do not have allowed sending these kind of emails
+    $recipients = array_filter($recipients, function (User $user) {
+      return $user->getSettings()->getSolutionCommentsEmails();
+    });
 
     if (count($recipients) === 0) {
       return true;
