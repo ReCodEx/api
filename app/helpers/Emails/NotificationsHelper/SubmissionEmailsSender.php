@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Notifications;
 
+use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use Latte;
@@ -39,6 +40,7 @@ class SubmissionEmailsSender {
    * Submission was evaluated and we have to let the user know it.
    * @param AssignmentSolutionSubmission $submission
    * @return bool
+   * @throws InvalidStateException
    */
   public function submissionEvaluated(AssignmentSolutionSubmission $submission): bool {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
@@ -62,13 +64,15 @@ class SubmissionEmailsSender {
    * Prepare and format body of the mail
    * @param AssignmentSolutionSubmission $submission
    * @return string Formatted mail body to be sent
+   * @throws InvalidStateException
    */
   private function createSubmissionEvaluatedBody(AssignmentSolutionSubmission $submission): string {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/submissionEvaluated_{locale}.latte");
+    return $latte->renderToString($template, [
       "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
       "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),

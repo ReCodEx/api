@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;
@@ -17,6 +18,9 @@ class EmailHelper {
 
   /** @var IMailer Nette mailer component */
   private $mailer;
+
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /** @var string Url of api instance */
   private $apiUrl;
@@ -45,10 +49,12 @@ class EmailHelper {
   /**
    * Constructor
    * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
-   * @param array   $params Array of params used to fill information into predefined mail template
+   * @param EmailLocalizationHelper $localizationHelper
+   * @param array $params Array of params used to fill information into predefined mail template
    */
-  public function __construct(IMailer $mailer, array $params) {
+  public function __construct(IMailer $mailer, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->mailer = $mailer;
+    $this->localizationHelper = $localizationHelper;
     $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz:4000");
     $this->footerUrl = Arrays::get($params, "footerUrl", "https://recodex.mff.cuni.cz");
     $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
@@ -66,6 +72,7 @@ class EmailHelper {
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
+   * @throws InvalidStateException
    */
   public function sendFromDefault(array $to, string $subject, string $text, array $bcc = []) {
     return $this->send(null, $to, $subject, $text, $bcc);
@@ -111,6 +118,7 @@ class EmailHelper {
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
+   * @throws InvalidStateException
    */
   public function send(?string $from, array $to, string $subject, string $text, array $bcc = []) {
     $subject = $this->subjectPrefix . $subject;
@@ -128,7 +136,8 @@ class EmailHelper {
       "siteName"  => $this->siteName,
       "githubUrl" => $this->githubUrl
     ];
-    $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/email_{locale}.latte");
+    $html = $latte->renderToString($template, $params);
 
     // Prepare the message ...
     $message = new Message();

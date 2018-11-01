@@ -1,15 +1,11 @@
 <?php
 namespace App\Helpers\Notifications;
 
+use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
 use App\Helpers\EmailLocalizationHelper;
-use App\Helpers\Evaluation\IExercise;
-use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\LocalizedExercise;
-use App\Model\Entity\ReferenceSolutionSubmission;
-use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionFailure;
-use App\Model\Entity\User;
 use Nette\SmartObject;
 use Nette\Utils\Arrays;
 use Latte;
@@ -45,6 +41,7 @@ class FailureResolutionEmailsSender {
    * Send a notification about a failure being resolved
    * @param SubmissionFailure $failure
    * @return bool
+   * @throws InvalidStateException
    */
   public function failureResolved(SubmissionFailure $failure): bool {
     $submission = $failure->getSubmission();
@@ -62,9 +59,16 @@ class FailureResolutionEmailsSender {
     );
   }
 
+  /**
+   * @param SubmissionFailure $failure
+   * @param string $title
+   * @return string
+   * @throws InvalidStateException
+   */
   private function createFailureResolvedBody(SubmissionFailure $failure, string $title): string {
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/failureResolved.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/failureResolved_{locale}.latte");
+    return $latte->renderToString($template, [
       "title" => $title,
       "date" => $failure->getCreatedAt(),
       "note" => $failure->getResolutionNote()

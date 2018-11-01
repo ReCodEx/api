@@ -293,7 +293,6 @@ services:
 
   # helpers
   - App\Helpers\EvaluationLoadingHelper
-  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
@@ -336,6 +335,7 @@ services:
   - App\Helpers\EmailLocalizationHelper
 
   # emails
+  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, @App\Helpers\EmailLocalizationHelper, %emails%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, @App\Helpers\EmailLocalizationHelper, %emailVerification%)
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, @App\Helpers\EmailLocalizationHelper, %forgottenPassword%)
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\EmailLocalizationHelper, %assignmentNotifications%)

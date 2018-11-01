@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
 use App\Model\Entity\LocalizedEntity;
 use App\Security\Identity;
 use Doctrine\Common\Collections\Collection;
@@ -14,6 +15,7 @@ use Nette;
 class EmailLocalizationHelper {
 
   const DEFAULT_LOCALE = "en";
+  const LOCALE_PLACEHOLDER_PATTERN = "[{locale}]";
 
   /**
    * @var Nette\Security\User
@@ -30,15 +32,23 @@ class EmailLocalizationHelper {
 
 
   /**
+   * Get preferred locale of current user or default one.
+   * @return string
+   */
+  private function getUserLocale(): string {
+    /** @var Identity $userIdentity */
+    $userIdentity = $this->user->getIdentity();
+    return $userIdentity->getUserData() ? $userIdentity->getUserData()->getSettings()->getDefaultLanguage() : self::DEFAULT_LOCALE;
+  }
+
+  /**
    * Based on given collection try to find localized text conforming the default
    * language preferred by user.
    * @param Collection $collection
    * @return mixed
    */
   public function getLocalization(Collection $collection) {
-    /** @var Identity $userIdentity */
-    $userIdentity = $this->user->getIdentity();
-    $userLocale = $userIdentity->getUserData() ? $userIdentity->getUserData()->getSettings()->getDefaultLanguage() : self::DEFAULT_LOCALE;
+    $userLocale = $this->getUserLocale();
 
     /** @var LocalizedEntity $text */
     foreach ($collection as $text) {
@@ -51,10 +61,24 @@ class EmailLocalizationHelper {
   }
 
   /**
-   * TODO
+   * Based on given template path and filename with '{locale}' substring find
+   * proper template file with locale preferred by user or with default one.
    * @param string $templatePath
+   * @return string
+   * @throws InvalidStateException
    */
-  public function getTemplate(string $templatePath) {
-    //
+  public function getTemplate(string $templatePath): string {
+    $userLocale = $this->getUserLocale();
+    $template = Nette\Utils\Strings::replace($templatePath, self::LOCALE_PLACEHOLDER_PATTERN, $userLocale);
+    if (is_file($template)) {
+      return $template;
+    }
+
+    $template = Nette\Utils\Strings::replace($templatePath, self::LOCALE_PLACEHOLDER_PATTERN, self::DEFAULT_LOCALE);
+    if (is_file($template)) {
+      return $template;
+    }
+
+    throw new InvalidStateException("Missing email template for '$templatePath'");
   }
 }

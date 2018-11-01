@@ -135,7 +135,8 @@ class ForgottenPasswordHelper {
 
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/resetPasswordEmail.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/resetPasswordEmail_{locale}.latte");
+    return $latte->renderToString($template, [
       "username" => $login->getUsername(),
       "link" => "{$this->redirectUrl}#{$token}",
       "expiresAfter" => $expiresAfter->format("H:i")

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Notifications;
 
+use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
 use App\Helpers\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolution;
@@ -46,6 +47,7 @@ class SolutionCommentsEmailsSender {
    * @param AssignmentSolution|ReferenceExerciseSolution $solution
    * @param Comment $comment
    * @return bool
+   * @throws InvalidStateException
    */
   private function sendSolutionComment($solution, Comment $comment): bool {
     if ($comment->isPrivate()) {
@@ -96,6 +98,7 @@ class SolutionCommentsEmailsSender {
    * @param AssignmentSolution $solution
    * @param Comment $comment
    * @return boolean
+   * @throws InvalidStateException
    */
   public function assignmentSolutionComment(AssignmentSolution $solution, Comment $comment): bool {
     return $this->sendSolutionComment($solution, $comment);
@@ -106,11 +109,13 @@ class SolutionCommentsEmailsSender {
    * @param AssignmentSolution $solution
    * @param Comment $comment
    * @return string Formatted mail body to be sent
+   * @throws InvalidStateException
    */
   private function createAssignmentSolutionCommentBody(AssignmentSolution $solution, Comment $comment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/assignmentSolutionComment.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/assignmentSolutionComment_{locale}.latte");
+    return $latte->renderToString($template, [
       "assignment" => $this->localizationHelper->getLocalization($solution->getAssignment()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
@@ -124,6 +129,7 @@ class SolutionCommentsEmailsSender {
    * @param ReferenceExerciseSolution $solution
    * @param Comment $comment
    * @return bool
+   * @throws InvalidStateException
    */
   public function referenceSolutionComment(ReferenceExerciseSolution $solution, Comment $comment): bool {
     return $this->sendSolutionComment($solution, $comment);
@@ -134,11 +140,13 @@ class SolutionCommentsEmailsSender {
    * @param ReferenceExerciseSolution $solution
    * @param Comment $comment
    * @return string Formatted mail body to be sent
+   * @throws InvalidStateException
    */
   private function createReferenceSolutionCommentBody(ReferenceExerciseSolution $solution, Comment $comment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/referenceSolutionComment.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/referenceSolutionComment_{locale}.latte");
+    return $latte->renderToString($template, [
       "exercise" => $this->localizationHelper->getLocalization($solution->getExercise()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),

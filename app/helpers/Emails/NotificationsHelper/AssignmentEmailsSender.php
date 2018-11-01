@@ -89,7 +89,8 @@ class AssignmentEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
     if ($assignment instanceof Assignment) {
-      return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
+      $template = $this->localizationHelper->getTemplate(__DIR__ . "/newAssignmentEmail_{locale}.latte");
+      return $latte->renderToString($template, [
         "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
         "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "dueDate" => $assignment->getFirstDeadline(),
@@ -97,7 +98,8 @@ class AssignmentEmailsSender {
         "points" => $assignment->getMaxPointsBeforeFirstDeadline()
       ]);
     } else if ($assignment instanceof ShadowAssignment) {
-      return $latte->renderToString(__DIR__ . "/newShadowAssignmentEmail.latte", [
+      $template = $this->localizationHelper->getTemplate(__DIR__ . "/newShadowAssignmentEmail_{locale}.latte");
+      return $latte->renderToString($template, [
         "name" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
         "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "maxPoints" => $assignment->getMaxPoints(),
@@ -112,6 +114,7 @@ class AssignmentEmailsSender {
    * should be alerted.
    * @param Assignment $assignment
    * @return bool
+   * @throws InvalidStateException
    */
   public function assignmentDeadline(Assignment $assignment): bool {
     $subject = $this->assignmentDeadlinePrefix . $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName();
@@ -148,12 +151,14 @@ class AssignmentEmailsSender {
    * Prepare and format body of the assignment deadline mail
    * @param Assignment $assignment
    * @return string Formatted mail body to be sent
+   * @throws InvalidStateException
    */
   private function createAssignmentDeadlineBody(Assignment $assignment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
     $localizedGroup = $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts());
-    return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
+    $template = $this->localizationHelper->getTemplate(__DIR__ . "/assignmentDeadline_{locale}.latte");
+    return $latte->renderToString($template, [
       "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
       "group" => $localizedGroup ? $localizedGroup->getName() : "",
       "firstDeadline" => $assignment->getFirstDeadline(),
