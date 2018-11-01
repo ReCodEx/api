@@ -2,9 +2,9 @@
 
 namespace App\Helpers\Notifications;
 
-use App\Exceptions\BadRequestException;
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\EmailLocalizationHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
 use App\Model\Entity\ShadowAssignment;
@@ -28,16 +28,20 @@ class AssignmentEmailsSender {
   private $assignmentDeadlinePrefix;
   /** @var AssignmentSolutions */
   private $assignmentSolutions;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
    * @param AssignmentSolutions $assignmentSolutions
+   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, AssignmentSolutions $assignmentSolutions, array $params) {
+  public function __construct(EmailHelper $emailHelper, AssignmentSolutions $assignmentSolutions, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->assignmentSolutions = $assignmentSolutions;
+    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "New Assignment -");
     $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Behind the Corner - ");
@@ -48,9 +52,10 @@ class AssignmentEmailsSender {
    * situation.
    * @param AssignmentBase $assignment
    * @return boolean
+   * @throws InvalidStateException
    */
   public function assignmentCreated(AssignmentBase $assignment): bool {
-    $subject = $this->newAssignmentPrefix . $assignment->getLocalizedTexts()->first()->getName();
+    $subject = $this->newAssignmentPrefix . $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName();
 
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
@@ -85,16 +90,16 @@ class AssignmentEmailsSender {
     $latte = new Latte\Engine();
     if ($assignment instanceof Assignment) {
       return $latte->renderToString(__DIR__ . "/newAssignmentEmail.latte", [
-        "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-        "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
+        "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
+        "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "dueDate" => $assignment->getFirstDeadline(),
         "attempts" => $assignment->getSubmissionsCountLimit(),
         "points" => $assignment->getMaxPointsBeforeFirstDeadline()
       ]);
     } else if ($assignment instanceof ShadowAssignment) {
       return $latte->renderToString(__DIR__ . "/newShadowAssignmentEmail.latte", [
-        "name" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-        "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
+        "name" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
+        "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "maxPoints" => $assignment->getMaxPoints(),
       ]);
     } else {
@@ -109,7 +114,7 @@ class AssignmentEmailsSender {
    * @return bool
    */
   public function assignmentDeadline(Assignment $assignment): bool {
-    $subject = $this->assignmentDeadlinePrefix . $assignment->getLocalizedTexts()->first()->getName();
+    $subject = $this->assignmentDeadlinePrefix . $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName();
 
     $recipients = array();
 
@@ -147,10 +152,10 @@ class AssignmentEmailsSender {
   private function createAssignmentDeadlineBody(Assignment $assignment): string {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    $localizedGroup = $assignment->getGroup()->getLocalizedTexts()->first();
+    $localizedGroup = $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts());
     return $latte->renderToString(__DIR__ . "/assignmentDeadline.latte", [
-      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $localizedGroup ? $localizedGroup->getName() : "", // TODO
+      "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
+      "group" => $localizedGroup ? $localizedGroup->getName() : "",
       "firstDeadline" => $assignment->getFirstDeadline(),
       "secondDeadline" => $assignment->getSecondDeadline()
     ]);

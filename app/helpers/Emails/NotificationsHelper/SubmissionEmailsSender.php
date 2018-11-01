@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Notifications;
 
+use App\Helpers\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use Latte;
 use App\Helpers\EmailHelper;
@@ -18,14 +19,18 @@ class SubmissionEmailsSender {
   private $sender;
   /** @var string */
   private $submissionEvaluatedPrefix;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
+   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->emailHelper = $emailHelper;
+    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
   }
@@ -36,7 +41,8 @@ class SubmissionEmailsSender {
    * @return bool
    */
   public function submissionEvaluated(AssignmentSolutionSubmission $submission): bool {
-    $subject = $this->submissionEvaluatedPrefix . $submission->getAssignmentSolution()->getAssignment()->getLocalizedTexts()->first()->getName(); // TODO
+    $assignment = $submission->getAssignmentSolution()->getAssignment();
+    $subject = $this->submissionEvaluatedPrefix . $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName();
 
     $user = $submission->getAssignmentSolution()->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
@@ -63,8 +69,8 @@ class SubmissionEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/submissionEvaluated.latte", [
-      "assignment" => $assignment->getLocalizedTexts()->first()->getName(), // TODO
-      "group" => $assignment->getGroup()->getLocalizedTexts()->first()->getName(), // TODO
+      "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
+      "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
       "points" => $submission->getEvaluation()->getPoints(),

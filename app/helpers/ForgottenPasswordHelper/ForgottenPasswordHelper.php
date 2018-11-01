@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Security\TokenScope;
+use Exception;
 use Latte;
 use Nette\Utils\Arrays;
 use Kdyby\Doctrine\EntityManager;
@@ -60,16 +61,23 @@ class ForgottenPasswordHelper {
   private $accessManager;
 
   /**
+   * @var EmailLocalizationHelper
+   */
+  private $localizationHelper;
+
+  /**
    * Constructor
    * @param EntityManager $em
    * @param EmailHelper $emailHelper
    * @param AccessManager $accessManager
+   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params Parameters from configuration file
    */
-  public function __construct(EntityManager $em, EmailHelper $emailHelper, AccessManager $accessManager, array $params) {
+  public function __construct(EntityManager $em, EmailHelper $emailHelper, AccessManager $accessManager, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->em = $em;
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
+    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Password Recovery Request - ");
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
@@ -81,6 +89,7 @@ class ForgottenPasswordHelper {
    * @param Login $login
    * @param string $IPaddress IP address of change request client (from request headers)
    * @return bool If sending was successful or not
+   * @throws Exception
    */
   public function process(Login $login, string $IPaddress) {
     // Stalk forgotten password requests a little bit and store them to database
@@ -117,6 +126,7 @@ class ForgottenPasswordHelper {
    * @param Login $login
    * @param string $token
    * @return string
+   * @throws Exception
    */
   private function createBody(Login $login, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)

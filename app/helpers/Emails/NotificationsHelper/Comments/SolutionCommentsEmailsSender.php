@@ -3,6 +3,7 @@
 namespace App\Helpers\Notifications;
 
 use App\Helpers\EmailHelper;
+use App\Helpers\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
 use App\Model\Entity\ReferenceExerciseSolution;
@@ -23,14 +24,18 @@ class SolutionCommentsEmailsSender {
   private $assignmentSolutionCommentPrefix;
   /** @var string */
   private $referenceSolutionCommentPrefix;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
+   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->emailHelper = $emailHelper;
+    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->assignmentSolutionCommentPrefix = Arrays::get($params, ["emails", "assignmentSolutionCommentPrefix"], "Assignment Solution Comment - ");
     $this->referenceSolutionCommentPrefix = Arrays::get($params, ["emails", "referenceSolutionCommentPrefix"], "Reference Solution Comment - ");
@@ -106,7 +111,7 @@ class SolutionCommentsEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/assignmentSolutionComment.latte", [
-      "assignment" => $solution->getAssignment()->getLocalizedTexts()->first()->getName(), // TODO
+      "assignment" => $this->localizationHelper->getLocalization($solution->getAssignment()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),
@@ -134,7 +139,7 @@ class SolutionCommentsEmailsSender {
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
     return $latte->renderToString(__DIR__ . "/referenceSolutionComment.latte", [
-      "exercise" => $solution->getExercise()->getLocalizedTexts()->first()->getName(), // TODO
+      "exercise" => $this->localizationHelper->getLocalization($solution->getExercise()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),

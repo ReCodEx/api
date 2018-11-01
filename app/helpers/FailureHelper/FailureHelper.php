@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Model\Entity\SubmissionFailure;
+use Exception;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Utils\Arrays;
@@ -56,6 +57,7 @@ class FailureHelper {
    * @param string $type Type of the error like backend error or api error
    * @param string $message Text of the error message
    * @return bool
+   * @throws Exception
    */
   public function report(string $type, string $message) {
     $subject = $this->formatSubject($type);
@@ -71,7 +73,7 @@ class FailureHelper {
       $this->sender,
       $this->receivers,
       $subject,
-      $this->formatBody($message)
+      $message
     );
   }
 
@@ -93,14 +95,4 @@ class FailureHelper {
   private function formatSubject(string $type): string {
     return $this->subjectPrefix . $type;
   }
-
-  /**
-   * Prepare and format body of the mail
-   * @param string $message Error message to be reported
-   * @return string Formatted mail body to be sent
-   */
-  private function formatBody(string $message): string {
-    return $message; // @todo
-  }
-
 }

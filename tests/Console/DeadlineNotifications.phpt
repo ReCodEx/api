@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Console\SendAssignmentDeadlineNotification;
 use App\Helpers\EmailHelper;
+use App\Helpers\EmailLocalizationHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
@@ -26,6 +27,9 @@ class TestDeadlineNotifications extends Tester\TestCase
 
   /** @var AssignmentSolutions */
   private $assignmentSolutions;
+
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /** @var SendAssignmentDeadlineNotification */
   protected $command;
@@ -71,7 +75,8 @@ class TestDeadlineNotifications extends Tester\TestCase
     $this->emailHelperMock = Mockery::mock(EmailHelper::class);
     $this->assignments = $this->container->getByType(Assignments::class);
     $this->assignmentSolutions = $this->container->getByType(AssignmentSolutions::class);
-    $this->sender = new AssignmentEmailsSender($this->emailHelperMock, $this->assignmentSolutions, []);
+    $this->localizationHelper = $this->container->getByType(EmailLocalizationHelper::class);
+    $this->sender = new AssignmentEmailsSender($this->emailHelperMock, $this->assignmentSolutions, $this->localizationHelper, []);
     $this->command = new SendAssignmentDeadlineNotification(
       "1 day",
       $this->assignments,

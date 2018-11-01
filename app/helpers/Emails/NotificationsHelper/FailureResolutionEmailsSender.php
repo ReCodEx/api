@@ -2,6 +2,7 @@
 namespace App\Helpers\Notifications;
 
 use App\Helpers\EmailHelper;
+use App\Helpers\EmailLocalizationHelper;
 use App\Helpers\Evaluation\IExercise;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\LocalizedExercise;
@@ -25,13 +26,17 @@ class FailureResolutionEmailsSender {
   private $sender;
   /** @var string */
   private $failureResolvedPrefix;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
 
   /**
    * @param EmailHelper $emailHelper
+   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params) {
     $this->emailHelper = $emailHelper;
+    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->failureResolvedPrefix = Arrays::get($params, ["emails", "failureResolvedPrefix"], "Submission Failure Resolved - ");
   }
@@ -45,7 +50,7 @@ class FailureResolutionEmailsSender {
     $submission = $failure->getSubmission();
 
     /** @var LocalizedExercise $text */
-    $text = $submission->getExercise()->getLocalizedTexts()->first(); // TODO
+    $text = $this->localizationHelper->getLocalization($submission->getExercise()->getLocalizedTexts());
     $title = $text !== null ? $text->getName() : "UNKNOWN";
     $subject = $this->failureResolvedPrefix . $title;
 
