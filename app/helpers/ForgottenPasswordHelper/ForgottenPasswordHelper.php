@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
 use Exception;
 use Latte;
@@ -138,7 +140,7 @@ class ForgottenPasswordHelper {
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/resetPasswordEmail_{locale}.latte");
     return $latte->renderToString($template, [
       "username" => $login->getUsername(),
-      "link" => "{$this->redirectUrl}#{$token}",
+      "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i")
     ]);
   }

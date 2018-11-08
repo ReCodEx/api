@@ -6,6 +6,8 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
 use Exception;
 use Latte;
@@ -161,7 +163,7 @@ class EmailVerificationHelper {
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/verificationEmail_{locale}.latte");
     return $latte->renderToString($template, [
       "email" => $user->getEmail(),
-      "link" => "{$this->redirectUrl}#{$token}",
+      "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i")
     ]);
   }

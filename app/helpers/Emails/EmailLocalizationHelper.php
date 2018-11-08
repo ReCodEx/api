@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Helpers\Emails;
 
 use App\Exceptions\InvalidStateException;
 use App\Model\Entity\LocalizedEntity;

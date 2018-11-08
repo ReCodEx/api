@@ -4,7 +4,8 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
-use App\Helpers\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
 use App\Model\Entity\ReferenceExerciseSolution;
@@ -19,14 +20,19 @@ class SolutionCommentsEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
+
   /** @var string */
   private $sender;
   /** @var string */
   private $assignmentSolutionCommentPrefix;
   /** @var string */
   private $referenceSolutionCommentPrefix;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
+  /** @var string */
+  private $assignmentSolutionRedirectUrl;
+  /** @var string */
+  private $referenceSolutionRedirectUrl;
 
   /**
    * Constructor.
@@ -40,6 +46,8 @@ class SolutionCommentsEmailsSender {
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->assignmentSolutionCommentPrefix = Arrays::get($params, ["emails", "assignmentSolutionCommentPrefix"], "Assignment Solution Comment - ");
     $this->referenceSolutionCommentPrefix = Arrays::get($params, ["emails", "referenceSolutionCommentPrefix"], "Reference Solution Comment - ");
+    $this->assignmentSolutionRedirectUrl = Arrays::get($params, ["assignmentSolutionRedirectUrl"], "https://recodex.mff.cuni.cz");
+    $this->referenceSolutionRedirectUrl = Arrays::get($params, ["referenceSolutionRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
 
   /**
@@ -120,7 +128,11 @@ class SolutionCommentsEmailsSender {
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),
-      "comment" => $comment->getText()
+      "comment" => $comment->getText(),
+      "link" => EmailLinkHelper::getLink($this->assignmentSolutionRedirectUrl, [
+        "assignmentId" => $solution->getAssignment()->getId(),
+        "solutionId" => $solution->getId()
+      ])
     ]);
   }
 
@@ -151,7 +163,11 @@ class SolutionCommentsEmailsSender {
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),
-      "comment" => $comment->getText()
+      "comment" => $comment->getText(),
+      "link" => EmailLinkHelper::getLink($this->referenceSolutionRedirectUrl, [
+        "exerciseId" => $solution->getExercise()->getId(),
+        "solutionId" => $solution->getId()
+      ])
     ]);
   }
 }

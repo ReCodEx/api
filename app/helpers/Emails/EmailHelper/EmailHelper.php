@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;

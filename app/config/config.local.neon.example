@@ -2,6 +2,9 @@ parameters:
   api:
     address: https://recodex.mff.cuni.cz:4000
 
+  webapp:
+    address: https://recodex.mff.cuni.cz/en
+
   accessManager:
     issuer: https://recodex.mff.cuni.cz
     audience: https://recodex.mff.cuni.cz
@@ -36,7 +39,6 @@ parameters:
     secret: SECRET_TOKEN
 
   emails:
-    apiUrl: https://recodex.mff.cuni.cz:4000
     footerUrl: https://recodex.mff.cuni.cz
     from: "ReCodEx <noreply@recodex.mff.cuni.cz>"
     #debugMode: true  # in debug mode, no messages are sent via SMPT
@@ -45,12 +47,6 @@ parameters:
   failures:
     emails:
       to: "Administrator <admin@example.com>"
-
-  forgottenPassword:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"
-
-  emailVerification:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"
 
   mail:
     host: "smtp.ps.stdin.cz"

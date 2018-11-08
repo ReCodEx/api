@@ -3,7 +3,8 @@
 namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
-use App\Helpers\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLinkHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use Latte;
 use App\Helpers\EmailHelper;
@@ -16,12 +17,16 @@ class SubmissionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
+
   /** @var string */
   private $sender;
   /** @var string */
   private $submissionEvaluatedPrefix;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
+  /** @var string */
+  private $submissionRedirectUrl;
+
 
   /**
    * Constructor.
@@ -34,6 +39,7 @@ class SubmissionEmailsSender {
     $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
+    $this->submissionRedirectUrl = Arrays::get($params, ["submissionRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
 
   /**
@@ -78,7 +84,11 @@ class SubmissionEmailsSender {
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "was successful" : "failed",
       "points" => $submission->getEvaluation()->getPoints(),
-      "maxPoints" => $assignment->getMaxPoints($submission->getEvaluation()->getEvaluatedAt())
+      "maxPoints" => $assignment->getMaxPoints($submission->getEvaluation()->getEvaluatedAt()),
+      "link" => EmailLinkHelper::getLink($this->submissionRedirectUrl, [
+        "assignmentId" => $assignment->getId(),
+        "solutionId" => $submission->getAssignmentSolution()->getId()
+      ])
     ]);
   }
 

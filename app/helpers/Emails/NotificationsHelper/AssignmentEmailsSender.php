@@ -4,7 +4,8 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
-use App\Helpers\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLinkHelper;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
 use App\Model\Entity\ShadowAssignment;
@@ -20,16 +21,22 @@ class AssignmentEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
+  /** @var AssignmentSolutions */
+  private $assignmentSolutions;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
+
   /** @var string */
   private $sender;
   /** @var string */
   private $newAssignmentPrefix;
   /** @var string */
   private $assignmentDeadlinePrefix;
-  /** @var AssignmentSolutions */
-  private $assignmentSolutions;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
+  /** @var string */
+  private $assignmentRedirectUrl;
+  /** @var string */
+  private $shadowRedirectUrl;
+
 
   /**
    * Constructor.
@@ -45,6 +52,8 @@ class AssignmentEmailsSender {
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "New Assignment -");
     $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Behind the Corner - ");
+    $this->assignmentRedirectUrl = Arrays::get($params, ["assignmentRedirectUrl"], "https://recodex.mff.cuni.cz");
+    $this->shadowRedirectUrl = Arrays::get($params, ["shadowRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
 
   /**
@@ -95,7 +104,8 @@ class AssignmentEmailsSender {
         "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "dueDate" => $assignment->getFirstDeadline(),
         "attempts" => $assignment->getSubmissionsCountLimit(),
-        "points" => $assignment->getMaxPointsBeforeFirstDeadline()
+        "points" => $assignment->getMaxPointsBeforeFirstDeadline(),
+        "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
       ]);
     } else if ($assignment instanceof ShadowAssignment) {
       $template = $this->localizationHelper->getTemplate(__DIR__ . "/newShadowAssignmentEmail_{locale}.latte");
@@ -103,6 +113,7 @@ class AssignmentEmailsSender {
         "name" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
         "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
         "maxPoints" => $assignment->getMaxPoints(),
+        "link" => EmailLinkHelper::getLink($this->shadowRedirectUrl, ["id" => $assignment->getId()])
       ]);
     } else {
       throw new InvalidStateException("Unknown type of assignment");
@@ -162,7 +173,8 @@ class AssignmentEmailsSender {
       "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
       "group" => $localizedGroup ? $localizedGroup->getName() : "",
       "firstDeadline" => $assignment->getFirstDeadline(),
-      "secondDeadline" => $assignment->getSecondDeadline()
+      "secondDeadline" => $assignment->getSecondDeadline(),
+      "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
     ]);
   }
 

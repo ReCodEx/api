@@ -3,7 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Console\SendAssignmentDeadlineNotification;
 use App\Helpers\EmailHelper;
-use App\Helpers\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;

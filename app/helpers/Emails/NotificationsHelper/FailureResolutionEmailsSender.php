@@ -3,7 +3,7 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
-use App\Helpers\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\SubmissionFailure;
 use Nette\SmartObject;
@@ -18,12 +18,15 @@ class FailureResolutionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
+  /** @var EmailLocalizationHelper */
+  private $localizationHelper;
+
+
   /** @var string */
   private $sender;
   /** @var string */
   private $failureResolvedPrefix;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
+
 
   /**
    * @param EmailHelper $emailHelper
