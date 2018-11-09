@@ -196,6 +196,7 @@ acl:
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
     shadowAssignmentPoints: App\Security\ACL\IShadowAssignmentPointsPermissions
+    notification: App\Security\ACL\INotificationPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy
@@ -213,6 +214,7 @@ acl:
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
     shadowAssignmentPoints: App\Security\Policies\ShadowAssignmentPointsPermissionPolicy
+    notification: App\Security\Policies\NotificationPermissionPolicy
 
 extensions:
   console: Kdyby\Console\DI\ConsoleExtension
@@ -366,6 +368,7 @@ services:
   - App\Model\Repository\SisValidTerms
   - App\Model\Repository\ShadowAssignments
   - App\Model\Repository\ShadowAssignmentPointsRepository
+  - App\Model\Repository\Notifications
 
   # views factories
   - App\Model\View\ExerciseViewFactory

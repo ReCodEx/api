@@ -11,4 +11,8 @@ class Notifications extends BaseSoftDeleteRepository {
   public function __construct(EntityManager $em) {
     parent::__construct($em, Notification::class);
   }
+
+  public function findAllCurrent(): array {
+    // TODO
+  }
 }

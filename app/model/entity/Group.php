@@ -305,6 +305,26 @@ class Group
   }
 
   /**
+   * Is member of this group or any subgroup.
+   * @note Is member or supervisor or admin, whole package of members.
+   * @param User $user
+   * @return bool
+   */
+  public function isMemberOfSubgroup(User $user) {
+    if ($this->isAdminOf($user) || $this->isMemberOf($user)) {
+      return true;
+    }
+
+    foreach ($this->childGroups as $childGroup) {
+      if ($childGroup->isMemberOfSubgroup($user)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * @ORM\ManyToMany(targetEntity="User")
    */
   protected $primaryAdmins;
