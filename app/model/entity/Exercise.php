@@ -3,14 +3,10 @@
 namespace App\Model\Entity;
 
 use App\Helpers\Evaluation\IExercise;
-use App\Helpers\Localizations;
 use \DateTime;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use JsonSerializable;
 use Doctrine;
 use Gedmo\Mapping\Annotation as Gedmo;
 
