@@ -4,6 +4,7 @@ include __DIR__ . "/../bootstrap.php";
 use App\Security\Authorizator;
 use App\Security\Loader;
 use App\Security\PolicyRegistry;
+use App\Security\Roles;
 use Tester\Assert;
 
 class Resource1 { }
@@ -23,6 +24,9 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
   /** @var PolicyRegistry */
   private $policies;
 
+  /** @var Roles */
+  private $roles;
+
   /** @var Authorizator */
   private $authorizator;
 
@@ -39,7 +43,8 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
   public function setUp()
   {
     $this->policies = new PolicyRegistry();
-    $this->authorizator = $this->loader->loadAuthorizator($this->policies);
+    $this->roles = $this->loader->loadRoles();
+    $this->authorizator = $this->loader->loadAuthorizator($this->policies, $this->roles);
   }
 
   public function testNoEffectiveRoles()

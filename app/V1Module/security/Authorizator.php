@@ -17,23 +17,19 @@ abstract class Authorizator implements IAuthorizator {
   /** @var PolicyRegistry */
   protected $policy;
 
-  protected $roles = [];
+  /** @var Roles */
+  protected $roles;
 
   private $initialized = false;
 
-  public function __construct(PolicyRegistry $policy) {
+  public function __construct(PolicyRegistry $policy, Roles $roles) {
     $this->policy = $policy;
+    $this->roles = $roles;
   }
 
   protected abstract function checkPermissions(string $role, string $resource, string $privilege): bool;
 
-  protected abstract function setup();
-
   public function isAllowed(Identity $identity, string $resource, string $privilege, array $context): bool {
-    if (!$this->initialized) {
-      $this->setup();
-    }
-
     $this->queriedIdentity = $identity;
     $this->queriedContext = $context;
 
@@ -52,23 +48,7 @@ abstract class Authorizator implements IAuthorizator {
     return false;
   }
 
-  protected function addRole($role, $parents) {
-    $this->roles[$role] = $parents;
-  }
-
   protected function isInRole($target, $role): bool {
-    if ($target === $role) {
-      return true;
-    }
-
-    if (array_key_exists($target, $this->roles)) {
-      foreach ($this->roles[$target] as $parent) {
-        if ($this->isInRole($parent, $role)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return $this->roles->isInRole($target, $role);
   }
 }
