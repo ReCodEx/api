@@ -13,8 +13,8 @@ roles:
     - name: empowered-supervisor
       parents: supervisor
 
-
     - name: superadmin
+
 permissions:
     - allow: true
       role: superadmin
@@ -767,3 +767,25 @@ permissions:
           - remove
       conditions:
           - assignmentPoints.isSupervisor
+
+    ############################
+    # Notification permissions #
+    ############################
+
+    - allow: true
+      role: scope-read-all
+      resource: notification
+      actions:
+        - viewAll
+        - viewCurrent
+        - viewDetail
+
+    - allow: true
+      resource: notification
+      actions:
+        - viewDetail
+      conditions:
+        - notification.hasRole
+        - or:
+          - notification.isGlobal
+          - notification.isGroupsMember
