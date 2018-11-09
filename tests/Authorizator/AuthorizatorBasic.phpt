@@ -5,6 +5,7 @@ use App\Security\Authorizator;
 use App\Security\Loader;
 use App\Security\Policies\IPermissionPolicy;
 use App\Security\PolicyRegistry;
+use App\Security\Roles;
 use Tester\Assert;
 use Mockery\Mock;
 
@@ -29,6 +30,9 @@ class TestAuthorizatorBasic extends Tester\TestCase
   /** @var PolicyRegistry */
   private $policies;
 
+  /** @var Roles */
+  private $roles;
+
   /** @var Authorizator */
   private $authorizator;
 
@@ -52,7 +56,8 @@ class TestAuthorizatorBasic extends Tester\TestCase
   public function setUp()
   {
     $this->policies = new PolicyRegistry();
-    $this->authorizator = $this->loader->loadAuthorizator($this->policies);
+    $this->roles = $this->loader->loadRoles();
+    $this->authorizator = $this->loader->loadAuthorizator($this->policies, $this->roles);
     $this->policy1 = Mockery::mock(MockPolicy::class)->makePartial();
     $this->policy1->shouldReceive('getAssociatedClass')->withAnyArgs()->andReturn(Resource1::class);
     $this->policy2 = Mockery::mock(MockPolicy::class)->makePartial();

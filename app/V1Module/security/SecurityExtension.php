@@ -31,6 +31,10 @@ class SecurityExtension extends Nette\DI\CompilerExtension {
     $loader = $builder->addDefinition($this->prefix("loader"));
     $loader->setClass(Loader::class, [ $this->tempDirectory . "/security", $configFilePath, $acl ]);
 
+    $roles = $builder->addDefinition($this->prefix("roles"));
+    $roles->setFactory(sprintf("@%s::loadRoles", Loader::class));
+    $roles->addSetup("setup");
+
     $authorizator = $builder->addDefinition($this->prefix("authorizator"));
     $authorizator->setFactory(sprintf("@%s::loadAuthorizator", Loader::class));
 

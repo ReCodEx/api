@@ -3,20 +3,20 @@
 namespace App\Security\Policies;
 
 use App\Model\Entity\Notification;
-use App\Security\Authorizator;
 use App\Security\Identity;
+use App\Security\Roles;
 
 class NotificationPermissionPolicy implements IPermissionPolicy {
 
-  /** @var Authorizator */
-  private $authorizator;
+  /** @var Roles */
+  private $roles;
 
   public function getAssociatedClass() {
     return Notification::class;
   }
 
-  public function __construct(Authorizator $authorizator) {
-    $this->authorizator = $authorizator;
+  public function __construct(Roles $roles) {
+    $this->roles = $roles;
   }
 
 

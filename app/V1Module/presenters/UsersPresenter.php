@@ -67,6 +67,13 @@ class UsersPresenter extends BasePresenter {
    */
   public $exerciseViewFactory;
 
+  /**
+   * @var Roles
+   * @inject
+   */
+  public $roles;
+
+
   public function checkDefault() {
     if (!$this->userAcl->canViewAll()) {
       throw new ForbiddenRequestException();
@@ -513,7 +520,7 @@ class UsersPresenter extends BasePresenter {
     $user = $this->users->findOrThrow($id);
     $role = $this->getRequest()->getPost("role");
     // validate role
-    if (!Roles::validateRole($role)) {
+    if (!$this->roles->validateRole($role)) {
       throw new InvalidArgumentException("role", "Unknown user role '$role'");
     }
 

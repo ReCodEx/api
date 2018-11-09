@@ -1,6 +1,6 @@
 <?php
-namespace App\Security;
 
+namespace App\Security;
 
 use Nette\IOException;
 use Nette\Reflection\ClassType;
@@ -10,6 +10,8 @@ use Nette\Neon\Neon;
 
 class Loader {
   use SmartObject;
+
+  private $rolesBuilder;
 
   private $authorizatorBuilder;
 
@@ -31,6 +33,7 @@ class Loader {
     $this->tempDirectory = $tempDirectory;
     $this->configFilePath = $configFilePath;
     $this->aclInterfaces = $aclInterfaces;
+    $this->rolesBuilder = new RolesBuilder();
     $this->authorizatorBuilder = new AuthorizatorBuilder();
     $this->aclModuleBuilder = new ACLModuleBuilder();
     $this->userStorage = $userStorage;
@@ -70,9 +73,14 @@ class Loader {
       $config = Neon::decode(file_get_contents($this->configFilePath));
       $content = "<?php\n";
 
+      $roles = $this->rolesBuilder->build(
+        Arrays::get($config, "roles"),
+        $this->hash
+      );
+      $content .= (string) $roles;
+
       $authorizator = $this->authorizatorBuilder->build(
         $this->aclInterfaces,
-        Arrays::get($config, "roles"),
         Arrays::get($config, "permissions"),
         $this->hash
       );
@@ -97,10 +105,16 @@ class Loader {
     $this->loaded = true;
   }
 
-  public function loadAuthorizator(PolicyRegistry $registry): Authorizator {
+  public function loadRoles(): Roles {
+    $this->loadGeneratedClasses();
+    $class = $this->rolesBuilder->getClassName($this->hash);
+    return new $class();
+  }
+
+  public function loadAuthorizator(PolicyRegistry $registry, Roles $roles): Authorizator {
     $this->loadGeneratedClasses();
     $class = $this->authorizatorBuilder->getClassName($this->hash);
-    return new $class($registry);
+    return new $class($registry, $roles);
   }
 
   public function loadACLModule($interfaceName, IAuthorizator $authorizator, ?Identity $identity = null) {

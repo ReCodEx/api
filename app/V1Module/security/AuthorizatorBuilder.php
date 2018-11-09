@@ -17,20 +17,11 @@ class AuthorizatorBuilder {
     return "AuthorizatorImpl_" . $uniqueId;
   }
 
-  public function build($aclInterfaces, $roles, $permissions, $uniqueId): ClassType {
+  public function build($aclInterfaces, $permissions, $uniqueId): ClassType {
     $this->checkCounter = 0;
 
     $class = new ClassType($this->getClassName($uniqueId));
     $class->addExtend(Authorizator::class);
-    $setup = $class->addMethod("setup");
-    $setup->setVisibility("protected");
-
-    foreach ($roles as $role) {
-      $setup->addBody('$this->addRole(?, [...?]);', [
-        $role["name"],
-        (array) Arrays::get($role, "parents", []),
-      ]);
-    }
 
     $check = $class->addMethod("checkPermissions");
     $check->setReturnType("bool");
