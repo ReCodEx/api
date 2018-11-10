@@ -49,8 +49,9 @@ class RouterFactory {
     $router[] = self::createJobConfigRoutes("$prefix/job-config");
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
-    $router[] = self::createEmailsRouter("$prefix/emails");
+    $router[] = self::createEmailsRoutes("$prefix/emails");
     $router[] = self::createShadowAssignmentsRoutes("$prefix/shadow-assignments");
+    $router[] = self::createNotificationsRoutes("$prefix/notifications");
 
     return $router;
   }
@@ -435,7 +436,7 @@ class RouterFactory {
     return $router;
   }
 
-  private static function createEmailsRouter(string $prefix): RouteList {
+  private static function createEmailsRoutes(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new PostRoute("$prefix", "Emails:default");
     $router[] = new PostRoute("$prefix/supervisors", "Emails:sendToSupervisors");
@@ -461,6 +462,16 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/points/<pointsId>", "ShadowAssignments:points");
     $router[] = new PostRoute("$prefix/points/<pointsId>", "ShadowAssignments:updatePoints");
     $router[] = new DeleteRoute("$prefix/points/<pointsId>", "ShadowAssignments:removePoints");
+    return $router;
+  }
+
+  private static function createNotificationsRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new GetRoute("$prefix", "Notifications:default");
+    $router[] = new GetRoute("$prefix/all", "Notifications:all");
+    $router[] = new PostRoute("$prefix", "Notifications:create");
+    $router[] = new PostRoute("$prefix/<id>", "Notifications:update");
+    $router[] = new DeleteRoute("$prefix/<id>", "Notifications:remove");
     return $router;
   }
 }

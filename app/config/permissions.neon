@@ -789,3 +789,26 @@ permissions:
         - or:
           - notification.isGlobal
           - notification.isGroupsMember
+
+    - allow: true
+      role: supervisor
+      resource: notification
+      actions:
+        - create
+
+    - allow: true
+      resource: notification
+      actions:
+        - addGroup
+      conditions:
+        - group.isAdmin
+
+    - allow: true
+      resource: notification
+      actions:
+        - update
+        - remove
+      conditions:
+        - or:
+          - notification.isSuperGroupAdmin
+          - notification.isAuthor

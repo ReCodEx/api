@@ -2,6 +2,7 @@
 
 namespace App\Security\Policies;
 
+use App\Model\Entity\Group;
 use App\Model\Entity\Notification;
 use App\Security\Identity;
 use App\Security\Roles;
@@ -26,11 +27,36 @@ class NotificationPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    // TODO
+    return $this->roles->isInRole($notification->getRole(), $user->getRole());
   }
 
   public function isGlobal(Identity $identity, Notification $notification) {
     return $notification->getGroups()->isEmpty();
+  }
+
+  public function isAuthor(Identity $identity, Notification $notification) {
+    $user = $identity->getUserData();
+    if (!$user) {
+      return false;
+    }
+
+    return $user === $notification->getAuthor();
+  }
+
+  public function isSuperGroupAdmin(Identity $identity, Notification $notification) {
+    $user = $identity->getUserData();
+    if ($user === null || $notification->getGroups()->isEmpty()) {
+      return false;
+    }
+
+    /** @var Group $group */
+    foreach ($notification->getGroups() as $group) {
+      if ($group->isAdminOf($user)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public function isGroupsMember(Identity $identity, Notification $notification) {
@@ -39,6 +65,7 @@ class NotificationPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
+    /** @var Group $group */
     foreach ($notification->getGroups() as $group) {
       $isMember = $group->isMemberOfSubgroup($user);
       if ($isMember) {
