@@ -19,6 +19,11 @@ use JsonSerializable;
  * @method Collection getLocalizedTexts()
  * @method string getRole()
  * @method string getType()
+ * @method void addGroup(Group $group)
+ * @method void setVisibleFrom(DateTime $visibleFrom)
+ * @method void setVisibleTo(DateTime $visibleTo)
+ * @method void setRole(string $role)
+ * @method void setType(string $type)
  */
 class Notification implements JsonSerializable
 {
@@ -57,18 +62,18 @@ class Notification implements JsonSerializable
 
   /**
    * @var Collection|Selectable
-   * @ORM\ManyToMany(targetEntity="LocalizedExercise", indexBy="locale")
+   * @ORM\ManyToMany(targetEntity="LocalizedNotification", indexBy="locale", cascade={"persist"})
    */
   protected $localizedTexts;
 
-  public function addLocalizedText(LocalizedExercise $localizedText) {
+  public function addLocalizedText(LocalizedNotification $localizedText) {
     $this->localizedTexts->add($localizedText);
   }
 
   /**
    * Get localized text based on given locale.
    * @param string $locale
-   * @return LocalizedExercise|null
+   * @return LocalizedNotification|null
    */
   public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity {
     $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
@@ -114,32 +119,16 @@ class Notification implements JsonSerializable
   /**
    * Notification constructor.
    * @param User $author
-   * @param DateTime $createdAt
-   * @param DateTime $visibleFrom
-   * @param DateTime $visibleTo
-   * @param Collection|Selectable $localizedTexts
-   * @param string $role
-   * @param string $type
-   * @param Group|null $group
    */
   public function __construct(
-    User $author,
-    DateTime $createdAt,
-    DateTime $visibleFrom,
-    DateTime $visibleTo,
-    $localizedTexts,
-    string $role,
-    string $type,
-    Group $group = null
+    User $author
   ) {
     $this->author = $author;
-    $this->createdAt = $createdAt;
-    $this->visibleFrom = $visibleFrom;
-    $this->visibleTo = $visibleTo;
-    $this->localizedTexts = $localizedTexts;
-    $this->role = $role;
-    $this->type = $type;
-    $this->groups = $group ? new ArrayCollection($group) : new ArrayCollection();
+    $this->createdAt = new DateTime();
+    $this->visibleFrom = new DateTime();
+    $this->visibleTo = new DateTime();
+    $this->localizedTexts = new ArrayCollection();
+    $this->groups = new ArrayCollection();
   }
 
   public function jsonSerialize() {
