@@ -7,7 +7,7 @@ use DateTime;
 use Kdyby\Doctrine\EntityManager;
 
 
-class Notifications extends BaseSoftDeleteRepository {
+class Notifications extends BaseRepository {
 
   public function __construct(EntityManager $em) {
     parent::__construct($em, Notification::class);
@@ -20,9 +20,9 @@ class Notifications extends BaseSoftDeleteRepository {
    */
   public function findAllCurrent(): array {
     $now = new DateTime();
-    $qb = $this->repository->createQueryBuilder();
-    $qb->andWhere($qb->expr()->lte("visibleFrom", ":now"))
-      ->andWhere($qb->expr()->gte("visibleTo", ":now"))
+    $qb = $this->repository->createQueryBuilder("n");
+    $qb->andWhere($qb->expr()->lte("n.visibleFrom", ":now"))
+      ->andWhere($qb->expr()->gte("n.visibleTo", ":now"))
       ->setParameter("now", $now);
     return $qb->getQuery()->getResult();
   }

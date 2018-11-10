@@ -16,7 +16,6 @@ use JsonSerializable;
  * @method DateTime getCreatedAt()
  * @method DateTime getVisibleFrom()
  * @method DateTime getVisibleTo()
- * @method Collection getLocalizedTexts()
  * @method string getRole()
  * @method string getType()
  * @method void addGroup(Group $group)
@@ -65,6 +64,10 @@ class Notification implements JsonSerializable
    * @ORM\ManyToMany(targetEntity="LocalizedNotification", indexBy="locale", cascade={"persist"})
    */
   protected $localizedTexts;
+
+  public function getLocalizedTexts(): Collection {
+    return $this->localizedTexts;
+  }
 
   public function addLocalizedText(LocalizedNotification $localizedText) {
     $this->localizedTexts->add($localizedText);
