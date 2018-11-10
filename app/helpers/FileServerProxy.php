@@ -180,7 +180,7 @@ class FileServerProxy {
         $this->remoteServerAddress . $paths->result_path
       ];
     } catch (RequestException $e) {
-      throw new SubmissionFailedException("Cannot connect to remote file server");
+      throw new SubmissionFailedException("Cannot connect to remote file server - {$e->getMessage()}");
     }
   }
 
@@ -236,7 +236,7 @@ class FileServerProxy {
     try {
       return Json::decode($response->getBody());
     } catch (JsonException $e) {
-      throw new SubmissionFailedException("Remote file server did not respond with a valid JSON response.");
+      throw new SubmissionFailedException("Fileserver did not respond with a valid JSON response - {$e->getMessage()}");
     }
   }
 

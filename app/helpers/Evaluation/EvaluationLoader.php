@@ -87,9 +87,9 @@ class EvaluationLoader {
         ? null
         : EvaluationResultsLoader::parseResults($resultsYml, $jobConfig);
     } catch (JobConfigLoadingException | MalformedJobConfigException $e) {
-      throw new SubmissionEvaluationFailedException("Cannot load or parse job config.");
+      throw new SubmissionEvaluationFailedException("Cannot load or parse job config - {$e->getMessage()}");
     } catch (Exception $e) {
-      throw new SubmissionEvaluationFailedException("Cannot load results: " . $e->getMessage());
+      throw new SubmissionEvaluationFailedException("Cannot load results - " . $e->getMessage());
     }
   }
 }
