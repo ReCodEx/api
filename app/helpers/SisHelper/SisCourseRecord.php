@@ -83,7 +83,7 @@ class SisCourseRecord implements JsonSerializable {
 
   public function getCaption($lang) {
     if (!array_key_exists($lang, $this->captions)) {
-      throw new Exception();
+      throw new Exception("Caption for language '$lang' does not exist");
     }
 
     return $this->captions[$lang];
@@ -91,7 +91,7 @@ class SisCourseRecord implements JsonSerializable {
 
   public function getAnnotation($lang) {
     if (!array_key_exists($lang, $this->annotations)) {
-      throw new Exception();
+      throw new Exception("Annotation for language '$lang' does not exist'");
     }
 
     return $this->annotations[$lang];

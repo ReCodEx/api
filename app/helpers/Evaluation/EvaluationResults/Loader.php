@@ -23,7 +23,7 @@ class Loader {
     try {
       $parsedResults = Yaml::parse($results);
     } catch (ParseException $e) {
-      throw new SubmissionEvaluationFailedException("The results received from the file server are malformed.");
+      throw new SubmissionEvaluationFailedException("YAML parsing error - {$e->getMessage()}");
     }
 
     return new EvaluationResults($parsedResults, $config);

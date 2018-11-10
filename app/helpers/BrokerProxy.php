@@ -68,7 +68,7 @@ class BrokerProxy {
       $queue->setsockopt(ZMQ::SOCKOPT_LINGER, 0);
       $queue->connect($this->brokerAddress);
     } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Cannot connect to the Broker.");
+      throw new SubmissionFailedException("Cannot connect to the Broker - {$e->getMessage()}");
     }
 
     try {
@@ -76,7 +76,7 @@ class BrokerProxy {
       $poll->add($queue, ZMQ::POLL_IN);
     } catch (ZMQPollException $e) {
       $queue->disconnect($this->brokerAddress);
-      throw new SubmissionFailedException("Cannot create ZMQ poll.");
+      throw new SubmissionFailedException("Cannot create ZMQ poll - {$e->getMessage()}");
     }
 
     $hwGroup = implode('|', $hardwareGroups);
@@ -98,7 +98,7 @@ class BrokerProxy {
       $queue->sendmulti($message);
     } catch (ZMQSocketException $e) {
       $queue->disconnect($this->brokerAddress);
-      throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out.");
+      throw new SubmissionFailedException("Uploading solution to the Broker failed or timed out - {$e->getMessage()}");
     }
 
     $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
