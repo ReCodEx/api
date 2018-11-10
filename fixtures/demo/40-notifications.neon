@@ -1,0 +1,26 @@
+App\Model\Entity\LocalizedNotification:
+    globalNotificationText:
+        __construct:
+            - "en"
+            - "A demo notification text"
+
+App\Model\Entity\Notification:
+    globalNotification:
+        __construct:
+            - @demoAdmin
+        visibleFrom: "<dateTimeBetween('-3 day', '-1 day')>"
+        visibleTo: "<dateTimeBetween('+1 day', '+3 day')>"
+        addLocalizedText:
+            - @globalNotificationText
+        role: "student"
+        type: "custom-notification-type"
+
+    globalOutOfDateNotification:
+        __construct:
+            - @demoAdmin
+        visibleFrom: "<dateTimeBetween('-20 day', '-10 day')>"
+        visibleTo: "<dateTimeBetween('-3 day', '-1 day')>"
+        addLocalizedText:
+            - @globalNotificationText
+        role: "student"
+        type: "custom-notification-type"
