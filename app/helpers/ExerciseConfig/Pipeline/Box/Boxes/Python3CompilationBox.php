@@ -104,10 +104,9 @@ class Python3CompilationBox extends CompilationBox
     $pycFilenames = [];
     $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue();
     foreach ($sourceFiles as $sourceFile) {
-      $pycFilename = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
-      $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->setValue($pycFilename);
-      $pycFilenames[] = $pycFilename;
+      $pycFilenames[] = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
     }
+    $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->setValue($pycFilenames);
 
     // check if file produced by compilation was successfully created
     $pycFiles = $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR);
