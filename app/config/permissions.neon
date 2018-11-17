@@ -781,6 +781,12 @@ permissions:
         - viewDetail
 
     - allow: true
+      role: student
+      resource: notification
+      actions:
+        - viewCurrent
+
+    - allow: true
       resource: notification
       actions:
         - viewDetail
@@ -810,5 +816,5 @@ permissions:
         - remove
       conditions:
         - or:
-          - notification.isSuperGroupAdmin
+          - notification.isAncestorGroupAdmin
           - notification.isAuthor
