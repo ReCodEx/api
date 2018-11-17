@@ -45,7 +45,7 @@ abstract class Roles
    * @return bool true if given role is valid
    */
   public function validateRole(string $role): bool {
-    if (in_array($role, array_keys($this->roles))) {
+    if (array_key_exists($role, $this->roles)) {
       return true;
     }
 

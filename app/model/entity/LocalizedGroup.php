@@ -31,10 +31,10 @@ class LocalizedGroup extends LocalizedEntity implements JsonSerializable {
    */
   protected $group;
 
-  public function __construct($locale, string $name, string $text, ?LocalizedGroup $createdFrom = null) {
+  public function __construct($locale, string $name, string $description, ?LocalizedGroup $createdFrom = null) {
     parent::__construct($locale);
     $this->name = $name;
-    $this->description = $text;
+    $this->description = $description;
     $this->createdFrom = $createdFrom;
   }
 

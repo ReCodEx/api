@@ -43,7 +43,7 @@ class NotificationPermissionPolicy implements IPermissionPolicy {
     return $user === $notification->getAuthor();
   }
 
-  public function isSuperGroupAdmin(Identity $identity, Notification $notification) {
+  public function isAncestorGroupAdmin(Identity $identity, Notification $notification) {
     $user = $identity->getUserData();
     if ($user === null || $notification->getGroups()->isEmpty()) {
       return false;
