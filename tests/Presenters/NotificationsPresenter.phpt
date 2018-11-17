@@ -48,7 +48,7 @@ class TestNotificationsPresenter extends Tester\TestCase
   }
 
 
-  public function testDefault() {
+  public function testDefaultAll() {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $request = new Nette\Application\Request("V1:Notifications", "GET", ["action" => "default"]);
@@ -57,12 +57,39 @@ class TestNotificationsPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result["code"]);
-    $allCurrent = $this->presenter->notifications->findAllCurrent();
+    $allCurrent = $this->presenter->notifications->findAllCurrent([]);
     Assert::count(count($allCurrent), $result["payload"]);
 
     foreach ($result["payload"] as $environment) {
       Assert::type(Notification::class, $environment);
       Assert::contains($environment, $allCurrent);
+    }
+  }
+
+  public function testDefaultGroups() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    // Demo group does not have notification,
+    // so only one global should be returned
+    $group = current($this->presenter->groups->findFiltered(
+      null,
+      null,
+      "Demo group"
+    ));
+
+    $request = new Nette\Application\Request("V1:Notifications", "GET",
+      ["action" => "default", "groupsIds" => [$group->getId()]]
+    );
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result["code"]);
+    // we have only one current, global group in fixtures, the other ones are
+    // either expired or belongs to group which is not "Demo group"
+    Assert::count(1, $result["payload"]);
+
+    foreach ($result["payload"] as $environment) {
+      Assert::type(Notification::class, $environment);
     }
   }
 

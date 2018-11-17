@@ -4,6 +4,11 @@ App\Model\Entity\LocalizedNotification:
             - "en"
             - "A demo notification text"
 
+    groupNotificationText:
+        __construct:
+            - "en"
+            - "A demo notification text of group"
+
 App\Model\Entity\Notification:
     globalNotification:
         __construct:
@@ -24,3 +29,15 @@ App\Model\Entity\Notification:
             - @globalNotificationText
         role: "student"
         type: "custom-notification-type"
+
+    groupNotification:
+        __construct:
+            - @demoAdmin
+        visibleFrom: "<dateTimeBetween('-3 day', '-1 day')>"
+        visibleTo: "<dateTimeBetween('+1 day', '+3 day')>"
+        addLocalizedText:
+            - @groupNotificationText
+        role: "student"
+        type: "custom-notification-type"
+        addGroup:
+            - @demoChildGroup

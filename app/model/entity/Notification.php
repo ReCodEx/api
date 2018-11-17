@@ -18,7 +18,6 @@ use JsonSerializable;
  * @method DateTime getVisibleTo()
  * @method string getRole()
  * @method string getType()
- * @method void addGroup(Group $group)
  * @method void setVisibleFrom(DateTime $visibleFrom)
  * @method void setVisibleTo(DateTime $visibleTo)
  * @method void setRole(string $role)
@@ -96,6 +95,10 @@ class Notification implements JsonSerializable
     return $this->groups->filter(function (Group $group) {
       return !$group->isDeleted();
     });
+  }
+
+  public function addGroup(Group $group) {
+    $this->groups->add($group);
   }
 
   /**
