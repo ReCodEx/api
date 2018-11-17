@@ -18,6 +18,7 @@ class JavacCompilationBox extends CompilationBox
   /** Type key */
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
+  public static $CLASS_FILES_WILDCARD = "*.class";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $JAR_FILES_PORT_KEY = "jar-files";
   public static $DEFAULT_NAME = "Javac Compilation";
@@ -95,6 +96,7 @@ class JavacCompilationBox extends CompilationBox
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return array
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
@@ -108,6 +110,9 @@ class JavacCompilationBox extends CompilationBox
     // if there were some provided jar files, lets add them to the command line args
     $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
+
+    // set wildcard for class files
+    $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue(self::$CLASS_FILES_WILDCARD);
 
     $task->setCommandArguments(
       array_merge(

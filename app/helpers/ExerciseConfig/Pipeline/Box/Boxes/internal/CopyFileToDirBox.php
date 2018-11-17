@@ -16,17 +16,17 @@ use App\Helpers\JobConfig\Tasks\Task;
 
 
 /**
- * Box which will copy given files. If the filenames are same for the input and
- * output, box will compile to no-op.
+ * Box which will copy given file. If the filename is same for the input and
+ * output box will compile to no-op.
  * @note Internal box which should not be necessary in pipelines.
  */
-class CopyFilesBox extends Box
+class CopyFileToDirBox extends Box
 {
   /** Type key */
-  public static $COPY_TYPE = "copy-files";
+  public static $COPY_TYPE = "copy-file";
   public static $COPY_PORT_IN_KEY = "in";
   public static $COPY_PORT_OUT_KEY = "out";
-  public static $DEFAULT_NAME = "Copy multiple files";
+  public static $DEFAULT_NAME = "Copy file";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -39,10 +39,10 @@ class CopyFilesBox extends Box
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$COPY_PORT_IN_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
       self::$defaultOutputPorts = array(
-        new Port((new PortMeta())->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
+        new Port((new PortMeta())->setName(self::$COPY_PORT_OUT_KEY)->setType(VariableTypes::$FILE_TYPE))
       );
     }
   }
@@ -98,9 +98,9 @@ class CopyFilesBox extends Box
   /**
    * Set input port of this box.
    * @param Port $port
-   * @return CopyFilesBox
+   * @return CopyFileToDirBox
    */
-  public function setInputPort(Port $port): CopyFilesBox {
+  public function setInputPort(Port $port): CopyFileToDirBox {
     $this->meta->setInputPorts([$port]);
     return $this;
   }
@@ -108,9 +108,9 @@ class CopyFilesBox extends Box
   /**
    * Set output port of this box.
    * @param Port $port
-   * @return CopyFilesBox
+   * @return CopyFileToDirBox
    */
-  public function setOutputPort(Port $port): CopyFilesBox {
+  public function setOutputPort(Port $port): CopyFileToDirBox {
     $this->meta->setOutputPorts([$port]);
     return $this;
   }
@@ -142,25 +142,14 @@ class CopyFilesBox extends Box
       $outputVariable->setValue($inputVariable->getValue());
     }
 
-    if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
-      throw new ExerciseConfigException("Different count of files (source vs dest) in copy box");
-    }
-
-    $inputs = array_values($inputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
-    $outputs = array_values($outputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR));
-
-    $tasks = [];
-    for ($i = 0; $i < count($inputs); ++$i) {
-      $task = new Task();
-      $task->setPriority(Priorities::$DEFAULT);
-      $task->setCommandBinary(TaskCommands::$COPY);
-      $task->setCommandArguments([
-        $inputs[$i],
-        $outputs[$i]
-      ]);
-      $tasks[] = $task;
-    }
-    return $tasks;
+    $task = new Task();
+    $task->setPriority(Priorities::$DEFAULT);
+    $task->setCommandBinary(TaskCommands::$COPY);
+    $task->setCommandArguments([
+      $inputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR),
+      ConfigParams::$SOURCE_DIR . $outputVariable->getDirectory()
+    ]);
+    return [$task];
   }
 
 }
