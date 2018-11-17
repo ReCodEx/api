@@ -13,7 +13,6 @@ use App\Model\Repository\Notifications;
 use App\Security\ACL\INotificationPermissions;
 use App\Security\Roles;
 use DateTime;
-use Doctrine\Common\Collections\ArrayCollection;
 use Nette\Utils\Arrays;
 
 class NotificationsPresenter extends BasePresenter {
@@ -50,11 +49,15 @@ class NotificationsPresenter extends BasePresenter {
   }
 
   /**
-   * Get all notifications which are currently active.
+   * Get all notifications which are currently active. If groupsIds is given
+   * returns only the ones from given groups (and their ancestors) and
+   * global ones (without group).
    * @GET
+   * @param array $groupsIds identifications of groups
    */
-  public function actionDefault() {
-    $notifications = $this->notifications->findAllCurrent();
+  public function actionDefault(array $groupsIds) {
+    $ancestralGroupsIds = $this->groups->groupsIdsAncestralClosure($groupsIds);
+    $notifications = $this->notifications->findAllCurrent($ancestralGroupsIds);
     $notifications = array_filter($notifications,
       function (Notification $notification) {
         return $this->notificationAcl->canViewDetail($notification);
