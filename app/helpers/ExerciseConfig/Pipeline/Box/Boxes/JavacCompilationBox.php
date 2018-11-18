@@ -8,6 +8,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Nette\Utils\Strings;
 
 
 /**
@@ -19,6 +20,7 @@ class JavacCompilationBox extends CompilationBox
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
   public static $CLASS_FILES_WILDCARD = "*.class";
+  public static $JAVA_FILES_EXT_REGEX = "[.java]";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $JAR_FILES_PORT_KEY = "jar-files";
   public static $DEFAULT_NAME = "Javac Compilation";
@@ -111,8 +113,13 @@ class JavacCompilationBox extends CompilationBox
     $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
-    // set wildcard for class files
-    $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue(self::$CLASS_FILES_WILDCARD);
+    // set wildcards for class files, which are derived from compiled classes
+    $wildClassFiles = [];
+    foreach ($this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValueAsArray() as $srcFile) {
+      $className = Strings::replace($srcFile, self::$JAVA_FILES_EXT_REGEX, "");
+      $wildClassFiles[] = $className . self::$CLASS_FILES_WILDCARD;
+    }
+    $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue($wildClassFiles);
 
     $task->setCommandArguments(
       array_merge(
