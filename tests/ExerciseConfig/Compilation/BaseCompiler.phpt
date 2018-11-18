@@ -429,7 +429,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal([$testAInputTask->getId(), $initiationCompilationTask->getId(), $initiationExistsTask->getId(),
       $initiationMkdir->getId(), $testAMkdir->getId()], $testACopyTask->getDependencies());
     Assert::equal("cp", $testACopyTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . $initiationDir . "/a.out", ConfigParams::$SOURCE_DIR . "testA/a.out"],
+    Assert::equal([ConfigParams::$SOURCE_DIR . $initiationDir . "/a.out", ConfigParams::$SOURCE_DIR . "testA"],
       $testACopyTask->getCommandArguments());
     Assert::null($testACopyTask->getType());
     Assert::equal(null, $testACopyTask->getTestId());
@@ -504,7 +504,7 @@ class TestBaseCompiler extends Tester\TestCase
     Assert::equal([$testBInputTask->getId(), $initiationCompilationTask->getId(), $initiationExistsTask->getId(),
       $initiationMkdir->getId(), $testBMkdir->getId()], $testBCopyTask->getDependencies());
     Assert::equal("cp", $testBCopyTask->getCommandBinary());
-    Assert::equal([ConfigParams::$SOURCE_DIR . $initiationDir . "/a.out", ConfigParams::$SOURCE_DIR . "testB/a.out"],
+    Assert::equal([ConfigParams::$SOURCE_DIR . $initiationDir . "/a.out", ConfigParams::$SOURCE_DIR . "testB"],
       $testBCopyTask->getCommandArguments());
     Assert::null($testBCopyTask->getType());
     Assert::equal(null, $testBCopyTask->getTestId());
