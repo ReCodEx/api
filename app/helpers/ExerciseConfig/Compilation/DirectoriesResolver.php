@@ -46,6 +46,16 @@ class DirectoriesResolver {
     }
     $directoriesNodes[$directoryName][] = $node;
 
+    foreach ($node->getBox()->getInputPorts() as $inputPort) {
+      $variableValue = $inputPort->getVariableValue();
+      if ($variableValue && $variableValue->isFile() &&
+          $variableValue->getDirectory() === null) {
+        // set directory only if it was not set by processing previous node
+        // (this effectively means that the variable has no output box)
+        $inputPort->getVariableValue()->setDirectory($directoryName);
+      }
+    }
+
     // set directory on variable, this is used during creation of copy tasks
     foreach ($node->getBox()->getOutputPorts() as $outputPort) {
       $variableValue = $outputPort->getVariableValue();
