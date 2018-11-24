@@ -170,8 +170,15 @@ class Helper {
    * @throws ExerciseConfigException
    */
   public function getEnvironmentsForFiles(IExercise $exercise, array $files): array {
-    $envStatuses = [];
+    // prepare unusedFiles array indexed by filename and containing filename
+    // unused files are used for validation if all given files are used within exercise
+    $unusedFilesTemplate = [];
+    foreach ($files as $file) {
+      $unusedFilesTemplate[$file] = $file;
+    }
 
+    $unusedFiles = [];
+    $envStatuses = [];
     $envConfigs = [];
     foreach ($exercise->getRuntimeEnvironments() as $environment) {
       $exerciseEnvironment = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
@@ -183,6 +190,7 @@ class Helper {
       $envConfig = $this->loader->loadVariablesTable($parsedConfig);
       $envConfigs[$environment->getId()] = $envConfig;
       $envStatuses[$environment->getId()] = true;
+      $unusedFiles[$environment->getId()] = $unusedFilesTemplate;
     }
 
     $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
@@ -250,8 +258,8 @@ class Helper {
               $matchedValue = false;
               foreach ($files as $file) {
                 if (Wildcards::match($value, $file)) {
+                  unset($unusedFiles[$environment->getId()][$file]);
                   $matchedValue = true;
-                  break;
                 }
               }
 
@@ -276,7 +284,8 @@ class Helper {
     // return it in resulting array
     $result = [];
     foreach ($envStatuses as $envId => $status) {
-      if ($status) {
+      // status is true and also there are no unused files for environment
+      if ($status && count($unusedFiles[$envId]) === 0) {
         $result[] = $envId;
       }
     }
