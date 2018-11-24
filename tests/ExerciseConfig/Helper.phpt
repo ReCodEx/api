@@ -564,6 +564,13 @@ class TestExerciseConfigHelper extends Tester\TestCase
     Assert::equal(["c-gcc-linux"], $result);
   }
 
+  public function testEnvironmentsForFilesNotAllMatched() {
+    $exercise = $this->createExercise();
+    $result = $this->helper->getEnvironmentsForFiles($exercise, ["main.c", "main.java"]);
+
+    Assert::equal([], $result);
+  }
+
   public function testSubmitVariables() {
     $exercise = $this->createExercise();
     $result = $this->helper->getSubmitVariablesForExercise($exercise);
