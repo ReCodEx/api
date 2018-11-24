@@ -102,7 +102,10 @@ class Python3CompilationBox extends CompilationBox
 
     // determine name of pyc file and set it to variable
     $pycFilenames = [];
-    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue();
+    $sourceFiles = array_merge(
+      $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValueAsArray(),
+      $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValueAsArray()
+    );
     foreach ($sourceFiles as $sourceFile) {
       $pycFilenames[] = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
     }

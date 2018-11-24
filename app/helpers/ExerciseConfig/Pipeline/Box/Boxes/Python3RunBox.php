@@ -8,6 +8,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use Nette\Utils\Strings;
 
 
 /**
@@ -21,6 +22,9 @@ class Python3RunBox extends ExecutionBox
   public static $PYTHON3_VERSION = "python3";
   public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $DEFAULT_NAME = "Python3 Execution";
+
+  public static $PY_EXTENSION = ".py";
+  public static $PYC_EXTENSION = ".pyc";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -103,8 +107,14 @@ class Python3RunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
 
-    $runner = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
+    // process entry was given with extension '*.py' but we need to make it '*.pyc',
+    // because we compiled source files and extra files
     $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
+    if (Strings::endsWith($entry, self::$PY_EXTENSION)) {
+      $entry = Strings::substring($entry, 0, Strings::length($entry) - 3) . self::$PYC_EXTENSION;
+    }
+
+    $runner = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
     $args = [self::$PYTHON3_VERSION, $runner, $entry];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
