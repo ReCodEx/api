@@ -57,6 +57,23 @@ class ExerciseLimits implements JsonSerializable {
   }
 
   /**
+   * Remove limits for given test identification.
+   * @param string $testId
+   * @return ExerciseLimits
+   */
+  public function changeTestId(string $oldId, string $newId): ExerciseLimits {
+    $limits = $this->getLimits($oldId);
+    if ($limits) {
+      if ($this->getLimits($newId)) {
+        throw new \Exception("Serious internal error. Newly created test ID is already present in exercise limits!");
+      }
+      $this->removeLimits($oldId)->addLimits($newId, $limits);
+    }
+    return $this;
+  }
+
+
+  /**
    * Creates and returns properly structured array representing this object.
    * @return array
    */

@@ -21,6 +21,7 @@ use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Entity\ExerciseTest;
 use App\Model\Repository\Exercises;
+use App\Model\Repository\ExerciseTests;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Pipelines;
 use App\Model\Repository\ReferenceSolutionSubmissions;
@@ -42,6 +43,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @inject
    */
   public $exercises;
+
+  /**
+   * @var ExerciseTests
+   * @inject
+   */
+  public $exerciseTests;
 
   /**
    * @var Pipelines
@@ -598,16 +605,37 @@ class ExercisesConfigPresenter extends BasePresenter {
     $req = $this->getRequest();
     $tests = $req->getPost("tests");
 
+    /*
+     * We need to implement CoW on tests.
+     * All modified tests has to be newly created (with new IDs) and these
+     * new IDs has to be propagated into configuration and limits.
+     * Therefore a replacement mapping of updated tests is kept.
+     */
+
     $newTests = [];
+    $namesToOldIds = [];  // new test name => old test ID
+
     foreach ($tests as $test) {
+      // Perform checks on the test name...
       if (!array_key_exists("name", $test)) {
         throw new InvalidArgumentException("tests", "name item not found in particular test");
       }
 
-      $name = $test["name"];
-      $id = Arrays::get($test, "id", null);
-      $description = Arrays::get($test, "description", "");
+      $name = trim($test["name"]);
+      if (!preg_match('/^[-a-zA-Z0-9_()\[\].! ]+$/', $name)) {
+        throw new InvalidArgumentException("tests", "test name contains illicit characters");
+      }
+      if (strlen($name) > 64) {
+        throw new InvalidArgumentException("tests", "test name too long (exceeds 64 characters)");
+      }
+      if (array_key_exists($name, $newTests)) {
+        throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
+      }
 
+      $id = Arrays::get($test, "id", null);
+      $description = trim(Arrays::get($test, "description", ""));
+
+      // Prepare a test entity that is to be inserted into the new list of tests...
       $testEntity = $id ? $exercise->getExerciseTestById($id) : null;
       if ($testEntity === null) {
         // new exercise test was requested to be created
@@ -615,18 +643,14 @@ class ExercisesConfigPresenter extends BasePresenter {
           throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
         }
 
-        $testEntity = new ExerciseTest(trim($name), $description, $this->getCurrentUser());
-      } else {
-        // update of existing exercise test with all appropriate fields
-        $testEntity->setName(trim($name));
-        $testEntity->setDescription($description);
-        $testEntity->updatedNow();
+        $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
+      } elseif ($testEntity->getName() !== $name || $testEntity->getDescription() !== $description) {
+        // an update is needed => a copy is made and old ID mapping is kept
+        $namesToOldIds[$name] = $id;
+        $testEntity = new ExerciseTest($name, $description, $testEntity->getAuthor());
       }
+      // otherwise, the $testEntity is unchanged
 
-
-      if (array_key_exists($name, $newTests)) {
-        throw new InvalidArgumentException("tests", "two tests with the same name '$name' were specified");
-      }
       $newTests[$name] = $testEntity;
     }
 
@@ -638,20 +662,39 @@ class ExercisesConfigPresenter extends BasePresenter {
       );
     }
 
-    // clear old tests and set new ones
-    $exercise->getExerciseTests()->clear();
-    $exercise->setExerciseTests(new ArrayCollection($newTests));
+    $this->exercises->beginTransaction();
+    try {
+      // clear old tests and set new ones
+      $exercise->getExerciseTests()->clear();
+      $exercise->setExerciseTests(new ArrayCollection($newTests));
+      $this->exercises->flush();
 
-    // update exercise configuration and test in here
-    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), false);
+      // now we need to get IDs of newly created tests
+      $idMapping = [];  // old ID => new ID
+      foreach ($newTests as $test) {
+        $this->exerciseTests->refresh($test);
+        if (array_key_exists($test->getName(), $namesToOldIds)) {
+          $oldId = $namesToOldIds[$test->getName()];
+          $idMapping[$oldId] = $test->getId();
+        }
+      }
 
-    $exercise->updatedNow();
-    $this->exercises->flush();
+      // update exercise configuration and test in here
+      $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), $idMapping, false);
 
-    $this->configChecker->check($exercise);
-    $this->exercises->flush();
+      $exercise->updatedNow();
+      $this->exercises->flush();
 
-    $this->sendSuccessResponse($exercise->getExerciseTests()->getValues());
+      $this->configChecker->check($exercise);
+      $this->exercises->flush();
+      $this->exercises->commit();
+    }
+    catch (\Exception $e) {
+      $this->exercises->rollBack();
+      throw $e;
+    }
+
+    $this->sendSuccessResponse(array_values($newTests));
   }
 
 }

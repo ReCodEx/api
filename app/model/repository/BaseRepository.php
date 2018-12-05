@@ -134,4 +134,23 @@ class BaseRepository {
     return array_unique($filtered);
   }
 
+
+  /*
+   * Repositories provide access to low-level transaction control.
+   */
+
+  public function beginTransaction()
+  {
+    $this->em->getConnection()->beginTransaction();
+  }
+
+  public function commit()
+  {
+    $this->em->getConnection()->commit();
+  }
+
+  public function rollBack()
+  {
+    $this->em->getConnection()->rollBack();
+  }
 }
