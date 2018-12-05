@@ -31,21 +31,21 @@ class ExerciseConfig implements JsonSerializable {
 
   /**
    * Add environment into this holder.
-   * @param string $name
+   * @param string $id
    * @return $this
    */
-  public function addEnvironment(string $name): ExerciseConfig {
-    $this->environments[] = $name;
+  public function addEnvironment(string $id): ExerciseConfig {
+    $this->environments[] = $id;
     return $this;
   }
 
   /**
    * Remove environment according to given name identification.
-   * @param string $name
+   * @param string $id
    * @return $this
    */
-  public function removeEnvironment(string $name): ExerciseConfig {
-    if(($key = array_search($name, $this->environments)) !== false) {
+  public function removeEnvironment(string $id): ExerciseConfig {
+    if(($key = array_search($id, $this->environments)) !== false) {
       unset($this->environments[$key]);
     }
     return $this;
@@ -61,35 +61,51 @@ class ExerciseConfig implements JsonSerializable {
 
   /**
    * Get test for the given test name.
-   * @param string $name
+   * @param string $id
    * @return Test|null
    */
-  public function getTest(string $name): ?Test {
-    if (!array_key_exists($name, $this->tests)) {
+  public function getTest(string $id): ?Test {
+    if (!array_key_exists($id, $this->tests)) {
       return null;
     }
 
-    return $this->tests[$name];
+    return $this->tests[$id];
   }
 
   /**
    * Add test into this holder.
-   * @param string $name
+   * @param string $id
    * @param Test $test
    * @return $this
    */
-  public function addTest(string $name, Test $test): ExerciseConfig {
-    $this->tests[$name] = $test;
+  public function addTest(string $id, Test $test): ExerciseConfig {
+    $this->tests[$id] = $test;
     return $this;
   }
 
   /**
    * Remove test according to given test identification.
-   * @param string $name
+   * @param string $id
    * @return $this
    */
-  public function removeTest(string $name): ExerciseConfig {
-    unset($this->tests[$name]);
+  public function removeTest(string $id): ExerciseConfig {
+    unset($this->tests[$id]);
+    return $this;
+  }
+
+  /**
+   * Remove test according to given test identification.
+   * @param string $id
+   * @return $this
+   */
+  public function changeTestId(string $oldId, string $newId): ExerciseConfig {
+    $test = $this->getTest($oldId);
+    if ($test) {
+      if ($this->getTest($newId)) {
+        throw new \Exception("Serious internal error. Newly created test ID is already present in exercise config!");
+      }
+      $this->removeTest($oldId)->addTest($newId, $test);
+    }
     return $this;
   }
 

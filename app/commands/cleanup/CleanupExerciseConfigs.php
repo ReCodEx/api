@@ -131,16 +131,57 @@ class CleanupExerciseConfigs extends Command {
     return $deleteQuery->execute();
   }
 
+  /**
+   * Delete tests and return number of deleted entities.
+   * @param DateTime $limit
+   * @return int
+   */
+  private function cleanupTests(DateTime $limit): int {
+    $usedTests = [];
+
+    /** @var Exercise $exercise */
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
+      foreach ($exercise->getExerciseTestsIds() as $id) {
+        $usedTests[$id] = true;
+      }
+    }
+
+    /** @var Assignment $assignment */
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
+      foreach ($assignment->getExerciseTestsIds() as $id) {
+        $usedTests[$id] = true;
+      }
+    }
+
+    $deleteQuery = $this->entityManager->createQuery('
+      DELETE FROM App\Model\Entity\ExerciseTest t
+      WHERE t.createdAt <= :date AND t.id NOT IN (:ids)
+    ');
+
+    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("ids", array_keys($usedTests), Connection::PARAM_STR_ARRAY);
+    return $deleteQuery->execute();
+  }
+
   protected function execute(InputInterface $input, OutputInterface $output) {
     $now = new DateTime();
     $limit = clone $now;
     $limit->modify("-14 days");
 
-    $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
-    $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
-    $deletedLimsCount = $this->cleanupLimits($limit);
+    $this->exercises->beginTransaction();
+    try {
+      $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
+      $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
+      $deletedLimsCount = $this->cleanupLimits($limit);
+      $deletedTestsCount = $this->cleanupTests($limit);
+      $this->exercises->commit();
+    }
+    catch (\Exception $e) {
+      $this->exercises->rollBack();
+      throw $e;
+    }
 
-    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits");
+    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits; {$deletedTestsCount} exercise tests");
     return 0;
   }
 }
