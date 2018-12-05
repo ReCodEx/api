@@ -73,6 +73,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     $this->assignmentSolutions = $this->container->getByType(AssignmentSolutions::class);
     $this->sender = new AssignmentEmailsSender($this->emailHelperMock, $this->assignmentSolutions, []);
     $this->command = new SendAssignmentDeadlineNotification(
+      "",
       "1 day",
       $this->assignments,
       $this->sender
@@ -92,7 +93,7 @@ class TestDeadlineNotifications extends Tester\TestCase
     $this->assignments->persist($assignment);
 
     $this->emailHelperMock->shouldNotReceive("send");
-    $input = new StringInput("'1 day'");
+    $input = new StringInput("");
     $this->command->run($input, new NullOutput());
 
     Assert::true(true); // We make no assertions here - all the work is done by Mockery
@@ -102,12 +103,12 @@ class TestDeadlineNotifications extends Tester\TestCase
     $assignment = Assignment::assignToGroup($this->demoExercise, $this->demoGroup, true);
 
     $deadline = new DateTime();
-    $deadline->modify("+36 hours");
+    $deadline->modify("+12 hours");
     $assignment->setFirstDeadline($deadline);
     $this->assignments->persist($assignment);
 
     $this->emailHelperMock->shouldReceive("send")->once()->andReturn(true);
-    $input = new StringInput("'1 day'");
+    $input = new StringInput("");
     $this->command->run($input, new NullOutput());
 
     Assert::true(true); // We make no assertions here - all the work is done by Mockery

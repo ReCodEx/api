@@ -108,7 +108,8 @@ parameters:
       from: %emails.from%
       newAssignmentPrefix: "New Assignment -"
       assignmentDeadlinePrefix: "Assignment Deadline Is Behind the Corner -"
-      assignmentDeadlineThreshold: 1 day
+      assignmentDeadlineThresholdFrom: +1 day
+      assignmentDeadlineThresholdTo: +2 days
 
   submissionNotifications:
     emails:
@@ -241,7 +242,7 @@ services:
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
-  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
+  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
