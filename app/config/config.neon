@@ -112,7 +112,7 @@ parameters:
     emails:
       from: %emails.from%
       newAssignmentPrefix: "New Assignment -"
-      assignmentDeadlinePrefix: "Assignment Deadline Is Behind the Corner -"
+      assignmentDeadlinePrefix: "Assignment Deadline Is Around the Corner -"
       assignmentDeadlineThreshold: 1 day
 
   submissionNotifications:

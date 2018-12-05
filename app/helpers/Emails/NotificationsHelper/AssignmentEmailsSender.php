@@ -51,7 +51,7 @@ class AssignmentEmailsSender {
     $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->newAssignmentPrefix = Arrays::get($params, ["emails", "newAssignmentPrefix"], "New Assignment -");
-    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Behind the Corner - ");
+    $this->assignmentDeadlinePrefix = Arrays::get($params, ["emails", "assignmentDeadlinePrefix"], "Assignment Deadline Is Around the Corner - ");
     $this->assignmentRedirectUrl = Arrays::get($params, ["assignmentRedirectUrl"], "https://recodex.mff.cuni.cz");
     $this->shadowRedirectUrl = Arrays::get($params, ["shadowRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
