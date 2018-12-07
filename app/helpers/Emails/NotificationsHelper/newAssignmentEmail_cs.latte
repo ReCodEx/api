@@ -1,7 +1,7 @@
 <h3>Byla zadána nová úloha '{$name}'</h3>
 <p style="word-wrap: break-word; white-space: pre-line; width: 580px;">
     Cvičící ve Vaší skupině '{$group}' zadali novou úlohu '{$assignment}'.
-    Termín odevzdání je {$dueDate|date:'j.n.Y H:i'} a na odezvdání máte
+    Termín odevzdání je {$dueDate|localizedDate:'cs'} a na odezvdání máte
     {$attempts} pokusů. Maximální počet bodů je {$points}.
     Úlohu je možné najít na adrese: <a href="{$link}">{$link}</a>.
 </p>

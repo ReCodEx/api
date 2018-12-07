@@ -3,12 +3,12 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\SubmissionFailure;
 use Nette\SmartObject;
 use Nette\Utils\Arrays;
-use Latte;
 
 /**
  * A helper for sending notifications when submission failures are resolved
@@ -69,7 +69,7 @@ class FailureResolutionEmailsSender {
    * @throws InvalidStateException
    */
   private function createFailureResolvedBody(SubmissionFailure $failure, string $title): string {
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/failureResolved_{locale}.latte");
     return $latte->renderToString($template, [
       "title" => $title,

@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
@@ -128,7 +129,7 @@ class EmailHelper {
       $from = $this->from;
     }
 
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $params = [
       "subject"   => $subject,
       "message"   => $text,

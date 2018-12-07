@@ -4,6 +4,7 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\AssignmentSolution;
@@ -121,7 +122,7 @@ class SolutionCommentsEmailsSender {
    */
   private function createAssignmentSolutionCommentBody(AssignmentSolution $solution, Comment $comment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/assignmentSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
       "assignment" => $this->localizationHelper->getLocalization($solution->getAssignment()->getLocalizedTexts())->getName(),
@@ -156,7 +157,7 @@ class SolutionCommentsEmailsSender {
    */
   private function createReferenceSolutionCommentBody(ReferenceExerciseSolution $solution, Comment $comment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/referenceSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
       "exercise" => $this->localizationHelper->getLocalization($solution->getExercise()->getLocalizedTexts())->getName(),

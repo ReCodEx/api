@@ -4,6 +4,7 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Model\Entity\Assignment;
@@ -11,7 +12,6 @@ use App\Model\Entity\AssignmentBase;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
-use Latte;
 use Nette\Utils\Arrays;
 
 /**
@@ -96,7 +96,7 @@ class AssignmentEmailsSender {
    */
   private function createNewAssignmentBody(AssignmentBase $assignment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     if ($assignment instanceof Assignment) {
       $template = $this->localizationHelper->getTemplate(__DIR__ . "/newAssignmentEmail_{locale}.latte");
       return $latte->renderToString($template, [
@@ -166,7 +166,7 @@ class AssignmentEmailsSender {
    */
   private function createAssignmentDeadlineBody(Assignment $assignment): string {
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $localizedGroup = $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts());
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/assignmentDeadline_{locale}.latte");
     return $latte->renderToString($template, [

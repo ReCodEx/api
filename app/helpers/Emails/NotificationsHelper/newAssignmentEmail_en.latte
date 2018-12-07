@@ -1,7 +1,7 @@
 <h3>New assignment '{$assignment}' was created</h3>
 <p style="word-wrap: break-word; white-space: pre-line; width: 580px;">
     The supervisors in your group '{$group}' have assigned a new exercise '{$assignment}'.
-    The due date is {$dueDate|date:'j.n.Y H:i'} and you have {$attempts} attempts.
+    The due date is {$dueDate|localizedDate:'en'} and you have {$attempts} attempts.
     You can acquire a maximum of {$points} points.
     Assignment can be found on: <a href="{$link}">{$link}</a>.
 </p>

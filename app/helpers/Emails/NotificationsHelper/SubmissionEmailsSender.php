@@ -3,10 +3,10 @@
 namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
-use Latte;
 use App\Helpers\EmailHelper;
 use Nette\Utils\Arrays;
 
@@ -76,7 +76,7 @@ class SubmissionEmailsSender {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/submissionEvaluated_{locale}.latte");
     return $latte->renderToString($template, [
       "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),

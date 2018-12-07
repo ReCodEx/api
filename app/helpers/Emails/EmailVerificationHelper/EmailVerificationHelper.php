@@ -6,6 +6,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
@@ -159,7 +160,7 @@ class EmailVerificationHelper {
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = $this->localizationHelper->getTemplate(__DIR__ . "/verificationEmail_{locale}.latte");
     return $latte->renderToString($template, [
       "email" => $user->getEmail(),
