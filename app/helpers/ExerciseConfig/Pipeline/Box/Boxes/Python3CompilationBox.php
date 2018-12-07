@@ -109,6 +109,11 @@ class Python3CompilationBox extends CompilationBox
     foreach ($sourceFiles as $sourceFile) {
       $pycFilenames[] = pathinfo($sourceFile, PATHINFO_FILENAME) . self::$PYC_EXT;
     }
+
+    // some python libraries counts on presence of py source files, therefore
+    // we have to output them too, so they also will be copied from compilation
+    // folder
+    $pycFilenames = array_merge($pycFilenames, $sourceFiles);
     $this->getOutputPortValue(self::$PYC_FILES_PORT_KEY)->setValue($pycFilenames);
 
     // check if file produced by compilation was successfully created
