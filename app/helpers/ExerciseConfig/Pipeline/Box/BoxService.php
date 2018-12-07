@@ -44,7 +44,6 @@ class BoxService
       JavaRunBox::$JAVA_RUNNER_TYPE => JavaRunBox::class,
       JavacCompilationBox::$JAVAC_TYPE => JavacCompilationBox::class,
       Python3RunBox::$BOX_TYPE => Python3RunBox::class,
-      Python3CompilationBox::$BOX_TYPE => Python3CompilationBox::class,
       PhpRunBox::$PHP_RUN_TYPE => PhpRunBox::class,
       NodeRunBox::$NODE_RUN_TYPE => NodeRunBox::class,
       MergeFilesBox::$BOX_TYPE => MergeFilesBox::class,
