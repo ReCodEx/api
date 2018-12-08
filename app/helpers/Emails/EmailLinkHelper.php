@@ -19,7 +19,7 @@ class EmailLinkHelper {
    */
   public static function getLink(string $link, array $vars): string {
     foreach ($vars as $var => $val) {
-      $link = Nette\Utils\Strings::replace($link, "[{{$val}}]", $val);
+      $link = Nette\Utils\Strings::replace($link, "[{{$var}}]", $val);
     }
     return $link;
   }
