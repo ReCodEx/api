@@ -82,7 +82,7 @@ class SubmissionEmailsSender {
       "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
       "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
-      "status" => $submission->isCorrect() === true ? "was successful" : "failed",
+      "status" => $submission->isCorrect() === true ? "success" : "failure",
       "points" => $submission->getEvaluation()->getPoints(),
       "maxPoints" => $assignment->getMaxPoints($submission->getEvaluation()->getEvaluatedAt()),
       "link" => EmailLinkHelper::getLink($this->submissionRedirectUrl, [

@@ -12,16 +12,11 @@
     }
 
     hr {
-      width: 500px;
-      text-align: center;
-      margin: 0 auto;
-      border: 0;
-      height: 1px;
-      background-color: #c2c2c2;
+      color: #cbd9dc;
+      background-color: #cbd9dc;
     }
 
     p {
-      margin: 0;
       color: #000;
     }
   </style>
@@ -43,7 +38,10 @@
           
             <tr>
               <td style="padding: 20px;" colspan="2">
-                {$message|noescape}
+                <div style="word-wrap: break-word; width: 580px;">
+                  {$message|noescape}
+                </div>
+                <hr>
                 <p>
                   Pokud nechcete dostávat tyto emaily, aktualizujte prosím svoje uživatelské nastavení.
                 </p>

@@ -65,8 +65,6 @@ class SolutionCommentsEmailsSender {
     }
 
     $baseSolution = $solution->getSolution();
-    $subject = $this->assignmentSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
-
     $recipients = [];
     $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
     foreach ($comment->getThread()->findAllPublic() as $pComment) {
@@ -87,8 +85,10 @@ class SolutionCommentsEmailsSender {
     }
 
     if ($solution instanceof AssignmentSolution) {
+      $subject = $this->assignmentSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
       $body = $this->createAssignmentSolutionCommentBody($solution, $comment);
     } else {
+      $subject = $this->referenceSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
       $body = $this->createReferenceSolutionCommentBody($solution, $comment);
     }
 
