@@ -41,7 +41,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
   }
 
   /**
-   * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="supplementaryEvaluationFiles")
+   * @ORM\ManyToMany(targetEntity="Assignment", mappedBy="supplementaryEvaluationFiles")
    */
   protected $assignments;
 
