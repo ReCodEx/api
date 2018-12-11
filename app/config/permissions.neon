@@ -496,8 +496,9 @@ permissions:
           - deleteEvaluation
       conditions:
           or:
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
             - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSubGroupSupervisor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       resource: referenceExerciseSolution
@@ -514,6 +515,7 @@ permissions:
           - delete
       conditions:
           - referenceExerciseSolution.isExerciseAuthor
+          - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student
