@@ -54,14 +54,6 @@ class TestResult
     $this->cpuTimeExceeded = !$result->isCpuTimeOK();
     $this->message = substr($result->getMessage(), 0, 255);  // maximal size of varchar
     $this->judgeOutput = substr($result->getJudgeOutput(), 0, 65536); // the size corresponds to the length of the column
-
-    $this->tasks = new ArrayCollection();
-    foreach ($result->getExecutionResults() as $executionResult) {
-      $stats = $executionResult->getStats();
-      $newTask = new TaskResult($executionResult->getId(), $stats->getUsedWallTime(),
-          $stats->getUsedCpuTime(), $stats->getUsedMemory(), $executionResult->getOutput(), $this);
-      $this->tasks->add($newTask);
-    }
   }
 
   /**
@@ -150,11 +142,6 @@ class TestResult
    * @ORM\Column(type="text", length=65536, nullable=true)
    */
   protected $judgeOutput;
-
-  /**
-   * @ORM\OneToMany(targetEntity="TaskResult", mappedBy="testResult", cascade={"persist", "remove"})
-   */
-  protected $tasks;
 
   public function getData(bool $canViewRatios, bool $canViewValues, bool $canViewJudgeOutput) {
     $wallTime = null;
