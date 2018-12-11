@@ -11,13 +11,10 @@ use App\Helpers\EvaluationResults as ER;
  * @method string getId()
  * @method string getTestName()
  * @method float getScore()
- * @method float getUsedMemoryRatio()
  * @method int getUsedMemory()
  * @method int getUsedMemoryLimit()
- * @method float getUsedWallTimeRatio()
  * @method float getUsedWallTime()
  * @method float getUsedWallTimeLimit()
- * @method float getUsedCpuTimeRatio()
  * @method float getUsedCpuTime()
  * @method float getUsedCpuTimeLimit()
  * @method string getJudgeOutput()
@@ -42,15 +39,12 @@ class TestResult
     $this->status = $result->getStatus();
     $this->score = $result->getScore();
     $this->exitCode = $result->getExitCode();
-    $this->usedMemoryRatio = $result->getUsedMemoryRatio();
     $this->usedMemory = $result->getUsedMemory();
     // $this->usedMemoryLimit = $result->getUsedMemoryLimit(); // TODO
     $this->memoryExceeded = !$result->isMemoryOK();
-    $this->usedWallTimeRatio = $result->getUsedWallTimeRatio();
     $this->usedWallTime = $result->getUsedWallTime();
     // $this->usedWallTimeLimit = $result->getUsedWallTimeLimit(); // TODO
     $this->wallTimeExceeded = !$result->isWallTimeOK();
-    $this->usedCpuTimeRatio = $result->getUsedCpuTimeRatio();
     $this->usedCpuTime = $result->getUsedCpuTime();
     // $this->usedCpuTimeLimit = $result->getUsedCpuTimeLimit(); // TODO
     $this->cpuTimeExceeded = !$result->isCpuTimeOK();
@@ -91,11 +85,6 @@ class TestResult
   protected $memoryExceeded;
 
   /**
-   * @ORM\Column(type="float")
-   */
-  protected $usedMemoryRatio;
-
-  /**
    * @ORM\Column(type="integer")
    */
   protected $usedMemory;
@@ -113,11 +102,6 @@ class TestResult
   /**
    * @ORM\Column(type="float")
    */
-  protected $usedWallTimeRatio;
-
-  /**
-   * @ORM\Column(type="float")
-   */
   protected $usedWallTime;
 
   /**
@@ -129,11 +113,6 @@ class TestResult
    * @ORM\Column(type="boolean")
    */
   protected $cpuTimeExceeded;
-
-  /**
-   * @ORM\Column(type="float")
-   */
-  protected $usedCpuTimeRatio;
 
   /**
    * @ORM\Column(type="float")
@@ -160,7 +139,7 @@ class TestResult
    */
   protected $judgeOutput;
 
-  public function getData(bool $canViewRatios, bool $canViewValues, bool $canViewJudgeOutput) {
+  public function getData(bool $canViewLimits, bool $canViewValues, bool $canViewJudgeOutput) {
     $wallTime = null;
     $wallTimeRatio = null;
     $wallTimeLimit = null;
@@ -172,14 +151,14 @@ class TestResult
     $memoryLimit = null;
     $judgeLog = null;
 
-    if ($canViewRatios) {
+    if ($canViewLimits) {
       $wallTimeLimit = $this->usedWallTimeLimit;
       $cpuTimeLimit = $this->usedCpuTimeLimit;
       $memoryLimit = $this->usedMemoryLimit;
 
-      $wallTimeRatio = $this->usedWallTimeRatio;
-      $cpuTimeRatio = $this->usedCpuTimeRatio;
-      $memoryRatio = $this->usedMemoryRatio;
+      $wallTimeRatio = floatval($this->usedWallTime) / floatval($this->usedWallTimeLimit);
+      $cpuTimeRatio = floatval($this->usedCpuTime) / floatval($this->usedCpuTimeLimit);
+      $memoryRatio = floatval($this->usedMemory) / floatval($this->usedMemoryLimit);
     }
     if ($canViewValues) {
       $wallTime = $this->usedWallTime;

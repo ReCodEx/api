@@ -66,10 +66,10 @@ class SolutionEvaluation
    */
   protected $testResults;
 
-  public function getData(bool $canViewRatios, bool $canViewValues = false, bool $canViewJudgeOutput = false) {
+  public function getData(bool $canViewLimits, bool $canViewValues = false, bool $canViewJudgeOutput = false) {
     $testResults = $this->testResults->map(
-      function (TestResult $res) use ($canViewRatios, $canViewValues, $canViewJudgeOutput) {
-        return $res->getData($canViewRatios, $canViewValues, $canViewJudgeOutput);
+      function (TestResult $res) use ($canViewLimits, $canViewValues, $canViewJudgeOutput) {
+        return $res->getData($canViewLimits, $canViewValues, $canViewJudgeOutput);
       }
     )->getValues();
 
