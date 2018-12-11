@@ -77,6 +77,17 @@ abstract class Box implements JsonSerializable
    */
   public abstract function getCategory(): string;
 
+
+  /**
+   * Whether the box can be optimized (merged with another box with equal functionality).
+   * Boxes are optimizable by default, but specific boxes may prevent this behavior if necessary.
+   * @return bool
+   */
+  public function isOptimizable(): bool
+  {
+    return true;
+  }
+
   /**
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
