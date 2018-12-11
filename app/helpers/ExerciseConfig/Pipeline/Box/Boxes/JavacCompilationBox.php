@@ -5,9 +5,13 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\Priorities;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
+use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskType;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
+use App\Helpers\JobConfig\Tasks\Task;
 use Nette\Utils\Strings;
 
 
@@ -19,6 +23,7 @@ class JavacCompilationBox extends CompilationBox
   /** Type key */
   public static $JAVAC_TYPE = "javac";
   public static $JAVAC_BINARY = "/usr/bin/javac";
+  public static $COMPILATION_SUBDIR = 'compiled-classes';
   public static $CLASS_FILES_WILDCARD = "*.class";
   public static $JAVA_FILES_EXT_REGEX = "[.java]";
   public static $CLASS_FILES_PORT_KEY = "class-files";
@@ -101,27 +106,39 @@ class JavacCompilationBox extends CompilationBox
    * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
-    $task = $this->compileBaseTask($params);
-    $task->setCommandBinary(self::$JAVAC_BINARY);
+    // Create a separate directory where all *.class files will end up.
+    $mkdirTask = new Task();
+    $mkdirTask->setPriority(Priorities::$INITIATION);
+    $mkdirTask->setType(TaskType::$INITIATION);
+    $mkdirTask->setCommandBinary(TaskCommands::$MKDIR);
+    $mkdirTask->setCommandArguments([
+      ConfigParams::$SOURCE_DIR . $this->getDirectory() . ConfigParams::$PATH_DELIM . self::$COMPILATION_SUBDIR
+    ]);
+
+    // Prepare compile task
+    $compileTask = $this->compileBaseTask($params);
+    $compileTask->setCommandBinary(self::$JAVAC_BINARY);
 
     $args = [];
     if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
       $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
     }
 
+    // First order of business -- make sure all *.class files will be yielded to prepared dir (but in eval box)
+    $args[] = '-d';
+    $args[] = ConfigParams::$EVAL_DIR . self::$COMPILATION_SUBDIR;
+
     // if there were some provided jar files, lets add them to the command line args
     $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
     // set wildcards for class files, which are derived from compiled classes
-    $wildClassFiles = [];
-    foreach ($this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValueAsArray() as $srcFile) {
-      $className = Strings::replace($srcFile, self::$JAVA_FILES_EXT_REGEX, "");
-      $wildClassFiles[] = $className . self::$CLASS_FILES_WILDCARD;
-    }
+    $wildClassFiles = [
+      self::$COMPILATION_SUBDIR . ConfigParams::$PATH_DELIM . self::$CLASS_FILES_WILDCARD
+    ];
     $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue($wildClassFiles);
 
-    $task->setCommandArguments(
+    $compileTask->setCommandArguments(
       array_merge(
         $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)
@@ -131,7 +148,7 @@ class JavacCompilationBox extends CompilationBox
       )
     );
 
-    return [$task];
+    return [$mkdirTask, $compileTask];
   }
 
 }
