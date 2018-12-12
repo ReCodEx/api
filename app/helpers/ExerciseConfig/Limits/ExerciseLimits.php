@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
+use App\Exceptions\InternalServerErrorException;
 use Nette\Utils\Arrays;
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
@@ -60,12 +61,13 @@ class ExerciseLimits implements JsonSerializable {
    * Remove limits for given test identification.
    * @param string $testId
    * @return ExerciseLimits
+   * @throws InternalServerErrorException
    */
   public function changeTestId(string $oldId, string $newId): ExerciseLimits {
     $limits = $this->getLimits($oldId);
     if ($limits) {
       if ($this->getLimits($newId)) {
-        throw new \Exception("Serious internal error. Newly created test ID is already present in exercise limits!");
+        throw new InternalServerErrorException("Serious internal error. Newly created test ID is already present in exercise limits!");
       }
       $this->removeLimits($oldId)->addLimits($newId, $limits);
     }

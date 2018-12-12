@@ -688,8 +688,7 @@ class ExercisesConfigPresenter extends BasePresenter {
       $this->configChecker->check($exercise);
       $this->exercises->flush();
       $this->exercises->commit();
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       $this->exercises->rollBack();
       throw $e;
     }

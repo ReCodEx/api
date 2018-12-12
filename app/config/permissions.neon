@@ -514,8 +514,9 @@ permissions:
       actions:
           - delete
       conditions:
-          - referenceExerciseSolution.isExerciseAuthor
-          - referenceExerciseSolution.isExerciseSuperGroupAdmin
+          or:
+            - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student
