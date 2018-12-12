@@ -83,8 +83,7 @@ abstract class Box implements JsonSerializable
    * Boxes are optimizable by default, but specific boxes may prevent this behavior if necessary.
    * @return bool
    */
-  public function isOptimizable(): bool
-  {
+  public function isOptimizable(): bool {
     return true;
   }
 

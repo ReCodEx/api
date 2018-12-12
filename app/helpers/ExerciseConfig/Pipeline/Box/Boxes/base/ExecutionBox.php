@@ -45,8 +45,7 @@ abstract class ExecutionBox extends Box
     return BoxCategories::$EXECUTION;
   }
 
-  public function isOptimizable(): bool
-  {
+  public function isOptimizable(): bool {
     return false; // execution boxes are not optimizable, all executions must be performed
   }
 
