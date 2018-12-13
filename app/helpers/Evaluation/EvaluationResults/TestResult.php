@@ -34,31 +34,24 @@ class TestResult {
   /** @var Limits[] Limits of the execution tasks of this test, indexed by task-id */
   private $limits;
 
-  /** @var StatsInterpretation[] Stats interpretation for each execution task (indexed by task-id)  */
-  private $statsInterpretation;
 
   /**
    * Constructor
-   * @param TestConfig            $config           Test configuration (contained tasks grouped by types, limits)
-   * @param array                 $executionResults Results of execution tasks
+   * @param TestConfig $config Test configuration (contained tasks grouped by types, limits)
+   * @param TaskResult[] $executionResults Results of execution tasks
    * @param TaskResult $evaluationResult Result of the one evaluation task
-   * @param string                $hardwareGroupId  Identifier of hardware group on which was the test evaluated
+   * @param string $hardwareGroupId Identifier of hardware group on which was the test evaluated
    */
   public function __construct(
     TestConfig $config,
     array $executionResults,
     TaskResult $evaluationResult,
-    string     $hardwareGroupId
+    string $hardwareGroupId
   ) {
     $this->config = $config;
     $this->executionResults = $executionResults;
     $this->evaluationResult = $evaluationResult;
     $this->limits = $config->getLimits($hardwareGroupId);
-    foreach ($this->executionResults as $execRes) {
-      $stats = $execRes->getStats();
-      $limit = $this->limits[$execRes->getId()];
-      $this->statsInterpretation[] = new StatsInterpretation($stats, $limit);
-    }
 
     // set the status based on the tasks runtime and their results
     $this->status = self::STATUS_OK;
@@ -141,16 +134,14 @@ class TestResult {
    * @return boolean The result
    */
   public function didExecutionMeetLimits(): bool {
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->doesMeetAllCriteria() === false) {
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      $doesMeetCriteria = $limits === null || $result->getStats()->doesMeetAllCriteria($limits);
+      if ($doesMeetCriteria === false) {
         return false;
       }
     }
     return true;
-  }
-
-  public function getStatsInterpretation(): array {
-    return $this->statsInterpretation;
   }
 
   /**
@@ -158,8 +149,10 @@ class TestResult {
    * @return boolean The result
    */
   public function isWallTimeOK(): bool {
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isWallTimeOK() === false) {
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      $isWallTimeOk = $limits === null || $result->getStats()->isWallTimeOK($limits->getWallTime());
+      if ($isWallTimeOk === false) {
         return false;
       }
     }
@@ -171,8 +164,10 @@ class TestResult {
    * @return boolean The result
    */
   public function isCpuTimeOK(): bool {
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isCpuTimeOK() === false) {
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      $isCpuTimeOk = $limits === null || $result->getStats()->isCpuTimeOK($limits->getTimeLimit());
+      if ($isCpuTimeOk === false) {
         return false;
       }
     }
@@ -184,8 +179,10 @@ class TestResult {
    * @return boolean The result
    */
   public function isMemoryOK(): bool {
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->isMemoryOK() === false) {
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      $isMemoryOk = $limits === null || $result->getStats()->isMemoryOK($limits->getMemoryLimit());
+      if ($isMemoryOk === false) {
         return false;
       }
     }
@@ -206,17 +203,18 @@ class TestResult {
   }
 
   /**
-   * Get maximum used memory ratio of all tasks.
-   * @return float The value in [0.0, 1.0]
+   * Get maximum memory limit of all execution tasks.
+   * @return int in kilobytes
    */
-  public function getUsedMemoryRatio(): float {
-    $maxRatio = 0.0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedMemoryRatio() > $maxRatio) {
-        $maxRatio = $interpretation->getUsedMemoryRatio();
+  public function getUsedMemoryLimit(): int {
+    $maxLimit = 0;
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      if ($limits && $limits->getMemoryLimit() > $maxLimit) {
+        $maxLimit = $limits->getMemoryLimit();
       }
     }
-    return $maxRatio;
+    return $maxLimit;
   }
 
   /**
@@ -225,26 +223,27 @@ class TestResult {
    */
   public function getUsedMemory(): int {
     $maxMemory = 0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedMemory() > $maxMemory) {
-        $maxMemory = $interpretation->getUsedMemory();
+    foreach ($this->executionResults as $result) {
+      if ($result->getStats()->getUsedMemory() > $maxMemory) {
+        $maxMemory = $result->getStats()->getUsedMemory();
       }
     }
     return $maxMemory;
   }
 
   /**
-   * Get maximum used wall time ratio of all tasks.
-   * @return float The value in [0.0, 1.0]
+   * Get maximum wall time limit of all execution tasks.
+   * @return float in seconds
    */
-  public function getUsedWallTimeRatio(): float {
-    $maxRatio = 0.0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedWallTimeRatio() > $maxRatio) {
-        $maxRatio = $interpretation->getUsedWallTimeRatio();
+  public function getUsedWallTimeLimit(): float {
+    $maxLimit = 0.0;
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      if ($limits && $limits->getWallTime() > $maxLimit) {
+        $maxLimit = $limits->getWallTime();
       }
     }
-    return $maxRatio;
+    return $maxLimit;
   }
 
   /**
@@ -253,26 +252,27 @@ class TestResult {
    */
   public function getUsedWallTime(): float {
     $maxTime = 0.0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedWallTime() > $maxTime) {
-        $maxTime = $interpretation->getUsedWallTime();
+    foreach ($this->executionResults as $result) {
+      if ($result->getStats()->getUsedWallTime() > $maxTime) {
+        $maxTime = $result->getStats()->getUsedWallTime();
       }
     }
     return $maxTime;
   }
 
   /**
-   * Get maximum used cpu time ratio of all tasks.
-   * @return float The value in [0.0, 1.0]
+   * Get maximum cpu time limit of all execution tasks.
+   * @return float in seconds
    */
-  public function getUsedCpuTimeRatio(): float {
-    $maxRatio = 0.0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedCpuTimeRatio() > $maxRatio) {
-        $maxRatio = $interpretation->getUsedCpuTimeRatio();
+  public function getUsedCpuTimeLimit(): float {
+    $maxLimit = 0.0;
+    foreach ($this->executionResults as $result) {
+      $limits = $this->limits[$result->getId()];
+      if ($limits && $limits->getTimeLimit() > $maxLimit) {
+        $maxLimit = $limits->getTimeLimit();
       }
     }
-    return $maxRatio;
+    return $maxLimit;
   }
 
   /**
@@ -281,9 +281,9 @@ class TestResult {
    */
   public function getUsedCpuTime(): float {
     $maxTime = 0.0;
-    foreach ($this->statsInterpretation as $interpretation) {
-      if ($interpretation->getUsedCpuTime() > $maxTime) {
-        $maxTime = $interpretation->getUsedCpuTime();
+    foreach ($this->executionResults as $result) {
+      if ($result->getStats()->getUsedCpuTime() > $maxTime) {
+        $maxTime = $result->getStats()->getUsedCpuTime();
       }
     }
     return $maxTime;

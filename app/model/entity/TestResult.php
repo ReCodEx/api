@@ -40,13 +40,13 @@ class TestResult
     $this->score = $result->getScore();
     $this->exitCode = $result->getExitCode();
     $this->usedMemory = $result->getUsedMemory();
-    // $this->usedMemoryLimit = $result->getUsedMemoryLimit(); // TODO
+    $this->usedMemoryLimit = $result->getUsedMemoryLimit();
     $this->memoryExceeded = !$result->isMemoryOK();
     $this->usedWallTime = $result->getUsedWallTime();
-    // $this->usedWallTimeLimit = $result->getUsedWallTimeLimit(); // TODO
+    $this->usedWallTimeLimit = $result->getUsedWallTimeLimit();
     $this->wallTimeExceeded = !$result->isWallTimeOK();
     $this->usedCpuTime = $result->getUsedCpuTime();
-    // $this->usedCpuTimeLimit = $result->getUsedCpuTimeLimit(); // TODO
+    $this->usedCpuTimeLimit = $result->getUsedCpuTimeLimit();
     $this->cpuTimeExceeded = !$result->isCpuTimeOK();
     $this->message = substr($result->getMessage(), 0, 255);  // maximal size of varchar
     $this->judgeOutput = substr($result->getJudgeOutput(), 0, 65536); // the size corresponds to the length of the column
@@ -156,9 +156,12 @@ class TestResult
       $cpuTimeLimit = $this->usedCpuTimeLimit;
       $memoryLimit = $this->usedMemoryLimit;
 
-      $wallTimeRatio = floatval($this->usedWallTime) / floatval($this->usedWallTimeLimit);
-      $cpuTimeRatio = floatval($this->usedCpuTime) / floatval($this->usedCpuTimeLimit);
-      $memoryRatio = floatval($this->usedMemory) / floatval($this->usedMemoryLimit);
+      $wallTimeRatio = $this->usedWallTimeLimit == 0 ? 0.0 :
+        floatval($this->usedWallTime) / floatval($this->usedWallTimeLimit);
+      $cpuTimeRatio = $this->usedCpuTimeLimit == 0 ? 0.0 :
+        floatval($this->usedCpuTime) / floatval($this->usedCpuTimeLimit);
+      $memoryRatio = $this->usedMemoryLimit == 0 ? 0.0 :
+        floatval($this->usedMemory) / floatval($this->usedMemoryLimit);
     }
     if ($canViewValues) {
       $wallTime = $this->usedWallTime;

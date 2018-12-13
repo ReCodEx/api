@@ -30,7 +30,7 @@ class SkippedStats implements IStats {
 
   /**
    * Compares the stats to the time limit
-   * @param float $secondsLimit Limiting amout of milliseconds
+   * @param float $secondsLimit Limiting amount of milliseconds
    * @return boolean The result
    */
   public function isWallTimeOK(float $secondsLimit): bool {
@@ -56,7 +56,7 @@ class SkippedStats implements IStats {
 
   /**
    * Get total amount of consumed memory
-   * @return int The ammout of memory the process allocated
+   * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return 0;
