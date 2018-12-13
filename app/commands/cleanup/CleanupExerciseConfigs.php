@@ -7,6 +7,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use DateTime;
+use Exception;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
@@ -163,25 +164,38 @@ class CleanupExerciseConfigs extends Command {
     return $deleteQuery->execute();
   }
 
+
+  protected function executeUnsafe(DateTime $limit, OutputInterface $output)
+  {
+    $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
+    $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
+    $deletedLimsCount = $this->cleanupLimits($limit);
+    $deletedTestsCount = $this->cleanupTests($limit);
+    $this->exercises->commit();
+    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits; {$deletedTestsCount} exercise tests");
+  }
+
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $now = new DateTime();
-    $limit = clone $now;
+    $limit = new DateTime();
     $limit->modify("-14 days");
 
-    $this->exercises->beginTransaction();
-    try {
-      $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
-      $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
-      $deletedLimsCount = $this->cleanupLimits($limit);
-      $deletedTestsCount = $this->cleanupTests($limit);
-      $this->exercises->commit();
-    }
-    catch (\Exception $e) {
-      $this->exercises->rollBack();
-      throw $e;
+    $tryAgain = 5;
+    while ($tryAgain-- > 0) {
+      $exception = null;
+      $this->exercises->beginTransaction();
+      try {
+        $this->executeUnsafe($limit, $output);
+        break;
+      } catch (Exception $e) {
+        $this->exercises->rollBack();
+        $exception = $e;
+      }
     }
 
-    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits; {$deletedTestsCount} exercise tests");
+    if (!empty($exception)) {
+      throw $exception; // re-throw last exception that caused DB TX failure
+    }
+
     return 0;
   }
 }
