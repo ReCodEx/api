@@ -614,6 +614,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     $newTests = [];
     $namesToOldIds = [];  // new test name => old test ID
+    $testsModified = false;
 
     foreach ($tests as $test) {
       // Perform checks on the test name...
@@ -639,19 +640,30 @@ class ExercisesConfigPresenter extends BasePresenter {
       $testEntity = $id ? $exercise->getExerciseTestById($id) : null;
       if ($testEntity === null) {
         // new exercise test was requested to be created
+        $testsModified = true;
+
         if ($exercise->getExerciseTestByName($name)) {
           throw new InvalidArgumentException("tests", "given test name '$name' is already taken");
         }
 
         $testEntity = new ExerciseTest($name, $description, $this->getCurrentUser());
+        $this->exerciseTests->persist($testEntity);
       } elseif ($testEntity->getName() !== $name || $testEntity->getDescription() !== $description) {
         // an update is needed => a copy is made and old ID mapping is kept
+        $testsModified = true;
         $namesToOldIds[$name] = $id;
         $testEntity = new ExerciseTest($name, $description, $testEntity->getAuthor());
+        $this->exerciseTests->persist($testEntity);
       }
       // otherwise, the $testEntity is unchanged
 
       $newTests[$name] = $testEntity;
+    }
+
+    if (!$testsModified && count($exercise->getExerciseTestsIds()) === count($newTests)) {
+      // nothing has changed
+      $this->sendSuccessResponse(array_values($newTests));
+      return;
     }
 
     $testCountLimit = $this->exerciseRestrictionsConfig->getTestCountLimit();
@@ -662,37 +674,27 @@ class ExercisesConfigPresenter extends BasePresenter {
       );
     }
 
-    $this->exercises->beginTransaction();
-    try {
-      // clear old tests and set new ones
-      $exercise->getExerciseTests()->clear();
-      $exercise->setExerciseTests(new ArrayCollection($newTests));
-      $this->exercises->flush();
-
-      // now we need to get IDs of newly created tests
-      $idMapping = [];  // old ID => new ID
-      foreach ($newTests as $test) {
-        $this->exerciseTests->refresh($test);
-        if (array_key_exists($test->getName(), $namesToOldIds)) {
-          $oldId = $namesToOldIds[$test->getName()];
-          $idMapping[$oldId] = $test->getId();
-        }
+    // first, we create the new tests as independent entities, to get their IDs
+    $this->exerciseTests->flush();  // actually creates the entities
+    $idMapping = [];  // old ID => new ID
+    foreach ($newTests as $test) {
+      $this->exerciseTests->refresh($test);
+      if (array_key_exists($test->getName(), $namesToOldIds)) {
+        $oldId = $namesToOldIds[$test->getName()];
+        $idMapping[$oldId] = $test->getId();
       }
-
-      // update exercise configuration and test in here
-      $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), $idMapping, false);
-
-      $exercise->updatedNow();
-      $this->exercises->flush();
-
-      $this->configChecker->check($exercise);
-      $this->exercises->flush();
-      $this->exercises->commit();
-    } catch (\Exception $e) {
-      $this->exercises->rollBack();
-      throw $e;
     }
 
+    // clear old tests and set new ones
+    $exercise->getExerciseTests()->clear();
+    $exercise->setExerciseTests(new ArrayCollection($newTests));
+    $exercise->updatedNow();
+
+    // update exercise configuration and test in here
+    $this->exerciseConfigUpdater->testsUpdated($exercise, $this->getCurrentUser(), $idMapping, false);
+    $this->configChecker->check($exercise);
+
+    $this->exercises->flush();
     $this->sendSuccessResponse(array_values($newTests));
   }
 
