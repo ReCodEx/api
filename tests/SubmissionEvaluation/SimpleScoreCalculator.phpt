@@ -70,6 +70,13 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     Assert::equal(0.6, $this->computeScore([1, 1, 1, 0, 0, 0]));
   }
 
+  public function testEmptyWeights() {
+    $calc = new SimpleScoreCalculator();
+    $cfg = $this->getCfg([0]);
+    $score = $calc->computeScore("testWeights: {  }\n", $cfg);
+    Assert::equal(0.0, $score);
+  }
+
   public function testScoreConfigValid() {
     Assert::true($this->getCalc()->isScoreConfigValid($this->scoreConfig));
   }
