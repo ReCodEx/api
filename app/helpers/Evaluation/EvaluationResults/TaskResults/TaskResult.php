@@ -83,7 +83,7 @@ class TaskResult {
    * Get parsed statistics of execution
    * @return ISandboxResults|null Statistics of the execution
    */
-  public function getStats(): ?ISandboxResults {
+  public function getSandboxResults(): ?ISandboxResults {
     return null;
   }
 

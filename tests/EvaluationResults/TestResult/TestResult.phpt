@@ -111,7 +111,6 @@ class TestTestResult extends Tester\TestCase
     $res = new TR($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TR::STATUS_OK, $res->getStatus());
-    Assert::equal($execRes[0]->getStats(), $res->getStats()[0]);
     Assert::equal(0.123, $res->getScore());
     Assert::true($res->didExecutionMeetLimits());
     Assert::true($res->isMemoryOK());

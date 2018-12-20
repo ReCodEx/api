@@ -101,9 +101,9 @@ class TestResult {
    * Get parsed result statistics for each task
    * @return array List of results for each task in this test
    */
-  public function getStats(): array {
+  private function getSandboxResultsList(): array {
     return array_map(
-      function (TaskResult $result) { return $result->getStats(); },
+      function (TaskResult $result) { return $result->getSandboxResults(); },
       $this->executionResults
     );
   }
@@ -136,7 +136,7 @@ class TestResult {
   public function didExecutionMeetLimits(): bool {
     foreach ($this->executionResults as $result) {
       $limits = $this->limits[$result->getId()];
-      $doesMeetCriteria = $limits === null || $result->getStats()->doesMeetAllCriteria($limits);
+      $doesMeetCriteria = $limits === null || $result->getSandboxResults()->doesMeetAllCriteria($limits);
       if ($doesMeetCriteria === false) {
         return false;
       }
@@ -151,7 +151,7 @@ class TestResult {
   public function isWallTimeOK(): bool {
     foreach ($this->executionResults as $result) {
       $limits = $this->limits[$result->getId()];
-      $isWallTimeOk = $limits === null || $result->getStats()->isWallTimeOK($limits->getWallTime());
+      $isWallTimeOk = $limits === null || $result->getSandboxResults()->isWallTimeOK($limits->getWallTime());
       if ($isWallTimeOk === false) {
         return false;
       }
@@ -166,7 +166,7 @@ class TestResult {
   public function isCpuTimeOK(): bool {
     foreach ($this->executionResults as $result) {
       $limits = $this->limits[$result->getId()];
-      $isCpuTimeOk = $limits === null || $result->getStats()->isCpuTimeOK($limits->getTimeLimit());
+      $isCpuTimeOk = $limits === null || $result->getSandboxResults()->isCpuTimeOK($limits->getTimeLimit());
       if ($isCpuTimeOk === false) {
         return false;
       }
@@ -181,7 +181,7 @@ class TestResult {
   public function isMemoryOK(): bool {
     foreach ($this->executionResults as $result) {
       $limits = $this->limits[$result->getId()];
-      $isMemoryOk = $limits === null || $result->getStats()->isMemoryOK($limits->getMemoryLimit());
+      $isMemoryOk = $limits === null || $result->getSandboxResults()->isMemoryOK($limits->getMemoryLimit());
       if ($isMemoryOk === false) {
         return false;
       }
@@ -194,7 +194,7 @@ class TestResult {
    * @return int If all tasks are successful, return 0. If not, return first nonzero code returned.
    */
   public function getExitCode(): int {
-    foreach ($this->getStats() as $stat) {
+    foreach ($this->getSandboxResultsList() as $stat) {
       if ($stat->getExitCode() !== 0) {
         return $stat->getExitCode();
       }
@@ -224,8 +224,8 @@ class TestResult {
   public function getUsedMemory(): int {
     $maxMemory = 0;
     foreach ($this->executionResults as $result) {
-      if ($result->getStats()->getUsedMemory() > $maxMemory) {
-        $maxMemory = $result->getStats()->getUsedMemory();
+      if ($result->getSandboxResults()->getUsedMemory() > $maxMemory) {
+        $maxMemory = $result->getSandboxResults()->getUsedMemory();
       }
     }
     return $maxMemory;
@@ -253,8 +253,8 @@ class TestResult {
   public function getUsedWallTime(): float {
     $maxTime = 0.0;
     foreach ($this->executionResults as $result) {
-      if ($result->getStats()->getUsedWallTime() > $maxTime) {
-        $maxTime = $result->getStats()->getUsedWallTime();
+      if ($result->getSandboxResults()->getUsedWallTime() > $maxTime) {
+        $maxTime = $result->getSandboxResults()->getUsedWallTime();
       }
     }
     return $maxTime;
@@ -282,8 +282,8 @@ class TestResult {
   public function getUsedCpuTime(): float {
     $maxTime = 0.0;
     foreach ($this->executionResults as $result) {
-      if ($result->getStats()->getUsedCpuTime() > $maxTime) {
-        $maxTime = $result->getStats()->getUsedCpuTime();
+      if ($result->getSandboxResults()->getUsedCpuTime() > $maxTime) {
+        $maxTime = $result->getSandboxResults()->getUsedCpuTime();
       }
     }
     return $maxTime;
@@ -294,7 +294,7 @@ class TestResult {
    * @return string The message
    */
   public function getMessage(): string {
-    foreach ($this->getStats() as $stat) {
+    foreach ($this->getSandboxResultsList() as $stat) {
       if (!empty($stat->getMessage())) {
         return $stat->getMessage();
       }

@@ -39,7 +39,7 @@ class ExecutionTaskResult extends TaskResult {
    * Get parsed statistics of execution
    * @return ISandboxResults Statistics of the execution
    */
-  public function getStats(): ISandboxResults {
+  public function getSandboxResults(): ISandboxResults {
     return $this->stats;
   }
 
@@ -48,7 +48,7 @@ class ExecutionTaskResult extends TaskResult {
    * @return int The code
    */
   public function getExitCode(): int {
-    return $this->getStats()->getExitCode();
+    return $this->getSandboxResults()->getExitCode();
   }
 
 }

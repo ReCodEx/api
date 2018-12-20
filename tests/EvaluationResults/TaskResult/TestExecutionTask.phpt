@@ -36,7 +36,7 @@ class TestExecutionTask extends Tester\TestCase
     Assert::same("ABC", $result->getId());
     Assert::same("OK", $result->getStatus());
     Assert::true($result->isOk());
-    Assert::equal(new SandboxResults(self::$sampleStats), $result->getStats());
+    Assert::equal(new SandboxResults(self::$sampleStats), $result->getSandboxResults());
   }
 
 }

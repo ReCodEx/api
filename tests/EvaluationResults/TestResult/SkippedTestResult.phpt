@@ -81,7 +81,6 @@ class TestSkippedTestResult extends Tester\TestCase
     $res = new TestResult($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TestResult::STATUS_SKIPPED, $res->getStatus());
-    Assert::equal([new SkippedSandboxResults()], $res->getStats());
     Assert::equal(0.0, $res->getScore());
     Assert::false($res->didExecutionMeetLimits());
     Assert::false($res->isMemoryOK());

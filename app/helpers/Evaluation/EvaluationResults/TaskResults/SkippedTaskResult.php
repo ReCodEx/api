@@ -20,7 +20,7 @@ class SkippedTaskResult extends TaskResult {
     ]);
   }
 
-  public function getStats(): ?ISandboxResults {
+  public function getSandboxResults(): ?ISandboxResults {
     return new SkippedSandboxResults();
   }
 
