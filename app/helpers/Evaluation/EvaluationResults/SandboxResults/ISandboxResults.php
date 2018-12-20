@@ -7,7 +7,7 @@ use App\Helpers\JobConfig\Limits;
 /**
  * Interface for accessing sandbox output of external task.
  */
-interface IStats {
+interface ISandboxResults {
 
   const EXIT_CODE_OK = 0;
   const EXIT_CODE_UNKNOWN = -1;

@@ -9,7 +9,7 @@ use Nette\Utils\Json;
 /**
  * Default stats for skipped tasks (the execution was not performed due to previous errors)
  */
-class SkippedStats implements IStats {
+class SkippedSandboxResults implements ISandboxResults {
 
   /**
    * Compares all the stats to the limits

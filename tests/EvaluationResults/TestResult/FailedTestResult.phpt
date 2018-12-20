@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
-use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\SkippedSandboxResults;
 use App\Helpers\EvaluationResults\TaskResult;
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;

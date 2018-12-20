@@ -10,7 +10,7 @@ use Nette\Utils\Json;
 /**
  * Stats implementation for Isolate sandbox
  */
-class Stats implements IStats {
+class SandboxResults implements ISandboxResults {
   const EXITCODE_KEY = "exitcode";
   const MEMORY_KEY = "memory";
   const CPU_TIME_KEY = "time";

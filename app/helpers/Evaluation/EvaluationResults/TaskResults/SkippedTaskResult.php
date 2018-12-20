@@ -20,8 +20,8 @@ class SkippedTaskResult extends TaskResult {
     ]);
   }
 
-  public function getStats(): ?IStats {
-    return new SkippedStats();
+  public function getStats(): ?ISandboxResults {
+    return new SkippedSandboxResults();
   }
 
 }
