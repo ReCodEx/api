@@ -2,8 +2,6 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Helpers\JobConfig\Limits;
-
 /**
  * Interface for accessing sandbox output of external task.
  */
@@ -14,13 +12,6 @@ interface ISandboxResults {
 
   const STATUS_OK = "OK";
   const STATUS_TO = "TO";
-
-  /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool;
 
   /**
    * Get total amount of consumed wall time

@@ -99,7 +99,7 @@ class TestResult {
 
   /**
    * Get parsed result statistics for each task
-   * @return array List of results for each task in this test
+   * @return ISandboxResults[] List of results for each task in this test
    */
   private function getSandboxResultsList(): array {
     return array_map(
@@ -134,14 +134,14 @@ class TestResult {
    * @return boolean The result
    */
   public function didExecutionMeetLimits(): bool {
-    foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
-      $doesMeetCriteria = $limits === null || $result->getSandboxResults()->doesMeetAllCriteria($limits);
-      if ($doesMeetCriteria === false) {
-        return false;
+    $isStatusOk = true;
+    foreach ($this->getSandboxResultsList() as $results) {
+      if (!$results->isStatusOK()) {
+        $isStatusOk = false;
       }
     }
-    return true;
+
+    return $isStatusOk && $this->isWallTimeOK() && $this->isCpuTimeOK() && $this->isMemoryOK();
   }
 
   /**

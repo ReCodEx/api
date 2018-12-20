@@ -3,7 +3,6 @@
 namespace App\Helpers\EvaluationResults;
 
 use App\Exceptions\ResultsLoadingException;
-use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
 
@@ -86,18 +85,6 @@ class SandboxResults implements ISandboxResults {
       throw new ResultsLoadingException("Sandbox results do not include the '" . self::STATUS_KEY . "' field.");
     }
     $this->status = $data[self::STATUS_KEY];
-  }
-
-  /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean The result
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool {
-    return $this->isStatusOK() &&
-      $this->isWallTimeOK($limits->getWallTime()) &&
-      $this->isCpuTimeOK($limits->getTimeLimit()) &&
-      $this->isMemoryOK($limits->getMemoryLimit());
   }
 
   /**

@@ -2,23 +2,10 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Exceptions\ResultsLoadingException;
-use App\Helpers\JobConfig\Limits;
-use Nette\Utils\Json;
-
 /**
  * Default stats for skipped tasks (the execution was not performed due to previous errors)
  */
 class SkippedSandboxResults implements ISandboxResults {
-
-  /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean The result
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool {
-    return false;
-  }
 
   /**
    * Get total amount of consumed time
