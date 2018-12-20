@@ -248,9 +248,9 @@ class TestResult {
    */
   public function getUsedMemory(): int {
     $maxMemory = 0;
-    foreach ($this->executionResults as $result) {
-      if ($result->getSandboxResults()->getUsedMemory() > $maxMemory) {
-        $maxMemory = $result->getSandboxResults()->getUsedMemory();
+    foreach ($this->sandboxResultsList as $results) {
+      if ($results->getUsedMemory() > $maxMemory) {
+        $maxMemory = $results->getUsedMemory();
       }
     }
     return $maxMemory;
@@ -277,9 +277,9 @@ class TestResult {
    */
   public function getUsedWallTime(): float {
     $maxTime = 0.0;
-    foreach ($this->executionResults as $result) {
-      if ($result->getSandboxResults()->getUsedWallTime() > $maxTime) {
-        $maxTime = $result->getSandboxResults()->getUsedWallTime();
+    foreach ($this->sandboxResultsList as $results) {
+      if ($results->getUsedWallTime() > $maxTime) {
+        $maxTime = $results->getUsedWallTime();
       }
     }
     return $maxTime;
@@ -306,9 +306,9 @@ class TestResult {
    */
   public function getUsedCpuTime(): float {
     $maxTime = 0.0;
-    foreach ($this->executionResults as $result) {
-      if ($result->getSandboxResults()->getUsedCpuTime() > $maxTime) {
-        $maxTime = $result->getSandboxResults()->getUsedCpuTime();
+    foreach ($this->sandboxResultsList as $results) {
+      if ($results->getUsedCpuTime() > $maxTime) {
+        $maxTime = $results->getUsedCpuTime();
       }
     }
     return $maxTime;
