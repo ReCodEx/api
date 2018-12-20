@@ -178,9 +178,15 @@ class TestResult {
    */
   public function isCpuTimeOK(): bool {
     foreach ($this->executionResults as $result) {
+      if ($result->isSkipped() || $result->getSandboxResults()->isStatusTO()) {
+        // skipped task is considered failed
+        return false;
+      }
+
       $limits = $this->getLimits($result->getId());
-      $isCpuTimeOk = $limits === null || $result->getSandboxResults()->isCpuTimeOK($limits->getTimeLimit());
-      if ($isCpuTimeOk === false) {
+      if ($limits !== null && $limits->getTimeLimit() != 0.0 &&
+          $result->getSandboxResults()->getUsedCpuTime() > $limits->getTimeLimit()) {
+        // cpu time limit was specified and used time exceeded it
         return false;
       }
     }
@@ -193,9 +199,15 @@ class TestResult {
    */
   public function isMemoryOK(): bool {
     foreach ($this->executionResults as $result) {
+      if ($result->isSkipped()) {
+        // skipped task is considered failed
+        return false;
+      }
+
       $limits = $this->getLimits($result->getId());
-      $isMemoryOk = $limits === null || $result->getSandboxResults()->isMemoryOK($limits->getMemoryLimit());
-      if ($isMemoryOk === false) {
+      if ($limits !== null && $limits->getMemoryLimit() != 0 &&
+          $result->getSandboxResults()->getUsedMemory() >= $limits->getMemoryLimit()) {
+        // memory limit was specified and used memory exceeded it
         return false;
       }
     }

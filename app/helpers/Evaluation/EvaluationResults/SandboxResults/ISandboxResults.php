@@ -26,24 +26,10 @@ interface ISandboxResults {
   public function getUsedCpuTime(): float;
 
   /**
-   * Compares the stats to the cpu time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool;
-
-  /**
    * Get total amount of consumed memory
    * @return int The ammout of memory the process allocated
    */
   public function getUsedMemory(): int;
-
-  /**
-   * Compares the stats to the memory limit (in bytes)
-   * @param  int     $bytesLimit Limiting amout of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool;
 
   /**
    * Get exit code of examined program

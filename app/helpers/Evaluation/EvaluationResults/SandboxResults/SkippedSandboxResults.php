@@ -24,29 +24,11 @@ class SkippedSandboxResults implements ISandboxResults {
   }
 
   /**
-   * Compares the stats to the cpu time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool {
-    return false;
-  }
-
-  /**
    * Get total amount of consumed memory
    * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return 0;
-  }
-
-  /**
-   * Compares the stats to the memory limit (in bytes)
-   * @param  int     $bytesLimit Limiting amout of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool {
-    return false;
   }
 
   /**

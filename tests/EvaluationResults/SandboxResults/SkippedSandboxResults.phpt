@@ -31,7 +31,6 @@ class TestSkippedSandboxResults extends Tester\TestCase
     Assert::equal(0.0, $stats->getUsedCpuTime());
     Assert::false($stats->wasKilled());
     Assert::equal("SKIPPED", (string) $stats);
-    Assert::false($stats->isMemoryOK(0));
   }
 }
 

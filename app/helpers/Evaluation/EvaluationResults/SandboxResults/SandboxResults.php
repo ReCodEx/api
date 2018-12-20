@@ -104,37 +104,11 @@ class SandboxResults implements ISandboxResults {
   }
 
   /**
-   * Compares the stats to the cpu time limit.
-   * @param float|int $secondsLimit Limiting amount of milliseconds
-   * @return bool The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool {
-    if ($this->isStatusTO()) {
-      return false;
-    } else if ($secondsLimit == 0.0) {
-      return true;
-    }
-    return $this->getUsedCpuTime() <= $secondsLimit;
-  }
-
-  /**
    * Get memory used by the program
    * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return $this->memory;
-  }
-
-  /**
-   * Compares the stats to the memory limit.
-   * @param  int     $bytesLimit Limiting amount of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool {
-    if ($bytesLimit === 0) {
-      return true;
-    }
-    return $this->getUsedMemory() < $bytesLimit;
   }
 
   /**

@@ -31,20 +31,6 @@ class TestSandboxResults extends Tester\TestCase
     Assert::equal("This is a random message", $stats->getMessage());
   }
 
-  public function testCpuTimeLimit() {
-    $stats = new SandboxResults(array_merge(self::$sample, [ "time" => 0.5 ]));
-    Assert::equal(0.5, $stats->getUsedCpuTime());
-    Assert::equal(true, $stats->isCpuTimeOK(1));
-    Assert::equal(false, $stats->isCpuTimeOK(0.4));
-  }
-
-  public function testMemoryLimit() {
-    $stats = new SandboxResults(array_merge(self::$sample, [ "memory" => 100 ]));
-    Assert::equal(100, $stats->getUsedMemory());
-    Assert::equal(true, $stats->isMemoryOK(200));
-    Assert::equal(false, $stats->isMemoryOK(50));
-  }
-
   public function testSerialization() {
     $stats = new SandboxResults(self::$sample);
     $json = json_encode(self::$sample);
