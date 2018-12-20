@@ -16,7 +16,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
 use App\Model\Entity\LocalizedExercise;
 use App\Helpers\ExerciseConfig\Loader as ExerciseConfigLoader;
-use App\Helpers\ScoreCalculatorAccessor;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\Groups;

@@ -3,7 +3,7 @@
 include '../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\SimpleScoreCalculator;
+use App\Helpers\Evaluation\SimpleScoreCalculator;
 use Doctrine\Common\Collections\ArrayCollection;
 
 use App\Model\Entity\TestResult;

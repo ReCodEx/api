@@ -8,7 +8,7 @@ use App\Helpers\EntityMetadata\Solution\SolutionParams;
 use App\Helpers\EntityMetadata\Solution\SubmitVariable;
 use App\Helpers\ExerciseConfig;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ScoreCalculatorAccessor;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\RuntimeEnvironment;
 use Nette\SmartObject;

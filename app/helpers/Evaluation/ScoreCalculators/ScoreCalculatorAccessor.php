@@ -1,6 +1,7 @@
 <?php
-namespace App\Helpers;
+namespace App\Helpers\Evaluation;
 use App\Exceptions\InvalidArgumentException;
+use App\Helpers\Evaluation\IScoreCalculator;
 use Nette;
 use Nette\Utils\Arrays;
 

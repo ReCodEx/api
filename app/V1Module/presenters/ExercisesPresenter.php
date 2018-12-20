@@ -13,7 +13,7 @@ use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
 use App\Helpers\Pagination;
-use App\Helpers\ScoreCalculatorAccessor;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
