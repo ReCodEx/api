@@ -38,13 +38,6 @@ class TestSandboxResults extends Tester\TestCase
     Assert::equal(false, $stats->isCpuTimeOK(0.4));
   }
 
-  public function testWallTimeLimit() {
-    $stats = new SandboxResults(array_merge(self::$sample, [ "wall-time" => 0.5 ]));
-    Assert::equal(0.5, $stats->getUsedWallTime());
-    Assert::equal(true, $stats->isWallTimeOK(1));
-    Assert::equal(false, $stats->isWallTimeOK(0.4));
-  }
-
   public function testMemoryLimit() {
     $stats = new SandboxResults(array_merge(self::$sample, [ "memory" => 100 ]));
     Assert::equal(100, $stats->getUsedMemory());

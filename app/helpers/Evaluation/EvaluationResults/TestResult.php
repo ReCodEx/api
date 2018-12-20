@@ -28,6 +28,9 @@ class TestResult {
   /** @var TaskResult Result of the evaluation task */
   private $evaluationResult;
 
+  /** @var ISandboxResults[] List of results for each execution task in this test indexed with task identification  */
+  private $sandboxResultsList = [];
+
   /** @var string Status of the test */
   private $status;
 
@@ -55,7 +58,10 @@ class TestResult {
 
     // set the status based on the tasks runtime and their results
     $this->status = self::STATUS_OK;
-    foreach ($this->executionResults as $result) { $this->status = self::calculateStatus($this->status, $result->getStatus()); }
+    foreach ($this->executionResults as $result) {
+      $this->status = self::calculateStatus($this->status, $result->getStatus());
+      $this->sandboxResultsList[$result->getId()] = $result->getSandboxResults();
+    }
     $this->status = self::calculateStatus($this->status, $evaluationResult->getStatus());
 
     // if the tested program exceeded its limits or scored zero points, we consider the test failed
@@ -98,14 +104,15 @@ class TestResult {
   }
 
   /**
-   * Get parsed result statistics for each task
-   * @return ISandboxResults[] List of results for each task in this test
+   * Helper function for getting limits structure.
+   * @param string $taskId
+   * @return Limits|null
    */
-  private function getSandboxResultsList(): array {
-    return array_map(
-      function (TaskResult $result) { return $result->getSandboxResults(); },
-      $this->executionResults
-    );
+  private function getLimits(string $taskId): ?Limits {
+    if (array_key_exists($taskId, $this->limits)) {
+      return $this->limits[$taskId];
+    }
+    return null;
   }
 
   /**
@@ -135,7 +142,7 @@ class TestResult {
    */
   public function didExecutionMeetLimits(): bool {
     $isStatusOk = true;
-    foreach ($this->getSandboxResultsList() as $results) {
+    foreach ($this->sandboxResultsList as $results) {
       if (!$results->isStatusOK()) {
         $isStatusOk = false;
       }
@@ -150,9 +157,15 @@ class TestResult {
    */
   public function isWallTimeOK(): bool {
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
-      $isWallTimeOk = $limits === null || $result->getSandboxResults()->isWallTimeOK($limits->getWallTime());
-      if ($isWallTimeOk === false) {
+      if ($result->isSkipped() || $result->getSandboxResults()->isStatusTO()) {
+        // skipped task is considered failed
+        return false;
+      }
+
+      $limits = $this->getLimits($result->getId());
+      if ($limits !== null && $limits->getWallTime() != 0.0 &&
+          $result->getSandboxResults()->getUsedWallTime() > $limits->getWallTime()) {
+        // wall time limit was specified and used time exceeded it
         return false;
       }
     }
@@ -165,7 +178,7 @@ class TestResult {
    */
   public function isCpuTimeOK(): bool {
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
+      $limits = $this->getLimits($result->getId());
       $isCpuTimeOk = $limits === null || $result->getSandboxResults()->isCpuTimeOK($limits->getTimeLimit());
       if ($isCpuTimeOk === false) {
         return false;
@@ -180,7 +193,7 @@ class TestResult {
    */
   public function isMemoryOK(): bool {
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
+      $limits = $this->getLimits($result->getId());
       $isMemoryOk = $limits === null || $result->getSandboxResults()->isMemoryOK($limits->getMemoryLimit());
       if ($isMemoryOk === false) {
         return false;
@@ -194,9 +207,9 @@ class TestResult {
    * @return int If all tasks are successful, return 0. If not, return first nonzero code returned.
    */
   public function getExitCode(): int {
-    foreach ($this->getSandboxResultsList() as $stat) {
-      if ($stat->getExitCode() !== 0) {
-        return $stat->getExitCode();
+    foreach ($this->sandboxResultsList as $results) {
+      if ($results->getExitCode() !== 0) {
+        return $results->getExitCode();
       }
     }
     return 0;
@@ -209,7 +222,7 @@ class TestResult {
   public function getUsedMemoryLimit(): int {
     $maxLimit = 0;
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
+      $limits = $this->getLimits($result->getId());
       if ($limits && $limits->getMemoryLimit() > $maxLimit) {
         $maxLimit = $limits->getMemoryLimit();
       }
@@ -238,7 +251,7 @@ class TestResult {
   public function getUsedWallTimeLimit(): float {
     $maxLimit = 0.0;
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
+      $limits = $this->getLimits($result->getId());
       if ($limits && $limits->getWallTime() > $maxLimit) {
         $maxLimit = $limits->getWallTime();
       }
@@ -267,7 +280,7 @@ class TestResult {
   public function getUsedCpuTimeLimit(): float {
     $maxLimit = 0.0;
     foreach ($this->executionResults as $result) {
-      $limits = $this->limits[$result->getId()];
+      $limits = $this->getLimits($result->getId());
       if ($limits && $limits->getTimeLimit() > $maxLimit) {
         $maxLimit = $limits->getTimeLimit();
       }
@@ -294,9 +307,9 @@ class TestResult {
    * @return string The message
    */
   public function getMessage(): string {
-    foreach ($this->getSandboxResultsList() as $stat) {
-      if (!empty($stat->getMessage())) {
-        return $stat->getMessage();
+    foreach ($this->sandboxResultsList as $results) {
+      if (!empty($results->getMessage())) {
+        return $results->getMessage();
       }
     }
     return "";

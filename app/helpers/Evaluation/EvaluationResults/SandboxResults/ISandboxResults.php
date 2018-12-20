@@ -20,13 +20,6 @@ interface ISandboxResults {
   public function getUsedWallTime(): float;
 
   /**
-   * Compares the stats to the wall time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool;
-
-  /**
    * Get total amount of consumed cpu time
    * @return float The cpu time for which the process ran in seconds
    */

@@ -32,7 +32,6 @@ class TestSkippedSandboxResults extends Tester\TestCase
     Assert::false($stats->wasKilled());
     Assert::equal("SKIPPED", (string) $stats);
     Assert::false($stats->isMemoryOK(0));
-    Assert::false($stats->isWallTimeOK(0.0));
   }
 }
 

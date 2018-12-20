@@ -16,15 +16,6 @@ class SkippedSandboxResults implements ISandboxResults {
   }
 
   /**
-   * Compares the stats to the time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool {
-    return false;
-  }
-
-  /**
    * Get total amount of consumed cpu time
    * @return float The cpu time for which the process ran in seconds
    */

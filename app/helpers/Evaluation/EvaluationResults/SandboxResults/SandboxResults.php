@@ -96,20 +96,6 @@ class SandboxResults implements ISandboxResults {
   }
 
   /**
-   * Compares the stats to the wall time limit.
-   * @param float|int $secondsLimit Limiting amount of milliseconds
-   * @return bool The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool {
-    if ($this->isStatusTO()) {
-      return false;
-    } else if ($secondsLimit == 0.0) {
-      return true;
-    }
-    return $this->getUsedWallTime() <= $secondsLimit;
-  }
-
-  /**
    * Get cpu time used by the program
    * @return float The cpu time for which the process ran in seconds
    */
