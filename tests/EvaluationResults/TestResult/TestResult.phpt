@@ -51,6 +51,26 @@ class TestTestResult extends Tester\TestCase
     ]
   ];
 
+  static $execCfg2 = [
+    "task-id" => "exec2",
+    "test-id" => "A",
+    "type" => ExecutionTaskType::TASK_TYPE,
+    "priority" => 2,
+    "fatal-failure" => false,
+    "cmd" => [ "bin" => "a.out" ],
+    "sandbox" => [
+      "name" => "isolate",
+      "limits" => [
+        [
+          "hw-group-id" => "A",
+          "memory" => 1024,
+          "time" => 1.0,
+          "wall-time" => 1.0
+        ]
+      ]
+    ]
+  ];
+
   static $evalRes = [
     "task-id" => "X",
     "status" => TaskResult::STATUS_OK,
@@ -69,6 +89,22 @@ class TestTestResult extends Tester\TestCase
       "message"   => "This is a random message",
       "status"    => "OK",
       "time"      => 0.037,
+      "killed"    => false
+    ]
+  ];
+
+  static $execRes2 = [
+    "task-id" => "exec2",
+    "status" => TaskResult::STATUS_OK,
+    "sandbox_results" => [
+      "exitcode"  => 0,
+      "max-rss"   => 19696,
+      "memory"    => 10000,
+      "wall-time" => 1.5,
+      "exitsig"   => 0,
+      "message"   => "This is a random message",
+      "status"    => "OK",
+      "time"      => 1.5,
       "killed"    => false
     ]
   ];
@@ -197,6 +233,30 @@ class TestTestResult extends Tester\TestCase
       Assert::equal($result, $res->getStatus());
       Assert::equal(0.0, $res->getScore());
     }
+  }
+
+  public function testTwoExecutionTasks_TimeLimitsExceeded() {
+    $cfg = new TestConfig("id", [
+      $this->builder->loadTask(self::$execCfg),
+      $this->builder->loadTask(self::$execCfg2),
+      $this->builder->loadTask(self::$evalCfg)
+    ]);
+    $res = new TR($cfg, [ new ExecutionTaskResult(self::$execRes), new ExecutionTaskResult(self::$execRes2) ],
+      new EvaluationTaskResult(self::$evalRes), "A");
+
+    Assert::equal(false, $res->didExecutionMeetLimits());
+    Assert::equal(false, $res->isCpuTimeOK());
+    Assert::equal(false, $res->isWallTimeOK());
+    Assert::equal(false, $res->isMemoryOK());
+
+    Assert::equal(2.0, $res->getUsedCpuTimeLimit());
+    Assert::equal(1.537, $res->getUsedCpuTime());
+
+    Assert::equal(1.0, $res->getUsedWallTimeLimit());
+    Assert::equal(1.592, $res->getUsedWallTime());
+
+    Assert::equal(8096, $res->getUsedMemoryLimit());
+    Assert::equal(10000, $res->getUsedMemory());
   }
 
   //////////////////////////////////////

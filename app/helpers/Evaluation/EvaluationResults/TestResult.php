@@ -156,6 +156,7 @@ class TestResult {
    * @return boolean The result
    */
   public function isWallTimeOK(): bool {
+    $time = 0.0;
     foreach ($this->executionResults as $result) {
       if ($result->isSkipped() || $result->getSandboxResults()->isStatusTO()) {
         // skipped task is considered failed
@@ -168,7 +169,16 @@ class TestResult {
         // wall time limit was specified and used time exceeded it
         return false;
       }
+
+      $time += $result->getSandboxResults()->getUsedWallTime();
     }
+
+    $wallTimeLimit = $this->getUsedWallTimeLimit();
+    if ($wallTimeLimit != 0.0 && $time > $wallTimeLimit) {
+      // fail also if the summary of wall times is bigger than maximal wall time limit
+      return false;
+    }
+
     return true;
   }
 
@@ -177,6 +187,7 @@ class TestResult {
    * @return boolean The result
    */
   public function isCpuTimeOK(): bool {
+    $time = 0.0;
     foreach ($this->executionResults as $result) {
       if ($result->isSkipped() || $result->getSandboxResults()->isStatusTO()) {
         // skipped task is considered failed
@@ -189,7 +200,16 @@ class TestResult {
         // cpu time limit was specified and used time exceeded it
         return false;
       }
+
+      $time += $result->getSandboxResults()->getUsedCpuTime();
     }
+
+    $cpuTimeLimit = $this->getUsedCpuTimeLimit();
+    if ($cpuTimeLimit != 0.0 && $time > $cpuTimeLimit) {
+      // fail also if the summary of cpu times is bigger than maximal cpu time limit
+      return false;
+    }
+
     return true;
   }
 
@@ -272,17 +292,16 @@ class TestResult {
   }
 
   /**
-   * Get maximum used wall time of all tasks.
+   * Get summary of used wall time of all tasks.
    * @return float in seconds
    */
   public function getUsedWallTime(): float {
-    $maxTime = 0.0;
-    foreach ($this->sandboxResultsList as $results) {
-      if ($results->getUsedWallTime() > $maxTime) {
-        $maxTime = $results->getUsedWallTime();
-      }
-    }
-    return $maxTime;
+    return array_reduce($this->sandboxResultsList,
+      function ($carry, ISandboxResults $results) {
+        return $carry + $results->getUsedWallTime();
+      },
+      0.0
+    );
   }
 
   /**
@@ -301,17 +320,16 @@ class TestResult {
   }
 
   /**
-   * Get maximum used cpu time of all tasks.
+   * Get summary of used cpu time of all tasks.
    * @return float in seconds
    */
   public function getUsedCpuTime(): float {
-    $maxTime = 0.0;
-    foreach ($this->sandboxResultsList as $results) {
-      if ($results->getUsedCpuTime() > $maxTime) {
-        $maxTime = $results->getUsedCpuTime();
-      }
-    }
-    return $maxTime;
+    return array_reduce($this->sandboxResultsList,
+      function ($carry, ISandboxResults $results) {
+        return $carry + $results->getUsedCpuTime();
+      },
+      0.0
+    );
   }
 
   /**
