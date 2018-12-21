@@ -27,7 +27,7 @@ class EmailLocalizationHelper {
    * @param Collection $collection
    * @return mixed
    */
-  public function getLocalization(string $locale, Collection $collection) {
+  public static function getLocalization(string $locale, Collection $collection) {
     $defaultText = null;
     /** @var LocalizedEntity $text */
     foreach ($collection as $text) {
@@ -55,7 +55,7 @@ class EmailLocalizationHelper {
    * @return string
    * @throws InvalidStateException
    */
-  public function getTemplate(string $locale, string $templatePath): string {
+  public static function getTemplate(string $locale, string $templatePath): string {
     $template = Nette\Utils\Strings::replace($templatePath, self::LOCALE_PLACEHOLDER_PATTERN, $locale);
     if (is_file($template)) {
       return $template;
@@ -74,14 +74,14 @@ class EmailLocalizationHelper {
    * users. Sending itself should be done via given method, which will be
    * executed for each locale.
    * @param User[] $users
-   * @param string $templatePath
+   * @param string|null $templatePath optional template path
    * @param callable $execute three arguments, first is array of users,
    *        second locale and third resolved template path, returning value
    *        should be boolean if the sending was done successfully
-   * @return bool
+   * @return bool if all emails were sent successfully
    * @throws InvalidStateException
    */
-  public function sendLocalizedEmail(array $users, string $templatePath, callable $execute): bool {
+  public function sendLocalizedEmail(array $users, ?string $templatePath, callable $execute): bool {
     // prepare array indexed by locale and containing user with that locale
     $localeUsers = [];
     foreach ($users as $user) {
@@ -95,7 +95,12 @@ class EmailLocalizationHelper {
     // go through and send the messages via given executable method
     $result = true;
     foreach ($localeUsers as $locale => $toUsers) {
-      $template = $this->getTemplate($locale, $templatePath);
+      $template = null;
+      if ($templatePath) {
+        // template path does not have to be given
+        $template = self::getTemplate($locale, $templatePath);
+      }
+
       if (!$execute($toUsers, $locale, $template)) {
         $result = false;
       }

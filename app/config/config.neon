@@ -343,7 +343,7 @@ services:
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper
-  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, @App\Helpers\Emails\EmailLocalizationHelper, %emails%)
+  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, @App\Helpers\Emails\EmailLocalizationHelper, %emailVerification%)
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, @App\Helpers\Emails\EmailLocalizationHelper, %forgottenPassword%)
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)

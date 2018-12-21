@@ -3,8 +3,10 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EmailHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IEmailPermissions;
@@ -12,6 +14,12 @@ use App\Security\ACL\IGroupPermissions;
 use App\Security\Roles;
 
 class EmailsPresenter extends BasePresenter {
+
+  /**
+   * @var EmailLocalizationHelper
+   * @inject
+   */
+  public $emailLocalizationHelper;
 
   /**
    * @var EmailHelper
@@ -49,18 +57,25 @@ class EmailsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+   * @throws InvalidStateException
    */
   public function actionDefault() {
     $users = $this->users->findAll();
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      null,
+      function ($toUsers, $locale) use ($subject, $message) {
+        $emails = array_map(function (User $user) {
+          return $user->getEmail();
+        }, $toUsers);
+
+        $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      });
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -75,18 +90,26 @@ class EmailsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+   * @throws InvalidStateException
    */
   public function actionSendToSupervisors() {
     $supervisors = $this->users->findByRoles(Roles::SUPERVISOR_ROLE, Roles::SUPERADMIN_ROLE);
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $supervisors);
-
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $supervisors,
+      null,
+      function ($toUsers, $locale) use ($subject, $message) {
+        $emails = array_map(function (User $user) {
+          return $user->getEmail();
+        }, $toUsers);
+
+        $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -101,18 +124,26 @@ class EmailsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="subject", validation="string:1..", description="Subject for the soon to be sent email")
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
+   * @throws InvalidStateException
    */
   public function actionSendToRegularUsers() {
     $users = $this->users->findByRoles(Roles::STUDENT_ROLE);
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      null,
+      function ($toUsers, $locale) use ($subject, $message) {
+        $emails = array_map(function (User $user) {
+          return $user->getEmail();
+        }, $toUsers);
+
+        $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -135,12 +166,15 @@ class EmailsPresenter extends BasePresenter {
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    * @throws NotFoundException
    * @throws ForbiddenRequestException
+   * @throws InvalidStateException
    */
   public function actionSendToGroupMembers(string $groupId) {
     $user = $this->getCurrentUser();
     $group = $this->groups->findOrThrow($groupId);
     $req = $this->getRequest();
 
+    $subject = $req->getPost("subject");
+    $message = $req->getPost("message");
     $toSupervisors = filter_var($req->getPost("toSupervisors"), FILTER_VALIDATE_BOOLEAN);
     $toAdmins = filter_var($req->getPost("toAdmins"), FILTER_VALIDATE_BOOLEAN);
     $toMe = filter_var($req->getPost("toMe"), FILTER_VALIDATE_BOOLEAN);
@@ -153,19 +187,23 @@ class EmailsPresenter extends BasePresenter {
       $users = array_merge($users, $group->getAdmins());
     }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
     // user requested copy of the email to his/hers email address
-    if ($toMe && !in_array($user->getEmail(), $emails)) {
-      $emails[] = $user->getEmail();
+    if ($toMe && !in_array($user, $users)) {
+      $users[] = $user;
     }
 
-    $subject = $req->getPost("subject");
-    $message = $req->getPost("message");
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      null,
+      function ($toUsers, $locale) use ($subject, $message) {
+        $emails = array_map(function (User $user) {
+          return $user->getEmail();
+        }, $toUsers);
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+        $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
+
     $this->sendSuccessResponse("OK");
   }
 }

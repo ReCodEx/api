@@ -20,9 +20,6 @@ class EmailHelper {
   /** @var IMailer Nette mailer component */
   private $mailer;
 
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
-
   /** @var string Url of api instance */
   private $apiUrl;
 
@@ -50,12 +47,10 @@ class EmailHelper {
   /**
    * Constructor
    * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
-   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params Array of params used to fill information into predefined mail template
    */
-  public function __construct(IMailer $mailer, EmailLocalizationHelper $localizationHelper, array $params) {
+  public function __construct(IMailer $mailer, array $params) {
     $this->mailer = $mailer;
-    $this->localizationHelper = $localizationHelper;
     $this->apiUrl = Arrays::get($params, "apiUrl", "https://recodex.mff.cuni.cz:4000");
     $this->footerUrl = Arrays::get($params, "footerUrl", "https://recodex.mff.cuni.cz");
     $this->siteName = Arrays::get($params, "siteName", "ReCodEx");
@@ -141,7 +136,7 @@ class EmailHelper {
       "siteName"  => $this->siteName,
       "githubUrl" => $this->githubUrl
     ];
-    $template = $this->localizationHelper->getTemplate($locale, __DIR__ . "/email_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/email_{locale}.latte");
     $html = $latte->renderToString($template, $params);
 
     // Prepare the message ...
