@@ -60,21 +60,14 @@ class EmailVerificationHelper {
   private $accessManager;
 
   /**
-   * @var EmailLocalizationHelper
-   */
-  private $localizationHelper;
-
-  /**
    * Constructor
    * @param EmailHelper $emailHelper
    * @param AccessManager $accessManager
-   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params Parameters from configuration file
    */
-  public function __construct(EmailHelper $emailHelper, AccessManager $accessManager, EmailLocalizationHelper $localizationHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, AccessManager $accessManager, array $params) {
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
-    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Email Verification Request - ");
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
@@ -124,15 +117,18 @@ class EmailVerificationHelper {
    * @param string $token
    * @return bool
    * @throws InvalidStateException
+   * @throws Exception
    */
   private function sendEmail(User $user, string $token): bool {
+    $locale = $user->getSettings()->getDefaultLanguage();
     $subject = $this->createSubject($user);
-    $message = $this->createBody($user, $token);
+    $message = $this->createBody($user, $locale, $token);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [ $user->getEmail() ],
+      $locale,
       $subject,
       $message
     );
@@ -150,18 +146,19 @@ class EmailVerificationHelper {
   /**
    * Creates and return body of email message.
    * @param User $user
+   * @param string $locale
    * @param string $token
    * @return string
-   * @throws Exception
+   * @throws InvalidStateException
    */
-  private function createBody(User $user, string $token): string {
+  private function createBody(User $user, string $locale, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/verificationEmail_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/verificationEmail_{locale}.latte");
     return $latte->renderToString($template, [
       "email" => $user->getEmail(),
       "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
