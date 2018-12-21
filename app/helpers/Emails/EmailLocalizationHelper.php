@@ -74,14 +74,12 @@ class EmailLocalizationHelper {
    * users. Sending itself should be done via given method, which will be
    * executed for each locale.
    * @param User[] $users
-   * @param string|null $templatePath optional template path
    * @param callable $execute three arguments, first is array of users,
    *        second locale and third resolved template path, returning value
    *        should be boolean if the sending was done successfully
    * @return bool if all emails were sent successfully
-   * @throws InvalidStateException
    */
-  public function sendLocalizedEmail(array $users, ?string $templatePath, callable $execute): bool {
+  public function sendLocalizedEmail(array $users, callable $execute): bool {
     // prepare array indexed by locale and containing user with that locale
     $localeUsers = [];
     foreach ($users as $user) {
@@ -95,13 +93,11 @@ class EmailLocalizationHelper {
     // go through and send the messages via given executable method
     $result = true;
     foreach ($localeUsers as $locale => $toUsers) {
-      $template = null;
-      if ($templatePath) {
-        // template path does not have to be given
-        $template = self::getTemplate($locale, $templatePath);
-      }
+      $emails = array_map(function (User $user) {
+        return $user->getEmail();
+      }, $toUsers);
 
-      if (!$execute($toUsers, $locale, $template)) {
+      if (!$execute($toUsers, $emails, $locale)) {
         $result = false;
       }
     }
