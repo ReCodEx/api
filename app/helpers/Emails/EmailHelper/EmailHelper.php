@@ -9,7 +9,6 @@ use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;
 use Nette\Utils\Arrays;
-use Latte;
 use Exception;
 
 /**
@@ -70,14 +69,15 @@ class EmailHelper {
   /**
    * Send an email with a nice template from default email address.
    * @param array $to Receivers of the email
+   * @param string $locale locale of the email which should be sent
    * @param string $subject Subject of the email
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
    * @throws InvalidStateException
    */
-  public function sendFromDefault(array $to, string $subject, string $text, array $bcc = []) {
-    return $this->send(null, $to, $subject, $text, $bcc);
+  public function sendFromDefault(array $to, string $locale, string $subject, string $text, array $bcc = []) {
+    return $this->send(null, $to, $locale, $subject, $text, $bcc);
   }
 
 
@@ -85,6 +85,7 @@ class EmailHelper {
    * Save mail copy into a text file in archiving directory.
    * @param Message $message Message to be serialized into the file.
    * @param Exception $lastMailerException Exception thrown from the sender (if any). Its message is logged as well.
+   * @throws Exception
    */
   private function archiveMailCopy(Message $message, Exception $lastMailerException = null)
   {
@@ -116,13 +117,15 @@ class EmailHelper {
    * Send an email with a nice template.
    * @param string|null $from Sender of the email
    * @param array $to Receivers of the email
+   * @param string $locale locale of the email which should be sent
    * @param string $subject Subject of the email
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
    * @throws InvalidStateException
+   * @throws Exception
    */
-  public function send(?string $from, array $to, string $subject, string $text, array $bcc = []) {
+  public function send(?string $from, array $to, string $locale, string $subject, string $text, array $bcc = []) {
     $subject = $this->subjectPrefix . $subject;
     if ($from === null) {
       // if from email is not provided use the default one
@@ -138,7 +141,7 @@ class EmailHelper {
       "siteName"  => $this->siteName,
       "githubUrl" => $this->githubUrl
     ];
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/email_{locale}.latte");
+    $template = $this->localizationHelper->getTemplate($locale, __DIR__ . "/email_{locale}.latte");
     $html = $latte->renderToString($template, $params);
 
     // Prepare the message ...
