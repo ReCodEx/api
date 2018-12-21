@@ -2,12 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\SubmissionFailure;
 use Exception;
-use Nette\Mail\IMailer;
-use Nette\Mail\Message;
 use Nette\Utils\Arrays;
-use Latte;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\ReportedErrors;
 
@@ -72,6 +70,7 @@ class FailureHelper {
     return $this->emailHelper->send(
       $this->sender,
       $this->receivers,
+      EmailLocalizationHelper::DEFAULT_LOCALE,
       $subject,
       $message
     );

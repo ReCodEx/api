@@ -85,6 +85,7 @@ class AssignmentEmailsSender {
         return $this->emailHelper->send(
           $this->sender,
           [],
+          $locale,
           $subject,
           $this->createNewAssignmentBody($assignment, $locale),
           $emails
@@ -162,6 +163,7 @@ class AssignmentEmailsSender {
         return $this->emailHelper->send(
           $this->sender,
           [],
+          $locale,
           $subject,
           $this->createAssignmentDeadlineBody($assignment, $locale),
           $emails

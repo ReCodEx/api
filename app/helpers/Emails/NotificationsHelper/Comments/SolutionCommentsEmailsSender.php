@@ -11,7 +11,6 @@ use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
 use App\Model\Entity\ReferenceExerciseSolution;
 use App\Model\Entity\User;
-use Latte;
 use Nette\Utils\Arrays;
 
 /**
@@ -84,21 +83,27 @@ class SolutionCommentsEmailsSender {
       return true;
     }
 
-    if ($solution instanceof AssignmentSolution) {
-      $subject = $this->assignmentSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
-      $body = $this->createAssignmentSolutionCommentBody($solution, $comment);
-    } else {
-      $subject = $this->referenceSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
-      $body = $this->createReferenceSolutionCommentBody($solution, $comment);
-    }
+    return $this->localizationHelper->sendLocalizedEmail(
+      $recipients,
+      function ($toUsers, $emails, $locale) use ($solution, $baseSolution, $comment) {
+        if ($solution instanceof AssignmentSolution) {
+          $subject = $this->assignmentSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
+          $body = $this->createAssignmentSolutionCommentBody($solution, $comment, $locale);
+        } else {
+          $subject = $this->referenceSolutionCommentPrefix . $baseSolution->getAuthor()->getName();
+          $body = $this->createReferenceSolutionCommentBody($solution, $comment, $locale);
+        }
 
-    // Send the mail
-    return $this->emailHelper->send(
-      $this->sender,
-      [],
-      $subject,
-      $body,
-      array_keys($recipients)
+        // Send the mail
+        return $this->emailHelper->send(
+          $this->sender,
+          [],
+          $locale,
+          $subject,
+          $body,
+          $emails
+        );
+      }
     );
   }
 
@@ -117,15 +122,16 @@ class SolutionCommentsEmailsSender {
    * Prepare and format body of the assignment solution comment.
    * @param AssignmentSolution $solution
    * @param Comment $comment
+   * @param string $locale
    * @return string Formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createAssignmentSolutionCommentBody(AssignmentSolution $solution, Comment $comment): string {
+  private function createAssignmentSolutionCommentBody(AssignmentSolution $solution, Comment $comment, string $locale): string {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/assignmentSolutionComment_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/assignmentSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
-      "assignment" => $this->localizationHelper->getLocalization($solution->getAssignment()->getLocalizedTexts())->getName(),
+      "assignment" => EmailLocalizationHelper::getLocalization($locale, $solution->getAssignment()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),
@@ -152,15 +158,16 @@ class SolutionCommentsEmailsSender {
    * Prepare and format body of the reference solution comment.
    * @param ReferenceExerciseSolution $solution
    * @param Comment $comment
+   * @param string $locale
    * @return string Formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createReferenceSolutionCommentBody(ReferenceExerciseSolution $solution, Comment $comment): string {
+  private function createReferenceSolutionCommentBody(ReferenceExerciseSolution $solution, Comment $comment, string $locale): string {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/referenceSolutionComment_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/referenceSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
-      "exercise" => $this->localizationHelper->getLocalization($solution->getExercise()->getLocalizedTexts())->getName(),
+      "exercise" => EmailLocalizationHelper::getLocalization($locale, $solution->getExercise()->getLocalizedTexts())->getName(),
       "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
       "author" => $comment->getUser()->getName(),
       "date" => $comment->getPostedAt(),

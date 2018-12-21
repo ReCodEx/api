@@ -17,8 +17,6 @@ class SubmissionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
 
   /** @var string */
   private $sender;
@@ -31,12 +29,10 @@ class SubmissionEmailsSender {
   /**
    * Constructor.
    * @param EmailHelper $emailHelper
-   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
     $this->submissionRedirectUrl = Arrays::get($params, ["submissionRedirectUrl"], "https://recodex.mff.cuni.cz");
@@ -50,37 +46,42 @@ class SubmissionEmailsSender {
    */
   public function submissionEvaluated(AssignmentSolutionSubmission $submission): bool {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
-    $subject = $this->submissionEvaluatedPrefix . $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName();
 
     $user = $submission->getAssignmentSolution()->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
       return true;
     }
 
+    $locale = $user->getSettings()->getDefaultLanguage();
+    $subject = $this->submissionEvaluatedPrefix .
+      EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName();
+
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [$user->getEmail()],
+      $locale,
       $subject,
-      $this->createSubmissionEvaluatedBody($submission)
+      $this->createSubmissionEvaluatedBody($submission, $locale)
     );
   }
 
   /**
    * Prepare and format body of the mail
    * @param AssignmentSolutionSubmission $submission
+   * @param string $locale
    * @return string Formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createSubmissionEvaluatedBody(AssignmentSolutionSubmission $submission): string {
+  private function createSubmissionEvaluatedBody(AssignmentSolutionSubmission $submission, string $locale): string {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/submissionEvaluated_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/submissionEvaluated_{locale}.latte");
     return $latte->renderToString($template, [
-      "assignment" => $this->localizationHelper->getLocalization($assignment->getLocalizedTexts())->getName(),
-      "group" => $this->localizationHelper->getLocalization($assignment->getGroup()->getLocalizedTexts())->getName(),
+      "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
+      "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),
       "status" => $submission->isCorrect() === true ? "success" : "failure",
       "points" => $submission->getEvaluation()->getPoints(),

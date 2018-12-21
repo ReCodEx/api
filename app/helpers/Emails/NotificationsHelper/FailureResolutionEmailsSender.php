@@ -18,9 +18,6 @@ class FailureResolutionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
-  /** @var EmailLocalizationHelper */
-  private $localizationHelper;
-
 
   /** @var string */
   private $sender;
@@ -30,12 +27,10 @@ class FailureResolutionEmailsSender {
 
   /**
    * @param EmailHelper $emailHelper
-   * @param EmailLocalizationHelper $localizationHelper
    * @param array $params
    */
-  public function __construct(EmailHelper $emailHelper, EmailLocalizationHelper $localizationHelper, array $params) {
+  public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
-    $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->failureResolvedPrefix = Arrays::get($params, ["emails", "failureResolvedPrefix"], "Submission Failure Resolved - ");
   }
@@ -48,29 +43,32 @@ class FailureResolutionEmailsSender {
    */
   public function failureResolved(SubmissionFailure $failure): bool {
     $submission = $failure->getSubmission();
+    $locale = $submission->getAuthor()->getSettings()->getDefaultLanguage();
 
     /** @var LocalizedExercise $text */
-    $text = $this->localizationHelper->getLocalization($submission->getExercise()->getLocalizedTexts());
+    $text = EmailLocalizationHelper::getLocalization($locale, $submission->getExercise()->getLocalizedTexts());
     $title = $text !== null ? $text->getName() : "UNKNOWN";
     $subject = $this->failureResolvedPrefix . $title;
 
     return $this->emailHelper->send(
       $this->sender,
       [$submission->getAuthor()->getEmail()],
+      $locale,
       $subject,
-      $this->createFailureResolvedBody($failure, $title)
+      $this->createFailureResolvedBody($failure, $title, $locale)
     );
   }
 
   /**
    * @param SubmissionFailure $failure
    * @param string $title
+   * @param string $locale
    * @return string
    * @throws InvalidStateException
    */
-  private function createFailureResolvedBody(SubmissionFailure $failure, string $title): string {
+  private function createFailureResolvedBody(SubmissionFailure $failure, string $title, string $locale): string {
     $latte = EmailLatteFactory::latte();
-    $template = $this->localizationHelper->getTemplate(__DIR__ . "/failureResolved_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/failureResolved_{locale}.latte");
     return $latte->renderToString($template, [
       "title" => $title,
       "date" => $failure->getCreatedAt(),

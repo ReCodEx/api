@@ -347,9 +347,9 @@ services:
   - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
-  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %failureResolutionNotifications%)
+  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
-  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %submissionNotifications%)
+  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
 
   # models - repositories
   - App\Model\Repository\Comments
