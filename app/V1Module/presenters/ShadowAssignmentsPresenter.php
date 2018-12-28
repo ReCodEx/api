@@ -267,9 +267,9 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   }
 
   /**
-   * Get a list of points of all users for the assignment
+   * Get a list of points of all users for the shadow assignment
    * @GET
-   * @param string $id Identifier of the assignment
+   * @param string $id Identifier of the shadow assignment
    * @throws NotFoundException
    */
   public function actionPointsList(string $id) {
@@ -316,7 +316,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="userId", validation="string", description="Identifier of the user which is marked as awardee for points")
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
    * @Param(type="post", name="note", validation="string", description="Note about newly created points")
-   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that might means")
+   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
    * @throws NotFoundException
    * @throws ForbiddenRequestException
    * @throws BadRequestException
@@ -358,7 +358,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @param string $pointsId Identifier of the shadow assignment points
    * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
    * @Param(type="post", name="note", validation="string", description="Note about newly created points")
-   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that might means")
+   * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
    * @throws NotFoundException
    */
   public function actionUpdatePoints(string $pointsId) {
