@@ -457,9 +457,7 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix", "ShadowAssignments:create");
     $router[] = new DeleteRoute("$prefix/<id>", "ShadowAssignments:remove");
     $router[] = new PostRoute("$prefix/<id>/validate", "ShadowAssignments:validate");
-    $router[] = new GetRoute("$prefix/<id>/points", "ShadowAssignments:pointsList");
-    $router[] = new PostRoute("$prefix/<id>/points", "ShadowAssignments:createPoints");
-    $router[] = new GetRoute("$prefix/points/<pointsId>", "ShadowAssignments:points");
+    $router[] = new PostRoute("$prefix/<id>/create-points", "ShadowAssignments:createPoints");
     $router[] = new PostRoute("$prefix/points/<pointsId>", "ShadowAssignments:updatePoints");
     $router[] = new DeleteRoute("$prefix/points/<pointsId>", "ShadowAssignments:removePoints");
     return $router;

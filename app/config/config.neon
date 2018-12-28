@@ -196,7 +196,6 @@ acl:
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
-    shadowAssignmentPoints: App\Security\ACL\IShadowAssignmentPointsPermissions
     notification: App\Security\ACL\INotificationPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
@@ -214,7 +213,6 @@ acl:
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
-    shadowAssignmentPoints: App\Security\Policies\ShadowAssignmentPointsPermissionPolicy
     notification: App\Security\Policies\NotificationPermissionPolicy
 
 extensions:
@@ -381,7 +379,6 @@ services:
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
   - App\Model\View\ReferenceExerciseSolutionViewFactory
   - App\Model\View\ShadowAssignmentViewFactory
-  - App\Model\View\ShadowAssignmentPointsViewFactory
 
 doctrine:
   user: 'root'
