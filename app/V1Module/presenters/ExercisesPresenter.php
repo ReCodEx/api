@@ -12,7 +12,6 @@ use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\Localizations;
-use App\Helpers\Pagination;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Model\Entity\ExerciseConfig;
@@ -24,6 +23,7 @@ use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
 use App\Model\View\ExerciseViewFactory;
+use App\Model\View\PipelineViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
@@ -108,6 +108,13 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $userViewFactory;
+
+  /**
+   * @var PipelineViewFactory
+   * @inject
+   */
+  public $pipelineViewFactory;
+
 
   public function checkDefault() {
     if (!$this->exerciseAcl->canViewAll()) {
@@ -353,6 +360,7 @@ class ExercisesPresenter extends BasePresenter {
     $pipelines = $exercise->getPipelines()->filter(function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     })->getValues();
+    $pipelines = $this->pipelineViewFactory->getPipelines($pipelines);
     $this->sendSuccessResponse($pipelines);
   }
 

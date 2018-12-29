@@ -3,7 +3,6 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
@@ -14,10 +13,12 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseFileStorage;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\PipelineConfig;
+use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\Model\Repository\SupplementaryExerciseFiles;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\UploadedFiles;
+use App\Model\View\PipelineViewFactory;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IPipelinePermissions;
 use App\Model\Repository\Pipelines;
@@ -30,7 +31,6 @@ use Exception;
  * Endpoints for pipelines manipulation
  * @LoggedIn
  */
-
 class PipelinesPresenter extends BasePresenter {
 
   /**
@@ -99,6 +99,12 @@ class PipelinesPresenter extends BasePresenter {
    */
   public $uploadedFileStorage;
 
+  /**
+   * @var PipelineViewFactory
+   * @inject
+   */
+  public $pipelineViewFactory;
+
 
   public function checkGetDefaultBoxes() {
     if (!$this->pipelineAcl->canViewAll()) {
@@ -139,6 +145,7 @@ class PipelinesPresenter extends BasePresenter {
     $pipelines = array_filter($pipelines, function (Pipeline $pipeline) {
       return $this->pipelineAcl->canViewDetail($pipeline);
     });
+    $pipelines = $this->pipelineViewFactory->getPipelines($pipelines);
     $this->sendPaginationSuccessResponse($pipelines, $pagination, true); // true = needs to be sliced inside
   }
 
@@ -166,7 +173,7 @@ class PipelinesPresenter extends BasePresenter {
     $pipeline = Pipeline::create($this->getCurrentUser(), $exercise);
     $pipeline->setName("Pipeline by {$this->getCurrentUser()->getName()}");
     $this->pipelines->persist($pipeline);
-    $this->sendSuccessResponse($pipeline);
+    $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
   }
 
   /**
@@ -176,6 +183,7 @@ class PipelinesPresenter extends BasePresenter {
    * @param string $id identification of pipeline
    * @Param(type="post", name="exerciseId", description="Exercise identification", required=false)
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionForkPipeline(string $id) {
     $req = $this->getRequest();
@@ -193,7 +201,7 @@ class PipelinesPresenter extends BasePresenter {
     // fork pipeline entity, persist it and return it
     $pipeline = Pipeline::forkFrom($this->getCurrentUser(), $pipeline, $exercise);
     $this->pipelines->persist($pipeline);
-    $this->sendSuccessResponse($pipeline);
+    $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
   }
 
   public function checkRemovePipeline(string $id) {
@@ -208,6 +216,7 @@ class PipelinesPresenter extends BasePresenter {
    * Delete an pipeline
    * @DELETE
    * @param string $id
+   * @throws NotFoundException
    */
   public function actionRemovePipeline(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
@@ -232,7 +241,7 @@ class PipelinesPresenter extends BasePresenter {
   public function actionGetPipeline(string $id) {
     /** @var Pipeline $pipeline */
     $pipeline = $this->pipelines->findOrThrow($id);
-    $this->sendSuccessResponse($pipeline);
+    $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
   }
 
   public function checkUpdatePipeline(string $id) {
@@ -293,7 +302,7 @@ class PipelinesPresenter extends BasePresenter {
     $parameters = $this->request->getPost("parameters") ?? [];
     $pipeline->setParameters($parameters);
 
-    $this->sendSuccessResponse($pipeline);
+    $this->sendSuccessResponse($this->pipelineViewFactory->getPipeline($pipeline));
   }
 
   /**
@@ -302,6 +311,7 @@ class PipelinesPresenter extends BasePresenter {
    * @Param(type="post", name="version", validation="numericint", description="Version of the pipeline.")
    * @param string $id Identifier of the pipeline
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionValidatePipeline(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
@@ -330,10 +340,9 @@ class PipelinesPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="files", description="Identifiers of supplementary files")
    * @param string $id identification of pipeline
-   * @throws BadRequestException
-   * @throws CannotReceiveUploadedFileException
    * @throws ForbiddenRequestException
    * @throws SubmissionFailedException
+   * @throws NotFoundException
    */
   public function actionUploadSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
@@ -390,6 +399,7 @@ class PipelinesPresenter extends BasePresenter {
    * Get list of all supplementary files for a pipeline
    * @GET
    * @param string $id identification of pipeline
+   * @throws NotFoundException
    */
   public function actionGetSupplementaryFiles(string $id) {
     $pipeline = $this->pipelines->findOrThrow($id);
@@ -408,7 +418,7 @@ class PipelinesPresenter extends BasePresenter {
    * @DELETE
    * @param string $id identification of pipeline
    * @param string $fileId identification of file
-   * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
   public function actionDeleteSupplementaryFile(string $id, string $fileId) {
     $pipeline = $this->pipelines->findOrThrow($id);
