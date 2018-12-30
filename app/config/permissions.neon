@@ -423,6 +423,7 @@ permissions:
           - viewLimits
           - viewScoreConfig
           - viewPipelines
+          - viewAssignments
           - viewList
 
     - allow: true
@@ -439,6 +440,7 @@ permissions:
           - viewScoreConfig
           - addReferenceSolution
           - viewPipelines
+          - viewAssignments
           - fork
       conditions:
           or:
