@@ -220,7 +220,7 @@ class Assignment extends AssignmentBase implements IExercise
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise")
+   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
    */
   protected $exercise;
 

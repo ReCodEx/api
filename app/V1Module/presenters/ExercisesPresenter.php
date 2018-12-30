@@ -15,6 +15,7 @@ use App\Helpers\Localizations;
 use App\Helpers\Pagination;
 use App\Helpers\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
+use App\Model\Entity\Assignment;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
@@ -23,8 +24,10 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
+use App\Model\View\AssignmentViewFactory;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\UserViewFactory;
+use App\Security\ACL\IAssignmentPermissions;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IPipelinePermissions;
@@ -80,6 +83,12 @@ class ExercisesPresenter extends BasePresenter {
   public $pipelineAcl;
 
   /**
+   * @var IAssignmentPermissions
+   * @inject
+   */
+  public $assignmentAcl;
+
+  /**
    * @var ScoreCalculatorAccessor
    * @inject
    */
@@ -108,6 +117,13 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $userViewFactory;
+
+  /**
+   * @var AssignmentViewFactory
+   * @inject
+   */
+  public $assignmentViewFactory;
+
 
   public function checkDefault() {
     if (!$this->exerciseAcl->canViewAll()) {
@@ -354,6 +370,32 @@ class ExercisesPresenter extends BasePresenter {
       return $this->pipelineAcl->canViewDetail($pipeline);
     })->getValues();
     $this->sendSuccessResponse($pipelines);
+  }
+
+  public function checkAssignments(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+
+    if (!$this->exerciseAcl->canViewAssignments($exercise)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Get all assignments created from this exercise.
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @param bool $notArchived true if assignments from archived groups should not be returned
+   * @throws NotFoundException
+   */
+  public function actionAssignments(string $id, bool $notArchived = false) {
+    $exercise = $this->exercises->findOrThrow($id);
+
+    $assignments = $exercise->getAssignments()->filter(function (Assignment $assignment) use ($notArchived) {
+      return $notArchived ?
+        $this->assignmentAcl->canViewDetail($assignment) && !$assignment->getGroup()->isArchived() :
+        $this->assignmentAcl->canViewDetail($assignment);
+    })->getValues();
+    $this->sendSuccessResponse($this->assignmentViewFactory->getAssignments($assignments));
   }
 
   /**

@@ -14,6 +14,12 @@ class AssignmentViewFactory {
     $this->assignmentAcl = $assignmentAcl;
   }
 
+  public function getAssignments(array $assignments): array {
+    return array_map(function (Assignment $assignment) {
+      return $this->getAssignment($assignment);
+    }, $assignments);
+  }
+
   public function getAssignment(Assignment $assignment) {
     return [
       "id" => $assignment->getId(),

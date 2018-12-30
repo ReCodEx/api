@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
@@ -165,6 +166,20 @@ class Exercise implements IExercise
   }
 
   /**
+   * @ORM\OneToMany(targetEntity="Assignment", mappedBy="exercise")
+   */
+  protected $assignments;
+
+  /**
+   * @return Collection
+   */
+  public function getAssignments() {
+    return $this->assignments->filter(function (Assignment $assignment) {
+      return !$assignment->isDeleted();
+    });
+  }
+
+  /**
    * @ORM\ManyToMany(targetEntity="Pipeline", inversedBy="exercises")
    */
   protected $pipelines;
@@ -207,6 +222,7 @@ class Exercise implements IExercise
    * @param string|null $scoreCalculator
    * @param string $scoreConfig
    * @param string $configurationType
+   * @throws Exception
    */
   private function __construct($version, $difficulty,
       Collection $localizedTexts, Collection $runtimeEnvironments,
@@ -230,6 +246,7 @@ class Exercise implements IExercise
     $this->isLocked = $isLocked;
     $this->isBroken = false;
     $this->groups = $groups;
+    $this->assignments = new ArrayCollection();
     $this->attachmentFiles = $attachmentFiles;
     $this->exerciseLimits = $exerciseLimits;
     $this->exerciseConfig = $exerciseConfig;
