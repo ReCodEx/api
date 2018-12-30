@@ -38,7 +38,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setAllowSecondDeadline(bool $allow)
  * @method setCanViewLimitRatios(bool $canView)
  * @method setPointsPercentualThreshold(float $threshold)
- * @method setVisibleFrom(DateTime $visibleFrom)
+ * @method setVisibleFrom(?DateTime $visibleFrom)
  */
 class Assignment extends AssignmentBase implements IExercise
 {

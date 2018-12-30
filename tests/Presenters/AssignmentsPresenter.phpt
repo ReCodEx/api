@@ -135,6 +135,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $canViewLimitRatios = false;
     $secondDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeSecondDeadline = 543;
+    $visibleFrom = (new \DateTime())->getTimestamp();
     $isBonus = true;
     $pointsPercentualThreshold = 90;
 
@@ -151,6 +152,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'canViewLimitRatios' => $canViewLimitRatios,
         'secondDeadline' => $secondDeadline,
         'maxPointsBeforeSecondDeadline' => $maxPointsBeforeSecondDeadline,
+        'visibleFrom' => $visibleFrom,
         'isBonus' => $isBonus,
         'pointsPercentualThreshold' => $pointsPercentualThreshold,
       ]
@@ -172,6 +174,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($canViewLimitRatios, $updatedAssignment["canViewLimitRatios"]);
     Assert::equal($secondDeadline, $updatedAssignment["secondDeadline"]);
     Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
+    Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
     Assert::equal($isBonus, $updatedAssignment["isBonus"]);
     Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment["pointsPercentualThreshold"]);
 
