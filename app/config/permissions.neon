@@ -280,10 +280,19 @@ permissions:
       resource: assignment
       actions:
           - viewDetail
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
           - submit
       conditions:
           - assignment.isAssignee
           - assignment.isPublic
+          - student.isSameUser
 
     - allow: true
       resource: assignment
