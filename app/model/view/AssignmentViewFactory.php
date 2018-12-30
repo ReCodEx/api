@@ -39,6 +39,7 @@ class AssignmentViewFactory {
       "allowSecondDeadline" => $assignment->getAllowSecondDeadline(),
       "maxPointsBeforeFirstDeadline" => $assignment->getMaxPointsBeforeFirstDeadline(),
       "maxPointsBeforeSecondDeadline" => $assignment->getMaxPointsBeforeSecondDeadline(),
+      "visibleFrom" => $assignment->getVisibleFrom() ? $assignment->getVisibleFrom()->getTimestamp() : null,
       "submissionsCountLimit" => $assignment->getSubmissionsCountLimit(),
       "runtimeEnvironmentIds" => $assignment->getAllRuntimeEnvironmentsIds(),
       "disabledRuntimeEnvironmentIds" => $assignment->getDisabledRuntimeEnvironmentsIds(),
