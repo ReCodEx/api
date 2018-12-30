@@ -282,7 +282,7 @@ permissions:
           - viewDetail
       conditions:
           - assignment.isAssignee
-          - assignment.isPublic
+          - assignment.isVisible
 
     - allow: true
       role: student
@@ -291,7 +291,7 @@ permissions:
           - submit
       conditions:
           - assignment.isAssignee
-          - assignment.isPublic
+          - assignment.isVisible
           - student.isSameUser
 
     - allow: true

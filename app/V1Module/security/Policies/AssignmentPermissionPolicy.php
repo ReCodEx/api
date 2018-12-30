@@ -3,6 +3,7 @@ namespace App\Security\Policies;
 
 use App\Model\Entity\Assignment;
 use App\Security\Identity;
+use DateTime;
 
 class AssignmentPermissionPolicy implements IPermissionPolicy {
   public function getAssociatedClass() {
@@ -11,6 +12,12 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
 
   public function isPublic(Identity $identity, Assignment $assignment) {
     return $assignment->isPublic();
+  }
+
+  public function isVisible(Identity $identity, Assignment $assignment) {
+    $now = new DateTime();
+    return $assignment->isPublic() &&
+      ($assignment->getVisibleFrom() === null || $assignment->getVisibleFrom() <= $now);
   }
 
   public function isAssignee(Identity $identity, Assignment $assignment) {
