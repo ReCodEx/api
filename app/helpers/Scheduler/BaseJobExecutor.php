@@ -16,10 +16,10 @@ abstract class BaseJobExecutor {
   public abstract function getJobClass(): string;
 
   /**
-   * @param SchedulerJob $job
+   * @param mixed $job
    * @throws Exception
    */
-  protected abstract function internalRun(SchedulerJob $job);
+  protected abstract function internalRun($job);
 
   /**
    * @param SchedulerJob $job

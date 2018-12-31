@@ -71,7 +71,7 @@ class Scheduler {
         $manager = $this->managers[$jobClass];
         $manager->run($job);
       } catch (Exception $e) {
-        // TODO: fail?
+        // TODO: write failure message into database
       }
 
       // update some job information
