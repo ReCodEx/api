@@ -292,6 +292,7 @@ services:
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
   - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
+  - App\Console\SchedulerCommand
 
   # migrations commands
   - Doctrine\Migrations\Tools\Console\Command\ExecuteCommand
@@ -443,6 +444,10 @@ services:
   - App\Model\View\ShadowAssignmentViewFactory
   - App\Model\View\PipelineViewFactory
   - App\Model\View\InstanceViewFactory
+
+  # scheduler
+  - App\Helpers\Scheduler\Scheduler
+  - App\Helpers\Scheduler\CommandJobManager
 
 doctrine:
   user: 'root'
