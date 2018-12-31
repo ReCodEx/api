@@ -4,12 +4,11 @@ namespace App\Helpers\Scheduler;
 
 use App\Model\Entity\SchedulerCommandJob;
 use App\Model\Entity\SchedulerJob;
-use Exception;
 
 /**
  * Class CommandJobManager
  */
-class CommandJobManager implements IJobManager {
+class CommandJobExecutor extends BaseJobExecutor {
 
   /**
    * CommandJobManager constructor.
@@ -22,11 +21,7 @@ class CommandJobManager implements IJobManager {
     return SchedulerCommandJob::class;
   }
 
-  public function run(SchedulerJob $job) {
-    if (get_class($job) !== $this->getJobClass()) {
-      throw new Exception(); // TODO
-    }
-
+  protected function internalRun(SchedulerJob $job) {
     // TODO
   }
 }

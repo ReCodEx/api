@@ -448,7 +448,7 @@ services:
 
   # scheduler
   - App\Helpers\Scheduler\Scheduler
-  - App\Helpers\Scheduler\CommandJobManager
+  - App\Helpers\Scheduler\CommandJobExecutor
 
 doctrine:
   user: 'root'
