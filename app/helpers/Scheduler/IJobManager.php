@@ -2,6 +2,9 @@
 
 namespace App\Helpers\Scheduler;
 
+use App\Model\Entity\SchedulerJob;
+use Exception;
+
 /**
  * Interface IJobManager
  */
@@ -13,7 +16,8 @@ interface IJobManager {
   public function getJobClass(): string;
 
   /**
-   * @param IJob $job
+   * @param SchedulerJob $job
+   * @throws Exception
    */
-  public function run(IJob $job);
+  public function run(SchedulerJob $job);
 }
