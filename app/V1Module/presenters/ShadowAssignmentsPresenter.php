@@ -159,11 +159,6 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setMaxPoints($req->getPost("maxPoints"));
 
-    if ($sendNotification && $wasPublic === false && $isPublic === true) {
-      // assignment is moving from non-public to public, send notification to students
-      $this->assignmentEmailsSender->assignmentCreated($assignment);
-    }
-
     // go through localizedTexts and construct database entities
     $localizedTexts = [];
     foreach ($req->getPost("localizedTexts") as $localization) {
@@ -194,6 +189,12 @@ class ShadowAssignmentsPresenter extends BasePresenter {
 
     foreach ($assignment->getLocalizedTexts() as $localizedText) {
       $this->shadowAssignments->persist($localizedText, false);
+    }
+
+    // sending notification has to be after setting new localized texts
+    if ($sendNotification && $wasPublic === false && $isPublic === true) {
+      // assignment is moving from non-public to public, send notification to students
+      $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
     $this->shadowAssignments->flush();

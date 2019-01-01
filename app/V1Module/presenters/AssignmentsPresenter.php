@@ -243,11 +243,6 @@ class AssignmentsPresenter extends BasePresenter {
       $this->solutionEvaluations->flush();
     }
 
-    if ($sendNotification && $wasPublic === false && $isPublic === true) {
-      // assignment is moving from non-public to public, send notification to students
-      $this->assignmentEmailsSender->assignmentCreated($assignment);
-    }
-
     // go through localizedTexts and construct database entities
     $localizedTexts = [];
     $localizedAssignments = [];
@@ -292,6 +287,12 @@ class AssignmentsPresenter extends BasePresenter {
 
     foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
       $this->assignments->persist($localizedAssignment, false);
+    }
+
+    // sending notification has to be after setting new localized texts
+    if ($sendNotification && $wasPublic === false && $isPublic === true) {
+      // assignment is moving from non-public to public, send notification to students
+      $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
     $this->assignments->flush();
