@@ -88,8 +88,12 @@ class GroupViewFactory {
    */
   private function getPointsForShadowAssignments(array $shadowPointsList): int {
     return array_reduce($shadowPointsList,
-      function ($carry, ShadowAssignmentPoints $points) {
-        return $carry + $points->getPoints();
+      function ($carry, Pair $pointsPair) {
+        $points = $pointsPair->value;
+        if ($points !== null) {
+          $carry += $points->getPoints();
+        }
+        return $carry;
       },
       0);
   }
@@ -129,13 +133,15 @@ class GroupViewFactory {
     }
 
     $shadowAssignments = [];
-    foreach ($shadowPointsList as $shadowPoints) {
-      $assignment = $shadowPoints->getShadowAssignment();
+    foreach ($shadowPointsList as $pointsPair) {
+      $assignment = $pointsPair->key;
+      $shadowPoints = $pointsPair->value;
+
       $shadowAssignments[] = [
         "id" => $assignment->getId(),
         "points" => [
           "total" => $assignment->getMaxPoints(),
-          "gained" => $shadowPoints->getPoints()
+          "gained" => $shadowPoints ? $shadowPoints->getPoints() : null
         ]
       ];
     }
