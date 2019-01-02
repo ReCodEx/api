@@ -21,24 +21,19 @@ class ShadowAssignmentPointsRepository extends BaseRepository {
    * Find points for given user of given assignments.
    * @param ShadowAssignment[] $shadowAssignments
    * @param User $awardee
-   * @return Pair[] indexed by the shadow assignment identification, value is
-   * pair which key is assignment and value is points. Points can be null if
-   * there are no points for the assignment and user
+   * @return ShadowAssignmentPoints[] indexed by the shadow assignment
+   * identification, value is shadow assignment points for the assignment
    */
   public function findPointsForAssignments(array $shadowAssignments, User $awardee): array {
-    $result = [];
-    foreach ($shadowAssignments as $assignment) {
-      $result[$assignment->getId()] = new Pair($assignment, null);
-    }
-
     $pointsList = $this->findBy([
       "awardee" => $awardee,
       "shadowAssignment" => $shadowAssignments, // doctrine will handle given array with IN operator
     ]);
 
     /** @var ShadowAssignmentPoints $points */
+    $result = [];
     foreach ($pointsList as $points) {
-      $result[$points->getShadowAssignment()->getId()]->value = $points;
+      $result[$points->getShadowAssignment()->getId()] = $points;
     }
     return $result;
   }
