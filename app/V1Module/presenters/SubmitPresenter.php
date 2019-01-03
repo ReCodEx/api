@@ -300,7 +300,7 @@ class SubmitPresenter extends BasePresenter {
           $solution->getSolution()->getRuntimeEnvironment(),
           $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
-      $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser());
+      $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
       $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,
         FailureHelper::TYPE_API_ERROR,
@@ -312,7 +312,7 @@ class SubmitPresenter extends BasePresenter {
 
     // create submission entity
     $submission = new AssignmentSolutionSubmission($solution,
-      $generatorResult->getJobConfigPath(), $this->getCurrentUser());
+      $generatorResult->getJobConfigPath(), $this->getCurrentUser(), $isDebug);
     $this->assignmentSubmissions->persist($submission);
 
     // initiate submission
