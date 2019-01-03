@@ -56,13 +56,15 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       "isCorrect" => $this->isCorrect(),
       "evaluation" => $evaluationData,
       "submittedAt" => $this->submittedAt->getTimestamp(),
-      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null
+      "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
+      "isDebug" => $this->isDebug
     ];
   }
 
   public function __construct(ReferenceExerciseSolution $referenceSolution,
-      ?HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy) {
-    parent::__construct($submittedBy, $jobConfigPath);
+      ?HardwareGroup $hwGroup, string $jobConfigPath, User $submittedBy,
+      bool $isDebug = false) {
+    parent::__construct($submittedBy, $jobConfigPath, $isDebug);
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
     $this->failures = new ArrayCollection();

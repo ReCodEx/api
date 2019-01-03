@@ -44,7 +44,8 @@ class AssignmentSolutionSubmissionViewFactory {
       "isCorrect" => $submission->isCorrect(),
       "evaluation" => $evaluationData,
       "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
-      "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null
+      "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null,
+      "isDebug" => $submission->isDebug()
     ];
   }
 }

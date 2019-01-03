@@ -55,15 +55,21 @@ abstract class Submission implements IEvaluable
    */
   protected $evaluation;
 
-  public function canBeEvaluated(): bool {
-    return $this->resultsUrl !== null;
-  }
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $isDebug;
 
 
-  public function __construct(User $submittedBy, string $jobConfigPath) {
+  public function __construct(User $submittedBy, string $jobConfigPath, bool $isDebug = false) {
     $this->submittedAt = new DateTime();
     $this->submittedBy = $submittedBy;
     $this->jobConfigPath = $jobConfigPath;
+    $this->isDebug = $isDebug;
+  }
+
+  public function canBeEvaluated(): bool {
+    return $this->resultsUrl !== null;
   }
 
   public function hasEvaluation(): bool {
@@ -76,6 +82,10 @@ abstract class Submission implements IEvaluable
 
   public function setEvaluation(SolutionEvaluation $evaluation) {
     $this->evaluation = $evaluation;
+  }
+
+  public function isDebug(): bool {
+    return $this->isDebug;
   }
 
   public abstract function getJobType(): string;
