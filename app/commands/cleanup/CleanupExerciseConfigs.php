@@ -7,6 +7,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
 use DateTime;
+use Exception;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
@@ -131,16 +132,70 @@ class CleanupExerciseConfigs extends Command {
     return $deleteQuery->execute();
   }
 
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $now = new DateTime();
-    $limit = clone $now;
-    $limit->modify("-14 days");
+  /**
+   * Delete tests and return number of deleted entities.
+   * @param DateTime $limit
+   * @return int
+   */
+  private function cleanupTests(DateTime $limit): int {
+    $usedTests = [];
 
+    /** @var Exercise $exercise */
+    foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
+      foreach ($exercise->getExerciseTestsIds() as $id) {
+        $usedTests[$id] = true;
+      }
+    }
+
+    /** @var Assignment $assignment */
+    foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
+      foreach ($assignment->getExerciseTestsIds() as $id) {
+        $usedTests[$id] = true;
+      }
+    }
+
+    $deleteQuery = $this->entityManager->createQuery('
+      DELETE FROM App\Model\Entity\ExerciseTest t
+      WHERE t.createdAt <= :date AND t.id NOT IN (:ids)
+    ');
+
+    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("ids", array_keys($usedTests), Connection::PARAM_STR_ARRAY);
+    return $deleteQuery->execute();
+  }
+
+
+  protected function executeUnsafe(DateTime $limit, OutputInterface $output)
+  {
     $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
     $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
     $deletedLimsCount = $this->cleanupLimits($limit);
+    $deletedTestsCount = $this->cleanupTests($limit);
+    $this->exercises->commit();
+    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits; {$deletedTestsCount} exercise tests");
+  }
 
-    $output->writeln("Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits");
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    $limit = new DateTime();
+    $limit->modify("-14 days");
+
+    $tryAgain = 5;
+    while ($tryAgain-- > 0) {
+      $exception = null;
+      $this->exercises->beginTransaction();
+      try {
+        $this->executeUnsafe($limit, $output);
+        break;
+      } catch (Exception $e) {
+        $this->exercises->rollBack();
+        $exception = $e;
+      }
+    }
+
+    if (!empty($exception)) {
+      throw $exception; // re-throw last exception that caused DB TX failure
+    }
+
     return 0;
   }
 }

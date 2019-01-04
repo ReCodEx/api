@@ -45,6 +45,10 @@ abstract class ExecutionBox extends Box
     return BoxCategories::$EXECUTION;
   }
 
+  public function isOptimizable(): bool {
+    return false; // execution boxes are not optimizable, all executions must be performed
+  }
+
   /**
    * Base compilation which creates task, set its type to execution and create
    * sandbox configuration. Stdin and stdout are also handled here.

@@ -48,7 +48,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
       $weightsSum += $weight;
     }
 
-    return $sum / $weightsSum;
+    return $weightsSum == 0 ? 0.0 : $sum / $weightsSum;
   }
 
   /**

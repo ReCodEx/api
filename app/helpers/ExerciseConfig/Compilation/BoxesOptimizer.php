@@ -79,6 +79,11 @@ class BoxesOptimizer {
       return false;
     }
 
+    // check whether both boxes can be optimized
+    if (!$firstBox->isOptimizable() || !$secondBox->isOptimizable()) {
+      return false;
+    }
+
     // check ports counts
     if (count($firstBox->getInputPorts()) !== count($secondBox->getInputPorts()) ||
         count($firstBox->getOutputPorts()) !== count($secondBox->getOutputPorts())) {

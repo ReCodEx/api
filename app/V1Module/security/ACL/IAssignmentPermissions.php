@@ -10,7 +10,7 @@ interface IAssignmentPermissions {
   function canViewDescription(Assignment $assignment): bool;
   function canUpdate(Assignment $assignment): bool;
   function canRemove(Assignment $assignment): bool;
-  function canSubmit(Assignment $assignment): bool;
+  function canSubmit(Assignment $assignment, User $student): bool;
   function canViewSubmissions(Assignment $assignment, User $student): bool;
   function canResubmitSubmissions(Assignment $assignment): bool;
   function canViewAssignmentSolutions(Assignment $assignment): bool;

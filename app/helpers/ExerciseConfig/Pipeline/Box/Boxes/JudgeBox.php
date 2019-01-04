@@ -73,6 +73,11 @@ class JudgeBox extends Box
     return BoxCategories::$EVALUATION;
   }
 
+  public function isOptimizable(): bool {
+    return false; // judge boxes are not optimizable (like the execution boxes)
+  }
+
+
   /**
    * Get default input ports for this box.
    * @return array

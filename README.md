@@ -84,9 +84,17 @@ notifications of assignment deadlines and cleaning up uploaded files. The
 recommended way of ensuring this is using a crontab like this:
 
 ```
-04	00	*	*	*	php www/index.php notifications:assignment-deadlines "1 day"
-02	00	*	*	*	php www/index.php db:cleanup:uploads
+00	03	*	*	6	php www/index.php db:cleanup:uploads
+15	03	*	*	6	php www/index.php db:cleanup:exercise-configs
+30	03	*	*	6	php www/index.php db:cleanup:localized-texts
+45	03	*	*	6	php www/index.php db:cleanup:pipeline-configs
+00	04	*	*	*	php www/index.php notifications:assignment-deadlines
 ```
+
+The example above will send email notifications at 4 a.m. every day and perform database garbage collection tasks between 3 and 4 a.m. every Saturday. 
+
+Some details of these periodic commands (e.g., a threshold period of relevant assignment deadlines) can be configured in api neon config file.
+
 
 ## Adminer
 

@@ -20,11 +20,9 @@ class Python3RunBox extends ExecutionBox
   public static $BOX_TYPE = "python3";
   public static $PYTHON3_BINARY = "/usr/bin/env";
   public static $PYTHON3_VERSION = "python3";
-  public static $PYC_FILES_PORT_KEY = "pyc-files";
   public static $DEFAULT_NAME = "Python3 Execution";
 
   public static $PY_EXTENSION = ".py";
-  public static $PYC_EXTENSION = ".pyc";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -39,11 +37,12 @@ class Python3RunBox extends ExecutionBox
       self::$initialized = true;
       self::$defaultInputPorts = array(
         new Port((new PortMeta())->setName(self::$RUNNER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta())->setName(self::$PYC_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
       );
       self::$defaultOutputPorts = array(
         new Port((new PortMeta())->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -107,13 +106,7 @@ class Python3RunBox extends ExecutionBox
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary(self::$PYTHON3_BINARY);
 
-    // process entry was given with extension '*.py' but we need to make it '*.pyc',
-    // because we compiled source files and extra files
     $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
-    if (Strings::endsWith($entry, self::$PY_EXTENSION)) {
-      $entry = Strings::substring($entry, 0, Strings::length($entry) - 3) . self::$PYC_EXTENSION;
-    }
-
     $runner = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
     $args = [self::$PYTHON3_VERSION, $runner, $entry];
     if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {

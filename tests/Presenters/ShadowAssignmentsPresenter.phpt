@@ -160,29 +160,6 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testPointsList()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
-    $assignment = $points->getShadowAssignment();
-    $pointsList = $assignment->getShadowAssignmentPointsCollection()->getValues();
-    $pointsList = array_map(function (\App\Model\Entity\ShadowAssignmentPoints $points) {
-      return $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
-    }, $pointsList);
-
-    $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'pointsList', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(count($pointsList), $result['payload']);
-    Assert::same($pointsList, $result['payload']);
-  }
-
   public function testCreatePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -214,24 +191,6 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     Assert::equal($this->user->getId(), $points['authorId']);
     Assert::equal($user->getId(), $points['awardeeId']);
     Assert::equal($timestamp, $points['awardedAt']);
-  }
-
-  public function testPoints()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
-    $pointsData = $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
-
-    $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'points', 'pointsId' => $points->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::same($pointsData, $result['payload']);
   }
 
   public function testUpdatePoints()

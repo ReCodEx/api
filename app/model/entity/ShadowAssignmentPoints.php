@@ -64,11 +64,13 @@ class ShadowAssignmentPoints
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
+   * Author is the person (typically teacher) who authorized the points.
    */
   protected $author;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
+   * Awardee is the person (typically student) who accepted (benefit from) the points.
    */
   protected $awardee;
 

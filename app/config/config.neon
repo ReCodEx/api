@@ -113,7 +113,8 @@ parameters:
       from: %emails.from%
       newAssignmentPrefix: "New Assignment - "
       assignmentDeadlinePrefix: "Assignment Deadline Is Around the Corner - "
-      assignmentDeadlineThreshold: 1 day
+      assignmentDeadlineThresholdFrom: +1 day
+      assignmentDeadlineThresholdTo: +2 days
 
   submissionNotifications:
     submissionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
@@ -203,7 +204,6 @@ acl:
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
-    shadowAssignmentPoints: App\Security\ACL\IShadowAssignmentPointsPermissions
     notification: App\Security\ACL\INotificationPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
@@ -221,7 +221,6 @@ acl:
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
-    shadowAssignmentPoints: App\Security\Policies\ShadowAssignmentPointsPermissionPolicy
     notification: App\Security\Policies\NotificationPermissionPolicy
 
 extensions:
@@ -249,7 +248,7 @@ services:
   - App\Console\DoctrineFixtures
   - App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
-  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThreshold%)
+  - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
@@ -354,6 +353,7 @@ services:
   # models - repositories
   - App\Model\Repository\Comments
   - App\Model\Repository\Exercises
+  - App\Model\Repository\ExerciseTests
   - App\Model\Repository\Assignments
   - App\Model\Repository\ExternalLogins
   - App\Model\Repository\Groups
@@ -390,7 +390,6 @@ services:
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
   - App\Model\View\ReferenceExerciseSolutionViewFactory
   - App\Model\View\ShadowAssignmentViewFactory
-  - App\Model\View\ShadowAssignmentPointsViewFactory
 
 doctrine:
   user: 'root'

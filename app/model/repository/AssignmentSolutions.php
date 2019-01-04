@@ -7,6 +7,7 @@ use App\Model\Entity\User;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
+use Nette\Utils\Arrays;
 
 
 /**
@@ -49,7 +50,8 @@ class AssignmentSolutions extends BaseRepository {
    * @return AssignmentSolution|null
    */
   public function findBestSolution(Assignment $assignment, User $user): ?AssignmentSolution {
-    return $this->findBestSolutionsForAssignments([$assignment], $user)[$assignment->getId()]->value;
+    $solutions = $this->findBestSolutionsForAssignments([$assignment], $user);
+    return Arrays::get($solutions, $assignment->getId(), null);
   }
 
   /**
@@ -87,36 +89,33 @@ class AssignmentSolutions extends BaseRepository {
    * Find best solutions of given assignments for user.
    * @param Assignment[] $assignments
    * @param User $user
-   * @return Pair[] An associative array (indexed by assignment id) of pairs where the first item is
-   * an assignment entity and the second is a solution entity (the best one for the assignment)
+   * @return AssignmentSolution[] An associative array indexed by assignment id
+   * with values of a solution entity (the best one for the assignment)
    */
   public function findBestSolutionsForAssignments(array $assignments, User $user): array {
     $result = [];
-    foreach ($assignments as $assignment) {
-      $result[$assignment->getId()] = new Pair($assignment, null);
-    }
-
     $solutions = $this->findValidSolutionsForAssignments($assignments, $user);
     foreach ($solutions as $solution) {
       $assignment = $solution->getAssignment();
-      $best = $result[$assignment->getId()]->value;
+      $best = Arrays::get($result, $assignment->getId(), null);
 
       if ($best === null) {
-        $result[$assignment->getId()]->value = $solution;
+        $result[$assignment->getId()] = $solution;
         continue;
       }
+
 
       if ($best->isAccepted()) {
         continue;
       }
 
       if ($solution->isAccepted()) {
-        $result[$assignment->getId()]->value = $solution;
+        $result[$assignment->getId()] = $solution;
         continue;
       }
 
       if ($best->getTotalPoints() < $solution->getTotalPoints()) {
-        $result[$assignment->getId()]->value = $solution;
+        $result[$assignment->getId()] = $solution;
       }
     }
 

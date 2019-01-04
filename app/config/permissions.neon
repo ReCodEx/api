@@ -280,10 +280,19 @@ permissions:
       resource: assignment
       actions:
           - viewDetail
+      conditions:
+          - assignment.isAssignee
+          - assignment.isPublic
+
+    - allow: true
+      role: student
+      resource: assignment
+      actions:
           - submit
       conditions:
           - assignment.isAssignee
           - assignment.isPublic
+          - student.isSameUser
 
     - allow: true
       resource: assignment
@@ -496,8 +505,9 @@ permissions:
           - deleteEvaluation
       conditions:
           or:
-            - referenceExerciseSolution.isExerciseSuperGroupAdmin
             - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSubGroupSupervisor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       resource: referenceExerciseSolution
@@ -513,7 +523,9 @@ permissions:
       actions:
           - delete
       conditions:
-          - referenceExerciseSolution.isExerciseAuthor
+          or:
+            - referenceExerciseSolution.isExerciseAuthor
+            - referenceExerciseSolution.isExerciseSuperGroupAdmin
 
     - allow: true
       role: supervisor-student
@@ -713,7 +725,7 @@ permissions:
       resource: shadowAssignment
       actions:
         - viewDetail
-        - viewPointsList
+        - viewAllPoints
 
     - allow: true
       role: student
@@ -728,10 +740,12 @@ permissions:
       resource: shadowAssignment
       actions:
           - viewDetail
-          - viewPointsList
+          - viewAllPoints
           - update
           - remove
           - createPoints
+          - updatePoints
+          - removePoints
       conditions:
           - assignment.isSupervisor
 
@@ -741,32 +755,6 @@ permissions:
           - createShadowAssignment
       conditions:
           - group.isSupervisor
-
-    ########################################
-    # Shadow Assignment Points permissions #
-    ########################################
-
-    - allow: true
-      role: scope-read-all
-      resource: shadowAssignmentPoints
-      actions:
-        - viewDetail
-
-    - allow: true
-      resource: shadowAssignmentPoints
-      actions:
-          - viewDetail
-      conditions:
-          - assignmentPoints.isAwardee
-
-    - allow: true
-      resource: shadowAssignmentPoints
-      actions:
-          - viewDetail
-          - update
-          - remove
-      conditions:
-          - assignmentPoints.isSupervisor
 
     ############################
     # Notification permissions #

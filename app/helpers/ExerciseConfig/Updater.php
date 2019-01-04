@@ -65,9 +65,9 @@ class Updater {
    * @param bool $flush
    * @throws ExerciseConfigException
    */
-  public function testsUpdated(Exercise $exercise, User $user, bool $flush = true) {
-    $this->updateTestsInConfig($exercise, $user);
-    $this->updateTestsInLimits($exercise, $user);
+  public function testsUpdated(Exercise $exercise, User $user, array $idMappings = [], bool $flush = true) {
+    $this->updateTestsInConfig($exercise, $user, $idMappings);
+    $this->updateTestsInLimits($exercise, $user, $idMappings);
 
     if ($flush) {
       $this->exercises->flush();
@@ -161,15 +161,20 @@ class Updater {
    * @param User $user
    * @throws ExerciseConfigException
    */
-  private function updateTestsInConfig(Exercise $exercise, User $user) {
+  private function updateTestsInConfig(Exercise $exercise, User $user, array $idMappings = []) {
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
-    $testNames = $exercise->getExerciseTestsIds();
+    $testIds = $exercise->getExerciseTestsIds();
+
+    // rename test IDs according to provided mapping
+    foreach ($idMappings as $oldId => $newId) {
+      $exerciseConfig->changeTestId($oldId, $newId);
+    }
 
     // remove old tests
-    foreach ($exerciseConfig->getTests() as $name => $test) {
-      // test name not found in all newly created or updated tests, terminate it
-      if (!in_array($name, $testNames)) {
-        $exerciseConfig->removeTest($name);
+    foreach ($exerciseConfig->getTests() as $id => $test) {
+      // test ID not found in all newly created or updated tests, terminate it
+      if (!in_array($id, $testIds)) {
+        $exerciseConfig->removeTest($id);
       }
     }
 
@@ -185,17 +190,22 @@ class Updater {
    * @param User $user
    * @throws ExerciseConfigException
    */
-  private function updateTestsInLimits(Exercise $exercise, User $user) {
-    $testNames = $exercise->getExerciseTestsIds();
+  private function updateTestsInLimits(Exercise $exercise, User $user, array $idMappings = []) {
+    $testIds = $exercise->getExerciseTestsIds();
 
     foreach ($exercise->getExerciseLimits() as $exerciseLimits) {
       $limits = $this->loader->loadExerciseLimits($exerciseLimits->getParsedLimits());
 
+      // rename test IDs according to provided mapping
+      foreach ($idMappings as $oldId => $newId) {
+        $limits->changeTestId($oldId, $newId);
+      }
+
       // remove old tests
-      foreach ($limits->getLimitsArray() as $name => $testLimits) {
-        // test name not found in all newly created or updated tests, terminate it
-        if (!in_array($name, $testNames)) {
-          $limits->removeLimits($name);
+      foreach ($limits->getLimitsArray() as $id => $testLimits) {
+        // test ID not found in all newly created or updated tests, terminate it
+        if (!in_array($id, $testIds)) {
+          $limits->removeLimits($id);
         }
       }
 
