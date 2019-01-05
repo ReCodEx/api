@@ -188,6 +188,7 @@ class AssignmentEmailsSender {
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => $localizedGroup ? $localizedGroup->getName() : "",
       "firstDeadline" => $assignment->getFirstDeadline(),
+      "allowSecondDeadline" => $assignment->getAllowSecondDeadline(),
       "secondDeadline" => $assignment->getSecondDeadline(),
       "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
     ]);

@@ -1,8 +1,8 @@
 <h3>Deadline for assignment '{$assignment}' is nigh</h3>
 <p>
     Your assignment '{$assignment}' in the group '{$group}' has a first deadline on
-    {$firstDeadline|localizedDate:'en'} and a second one on
-    {$secondDeadline|localizedDate:'en'}. This email is just a reminder that these
+    {$firstDeadline|localizedDate:'en'}{if $allowSecondDeadline} and a second one on
+    {$secondDeadline|localizedDate:'en'}{/if}. This email is just a reminder that these
     dates are nearing and you have not submitted any solution yet.
     Assignment can be found on: <a href="{$link}">{$link}</a>.
 </p>
