@@ -9,6 +9,7 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Helpers\Notifications\AssignmentPointsEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\LocalizedShadowAssignment;
@@ -71,6 +72,11 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    */
   public $groupAcl;
 
+  /**
+   * @var AssignmentPointsEmailsSender
+   * @inject
+   */
+  public $assignmentPointsEmailsSender;
 
 
   public function checkDetail(string $id) {
@@ -264,6 +270,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @throws NotFoundException
    * @throws ForbiddenRequestException
    * @throws BadRequestException
+   * @throws InvalidStateException
    */
   public function actionCreatePoints(string $id) {
     $req = $this->getRequest();
@@ -286,6 +293,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
 
     $pointsEntity = new ShadowAssignmentPoints($points, $note, $assignment, $this->getCurrentUser(), $user, $awardedAt);
     $this->shadowAssignmentPointsRepository->persist($pointsEntity);
+
+    // user was awarded with points, send an email
+    $this->assignmentPointsEmailsSender->shadowPointsUpdated($pointsEntity);
+
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));
   }
 
@@ -305,9 +316,11 @@ class ShadowAssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="note", validation="string", description="Note about newly created points")
    * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
    * @throws NotFoundException
+   * @throws InvalidStateException
    */
   public function actionUpdatePoints(string $pointsId) {
     $pointsEntity = $this->shadowAssignmentPointsRepository->findOrThrow($pointsId);
+    $oldPoints = $pointsEntity->getPoints();
 
     $req = $this->getRequest();
     $points = (int)$req->getPost("points");
@@ -320,8 +333,13 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $pointsEntity->setPoints($points);
     $pointsEntity->setNote($note);
     $pointsEntity->setAwardedAt($awardedAt);
-
     $this->shadowAssignmentPointsRepository->flush();
+
+    if ($oldPoints !== $points) {
+      // user points was updated, send an email
+      $this->assignmentPointsEmailsSender->shadowPointsUpdated($pointsEntity);
+    }
+
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));
   }
 

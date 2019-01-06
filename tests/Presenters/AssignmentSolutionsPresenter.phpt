@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
+use App\Helpers\Notifications\AssignmentPointsEmailsSender;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
@@ -13,9 +14,6 @@ use Tester\Assert;
  */
 class TestAssignmentSolutionsPresenter extends Tester\TestCase
 {
-  private $adminLogin = "admin@admin.com";
-  private $adminPassword = "admin";
-
   /** @var AssignmentSolutionsPresenter */
   protected $presenter;
 
@@ -130,13 +128,16 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
   public function testSetBonusPoints()
   {
     $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
+    $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    $allSubmissions = $this->presenter->assignmentSolutions->findAll();
-    $submission = array_pop($allSubmissions);
+    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("assignmentPointsUpdated")->with($solution)->andReturn(true)->once();
+    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',
-      ['action' => 'setBonusPoints', 'id' => $submission->id],
+      ['action' => 'setBonusPoints', 'id' => $solution->id],
       ['bonusPoints' => 4, 'overriddenPoints' => 857]
     );
     $response = $this->presenter->run($request);
@@ -147,9 +148,9 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::equal("OK", $result['payload']);
 
-    $submission = $this->presenter->assignmentSolutions->get($submission->id);
-    Assert::equal(4, $submission->getBonusPoints());
-    Assert::equal(857, $submission->getOverriddenPoints());
+    $solution = $this->presenter->assignmentSolutions->get($solution->id);
+    Assert::equal(4, $solution->getBonusPoints());
+    Assert::equal(857, $solution->getOverriddenPoints());
   }
 
   public function testSetAcceptedSubmission()

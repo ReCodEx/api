@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Helpers\Notifications\AssignmentPointsEmailsSender;
 use App\Model\Entity\Assignment;
 use App\V1Module\Presenters\ShadowAssignmentsPresenter;
 use Tester\Assert;
@@ -167,6 +168,11 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $user = PresenterTestHelper::getUser($this->container, PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
     $timestamp = time();
 
+    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
+    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
+
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
       'POST',
@@ -198,6 +204,11 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $shadowPoints = current($this->presenter->shadowAssignmentPointsRepository->findAll());
     $timestamp = time();
+
+    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
+    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
