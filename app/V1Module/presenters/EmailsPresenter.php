@@ -85,7 +85,13 @@ class EmailsPresenter extends BasePresenter {
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    */
   public function actionSendToSupervisors() {
-    $supervisors = $this->users->findByRoles(Roles::SUPERVISOR_ROLE, Roles::SUPERADMIN_ROLE);
+    $supervisors = $this->users->findByRoles(
+      Roles::SUPERVISOR_ROLE,
+      Roles::SUPERVISOR_STUDENT_ROLE,
+      Roles::EMPOWERED_SUPERVISOR_ROLE,
+      Roles::SUPERADMIN_ROLE
+    );
+
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
@@ -113,7 +119,7 @@ class EmailsPresenter extends BasePresenter {
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    */
   public function actionSendToRegularUsers() {
-    $users = $this->users->findByRoles(Roles::STUDENT_ROLE);
+    $users = $this->users->findByRoles(Roles::STUDENT_ROLE, Roles::SUPERVISOR_STUDENT_ROLE);
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
@@ -168,7 +174,8 @@ class EmailsPresenter extends BasePresenter {
     }
 
     // user requested copy of the email to his/hers email address
-    if ($toMe && !in_array($user, $users)) {
+    $foundMes = array_filter($users, function (User $user) { return $user->getId() === $user->getId(); });
+    if ($toMe && count($foundMes) === 0) {
       $users[] = $user;
     }
 
