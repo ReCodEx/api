@@ -362,9 +362,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $pipeline = current($this->pipelines->findAll());
     $pipeline1 = Pipeline::forkFrom($user, $pipeline);
-    $pipeline1->setId("testGetPipelines1");
     $pipeline2 = Pipeline::forkFrom($user, $pipeline);
-    $pipeline2->setId("testGetPipelines2");
     $exercise = current($this->exercises->findAll());
     $exercise->addPipeline($pipeline1);
     $exercise->addPipeline($pipeline2);
@@ -384,8 +382,9 @@ class TestExercisesPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::count(2, $payload);
 
-    Assert::contains($pipeline1, $payload);
-    Assert::contains($pipeline2, $payload);
+    $expectedIds = [$pipeline1->getId(), $pipeline2->getId()];
+    $actualIds = array_map(function ($item) { return $item["id"]; }, $result['payload']);
+    Assert::equal(sort($expectedIds), sort($actualIds));
   }
 
   public function testAssignments() {

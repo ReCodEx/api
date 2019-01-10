@@ -10,7 +10,6 @@ use App\Model\Entity\SupplementaryExerciseFile;
 use App\Model\Entity\UploadedFile;
 use App\V1Module\Presenters\PipelinesPresenter;
 use Doctrine\ORM\Id\UuidGenerator;
-use Nette\Utils\Json;
 use Tester\Assert;
 
 
@@ -90,8 +89,12 @@ class TestPipelinesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
-    Assert::same($this->presenter->pipelines->findAll(), $result['payload']['items']);
+    Assert::same(
+      array_map(function (Pipeline $pipeline) { return $pipeline->getId(); }, $this->presenter->pipelines->findAll()),
+      array_map(function ($item) { return $item["id"]; }, $result['payload']['items'])
+    );
     Assert::count(count($this->presenter->pipelines->findAll()), $result['payload']['items']);
+    Assert::count($result['payload']['totalCount'], $this->presenter->pipelines->findAll());
   }
 
   public function testGetPipeline()
@@ -111,13 +114,15 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
 
     $payload = $result['payload'];
-    Assert::same($pipeline, $payload);
+    Assert::equal($pipeline->getId(), $payload["id"]);
+    Assert::equal($pipeline->getName(), $payload["name"]);
   }
 
   public function testCreatePipeline()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
+    $author = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
     $pipelines = $this->presenter->pipelines->findAll();
     $pipelinesCount = count($pipelines);
 
@@ -130,15 +135,15 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count($pipelinesCount + 1, $this->presenter->pipelines->findAll());
 
-    Assert::type(\App\Model\Entity\Pipeline::class, $payload);
-    Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
-    Assert::equal("Pipeline by " . $this->user->identity->getUserData()->getName(), $payload->getName());
-    Assert::count(0, $payload->getExercises());
+    Assert::equal($author->getId(), $payload["author"]);
+    Assert::equal("Pipeline by " . $author->getName(), $payload["name"]);
+    Assert::count(0, $payload["exercisesIds"]);
   }
 
   public function testForkPipeline() {
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
+    $author = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
     $exercise = current($this->presenter->exercises->findAll());
     $pipelines = $this->presenter->pipelines->findAll();
     $pipeline = current($pipelines);
@@ -156,10 +161,9 @@ class TestPipelinesPresenter extends Tester\TestCase
     Assert::equal(200, $result['code']);
     Assert::count($pipelinesCount + 1, $this->presenter->pipelines->findAll());
 
-    Assert::type(\App\Model\Entity\Pipeline::class, $payload);
-    Assert::equal(PresenterTestHelper::ADMIN_LOGIN, $payload->getAuthor()->email);
-    Assert::equal($pipeline->getName(), $payload->getName());
-    Assert::true($payload->getExercises()->contains($exercise));
+    Assert::equal($author->getId(), $payload["author"]);
+    Assert::equal($pipeline->getName(), $payload["name"]);
+    Assert::contains($exercise->getId(), $payload["exercisesIds"]);
   }
 
   public function testRemovePipeline()
@@ -235,16 +239,10 @@ class TestPipelinesPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::equal(200, $result['code']);
 
-    Assert::equal('new pipeline name', $payload->getName());
-    Assert::equal(2, $payload->getVersion());
-    Assert::equal('description of pipeline', $payload->getDescription());
-    Assert::equal(static::PIPELINE_CONFIG, $payload->getPipelineConfig()->getParsedPipeline());
-
-    $parsedPipeline = $payload->getPipelineConfig()->getParsedPipeline();
-    Assert::equal("infile", $parsedPipeline["boxes"][0]["name"]);
-    Assert::equal("judgement", $parsedPipeline["boxes"][1]["name"]);
-    Assert::equal("file-in", $parsedPipeline["boxes"][0]["type"]);
-    Assert::equal("judge", $parsedPipeline["boxes"][1]["type"]);
+    Assert::equal('new pipeline name', $payload["name"]);
+    Assert::equal(2, $payload["version"]);
+    Assert::equal('description of pipeline', $payload["description"]);
+    Assert::equal(static::PIPELINE_CONFIG, $payload["pipeline"]);
   }
 
   public function testUpdatePipelineWithParameters()
