@@ -149,23 +149,38 @@ class SubmitPresenter extends BasePresenter {
         <= $assignment->getSubmissionsCountLimit());
   }
 
-  public function checkCanSubmit(string $id) {
-    $assignment = $this->assignments->findOrThrow($id);
+  /**
+   * Helper function for getting user from id or current one if null.
+   * @param string|null $userId
+   * @return User
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  private function getUserOrCurrent(?string $userId): User {
+    return $userId !== null ? $this->users->findOrThrow($userId) : $this->getCurrentUser();
+  }
 
-    if (!$this->assignmentAcl->canSubmit($assignment)) {
+
+  public function checkCanSubmit(string $id, string $userId = null) {
+    $assignment = $this->assignments->findOrThrow($id);
+    $user = $this->getUserOrCurrent($userId);
+
+    if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
       throw new ForbiddenRequestException("You cannot access this assignment.");
     }
   }
 
   /**
-   * Check if the current user can submit solutions to the assignment
+   * Check if the given user can submit solutions to the assignment
    * @GET
    * @param string $id Identifier of the assignment
+   * @param string|null $userId Identification of the user
    * @throws ForbiddenRequestException
+   * @throws NotFoundException
    */
-  public function actionCanSubmit(string $id) {
+  public function actionCanSubmit(string $id, string $userId = null) {
     $assignment = $this->assignments->findOrThrow($id);
-    $user = $this->getCurrentUser();
+    $user = $this->getUserOrCurrent($userId);
 
     $this->sendSuccessResponse([
       "canSubmit" => $this->canReceiveSubmissions($assignment, $user),
@@ -191,19 +206,14 @@ class SubmitPresenter extends BasePresenter {
   public function actionSubmit(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $req = $this->getRequest();
+    $user = $this->getUserOrCurrent($req->getPost("userId"));
 
-    $loggedInUser = $this->getCurrentUser();
-    $userId = $req->getPost("userId");
-    $user = $userId !== null
-      ? $this->users->findOrThrow($userId)
-      : $loggedInUser;
-
-    if (!$this->assignmentAcl->canSubmit($assignment)) {
+    if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
       throw new ForbiddenRequestException();
     }
 
-    if (!$this->canReceiveSubmissions($assignment, $loggedInUser)) {
-      throw new ForbiddenRequestException("User '{$loggedInUser->getId()}' cannot submit solutions for this assignment anymore.");
+    if (!$this->canReceiveSubmissions($assignment, $user)) {
+      throw new ForbiddenRequestException("User '{$user->getId()}' cannot submit solutions for this assignment anymore.");
     }
 
     // retrieve and check uploaded files
@@ -290,7 +300,7 @@ class SubmitPresenter extends BasePresenter {
           $solution->getSolution()->getRuntimeEnvironment(),
           $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
-      $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser());
+      $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
       $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,
         FailureHelper::TYPE_API_ERROR,
@@ -302,7 +312,7 @@ class SubmitPresenter extends BasePresenter {
 
     // create submission entity
     $submission = new AssignmentSolutionSubmission($solution,
-      $generatorResult->getJobConfigPath(), $this->getCurrentUser());
+      $generatorResult->getJobConfigPath(), $this->getCurrentUser(), $isDebug);
     $this->assignmentSubmissions->persist($submission);
 
     // initiate submission
@@ -387,9 +397,11 @@ class SubmitPresenter extends BasePresenter {
     $this->sendSuccessResponse($result);
   }
 
-  public function checkPreSubmit(string $id) {
+  public function checkPreSubmit(string $id, string $userId = null) {
     $assignment = $this->assignments->findOrThrow($id);
-    if (!$this->assignmentAcl->canSubmit($assignment)) {
+    $user = $this->getUserOrCurrent($userId);
+
+    if (!$this->assignmentAcl->canSubmit($assignment, $user)) {
       throw new ForbiddenRequestException("You cannot submit this assignment.");
     }
   }
@@ -401,12 +413,13 @@ class SubmitPresenter extends BasePresenter {
    * submit.
    * @POST
    * @param string $id identifier of assignment
-   * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
-   * @throws NotFoundException
-   * @throws InvalidArgumentException
+   * @param string|null $userId Identifier of the submission author
    * @throws ExerciseConfigException
+   * @throws InvalidArgumentException
+   * @throws NotFoundException
+   * @Param(type="post", name="files", validation="array", "Array of identifications of submitted files")
    */
-  public function actionPreSubmit(string $id) {
+  public function actionPreSubmit(string $id, string $userId = null) {
     $assignment = $this->assignments->findOrThrow($id);
 
     // retrieve and check uploaded files

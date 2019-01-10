@@ -1,10 +1,9 @@
 <?php
-namespace App\Security\ACL;
 
+namespace App\Security\ACL;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
-use App\Model\Entity\ReferenceExerciseSolution;
 
 interface IExercisePermissions {
   function canViewAll(): bool;
@@ -23,6 +22,7 @@ interface IExercisePermissions {
   function canAttachPipeline(Exercise $exercise): bool;
   function canDetachPipeline(Exercise $exercise): bool;
   function canViewPipelines(Exercise $exercise): bool;
+  function canViewAssignments(Exercise $exercise): bool;
   function canAttachGroup(Exercise $exercise, Group $group): bool;
   function canDetachGroup(Exercise $exercise, Group $group): bool;
 }
