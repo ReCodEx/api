@@ -382,10 +382,9 @@ class TestExercisesPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::count(2, $payload);
 
-    Assert::same(
-      [$pipeline1->getId(), $pipeline2->getId()],
-      array_map(function ($item) { return $item["id"]; }, $result['payload'])
-    );
+    $expectedIds = [$pipeline1->getId(), $pipeline2->getId()];
+    $actualIds = array_map(function ($item) { return $item["id"]; }, $result['payload']);
+    Assert::equal(sort($expectedIds), sort($actualIds));
   }
 
   public function testAssignments() {
