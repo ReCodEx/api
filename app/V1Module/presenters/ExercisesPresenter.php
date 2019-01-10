@@ -381,19 +381,19 @@ class ExercisesPresenter extends BasePresenter {
   }
 
   /**
-   * Get all assignments created from this exercise.
+   * Get all non-archived assignments created from this exercise.
    * @GET
    * @param string $id Identifier of the exercise
-   * @param bool $notArchived true if assignments from archived groups should not be returned
+   * @param bool $archived Include also archived groups in the result
    * @throws NotFoundException
    */
-  public function actionAssignments(string $id, bool $notArchived = false) {
+  public function actionAssignments(string $id, bool $archived = false) {
     $exercise = $this->exercises->findOrThrow($id);
 
-    $assignments = $exercise->getAssignments()->filter(function (Assignment $assignment) use ($notArchived) {
-      return $notArchived ?
-        $this->assignmentAcl->canViewDetail($assignment) && !$assignment->getGroup()->isArchived() :
-        $this->assignmentAcl->canViewDetail($assignment);
+    $assignments = $exercise->getAssignments()->filter(function (Assignment $assignment) use ($archived) {
+      return $archived ?
+        $this->assignmentAcl->canViewDetail($assignment) :
+        $this->assignmentAcl->canViewDetail($assignment) && !$assignment->getGroup()->isArchived();
     })->getValues();
     $this->sendSuccessResponse($this->assignmentViewFactory->getAssignments($assignments));
   }
