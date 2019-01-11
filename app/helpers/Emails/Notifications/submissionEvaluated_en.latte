@@ -1,8 +1,15 @@
-<h3>Your submission of exercise '{$assignment}' was evaluated</h3>
+<h3>Your submission of the assignment '{$assignment}' was evaluated</h3>
 <p>
-    Some of the supervisors in your group '{$group}' resubmitted your solution of
-    exercise '{$assignment}' on {$date|localizedDate:'en'}.
-    Your solution has status {$status} and gathered {$points} points out of
-    {$maxPoints}.
-    Submission evaluation can be found on: <a href="{$link}">{$link}</a>.
+    Your submission of the assignment '{$assignment}' submitted don {$date|localizedDate:'en'}
+    in the group '{$group}' was evaluated.
+    The solution has status {$status} and was awarded {$points} of {$maxPoints} points.
+</p>
+<p>
+    These notifications are sent only when the evaluation takes longer time
+    or the solution was resubmitted for evaluation.
+    The resubmission can be initiated by a teacher or by administrator
+    (e.g., when exercise configuration is changed or a bug in the system is fixed).
+</p>
+<p>
+    You may see the results at: <a href="{$link}">{$link}</a>.
 </p>

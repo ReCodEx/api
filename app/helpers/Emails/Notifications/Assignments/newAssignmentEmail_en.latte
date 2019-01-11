@@ -1,7 +1,9 @@
-<h3>New assignment '{$assignment}' was created</h3>
+<h3>New exercise '{$assignment}' assigned</h3>
 <p>
-    The supervisors in your group '{$group}' have assigned a new exercise '{$assignment}'.
-    The due date is {$dueDate|localizedDate:'en'} and you have {$attempts} attempts.
+    A new exercise '{$assignment}' has been assigned in your group '{$group}'.
+    The deadline is {$firstDeadline|localizedDate:'en'}
+    {if $allowSecondDeadline} (second deadline is {$secondDeadline|localizedDate:'en'}){/if}
+    and you have {$attempts} attempts for submission.
     You can acquire a maximum of {$points} points.
-    Assignment can be found on: <a href="{$link}">{$link}</a>.
+    The assignment can be found at: <a href="{$link}">{$link}</a>.
 </p>

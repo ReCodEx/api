@@ -1,10 +1,7 @@
-<h3>New comment at exercise '{$exercise}' submitted by '{$solutionAuthor}'</h3>
+<h3>New reference solution comment of '{$exercise}'</h3>
+<p><code>{$comment}</code></p>
 <p>
-    New comment was added under the reference solution of exercise '{$exercise}'
-    submitted by '{$solutionAuthor}'. Comment was added by '{$author}' on
-    {$date|localizedDate:'en'} with following text:
-    <br>
-    <code>{$comment}</code>
-    <br>
-    Comment can be found on: <a href="{$link}">{$link}</a>.
+    Comment was added by '{$author}' on {$date|localizedDate:'en'}
+    to reference solution of exercise '{$exercise}' submitted by '{$solutionAuthor}'.
+    Comment can be found on the page showing the detail of the reference solution: <a href="{$link}">{$link}</a>.
 </p>

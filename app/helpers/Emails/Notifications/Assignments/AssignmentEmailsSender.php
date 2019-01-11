@@ -109,7 +109,9 @@ class AssignmentEmailsSender {
       return $latte->renderToString($template, [
         "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
         "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
-        "dueDate" => $assignment->getFirstDeadline(),
+        "firstDeadline" => $assignment->getFirstDeadline(),
+        "allowSecondDeadline" => $assignment->getAllowSecondDeadline(),
+        "secondDeadline" => $assignment->getSecondDeadline(),
         "attempts" => $assignment->getSubmissionsCountLimit(),
         "points" => $assignment->getMaxPointsBeforeFirstDeadline(),
         "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])

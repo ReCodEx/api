@@ -1,7 +1,14 @@
 <h3>Vaše řešení úlohy '{$assignment}' bylo vyhodnoceno</h3>
 <p>
-    Jeden ze cvičících ve skupině '{$group}' znovu vyhodnotil Vaše řešení úlohy
-    '{$assignment}' ve {$date|localizedDate:'cs'}.
-    Vaše řešení má status {$status} a získalo {$points} bodů z {$maxPoints}.
-    Řešení je možné najít na adrese: <a href="{$link}">{$link}</a>.
+    Vaše řešení k úloze '{$assignment}' odevzdané v {$date|localizedDate:'cs'} ve skupině '{$group}' bylo vyhodnoceno.
+    Řešení má status {$status} a získalo {$points} bodů z {$maxPoints}.
+</p>
+<p>
+    Tyto notifikace jsou zasílány pouze pokud vyhodnocení trvá delší dobu,
+    nebo pokud dojde k opětovnému vyhodnocení odevzdaného řešení.
+    O opětovné vyhodnocení může požádat vyučující nebo administrátor,
+    např. pokud dojde ke změně nastavení úlohy, nebo opravě chyby v systému.
+</p>
+<p>
+    Výsledky si můžete prohlédnout na adrese: <a href="{$link}">{$link}</a>.
 </p>

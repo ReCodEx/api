@@ -1,11 +1,8 @@
-<h3>Nový komentář u úlohy '{$assignment}' odevzdané uživatelem '{$solutionAuthor}'</h3>
+<h3>Nový komentář k řešení úlohy '{$assignment}'</h3>
+<p><code>{$comment}</code></p>
 <p>
-    Nový komentář byl přidán u studentského řešení úlohy '{$assignment}', která
+    Komentář byl přidán uživatelem '{$author}' {$date|localizedDate:'cs'}
+    ke studentskému řešení úlohy '{$assignment}', která
     byla odevzdaná uživatelem '{$solutionAuthor}'.
-    Komentář byl přidán uživatelem '{$author}' {$date|localizedDate:'cs'} s
-    následujícím textem:
-    <br>
-    <code>{$comment}</code>
-    <br>
-    Komentář je možné najít na adrese: <a href="{$link}">{$link}</a>.
+    Komentář je možné najít na stránce detailu odevzdaného řešení: <a href="{$link}">{$link}</a>.
 </p>
