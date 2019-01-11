@@ -12,16 +12,11 @@
     }
 
     hr {
-      width: 500px;
-      text-align: center;
-      margin: 0 auto;
-      border: 0;
-      height: 1px;
-      background-color: #c2c2c2;
+      color: #cbd9dc;
+      background-color: #cbd9dc;
     }
 
     p {
-      margin: 0;
       color: #000;
     }
   </style>
@@ -43,17 +38,19 @@
           
             <tr>
               <td style="padding: 20px;" colspan="2">
-                {$message|noescape}
+                <div style="word-wrap: break-word; width: 580px;">
+                  {$message|noescape}
+                </div>
+                <hr>
                 <p>
-                  If you do not want to receive these emails anymore, please update your user
-                  settings accordingly.
+                  Pokud nechcete dostávat tento typ oznámení, upravte prosím svoje nastavení uživatelského účtu.
                 </p>
               </td>
             </tr>
             <tr style="background: #f8f8f8; margin: 0; padding: 0; text-align: left; overflow: hidden;">
               <td style="margin: 0; padding: 20px;">
                 <p style="margin: 0; padding: 0;">
-                  Happy coding,<br>ReCodEx Team<br>
+                  Programujte zodpovědně,<br>ReCodEx Team<br>
                   <a href="{$footerUrl}">{$footerUrl}</a>
                 </p>
               </td>

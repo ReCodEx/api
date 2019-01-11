@@ -1,0 +1,8 @@
+<h3>Byla zadána nová úloha '{$assignment}'</h3>
+<p>
+    Ve Vaší skupině '{$group}' byla zadána nová úloha '{$assignment}'.
+    Termín odevzdání je {$firstDeadline|localizedDate:'cs'}
+    {if $allowSecondDeadline} (druhý termín je {$secondDeadline|localizedDate:'en'}){/if}
+    a na odevzdání máte {$attempts} pokusů. Maximální počet bodů je {$points}.
+    Úlohu je možné najít na adrese: <a href="{$link}">{$link}</a>.
+</p>

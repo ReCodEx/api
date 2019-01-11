@@ -3,7 +3,14 @@
 namespace App\Helpers;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidAccessTokenException;
+use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
+use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
+use Exception;
 use Latte;
 use Nette\Utils\Arrays;
 use App\Model\Entity\User;
@@ -71,6 +78,7 @@ class EmailVerificationHelper {
    * Generate access token and send it to the given email.
    * @param User $user
    * @return bool If sending was successful or not
+   * @throws InvalidStateException
    */
   public function process(User $user) {
     // prepare all necessary things
@@ -87,6 +95,8 @@ class EmailVerificationHelper {
    * @param AccessToken $token
    * @return bool
    * @throws ForbiddenRequestException
+   * @throws InvalidAccessTokenException
+   * @throws InvalidArgumentException
    */
   public function verify(User $user, AccessToken $token) {
     // the token is parsed, which means, it has already been validated in terms of exp, iat, ...
@@ -106,15 +116,19 @@ class EmailVerificationHelper {
    * @param User $user
    * @param string $token
    * @return bool
+   * @throws InvalidStateException
+   * @throws Exception
    */
   private function sendEmail(User $user, string $token): bool {
+    $locale = $user->getSettings()->getDefaultLanguage();
     $subject = $this->createSubject($user);
-    $message = $this->createBody($user, $token);
+    $message = $this->createBody($user, $locale, $token);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [ $user->getEmail() ],
+      $locale,
       $subject,
       $message
     );
@@ -132,19 +146,22 @@ class EmailVerificationHelper {
   /**
    * Creates and return body of email message.
    * @param User $user
+   * @param string $locale
    * @param string $token
    * @return string
+   * @throws InvalidStateException
    */
-  private function createBody(User $user, string $token): string {
+  private function createBody(User $user, string $locale, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/verificationEmail.latte", [
+    $latte = EmailLatteFactory::latte();
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/verificationEmail_{locale}.latte");
+    return $latte->renderToString($template, [
       "email" => $user->getEmail(),
-      "link" => "{$this->redirectUrl}#{$token}",
+      "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i")
     ]);
   }
