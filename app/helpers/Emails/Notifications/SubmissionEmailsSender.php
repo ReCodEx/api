@@ -8,6 +8,7 @@ use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Helpers\EmailHelper;
+use DateTime;
 use Nette\Utils\Arrays;
 
 /**
@@ -24,6 +25,8 @@ class SubmissionEmailsSender {
   private $submissionEvaluatedPrefix;
   /** @var string */
   private $submissionRedirectUrl;
+  /** @var string */
+  private $submissionNotificationThreshold;
 
 
   /**
@@ -36,6 +39,7 @@ class SubmissionEmailsSender {
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
     $this->submissionRedirectUrl = Arrays::get($params, ["submissionRedirectUrl"], "https://recodex.mff.cuni.cz");
+    $this->submissionNotificationThreshold = Arrays::get($params, ["submissionNotificationThreshold"], "-5 minutes");
   }
 
   /**
@@ -45,7 +49,14 @@ class SubmissionEmailsSender {
    * @throws InvalidStateException
    */
   public function submissionEvaluated(AssignmentSolutionSubmission $submission): bool {
-    $assignment = $submission->getAssignmentSolution()->getAssignment();
+    $solution = $submission->getAssignmentSolution();
+    $assignment = $solution->getAssignment();
+
+    // check the threshold for sending email notification
+    $threshold = (new DateTime())->modify($this->submissionNotificationThreshold);
+    if ($solution->getSolution()->getCreatedAt() >= $threshold) {
+      return true;
+    }
 
     $user = $submission->getAssignmentSolution()->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {

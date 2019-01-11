@@ -118,6 +118,7 @@ parameters:
 
   submissionNotifications:
     submissionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
+    submissionNotificationThreshold: -5 minutes
     emails:
       from: %emails.from%
       submissionEvaluatedPrefix: "Submission Evaluated - "
