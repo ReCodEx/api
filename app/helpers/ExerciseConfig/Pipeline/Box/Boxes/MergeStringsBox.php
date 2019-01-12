@@ -13,8 +13,10 @@ use App\Helpers\ExerciseConfig\VariableTypes;
  * Box which will take two string arrays on its input and join them to one merged
  * array.
  */
-class MergeStringsBox extends MergeBox
+class MergeStringsBox extends Box
 {
+  use MergeBox;
+
   public static $BOX_TYPE = "merge-strings";
   public static $DEFAULT_NAME = "Merge strings";
 

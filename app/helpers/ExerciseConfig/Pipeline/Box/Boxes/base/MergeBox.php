@@ -13,8 +13,13 @@ use Exception;
 
 /**
  * Base class for merging boxes. They take two arrays and produce concatenated array.
+ * Technical Note:
+ * This class depends heavily on late static binding, since the whole Box ecosystem
+ * is built on classes (i.e., static members) instead of meta objects.
+ * Since we did not want to refactorize the whole familly of Box classes,
+ * we have decided to stick with the late static binding. Beware!
  */
-abstract class MergeBox extends Box
+trait MergeBox
 {
   /** Type key */
   public static $IN1_PORT_KEY = "in1";
@@ -57,7 +62,7 @@ abstract class MergeBox extends Box
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
-    static::init();
+    self::init();
     parent::__construct($meta);
   }
 
@@ -71,7 +76,7 @@ abstract class MergeBox extends Box
    * @throws ExerciseConfigException
    */
   public function getDefaultInputPorts(): array {
-    static::init();
+    self::init();
     return self::$defaultInputPorts;
   }
 
@@ -81,7 +86,7 @@ abstract class MergeBox extends Box
    * @throws ExerciseConfigException
    */
   public function getDefaultOutputPorts(): array {
-    static::init();
+    self::init();
     return self::$defaultOutputPorts;
   }
 
