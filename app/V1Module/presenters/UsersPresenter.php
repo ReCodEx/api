@@ -332,7 +332,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
    * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
    * @Param(type="post", name="solutionCommentsEmails", validation="bool", description="Flag if email should be sent to user when new submission comment is added", required=false)
-   * @Param(type="post", name="assignmentPointsEmails", validation="bool", description="Flag if email should be sent to user when the points were awarded for assignment", required=false)
+   * @Param(type="post", name="pointsChangedEmails", validation="bool", description="Flag if email should be sent to user when the points were awarded for assignment", required=false)
    * @throws NotFoundException
    */
   public function actionUpdateSettings(string $id) {
@@ -363,9 +363,9 @@ class UsersPresenter extends BasePresenter {
     $solutionCommentsEmails = $req->getPost("solutionCommentsEmails") !== null
       ? filter_var($req->getPost("solutionCommentsEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getSolutionCommentsEmails();
-    $assignmentPointsEmails = $req->getPost("assignmentPointsEmails") !== null
-      ? filter_var($req->getPost("assignmentPointsEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getAssignmentPointsEmails();
+    $pointsChangedEmails = $req->getPost("pointsChangedEmails") !== null
+      ? filter_var($req->getPost("pointsChangedEmails"), FILTER_VALIDATE_BOOLEAN)
+      : $settings->getPointsChangedEmails();
     $useGravatar = $req->getPost("useGravatar") !== null
       ? filter_var($req->getPost("useGravatar"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getUseGravatar();
@@ -378,7 +378,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setAssignmentDeadlineEmails($assignmentDeadlineEmails);
     $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
     $settings->setSolutionCommentsEmails($solutionCommentsEmails);
-    $settings->setAssignmentPointsEmails($assignmentPointsEmails);
+    $settings->setPointsChangedEmails($pointsChangedEmails);
     $settings->setUseGravatar($useGravatar);
 
     $this->users->persist($user);

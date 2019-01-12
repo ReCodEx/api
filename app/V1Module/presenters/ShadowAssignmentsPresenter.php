@@ -9,9 +9,8 @@ use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
-use App\Helpers\Notifications\AssignmentPointsEmailsSender;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Helpers\Validators;
-use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\LocalizedShadowAssignment;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\ShadowAssignmentPoints;
@@ -73,10 +72,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
   public $groupAcl;
 
   /**
-   * @var AssignmentPointsEmailsSender
+   * @var PointsChangedEmailsSender
    * @inject
    */
-  public $assignmentPointsEmailsSender;
+  public $pointsChangedEmailsSender;
 
 
   public function checkDetail(string $id) {
@@ -295,7 +294,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $this->shadowAssignmentPointsRepository->persist($pointsEntity);
 
     // user was awarded with points, send an email
-    $this->assignmentPointsEmailsSender->shadowPointsUpdated($pointsEntity);
+    $this->pointsChangedEmailsSender->shadowPointsUpdated($pointsEntity);
 
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));
   }
@@ -337,7 +336,7 @@ class ShadowAssignmentsPresenter extends BasePresenter {
 
     if ($oldPoints !== $points) {
       // user points was updated, send an email
-      $this->assignmentPointsEmailsSender->shadowPointsUpdated($pointsEntity);
+      $this->pointsChangedEmailsSender->shadowPointsUpdated($pointsEntity);
     }
 
     $this->sendSuccessResponse($this->shadowAssignmentViewFactory->getPoints($pointsEntity));

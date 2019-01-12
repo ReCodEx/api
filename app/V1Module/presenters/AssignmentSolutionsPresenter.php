@@ -10,7 +10,7 @@ use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
-use App\Helpers\Notifications\AssignmentPointsEmailsSender;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
@@ -85,10 +85,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public $assignmentSolutionSubmissionViewFactory;
 
   /**
-   * @var AssignmentPointsEmailsSender
+   * @var PointsChangedEmailsSender
    * @inject
    */
-  public $assignmentPointsEmailsSender;
+  public $pointsChangedEmailsSender;
 
 
   public function checkSolution(string $id) {
@@ -252,7 +252,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     }
 
     if ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints) {
-      $this->assignmentPointsEmailsSender->assignmentPointsUpdated($solution);
+      $this->pointsChangedEmailsSender->solutionPointsUpdated($solution);
     }
 
     $this->assignmentSolutions->flush();

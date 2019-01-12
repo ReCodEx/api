@@ -2,7 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
-use App\Helpers\Notifications\AssignmentPointsEmailsSender;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Model\Entity\Assignment;
 use App\V1Module\Presenters\ShadowAssignmentsPresenter;
 use Tester\Assert;
@@ -168,10 +168,10 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $user = PresenterTestHelper::getUser($this->container, PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
     $timestamp = time();
 
-    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
-    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
+    /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
     $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
-    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
+    $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
@@ -205,10 +205,10 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     $shadowPoints = current($this->presenter->shadowAssignmentPointsRepository->findAll());
     $timestamp = time();
 
-    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
-    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
+    /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
     $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
-    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
+    $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
