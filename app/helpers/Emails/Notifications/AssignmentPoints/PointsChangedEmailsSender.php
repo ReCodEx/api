@@ -14,7 +14,7 @@ use Nette\Utils\Arrays;
 /**
  * Sending emails on assignment creation.
  */
-class AssignmentPointsEmailsSender {
+class PointsChangedEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
@@ -22,11 +22,11 @@ class AssignmentPointsEmailsSender {
   /** @var string */
   private $sender;
   /** @var string */
-  private $pointsUpdatedPrefix;
+  private $solutionPointsUpdatedPrefix;
   /** @var string */
   private $shadowPointsUpdatedPrefix;
   /** @var string */
-  private $assignmentPointsRedirectUrl;
+  private $solutionPointsRedirectUrl;
   /** @var string */
   private $shadowPointsRedirectUrl;
 
@@ -39,9 +39,9 @@ class AssignmentPointsEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->pointsUpdatedPrefix = Arrays::get($params, ["emails", "pointsUpdatedPrefix"], "Assignment Points Updated - ");
+    $this->solutionPointsUpdatedPrefix = Arrays::get($params, ["emails", "solutionPointsUpdatedPrefix"], "Assignment Points Updated - ");
     $this->shadowPointsUpdatedPrefix = Arrays::get($params, ["emails", "shadowPointsUpdatedPrefix"], "Shadow Assignment Points Awarded - ");
-    $this->assignmentPointsRedirectUrl = Arrays::get($params, ["assignmentPointsRedirectUrl"], "https://recodex.mff.cuni.cz");
+    $this->solutionPointsRedirectUrl = Arrays::get($params, ["solutionPointsRedirectUrl"], "https://recodex.mff.cuni.cz");
     $this->shadowPointsRedirectUrl = Arrays::get($params, ["shadowPointsRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
 
@@ -52,14 +52,14 @@ class AssignmentPointsEmailsSender {
    * @return boolean
    * @throws InvalidStateException
    */
-  public function assignmentPointsUpdated(AssignmentSolution $solution): bool {
+  public function solutionPointsUpdated(AssignmentSolution $solution): bool {
     $author = $solution->getSolution()->getAuthor();
-    if (!$author->getSettings()->getAssignmentPointsEmails()) {
+    if (!$author->getSettings()->getPointsChangedEmails()) {
       return true;
     }
 
     $locale = $author->getSettings()->getDefaultLanguage();
-    $subject = $this->pointsUpdatedPrefix .
+    $subject = $this->solutionPointsUpdatedPrefix .
       EmailLocalizationHelper::getLocalization($locale, $solution->getAssignment()->getLocalizedTexts())->getName();
 
     return $this->emailHelper->send(
@@ -67,7 +67,7 @@ class AssignmentPointsEmailsSender {
       [$author->getEmail()],
       $locale,
       $subject,
-      $this->createAssignmentPointsUpdatedBody($solution, $locale)
+      $this->createSolutionPointsUpdatedBody($solution, $locale)
     );
   }
 
@@ -78,12 +78,12 @@ class AssignmentPointsEmailsSender {
    * @return string Formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createAssignmentPointsUpdatedBody(AssignmentSolution $solution, string $locale): string {
+  private function createSolutionPointsUpdatedBody(AssignmentSolution $solution, string $locale): string {
     $assignment = $solution->getAssignment();
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
-    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/assignmentPointsUpdated_{locale}.latte");
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/solutionPointsUpdated_{locale}.latte");
     return $latte->renderToString($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
@@ -91,7 +91,7 @@ class AssignmentPointsEmailsSender {
       "maxPoints" => $solution->getMaxPoints(),
       "hasBonusPoints" => $solution->getBonusPoints() !== 0,
       "bonusPoints" => $solution->getBonusPoints(),
-      "link" => EmailLinkHelper::getLink($this->assignmentPointsRedirectUrl, ["id" => $assignment->getId()])
+      "link" => EmailLinkHelper::getLink($this->solutionPointsRedirectUrl, ["id" => $assignment->getId()])
     ]);
   }
 
@@ -104,7 +104,7 @@ class AssignmentPointsEmailsSender {
    */
   public function shadowPointsUpdated(ShadowAssignmentPoints $points): bool {
     $awardee = $points->getAwardee();
-    if (!$awardee->getSettings()->getAssignmentPointsEmails()) {
+    if (!$awardee->getSettings()->getPointsChangedEmails()) {
       return true;
     }
 

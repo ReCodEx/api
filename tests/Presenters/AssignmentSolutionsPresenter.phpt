@@ -2,7 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
-use App\Helpers\Notifications\AssignmentPointsEmailsSender;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\User;
 use App\V1Module\Presenters\AssignmentSolutionsPresenter;
@@ -130,10 +130,10 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, "admin@admin.com", "admin");
     $solution = current($this->presenter->assignmentSolutions->findAll());
 
-    /** @var Mockery\Mock | AssignmentPointsEmailsSender $mockPointsEmailsSender */
-    $mockPointsEmailsSender = Mockery::mock(AssignmentPointsEmailsSender::class);
-    $mockPointsEmailsSender->shouldReceive("assignmentPointsUpdated")->with($solution)->andReturn(true)->once();
-    $this->presenter->assignmentPointsEmailsSender = $mockPointsEmailsSender;
+    /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("solutionPointsUpdated")->with($solution)->andReturn(true)->once();
+    $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',

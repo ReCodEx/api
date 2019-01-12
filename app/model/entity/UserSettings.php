@@ -17,7 +17,7 @@ use JsonSerializable;
  * @method bool getAssignmentDeadlineEmails()
  * @method bool getSubmissionEvaluatedEmails()
  * @method bool getSolutionCommentsEmails()
- * @method bool getAssignmentPointsEmails()
+ * @method bool getPointsChangedEmails()
  * @method setDarkTheme(bool $darkTheme)
  * @method setVimMode(bool $vimMode)
  * @method setOpenedSidebar(bool $opened)
@@ -27,7 +27,7 @@ use JsonSerializable;
  * @method setAssignmentDeadlineEmails(bool $flag)
  * @method setSubmissionEvaluatedEmails(bool $flag)
  * @method setSolutionCommentsEmails(bool $flag)
- * @method setAssignmentPointsEmails(bool $flag)
+ * @method setPointsChangedEmails(bool $flag)
  */
 class UserSettings implements JsonSerializable
 {
@@ -50,7 +50,7 @@ class UserSettings implements JsonSerializable
     $this->assignmentDeadlineEmails = true;
     $this->submissionEvaluatedEmails = true;
     $this->solutionCommentsEmails = true;
-    $this->assignmentPointsEmails = true;
+    $this->pointsChangedEmails = true;
   }
 
   /**
@@ -113,7 +113,7 @@ class UserSettings implements JsonSerializable
   /**
    * @ORM\Column(type="boolean")
    */
-  protected $assignmentPointsEmails;
+  protected $pointsChangedEmails;
 
 
   public function jsonSerialize() {
@@ -127,7 +127,7 @@ class UserSettings implements JsonSerializable
       "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
       "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
       "solutionCommentsEmails" => $this->solutionCommentsEmails,
-      "assignmentPointsEmails" => $this->assignmentPointsEmails
+      "pointsChangedEmails" => $this->pointsChangedEmails
     ];
   }
 }
