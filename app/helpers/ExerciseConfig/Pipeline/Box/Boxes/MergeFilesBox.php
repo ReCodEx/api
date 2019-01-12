@@ -4,7 +4,6 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -14,8 +13,10 @@ use App\Helpers\ExerciseConfig\VariableTypes;
  * Box which will take two file arrays on its input and join them to one merged
  * array.
  */
-class MergeFilesBox extends MergeBox
+class MergeFilesBox extends Box
 {
+  use MergeBox;
+
   public static $BOX_TYPE = "merge-files";
   public static $DEFAULT_NAME = "Merge files";
 
