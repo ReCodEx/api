@@ -74,7 +74,7 @@ class Comment implements JsonSerializable
         "id" => $this->user->getId(),
         "name" => $this->user->getName(),
         "avatarUrl" => $this->user->getAvatarUrl(),
-        "avatarLetter" => !empty($this->user->getFirstName()) ? $this->user->getFirstName()[0] : ""
+        "avatarLetter" => !empty($this->user->getFirstName()) ? mb_substr($this->user->getFirstName(), 0, 1) : ""
       ],
       "postedAt" => $this->postedAt->getTimestamp(),
       "isPrivate" => $this->isPrivate,
