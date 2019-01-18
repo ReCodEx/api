@@ -25,7 +25,6 @@ class Version20190114131100 extends AbstractMigration
           [
             'name' => 'judgeOnlyPipeline',
             'config' => <<<'PIPELINE_LITERAL_ENDS'
-
 ---
 boxes:
   -
