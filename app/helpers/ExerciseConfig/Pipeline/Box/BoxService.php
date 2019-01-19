@@ -36,6 +36,7 @@ class BoxService
       GppCompilationBox::$GPP_TYPE => GppCompilationBox::class,
       BisonCompilationBox::$BOX_TYPE => BisonCompilationBox::class,
       ElfExecutionBox::$ELF_EXEC_TYPE => ElfExecutionBox::class,
+      WrappedExecutionBox::$BOX_TYPE => WrappedExecutionBox::class,
       FpcCompilationBox::$FPC_TYPE => FpcCompilationBox::class,
       MonoCompilationBox::$MCS_TYPE => MonoCompilationBox::class,
       MonoExecutionBox::$MONO_EXEC_TYPE => MonoExecutionBox::class,

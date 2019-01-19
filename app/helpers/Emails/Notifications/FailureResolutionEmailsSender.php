@@ -1,17 +1,14 @@
 <?php
 namespace App\Helpers\Notifications;
 
+use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
-use App\Helpers\Evaluation\IExercise;
-use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Helpers\Emails\EmailLatteFactory;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\LocalizedExercise;
-use App\Model\Entity\ReferenceSolutionSubmission;
-use App\Model\Entity\Submission;
 use App\Model\Entity\SubmissionFailure;
-use App\Model\Entity\User;
 use Nette\SmartObject;
 use Nette\Utils\Arrays;
-use Latte;
 
 /**
  * A helper for sending notifications when submission failures are resolved
@@ -21,10 +18,12 @@ class FailureResolutionEmailsSender {
 
   /** @var EmailHelper */
   private $emailHelper;
+
   /** @var string */
   private $sender;
   /** @var string */
   private $failureResolvedPrefix;
+
 
   /**
    * @param EmailHelper $emailHelper
@@ -40,26 +39,37 @@ class FailureResolutionEmailsSender {
    * Send a notification about a failure being resolved
    * @param SubmissionFailure $failure
    * @return bool
+   * @throws InvalidStateException
    */
   public function failureResolved(SubmissionFailure $failure): bool {
     $submission = $failure->getSubmission();
+    $locale = $submission->getAuthor()->getSettings()->getDefaultLanguage();
 
     /** @var LocalizedExercise $text */
-    $text = $submission->getExercise()->getLocalizedTexts()->first(); // TODO
+    $text = EmailLocalizationHelper::getLocalization($locale, $submission->getExercise()->getLocalizedTexts());
     $title = $text !== null ? $text->getName() : "UNKNOWN";
     $subject = $this->failureResolvedPrefix . $title;
 
     return $this->emailHelper->send(
       $this->sender,
       [$submission->getAuthor()->getEmail()],
+      $locale,
       $subject,
-      $this->createFailureResolvedBody($failure, $title)
+      $this->createFailureResolvedBody($failure, $title, $locale)
     );
   }
 
-  private function createFailureResolvedBody(SubmissionFailure $failure, string $title): string {
-    $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/failureResolved.latte", [
+  /**
+   * @param SubmissionFailure $failure
+   * @param string $title
+   * @param string $locale
+   * @return string
+   * @throws InvalidStateException
+   */
+  private function createFailureResolvedBody(SubmissionFailure $failure, string $title, string $locale): string {
+    $latte = EmailLatteFactory::latte();
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/failureResolved_{locale}.latte");
+    return $latte->renderToString($template, [
       "title" => $title,
       "date" => $failure->getCreatedAt(),
       "note" => $failure->getResolutionNote()

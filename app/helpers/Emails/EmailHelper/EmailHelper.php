@@ -2,11 +2,13 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use Nette\Mail\IMailer;
 use Nette\Mail\Message;
 use Nette\Mail\SendException;
 use Nette\Utils\Arrays;
-use Latte;
 use Exception;
 
 /**
@@ -45,7 +47,7 @@ class EmailHelper {
   /**
    * Constructor
    * @param IMailer $mailer Created and configured (TLS verification, etc.) mailer object
-   * @param array   $params Array of params used to fill information into predefined mail template
+   * @param array $params Array of params used to fill information into predefined mail template
    */
   public function __construct(IMailer $mailer, array $params) {
     $this->mailer = $mailer;
@@ -62,13 +64,15 @@ class EmailHelper {
   /**
    * Send an email with a nice template from default email address.
    * @param array $to Receivers of the email
+   * @param string $locale locale of the email which should be sent
    * @param string $subject Subject of the email
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
+   * @throws InvalidStateException
    */
-  public function sendFromDefault(array $to, string $subject, string $text, array $bcc = []) {
-    return $this->send(null, $to, $subject, $text, $bcc);
+  public function sendFromDefault(array $to, string $locale, string $subject, string $text, array $bcc = []) {
+    return $this->send(null, $to, $locale, $subject, $text, $bcc);
   }
 
 
@@ -76,6 +80,7 @@ class EmailHelper {
    * Save mail copy into a text file in archiving directory.
    * @param Message $message Message to be serialized into the file.
    * @param Exception $lastMailerException Exception thrown from the sender (if any). Its message is logged as well.
+   * @throws Exception
    */
   private function archiveMailCopy(Message $message, Exception $lastMailerException = null)
   {
@@ -107,19 +112,22 @@ class EmailHelper {
    * Send an email with a nice template.
    * @param string|null $from Sender of the email
    * @param array $to Receivers of the email
+   * @param string $locale locale of the email which should be sent
    * @param string $subject Subject of the email
    * @param string $text Text of the message
    * @param array $bcc Blind copy receivers
    * @return bool If sending was successful or not
+   * @throws InvalidStateException
+   * @throws Exception
    */
-  public function send(?string $from, array $to, string $subject, string $text, array $bcc = []) {
+  public function send(?string $from, array $to, string $locale, string $subject, string $text, array $bcc = []) {
     $subject = $this->subjectPrefix . $subject;
     if ($from === null) {
       // if from email is not provided use the default one
       $from = $this->from;
     }
 
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $params = [
       "subject"   => $subject,
       "message"   => $text,
@@ -128,7 +136,8 @@ class EmailHelper {
       "siteName"  => $this->siteName,
       "githubUrl" => $this->githubUrl
     ];
-    $html = $latte->renderToString(__DIR__ . "/email.latte", $params);
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/email_{locale}.latte");
+    $html = $latte->renderToString($template, $params);
 
     // Prepare the message ...
     $message = new Message();

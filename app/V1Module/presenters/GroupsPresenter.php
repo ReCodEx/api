@@ -129,7 +129,7 @@ class GroupsPresenter extends BasePresenter {
   public $shadowAssignmentViewFactory;
 
   /**
-   * Get a list of all groups a user can see. The return set is filtered by parameters.
+   * Get a list of all non-archived groups a user can see. The return set is filtered by parameters.
    * @GET
    * @param string|null $instanceId Only groups of this instance are returned.
    * @param bool|null $ancestors If true, returns an ancestral closure of the initial result set.

@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Helpers\Notifications\AssignmentEmailsSender;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Model\Entity\Assignment;
 use App\V1Module\Presenters\ShadowAssignmentsPresenter;
 use Tester\Assert;
@@ -160,35 +161,17 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     }, NotFoundException::class);
   }
 
-  public function testPointsList()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
-    $assignment = $points->getShadowAssignment();
-    $pointsList = $assignment->getShadowAssignmentPointsCollection()->getValues();
-    $pointsList = array_map(function (\App\Model\Entity\ShadowAssignmentPoints $points) {
-      return $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
-    }, $pointsList);
-
-    $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'pointsList', 'id' => $assignment->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(count($pointsList), $result['payload']);
-    Assert::same($pointsList, $result['payload']);
-  }
-
   public function testCreatePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $assignment = current($this->presenter->shadowAssignments->findAll());
     $user = PresenterTestHelper::getUser($this->container, PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
     $timestamp = time();
+
+    /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
+    $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',
@@ -216,29 +199,16 @@ class TestShadowAssignmentsPresenter extends Tester\TestCase
     Assert::equal($timestamp, $points['awardedAt']);
   }
 
-  public function testPoints()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-
-    $points = current($this->presenter->shadowAssignmentPointsRepository->findAll());
-    $pointsData = $this->presenter->shadowAssignmentPointsViewFactory->getPoints($points);
-
-    $request = new Nette\Application\Request('V1:ShadowAssignments', 'GET',
-      ['action' => 'points', 'pointsId' => $points->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::same($pointsData, $result['payload']);
-  }
-
   public function testUpdatePoints()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
     $shadowPoints = current($this->presenter->shadowAssignmentPointsRepository->findAll());
     $timestamp = time();
+
+    /** @var Mockery\Mock | PointsChangedEmailsSender $mockPointsEmailsSender */
+    $mockPointsEmailsSender = Mockery::mock(PointsChangedEmailsSender::class);
+    $mockPointsEmailsSender->shouldReceive("shadowPointsUpdated")->with(Mockery::any())->andReturn(true)->once();
+    $this->presenter->pointsChangedEmailsSender = $mockPointsEmailsSender;
 
     $request = new Nette\Application\Request(
       'V1:ShadowAssignments',

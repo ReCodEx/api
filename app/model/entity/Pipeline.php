@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
-use JsonSerializable;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
@@ -22,10 +22,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setName(string $name)
  * @method setDescription(string $description)
  * @method setPipelineConfig($config)
- * @method PipelineParameter[] getParameters()
+ * @method Collection getParameters()
  * @method Collection getRuntimeEnvironments()
+ * @method DateTime getCreatedAt()
  */
-class Pipeline implements JsonSerializable
+class Pipeline
 {
   use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
   use UpdateableEntity;
@@ -112,6 +113,7 @@ class Pipeline implements JsonSerializable
    * @param Pipeline|null $createdFrom
    * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @param Collection|null $runtimeEnvironments
+   * @throws Exception
    */
   private function __construct(string $name, int $version, string $description,
       PipelineConfig $pipelineConfig, Collection $supplementaryEvaluationFiles,
@@ -213,6 +215,7 @@ class Pipeline implements JsonSerializable
    * @param User|null $user The author of the pipeline (null for universal pipelines).
    * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @return Pipeline
+   * @throws Exception
    */
   public static function create(?User $user, ?Exercise $exercise = null): Pipeline {
     return new self(
@@ -233,6 +236,7 @@ class Pipeline implements JsonSerializable
    * @param Pipeline $pipeline
    * @param Exercise|null $exercise Initial exercise to which the pipeline belongs to.
    * @return Pipeline
+   * @throws Exception
    */
   public static function forkFrom(User $user, Pipeline $pipeline, Exercise $exercise = null): Pipeline {
     return new self(
@@ -281,24 +285,5 @@ class Pipeline implements JsonSerializable
         unset($this->parameters[$key]);
       }
     }
-  }
-
-  public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "name" => $this->name,
-      "version" => $this->version,
-      "createdAt" => $this->createdAt->getTimestamp(),
-      "updatedAt" => $this->updatedAt->getTimestamp(),
-      "description" => $this->description,
-      "author" => $this->author ? $this->author->getId() : null,
-      "exercisesIds" => $this->getExercisesIds(),
-      "supplementaryFilesIds" => $this->getSupplementaryFilesIds(),
-      "pipeline" => $this->pipelineConfig->getParsedPipeline(),
-      "parameters" => array_merge(static::DEFAULT_PARAMETERS, $this->parameters->toArray()),
-      "runtimeEnvironmentIds" => $this->runtimeEnvironments->map(function (RuntimeEnvironment $env) {
-        return $env->getId();
-      })->getValues()
-    ];
   }
 }

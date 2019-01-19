@@ -163,6 +163,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
    * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
+   * @Param(type="post", name="visibleFrom", validation="timestamp", required=false, description="Date from which this assignment will be visible to students")
    * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can user view ratio of his solution memory and time usages and assignment limits?")
    * @Param(type="post", name="secondDeadline", validation="timestamp", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
@@ -212,6 +213,10 @@ class AssignmentsPresenter extends BasePresenter {
     $firstDeadlineTimestamp = (int)$req->getPost("firstDeadline");
     $oldSecondDeadlineTimestamp = $assignment->getSecondDeadline()->getTimestamp();
     $secondDeadlineTimestamp = (int)$req->getPost("secondDeadline") ?: 0;
+    $oldVisibleFromTimestamp = $assignment->getVisibleFrom() ? $assignment->getVisibleFrom()->getTimestamp() : null;
+    $visibleFromTimestamp = (int)$req->getPost("visibleFrom");
+    $visibleFrom = $visibleFromTimestamp ? DateTime::createFromFormat('U', $visibleFromTimestamp) : null;
+
     $sendNotification = $req->getPost("sendNotification");
     $sendNotification = $sendNotification !== null ? filter_var($sendNotification, FILTER_VALIDATE_BOOLEAN) : true;
 
@@ -222,6 +227,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setSecondDeadline(DateTime::createFromFormat('U', $secondDeadlineTimestamp));
     $assignment->setMaxPointsBeforeFirstDeadline($firstDeadlinePoints);
     $assignment->setMaxPointsBeforeSecondDeadline($secondDeadlinePoints);
+    $assignment->setVisibleFrom($visibleFrom);
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
@@ -241,11 +247,6 @@ class AssignmentsPresenter extends BasePresenter {
         }
       }
       $this->solutionEvaluations->flush();
-    }
-
-    if ($sendNotification && $wasPublic === false && $isPublic === true) {
-      // assignment is moving from non-public to public, send notification to students
-      $this->assignmentEmailsSender->assignmentCreated($assignment);
     }
 
     // go through localizedTexts and construct database entities
@@ -292,6 +293,25 @@ class AssignmentsPresenter extends BasePresenter {
 
     foreach ($assignment->getLocalizedAssignments() as $localizedAssignment) {
       $this->assignments->persist($localizedAssignment, false);
+    }
+
+    // sending notification has to be after setting new localized texts
+    if ($sendNotification) {
+      // mail notification sent to students was requested
+
+      $now = new DateTime();
+      if ($wasPublic === false && $isPublic === true &&
+        ($visibleFromTimestamp === null || $visibleFrom <= $now)) {
+        // assignment is moving from non-public to public, send notification to students
+        $this->assignmentEmailsSender->assignmentCreated($assignment);
+      }
+
+      if ($isPublic === true && $visibleFromTimestamp !== null &&
+        $oldVisibleFromTimestamp !== $visibleFromTimestamp) {
+        // assignment is public and visible from timestamp was set
+        // this means notification email should be sent later
+        // TODO: schedule email sending and unschedule old one if any
+      }
     }
 
     $this->assignments->flush();

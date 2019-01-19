@@ -5,10 +5,12 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\InvalidArgumentException;
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotReadyException;
 use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FileServerProxy;
+use App\Helpers\Notifications\PointsChangedEmailsSender;
 use App\Helpers\Validators;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Repository\AssignmentSolutions;
@@ -81,6 +83,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentSolutionSubmissionViewFactory;
+
+  /**
+   * @var PointsChangedEmailsSender
+   * @inject
+   */
+  public $pointsChangedEmailsSender;
+
 
   public function checkSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -215,15 +224,19 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Set new amount of bonus points for a solution
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
-   * @Param(type="post", name="overriddenPoints", description="Overrides points assigned to solution by the system")
+   * @Param(type="post", name="overriddenPoints", required=false, description="Overrides points assigned to solution by the system")
    * @param string $id Identifier of the submission
    * @throws NotFoundException
    * @throws InvalidArgumentException
+   * @throws InvalidStateException
    */
   public function actionSetBonusPoints(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    $oldBonusPoints = $solution->getBonusPoints();
+    $oldOverridenPoints = $solution->getOverriddenPoints();
+
     $newBonusPoints = $this->getRequest()->getPost("bonusPoints");
     $overriddenPoints = $this->getRequest()->getPost("overriddenPoints");
-    $solution = $this->assignmentSolutions->findOrThrow($id);
 
     $solution->setBonusPoints($newBonusPoints);
 
@@ -236,6 +249,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       $solution->setOverriddenPoints(null);
     } else {
       throw new InvalidArgumentException("overridenPoints", "The value '$overriddenPoints' is not null|numericint");
+    }
+
+    if ($oldBonusPoints !== $newBonusPoints || $oldOverridenPoints !== $overriddenPoints) {
+      $this->pointsChangedEmailsSender->solutionPointsUpdated($solution);
     }
 
     $this->assignmentSolutions->flush();

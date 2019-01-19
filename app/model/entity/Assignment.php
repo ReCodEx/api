@@ -29,6 +29,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getSecondDeadline()
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
+ * @method DateTime getVisibleFrom()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
@@ -37,6 +38,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setAllowSecondDeadline(bool $allow)
  * @method setCanViewLimitRatios(bool $canView)
  * @method setPointsPercentualThreshold(float $threshold)
+ * @method setVisibleFrom(?DateTime $visibleFrom)
  */
 class Assignment extends AssignmentBase implements IExercise
 {
@@ -55,18 +57,16 @@ class Assignment extends AssignmentBase implements IExercise
     int $maxPointsBeforeSecondDeadline = 0,
     bool $canViewLimitRatios = false,
     bool $isBonus = false,
-    $pointsPercentualThreshold = 0
+    $pointsPercentualThreshold = 0,
+    ?DateTime $visibleFrom = null
   ) {
-    if ($secondDeadline == null) {
-      $secondDeadline = $firstDeadline;
-    }
-
     $this->exercise = $exercise;
     $this->group = $group;
+    $this->visibleFrom = $visibleFrom;
     $this->firstDeadline = $firstDeadline;
     $this->maxPointsBeforeFirstDeadline = $maxPointsBeforeFirstDeadline;
     $this->allowSecondDeadline = $allowSecondDeadline;
-    $this->secondDeadline = $secondDeadline;
+    $this->secondDeadline = $secondDeadline == null ? $firstDeadline : $secondDeadline;
     $this->maxPointsBeforeSecondDeadline = $maxPointsBeforeSecondDeadline;
     $this->assignmentSolutions = new ArrayCollection();
     $this->isPublic = $isPublic;
@@ -160,6 +160,11 @@ class Assignment extends AssignmentBase implements IExercise
   protected $submissionsCountLimit;
 
   /**
+   * @ORM\Column(type="datetime", nullable=true)
+   */
+  protected $visibleFrom;
+
+  /**
    * @ORM\Column(type="datetime")
    */
   protected $firstDeadline;
@@ -220,7 +225,7 @@ class Assignment extends AssignmentBase implements IExercise
   protected $canViewLimitRatios;
 
   /**
-   * @ORM\ManyToOne(targetEntity="Exercise")
+   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
    */
   protected $exercise;
 

@@ -474,7 +474,8 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $generatorResult = $this->jobConfigGenerator
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
     } catch (ExerciseConfigException | JobConfigStorageException $e) {
-      $submission = new ReferenceSolutionSubmission($referenceSolution, null, "", $this->getCurrentUser());
+      $submission = new ReferenceSolutionSubmission($referenceSolution, null,
+        "", $this->getCurrentUser(), $isDebug);
       $this->referenceSubmissions->persist($submission, false);
 
       $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_CONFIG_ERROR, $e->getMessage(), $submission);
@@ -488,7 +489,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     foreach ($hwGroups->getValues() as $hwGroup) {
       // create the entity and generate the ID
       $submission = new ReferenceSolutionSubmission($referenceSolution, $hwGroup,
-        $generatorResult->getJobConfigPath(), $this->getCurrentUser());
+        $generatorResult->getJobConfigPath(), $this->getCurrentUser(), $isDebug);
       $this->referenceSubmissions->persist($submission);
 
       try {

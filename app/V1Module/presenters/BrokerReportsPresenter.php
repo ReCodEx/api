@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\HttpBasicAuthException;
 use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\WrongCredentialsException;
@@ -12,6 +13,7 @@ use App\Helpers\EvaluationLoadingHelper;
 use App\Helpers\FailureHelper;
 use App\Helpers\BasicAuthHelper;
 use App\Helpers\JobConfig\JobId;
+use App\Helpers\Notifications\SubmissionEmailsSender;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SubmissionFailure;
@@ -64,6 +66,13 @@ class BrokerReportsPresenter extends BasePresenter {
   public $evaluationLoadingHelper;
 
   /**
+   * @var SubmissionEmailsSender
+   * @inject
+   */
+  public $submissionEmailsSender;
+
+
+  /**
    * The actions of this presenter have specific
    * @throws WrongCredentialsException
    * @throws HttpBasicAuthException
@@ -91,6 +100,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @param string $jobId Identifier of the job whose status is being reported
    * @throws InternalServerErrorException
    * @throws NotFoundException
+   * @throws InvalidStateException
    */
   public function actionJobStatus($jobId) {
     $status = $this->getRequest()->getPost("status");
@@ -107,7 +117,12 @@ class BrokerReportsPresenter extends BasePresenter {
           case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
             // load the evaluation of the student submission (or a resubmission of a student submission)
-            $this->evaluationLoadingHelper->loadEvaluation($submission);
+            $result = $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+            if ($result) {
+              // optionally send notification to the user about evaluation of the solution
+              $this->submissionEmailsSender->submissionEvaluated($submission);
+            }
             break;
         }
         break;

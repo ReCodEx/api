@@ -2,13 +2,16 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
+use Exception;
 use Latte;
 use Nette\Utils\Arrays;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Login;
 use App\Model\Entity\ForgottenPassword;
-use App\Security\AccessToken;
 use App\Security\AccessManager;
 use DateTime;
 use DateInterval;
@@ -81,6 +84,7 @@ class ForgottenPasswordHelper {
    * @param Login $login
    * @param string $IPaddress IP address of change request client (from request headers)
    * @return bool If sending was successful or not
+   * @throws Exception
    */
   public function process(Login $login, string $IPaddress) {
     // Stalk forgotten password requests a little bit and store them to database
@@ -91,13 +95,16 @@ class ForgottenPasswordHelper {
     // prepare all necessary things
     $token = $this->accessManager->issueToken($login->getUser(), [TokenScope::CHANGE_PASSWORD],
       $this->tokenExpiration);
+
+    $locale = $login->getUser()->getSettings()->getDefaultLanguage();
     $subject = $this->createSubject($login);
-    $message = $this->createBody($login, $token);
+    $message = $this->createBody($login, $locale, $token);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [ $login->getUser()->getEmail() ],
+      $locale,
       $subject,
       $message
     );
@@ -115,19 +122,22 @@ class ForgottenPasswordHelper {
   /**
    * Creates and return body of email message.
    * @param Login $login
+   * @param string $locale
    * @param string $token
    * @return string
+   * @throws InvalidStateException
    */
-  private function createBody(Login $login, string $token): string {
+  private function createBody(Login $login, string $locale, string $token): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
     $latte = new Latte\Engine();
-    return $latte->renderToString(__DIR__ . "/resetPasswordEmail.latte", [
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/resetPasswordEmail_{locale}.latte");
+    return $latte->renderToString($template, [
       "username" => $login->getUsername(),
-      "link" => "{$this->redirectUrl}#{$token}",
+      "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i")
     ]);
   }

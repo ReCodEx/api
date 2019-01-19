@@ -46,6 +46,9 @@ class TestExercisesPresenter extends Tester\TestCase
   /** @var App\Model\Repository\Exercises */
   protected $exercises;
 
+  /** @var App\Model\Repository\Assignments */
+  protected $assignments;
+
   /** @var App\Model\Repository\Pipelines */
   protected $pipelines;
 
@@ -69,6 +72,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $this->supplementaryFiles = $container->getByType(\App\Model\Repository\SupplementaryExerciseFiles::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->exercises = $container->getByType(App\Model\Repository\Exercises::class);
+    $this->assignments = $container->getByType(App\Model\Repository\Assignments::class);
     $this->pipelines = $container->getByType(App\Model\Repository\Pipelines::class);
     $this->attachmentFiles = $container->getByType(\App\Model\Repository\AttachmentFiles::class);
     $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
@@ -358,9 +362,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $user = $this->logins->getUser(PresenterTestHelper::ADMIN_LOGIN, PresenterTestHelper::ADMIN_PASSWORD);
     $pipeline = current($this->pipelines->findAll());
     $pipeline1 = Pipeline::forkFrom($user, $pipeline);
-    $pipeline1->setId("testGetPipelines1");
     $pipeline2 = Pipeline::forkFrom($user, $pipeline);
-    $pipeline2->setId("testGetPipelines2");
     $exercise = current($this->exercises->findAll());
     $exercise->addPipeline($pipeline1);
     $exercise->addPipeline($pipeline2);
@@ -380,8 +382,38 @@ class TestExercisesPresenter extends Tester\TestCase
     $payload = $result['payload'];
     Assert::count(2, $payload);
 
-    Assert::contains($pipeline1, $payload);
-    Assert::contains($pipeline2, $payload);
+    $expectedIds = [$pipeline1->getId(), $pipeline2->getId()];
+    $actualIds = array_map(function ($item) { return $item["id"]; }, $result['payload']);
+    Assert::equal(sort($expectedIds), sort($actualIds));
+  }
+
+  public function testAssignments() {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    $exercise = null;
+    foreach ($this->exercises->findAll() as $e) {
+      if ($e->getAssignments()->count() > 0) {
+        $exercise = $e;
+        break;
+      }
+    }
+    Assert::notEqual(null, $exercise);
+
+    $request = new Nette\Application\Request("V1:Exercises", 'GET',
+      ['action' => 'assignments', 'id' => $exercise->getId()]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+
+    $payload = $result['payload'];
+    Assert::count($exercise->getAssignments()->count(), $payload);
+
+    Assert::same(
+      $exercise->getAssignments()->map(function ($assignment) { return $assignment->getId(); })->toArray(),
+      array_map(function ($item) { return $item["id"]; }, $payload)
+    );
   }
 
   public function testForkFromToGroup()

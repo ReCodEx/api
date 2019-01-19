@@ -17,6 +17,9 @@ parameters:
     description: "ReCodEx Code Examiner - API Server"
     versionFormat: "{tag}"
 
+  webapp:
+    address: https://recodex.mff.cuni.cz/en
+
   accessManager:  # configuration of access token in JWT standard. Do not modify unless you really know what are you doing.
     leeway: 60
     issuer: https://recodex.mff.cuni.cz
@@ -104,14 +107,18 @@ parameters:
       subjectPrefix: "Failure Report - "  # prefix of mail subject
 
   assignmentNotifications:
+    assignmentRedirectUrl: "%webapp.address%/app/assignment/{id}"
+    shadowRedirectUrl: "%webapp.address%/app/shadow-assignment/{id}"
     emails:
       from: %emails.from%
-      newAssignmentPrefix: "New Assignment -"
-      assignmentDeadlinePrefix: "Assignment Deadline Is Behind the Corner -"
+      newAssignmentPrefix: "New Assignment - "
+      assignmentDeadlinePrefix: "Assignment Deadline Is Around the Corner - "
       assignmentDeadlineThresholdFrom: +1 day
       assignmentDeadlineThresholdTo: +2 days
 
   submissionNotifications:
+    submissionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
+    submissionNotificationThreshold: -5 minutes
     emails:
       from: %emails.from%
       submissionEvaluatedPrefix: "Submission Evaluated - "
@@ -122,20 +129,30 @@ parameters:
       failureResolvedPrefix: "Submission Failure Resolved - "
 
   solutionCommentsNotifications:
+    assignmentSolutionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
+    referenceSolutionRedirectUrl: "%webapp.address%/app/exercises/{exerciseId}/reference-solution/{solutionId}"
     emails:
       from: %emails.from%
       assignmentSolutionCommentPrefix: "Assignment Solution Comment - "
       referenceSolutionCommentPrefix: "Reference Solution Comment - "
 
+  pointsChangedNotifications:
+    solutionPointsRedirectUrl: "%webapp.address%/app/assignment/{id}"
+    shadowPointsRedirectUrl: "%webapp.address%/app/shadow-assignment/{id}"
+    emails:
+      from: %emails.from%
+      solutionPointsUpdatedPrefix: "Assignment Points Updated - "
+      shadowPointsUpdatedPrefix: "Shadow Assignment Points Awarded - "
+
   forgottenPassword:  # user messages for changing passwords
-    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"  # URL of web application where the password can be changed
+    redirectUrl: "%webapp.address%/forgotten-password/change#{token}"  # URL of web application where the password can be changed
     tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
     emails:  # additional info for sending mails, from is source address and subjectPrefix is prefix of mail subject
       from: %emails.from%
       subjectPrefix: "Password Recovery Request - "
 
   emailVerification:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"
+    redirectUrl: "%webapp.address%/email-verification#{token}"
     tokenExpiration: 600 # 10 minutes
     emails:
       from: %emails.from%
@@ -196,7 +213,6 @@ acl:
     sis: App\Security\ACL\ISisPermissions
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
-    shadowAssignmentPoints: App\Security\ACL\IShadowAssignmentPointsPermissions
     notification: App\Security\ACL\INotificationPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
@@ -214,7 +230,6 @@ acl:
     groupContext: App\Security\Policies\SisGroupContextPermissionPolicy
     sisBoundGroup: App\Security\Policies\SisBoundGroupPermissionPolicy
     shadowAssignment: App\Security\Policies\ShadowAssignmentPermissionPolicy
-    shadowAssignmentPoints: App\Security\Policies\ShadowAssignmentPointsPermissionPolicy
     notification: App\Security\Policies\NotificationPermissionPolicy
 
 extensions:
@@ -294,7 +309,6 @@ services:
 
   # helpers
   - App\Helpers\EvaluationLoadingHelper
-  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
   - App\Helpers\FailureHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, %failures%)
   - App\Helpers\BrokerProxy(%broker%)
   - App\Helpers\FileServerProxy(%fileServer%)
@@ -303,7 +317,6 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\EvaluationPointsLoader
-  - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
   - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%, %jobConfig.humanReadable%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\JobConfig\Generator
@@ -312,11 +325,6 @@ services:
     simple: @App\Helpers\Evaluation\SimpleScoreCalculator
   })
   - App\Helpers\ExerciseFileStorage
-  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, %assignmentNotifications%)
-  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
-  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
-  - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, %solutionCommentsNotifications%)
-  - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer
   - App\Helpers\ExerciseConfig\Compiler
@@ -340,6 +348,17 @@ services:
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
   - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
+
+  # emails
+  - App\Helpers\Emails\EmailLocalizationHelper
+  - App\Helpers\EmailHelper(@Nette\Mail\SmtpMailer, %emails%)
+  - App\Helpers\EmailVerificationHelper(@App\Helpers\EmailHelper, @App\Security\AccessManager, %emailVerification%)
+  - App\Helpers\ForgottenPasswordHelper(@Kdyby\Doctrine\EntityManager, @App\Helpers\EmailHelper, @App\Security\AccessManager, %forgottenPassword%)
+  - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
+  - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
+  - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
+  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
+  - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
 
   # models - repositories
   - App\Model\Repository\Comments
@@ -381,7 +400,7 @@ services:
   - App\Model\View\AssignmentSolutionSubmissionViewFactory
   - App\Model\View\ReferenceExerciseSolutionViewFactory
   - App\Model\View\ShadowAssignmentViewFactory
-  - App\Model\View\ShadowAssignmentPointsViewFactory
+  - App\Model\View\PipelineViewFactory
 
 doctrine:
   user: 'root'

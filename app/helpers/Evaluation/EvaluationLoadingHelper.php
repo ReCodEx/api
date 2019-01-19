@@ -45,7 +45,7 @@ class EvaluationLoadingHelper {
    * @return bool
    * @throws InternalServerErrorException
    */
-  public function loadEvaluation(Submission $submission) {
+  public function loadEvaluation(Submission $submission): bool {
     if ($submission->hasEvaluation()) {
       return true;
     }

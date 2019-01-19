@@ -5,6 +5,7 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\EmailHelper;
+use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Model\Entity\User;
 use App\Model\Repository\Groups;
 use App\Security\ACL\IEmailPermissions;
@@ -12,6 +13,12 @@ use App\Security\ACL\IGroupPermissions;
 use App\Security\Roles;
 
 class EmailsPresenter extends BasePresenter {
+
+  /**
+   * @var EmailLocalizationHelper
+   * @inject
+   */
+  public $emailLocalizationHelper;
 
   /**
    * @var EmailHelper
@@ -52,15 +59,16 @@ class EmailsPresenter extends BasePresenter {
    */
   public function actionDefault() {
     $users = $this->users->findAll();
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      function ($toUsers, $emails, $locale) use ($subject, $message) {
+        return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      });
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -77,16 +85,24 @@ class EmailsPresenter extends BasePresenter {
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    */
   public function actionSendToSupervisors() {
-    $supervisors = $this->users->findByRoles(Roles::SUPERVISOR_ROLE, Roles::SUPERADMIN_ROLE);
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $supervisors);
+    $supervisors = $this->users->findByRoles(
+      Roles::SUPERVISOR_ROLE,
+      Roles::SUPERVISOR_STUDENT_ROLE,
+      Roles::EMPOWERED_SUPERVISOR_ROLE,
+      Roles::SUPERADMIN_ROLE
+    );
 
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $supervisors,
+      function ($toUsers, $emails, $locale) use ($subject, $message) {
+        return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -103,16 +119,18 @@ class EmailsPresenter extends BasePresenter {
    * @Param(type="post", name="message", validation="string:1..", description="Message which will be sent, can be html code")
    */
   public function actionSendToRegularUsers() {
-    $users = $this->users->findByRoles(Roles::STUDENT_ROLE);
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
+    $users = $this->users->findByRoles(Roles::STUDENT_ROLE, Roles::SUPERVISOR_STUDENT_ROLE);
     $req = $this->getRequest();
     $subject = $req->getPost("subject");
     $message = $req->getPost("message");
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      function ($toUsers, $emails, $locale) use ($subject, $message) {
+        return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
+
     $this->sendSuccessResponse("OK");
   }
 
@@ -141,6 +159,8 @@ class EmailsPresenter extends BasePresenter {
     $group = $this->groups->findOrThrow($groupId);
     $req = $this->getRequest();
 
+    $subject = $req->getPost("subject");
+    $message = $req->getPost("message");
     $toSupervisors = filter_var($req->getPost("toSupervisors"), FILTER_VALIDATE_BOOLEAN);
     $toAdmins = filter_var($req->getPost("toAdmins"), FILTER_VALIDATE_BOOLEAN);
     $toMe = filter_var($req->getPost("toMe"), FILTER_VALIDATE_BOOLEAN);
@@ -153,19 +173,19 @@ class EmailsPresenter extends BasePresenter {
       $users = array_merge($users, $group->getAdmins());
     }
 
-    $emails = array_map(function (User $user) {
-      return $user->getEmail();
-    }, $users);
-
     // user requested copy of the email to his/hers email address
-    if ($toMe && !in_array($user->getEmail(), $emails)) {
-      $emails[] = $user->getEmail();
+    $foundMes = array_filter($users, function (User $user) { return $user->getId() === $user->getId(); });
+    if ($toMe && count($foundMes) === 0) {
+      $users[] = $user;
     }
 
-    $subject = $req->getPost("subject");
-    $message = $req->getPost("message");
+    $this->emailLocalizationHelper->sendLocalizedEmail(
+      $users,
+      function ($toUsers, $emails, $locale) use ($subject, $message) {
+        return $this->emailHelper->sendFromDefault([], $locale, $subject, $message, $emails);
+      }
+    );
 
-    $this->emailHelper->sendFromDefault([], $subject, $message, $emails);
     $this->sendSuccessResponse("OK");
   }
 }
