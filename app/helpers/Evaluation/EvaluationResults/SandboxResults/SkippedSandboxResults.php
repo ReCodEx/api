@@ -2,23 +2,10 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Exceptions\ResultsLoadingException;
-use App\Helpers\JobConfig\Limits;
-use Nette\Utils\Json;
-
 /**
  * Default stats for skipped tasks (the execution was not performed due to previous errors)
  */
-class SkippedStats implements IStats {
-
-  /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean The result
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool {
-    return false;
-  }
+class SkippedSandboxResults implements ISandboxResults {
 
   /**
    * Get total amount of consumed time
@@ -26,15 +13,6 @@ class SkippedStats implements IStats {
    */
   public function getUsedWallTime(): float {
     return 0;
-  }
-
-  /**
-   * Compares the stats to the time limit
-   * @param float $secondsLimit Limiting amout of milliseconds
-   * @return boolean The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool {
-    return false;
   }
 
   /**
@@ -46,29 +24,11 @@ class SkippedStats implements IStats {
   }
 
   /**
-   * Compares the stats to the cpu time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool {
-    return false;
-  }
-
-  /**
    * Get total amount of consumed memory
-   * @return int The ammout of memory the process allocated
+   * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return 0;
-  }
-
-  /**
-   * Compares the stats to the memory limit (in bytes)
-   * @param  int     $bytesLimit Limiting amout of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool {
-    return false;
   }
 
   /**

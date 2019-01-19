@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
-use App\Helpers\EvaluationResults\Stats;
+use App\Helpers\EvaluationResults\SandboxResults;
 use App\Exceptions\ResultsLoadingException;
 
 /**

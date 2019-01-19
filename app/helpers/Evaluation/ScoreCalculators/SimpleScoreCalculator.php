@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Helpers;
+namespace App\Helpers\Evaluation;
 
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Helpers\Evaluation\IScoreCalculator;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 

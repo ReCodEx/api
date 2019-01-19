@@ -9,7 +9,7 @@ use App\Exceptions\ResultsLoadingException;
 class ExecutionTaskResult extends TaskResult {
   const SANDBOX_RESULTS_KEY = "sandbox_results";
 
-  /** @var IStats Statistics of the execution */
+  /** @var ISandboxResults Statistics of the execution */
   private $stats;
 
   /**
@@ -29,17 +29,17 @@ class ExecutionTaskResult extends TaskResult {
         throw new ResultsLoadingException("Execution task '{$this->getId()}' does not contain array of sandbox results.");
       }
 
-      $this->stats = new Stats($data[self::SANDBOX_RESULTS_KEY]);
+      $this->stats = new SandboxResults($data[self::SANDBOX_RESULTS_KEY]);
     } else {
-      $this->stats = new SkippedStats();
+      $this->stats = new SkippedSandboxResults();
     }
   }
 
   /**
    * Get parsed statistics of execution
-   * @return IStats Statistics of the execution
+   * @return ISandboxResults Statistics of the execution
    */
-  public function getStats(): IStats {
+  public function getSandboxResults(): ISandboxResults {
     return $this->stats;
   }
 
@@ -48,7 +48,7 @@ class ExecutionTaskResult extends TaskResult {
    * @return int The code
    */
   public function getExitCode(): int {
-    return $this->getStats()->getExitCode();
+    return $this->getSandboxResults()->getExitCode();
   }
 
 }

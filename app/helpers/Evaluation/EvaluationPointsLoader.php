@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Helpers\Evaluation\IExercise;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\SolutionEvaluation;

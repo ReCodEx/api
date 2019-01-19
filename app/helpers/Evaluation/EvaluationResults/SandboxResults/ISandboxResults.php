@@ -2,12 +2,10 @@
 
 namespace App\Helpers\EvaluationResults;
 
-use App\Helpers\JobConfig\Limits;
-
 /**
  * Interface for accessing sandbox output of external task.
  */
-interface IStats {
+interface ISandboxResults {
 
   const EXIT_CODE_OK = 0;
   const EXIT_CODE_UNKNOWN = -1;
@@ -16,24 +14,10 @@ interface IStats {
   const STATUS_TO = "TO";
 
   /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool;
-
-  /**
    * Get total amount of consumed wall time
    * @return float The wall time for which the process ran in seconds
    */
   public function getUsedWallTime(): float;
-
-  /**
-   * Compares the stats to the wall time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool;
 
   /**
    * Get total amount of consumed cpu time
@@ -42,24 +26,10 @@ interface IStats {
   public function getUsedCpuTime(): float;
 
   /**
-   * Compares the stats to the cpu time limit
-   * @param float $secondsLimit Limiting amount of milliseconds
-   * @return boolean The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool;
-
-  /**
    * Get total amount of consumed memory
    * @return int The ammout of memory the process allocated
    */
   public function getUsedMemory(): int;
-
-  /**
-   * Compares the stats to the memory limit (in bytes)
-   * @param  int     $bytesLimit Limiting amout of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool;
 
   /**
    * Get exit code of examined program

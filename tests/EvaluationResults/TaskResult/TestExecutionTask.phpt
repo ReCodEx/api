@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use Tester\Assert;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
-use App\Helpers\EvaluationResults\Stats;
+use App\Helpers\EvaluationResults\SandboxResults;
 use App\Exceptions\ResultsLoadingException;
 
 class TestExecutionTask extends Tester\TestCase
@@ -36,7 +36,7 @@ class TestExecutionTask extends Tester\TestCase
     Assert::same("ABC", $result->getId());
     Assert::same("OK", $result->getStatus());
     Assert::true($result->isOk());
-    Assert::equal(new Stats(self::$sampleStats), $result->getStats());
+    Assert::equal(new SandboxResults(self::$sampleStats), $result->getSandboxResults());
   }
 
 }

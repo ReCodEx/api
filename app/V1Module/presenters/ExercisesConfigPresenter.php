@@ -14,7 +14,7 @@ use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseRestrictionsConfig;
-use App\Helpers\ScoreCalculatorAccessor;
+use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseLimits;

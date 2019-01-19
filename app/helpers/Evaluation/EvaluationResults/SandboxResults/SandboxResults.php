@@ -3,14 +3,13 @@
 namespace App\Helpers\EvaluationResults;
 
 use App\Exceptions\ResultsLoadingException;
-use App\Helpers\JobConfig\Limits;
 use Nette\Utils\Json;
 
 
 /**
  * Stats implementation for Isolate sandbox
  */
-class Stats implements IStats {
+class SandboxResults implements ISandboxResults {
   const EXITCODE_KEY = "exitcode";
   const MEMORY_KEY = "memory";
   const CPU_TIME_KEY = "time";
@@ -89,37 +88,11 @@ class Stats implements IStats {
   }
 
   /**
-   * Compares all the stats to the limits
-   * @param  Limits $limits The configured limits
-   * @return boolean The result
-   */
-  public function doesMeetAllCriteria(Limits $limits): bool {
-    return $this->isStatusOK() &&
-      $this->isWallTimeOK($limits->getWallTime()) &&
-      $this->isCpuTimeOK($limits->getTimeLimit()) &&
-      $this->isMemoryOK($limits->getMemoryLimit());
-  }
-
-  /**
    * Get wall time used by the program
    * @return float The time for which the process ran in seconds
    */
   public function getUsedWallTime(): float {
     return $this->wallTime;
-  }
-
-  /**
-   * Compares the stats to the wall time limit.
-   * @param float|int $secondsLimit Limiting amount of milliseconds
-   * @return bool The result
-   */
-  public function isWallTimeOK(float $secondsLimit): bool {
-    if ($this->isStatusTO()) {
-      return false;
-    } else if ($secondsLimit == 0.0) {
-      return true;
-    }
-    return $this->getUsedWallTime() <= $secondsLimit;
   }
 
   /**
@@ -131,37 +104,11 @@ class Stats implements IStats {
   }
 
   /**
-   * Compares the stats to the cpu time limit.
-   * @param float|int $secondsLimit Limiting amount of milliseconds
-   * @return bool The result
-   */
-  public function isCpuTimeOK(float $secondsLimit): bool {
-    if ($this->isStatusTO()) {
-      return false;
-    } else if ($secondsLimit == 0.0) {
-      return true;
-    }
-    return $this->getUsedCpuTime() <= $secondsLimit;
-  }
-
-  /**
    * Get memory used by the program
    * @return int The amount of memory the process allocated
    */
   public function getUsedMemory(): int {
     return $this->memory;
-  }
-
-  /**
-   * Compares the stats to the memory limit.
-   * @param  int     $bytesLimit Limiting amount of bytes
-   * @return boolean The result
-   */
-  public function isMemoryOK(int $bytesLimit): bool {
-    if ($bytesLimit === 0) {
-      return true;
-    }
-    return $this->getUsedMemory() < $bytesLimit;
   }
 
   /**

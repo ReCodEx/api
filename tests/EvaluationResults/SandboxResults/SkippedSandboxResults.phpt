@@ -3,13 +3,13 @@
 include '../../bootstrap.php';
 
 use Tester\Assert;
-use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\SkippedSandboxResults;
 use App\Helpers\JobConfig\Limits;
 
 /**
  * @testCase
  */
-class TestSkippedStats extends Tester\TestCase
+class TestSkippedSandboxResults extends Tester\TestCase
 {
   static $sample = [
     "exitcode"  => 0,
@@ -24,19 +24,16 @@ class TestSkippedStats extends Tester\TestCase
 ];
 
   public function testParseStats() {
-    $stats = new SkippedStats();
-    Assert::equal(SkippedStats::EXIT_CODE_UNKNOWN, $stats->getExitCode());
+    $stats = new SkippedSandboxResults();
+    Assert::equal(SkippedSandboxResults::EXIT_CODE_UNKNOWN, $stats->getExitCode());
     Assert::equal(0, $stats->getUsedMemory());
     Assert::equal(0.0, $stats->getUsedWallTime());
     Assert::equal(0.0, $stats->getUsedCpuTime());
     Assert::false($stats->wasKilled());
     Assert::equal("SKIPPED", (string) $stats);
-    Assert::false($stats->doesMeetAllCriteria(new Limits([ 'hw-group-id' => 'X', 'time' => 0.0, 'memory' => 0 ])));
-    Assert::false($stats->isMemoryOK(0));
-    Assert::false($stats->isWallTimeOK(0.0));
   }
 }
 
 # Testing methods run
-$testCase = new TestSkippedStats();
+$testCase = new TestSkippedSandboxResults();
 $testCase->run();

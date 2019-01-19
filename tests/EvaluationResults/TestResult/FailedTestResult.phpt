@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
-use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\SkippedSandboxResults;
 use App\Helpers\EvaluationResults\TaskResult;
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
@@ -93,10 +93,18 @@ class TestFailedTestResult extends Tester\TestCase
     Assert::equal(TestResult::STATUS_FAILED, $res->getStatus());
     Assert::equal(0.0, $res->getScore());
     Assert::true($res->didExecutionMeetLimits());
+    Assert::true($res->isMemoryOK());
+    Assert::true($res->isWallTimeOK());
+    Assert::true($res->isCpuTimeOK());
     Assert::same(10, $res->getExitCode());
-    Assert::same(0.8, $res->getUsedMemoryRatio());
-    Assert::same(0.092, $res->getUsedWallTimeRatio());
+    Assert::same(8000, $res->getUsedMemory());
+    Assert::same(10000, $res->getUsedMemoryLimit());
+    Assert::same(0.092, $res->getUsedWallTime());
+    Assert::same(1.0, $res->getUsedWallTimeLimit());
+    Assert::same(0.037, $res->getUsedCpuTime());
+    Assert::same(0.0, $res->getUsedCpuTimeLimit());
     Assert::same("This is a random message", $res->getMessage());
+    Assert::same("", $res->getJudgeOutput());
   }
 
 }

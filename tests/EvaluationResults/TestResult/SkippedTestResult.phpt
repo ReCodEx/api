@@ -4,7 +4,7 @@ include '../../bootstrap.php';
 
 use App\Helpers\EvaluationResults\EvaluationTaskResult;
 use App\Helpers\EvaluationResults\ExecutionTaskResult;
-use App\Helpers\EvaluationResults\SkippedStats;
+use App\Helpers\EvaluationResults\SkippedSandboxResults;
 use App\Helpers\EvaluationResults\TaskResult;
 use Tester\Assert;
 use App\Helpers\EvaluationResults\TestResult;
@@ -81,13 +81,20 @@ class TestSkippedTestResult extends Tester\TestCase
     $res = new TestResult($cfg, $execRes, $evalRes, "A");
     Assert::equal("some ID", $res->getId());
     Assert::equal(TestResult::STATUS_SKIPPED, $res->getStatus());
-    Assert::equal([new SkippedStats()], $res->getStats());
     Assert::equal(0.0, $res->getScore());
     Assert::false($res->didExecutionMeetLimits());
-    Assert::same(\App\Helpers\EvaluationResults\IStats::EXIT_CODE_UNKNOWN, $res->getExitCode());
-    Assert::same(0.0, $res->getUsedMemoryRatio());
-    Assert::same(0.0, $res->getUsedWallTimeRatio());
+    Assert::false($res->isMemoryOK());
+    Assert::false($res->isWallTimeOK());
+    Assert::false($res->isCpuTimeOK());
+    Assert::same(\App\Helpers\EvaluationResults\ISandboxResults::EXIT_CODE_UNKNOWN, $res->getExitCode());
+    Assert::same(0, $res->getUsedMemory());
+    Assert::same(8096, $res->getUsedMemoryLimit());
+    Assert::same(0.0, $res->getUsedWallTime());
+    Assert::same(0.0, $res->getUsedWallTimeLimit());
+    Assert::same(0.0, $res->getUsedCpuTime());
+    Assert::same(1.0, $res->getUsedCpuTimeLimit());
     Assert::same("", $res->getMessage());
+    Assert::same("", $res->getJudgeOutput());
   }
 
 }
