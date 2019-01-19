@@ -32,9 +32,9 @@ class Version20181211142808 extends AbstractMigration
   {
     // compute limits from used memory and time using stored ratios
     $this->connection->executeQuery("UPDATE test_result
-      SET used_memory_limit = used_memory / used_memory_ratio,
-          used_wall_time_limit = ROUND(used_wall_time / used_wall_time_ratio, 3),
-          used_cpu_time_limit = ROUND(used_cpu_time / used_cpu_time_ratio, 3)");
+      SET used_memory_limit = LEAST(used_memory / GREATEST(used_memory_ratio, 0.00001), 4000008),
+          used_wall_time_limit = ROUND(used_wall_time / GREATEST(used_wall_time_ratio, 0.00001), 3),
+          used_cpu_time_limit = ROUND(used_cpu_time / GREATEST(used_cpu_time_ratio, 0.00001), 3)");
   }
 
   /**
