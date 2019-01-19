@@ -42,7 +42,7 @@ class Version20181207152232 extends AbstractMigration
    * Remove compilation python pipeline which is no longer needed.
    * @throws DBALException
    */
-  private function removePythonCompilationPipeline(): string {
+  private function removePythonCompilationPipeline(): ?string {
     $pipelineId = $this->connection->executeQuery("SELECT * FROM pipeline WHERE name = :name",
       ["name" => self::PYTHON_COMPILATION_PIPELINE_NAME])->fetch()["id"];
 
@@ -131,7 +131,7 @@ class Version20181207152232 extends AbstractMigration
    * @param string $compilationPipelineId
    * @throws DBALException
    */
-  private function updatePythonConfigs(string $compilationPipelineId) {
+  private function updatePythonConfigs(?string $compilationPipelineId) {
     $passthroughFilesPipeline = $this->connection->executeQuery("SELECT * FROM pipeline WHERE name = :name",
       ["name" => "Compilation source files pass-through"])->fetch()["id"];
 
