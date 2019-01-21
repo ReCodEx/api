@@ -51,7 +51,7 @@ class AssignmentViewFactory {
       "disabledRuntimeEnvironmentIds" => $assignment->getDisabledRuntimeEnvironmentsIds(),
       "canViewLimitRatios" => $assignment->getCanViewLimitRatios(),
       "isBonus" => $assignment->isBonus(),
-      "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold(),
+      "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold() * 100,
       "exerciseSynchronizationInfo" => [
         "isSynchronizationPossible" => !$assignment->getExercise()->isBroken(),
         "updatedAt" => [

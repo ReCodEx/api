@@ -137,7 +137,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     $maxPointsBeforeSecondDeadline = 543;
     $visibleFrom = (new \DateTime())->getTimestamp();
     $isBonus = true;
-    $pointsPercentualThreshold = 90;
+    $pointsPercentualThreshold = 90.0;
 
     $request = new Nette\Application\Request('V1:Assignments', 'POST',
       ['action' => 'updateDetail', 'id' => $assignment->getId()],
@@ -176,7 +176,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     Assert::equal($maxPointsBeforeSecondDeadline, $updatedAssignment["maxPointsBeforeSecondDeadline"]);
     Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
     Assert::equal($isBonus, $updatedAssignment["isBonus"]);
-    Assert::equal($pointsPercentualThreshold / 100, $updatedAssignment["pointsPercentualThreshold"]);
+    Assert::equal($pointsPercentualThreshold, $updatedAssignment["pointsPercentualThreshold"]);
 
     // check localized texts
     Assert::count(1, $updatedAssignment["localizedTexts"]);
@@ -218,7 +218,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'allowSecondDeadline' => false,
         'canViewLimitRatios' => false,
         'isBonus' => false,
-        'pointsPercentualThreshold' => 50,
+        'pointsPercentualThreshold' => 50.0,
       ]
     );
     $response = $this->presenter->run($request);
@@ -258,7 +258,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'secondDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeSecondDeadline' => 543,
         'isBonus' => true,
-        'pointsPercentualThreshold' => 90,
+        'pointsPercentualThreshold' => 90.0,
         'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
       ]
     );
@@ -296,7 +296,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         'secondDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeSecondDeadline' => 543,
         'isBonus' => true,
-        'pointsPercentualThreshold' => 90,
+        'pointsPercentualThreshold' => 90.0,
         'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
       ]
     );

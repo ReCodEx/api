@@ -19,7 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @method string getId()
- * @method int getPointsPercentualThreshold()
+ * @method float getPointsPercentualThreshold()
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
