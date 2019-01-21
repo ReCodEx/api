@@ -168,7 +168,7 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="secondDeadline", validation="timestamp", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
-   * @Param(type="post", name="pointsPercentualThreshold", validation="numericint", required=false, description="A minimum percentage of points needed to gain point from assignment")
+   * @Param(type="post", name="pointsPercentualThreshold", validation="numeric", required=false, description="A minimum percentage of points needed to gain point from assignment")
    * @Param(type="post", name="disabledRuntimeEnvironmentIds", validation="list", required=false, description="Identifiers of runtime environments that should not be used for student submissions (only supported for JSON requests)")
    * @Param(type="post", name="sendNotification", required=false, validation="bool", description="If email notification should be sent")
    * @param string $id Identifier of the updated assignment
@@ -207,7 +207,7 @@ class AssignmentsPresenter extends BasePresenter {
     $secondDeadlinePoints = (int)$req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
     $oldThreshold = $assignment->getPointsPercentualThreshold();
     $threshold = $req->getPost("pointsPercentualThreshold") !== null
-      ? (int)$req->getPost("pointsPercentualThreshold") / 100
+      ? round((float)$req->getPost("pointsPercentualThreshold"), 2) / 100.0
       : $assignment->getPointsPercentualThreshold();
     $oldFirstDeadlineTimestamp = $assignment->getFirstDeadline()->getTimestamp();
     $firstDeadlineTimestamp = (int)$req->getPost("firstDeadline");
