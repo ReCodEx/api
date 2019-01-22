@@ -97,16 +97,16 @@
         },
         {
             "name": "dg/adminer-custom",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dg/adminer-custom.git",
-                "reference": "fe6d5800d85aef697d110a83aaa863bbd2c2b965"
+                "reference": "186f1a6af7c6ef0d2ddaec645ef5f58ef60f47f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/fe6d5800d85aef697d110a83aaa863bbd2c2b965",
-                "reference": "fe6d5800d85aef697d110a83aaa863bbd2c2b965",
+                "url": "https://api.github.com/repos/dg/adminer-custom/zipball/186f1a6af7c6ef0d2ddaec645ef5f58ef60f47f1",
+                "reference": "186f1a6af7c6ef0d2ddaec645ef5f58ef60f47f1",
                 "shasum": ""
             },
             "type": "library",
@@ -122,7 +122,7 @@
                 "postgresql",
                 "sqlite"
             ],
-            "time": "2018-06-29T10:30:14+00:00"
+            "time": "2018-11-26T15:13:02+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -733,12 +733,12 @@
             "version": "v2.5.12",
             "source": {
                 "type": "git",
-                "url": "https://github.com/doctrine/doctrine2.git",
+                "url": "https://github.com/doctrine/orm.git",
                 "reference": "984535cadc609e9eef8c89414aa3568ee97aa79f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/doctrine2/zipball/984535cadc609e9eef8c89414aa3568ee97aa79f",
+                "url": "https://api.github.com/repos/doctrine/orm/zipball/984535cadc609e9eef8c89414aa3568ee97aa79f",
                 "reference": "984535cadc609e9eef8c89414aa3568ee97aa79f",
                 "shasum": ""
             },
@@ -1800,6 +1800,11 @@
         {
             "name": "league/uri",
             "version": "5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/uri.git",
+                "reference": "872194ac1ca5e51fbb9e0e5ba4d27f91aa783e82"
+            },
             "require": {
                 "ext-fileinfo": "*",
                 "ext-intl": "*",
