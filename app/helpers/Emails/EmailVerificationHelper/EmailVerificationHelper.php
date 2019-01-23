@@ -140,7 +140,7 @@ class EmailVerificationHelper {
    * @return string
    */
   private function createSubject(User $user): string {
-    return $this->subjectPrefix . " " . $user->getEmail();
+    return $this->subjectPrefix . $user->getEmail();
   }
 
   /**

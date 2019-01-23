@@ -116,7 +116,7 @@ class ForgottenPasswordHelper {
    * @return string
    */
   private function createSubject(Login $login): string {
-    return $this->subjectPrefix . " " . $login->getUsername();
+    return $this->subjectPrefix . $login->getUsername();
   }
 
   /**
