@@ -12,7 +12,6 @@ use DateTime;
 /**
  * @ORM\Entity
  * @method string getId()
- * @method User getAuthor()
  */
 class ExerciseConfig
 {
@@ -45,6 +44,10 @@ class ExerciseConfig
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * Constructor

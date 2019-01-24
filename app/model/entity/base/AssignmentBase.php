@@ -21,7 +21,7 @@ abstract class AssignmentBase {
   use UpdateableEntity;
   use DeleteableEntity;
 
-  abstract function getGroup(): Group;
+  abstract function getGroup(): ?Group;
   abstract function getMaxPoints(): int;
   abstract function getLocalizedTexts(): Collection;
   abstract function getLocalizedTextByLocale(string $locale): ?LocalizedEntity;

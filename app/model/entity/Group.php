@@ -577,7 +577,7 @@ class Group
 
   public function getParentGroup(): ?Group {
     if ($this->parentGroup !== null) {
-      return $this->parentGroup;
+      return $this->parentGroup->isDeleted() ? null : $this->parentGroup;
     }
 
     if ($this->instance->getRootGroup() !== $this) {

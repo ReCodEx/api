@@ -62,6 +62,10 @@ class Instance implements JsonSerializable
    */
   protected $admin;
 
+  public function getAdmin(): ?User {
+    return $this->admin->isDeleted() ? null : $this->admin;
+  }
+
   /**
    * @ORM\Column(type="boolean")
    */
@@ -136,7 +140,7 @@ class Instance implements JsonSerializable
       "createdAt" => $this->createdAt->getTimestamp(),
       "updatedAt" => $this->updatedAt->getTimestamp(),
       "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : null,
-      "admin" => $this->admin ? $this->admin->getId() : null,
+      "admin" => $this->getAdmin() ? $this->getAdmin()->getId() : null,
       "rootGroupId" => $this->rootGroup !== null ? $this->rootGroup->getId() : null
     ];
   }

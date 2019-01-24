@@ -13,7 +13,6 @@ use Symfony\Component\Yaml\Yaml;
  *
  * @method string getId()
  * @method RuntimeEnvironment getRuntimeEnvironment()
- * @method getAuthor()
  */
 class ExerciseEnvironmentConfig
 {
@@ -53,6 +52,11 @@ class ExerciseEnvironmentConfig
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
+
 
   /**
    * RuntimeConfig constructor.

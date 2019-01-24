@@ -17,7 +17,6 @@ use JsonSerializable;
  * @method string getLocalFilePath()
  * @method DateTime getUploadedAt()
  * @method int getFileSize()
- * @method User getUser()
  */
 class UploadedFile implements JsonSerializable
 {
@@ -80,6 +79,10 @@ class UploadedFile implements JsonSerializable
    */
   protected $user;
 
+  public function getUser(): ?User {
+    return $this->user->isDeleted() ? null : $this->user;
+  }
+
 
   /**
    * @param string $name Name of the file
@@ -104,7 +107,7 @@ class UploadedFile implements JsonSerializable
       "name" => $this->name,
       "size" => $this->fileSize,
       "uploadedAt" => $this->uploadedAt->getTimestamp(),
-      "userId" => $this->user->getId(),
+      "userId" => $this->getUser() ? $this->getUser()->getId() : null,
       "isPublic" => $this->isPublic
     ];
   }

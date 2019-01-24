@@ -17,7 +17,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method string getName()
  * @method string getDescription()
- * @method User getAuthor()
  * @method PipelineConfig getPipelineConfig()
  * @method setName(string $name)
  * @method setDescription(string $description)
@@ -60,6 +59,10 @@ class Pipeline
    */
   protected $author;
 
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
+
   /**
    * @ORM\Column(type="datetime")
    */
@@ -69,6 +72,10 @@ class Pipeline
    * @ORM\ManyToOne(targetEntity="Pipeline")
    */
   protected $createdFrom;
+
+  public function getCreatedFrom(): ?Pipeline {
+    return $this->createdFrom && $this->createdFrom->isDeleted() ? null : $this->createdFrom;
+  }
 
   /**
    * @ORM\ManyToMany(targetEntity="Exercise", mappedBy="pipelines")

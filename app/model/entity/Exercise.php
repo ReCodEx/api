@@ -18,7 +18,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getId()
  * @method Collection getExerciseLimits()
  * @method Collection getExerciseEnvironmentConfigs()
- * @method User getAuthor()
  * @method DateTime getCreatedAt()
  * @method string getDifficulty()
  * @method Collection getReferenceSolutions()
@@ -84,8 +83,8 @@ class Exercise implements IExercise
    */
   protected $exercise;
 
-  public function getForkedFrom() {
-      return $this->exercise;
+  public function getForkedFrom(): ?Exercise {
+      return $this->exercise && $this->exercise->isDeleted() ? null : $this->exercise;
   }
 
   /**
@@ -100,6 +99,10 @@ class Exercise implements IExercise
 
   public function isAuthor(User $user) {
     return $this->author->getId() === $user->getId();
+  }
+
+  public function getAuthor() {
+    return $this->author->isDeleted() ? null : $this->author;
   }
 
   /**
