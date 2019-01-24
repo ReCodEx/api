@@ -23,7 +23,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getSubmissionsCountLimit()
  * @method Collection getAssignmentSolutions()
  * @method bool getCanViewLimitRatios()
- * @method Exercise getExercise()
  * @method DateTime getFirstDeadline()
  * @method bool getAllowSecondDeadline()
  * @method DateTime getSecondDeadline()
@@ -229,13 +228,17 @@ class Assignment extends AssignmentBase implements IExercise
    */
   protected $exercise;
 
+  public function getExercise(): ?Exercise {
+    return $this->exercise->isDeleted() ? null : $this->exercise;
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="Group", inversedBy="assignments")
    */
   protected $group;
 
-  public function getGroup(): Group {
-    return $this->group;
+  public function getGroup(): ?Group {
+    return $this->group->isDeleted() ? null : $this->group;
   }
 
   /**

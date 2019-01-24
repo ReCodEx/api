@@ -12,7 +12,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method User getAuthor()
  * @method DateTime getCreatedAt()
  * @method DateTime getVisibleFrom()
  * @method DateTime getVisibleTo()
@@ -39,6 +38,10 @@ class Notification implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * @var DateTime
@@ -140,7 +143,7 @@ class Notification implements JsonSerializable
   public function jsonSerialize() {
     return [
       "id" => $this->id,
-      "authorId" => $this->author->getId(),
+      "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
       "createdAt" => $this->createdAt->getTimestamp(),
       "visibleFrom" => $this->visibleFrom->getTimestamp(),
       "visibleTo" => $this->visibleTo->getTimestamp(),

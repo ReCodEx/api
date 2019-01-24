@@ -98,8 +98,8 @@ class ShadowAssignment extends AssignmentBase
    */
   protected $group;
 
-  public function getGroup(): Group {
-    return $this->group;
+  public function getGroup(): ?Group {
+    return $this->group->isDeleted() ? null : $this->group;
   }
 
   /**

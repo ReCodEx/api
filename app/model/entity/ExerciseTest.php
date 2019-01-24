@@ -14,7 +14,6 @@ use JsonSerializable;
  * @method setId(int $id)
  * @method string getName()
  * @method string getDescription()
- * @method User getAuthor()
  * @method DateTime getCreatedAt()
  * @method string setName(string $name)
  * @method string setDescription(string $description)
@@ -45,6 +44,10 @@ class ExerciseTest implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * @ORM\Column(type="datetime")

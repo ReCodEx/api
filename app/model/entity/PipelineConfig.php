@@ -14,7 +14,6 @@ use DateTime;
  * @ORM\Entity
  *
  * @method string getId()
- * @method User getAuthor()
  * @method string getPipelineConfig()
  */
 class PipelineConfig
@@ -37,6 +36,10 @@ class PipelineConfig
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * @ORM\Column(type="datetime")

@@ -16,7 +16,6 @@ use DateTime;
  * @method string getLimits()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  * @method HardwareGroup getHardwareGroup()
- * @method User getAuthor()
  */
 class ExerciseLimits implements JsonSerializable
 {
@@ -49,6 +48,10 @@ class ExerciseLimits implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * @ORM\ManyToOne(targetEntity="RuntimeEnvironment")
