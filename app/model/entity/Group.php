@@ -514,7 +514,7 @@ class Group
    */
   public function getPublicAssignments() {
     return $this->getAssignments()->filter(
-      function (Assignment $assignment) { return $assignment->isPublic(); }
+      function (Assignment $assignment) { return $assignment->isVisibleToStudents(); }
     );
   }
 

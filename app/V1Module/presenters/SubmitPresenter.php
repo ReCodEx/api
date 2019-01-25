@@ -142,7 +142,7 @@ class SubmitPresenter extends BasePresenter {
    * @return bool
    */
   private function canReceiveSubmissions(Assignment $assignment, User $user = null) {
-    return $assignment->isPublic() &&
+    return $assignment->isVisibleToStudents() &&
       $assignment->getGroup()->hasValidLicence() &&
       ($user !== null &&
         count($this->assignmentSolutions->findValidSolutions($assignment, $user))
