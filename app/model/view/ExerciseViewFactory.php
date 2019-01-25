@@ -30,7 +30,7 @@ class ExerciseViewFactory {
       "runtimeEnvironments" => $exercise->getRuntimeEnvironments()->getValues(),
       "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
       "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
-      "authorId" => $exercise->getAuthor()->getId(),
+      "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
       "groupsIds" => $exercise->getGroupsIds(),
       "isPublic" => $exercise->isPublic(),
       "isLocked" => $exercise->isLocked(),

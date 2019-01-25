@@ -98,7 +98,7 @@ class Exercise implements IExercise
   protected $author;
 
   public function isAuthor(User $user) {
-    return $this->author->getId() === $user->getId();
+    return $this->author && $this->author->getId() === $user->getId();
   }
 
   public function getAuthor() {
