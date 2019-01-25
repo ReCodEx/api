@@ -91,7 +91,7 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    return $file->getUser()->getId() === $user->getId();
+    return $file->getUser() && $file->getUser()->getId() === $user->getId();
   }
 
   public function isReferenceSolutionInSupervisedSubGroup(Identity $identity, UploadedFile $file) {
