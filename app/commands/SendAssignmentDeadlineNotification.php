@@ -48,7 +48,7 @@ class SendAssignmentDeadlineNotification extends Command {
     }
 
     foreach ($this->assignments->findByDeadline($from, $to) as $assignment) {
-      if ($assignment->isPublic()) {
+      if ($assignment->isVisibleToStudents()) {
         $this->sender->assignmentDeadline($assignment);
       }
     }

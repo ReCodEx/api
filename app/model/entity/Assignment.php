@@ -163,6 +163,12 @@ class Assignment extends AssignmentBase implements IExercise
    */
   protected $visibleFrom;
 
+  public function isVisibleToStudents()
+  {
+    // Is public unconditionally, or visible from date has already passed
+    return $this->isPublic() && (!$this->visibleFrom || $this->visibleFrom <= (new \DateTime()));
+  }
+
   /**
    * @ORM\Column(type="datetime")
    */
