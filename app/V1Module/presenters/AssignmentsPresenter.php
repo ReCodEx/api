@@ -164,7 +164,8 @@ class AssignmentsPresenter extends BasePresenter {
    * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
    * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
    * @Param(type="post", name="visibleFrom", validation="timestamp", required=false, description="Date from which this assignment will be visible to students")
-   * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can user view ratio of his solution memory and time usages and assignment limits?")
+   * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")
+   * @Param(type="post", name="canViewJudgeOutputs", validation="bool", description="Can all users view judge outputs of theirs solution?")
    * @Param(type="post", name="secondDeadline", validation="timestamp", required=false, description="A second deadline for submission of the assignment (with different point award)")
    * @Param(type="post", name="maxPointsBeforeSecondDeadline", validation="numericint", required=false, description="A maximum of points that can be awarded for a late submission")
    * @Param(type="post", name="isBonus", validation="bool", description="If set to true then points from this exercise will not be included in overall score of group")
@@ -231,6 +232,7 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment->setSubmissionsCountLimit($req->getPost("submissionsCountLimit"));
     $assignment->setAllowSecondDeadline(filter_var($req->getPost("allowSecondDeadline"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setCanViewLimitRatios(filter_var($req->getPost("canViewLimitRatios"), FILTER_VALIDATE_BOOLEAN));
+    $assignment->setCanViewJudgeOutputs(filter_var($req->getPost("canViewJudgeOutputs"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setIsBonus(filter_var($req->getPost("isBonus"), FILTER_VALIDATE_BOOLEAN));
     $assignment->setPointsPercentualThreshold($threshold);
 
