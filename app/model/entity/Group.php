@@ -510,15 +510,6 @@ class Group
   }
 
   /**
-   * Student can view only public assignments.
-   */
-  public function getPublicAssignments() {
-    return $this->getAssignments()->filter(
-      function (Assignment $assignment) { return $assignment->isVisibleToStudents(); }
-    );
-  }
-
-  /**
    * Get identifications of groups in descending order.
    * @return string[]
    */
