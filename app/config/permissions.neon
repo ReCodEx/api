@@ -379,7 +379,6 @@ permissions:
           - viewEvaluation
           - viewEvaluationDetails
           - viewEvaluationValues
-          - viewEvaluationJudgeOutput
           - deleteEvaluation
           - viewResubmissions
           - delete
@@ -388,6 +387,15 @@ permissions:
           - downloadResultArchive
       conditions:
           - assignmentSolution.isSupervisor
+
+    - allow: true
+      resource: assignmentSolution
+      actions:
+          - viewEvaluationJudgeOutput
+      conditions:
+          or:
+              - assignmentSolution.isSupervisor
+              - assignmentSolution.areJudgeOutputsPublic
 
     #######################
     # Comment permissions #
