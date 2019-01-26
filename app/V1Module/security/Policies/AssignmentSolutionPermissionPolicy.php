@@ -32,4 +32,8 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
   public function areEvaluationDetailsPublic(Identity $identity, AssignmentSolution $solution) {
     return $solution->getAssignment()->getCanViewLimitRatios();
   }
+
+  public function areJudgeOutputsPublic(Identity $identity, AssignmentSolution $solution) {
+    return $solution->getAssignment()->getCanViewJudgeOutputs();
+  }
 }
