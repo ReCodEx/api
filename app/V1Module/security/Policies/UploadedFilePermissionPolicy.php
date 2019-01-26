@@ -34,12 +34,10 @@ class UploadedFilePermissionPolicy implements IPermissionPolicy {
     return $file instanceof AttachmentFile;
   }
 
-  public function isExerciseOrAssignmentPublic(Identity $identity, UploadedFile $file) {
-    return $file instanceof AttachmentFile && ($file->getExercises()->exists(function ($i, Exercise $exercise) {
+  public function isExercisePublic(Identity $identity, UploadedFile $file) {
+    return $file instanceof AttachmentFile && $file->getExercises()->exists(function ($i, Exercise $exercise) {
       return $exercise->isPublic();
-    }) || $file->getAssignments()->exists(function ($i, Assignment $assignment) {
-      return $assignment->isPublic();
-    }));
+    });
   }
 
   public function isAuthorOfSupplementaryFileExercises(Identity $identity, UploadedFile $file) {
