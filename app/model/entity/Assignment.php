@@ -29,6 +29,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method int getMaxPointsBeforeFirstDeadline()
  * @method int getMaxPointsBeforeSecondDeadline()
  * @method DateTime getVisibleFrom()
+ * @method bool getCanViewJudgeOutputs()
  * @method setFirstDeadline(DateTime $deadline)
  * @method setSecondDeadline(DateTime $deadline)
  * @method setMaxPointsBeforeFirstDeadline(int $points)
@@ -38,6 +39,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setCanViewLimitRatios(bool $canView)
  * @method setPointsPercentualThreshold(float $threshold)
  * @method setVisibleFrom(?DateTime $visibleFrom)
+ * @method setCanViewJudgeOutputs(bool $canView)
  */
 class Assignment extends AssignmentBase implements IExercise
 {
@@ -57,7 +59,8 @@ class Assignment extends AssignmentBase implements IExercise
     bool $canViewLimitRatios = false,
     bool $isBonus = false,
     $pointsPercentualThreshold = 0,
-    ?DateTime $visibleFrom = null
+    ?DateTime $visibleFrom = null,
+    bool $canViewJudgeOutputs = false
   ) {
     $this->exercise = $exercise;
     $this->group = $group;
@@ -82,6 +85,7 @@ class Assignment extends AssignmentBase implements IExercise
     $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
     $this->localizedAssignments = new ArrayCollection();
     $this->canViewLimitRatios = $canViewLimitRatios;
+    $this->canViewJudgeOutputs = $canViewJudgeOutputs;
     $this->version = 1;
     $this->isBonus = $isBonus;
     $this->pointsPercentualThreshold = $pointsPercentualThreshold;
@@ -228,6 +232,11 @@ class Assignment extends AssignmentBase implements IExercise
    * @ORM\Column(type="boolean")
    */
   protected $canViewLimitRatios;
+
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $canViewJudgeOutputs;
 
   /**
    * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="assignments")
