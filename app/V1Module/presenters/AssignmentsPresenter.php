@@ -426,13 +426,18 @@ class AssignmentsPresenter extends BasePresenter {
 
   /**
    * Update the assignment so that it matches with the current version of the exercise (limits, texts, etc.)
-   * @param string $id Identifier of the exercise that should be synchronized
+   * @param string $id Identifier of the assignment that should be synchronized
    * @POST
    * @throws BadRequestException
+   * @throws NotFoundException
    */
   public function actionSyncWithExercise($id) {
     $assignment = $this->assignments->findOrThrow($id);
     $exercise = $assignment->getExercise();
+
+    if ($exercise === null) {
+      throw new NotFoundException("Exercise for assignment '{$id}' was deleted");
+    }
 
     if ($exercise->isBroken()) {
       throw new BadRequestException("Exercise '{$exercise->getId()}' is broken. If you are the author, check its configuration.");
