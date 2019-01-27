@@ -52,6 +52,11 @@ class SubmissionEmailsSender {
     $solution = $submission->getAssignmentSolution();
     $assignment = $solution->getAssignment();
 
+    if ($assignment->getGroup() === null) {
+      // group was deleted, do not send emails
+      return false;
+    }
+
     // check the threshold for sending email notification
     $threshold = (new DateTime())->modify($this->submissionNotificationThreshold);
     if ($solution->getSolution()->getCreatedAt() >= $threshold) {

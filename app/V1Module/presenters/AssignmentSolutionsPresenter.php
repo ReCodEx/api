@@ -271,6 +271,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @POST
    * @param string $id identifier of the submission
    * @throws \Nette\Application\AbortException
+   * @throws NotFoundException
    */
   public function actionSetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -287,6 +288,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
     // forward to student statistics of group
     $groupOfSubmission = $solution->getAssignment()->getGroup();
+    if ($groupOfSubmission === null) {
+      throw new NotFoundException("Group for assignment '$id' was not found");
+    }
+
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
@@ -302,6 +307,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @DELETE
    * @param string $id identifier of the submission
    * @throws \Nette\Application\AbortException
+   * @throws NotFoundException
    */
   public function actionUnsetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -312,6 +318,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
     // forward to student statistics of group
     $groupOfSubmission = $solution->getAssignment()->getGroup();
+    if ($groupOfSubmission === null) {
+      throw new NotFoundException("Group for assignment '$id' was not found");
+    }
+
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 

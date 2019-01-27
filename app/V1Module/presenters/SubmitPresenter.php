@@ -143,6 +143,7 @@ class SubmitPresenter extends BasePresenter {
    */
   private function canReceiveSubmissions(Assignment $assignment, User $user = null) {
     return $assignment->isVisibleToStudents() &&
+      $assignment->getGroup() &&
       $assignment->getGroup()->hasValidLicence() &&
       ($user !== null &&
         count($this->assignmentSolutions->findValidSolutions($assignment, $user))
@@ -285,7 +286,7 @@ class SubmitPresenter extends BasePresenter {
 
     // check for the license of instance of user
     $assignment = $solution->getAssignment();
-    if ($assignment->getGroup()->hasValidLicence() === false) {
+    if ($assignment->getGroup() && $assignment->getGroup()->hasValidLicence() === false) {
       throw new ForbiddenRequestException("Your institution '{$assignment->getGroup()->getInstance()->getId()}' does not have a valid licence and you cannot submit solutions for any assignment in this group '{$assignment->getGroup()->getId()}'. Contact your supervisor for assistance.",
         IResponse::S402_PAYMENT_REQUIRED);
     }

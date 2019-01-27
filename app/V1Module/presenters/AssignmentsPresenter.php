@@ -547,10 +547,15 @@ class AssignmentsPresenter extends BasePresenter {
    * Get the best solutions to an assignment for all students in group.
    * @GET
    * @param string $id Identifier of the assignment
+   * @throws NotFoundException
    */
   public function actionBestSolutions(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $bestSubmissions = [];
+
+    if ($assignment->getGroup() === null) {
+      throw new NotFoundException("Group for assignment '$id' was deleted");
+    }
 
     foreach ($assignment->getGroup()->getStudents() as $student) {
       $solution = $this->assignmentSolutions->findBestSolution($assignment, $student);
@@ -589,6 +594,10 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionDownloadBestSolutionsArchive(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
     $files = [];
+
+    if ($assignment->getGroup() === null) {
+      throw new NotFoundException("Group for assignment '$id' was deleted");
+    }
 
     foreach ($assignment->getGroup()->getStudents() as $student) {
       $solution = $this->assignmentSolutions->findBestSolution($assignment, $student);

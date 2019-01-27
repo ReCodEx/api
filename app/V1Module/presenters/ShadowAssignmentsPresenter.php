@@ -281,6 +281,10 @@ class ShadowAssignmentsPresenter extends BasePresenter {
     $awardedAt = $awardedAt ? DateTime::createFromFormat('U', $awardedAt) : null;
 
     $assignment = $this->shadowAssignments->findOrThrow($id);
+    if ($assignment->getGroup() === null) {
+      throw new NotFoundException("Group for assignment '$id' was deleted");
+    }
+
     $user = $this->users->findOrThrow($userId);
     if (!$assignment->getGroup()->isStudentOf($user)) {
       throw new BadRequestException("User is not member of the group");

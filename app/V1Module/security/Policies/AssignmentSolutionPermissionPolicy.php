@@ -21,7 +21,7 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    return $group->isSupervisorOf($user) || $group->isAdminOf($user);
+    return $group && $group->isSupervisorOf($user) || $group->isAdminOf($user);
   }
 
   public function isAuthor(Identity $identity, AssignmentSolution $solution) {

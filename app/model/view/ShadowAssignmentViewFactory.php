@@ -66,7 +66,7 @@ class ShadowAssignmentViewFactory {
       "localizedTexts" => $assignment->getLocalizedTexts()->map(function (LocalizedShadowAssignment $text) {
         return $text->jsonSerialize();
       })->getValues(),
-      "groupId" => $assignment->getGroup()->getId(),
+      "groupId" => $assignment->getGroup() ? $assignment->getGroup()->getId() : null,
       "isBonus" => $assignment->isBonus(),
       "maxPoints" => $assignment->getMaxPoints(),
       "points" => $this->getAssignmentPoints($assignment),
