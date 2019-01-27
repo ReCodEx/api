@@ -29,8 +29,13 @@ class Licence implements JsonSerializable
 
   /**
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="licences")
+   * @var Instance
    */
   protected $instance;
+
+  public function getInstance(): ?Instance {
+    return $this->instance->isDeleted() ? null : $this->instance;
+  }
 
   /**
    * A licence can be manually marked as invalid by the admins.

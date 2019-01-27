@@ -13,7 +13,6 @@ use JsonSerializable;
  * @method string getId()
  * @method string getDescription()
  * @method Solution getSolution()
- * @method Exercise getExercise()
  * @method Collection getSubmissions()
  */
 class ReferenceExerciseSolution
@@ -31,6 +30,11 @@ class ReferenceExerciseSolution
    * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
    */
   protected $exercise;
+
+  // TODO: repair references
+  public function getExercise(): ?Exercise {
+    return $this->exercise->isDeleted() ? null : $this->exercise;
+  }
 
   /**
    * @ORM\Column(type="text")

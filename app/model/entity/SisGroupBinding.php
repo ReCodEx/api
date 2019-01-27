@@ -15,6 +15,7 @@ class SisGroupBinding {
 
   /**
    * @ORM\ManyToOne(targetEntity="Group")
+   * @var Group
    */
   protected $group;
 
@@ -33,8 +34,8 @@ class SisGroupBinding {
     $this->code = $code;
   }
 
-  public function getGroup(): Group {
-    return $this->group;
+  public function getGroup(): ?Group {
+    return $this->group->isDeleted() ? null : $this->group;
   }
 
   public function getCode() {

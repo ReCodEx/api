@@ -8,7 +8,6 @@ use JsonSerializable;
 
 /**
  * @ORM\Entity
- * @method User getUser()
  * @method CommentThread getCommentThread()
  * @method DateTime getPostedAt()
  * @method string getText()
@@ -35,6 +34,10 @@ class Comment implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $user;
+
+  public function getUser(): ?User {
+    return $this->user->isDeleted() ? null : $this->user;
+  }
 
   /**
    * @ORM\Column(type="boolean")

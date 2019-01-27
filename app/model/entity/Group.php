@@ -21,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getExternalId()
  * @method string getDescription()
  * @method float getThreshold()
- * @method Instance getInstance()
  * @method setExternalId(string $id)
  * @method bool getPublicStats()
  * @method setPublicStats(bool $areStatsPublic)
@@ -221,6 +220,11 @@ class Group
    * @ORM\ManyToOne(targetEntity="Instance", inversedBy="groups")
    */
   protected $instance;
+
+  // TODO: repair references
+  public function getInstance(): ?Instance {
+    return $this->instance->isDeleted() ? null : $this->instance;
+  }
 
   public function hasValidLicence() {
     $instance = $this->getInstance();
