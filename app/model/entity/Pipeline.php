@@ -60,7 +60,7 @@ class Pipeline
   protected $author;
 
   public function getAuthor(): ?User {
-    return $this->author->isDeleted() ? null : $this->author;
+    return $this->author && $this->author->isDeleted() ? null : $this->author;
   }
 
   /**
