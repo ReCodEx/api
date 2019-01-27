@@ -293,32 +293,38 @@ class Assignment extends AssignmentBase implements IExercise
   }
 
   public function areRuntimeEnvironmentConfigsInSync(): bool {
-    return $this->getRuntimeEnvironments()->forAll(
-      function ($key, RuntimeEnvironment $env) {
+    $exercise = $this->getExercise();
+    return $exercise && $this->getRuntimeEnvironments()->forAll(
+      function ($key, RuntimeEnvironment $env) use ($exercise) {
         $ours = $this->getExerciseEnvironmentConfigByEnvironment($env);
-        $theirs = $this->getExercise()->getExerciseEnvironmentConfigByEnvironment($env);
+        $theirs = $exercise->getExerciseEnvironmentConfigByEnvironment($env);
         return $ours === $theirs;
       }
     );
   }
 
   public function areHardwareGroupsInSync(): bool {
-    return $this->getHardwareGroups()->count() === $this->getExercise()->getHardwareGroups()->count()
-      && $this->getHardwareGroups()->forAll(function ($key, HardwareGroup $group) {
-        return $this->getExercise()->getHardwareGroups()->contains($group);
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->getHardwareGroups()->count() === $exercise->getHardwareGroups()->count()
+      && $this->getHardwareGroups()->forAll(function ($key, HardwareGroup $group) use ($exercise) {
+        return $exercise->getHardwareGroups()->contains($group);
       });
   }
 
   public function areLocalizedTextsInSync(): bool {
-    return $this->getLocalizedTexts()->count() >= $this->getExercise()->getLocalizedTexts()->count()
-      && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) {
-        $theirs = $this->getExercise()->getLocalizedTextByLocale($ours->getLocale());
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->getLocalizedTexts()->count() >= $exercise->getLocalizedTexts()->count()
+      && $this->getLocalizedTexts()->forAll(function ($key, LocalizedExercise $ours) use ($exercise) {
+        $theirs = $exercise->getLocalizedTextByLocale($ours->getLocale());
         return $theirs === null || $ours->equals($theirs) || $theirs->getCreatedAt() < $ours->getCreatedAt();
       });
   }
 
   public function areLimitsInSync(): bool {
-    return $this->areRuntimeEnvironmentConfigsInSync() && $this->areHardwareGroupsInSync()
+    return $this->getExercise()
+      && $this->areRuntimeEnvironmentConfigsInSync() && $this->areHardwareGroupsInSync()
       && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
         return $this->hardwareGroups->forAll(function ($key, HardwareGroup $group) use ($env) {
           $ours = $this->getLimitsByEnvironmentAndHwGroup($env, $group);
@@ -329,35 +335,47 @@ class Assignment extends AssignmentBase implements IExercise
   }
 
   public function areExerciseTestsInSync(): bool {
-    return $this->getExerciseTests()->count() === $this->getExercise()->getExerciseTests()->count()
-      && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) {
-        return $this->getExercise()->getExerciseTests()->contains($test);
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->getExerciseTests()->count() === $exercise->getExerciseTests()->count()
+      && $this->getExerciseTests()->forAll(function ($key, ExerciseTest $test) use ($exercise) {
+        return $exercise->getExerciseTests()->contains($test);
       });
   }
 
   public function areSupplementaryFilesInSync(): bool {
-    return $this->getSupplementaryEvaluationFiles()->count() === $this->getExercise()->getSupplementaryEvaluationFiles()->count()
-      && $this->getSupplementaryEvaluationFiles()->forAll(function ($key, SupplementaryExerciseFile $file) {
-        return $this->getExercise()->getSupplementaryEvaluationFiles()->contains($file);
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->getSupplementaryEvaluationFiles()->count() === $exercise->getSupplementaryEvaluationFiles()->count()
+      && $this->getSupplementaryEvaluationFiles()->forAll(function ($key, SupplementaryExerciseFile $file) use ($exercise) {
+        return $exercise->getSupplementaryEvaluationFiles()->contains($file);
       });
   }
 
   public function areAttachmentFilesInSync(): bool {
-    return $this->getAttachmentFiles()->count() === $this->getExercise()->getAttachmentFiles()->count()
-      && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) {
-        return $this->getExercise()->getAttachmentFiles()->contains($file);
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->getAttachmentFiles()->count() === $exercise->getAttachmentFiles()->count()
+      && $this->getAttachmentFiles()->forAll(function ($key, AttachmentFile $file) use ($exercise) {
+        return $exercise->getAttachmentFiles()->contains($file);
       });
   }
 
   public function areRuntimeEnvironmentsInSync(): bool {
-    return $this->runtimeEnvironments->count() === $this->getExercise()->getRuntimeEnvironments()->count()
-      && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) {
-        return $this->getExercise()->getRuntimeEnvironments()->contains($env);
+    $exercise = $this->getExercise();
+    return $exercise
+      && $this->runtimeEnvironments->count() === $this->exercise->getRuntimeEnvironments()->count()
+      && $this->runtimeEnvironments->forAll(function ($key, RuntimeEnvironment $env) use ($exercise) {
+        return $exercise->getRuntimeEnvironments()->contains($env);
       });
   }
 
   public function syncWithExercise() {
     $exercise = $this->getExercise();
+    if ($exercise === null) {
+      // cannot sync exercise was deleted
+      return;
+    }
 
     $this->hardwareGroups->clear();
     foreach ($exercise->getHardwareGroups() as $group) {

@@ -21,6 +21,7 @@ class AssignmentViewFactory {
   }
 
   public function getAssignment(Assignment $assignment) {
+    $exercise = $assignment->getExercise();
     return [
       "id" => $assignment->getId(),
       "version" => $assignment->getVersion(),
@@ -38,7 +39,7 @@ class AssignmentViewFactory {
 
         return $data;
       })->getValues(),
-      "exerciseId" => $assignment->getExercise() ? $assignment->getExercise()->getId() : null,
+      "exerciseId" => $exercise ? $exercise->getId() : null,
       "groupId" => $assignment->getGroup() ? $assignment->getGroup()->getId() : null,
       "firstDeadline" => $assignment->getFirstDeadline()->getTimestamp(),
       "secondDeadline" => $assignment->getSecondDeadline()->getTimestamp(),
@@ -54,22 +55,22 @@ class AssignmentViewFactory {
       "isBonus" => $assignment->isBonus(),
       "pointsPercentualThreshold" => $assignment->getPointsPercentualThreshold() * 100,
       "exerciseSynchronizationInfo" => [
-        "isSynchronizationPossible" => !$assignment->getExercise()->isBroken(),
+        "isSynchronizationPossible" => $exercise && !$exercise->isBroken(),
         "updatedAt" => [
           "assignment" => $assignment->getUpdatedAt()->getTimestamp(),
-          "exercise" => $assignment->getExercise()->getUpdatedAt()->getTimestamp(),
+          "exercise" => $exercise ? $exercise->getUpdatedAt()->getTimestamp() : null,
         ],
         "exerciseConfig" => [
-          "upToDate" => $assignment->getExerciseConfig() === $assignment->getExercise()->getExerciseConfig(),
+          "upToDate" => $exercise && $assignment->getExerciseConfig() === $exercise->getExerciseConfig(),
         ],
         "configurationType" => [
-          "upToDate" => $assignment->getConfigurationType() === $assignment->getExercise()->getConfigurationType(),
+          "upToDate" => $exercise && $assignment->getConfigurationType() === $exercise->getConfigurationType(),
         ],
         "scoreConfig" => [
-          "upToDate" => $assignment->getScoreConfig() === $assignment->getExercise()->getScoreConfig(),
+          "upToDate" => $exercise && $assignment->getScoreConfig() === $exercise->getScoreConfig(),
         ],
         "scoreCalculator" => [
-          "upToDate" => $assignment->getScoreCalculator() === $assignment->getExercise()->getScoreCalculator(),
+          "upToDate" => $exercise && $assignment->getScoreCalculator() === $exercise->getScoreCalculator(),
         ],
         "exerciseEnvironmentConfigs" => [
           "upToDate" => $assignment->areRuntimeEnvironmentConfigsInSync()
