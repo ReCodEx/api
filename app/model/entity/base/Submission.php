@@ -93,7 +93,7 @@ abstract class Submission implements IEvaluable
 
   public abstract function getJobType(): string;
 
-  public abstract function getExercise(): IExercise;
+  public abstract function getExercise(): ?IExercise;
 
-  public abstract function getAuthor(): User;
+  public abstract function getAuthor(): ?User;
 }

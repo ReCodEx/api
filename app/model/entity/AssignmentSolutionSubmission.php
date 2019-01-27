@@ -52,11 +52,11 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
     return static::JOB_TYPE;
   }
 
-  public  function getExercise(): IExercise {
+  public  function getExercise(): ?IExercise {
     return $this->getAssignmentSolution()->getAssignment();
   }
 
-  public  function getAuthor(): User {
+  public  function getAuthor(): ?User {
     return $this->getAssignmentSolution()->getSolution()->getAuthor();
   }
 }

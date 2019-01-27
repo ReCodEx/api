@@ -97,6 +97,10 @@ class AssignmentSolutions extends BaseRepository {
     $solutions = $this->findValidSolutionsForAssignments($assignments, $user);
     foreach ($solutions as $solution) {
       $assignment = $solution->getAssignment();
+      if ($assignment === null) {
+        continue;
+      }
+
       $best = Arrays::get($result, $assignment->getId(), null);
 
       if ($best === null) {

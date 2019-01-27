@@ -32,6 +32,10 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
+    if ($referenceExerciseSolution->getExercise() === null) {
+      return false;
+    }
+
     return $user === $referenceExerciseSolution->getExercise()->getAuthor();
   }
 
@@ -39,8 +43,9 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
     $exercise = $referenceExerciseSolution->getExercise();
 
-    if ($user === null || $exercise->getGroups()->isEmpty() ||
-      $exercise->isPublic() === false) {
+    if ($user === null || $exercise === null ||
+        $exercise->getGroups()->isEmpty() ||
+        $exercise->isPublic() === false) {
       return false;
     }
 
@@ -59,7 +64,8 @@ class ReferenceExerciseSolutionPermissionPolicy implements IPermissionPolicy {
     $user = $identity->getUserData();
     $exercise = $referenceExerciseSolution->getExercise();
 
-    if ($user === null || $exercise->getGroups()->isEmpty() ||
+    if ($user === null || $exercise === null ||
+        $exercise->getGroups()->isEmpty() ||
         $exercise->isPublic() === false) {
       return false;
     }

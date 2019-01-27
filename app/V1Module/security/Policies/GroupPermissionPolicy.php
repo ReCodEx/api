@@ -47,12 +47,16 @@ class GroupPermissionPolicy implements IPermissionPolicy {
   }
 
   public function isRootGroupOfInstance(Identity $identity, Group $group) {
-    return $group->getId() === $group->getInstance()->getId();
+    return $group->getInstance() && $group->getId() === $group->getInstance()->getId();
   }
 
   public function isInSameInstance(Identity $identity, Group $group): bool {
     $user = $identity->getUserData();
     if ($user === null) {
+      return false;
+    }
+
+    if ($group->getInstance() === null) {
       return false;
     }
 

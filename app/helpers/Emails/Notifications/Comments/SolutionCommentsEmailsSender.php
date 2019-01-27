@@ -65,10 +65,15 @@ class SolutionCommentsEmailsSender {
 
     $baseSolution = $solution->getSolution();
     $recipients = [];
-    $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
+    if ($baseSolution->getAuthor() !== null) {
+      $recipients[$baseSolution->getAuthor()->getEmail()] = $baseSolution->getAuthor();
+    }
+
     foreach ($comment->getThread()->findAllPublic() as $pComment) {
       $user = $pComment->getUser();
-      $recipients[$user->getEmail()] = $user;
+      if ($user !== null) {
+        $recipients[$user->getEmail()] = $user;
+      }
     }
 
     // filter out the author of the comment, it is pointless to send email to that user
@@ -115,6 +120,11 @@ class SolutionCommentsEmailsSender {
    * @throws InvalidStateException
    */
   public function assignmentSolutionComment(AssignmentSolution $solution, Comment $comment): bool {
+    if ($solution->getAssignment() === null) {
+      // assignment was deleted, do not send emails
+      return false;
+    }
+
     return $this->sendSolutionComment($solution, $comment);
   }
 
@@ -132,8 +142,8 @@ class SolutionCommentsEmailsSender {
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/assignmentSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $solution->getAssignment()->getLocalizedTexts())->getName(),
-      "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
-      "author" => $comment->getUser()->getName(),
+      "solutionAuthor" => $solution->getSolution()->getAuthor() ? $solution->getSolution()->getAuthor()->getName() : "",
+      "author" => $comment->getUser() ? $comment->getUser()->getName() : "",
       "date" => $comment->getPostedAt(),
       "comment" => $comment->getText(),
       "link" => EmailLinkHelper::getLink($this->assignmentSolutionRedirectUrl, [
@@ -151,6 +161,11 @@ class SolutionCommentsEmailsSender {
    * @throws InvalidStateException
    */
   public function referenceSolutionComment(ReferenceExerciseSolution $solution, Comment $comment): bool {
+    if ($solution->getExercise() === null) {
+      // exercise was deleted, do not send emails
+      return false;
+    }
+
     return $this->sendSolutionComment($solution, $comment);
   }
 
@@ -168,8 +183,8 @@ class SolutionCommentsEmailsSender {
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/referenceSolutionComment_{locale}.latte");
     return $latte->renderToString($template, [
       "exercise" => EmailLocalizationHelper::getLocalization($locale, $solution->getExercise()->getLocalizedTexts())->getName(),
-      "solutionAuthor" => $solution->getSolution()->getAuthor()->getName(),
-      "author" => $comment->getUser()->getName(),
+      "solutionAuthor" => $solution->getSolution()->getAuthor() ? $solution->getSolution()->getAuthor()->getName() : "",
+      "author" => $comment->getUser() ? $comment->getUser()->getName() : "",
       "date" => $comment->getPostedAt(),
       "comment" => $comment->getText(),
       "link" => EmailLinkHelper::getLink($this->referenceSolutionRedirectUrl, [

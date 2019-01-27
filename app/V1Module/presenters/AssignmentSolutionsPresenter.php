@@ -275,6 +275,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionSetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
+    if ($solution->getAssignment() === null) {
+      throw new NotFoundException("Assignment for solution '$id' was deleted");
+    }
+
+    if ($solution->getSolution()->getAuthor() === null) {
+      throw new NotFoundException("Author of solution '$id' was deleted");
+    }
 
     // accepted flag has to be set to false for all other submissions
     $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
@@ -311,6 +318,13 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionUnsetAcceptedSubmission(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
+    if ($solution->getAssignment() === null) {
+      throw new NotFoundException("Assignment for solution '$id' was not found");
+    }
+
+    if ($solution->getAssignment()->getGroup() === null) {
+      throw new NotFoundException("Group for solution '$id' was not found");
+    }
 
     // set accepted flag as false even if it was false
     $solution->setAccepted(false);
@@ -318,10 +332,6 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
     // forward to student statistics of group
     $groupOfSubmission = $solution->getAssignment()->getGroup();
-    if ($groupOfSubmission === null) {
-      throw new NotFoundException("Group for assignment '$id' was not found");
-    }
-
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 

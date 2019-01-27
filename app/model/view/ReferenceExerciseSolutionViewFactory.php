@@ -16,19 +16,19 @@ class ReferenceExerciseSolutionViewFactory {
     $this->referenceSolutionAcl = $referenceSolutionAcl;
   }
 
-  public function getReferenceSolution(ReferenceExerciseSolution $referenceExerciseSolution) {
+  public function getReferenceSolution(ReferenceExerciseSolution $solution) {
     return [
-      "id" => $referenceExerciseSolution->getId(),
-      "exerciseId" => $referenceExerciseSolution->getExercise()->getId(),
-      "description" => $referenceExerciseSolution->getDescription(),
-      "solution" => $referenceExerciseSolution->getSolution(),
-      "runtimeEnvironmentId" => $referenceExerciseSolution->getSolution()->getRuntimeEnvironment()->getId(),
-      "submissions" => $referenceExerciseSolution->getSubmissions()->map(
+      "id" => $solution->getId(),
+      "exerciseId" => $solution->getExercise() ? $solution->getExercise()->getId() : null,
+      "description" => $solution->getDescription(),
+      "solution" => $solution->getSolution(),
+      "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
+      "submissions" => $solution->getSubmissions()->map(
         function (ReferenceSolutionSubmission $evaluation) {
           return $evaluation->getId();
         }
       )->getValues(),
-      "permissionHints" => PermissionHints::get($this->referenceSolutionAcl, $referenceExerciseSolution)
+      "permissionHints" => PermissionHints::get($this->referenceSolutionAcl, $solution)
     ];
   }
 

@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\AssignmentSolutionSubmission;
@@ -30,7 +31,7 @@ class EvaluationPointsLoader {
 
   /**
    * Set score and points to given evaluation of student submission.
-   * @throws \App\Exceptions\SubmissionEvaluationFailedException
+   * @throws SubmissionEvaluationFailedException
    */
   public function setStudentScoreAndPoints(?AssignmentSolutionSubmission $submission) {
     $this->setStudentScore($submission);
@@ -40,7 +41,7 @@ class EvaluationPointsLoader {
   /**
    * Set score to evaluation of student submission.
    * @param SolutionEvaluation|null $evaluation
-   * @throws \App\Exceptions\SubmissionEvaluationFailedException
+   * @throws SubmissionEvaluationFailedException
    */
   private function setStudentScore(?AssignmentSolutionSubmission $submission) {
     if ($submission === null || !$submission->hasEvaluation()) {
@@ -91,7 +92,7 @@ class EvaluationPointsLoader {
 
     $evaluation = $submission->getEvaluation();
     $assignment = $submission->getAssignmentSolution()->getAssignment();
-    if ($assignment->hasAssignedPoints()) {
+    if ($assignment && $assignment->hasAssignedPoints()) {
       return $evaluation->getPoints() > 0;
     }
 
@@ -114,7 +115,7 @@ class EvaluationPointsLoader {
 
   /**
    * Evaluation score calculated with exercise calculator.
-   * @throws \App\Exceptions\SubmissionEvaluationFailedException
+   * @throws SubmissionEvaluationFailedException
    */
   public function setReferenceScore(?ReferenceSolutionSubmission $submission) {
     if ($submission === null || !$submission->hasEvaluation()) {
@@ -132,10 +133,14 @@ class EvaluationPointsLoader {
    * Helper function which handle the same score setting functionality for
    * student and reference solution.
    * @param SolutionEvaluation $evaluation
-   * @param IExercise $exercise
-   * @throws \App\Exceptions\SubmissionEvaluationFailedException
+   * @param IExercise|null $exercise
+   * @throws SubmissionEvaluationFailedException
    */
-  private function setScore(SolutionEvaluation $evaluation, IExercise $exercise) {
+  private function setScore(SolutionEvaluation $evaluation, ?IExercise $exercise) {
+    if ($exercise === null) {
+      throw new SubmissionEvaluationFailedException("Exercise was deleted");
+    }
+
     // setup
     $score = 0;
 

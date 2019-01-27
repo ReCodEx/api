@@ -52,8 +52,10 @@ class SubmissionEmailsSender {
     $solution = $submission->getAssignmentSolution();
     $assignment = $solution->getAssignment();
 
-    if ($assignment->getGroup() === null) {
-      // group was deleted, do not send emails
+    if ($solution->getSolution()->getAuthor() === null ||
+        $assignment === null ||
+        $assignment->getGroup() === null) {
+      // group, assignment or user was deleted, do not send emails
       return false;
     }
 
@@ -63,7 +65,7 @@ class SubmissionEmailsSender {
       return true;
     }
 
-    $user = $submission->getAssignmentSolution()->getSolution()->getAuthor();
+    $user = $solution->getSolution()->getAuthor();
     if (!$user->getSettings()->getSubmissionEvaluatedEmails()) {
       return true;
     }
