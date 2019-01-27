@@ -67,7 +67,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
    * @param int $fileSize
    * @param string $hashName
    * @param string $fileServerPath
-   * @param User $user
+   * @param User|null $user
    * @param Exercise|null $exercise
    * @param Pipeline|null $pipeline
    */
@@ -77,7 +77,7 @@ class SupplementaryExerciseFile extends UploadedFile implements JsonSerializable
     int $fileSize,
     string $hashName,
     string $fileServerPath,
-    User $user,
+    ?User $user,
     Exercise $exercise = null,
     Pipeline $pipeline = null
   ) {
