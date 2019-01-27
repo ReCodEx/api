@@ -17,7 +17,6 @@ use App\Exceptions\ForbiddenRequestException;
  * @method string getId()
  * @method string getNote()
  * @method Solution getSolution()
- * @method Assignment getAssignment()
  * @method bool getAccepted()
  * @method setAccepted(bool $accepted)
  * @method int getBonusPoints()
@@ -49,6 +48,11 @@ class AssignmentSolution
    * @ORM\ManyToOne(targetEntity="Assignment")
    */
   protected $assignment;
+
+  // TODO: repair references
+  public function getAssignment(): ?Assignment {
+    return $this->assignment->isDeleted() ? null : $this->assignment;
+  }
 
   /**
    * Determine if submission was made after deadline.

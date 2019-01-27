@@ -31,8 +31,8 @@ class ShadowAssignmentViewFactory {
       'id' => $points->getId(),
       'points' => $points->getPoints(),
       'note' => $points->getNote(),
-      'authorId' => $points->getAuthor()->getId(),  // who give the points
-      'awardeeId' => $points->getAwardee()->getId(),  // who gets the points
+      'authorId' => $points->getAuthor() ? $points->getAuthor()->getId() : null,  // who give the points
+      'awardeeId' => $points->getAwardee() ? $points->getAwardee()->getId() : null,  // who gets the points
       'createdAt' => $points->getCreatedAt()->getTimestamp(),
       'updatedAt' => $points->getUpdatedAt()->getTimestamp(),
       'awardedAt' => $points->getAwardedAt() ? $points->getAwardedAt()->getTimestamp() : null

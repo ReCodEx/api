@@ -37,6 +37,10 @@ class ForgottenPassword
    */
   protected $user;
 
+  public function getUser(): ?User {
+    return $this->user->isDeleted() ? null : $this->user;
+  }
+
   /**
    * @ORM\Column(type="datetime")
    */

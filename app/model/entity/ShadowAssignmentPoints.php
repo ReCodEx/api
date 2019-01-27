@@ -12,9 +12,6 @@ use DateTime;
  *
  * @method string getId()
  * @method string getNote()
- * @method ShadowAssignment getShadowAssignment()
- * @method User getAuthor()
- * @method User getAwardee()
  * @method int getPoints()
  * @method DateTime getCreatedAt()
  * @method ?DateTime getAwardedAt()
@@ -62,17 +59,31 @@ class ShadowAssignmentPoints
    */
   protected $shadowAssignment;
 
+  // TODO: repair references
+  public function getShadowAssignment(): ?ShadowAssignment {
+    return $this->shadowAssignment->isDeleted() ? null : $this->shadowAssignment;
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="User")
    * Author is the person (typically teacher) who authorized the points.
    */
   protected $author;
 
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
+
   /**
    * @ORM\ManyToOne(targetEntity="User")
    * Awardee is the person (typically student) who accepted (benefit from) the points.
    */
   protected $awardee;
+
+  // TODO: repair references
+  public function getAwardee(): ?User {
+    return $this->awardee->isDeleted() ? null : $this->awardee;
+  }
 
   /**
    * @ORM\Column(type="datetime")

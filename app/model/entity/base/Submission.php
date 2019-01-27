@@ -15,7 +15,6 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method string getResultsUrl()
  * @method string setResultsUrl(string $url)
  * @method string getJobConfigPath()
- * @method User getSubmittedBy()
  * @method DateTime getSubmittedAt()
  */
 abstract class Submission implements IEvaluable
@@ -38,6 +37,10 @@ abstract class Submission implements IEvaluable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $submittedBy;
+
+  public function getSubmittedBy(): ?User {
+    return $this->submittedBy->isDeleted() ? null : $this->submittedBy;
+  }
 
   /**
    * @ORM\Column(type="string", nullable=true)

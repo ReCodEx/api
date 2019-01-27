@@ -14,7 +14,6 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @ORM\Entity
  * @method string getId()
- * @method User getAuthor()
  * @method Collection getFiles()
  * @method RuntimeEnvironment getRuntimeEnvironment()
  * @method DateTime getCreatedAt()
@@ -35,6 +34,11 @@ class Solution implements JsonSerializable
    * @ORM\ManyToOne(targetEntity="User")
    */
   protected $author;
+
+  // TODO: repair references
+  public function getAuthor(): ?User {
+    return $this->author->isDeleted() ? null : $this->author;
+  }
 
   /**
    * @ORM\Column(type="datetime")
