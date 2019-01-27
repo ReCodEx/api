@@ -172,7 +172,6 @@ class GroupsPresenter extends BasePresenter {
 
     /** @var Instance $instance */
     $instance = $this->instances->findOrThrow($instanceId);
-
     $parentGroup = !$parentGroupId ? $instance->getRootGroup() : $this->groups->findOrThrow($parentGroupId);
 
     if ($parentGroup->isArchived()) {

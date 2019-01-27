@@ -87,11 +87,11 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     return static::JOB_TYPE;
   }
 
-  public function getExercise(): IExercise {
+  public function getExercise(): ?IExercise {
     return $this->getReferenceSolution()->getExercise();
   }
 
-  public function getAuthor(): User {
+  public function getAuthor(): ?User {
     return $this->getReferenceSolution()->getSolution()->getAuthor();
   }
 }

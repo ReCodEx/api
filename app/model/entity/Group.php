@@ -221,7 +221,6 @@ class Group
    */
   protected $instance;
 
-  // TODO: repair references
   public function getInstance(): ?Instance {
     return $this->instance->isDeleted() ? null : $this->instance;
   }

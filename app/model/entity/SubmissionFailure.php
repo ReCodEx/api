@@ -120,6 +120,11 @@ class SubmissionFailure implements JsonSerializable {
   }
 
   function jsonSerialize() {
+    $assignmentSolution = $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution() : null;
+    $assignment = $assignmentSolution ? $assignmentSolution->getAssignment() : null;
+    $referenceSolution = $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution() : null;
+    $exercise = $referenceSolution ? $referenceSolution->getExercise() : null;
+
     return [
       "id" => $this->id,
       "type" => $this->type,
@@ -127,10 +132,10 @@ class SubmissionFailure implements JsonSerializable {
       "createdAt" => $this->createdAt->getTimestamp(),
       "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : null,
       "resolutionNote" => $this->resolutionNote,
-      "assignmentSolutionId" => $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution()->getId() : null,
-      "assignmentId" => $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution()->getAssignment()->getId() : null,
-      "referenceSolutionId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getId() : null,
-      "exerciseId" => $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution()->getExercise()->getId() : null
+      "assignmentSolutionId" => $assignmentSolution ? $assignmentSolution->getId() : null,
+      "assignmentId" => $assignment ? $assignment->getId() : null,
+      "referenceSolutionId" => $referenceSolution ? $referenceSolution->getId() : null,
+      "exerciseId" => $exercise ? $exercise->getId() : null
     ];
   }
 }

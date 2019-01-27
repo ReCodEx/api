@@ -400,6 +400,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
 
     /** @var ReferenceExerciseSolution $referenceSolution */
     $referenceSolution = $this->referenceSolutions->findOrThrow($id);
+    if ($referenceSolution->getExercise() === null) {
+      throw new NotFoundException("Exercise for solution '$id' was deleted");
+    }
 
     if ($referenceSolution->getExercise()->isBroken()) {
       throw new BadRequestException("Exercise is broken. If you are the author, check its configuration.");

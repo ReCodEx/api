@@ -35,7 +35,6 @@ class Solution implements JsonSerializable
    */
   protected $author;
 
-  // TODO: repair references
   public function getAuthor(): ?User {
     return $this->author->isDeleted() ? null : $this->author;
   }

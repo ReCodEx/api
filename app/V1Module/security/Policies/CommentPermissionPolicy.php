@@ -44,7 +44,8 @@ class CommentPermissionPolicy implements IPermissionPolicy {
 
     /** @var AssignmentSolution $solution */
     $solution = $this->assignmentSolutions->get($comment->getCommentThread()->getId());
-    if ($solution === null) {
+    if ($solution === null ||
+        $solution->getAssignment() === null) {
       return false;
     }
 

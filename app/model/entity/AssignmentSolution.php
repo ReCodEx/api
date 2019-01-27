@@ -49,7 +49,6 @@ class AssignmentSolution
    */
   protected $assignment;
 
-  // TODO: repair references
   public function getAssignment(): ?Assignment {
     return $this->assignment->isDeleted() ? null : $this->assignment;
   }

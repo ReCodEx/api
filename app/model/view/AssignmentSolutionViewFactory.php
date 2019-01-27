@@ -65,7 +65,7 @@ class AssignmentSolutionViewFactory {
     return [
       "id" => $solution->getId(),
       "note" => $solution->getNote(),
-      "exerciseAssignmentId" => $solution->getAssignment()->getId(),
+      "exerciseAssignmentId" => $solution->getAssignment() ? $solution->getAssignment()->getId() : null,
       "solution" => $solution->getSolution(),
       "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
       "maxPoints" => $solution->getMaxPoints(),

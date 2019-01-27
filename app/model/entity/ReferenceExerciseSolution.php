@@ -31,7 +31,6 @@ class ReferenceExerciseSolution
    */
   protected $exercise;
 
-  // TODO: repair references
   public function getExercise(): ?Exercise {
     return $this->exercise->isDeleted() ? null : $this->exercise;
   }

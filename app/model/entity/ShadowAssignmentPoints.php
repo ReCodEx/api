@@ -59,7 +59,6 @@ class ShadowAssignmentPoints
    */
   protected $shadowAssignment;
 
-  // TODO: repair references
   public function getShadowAssignment(): ?ShadowAssignment {
     return $this->shadowAssignment->isDeleted() ? null : $this->shadowAssignment;
   }
@@ -80,7 +79,6 @@ class ShadowAssignmentPoints
    */
   protected $awardee;
 
-  // TODO: repair references
   public function getAwardee(): ?User {
     return $this->awardee->isDeleted() ? null : $this->awardee;
   }

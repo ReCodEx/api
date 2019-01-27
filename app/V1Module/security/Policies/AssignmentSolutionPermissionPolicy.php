@@ -14,6 +14,10 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
 
   public function isSupervisor(Identity $identity, AssignmentSolution $solution) {
     $assignment = $solution->getAssignment();
+    if ($assignment === null) {
+      return false;
+    }
+
     $group = $assignment->getGroup();
     $user = $identity->getUserData();
 
@@ -30,10 +34,10 @@ class AssignmentSolutionPermissionPolicy implements IPermissionPolicy {
   }
 
   public function areEvaluationDetailsPublic(Identity $identity, AssignmentSolution $solution) {
-    return $solution->getAssignment()->getCanViewLimitRatios();
+    return $solution->getAssignment() && $solution->getAssignment()->getCanViewLimitRatios();
   }
 
   public function areJudgeOutputsPublic(Identity $identity, AssignmentSolution $solution) {
-    return $solution->getAssignment()->getCanViewJudgeOutputs();
+    return $solution->getAssignment() && $solution->getAssignment()->getCanViewJudgeOutputs();
   }
 }

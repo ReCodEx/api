@@ -53,8 +53,10 @@ class PointsChangedEmailsSender {
    * @throws InvalidStateException
    */
   public function solutionPointsUpdated(AssignmentSolution $solution): bool {
-    if ($solution->getAssignment()->getGroup() === null) {
-      // group was deleted, do not send emails
+    if ($solution->getSolution()->getAuthor() === null ||
+        $solution->getAssignment() === null ||
+        $solution->getAssignment()->getGroup() === null) {
+      // group, assignment or user was deleted, do not send emails
       return false;
     }
 
@@ -108,12 +110,18 @@ class PointsChangedEmailsSender {
    * @throws InvalidStateException
    */
   public function shadowPointsUpdated(ShadowAssignmentPoints $points): bool {
-    if ($points->getShadowAssignment()->getGroup() === null) {
-      // group was deleted, do not send emails
+    if ($points->getShadowAssignment() === null ||
+        $points->getShadowAssignment()->getGroup() === null) {
+      // group or assignment was deleted, do not send emails
       return false;
     }
 
     $awardee = $points->getAwardee();
+    if ($awardee === null) {
+      // user was deleted, do not send emails
+      return false;
+    }
+
     if (!$awardee->getSettings()->getPointsChangedEmails()) {
       return true;
     }
