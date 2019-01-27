@@ -63,6 +63,11 @@ class AssignmentEmailsSender {
    * @return boolean
    */
   public function assignmentCreated(AssignmentBase $assignment): bool {
+    if ($assignment->getGroup() === null) {
+      // group was deleted, do not send emails
+      return false;
+    }
+
     $recipients = array();
     foreach ($assignment->getGroup()->getStudents() as $student) {
       if (!$student->getSettings()->getNewAssignmentEmails()) {
@@ -137,8 +142,12 @@ class AssignmentEmailsSender {
    * @throws InvalidStateException
    */
   public function assignmentDeadline(Assignment $assignment): bool {
-    $recipients = array();
+    if ($assignment->getGroup() === null) {
+      // group was deleted, do not send emails
+      return false;
+    }
 
+    $recipients = array();
     /** @var User $student */
     foreach ($assignment->getGroup()->getStudents() as $student) {
       if (count($this->assignmentSolutions->findSolutions($assignment, $student)) > 0 ||
