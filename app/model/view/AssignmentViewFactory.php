@@ -38,8 +38,8 @@ class AssignmentViewFactory {
 
         return $data;
       })->getValues(),
-      "exerciseId" => $assignment->getExercise()->getId(),
-      "groupId" => $assignment->getGroup()->getId(),
+      "exerciseId" => $assignment->getExercise() ? $assignment->getExercise()->getId() : null,
+      "groupId" => $assignment->getGroup() ? $assignment->getGroup()->getId() : null,
       "firstDeadline" => $assignment->getFirstDeadline()->getTimestamp(),
       "secondDeadline" => $assignment->getSecondDeadline()->getTimestamp(),
       "allowSecondDeadline" => $assignment->getAllowSecondDeadline(),
