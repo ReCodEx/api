@@ -399,9 +399,8 @@ class ExercisesPresenter extends BasePresenter {
     $exercise = $this->exercises->findOrThrow($id);
 
     $assignments = $exercise->getAssignments()->filter(function (Assignment $assignment) use ($archived) {
-      return $archived ?
-        $this->assignmentAcl->canViewDetail($assignment) :
-        $this->assignmentAcl->canViewDetail($assignment) && $assignment->getGroup() && !$assignment->getGroup()->isArchived();
+      return $this->assignmentAcl->canViewDetail($assignment) && $assignment->getGroup()
+        && ($archived || !$assignment->getGroup()->isArchived());
     })->getValues();
     $this->sendSuccessResponse($this->assignmentViewFactory->getAssignments($assignments));
   }

@@ -38,7 +38,6 @@ class AssignmentPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    return $group && $group->isSupervisorOf($user) || $group->isAdminOf($user);
+    return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
   }
-
 }
