@@ -11,6 +11,7 @@ use App\Helpers\EvaluationPointsLoader;
 use App\Helpers\Localizations;
 use App\Helpers\Notifications\AssignmentEmailsSender;
 use App\Helpers\Validators;
+use App\Helpers\AssignmentRestrictionsConfig;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\LocalizedAssignment;
@@ -129,6 +130,11 @@ class AssignmentsPresenter extends BasePresenter {
    */
   public $runtimeEnvironments;
 
+  /**
+   * @var AssignmentRestrictionsConfig
+   * @inject
+   */
+  public $restrictionsConfig;
 
   public function checkDetail(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
@@ -199,13 +205,29 @@ class AssignmentsPresenter extends BasePresenter {
       }
     }
 
+    // Validate numeric inputs for reasonable ranges (and create variables with their values)
+    $validRanges = [
+      'submissionsCountLimit' => [1, $this->restrictionsConfig->getSubmissionsCountLimitLimit()],
+      'pointsPercentualThreshold' => [0, 100],  // percent limits need not be configured
+      'maxPointsBeforeFirstDeadline' => [0, $this->restrictionsConfig->getMaxPointsLimit()],
+      'maxPointsBeforeSecondDeadline' => [0, $this->restrictionsConfig->getMaxPointsLimit()],
+    ];
+    foreach ($validRanges as $name => list($min, $max)) {
+      if ($req->getPost($name) !== null) {
+        $value = (int)$req->getPost($name);
+        if ($value < $min || $value > $max) {
+          throw new InvalidArgumentException("Attribute '$name' value $value is out of range [$min,$max].");
+        }
+      }
+    }
+
     // old values of some attributes
     $wasPublic = $assignment->isPublic();
     $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
     $oldFirstDeadlinePoints = $assignment->getMaxPointsBeforeFirstDeadline();
-    $firstDeadlinePoints = (int)$req->getPost("maxPointsBeforeFirstDeadline");
+    $firstDeadlinePoints = $req->getPost("maxPointsBeforeFirstDeadline");
     $oldSecondDeadlinePoints = $assignment->getMaxPointsBeforeSecondDeadline();
-    $secondDeadlinePoints = (int)$req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
+    $secondDeadlinePoints = $req->getPost("maxPointsBeforeSecondDeadline") ?: 0;
     $oldThreshold = $assignment->getPointsPercentualThreshold();
     $threshold = $req->getPost("pointsPercentualThreshold") !== null
       ? round((float)$req->getPost("pointsPercentualThreshold"), 2) / 100.0
