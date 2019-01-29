@@ -171,6 +171,10 @@ parameters:
         verify_peer_name: false
         allow_self_signed: true
 
+  assignmentRestrictions:
+    submissionsCountLimitLimit: 100  # maximum value for assignment.submissionCountLimit
+    maxPointsLimit: 10000  # limit for maximal points (both before first and second deadline)
+
   exerciseRestrictions: {}
 
   migrations:
@@ -305,6 +309,7 @@ services:
   - App\Helpers\EmailsConfig(%emails%)
   - App\Helpers\ApiConfig(%api%)
   - App\Helpers\UploadsConfig(%uploads%)
+  - App\Helpers\AssignmentRestrictionsConfig(%assignmentRestrictions%)
   - App\Helpers\ExerciseRestrictionsConfig(%exerciseRestrictions%)
 
   # helpers

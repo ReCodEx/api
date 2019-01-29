@@ -130,7 +130,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
     ];
     $firstDeadline = (new \DateTime())->getTimestamp();
     $maxPointsBeforeFirstDeadline = 123;
-    $submissionsCountLimit = 321;
+    $submissionsCountLimit = 32;
     $allowSecondDeadline = true;
     $canViewLimitRatios = false;
     $canViewJudgeOutputs = true;
@@ -256,7 +256,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         ],
         'firstDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeFirstDeadline' => 123,
-        'submissionsCountLimit' => 321,
+        'submissionsCountLimit' => 32,
         'allowSecondDeadline' => true,
         'canViewLimitRatios' => false,
         'canViewJudgeOutputs' => false,
@@ -295,7 +295,7 @@ class TestAssignmentsPresenter extends Tester\TestCase
         ],
         'firstDeadline' => (new \DateTime())->getTimestamp(),
         'maxPointsBeforeFirstDeadline' => 123,
-        'submissionsCountLimit' => 321,
+        'submissionsCountLimit' => 32,
         'allowSecondDeadline' => true,
         'canViewLimitRatios' => false,
         'canViewJudgeOutputs' => false,
