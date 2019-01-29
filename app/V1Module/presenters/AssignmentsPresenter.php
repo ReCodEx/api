@@ -415,7 +415,7 @@ class AssignmentsPresenter extends BasePresenter {
     // create an assignment for the group based on the given exercise but without any params
     // and make sure the assignment is not public yet - the supervisor must edit it first
     $deadline = new DateTime();
-    $deadline->modify("+7 days");
+    $deadline->modify("+2 weeks")->modify('tomorrow')->modify("-1 minute");
     $assignment = Assignment::assignToGroup($exercise, $group, false, $deadline);
     $this->assignments->persist($assignment);
     $this->sendSuccessResponse($this->assignmentViewFactory->getAssignment($assignment));
