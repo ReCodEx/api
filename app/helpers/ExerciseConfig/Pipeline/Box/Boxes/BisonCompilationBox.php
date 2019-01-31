@@ -38,7 +38,7 @@ class BisonCompilationBox extends CompilationBox
       self::$initialized = true;
       self::$defaultInputPorts = [
         new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$SOURCE_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
       ];
       self::$defaultOutputPorts = [
         new Port((new PortMeta())->setName(self::$OUTPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE))
