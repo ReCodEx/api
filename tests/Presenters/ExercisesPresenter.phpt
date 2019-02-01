@@ -272,9 +272,9 @@ class TestExercisesPresenter extends Tester\TestCase
 
     /** @var LocalizedExercise $localized */
     foreach ($exercise->localizedTexts as $localized) {
-      Assert::count(1, array_filter($updatedLocalizedTexts), function (LocalizedExercise $text) use ($localized) {
+      Assert::count(1, array_filter($updatedLocalizedTexts, function (LocalizedExercise $text) use ($localized) {
         return $text->getLocale() === $localized->getLocale();
-      });
+      }));
     }
 
     Assert::count(1, array_filter($updatedLocalizedTexts, function (LocalizedExercise $text) {

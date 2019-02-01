@@ -12,8 +12,8 @@ class TestInternalTask extends Tester\TestCase
 {
   static $basic = [
     "task-id" => "A",
-    "priority" => "1",
-    "fatal-failure" => "true",
+    "priority" => 1,
+    "fatal-failure" => true,
     "cmd" => [
       "bin" => "cmdA"
     ],
@@ -43,7 +43,7 @@ class TestInternalTask extends Tester\TestCase
     Assert::equal(null, $task->getTestId());
     Assert::false($task->isSandboxedTask());
 
-    Assert::isEqual(self::$basic, $task->toArray());
+    Assert::equal(self::$basic, $task->toArray());
   }
 }
 

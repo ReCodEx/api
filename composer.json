@@ -59,7 +59,7 @@
 		"limenet/git-version": "^0.1"
 	},
 	"require-dev": {
-		"nette/tester": "^1.7",
+		"nette/tester": "^2.1",
 		"mockery/mockery": "@stable",
 		"mikey179/vfsStream": "@stable",
 		"phpstan/phpstan": "@stable"

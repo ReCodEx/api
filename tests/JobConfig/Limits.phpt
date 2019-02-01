@@ -15,20 +15,20 @@ class TestLimits extends Tester\TestCase
   static $sample = [
     "hw-group-id" => "A",
     "memory" => 123,
-    "time" => 456
+    "time" => 456.0
   ];
   static $cfg = [
-    [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ],
-    [ "hw-group-id" => "B", "memory" => 321, "time" => 645 ]
+    [ "hw-group-id" => "A", "memory" => 123, "time" => 456.0 ],
+    [ "hw-group-id" => "B", "memory" => 321, "time" => 645.0 ]
   ];
   static $boundDir = [
     "src" => "/tmp", "dst" => "/temp", "mode" => "RW"
   ];
   static $optional = [
     "hw-group-id" => "optional",
-    "time" => 1,
-    "wall-time" => 2,
-    "extra-time" => 3,
+    "time" => 1.0,
+    "wall-time" => 2.0,
+    "extra-time" => 3.0,
     "stack-size" => 4,
     "memory" => 5,
     "parallel" => 6,
@@ -104,9 +104,9 @@ class TestLimits extends Tester\TestCase
     Assert::equal(6, $limits->getParallel());
     Assert::equal(7, $limits->getDiskSize());
     Assert::equal(8, $limits->getDiskFiles());
-    Assert::isEqual([ "varA", "varB", "varC" ], $limits->getEnvironVariables());
+    Assert::equal([ "varA", "varB", "varC" ], $limits->getEnvironVariables());
     Assert::count(2, $limits->getBoundDirectories());
-    Assert::isEqual(self::$optional, $limits->toArray());
+    Assert::equal(self::$optional, $limits->toArray());
   }
 
   public function testBoundDirectoryConfig() {
@@ -114,7 +114,7 @@ class TestLimits extends Tester\TestCase
     Assert::equal("/tmp", $boundDir->getSource());
     Assert::equal("/temp", $boundDir->getDestination());
     Assert::equal("RW", $boundDir->getMode());
-    Assert::isEqual(self::$boundDir, $boundDir->toArray());
+    Assert::equal(self::$boundDir, $boundDir->toArray());
   }
 
 }
