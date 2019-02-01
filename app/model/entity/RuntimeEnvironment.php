@@ -25,7 +25,7 @@ class RuntimeEnvironment implements JsonSerializable
 
   /**
    * @ORM\Id
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", length=32)
    */
   protected $id;
 

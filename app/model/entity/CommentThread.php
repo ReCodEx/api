@@ -17,7 +17,7 @@ class CommentThread implements JsonSerializable
 
   /**
    * @ORM\Id
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", length=36, options={"fixed":true})
    */
   protected $id;
 

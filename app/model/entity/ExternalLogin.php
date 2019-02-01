@@ -27,12 +27,12 @@ class ExternalLogin
   protected $id;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", length=32)
    */
   protected $authService;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", length=128)
    */
   protected $externalId;
 
