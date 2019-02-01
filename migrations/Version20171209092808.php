@@ -2,9 +2,8 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Doctrine\ORM\Id\UuidGenerator;
 use Faker\Provider\Uuid;
 use Symfony\Component\Yaml\Yaml;
 
@@ -133,7 +132,7 @@ class Version20171209092808 extends AbstractMigration
    * @throws \Doctrine\DBAL\ConnectionException
    * @throws \Doctrine\DBAL\DBALException
    */
-  public function up(Schema $schema)
+  public function up(Schema $schema): void
   {
     $this->connection->beginTransaction();
     $this->updateExercises("exercise");
@@ -143,9 +142,8 @@ class Version20171209092808 extends AbstractMigration
 
   /**
    * @param Schema $schema
-   * @throws \Doctrine\DBAL\Migrations\IrreversibleMigrationException
    */
-  public function down(Schema $schema)
+  public function down(Schema $schema): void
   {
     $this->throwIrreversibleMigrationException();
   }

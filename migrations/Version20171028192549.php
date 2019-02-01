@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use Symfony\Component\Yaml\Yaml;
 
@@ -15,7 +15,7 @@ class Version20171028192549 extends AbstractMigration
     /**
      * @param Schema $schema
      */
-    public function up(Schema $schema)
+    public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -24,7 +24,7 @@ class Version20171028192549 extends AbstractMigration
         $this->addSql('ALTER TABLE exercise ADD score_calculator VARCHAR(255) DEFAULT NULL, ADD score_config LONGTEXT NOT NULL');
     }
 
-    public function postUp(Schema $schema)
+    public function postUp(Schema $schema): void
     {
       // Fix each exercise ...
       $exercises = $this->connection->executeQuery("SELECT e.id, ec.config FROM exercise AS e JOIN exercise_config AS ec ON e.exercise_config_id = ec.id");
@@ -56,7 +56,7 @@ class Version20171028192549 extends AbstractMigration
     /**
      * @param Schema $schema
      */
-    public function down(Schema $schema)
+    public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');

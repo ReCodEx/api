@@ -248,7 +248,7 @@ extensions:
 decorator:
   Symfony\Component\Console\Command\Command:
     tags: [kdyby.console.command]
-  Doctrine\DBAL\Migrations\Tools\Console\Command\AbstractCommand:
+  Doctrine\Migrations\Tools\Console\Command\AbstractCommand:
     setup:
       - setMigrationConfiguration(@migrations.configuration)
 
@@ -268,16 +268,16 @@ services:
   - App\Console\CleanupPipelineConfigs
 
   # migrations commands
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\DiffCommand
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\GenerateCommand
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\StatusCommand
-  - Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand
+  - Doctrine\Migrations\Tools\Console\Command\ExecuteCommand
+  - Doctrine\Migrations\Tools\Console\Command\DiffCommand
+  - Doctrine\Migrations\Tools\Console\Command\GenerateCommand
+  - Doctrine\Migrations\Tools\Console\Command\MigrateCommand
+  - Doctrine\Migrations\Tools\Console\Command\StatusCommand
+  - Doctrine\Migrations\Tools\Console\Command\VersionCommand
 
   # doctrine migrations
   migrations.configuration:
-    factory: Doctrine\DBAL\Migrations\Configuration\Configuration
+    factory: Doctrine\Migrations\Configuration\Configuration
     setup:
       - setMigrationsTableName(%migrations.table%)
       - setMigrationsColumnName(%migrations.column%)

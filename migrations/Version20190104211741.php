@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -13,7 +13,7 @@ class Version20190104211741 extends AbstractMigration
     /**
      * @param Schema $schema
      */
-    public function up(Schema $schema)
+    public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -21,7 +21,7 @@ class Version20190104211741 extends AbstractMigration
         $this->addSql('ALTER TABLE user_settings ADD points_changed_emails TINYINT(1) NOT NULL COMMENT \'(DC2Type:boolean)\'');
     }
 
-    public function postUp(Schema $schema)
+    public function postUp(Schema $schema): void
     {
         $this->connection->executeQuery("UPDATE `user_settings` SET points_changed_emails = 1");
     }
@@ -30,7 +30,7 @@ class Version20190104211741 extends AbstractMigration
   /**
      * @param Schema $schema
      */
-    public function down(Schema $schema)
+    public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');

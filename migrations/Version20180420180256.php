@@ -2,9 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbortMigrationException;
-use Doctrine\DBAL\Migrations\AbstractMigration;
-use Doctrine\DBAL\Migrations\IrreversibleMigrationException;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -17,7 +15,7 @@ class Version20180420180256 extends AbstractMigration
    */
   private $userInstance = [];
 
-  public function preUp(Schema $schema) {
+  public function preUp(Schema $schema): void {
     $result = $this->connection->executeQuery("SELECT id, instance_id FROM user");
     foreach ($result as $row) {
       $this->userInstance[] = "('{$row["id"]}', '{$row["instance_id"]}')";
@@ -26,9 +24,8 @@ class Version20180420180256 extends AbstractMigration
 
   /**
    * @param Schema $schema
-   * @throws AbortMigrationException
    */
-  public function up(Schema $schema) {
+  public function up(Schema $schema): void {
     // this up() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
@@ -40,7 +37,7 @@ class Version20180420180256 extends AbstractMigration
     $this->addSql('ALTER TABLE user DROP instance_id');
   }
 
-  public function postUp(Schema $schema) {
+  public function postUp(Schema $schema): void {
     if (empty($this->userInstance)) {
       return;
     }
@@ -50,9 +47,8 @@ class Version20180420180256 extends AbstractMigration
 
   /**
    * @param Schema $schema
-   * @throws IrreversibleMigrationException
    */
-  public function down(Schema $schema) {
+  public function down(Schema $schema): void {
     $this->throwIrreversibleMigrationException();
   }
 }

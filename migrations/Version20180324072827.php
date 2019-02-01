@@ -3,8 +3,7 @@
 namespace Migrations;
 
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Migrations\AbstractMigration;
-use Doctrine\DBAL\Migrations\IrreversibleMigrationException;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use Symfony\Component\Yaml\Yaml;
 
@@ -140,7 +139,7 @@ class Version20180324072827 extends AbstractMigration
    * @param Schema $schema
    * @throws DBALException
    */
-  public function up(Schema $schema) {
+  public function up(Schema $schema): void {
     $this->connection->beginTransaction();
     $this->updatePassthroughEnvironments();
     $this->updateEnvironment();
@@ -150,9 +149,8 @@ class Version20180324072827 extends AbstractMigration
 
   /**
    * @param Schema $schema
-   * @throws IrreversibleMigrationException
    */
-  public function down(Schema $schema) {
+  public function down(Schema $schema): void {
     $this->throwIrreversibleMigrationException();
   }
 }

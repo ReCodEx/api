@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -15,7 +15,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function preUp(Schema $schema)
+  public function preUp(Schema $schema): void
   {
     $this->pipelines = $this->connection->executeQuery("SELECT id, exercise_id FROM pipeline WHERE exercise_id IS NOT NULL")->fetchAll();
   }
@@ -23,7 +23,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function up(Schema $schema)
+  public function up(Schema $schema): void
   {
     // this up() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -42,7 +42,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function postUp(Schema $schema)
+  public function postUp(Schema $schema): void
   {
     foreach ($this->pipelines as $pipeline) {
       $this->connection->executeQuery("INSERT INTO exercise_pipeline (pipeline_id, exercise_id) VALUES (:pid, :eid)",
@@ -53,7 +53,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function preDown(Schema $schema)
+  public function preDown(Schema $schema): void
   {
     $this->pipelines = $this->connection->executeQuery("SELECT p.id AS pid, ep.exercise_id AS eid FROM pipeline AS p
       JOIN exercise_pipeline AS ep ON p.id = ep.pipeline_id")
@@ -62,7 +62,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function down(Schema $schema)
+  public function down(Schema $schema): void
   {
     // this down() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -79,7 +79,7 @@ class Version20180727203830 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function postDown(Schema $schema)
+  public function postDown(Schema $schema): void
   {
     foreach ($this->pipelines as $pipeline) {
       $this->connection->executeQuery("UPDATE pipeline SET exercise_id = :eid WHERE id = :pid",
