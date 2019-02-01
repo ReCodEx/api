@@ -309,11 +309,14 @@ class TestExerciseFilesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(2, $result['payload']);
-    $expectedFiles = [$expectedFile1, $expectedFile2];
 
-    sort($expectedFiles);
-    sort($result['payload']);
-    Assert::equal($expectedFiles, $result['payload']);
+    $expectedFilesIds = [$expectedFile1->getId(), $expectedFile2->getId()];
+    sort($expectedFilesIds);
+
+    $payloadIds = array_map(function($item) { return $item->getId(); }, $result['payload']);
+    sort($payloadIds);
+
+    Assert::equal($expectedFilesIds, $payloadIds);
   }
 
   public function testDeleteAttachmentFile() {
