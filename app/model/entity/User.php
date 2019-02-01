@@ -128,7 +128,7 @@ class User
    */
   public function setGravatar(bool $useGravatar = true) {
     $this->avatarUrl = !$useGravatar ? null :
-      Gravatar::image($this->email, 200, "retro", "g", "png", true, false);
+      Gravatar::image($this->email, 200, "retro", "g", "png", false)->getUrl();
   }
 
   /**
