@@ -255,7 +255,7 @@ decorator:
 services:
   http.requestFactory: App\RequestFactory
   router: App\RouterFactory::createRouter
-  - Nette\Mail\SmtpMailer(%mail%)
+  nette.mailer: Nette\Mail\SmtpMailer(%mail%)
 
   # commands
   - App\Console\DoctrineFixtures
