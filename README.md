@@ -10,7 +10,7 @@ A REST API that provides access to the evaluation backend by clients.
 
 ## Installation
 
-The web API requires a PHP runtime version at least 7. Which one depends on
+The web API requires a PHP runtime version at least 7.2. Which one depends on
 actual configuration, there is a choice between _mod_php_ inside Apache,
 _php-fpm_ with Apache or Nginx proxy or running it as standalone uWSGI script.
 It is common that there are some PHP extensions, that have to be installed on
