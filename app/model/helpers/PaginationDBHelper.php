@@ -18,7 +18,7 @@ class PaginationDbHelper
    * Translation table from locale to MySQL collation specification
    */
   private static $knownCollations = [
-    'cs' => 'utf8_czech_ci'
+    'cs' => 'utf8mb4_czech_ci'
   ];
 
   /**
