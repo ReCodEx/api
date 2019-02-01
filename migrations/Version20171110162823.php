@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -12,7 +12,7 @@ class Version20171110162823 extends AbstractMigration
 {
   private $assignmentSolutionsToBeDeleted = [];
 
-  public function preUp(Schema $schema) {
+  public function preUp(Schema $schema): void {
     $result = $this->connection->executeQuery('SELECT id, original_submission_id FROM assignment_solution WHERE original_submission_id IS NOT NULL');
     foreach ($result as $row) {
       $originalId = null;
@@ -35,7 +35,7 @@ class Version20171110162823 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function up(Schema $schema)
+  public function up(Schema $schema): void
   {
     // this up() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -52,7 +52,7 @@ class Version20171110162823 extends AbstractMigration
     $this->addSql('ALTER TABLE submission_failure DROP assignment_solution_id');
   }
 
-  public function postUp(Schema $schema) {
+  public function postUp(Schema $schema): void {
     $this->connection->beginTransaction();
 
     // delete all resubmits which are now represented as AssignmentSolutionSubmission entity
@@ -66,7 +66,7 @@ class Version20171110162823 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function down(Schema $schema)
+  public function down(Schema $schema): void
   {
     $this->throwIrreversibleMigrationException();
   }

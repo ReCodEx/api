@@ -2,7 +2,7 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 /**
@@ -15,7 +15,7 @@ class Version20171009160705 extends AbstractMigration
    */
   private $exerciseGroup = [];
 
-  public function preUp(Schema $schema)
+  public function preUp(Schema $schema): void
   {
     $result = $this->connection->executeQuery("SELECT id, group_id FROM exercise WHERE group_id IS NOT NULL");
     foreach ($result as $row) {
@@ -28,7 +28,7 @@ class Version20171009160705 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function up(Schema $schema)
+  public function up(Schema $schema): void
   {
     // this up() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
@@ -41,7 +41,7 @@ class Version20171009160705 extends AbstractMigration
     $this->addSql('ALTER TABLE exercise DROP group_id');
   }
 
-  public function postUp(Schema $schema)
+  public function postUp(Schema $schema): void
   {
     if (empty($this->exerciseGroup)) {
       return;
@@ -53,7 +53,7 @@ class Version20171009160705 extends AbstractMigration
   /**
    * @param Schema $schema
    */
-  public function down(Schema $schema)
+  public function down(Schema $schema): void
   {
     // this down() migration is auto-generated, please modify it to your needs
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');

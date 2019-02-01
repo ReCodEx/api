@@ -3,8 +3,7 @@
 namespace Migrations;
 
 use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Migrations\AbstractMigration;
-use Doctrine\DBAL\Migrations\IrreversibleMigrationException;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 use Symfony\Component\Yaml\Yaml;
 
@@ -44,7 +43,7 @@ class Version20180329190603 extends AbstractMigration
    * @param Schema $schema
    * @throws DBALException
    */
-  public function up(Schema $schema) {
+  public function up(Schema $schema): void {
     foreach ($this->getExtraFilesRelevantPipelineConfigsIds() as $configId) {
       $pipelineConfig = $this->connection->executeQuery("SELECT * FROM pipeline_config WHERE id = :id", ["id" => $configId])->fetch();
       $config = Yaml::parse($pipelineConfig["pipeline_config"]);
@@ -85,9 +84,8 @@ class Version20180329190603 extends AbstractMigration
 
   /**
    * @param Schema $schema
-   * @throws IrreversibleMigrationException
    */
-  public function down(Schema $schema) {
+  public function down(Schema $schema): void {
     $this->throwIrreversibleMigrationException();
   }
 }

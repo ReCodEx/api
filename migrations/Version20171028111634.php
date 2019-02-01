@@ -2,14 +2,14 @@
 
 namespace Migrations;
 
-use Doctrine\DBAL\Migrations\AbstractMigration;
+use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
 
 class Version20171028111634 extends AbstractMigration {
   /**
    * @param Schema $schema
    */
-  public function up(Schema $schema) {
+  public function up(Schema $schema): void {
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
     $this->addSql("RENAME TABLE localized_text TO localized_exercise");
@@ -20,7 +20,7 @@ class Version20171028111634 extends AbstractMigration {
   /**
    * @param Schema $schema
    */
-  public function down(Schema $schema) {
+  public function down(Schema $schema): void {
     $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
     $this->addSql("RENAME TABLE localized_exercise TO localized_text ");
