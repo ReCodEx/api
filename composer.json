@@ -22,7 +22,7 @@
 		]
 	},
 	"require": {
-		"php": ">=7.1",
+		"php": ">=7.2",
 		"nette/application": "^2.4",
 		"nette/bootstrap": "^2.4",
 		"nette/caching": "^2.5",
