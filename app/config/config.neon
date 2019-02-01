@@ -413,6 +413,10 @@ doctrine:
   host: localhost
   dbname: 'recodex-api'
   autoGenerateProxyClasses: 2 # only generate proxies if their files do not exist
+  charset: utf8mb4
+  defaultTableOptions:
+    charset: utf8mb4
+    collate: utf8mb4_unicode_ci
   metadata:
     App\Model\Entity: %appDir%/model/entity
   types:
