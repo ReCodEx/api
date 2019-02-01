@@ -14,8 +14,8 @@ class TestSandboxConfig extends Tester\TestCase
   static $cfg = [
     "name" => "sandboxName",
     "limits" => [
-      [ "hw-group-id" => "idA" ],
-      [ "hw-group-id" => "idB" ]
+      [ "hw-group-id" => "idA", "bound-directories" => [] ],
+      [ "hw-group-id" => "idB", "bound-directories" => [] ]
     ]
   ];
   static $optional = [
@@ -26,7 +26,7 @@ class TestSandboxConfig extends Tester\TestCase
     "output" => true,
     "chdir" => "/change/dir",
     "limits" => [
-      [ "hw-group-id" => "optionalGroup"]
+      [ "hw-group-id" => "optionalGroup", "bound-directories" => [] ]
     ]
   ];
 
@@ -63,7 +63,7 @@ class TestSandboxConfig extends Tester\TestCase
     Assert::equal(2, count($sandbox->getLimitsArray()));
     Assert::true($sandbox->hasLimits("idA"));
     Assert::true($sandbox->hasLimits("idB"));
-    Assert::isEqual(self::$cfg, $sandbox->toArray());
+    Assert::equal(self::$cfg, $sandbox->toArray());
   }
 
   public function testOptional() {
@@ -76,7 +76,7 @@ class TestSandboxConfig extends Tester\TestCase
     Assert::equal("/change/dir", $sandbox->getChdir());
     Assert::equal(1, count($sandbox->getLimitsArray()));
     Assert::true($sandbox->hasLimits("optionalGroup"));
-    Assert::isEqual(self::$optional, $sandbox->toArray());
+    Assert::equal(self::$optional, $sandbox->toArray());
   }
 
   public function testHasLimits() {

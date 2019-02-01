@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e95640385206eced15dfd323518226d",
+    "content-hash": "23f802955dae97499b1318ce29578a21",
     "packages": [
         {
             "name": "behat/transliterator",
@@ -4955,20 +4955,20 @@
         },
         {
             "name": "nette/tester",
-            "version": "v1.7.2",
+            "version": "v2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/tester.git",
-                "reference": "c81e276f9809143312c5be51952b1316901b8403"
+                "reference": "6b3e881e7c5ffb596a5dc25ab6e4efbbe27eb926"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/tester/zipball/c81e276f9809143312c5be51952b1316901b8403",
-                "reference": "c81e276f9809143312c5be51952b1316901b8403",
+                "url": "https://api.github.com/repos/nette/tester/zipball/6b3e881e7c5ffb596a5dc25ab6e4efbbe27eb926",
+                "reference": "6b3e881e7c5ffb596a5dc25ab6e4efbbe27eb926",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.0"
+                "php": ">=7.1"
             },
             "bin": [
                 "src/tester"
@@ -4976,7 +4976,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.7-dev"
+                    "dev-master": "2.1-dev"
                 }
             },
             "autoload": {
@@ -5013,7 +5013,7 @@
                 "testing",
                 "unit"
             ],
-            "time": "2018-06-01T09:33:19+00:00"
+            "time": "2018-10-10T12:35:10+00:00"
         },
         {
             "name": "nikic/php-parser",

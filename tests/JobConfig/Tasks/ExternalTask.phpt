@@ -12,12 +12,18 @@ class TestExternalTask extends Tester\TestCase
 {
   static $basic = [
     "task-id" => "A",
-    "priority" => "1",
-    "fatal-failure" => "true",
+    "priority" => 1,
+    "fatal-failure" => true,
     "cmd" => [
       "bin" => "cmdA"
     ],
-    "sandbox" => [ "name" => "isolate", "limits" => [ [ "hw-group-id" => "A", "memory" => 123, "time" => 456 ] ] ],
+    "sandbox" => [
+      "name" => "isolate",
+      "limits" => [ [
+        "hw-group-id" => "A",
+        "memory" => 123, "time" => 456.0,
+        "bound-directories" => []
+      ] ] ],
     "forward" => "compatibility"
   ];
 
@@ -45,7 +51,7 @@ class TestExternalTask extends Tester\TestCase
     Assert::true($task->isSandboxedTask());
     Assert::equal("isolate", $task->getSandboxConfig()->getName());
 
-    Assert::isEqual(self::$basic, $task->toArray());
+    Assert::equal(self::$basic, $task->toArray());
   }
 }
 

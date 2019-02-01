@@ -11,8 +11,8 @@ class TestTaskBase extends Tester\TestCase
 {
   static $basic = [
     "task-id" => "A",
-    "priority" => "1",
-    "fatal-failure" => "true",
+    "priority" => 1,
+    "fatal-failure" => true,
     "cmd" => [
       "bin" => "cmdA"
     ],
@@ -21,8 +21,8 @@ class TestTaskBase extends Tester\TestCase
   static $initiation = [
     "task-id" => "B",
     "test-id" => "X",
-    "priority" => "2",
-    "fatal-failure" => "false",
+    "priority" => 2,
+    "fatal-failure" => false,
     "cmd" => [
       "bin" => "cmdB"
     ],
@@ -31,8 +31,8 @@ class TestTaskBase extends Tester\TestCase
   static $evaluation = [
     "task-id" => "C",
     "test-id" => "Y",
-    "priority" => "3",
-    "fatal-failure" => "true",
+    "priority" => 3,
+    "fatal-failure" => true,
     "cmd" => [
       "bin" => "cmdC"
     ],
@@ -41,8 +41,8 @@ class TestTaskBase extends Tester\TestCase
   static $execution = [
     "task-id" => "D",
     "test-id" => "Z",
-    "priority" => "4",
-    "fatal-failure" => "false",
+    "priority" => 4,
+    "fatal-failure" => false,
     "cmd" => [
       "bin" => "cmdD"
     ],
@@ -51,8 +51,8 @@ class TestTaskBase extends Tester\TestCase
   static $optional = [
     "task-id" => "optional",
     "test-id" => "testOptional",
-    "priority" => "5",
-    "fatal-failure" => "true",
+    "priority" => 5,
+    "fatal-failure" => true,
     "dependencies" => [
       "depA", "depB", "depC"
     ],
@@ -87,7 +87,7 @@ class TestTaskBase extends Tester\TestCase
     Assert::equal(null, $task->getType());
     Assert::equal(null, $task->getTestId());
 
-    Assert::isEqual(self::$basic, $task->toArray());
+    Assert::equal(self::$basic, $task->toArray());
   }
 
   public function testInitiationTask() {
@@ -101,7 +101,7 @@ class TestTaskBase extends Tester\TestCase
     Assert::true($task->isInitiationTask());
     Assert::equal("X", $task->getTestId());
 
-    Assert::isEqual(self::$initiation, $task->toArray());
+    Assert::equal(self::$initiation, $task->toArray());
   }
 
   public function testEvaluationTask() {
@@ -115,7 +115,7 @@ class TestTaskBase extends Tester\TestCase
     Assert::true($task->isEvaluationTask());
     Assert::equal("Y", $task->getTestId());
 
-    Assert::isEqual(self::$evaluation, $task->toArray());
+    Assert::equal(self::$evaluation, $task->toArray());
   }
 
   public function testExecutionTask() {
@@ -129,7 +129,7 @@ class TestTaskBase extends Tester\TestCase
     Assert::true($task->isExecutionTask());
     Assert::equal("Z", $task->getTestId());
 
-    Assert::isEqual(self::$execution, $task->toArray());
+    Assert::equal(self::$execution, $task->toArray());
   }
 
   public function testOptionalTask() {
@@ -137,13 +137,13 @@ class TestTaskBase extends Tester\TestCase
     Assert::equal("optional", $task->getId());
     Assert::equal(5, $task->getPriority());
     Assert::equal(true, $task->getFatalFailure());
-    Assert::isEqual(["depA", "depB", "depC"], $task->getDependencies());
+    Assert::equal(["depA", "depB", "depC"], $task->getDependencies());
     Assert::equal("cmdOptional", $task->getCommandBinary());
-    Assert::isEqual(["argA", "argB", "argC"], $task->getCommandArguments());
+    Assert::equal(["argA", "argB", "argC"], $task->getCommandArguments());
     Assert::equal("execution", $task->getType());
     Assert::equal("testOptional", $task->getTestId());
 
-    Assert::isEqual(self::$optional, $task->toArray());
+    Assert::equal(self::$optional, $task->toArray());
   }
 }
 
