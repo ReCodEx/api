@@ -135,7 +135,20 @@ class BrokerProxy {
     }
 
     $queue->disconnect($this->brokerAddress);
-    return $response;
+
+    // check returned stats if they are in correct format
+    $response = array_values($response);
+    if (count($response) % 2 !== 0) {
+      throw new InvalidStateException("Malformed stats returned by broker");
+    }
+
+    // process stats into associative array
+    $results = [];
+    for ($i = 0; $i < count($response); $i += 2) {
+      $results[$response[$i]] = $response[$i + 1];
+    }
+
+    return $results;
   }
 
   /**
