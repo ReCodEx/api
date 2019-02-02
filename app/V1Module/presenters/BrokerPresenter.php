@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Helpers\BrokerProxy;
 use App\Security\ACL\IBrokerPermissions;
 
 /**
@@ -16,6 +17,12 @@ class BrokerPresenter extends BasePresenter {
    */
   public $brokerAcl;
 
+  /**
+   * @var BrokerProxy
+   * @inject
+   */
+  public $brokerProxy;
+
 
   public function checkStatus() {
     if (!$this->brokerAcl->canViewStatus()) {
@@ -28,7 +35,8 @@ class BrokerPresenter extends BasePresenter {
    * @GET
    */
   public function actionStatus() {
-    $this->sendSuccessResponse("OK");
+    $status = $this->brokerProxy->getStatus();
+    $this->sendSuccessResponse($status);
   }
 
   public function checkFreeze() {
@@ -42,6 +50,7 @@ class BrokerPresenter extends BasePresenter {
    * @POST
    */
   public function actionFreeze() {
+    $this->brokerProxy->freeze();
     $this->sendSuccessResponse("OK");
   }
 
@@ -56,6 +65,7 @@ class BrokerPresenter extends BasePresenter {
    * @POST
    */
   public function actionUnfreeze() {
+    $this->brokerProxy->unfreeze();
     $this->sendSuccessResponse("OK");
   }
 }
