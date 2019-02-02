@@ -26,21 +26,21 @@ class BrokerPresenter extends BasePresenter {
   public $brokerProxy;
 
 
-  public function checkStatus() {
-    if (!$this->brokerAcl->canViewStatus()) {
-      throw new ForbiddenRequestException("You cannot see broker status");
+  public function checkStats() {
+    if (!$this->brokerAcl->canViewStats()) {
+      throw new ForbiddenRequestException("You cannot see broker stats");
     }
   }
 
   /**
-   * Get current status from broker
+   * Get current statistics from broker.
    * @GET
    * @throws InvalidStateException
    * @throws ZMQSocketException
    */
-  public function actionStatus() {
-    $status = $this->brokerProxy->getStatus();
-    $this->sendSuccessResponse($status);
+  public function actionStats() {
+    $stats = $this->brokerProxy->getStats();
+    $this->sendSuccessResponse($stats);
   }
 
   public function checkFreeze() {

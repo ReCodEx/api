@@ -85,7 +85,7 @@ class RouterFactory {
    */
   private static function createBrokerRoutes(string $prefix): RouteList {
     $router = new RouteList();
-    $router[] = new GetRoute("$prefix/status", "Broker:status");
+    $router[] = new GetRoute("$prefix/stats", "Broker:stats");
     $router[] = new PostRoute("$prefix/freeze", "Broker:freeze");
     $router[] = new PostRoute("$prefix/unfreeze", "Broker:unfreeze");
     return $router;
