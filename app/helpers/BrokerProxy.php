@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 
 use ZMQ;
@@ -57,27 +58,11 @@ class BrokerProxy {
    * @param string $resultRemotePath URL where to store resulting archive of whole evaluation
    * @return bool Evaluation has been started on remote server when returns true.
    * @throws SubmissionFailedException on any error
+   * @throws ZMQSocketException
+   * @throws InvalidStateException
    */
-  public function startEvaluation(string $jobId, array $hardwareGroups, array $headers = [], string $archiveRemotePath, string $resultRemotePath) {
-    $queue = null;
-    $poll = null;
-
-    try {
-      $queue = new ZMQSocket(new ZMQContext(), ZMQ::SOCKET_DEALER, $jobId);
-      // Configure socket to not wait at close time
-      $queue->setsockopt(ZMQ::SOCKOPT_LINGER, 0);
-      $queue->connect($this->brokerAddress);
-    } catch (ZMQSocketException $e) {
-      throw new SubmissionFailedException("Cannot connect to the Broker - {$e->getMessage()}");
-    }
-
-    try {
-      $poll = new ZMQPoll();
-      $poll->add($queue, ZMQ::POLL_IN);
-    } catch (ZMQPollException $e) {
-      $queue->disconnect($this->brokerAddress);
-      throw new SubmissionFailedException("Cannot create ZMQ poll - {$e->getMessage()}");
-    }
+  public function startEvaluation(string $jobId, array $hardwareGroups, array $headers, string $archiveRemotePath, string $resultRemotePath) {
+    $queue = $this->brokerConnect($jobId);
 
     $hwGroup = implode('|', $hardwareGroups);
     $message = [];
@@ -123,12 +108,66 @@ class BrokerProxy {
   }
 
   /**
+   * Get broker status.
+   * @return array
+   */
+  public function getStatus(): array {
+    // TODO
+  }
+
+  /**
+   * Freeze broker and its execution.
+   */
+  public function freeze() {
+    // TODO
+  }
+
+  /**
+   * Unfreeze broker and its execution.
+   */
+  public function unfreeze() {
+    // TODO
+  }
+
+  /**
+   * Connect to the broker and setup the connection.
+   * @param string|null $persistentId
+   * @return ZMQSocket
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
+   */
+  private function brokerConnect($persistentId = null): ZMQSocket {
+    $queue = null;
+    $poll = null;
+
+    try {
+      $queue = new ZMQSocket(new ZMQContext(), ZMQ::SOCKET_DEALER, $persistentId);
+      // Configure socket to not wait at close time
+      $queue->setsockopt(ZMQ::SOCKOPT_LINGER, 0);
+      $queue->connect($this->brokerAddress);
+    } catch (ZMQSocketException $e) {
+      throw new InvalidStateException("Cannot connect to the Broker - {$e->getMessage()}");
+    }
+
+    try {
+      $poll = new ZMQPoll();
+      $poll->add($queue, ZMQ::POLL_IN);
+    } catch (ZMQPollException $e) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Cannot create ZMQ poll - {$e->getMessage()}");
+    }
+
+    return $queue;
+  }
+
+  /**
    * WORKAROUND for https://github.com/mkoppanen/php-zmq/issues/176
    * Wait until given socket can be read from
    * @param ZMQSocket $queue The socket for which we want to wait
    * @param int $timeout Time limit in milliseconds
    * @return array|null
    * @throws SubmissionFailedException
+   * @throws ZMQSocketException
    */
   private function pollReadWorkaround(ZMQSocket $queue, int $timeout) {
     $timeoutSeconds = $timeout / 1000;
