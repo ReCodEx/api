@@ -5,6 +5,7 @@ namespace App\Model\Entity;
 use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Exception;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use DateTime;
@@ -38,7 +39,7 @@ class PipelineConfig
   protected $author;
 
   public function getAuthor(): ?User {
-    return $this->author->isDeleted() ? null : $this->author;
+    return $this->author && $this->author->isDeleted() ? null : $this->author;
   }
 
   /**
@@ -60,10 +61,11 @@ class PipelineConfig
   /**
    * Constructor
    * @param string $pipeline
-   * @param User $author
+   * @param User|null $author
    * @param PipelineConfig|null $createdFrom
+   * @throws Exception
    */
-  public function __construct(string $pipeline, User $author,
+  public function __construct(string $pipeline, ?User $author,
       PipelineConfig $createdFrom = null) {
     $this->createdAt = new DateTime();
     $this->pipelines = new ArrayCollection();
