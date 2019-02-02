@@ -218,6 +218,7 @@ acl:
     email: App\Security\ACL\IEmailPermissions
     shadowAssignment: App\Security\ACL\IShadowAssignmentPermissions
     notification: App\Security\ACL\INotificationPermissions
+    broker: App\Security\ACL\IBrokerPermissions
   policies:
     group: App\Security\Policies\GroupPermissionPolicy
     instance: App\Security\Policies\InstancePermissionPolicy

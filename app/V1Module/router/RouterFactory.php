@@ -31,6 +31,7 @@ class RouterFactory {
 
     $router[] = self::createSecurityRoutes("$prefix/security");
     $router[] = self::createAuthRoutes("$prefix/login");
+    $router[] = self::createBrokerRoutes("$prefix/broker");
     $router[] = self::createBrokerReportsRoutes("$prefix/broker-reports");
     $router[] = self::createCommentsRoutes("$prefix/comments");
     $router[] = self::createExercisesRoutes("$prefix/exercises");
@@ -74,6 +75,19 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/issue-restricted-token", "Login:issueRestrictedToken");
     $router[] = new PostRoute("$prefix/takeover/<userId>", "Login:takeOver");
     $router[] = new PostRoute("$prefix/<serviceId>[/<type>]", "Login:external");
+    return $router;
+  }
+
+  /**
+   * Adds all Broker endpoints to given router.
+   * @param string $prefix Route prefix
+   * @return RouteList All endpoint routes
+   */
+  private static function createBrokerRoutes(string $prefix): RouteList {
+    $router = new RouteList();
+    $router[] = new GetRoute("$prefix/status", "Broker:status");
+    $router[] = new PostRoute("$prefix/freeze", "Broker:freeze");
+    $router[] = new PostRoute("$prefix/unfreeze", "Broker:unfreeze");
     return $router;
   }
 
