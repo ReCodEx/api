@@ -3,8 +3,10 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\InvalidStateException;
 use App\Helpers\BrokerProxy;
 use App\Security\ACL\IBrokerPermissions;
+use ZMQSocketException;
 
 /**
  * Endpoints for getting status of broker and its management.
@@ -33,6 +35,8 @@ class BrokerPresenter extends BasePresenter {
   /**
    * Get current status from broker
    * @GET
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   public function actionStatus() {
     $status = $this->brokerProxy->getStatus();
@@ -48,6 +52,8 @@ class BrokerPresenter extends BasePresenter {
   /**
    * Freeze broker and its execution.
    * @POST
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   public function actionFreeze() {
     $this->brokerProxy->freeze();
@@ -63,6 +69,8 @@ class BrokerPresenter extends BasePresenter {
   /**
    * Unfreeze broker and its execution.
    * @POST
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   public function actionUnfreeze() {
     $this->brokerProxy->unfreeze();

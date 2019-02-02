@@ -23,6 +23,10 @@ class BrokerProxy {
   const EXPECTED_RESULT = "accept";
   const EXPECTED_ACK = "ack";
 
+  const COMMAND_STATUS = "get-runtime-stats";
+  const COMMAND_FREEZE = "freeze";
+  const COMMAND_UNFREEZE = "unfreeze";
+
   /** @var string IP address or hostname (with port) of ReCodEx broker */
   private $brokerAddress;
 
@@ -109,24 +113,79 @@ class BrokerProxy {
 
   /**
    * Get broker status.
-   * @return array
+   * @return string[]
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   public function getStatus(): array {
-    // TODO
+    $queue = $this->brokerConnect();
+
+    try {
+      $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $queue->sendmulti([self::COMMAND_STATUS]);
+    } catch (ZMQSocketException $e) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Status retrieval failed or timed out - {$e->getMessage()}");
+    }
+
+    $response = $this->pollReadWorkaround($queue, $this->resultTimeout);
+    if ($response === null) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Receiving response from the broker failed.");
+    }
+
+    $queue->disconnect($this->brokerAddress);
+    return $response;
   }
 
   /**
    * Freeze broker and its execution.
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
-  public function freeze() {
-    // TODO
+  public function freeze(): void {
+    $queue = $this->brokerConnect();
+
+    try {
+      $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $queue->sendmulti([self::COMMAND_FREEZE]);
+    } catch (ZMQSocketException $e) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Freeze failed or timed out - {$e->getMessage()}");
+    }
+
+    $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
+    if ($ack === null || count($ack) < 1 || $ack[0] !== self::EXPECTED_ACK) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Broker did not send acknowledgement message.");
+    }
+
+    $queue->disconnect($this->brokerAddress);
   }
 
   /**
    * Unfreeze broker and its execution.
+   * @throws ZMQSocketException
+   * @throws InvalidStateException
    */
   public function unfreeze() {
-    // TODO
+    $queue = $this->brokerConnect();
+
+    try {
+      $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
+      $queue->sendmulti([self::COMMAND_UNFREEZE]);
+    } catch (ZMQSocketException $e) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Unfreeze failed or timed out - {$e->getMessage()}");
+    }
+
+    $ack = $this->pollReadWorkaround($queue, $this->ackTimeout);
+    if ($ack === null || count($ack) < 1 || $ack[0] !== self::EXPECTED_ACK) {
+      $queue->disconnect($this->brokerAddress);
+      throw new InvalidStateException("Broker did not send acknowledgement message.");
+    }
+
+    $queue->disconnect($this->brokerAddress);
   }
 
   /**
@@ -166,7 +225,6 @@ class BrokerProxy {
    * @param ZMQSocket $queue The socket for which we want to wait
    * @param int $timeout Time limit in milliseconds
    * @return array|null
-   * @throws SubmissionFailedException
    * @throws ZMQSocketException
    */
   private function pollReadWorkaround(ZMQSocket $queue, int $timeout) {
