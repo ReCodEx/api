@@ -23,7 +23,7 @@ class BrokerProxy {
   const EXPECTED_RESULT = "accept";
   const EXPECTED_ACK = "ack";
 
-  const COMMAND_STATUS = "get-runtime-stats";
+  const COMMAND_STATS = "get-runtime-stats";
   const COMMAND_FREEZE = "freeze";
   const COMMAND_UNFREEZE = "unfreeze";
 
@@ -112,20 +112,20 @@ class BrokerProxy {
   }
 
   /**
-   * Get broker status.
+   * Get broker stats.
    * @return string[]
    * @throws InvalidStateException
    * @throws ZMQSocketException
    */
-  public function getStatus(): array {
+  public function getStats(): array {
     $queue = $this->brokerConnect();
 
     try {
       $queue->setsockopt(ZMQ::SOCKOPT_SNDTIMEO, $this->sendTimeout);
-      $queue->sendmulti([self::COMMAND_STATUS]);
+      $queue->sendmulti([self::COMMAND_STATS]);
     } catch (ZMQSocketException $e) {
       $queue->disconnect($this->brokerAddress);
-      throw new InvalidStateException("Status retrieval failed or timed out - {$e->getMessage()}");
+      throw new InvalidStateException("Stats retrieval failed or timed out - {$e->getMessage()}");
     }
 
     $response = $this->pollReadWorkaround($queue, $this->resultTimeout);
