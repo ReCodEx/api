@@ -51,6 +51,10 @@ parameters:
   monitor:  # connection to monitor
     address: wss://recodex.mff.cuni.cz:4443/ws  # URI of monitor
 
+  registration:
+    enabled: false  # for security reasons, simple registration is disabled by default
+    implicitGroupsIds: {}  # list of group IDs to which each new registered user is added as member
+
   uploads:
     removalThreshold: "1 day"
     maxPreviewSize: 65536
@@ -304,13 +308,14 @@ services:
   )
 
   # config objects
-  - App\Helpers\MonitorConfig(%monitor%)
+  - App\Helpers\ApiConfig(%api%)
+  - App\Helpers\AssignmentRestrictionsConfig(%assignmentRestrictions%)
   - App\Helpers\BrokerConfig(%broker%)
   - App\Helpers\EmailsConfig(%emails%)
-  - App\Helpers\ApiConfig(%api%)
-  - App\Helpers\UploadsConfig(%uploads%)
-  - App\Helpers\AssignmentRestrictionsConfig(%assignmentRestrictions%)
   - App\Helpers\ExerciseRestrictionsConfig(%exerciseRestrictions%)
+  - App\Helpers\MonitorConfig(%monitor%)
+  - App\Helpers\RegistrationConfig(%registration%)
+  - App\Helpers\UploadsConfig(%uploads%)
 
   # helpers
   - App\Helpers\EvaluationLoadingHelper
