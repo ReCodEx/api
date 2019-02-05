@@ -11,7 +11,7 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig3:
 		__construct:
-			- "--- \nboxes: \n  - \n    name: inputs\n    portsIn: {}\n    portsOut: \n      input: \n        type: file[]\n        value: input-files\n    type: files-in\n  - \n    name: merge\n    portsIn: \n      in1: \n        type: \"file[]\"\n        value: input-files\n      in2: \n        type: file[]\n        value: source-files\n    portsOut: \n      out: \n        type: file[]\n        value: merged-files\n    type: merge-files\n  - \n    name: run\n    portsIn: \n      args: \n        type: \"string[]\"\n        value: run-args\n      binary-file: \n        type: file\n        value: custom-judge\n      input-files: \n        type: \"file[]\"\n        value: merged-files\n      stdin: \n        type: file\n        value: \"\"\n    portsOut: \n      output-file: \n        type: file\n        value: \"\"\n      stdout: \n        type: file\n        value: actual-output\n    type: elf-exec\n  - \n    name: judge\n    portsIn: \n      actual-output: \n        type: file\n        value: actual-output\n      args: \n        type: \"string[]\"\n        value: judge-args\n      custom-judge: \n        type: file\n        value: \"\"\n      expected-output: \n        type: file\n        value: actual-output\n      judge-type: \n        type: string\n        value: judge-type\n    portsOut: {}\n    type: judge\n  - \n    name: source-files\n    portsIn: {}\n    portsOut: \n      input: \n        type: \"file[]\"\n        value: source-files\n    type: files-in\n  - \n    name: custom-judge\n    portsIn: {}\n    portsOut: \n      input: \n        type: file\n        value: custom-judge\n    type: file-in\nvariables: \n  - \n    name: run-args\n    type: \"string[]\"\n    value: $run-args\n  - \n    name: judge-type\n    type: string\n    value: \"recodex-judge-passthrough\"\n  - \n    name: actual-output\n    type: file\n    value: \"\"\n  - \n    name: input-files\n    type: file[]\n    value: $actual-inputs\n  - \n    name: source-files\n    type: \"file[]\"\n    value: []\n  - \n    name: merged-files\n    type: \"file[]\"\n    value: []\n  - \n    name: custom-judge\n    type: file\n    value: \"\"\n  - \n    name: judge-args\n    type: \"string[]\"\n    value: []\n"
+			- "---\nboxes:\n  -\n    name: inputs\n    portsIn: {}\n    portsOut:\n      input:\n        type: file[]\n        value: input-files\n    type: files-in\n  -\n    name: merge\n    portsIn:\n      in1:\n        type: file[]\n        value: input-files\n      in2:\n        type: file[]\n        value: source-files\n    portsOut:\n      out:\n        type: file[]\n        value: merged-files\n    type: merge-files\n  -\n    name: run\n    portsIn:\n      runtime-path:\n        type: string\n        value: runtime-path\n      runtime-args:\n        type: string[]\n        value: runtime-args\n      args:\n        type: string[]\n        value: run-args\n      binary-file:\n        type: file\n        value: custom-judge\n      input-files:\n        type: file[]\n        value: merged-files\n      stdin:\n        type: file\n        value: \"\"\n    portsOut:\n      output-file:\n        type: file\n        value: \"\"\n      stdout:\n        type: file\n        value: actual-output\n    type: wrapped-exec\n  -\n    name: judge\n    portsIn:\n      actual-output:\n        type: file\n        value: actual-output\n      args:\n        type: string[]\n        value: judge-args\n      custom-judge:\n        type: file\n        value: \"\"\n      expected-output:\n        type: file\n        value: actual-output\n      judge-type:\n        type: string\n        value: judge-type\n    portsOut: {}\n    type: judge\n  -\n    name: source-files\n    portsIn: {}\n    portsOut:\n      input:\n        type: file[]\n        value: source-files\n    type: files-in\n  -\n    name: custom-judge\n    portsIn: {}\n    portsOut:\n      input:\n        type: file\n        value: custom-judge\n    type: file-in\nvariables:\n  -\n    name: runtime-path\n    type: string\n    value: /usr/bin/recodex-data-only-wrapper.sh\n  -\n    name: runtime-args\n    type: string[]\n    value: []\n  -\n    name: run-args\n    type: string[]\n    value: $run-args\n  -\n    name: judge-type\n    type: string\n    value: recodex-judge-passthrough\n  -\n    name: actual-output\n    type: file\n    value: \"\"\n  -\n    name: input-files\n    type: file[]\n    value: $actual-inputs\n  -\n    name: source-files\n    type: file[]\n    value: []\n  -\n    name: merged-files\n    type: file[]\n    value: []\n  -\n    name: custom-judge\n    type: file\n    value: \"\"\n  -\n    name: judge-args\n    type: string[]\n    value: []"
 			- @demoAdmin
 
 	pipelineConfig4:
@@ -91,17 +91,12 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig19:
 		__construct:
-			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: python3c, type: python3c, portsIn: { extra-files: { type: 'file[]', value: extra-files }, source-files: { type: 'file[]', value: source-files } }, portsOut: { pyc-files: { type: 'file[]', value: pyc-files } } }\n    - { name: pyc-file, type: files-out, portsIn: { output: { type: 'file[]', value: pyc-files } }, portsOut: {  } }\nvariables:\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: pyc-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig20:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: pyc-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, pyc-files: { type: 'file[]', value: pyc-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: pyc-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n"
-			- @demoAdmin
-
-	pipelineConfig21:
-		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: pyc-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, pyc-files: { type: 'file[]', value: pyc-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: pyc-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 App\Model\Entity\Pipeline:
@@ -126,6 +121,7 @@ App\Model\Entity\Pipeline:
 		runtimeEnvironments:
 			- @node-linux
 			- @php-linux
+			- @python3
 
 	pipeline3:
 		__construct:
@@ -312,8 +308,8 @@ App\Model\Entity\Pipeline:
 			create:
 				- null
 
-		name: Python compilation
-		description: "Python compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `python3` with default options: `-m`, `compileall`.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* pyc-files - python compiles source files into pyc files which can be further processed in following pipelines"
+		name: "Python execution & evaluation [outfile]"
+		description: "Executes Python application and run judge on file outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig19
 		runtimeEnvironments:
 			- @python3
@@ -323,20 +319,9 @@ App\Model\Entity\Pipeline:
 			create:
 				- null
 
-		name: "Python execution & evaluation [outfile]"
-		description: "Executes Python application and run judge on file outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
-		pipelineConfig: @pipelineConfig20
-		runtimeEnvironments:
-			- @python3
-
-	pipeline21:
-		__construct:
-			create:
-				- null
-
 		name: "Python execution & evaluation [stdout]"
 		description: "Executes Python application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
-		pipelineConfig: @pipelineConfig21
+		pipelineConfig: @pipelineConfig20
 		runtimeEnvironments:
 			- @python3
 
@@ -572,10 +557,24 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline19_isCompilationPipeline:
+	pipeline19_isExecutionPipeline:
 		__construct:
 			- @pipeline19
-			- isCompilationPipeline
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline19_producesFiles:
+		__construct:
+			- @pipeline19
+			- producesFiles
+
+		value: true
+
+	pipeline19_hasEntryPoint:
+		__construct:
+			- @pipeline19
+			- hasEntryPoint
 
 		value: true
 
@@ -586,37 +585,16 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline20_producesFiles:
+	pipeline20_producesStdout:
 		__construct:
 			- @pipeline20
-			- producesFiles
+			- producesStdout
 
 		value: true
 
 	pipeline20_hasEntryPoint:
 		__construct:
 			- @pipeline20
-			- hasEntryPoint
-
-		value: true
-
-	pipeline21_isExecutionPipeline:
-		__construct:
-			- @pipeline21
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline21_producesStdout:
-		__construct:
-			- @pipeline21
-			- producesStdout
-
-		value: true
-
-	pipeline21_hasEntryPoint:
-		__construct:
-			- @pipeline21
 			- hasEntryPoint
 
 		value: true

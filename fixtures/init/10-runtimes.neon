@@ -9,6 +9,16 @@ App\Model\Entity\RuntimeEnvironment:
 			- C language compiled with GCC
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{c,h}\""
 
+	cpp-bison-flex:
+		__construct:
+			- cpp-bison-flex
+			- Compilers
+			- "Compilers (C++, Bison, Flex)"
+			- "[cpp,h,hpp,y,lex]"
+			- GNU/Linux
+			- "C++17 language compiled with GCC 7.3 with Flex (2.5.37) and Bison (3.0.4) tools"
+			- "- name: \"source-files-cpp\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\"\n- name: \"source-file-bison\"\n  type: \"file\"\n  value: \"*.y\"\n- name: \"source-file-flex\"\n  type: \"file[]\"\n  value: \"*.lex\"\n"
+
 	cxx-gcc-linux:
 		__construct:
 			- cxx-gcc-linux
@@ -86,6 +96,6 @@ App\Model\Entity\RuntimeEnvironment:
 			- Python 3
 			- "[py]"
 			- GNU/Linux
-			- Python 3 precompiled with CPython
+			- Python executed in Python 3 runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.py\""
 
