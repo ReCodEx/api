@@ -25,7 +25,6 @@ class JavacCompilationBox extends CompilationBox
   public static $JAVAC_BINARY = "/usr/bin/javac";
   public static $COMPILATION_SUBDIR = 'compiled-classes';
   public static $CLASS_FILES_WILDCARD = "*.class";
-  public static $JAVA_FILES_EXT_REGEX = "[.java]";
   public static $CLASS_FILES_PORT_KEY = "class-files";
   public static $JAR_FILES_PORT_KEY = "jar-files";
   public static $DEFAULT_NAME = "Javac Compilation";
