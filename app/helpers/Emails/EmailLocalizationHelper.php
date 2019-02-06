@@ -17,7 +17,7 @@ class EmailLocalizationHelper {
 
   const CZECH_LOCALE = "cs";
   const DEFAULT_LOCALE = "en";
-  const LOCALE_PLACEHOLDER_PATTERN = "[{locale}]";
+  const LOCALE_PLACEHOLDER_PATTERN = '/{locale}/';
 
 
   /**
