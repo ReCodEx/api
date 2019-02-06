@@ -4,9 +4,12 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\BadRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\EmailVerificationHelper;
+use App\Helpers\RegistrationConfig;
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
+use App\Model\Entity\Group;
 use App\Model\Repository\Users;
+use App\Model\Repository\Groups;
 use App\V1Module\Presenters\RegistrationPresenter;
 use Tester\Assert;
 use App\Helpers\ExternalLogin\UserData;
@@ -44,6 +47,9 @@ class TestRegistrationPresenter extends Tester\TestCase
   /** @var Users */
   private $users;
 
+  /** @var Groups */
+  private $groups;
+
   public function __construct()
   {
     global $container;
@@ -53,6 +59,7 @@ class TestRegistrationPresenter extends Tester\TestCase
     $this->instances = $container->getByType(\App\Model\Repository\Instances::class);
     $this->logins = $container->getByType(\App\Model\Repository\Logins::class);
     $this->users = $container->getByType(\App\Model\Repository\Users::class);
+    $this->groups = $container->getByType(\App\Model\Repository\Groups::class);
     $this->externalLogins = $container->getByType(\App\Model\Repository\ExternalLogins::class);
   }
 
@@ -60,6 +67,10 @@ class TestRegistrationPresenter extends Tester\TestCase
   {
     PresenterTestHelper::fillDatabase($this->container);
     $this->presenter = PresenterTestHelper::createPresenter($this->container, RegistrationPresenter::class);
+    $this->presenter->registrationConfig = new RegistrationConfig([
+      'enabled' => true,
+      'implicitGroupsIds' => []
+    ]);
   }
 
   protected function tearDown()
@@ -113,6 +124,95 @@ class TestRegistrationPresenter extends Tester\TestCase
     $login = $this->logins->findByUserId($user["id"]);
     Assert::equal($user["id"], $login->getUser()->getId());
     Assert::true($login->passwordsMatchOrEmpty($password));
+  }
+
+  public function testCreateAccountWithImplicitGroups()
+  {
+    $email = "email@email.email";
+    $firstName = "firstName";
+    $lastName = "lastName";
+    $password = "password";
+    $instances = $this->instances->findAll();
+    $instance = array_pop($instances);
+    $instanceId = $instance->getId();
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+    $groupId = $instance->getGroups()->filter(
+      function (Group $group) { return !$group->isArchived() && !$group->isOrganizational(); }
+    )->first()->getId();
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccount'],
+      [
+          'email' => $email,
+          'firstName' => $firstName,
+          'lastName' => $lastName,
+          'password' => $password,
+          'passwordConfirm' => $password,
+          'instanceId' => $instanceId,
+          'degreesBeforeName' => $degreesBeforeName,
+          'degreesAfterName' => $degreesAfterName
+        ]
+    );
+    $this->presenter->registrationConfig = new RegistrationConfig([
+      'enabled' => true,
+      'implicitGroupsIds' => [ $groupId ]
+    ]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(201, $result['code']);
+    Assert::equal(2, count($result['payload']));
+    Assert::true(array_key_exists("accessToken", $result["payload"]));
+    Assert::true(array_key_exists("user", $result["payload"]));
+
+    // check created user
+    $user = $result["payload"]["user"];
+    Assert::equal("$degreesBeforeName $firstName $lastName $degreesAfterName", $user["fullName"]);
+    Assert::equal($email, $user["privateData"]["email"]);
+
+    // check created login
+    $login = $this->logins->findByUserId($user["id"]);
+    Assert::equal($user["id"], $login->getUser()->getId());
+    Assert::true($login->passwordsMatchOrEmpty($password));
+
+    // check user is member of groups
+    $joinedGroups = $this->groups->findFiltered($login->getUser(), $instanceId);
+    Assert::count(1, $joinedGroups);
+    Assert::equal($groupId, reset($joinedGroups)->getId());
+  }
+
+  public function testCreateAccountRegistrationDisabled()
+  {
+    $email = "email@email.email";
+    $firstName = "firstName";
+    $lastName = "lastName";
+    $password = "password";
+    $instanceId = "bla bla bla random string";
+    $degreesBeforeName = "degreesBeforeName";
+    $degreesAfterName = "degreesAfterName";
+
+    $request = new Nette\Application\Request($this->presenterPath, 'POST',
+      ['action' => 'createAccount'],
+      [
+        'email' => $email,
+        'firstName' => $firstName,
+        'lastName' => $lastName,
+        'password' => $password,
+        'passwordConfirm' => $password,
+        'instanceId' => $instanceId,
+        'degreesBeforeName' => $degreesBeforeName,
+        'degreesAfterName' => $degreesAfterName
+      ]
+    );
+    $this->presenter->registrationConfig = new RegistrationConfig([
+      'enabled' => false,
+    ]);
+
+    Assert::throws(function () use ($request) {
+        $this->presenter->run($request);
+    }, BadRequestException::class, "Bad Request - Simple registration is disabled in configuration.");
   }
 
   public function testCreateAccountIcorrectInstance()

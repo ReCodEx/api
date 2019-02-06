@@ -7,6 +7,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
+use App\Model\Repository\Groups;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Instances;
@@ -15,6 +16,7 @@ use App\Security\AccessManager;
 use App\Exceptions\BadRequestException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
+use App\Helpers\RegistrationConfig;
 use App\Security\Roles;
 use Nette\Http\IResponse;
 use ZxcvbnPhp\Zxcvbn;
@@ -49,6 +51,12 @@ class RegistrationPresenter extends BasePresenter {
   public $instances;
 
   /**
+   * @var Groups
+   * @inject
+   */
+  public $groups;
+
+  /**
    * @var ExternalServiceAuthenticator
    * @inject
    */
@@ -65,6 +73,12 @@ class RegistrationPresenter extends BasePresenter {
    * @inject
    */
   public $userViewFactory;
+
+  /**
+   * @var RegistrationConfig
+   * @inject
+   */
+  public $registrationConfig;
 
   /**
    * Get an instance by its ID.
@@ -99,6 +113,10 @@ class RegistrationPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   public function actionCreateAccount() {
+    if (!$this->registrationConfig->isEnabled()) {
+      throw new BadRequestException("Simple registration is disabled in configuration.");
+    }
+
     $req = $this->getRequest();
 
     // check if the email is free
@@ -136,6 +154,15 @@ class RegistrationPresenter extends BasePresenter {
 
     // email verification
     $this->emailVerificationHelper->process($user);
+
+    // add new user to implicit groups
+    foreach ($this->registrationConfig->getImplicitGroupsIds() as $groupId) {
+      $group = $this->groups->findOrThrow($groupId);
+      if (!$group->isArchived() && !$group->isOrganizational()) {
+        $user->makeStudentOf($group);
+      }
+    }
+    $this->groups->flush();
 
     // successful!
     $this->sendSuccessResponse([

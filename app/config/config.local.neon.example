@@ -26,6 +26,9 @@ parameters:
   monitor:
     address: wss://recodex.mff.cuni.cz:443/ws
 
+  localRegistration:
+    enabled: false  # set to true if you want to permit simple local registration
+
   CAS:
     options:
       ldap:
