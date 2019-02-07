@@ -442,6 +442,7 @@ permissions:
           - viewPipelines
           - viewAssignments
           - viewList
+          - viewAllTags
 
     - allow: true
       role: student
@@ -473,6 +474,8 @@ permissions:
           - update
           - attachPipeline
           - detachPipeline
+          - addTag
+          - removeTag
       conditions:
           or:
             - exercise.isSuperGroupAdmin
@@ -551,6 +554,7 @@ permissions:
       actions:
           - viewAll
           - viewAllAuthors
+          - viewAllTags
 
     - allow: true
       role: supervisor-student

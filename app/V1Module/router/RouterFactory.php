@@ -140,6 +140,9 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>/groups/<groupId>", "Exercises:detachGroup");
     $router[] = new PostRoute("$prefix/<id>/pipelines/<pipelineId>", "Exercises:attachPipeline");
     $router[] = new DeleteRoute("$prefix/<id>/pipelines/<pipelineId>", "Exercises:detachPipeline");
+    $router[] = new GetRoute("$prefix/tags", "Exercises:allTags");
+    $router[] = new PostRoute("$prefix/<id>/tags/<name>", "Exercises:addTag");
+    $router[] = new DeleteRoute("$prefix/<id>/tags/<name>", "Exercises:removeTag");
 
     $router[] = new GetRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:getSupplementaryFiles");
     $router[] = new PostRoute("$prefix/<id>/supplementary-files", "ExerciseFiles:uploadSupplementaryFiles");

@@ -4,6 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
 use App\Security\AccessManager;
@@ -562,6 +563,41 @@ class TestExercisesPresenter extends Tester\TestCase
     Assert::equal($exercise->getId(), $payload["id"]);
     $this->presenter->exercises->refresh($exercise);
     Assert::false($exercise->getPipelines()->contains($pipeline));
+  }
+
+  public function testAllTags() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'allTags']);
+
+    Assert::equal(["tag1", "tag2"], $payload);
+  }
+
+  public function testAddTag() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $newTagName = "newAddTagName";
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'POST',
+      ['action' => 'addTag', 'id' => $exercise->getId(), 'name' => $newTagName]);
+
+    Assert::contains($newTagName, $payload["tags"]);
+  }
+
+  public function testRemoveTag() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $exercise = current($this->presenter->exercises->findAll());
+    $user = current($this->presenter->users->findAll());
+    $tagName = "removeTagName";
+    $exercise->addExerciseTag(new ExerciseTag($tagName, $user, $exercise));
+    $this->exercises->flush();
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'DELETE',
+      ['action' => 'removeTag', 'id' => $exercise->getId(), 'name' => $tagName]);
+
+    Assert::notContains($tagName, $payload["tags"]);
   }
 }
 

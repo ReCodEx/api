@@ -4,6 +4,7 @@ namespace App\Model\View;
 use App\Helpers\Localizations;
 use App\Helpers\PermissionHints;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Security\ACL\IExercisePermissions;
 
@@ -40,6 +41,7 @@ class ExerciseViewFactory {
       "configurationType" => $exercise->getConfigurationType(),
       "isBroken" => $exercise->isBroken(),
       "validationError" => $exercise->getValidationError(),
+      "tags" => $exercise->getExerciseTags()->map(function (ExerciseTag $tag) { return $tag->getName(); })->toArray(),
       "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
     ];
   }

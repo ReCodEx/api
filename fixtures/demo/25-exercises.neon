@@ -23,6 +23,7 @@ App\Model\Entity\LocalizedExercise:
             - "group supervisor alalal"
             - ""
             - ""
+
 App\Model\Entity\Exercise:
     demoExercise:
         __construct:
@@ -174,5 +175,17 @@ App\Model\Entity\AttachmentFile:
             - "<dateTimeBetween('-3 years', '-1 years')>"
             - 42
             - "/some/path"
+            - @demoAdmin
+            - @demoExercise
+
+App\Model\Entity\ExerciseTag:
+    demoTag1:
+        __construct:
+            - "tag1"
+            - @demoAdmin
+            - @demoExercise
+    demoTag2:
+        __construct:
+            - "tag2"
             - @demoAdmin
             - @demoExercise
