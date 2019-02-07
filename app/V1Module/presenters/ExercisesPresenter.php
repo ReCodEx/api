@@ -17,8 +17,10 @@ use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\ExerciseConfig;
+use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\Pipeline;
 use App\Model\Repository\Exercises;
+use App\Model\Repository\ExerciseTags;
 use App\Model\Repository\Pipelines;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
@@ -130,6 +132,12 @@ class ExercisesPresenter extends BasePresenter {
    * @inject
    */
   public $assignmentViewFactory;
+
+  /**
+   * @var ExerciseTags
+   * @inject
+   */
+  public $exerciseTags;
 
 
   public function checkDefault() {
@@ -541,6 +549,10 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
+  // ************************************************
+  // ******************** GROUPS ********************
+  // ************************************************
+
   public function checkAttachGroup(string $id, string $groupId) {
     $exercise = $this->exercises->findOrThrow($id);
     $group = $this->groups->findOrThrow($groupId);
@@ -601,6 +613,10 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
+  // ***************************************************
+  // ******************** PIPELINES ********************
+  // ***************************************************
+
   public function checkAttachPipeline(string $id, string $pipelineId) {
     $exercise = $this->exercises->findOrThrow($id);
     $pipeline = $this->pipelines->findOrThrow($pipelineId);
@@ -615,6 +631,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @param string $pipelineId Identifier of the pipeline to be attached
    * @throws InvalidArgumentException
+   * @throws NotFoundException
    */
   public function actionAttachPipeline(string $id, string $pipelineId) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -643,6 +660,7 @@ class ExercisesPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @param string $pipelineId Identifier of the pipeline to be detached from the exercise
    * @throws InvalidArgumentException
+   * @throws NotFoundException
    */
   public function actionDetachPipeline(string $id, string $pipelineId) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -657,5 +675,86 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
 
+  // **********************************************
+  // ******************** TAGS ********************
+  // **********************************************
 
+  public function checkAllTags() {
+    if (!$this->exerciseAcl->canViewAllTags()) {
+      throw new ForbiddenRequestException("You are not allowed to view all tags");
+    }
+  }
+
+  /**
+   * Get list of global exercise tag names which are currently registered.
+   * @GET
+   */
+  public function actionAllTags() {
+    $tags = $this->exerciseTags->findAllDistinctNames();
+    $this->sendSuccessResponse($tags);
+  }
+
+  public function checkAddTag(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canAddTag($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to add tag to the exercise");
+    }
+  }
+
+  /**
+   * Add tag with given name to the exercise.
+   * @POST
+   * @param string $id
+   * @param string $name
+   * @throws BadRequestException
+   * @throws NotFoundException
+   * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
+   */
+  public function actionAddTag(string $id, string $name) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
+    if ($tag !== null) {
+      throw new BadRequestException("Tag already exists on exercise");
+    }
+
+    if (empty($name)) {
+      throw new BadRequestException("Tag cannot be empty");
+    }
+
+    if (strlen($name) > 32) {
+      throw new InvalidArgumentException("name", "tag name too long (exceeds 32 characters)");
+    }
+
+    $tag = new ExerciseTag($name, $this->getCurrentUser(), $exercise);
+    $exercise->addExerciseTag($tag);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+  }
+
+  public function checkRemoveTag(string $id) {
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canRemoveTag($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to add tag to the exercise");
+    }
+  }
+
+  /**
+   * Remove tag with given name from exercise.
+   * @DELETE
+   * @param string $id
+   * @param string $name
+   * @throws NotFoundException
+   */
+  public function actionRemoveTag(string $id, string $name) {
+    $exercise = $this->exercises->findOrThrow($id);
+    $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
+    if ($tag === null) {
+      throw new NotFoundException("Tag '{$name}' was not found");
+    }
+
+    $exercise->removeExerciseTag($tag);
+    $this->exercises->flush();
+    $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
+  }
 }

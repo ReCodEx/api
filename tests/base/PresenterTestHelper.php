@@ -157,7 +157,7 @@ class PresenterTestHelper
 
   /**
    * Perform regular presenter request and make common asserts.
-   * @param $presenter The presenter which should handle the request.
+   * @param mixed $presenter The presenter which should handle the request.
    * @param string $module String representing the module path (e.g., 'V1:Exercises').
    * @param string $method HTTP method of the request (GET, POST, ...).
    * @param array $params Parameters of the request.

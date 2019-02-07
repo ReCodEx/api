@@ -400,6 +400,7 @@ services:
   - App\Model\Repository\ShadowAssignments
   - App\Model\Repository\ShadowAssignmentPointsRepository
   - App\Model\Repository\Notifications
+  - App\Model\Repository\ExerciseTags
 
   # views factories
   - App\Model\View\ExerciseViewFactory
