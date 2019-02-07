@@ -21,12 +21,15 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method DateTime getCreatedAt()
  * @method string getDifficulty()
  * @method Collection getReferenceSolutions()
+ * @method Collection getExerciseTests()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  * @method setConfigurationType($type)
  * @method void addGroup(Group $group)
+ * @method void addExerciseTag(ExerciseTag $tag)
+ * @method void removeExerciseTag(ExerciseTag $tag)
  * @method void removeGroup(Group $group)
  */
 class Exercise implements IExercise
@@ -202,6 +205,12 @@ class Exercise implements IExercise
     $this->pipelines->removeElement($pipeline);
     $pipeline->getAllExercises()->removeElement($this);
   }
+
+  /**
+   * @var Collection
+   * @ORM\OneToMany(targetEntity="LocalizedNotification", mappedBy="exercise", cascade={"persist"})
+   */
+  protected $exerciseTags;
 
   /**
    * Constructor
