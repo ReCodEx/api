@@ -251,6 +251,8 @@ class BasePresenter extends \App\Presenters\BasePresenter {
    * @param Pagination $pagination Object holding pagination metadata and ordering.
    * @param bool $sliceItems If true, a slice of items array is created using pagination data.
    *                         Otherwise, the items are expected to be already sliced.
+   * @param int|null $totalCount total count of all resources
+   * @param int $code response code
    */
   protected function sendPaginationSuccessResponse(array $items,
                                                    Pagination $pagination,

@@ -158,7 +158,7 @@ class ExercisesPresenter extends BasePresenter {
    */
   public function actionDefault(int $offset = 0, int $limit = null, string $orderBy = null, array $filters = null, string $locale = null) {
     $pagination = $this->getPagination($offset, $limit, $locale, $orderBy,
-      ($filters === null) ? [] : $filters, ['search', 'instanceId', 'groupsIds', 'authorsIds']);
+      ($filters === null) ? [] : $filters, ['search', 'instanceId', 'groupsIds', 'authorsIds', 'tags']);
 
     // Get all matching exercises and filter them by ACLs...
     $exercises = $this->exercises->getPreparedForPagination($pagination, $this->groups);
