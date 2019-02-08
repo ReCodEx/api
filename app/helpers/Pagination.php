@@ -57,6 +57,7 @@ class Pagination {
    *                             If the ordering identifier is prefixed with '!', DESC ordering is used instead of ASC.
    * @param array $filters Array of filters and their values. Filters are endpoint-specific.
    * @param array|null $knownFilters Array of known filter names. If present, unknown filters will trigger exception.
+   * @throws InvalidArgumentException
    */
   public function __construct(int $offset = 0, int $limit = null, string $locale = null, string $orderBy = null, array $filters = [], array $knownFilters = null) {
     $this->offset = $offset < 0 ? 0 : $offset;

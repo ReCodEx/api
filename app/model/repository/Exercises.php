@@ -96,7 +96,7 @@ class Exercises extends BaseSoftDeleteRepository {
       $qb->andWhere($qb->expr()->in("e.author", $authorIds));
     }
 
-    // Only exercised in explicitly given groups (or their ascendants) ...
+    // Only exercises in explicitly given groups (or their ascendants) ...
     if ($pagination->hasFilter("groupsIds")) {
       $groupsIds = $pagination->getFilter("groupsIds");
       if (!is_array($groupsIds)) {
@@ -114,9 +114,20 @@ class Exercises extends BaseSoftDeleteRepository {
       $qb->andWhere($orExpr);
     }
 
+    // Only exercises with given tags
+    if ($pagination->hasFilter("tags")) {
+      $tagNames = $pagination->getFilter("tags");
+      if (!is_array($tagNames)) {
+        $tagNames = [ $tagNames ];
+      }
+
+      $qb->join("e.exerciseTags", "et")
+        ->andWhere($qb->expr()->in("et.name", $tagNames));
+    }
+
     if ($pagination->getOrderBy() === "name") {
       // Special patch, we need to load localized names from another entity ...
-      // Note: This requires custom COALESCE_SUB, which is actually normal COALECE function that allows subqueries inside in DQL
+      // Note: This requires custom COALESCE_SUB, which is actually normal COALESCE function that allows subqueries inside in DQL
       $qb->addSelect('COALESCE_SUB(
           (SELECT le1.name FROM App\Model\Entity\LocalizedExercise AS le1 WHERE le1 MEMBER OF e.localizedTexts AND le1.locale = :locale),
           (SELECT le2.name FROM App\Model\Entity\LocalizedExercise AS le2 WHERE le2 MEMBER OF e.localizedTexts AND le2.locale = \'en\'),
