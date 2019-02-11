@@ -155,7 +155,7 @@ class Groups extends BaseSoftDeleteRepository  {
 
   /**
    * Filter list of groups so that only groups affiliated to given user
-   * (by direct membership or by admin rights) remain in the result.
+   * (by direct membership or by admin rights) and public groups remain in the result.
    * @param User $user User whos affiliation is considered.
    * @param Group[] List of groups to be filtered.
    * @return Group[]
@@ -169,7 +169,7 @@ class Groups extends BaseSoftDeleteRepository  {
       $id = $group->getId();
 
       // The group is directly associated with the user...
-      if (array_key_exists($id, $memberOf) || array_key_exists($id, $adminOf)) {
+      if ($group->isPublic() || array_key_exists($id, $memberOf) || array_key_exists($id, $adminOf)) {
         return true;
       }
 
