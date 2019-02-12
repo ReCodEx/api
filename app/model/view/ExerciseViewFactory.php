@@ -41,7 +41,7 @@ class ExerciseViewFactory {
       "configurationType" => $exercise->getConfigurationType(),
       "isBroken" => $exercise->isBroken(),
       "validationError" => $exercise->getValidationError(),
-      "tags" => $exercise->getExerciseTags()->map(function (ExerciseTag $tag) { return $tag->getName(); })->toArray(),
+      "tags" => $exercise->getTags()->map(function (ExerciseTag $tag) { return $tag->getName(); })->toArray(),
       "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
     ];
   }

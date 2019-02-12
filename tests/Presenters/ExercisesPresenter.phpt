@@ -591,7 +591,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $exercise = current($this->presenter->exercises->findAll());
     $user = current($this->presenter->users->findAll());
     $tagName = "removeTagName";
-    $exercise->addExerciseTag(new ExerciseTag($tagName, $user, $exercise));
+    $exercise->addTag(new ExerciseTag($tagName, $user, $exercise));
     $this->exercises->flush();
 
     $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'DELETE',
