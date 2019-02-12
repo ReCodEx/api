@@ -377,7 +377,8 @@ class ExercisesConfigPresenter extends BasePresenter {
   }
 
   /**
-   * Get a description of resource limits for an exercise for given hwgroup
+   * Get a description of resource limits for an exercise for given hwgroup.
+   * @DEPRECATED
    * @GET
    * @param string $id Identifier of the exercise
    * @param string $runtimeEnvironmentId
@@ -420,6 +421,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
   /**
    * Set resource limits for an exercise for given hwgroup.
+   * @DEPRECATED
    * @POST
    * @Param(type="post", name="limits", description="A list of resource limits for the given environment and hardware group", validation="array")
    * @param string $id Identifier of the exercise
@@ -478,6 +480,7 @@ class ExercisesConfigPresenter extends BasePresenter {
 
   /**
    * Remove resource limits of given hwgroup from an exercise.
+   * @DEPRECATED
    * @DELETE
    * @param string $id Identifier of the exercise
    * @param string $runtimeEnvironmentId
@@ -507,6 +510,100 @@ class ExercisesConfigPresenter extends BasePresenter {
     $this->configChecker->check($exercise);
     $this->exercises->flush();
     $this->sendSuccessResponse("OK");
+  }
+
+  public function checkGetLimits(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canViewLimits($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to get limits for this exercise.");
+    }
+  }
+
+  /**
+   * Get a description of resource limits for given exercise (all hwgroups all environments).
+   * @GET
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   */
+  public function actionGetLimits(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+
+    // prepare the result structure -- array [hwGroup][envId][testId] -> limits
+    $limits = [];
+    foreach ($exercise->getHardwareGroups() as $hwGroup) {
+      $limits[$hwGroup->getId()] = [];
+      foreach ($exercise->getRuntimeEnvironments() as $environment) {
+        $limits[$hwGroup->getId()][$environment->getId()] = null;
+      }
+    }
+
+    // fill existing limits into result structure
+    foreach ($exercise->getExerciseLimits() as $l) {
+      $limits[$l->getHardwareGroup()->getId()][$l->getRuntimeEnvironment()->getId()] = $l->getParsedLimits();
+    }
+    $this->sendSuccessResponse($limits);
+  }
+
+  public function checkSetLimits(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+    if (!$this->exerciseAcl->canSetLimits($exercise)) {
+      throw new ForbiddenRequestException("You are not allowed to set limits for this exercise.");
+    }
+  }
+
+  /**
+   * Update resource limits for given exercise.
+   * If limits for particular hwGroup or environment are not posted, no change occurs.
+   * If limits for particular hwGroup or environment are not posted as null, they are removed.
+   * @POST
+   * @Param(type="post", name="limits", description="A list of resource limits in the same format as getLimits endpoint yields.", validation="array")
+   * @param string $id Identifier of the exercise
+   * @throws ForbiddenRequestException
+   * @throws NotFoundException
+   * @throws ExerciseConfigException
+   */
+  public function actionSetLimits(string $id) {
+    /** @var Exercise $exercise */
+    $exercise = $this->exercises->findOrThrow($id);
+
+    $limits = $this->getRequest()->getPost("limits");
+    foreach ($limits as $hwGroupId => $hwGroupLimits) {
+      $hwGroup = $this->hardwareGroups->findOrThrow($hwGroupId);
+      if (!$exercise->getHardwareGroups()->contains($hwGroup)) {
+        throw new NotFoundException("Specified hardware group '$hwGroupId' not defined for this exercise");
+      }
+      
+      foreach ($hwGroupLimits as $envId => $envLimits) {
+        $environment = $this->runtimeEnvironments->findOrThrow($envId);
+        if (!$exercise->getRuntimeEnvironments()->contains($environment)) {
+          throw new NotFoundException("Specified environment '$envId' not defined for this exercise");
+        }
+
+        $oldLimits = $exercise->getLimitsByEnvironmentAndHwGroup($environment, $hwGroup);
+        $exercise->removeExerciseLimits($oldLimits); // if there were ones before
+
+        if ($envLimits) {
+          // load and validate a structured limits object
+          $envLimitsObj = $this->exerciseConfigLoader->loadExerciseLimits($envLimits);
+          $this->configValidator->validateExerciseLimits($exercise, $hwGroup->getMetadata(), $envLimitsObj);
+        
+          // create and add new limits
+          $newLimits = new ExerciseLimits($environment, $hwGroup, (string)$envLimitsObj, $this->getCurrentUser(), $oldLimits);    
+          $exercise->addExerciseLimits($newLimits);
+        }
+      }
+    }
+
+
+    // final updates and checks...
+    $exercise->updatedNow();
+    $this->configChecker->check($exercise);
+    $this->exercises->flush();
+    $this->forward('ExercisesConfig:getLimits', $id);
   }
 
   public function checkGetScoreConfig(string $id) {
