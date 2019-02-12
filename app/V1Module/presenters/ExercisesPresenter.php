@@ -719,7 +719,7 @@ class ExercisesPresenter extends BasePresenter {
     }
 
     $tag = new ExerciseTag($name, $this->getCurrentUser(), $exercise);
-    $exercise->addExerciseTag($tag);
+    $exercise->addTag($tag);
     $this->exercises->flush();
     $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }
@@ -745,7 +745,7 @@ class ExercisesPresenter extends BasePresenter {
       throw new NotFoundException("Tag '{$name}' was not found");
     }
 
-    $exercise->removeExerciseTag($tag);
+    $exercise->removeTag($tag);
     $this->exercises->flush();
     $this->sendSuccessResponse($this->exerciseViewFactory->getExercise($exercise));
   }

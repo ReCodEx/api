@@ -22,15 +22,15 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method string getDifficulty()
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseTests()
- * @method Collection getExerciseTags()
+ * @method Collection getTags()
  * @method void setScoreConfig(string $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
  * @method setConfigurationType($type)
  * @method void addGroup(Group $group)
- * @method void addExerciseTag(ExerciseTag $tag)
- * @method void removeExerciseTag(ExerciseTag $tag)
+ * @method void addTag(ExerciseTag $tag)
+ * @method void removeTag(ExerciseTag $tag)
  * @method void removeGroup(Group $group)
  */
 class Exercise implements IExercise
@@ -211,7 +211,7 @@ class Exercise implements IExercise
    * @var Collection
    * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise", cascade={"persist", "remove"})
    */
-  protected $exerciseTags;
+  protected $tags;
 
   /**
    * Constructor
@@ -272,7 +272,7 @@ class Exercise implements IExercise
     $this->scoreConfig = $scoreConfig;
     $this->configurationType = $configurationType;
     $this->validationError = "";
-    $this->exerciseTags = new ArrayCollection();
+    $this->tags = new ArrayCollection();
   }
 
   public static function create(User $user, Group $group): Exercise {
