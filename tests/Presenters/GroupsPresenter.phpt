@@ -83,7 +83,7 @@ class TestGroupsPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin, $this->groupSupervisorPassword);
     $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'GET',
       ['action' => 'default']);
-    Assert::equal(1, count($payload));
+    Assert::equal(2, count($payload));
   }
 
   public function testListAllGroupsByAdmin()
