@@ -706,24 +706,16 @@ class ExercisesPresenter extends BasePresenter {
    * @POST
    * @param string $id
    * @param string $name
+   * @Param(type="get", name="name", validation="string:1..32", description="Name of the newly added tag to given exercise")
    * @throws BadRequestException
    * @throws NotFoundException
    * @throws ForbiddenRequestException
-   * @throws InvalidArgumentException
    */
   public function actionAddTag(string $id, string $name) {
     $exercise = $this->exercises->findOrThrow($id);
     $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
     if ($tag !== null) {
       throw new BadRequestException("Tag already exists on exercise");
-    }
-
-    if (empty($name)) {
-      throw new BadRequestException("Tag cannot be empty");
-    }
-
-    if (strlen($name) > 32) {
-      throw new InvalidArgumentException("name", "tag name too long (exceeds 32 characters)");
     }
 
     $tag = new ExerciseTag($name, $this->getCurrentUser(), $exercise);

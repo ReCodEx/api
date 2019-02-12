@@ -167,7 +167,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
         case "post":
           $value = $this->getPostField($name, $required);
           break;
-        case "query":
+        case "get":
           $value = $this->getQueryField($name, $required);
           break;
         default:
@@ -204,7 +204,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
   }
 
   private function getQueryField($param, $required = true) {
-    $value = $this->getHttpRequest()->getQuery($param);
+    $value = $this->getRequest()->getParameter($param);
     if ($value === null && $required) {
       throw new BadRequestException("Missing required query field $param");
     }
