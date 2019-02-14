@@ -21,6 +21,7 @@ use Nette\Utils\Arrays;
 class BrokerProxy {
 
   const EXPECTED_RESULT = "accept";
+  const REJECTED_RESULT = "reject";
   const EXPECTED_ACK = "ack";
 
   const COMMAND_STATS = "get-runtime-stats";
@@ -102,12 +103,22 @@ class BrokerProxy {
     }
 
     $response = $this->pollReadWorkaround($queue, $this->resultTimeout);
-    if ($response === null) {
+    if ($response === null || count($response) < 1) {
       $queue->disconnect($this->brokerAddress);
       throw new SubmissionFailedException("Receiving response from the broker failed.");
     }
 
+    // just close the damn connection
     $queue->disconnect($this->brokerAddress);
+
+    if ($response[0] === self::REJECTED_RESULT) {
+      $rejectMessage = "The broker rejected our request";
+      if (count($response) > 1) {
+        array_pop($response);
+        $rejectMessage .= ": " . implode(" ", $response);
+      }
+      throw new SubmissionFailedException($rejectMessage);
+    }
     return $response[0] === self::EXPECTED_RESULT;
   }
 

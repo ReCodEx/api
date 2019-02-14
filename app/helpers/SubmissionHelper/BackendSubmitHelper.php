@@ -2,8 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\JobConfig\JobConfig;
+use ZMQSocketException;
 
 /**
  * Easy submit new job to the backend. This means prepare the archive, upload it to the
@@ -36,6 +38,8 @@ class BackendSubmitHelper {
    *                              (if none is given, all hardware groups associated with the assignment can be used)
    * @return null|string URL of the results when the submission was accepted and evaluation started, otherwise null
    * @throws SubmissionFailedException
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   public function initiateEvaluation(JobConfig $jobConfig, array $files, array $headers = [], string $hardwareGroup = null) {
     // firstly let us set address of fileserver to job configuration
