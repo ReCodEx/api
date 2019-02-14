@@ -2,11 +2,13 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InvalidStateException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\Storage;
 use App\Model\Entity\ReferenceSolutionSubmission;
 use App\Model\Entity\AssignmentSolution;
+use ZMQSocketException;
 
 /**
  * Class which should create submission, generate job configuration,
@@ -34,6 +36,8 @@ class SubmissionHelper {
    * @param null|string $hwgroup
    * @return string fileserver results URL
    * @throws SubmissionFailedException
+   * @throws InvalidStateException
+   * @throws ZMQSocketException
    */
   private function internalSubmit(string $jobId, string $jobType,
       string $environment, array $files, JobConfig $jobConfig,
@@ -65,7 +69,9 @@ class SubmissionHelper {
    * @param array $files
    * @param JobConfig $jobConfig
    * @return string fileserver results URL
+   * @throws InvalidStateException
    * @throws SubmissionFailedException
+   * @throws ZMQSocketException
    */
   public function submit(string $jobId, string $environment, array $files,
       JobConfig $jobConfig): string {
@@ -80,7 +86,9 @@ class SubmissionHelper {
    * @param array $files
    * @param JobConfig $jobConfig
    * @return string fileserver results URL
+   * @throws InvalidStateException
    * @throws SubmissionFailedException
+   * @throws ZMQSocketException
    */
   public function submitReference(string $jobId, string $environment,
       ?string $hwgroup, array $files, JobConfig $jobConfig): string {
