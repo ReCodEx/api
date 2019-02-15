@@ -710,8 +710,13 @@ class ExercisesPresenter extends BasePresenter {
    * @throws BadRequestException
    * @throws NotFoundException
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionAddTag(string $id, string $name) {
+    if (!preg_match('/^[-a-zA-Z0-9_]+$/', $name)) {
+      throw new InvalidArgumentException("name", "tag name contains illicit characters");
+    }
+
     $exercise = $this->exercises->findOrThrow($id);
     $tag = $this->exerciseTags->findByNameAndExercise($name, $exercise);
     if ($tag !== null) {
