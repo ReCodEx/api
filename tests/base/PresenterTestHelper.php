@@ -166,10 +166,14 @@ class PresenterTestHelper
    * @return array|null Payload subtree of JSON request.
    * @throws Exception
    */
-  public static function performPresenterRequest($presenter, string $module, string $method = 'GET', array $params = [], array $post = [], $expectedCode = 200)
+	public static function performPresenterRequest($presenter, string $module, string $method = 'GET',
+		array $params = [], array $post = [], $expectedCode = 200)
   {
     $request = new \Nette\Application\Request($module, $method, $params, $post);
-    $response = $presenter->run($request);
+		$response = $presenter->run($request);
+		while ($response instanceof \Nette\Application\Responses\ForwardResponse) {
+			$response = $presenter->run($response->getRequest());
+		}
     Tester\Assert::type(\Nette\Application\Responses\JsonResponse::class, $response);
 
     $result = $response->getPayload();
@@ -197,5 +201,31 @@ class PresenterTestHelper
       }
     }
     return $res;
-  }
+	}
+
+	private static function flatten(array &$res, string $keyPrefix, array $array, string $separator) {
+		foreach ($array as $name => $value) {
+			$name = "$keyPrefix$separator$name";
+			if (is_array($value)) {
+				self::flatten($res, $name, $value, $separator);
+			} else {
+				$res[$name] = $value;
+			}
+		}
+	}
+
+	/**
+	 * Take array representing nested JSON structure and flatten it.
+	 * Keys are concatenated using given string as separator.
+	 * The result is sorted by keys.
+   * @param array $array Input structure encoded in nested assoc arrays.
+   * @param string $separator String used as glue for keys.
+   * @return array Sorted array where all scalar values are kept and keys concatenated.
+	 */
+	public static function flattenNestedStructure(array $array, string $separator = '/') {
+		$res = [];
+		self::flatten($res, '', $array, $separator);
+		ksort($res);
+		return $res;
+	}
 }

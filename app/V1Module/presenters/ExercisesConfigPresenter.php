@@ -541,8 +541,8 @@ class ExercisesConfigPresenter extends BasePresenter {
     }
 
     // fill existing limits into result structure
-    foreach ($exercise->getExerciseLimits() as $l) {
-      $limits[$l->getHardwareGroup()->getId()][$l->getRuntimeEnvironment()->getId()] = $l->getParsedLimits();
+    foreach ($exercise->getExerciseLimits() as $limit) {
+      $limits[$limit->getHardwareGroup()->getId()][$limit->getRuntimeEnvironment()->getId()] = $limit->getParsedLimits();
     }
     $this->sendSuccessResponse($limits);
   }
@@ -558,7 +558,7 @@ class ExercisesConfigPresenter extends BasePresenter {
   /**
    * Update resource limits for given exercise.
    * If limits for particular hwGroup or environment are not posted, no change occurs.
-   * If limits for particular hwGroup or environment are not posted as null, they are removed.
+   * If limits for particular hwGroup or environment are posted as null, they are removed.
    * @POST
    * @Param(type="post", name="limits", description="A list of resource limits in the same format as getLimits endpoint yields.", validation="array")
    * @param string $id Identifier of the exercise
@@ -597,7 +597,6 @@ class ExercisesConfigPresenter extends BasePresenter {
         }
       }
     }
-
 
     // final updates and checks...
     $exercise->updatedNow();
