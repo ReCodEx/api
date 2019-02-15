@@ -12,7 +12,7 @@ class ExerciseTags extends BaseRepository {
     parent::__construct($em, ExerciseTag::class);
   }
 
-  public function findByNameAndExercise(?string $name, Exercise $exercise): ?ExerciseTag {
+  public function findByNameAndExercise(string $name, Exercise $exercise): ?ExerciseTag {
     return $this->findOneBy([
       "name" => $name,
       "exercise" => $exercise
