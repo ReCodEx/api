@@ -114,7 +114,7 @@ class BrokerProxy {
     if ($response[0] === self::REJECTED_RESULT) {
       $rejectMessage = "The broker rejected our request";
       if (count($response) > 1) {
-        array_pop($response);
+        array_shift($response);
         $rejectMessage .= ": " . implode(" ", $response);
       }
       throw new SubmissionFailedException($rejectMessage);
