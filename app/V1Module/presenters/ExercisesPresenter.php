@@ -706,7 +706,7 @@ class ExercisesPresenter extends BasePresenter {
    * @POST
    * @param string $id
    * @param string $name
-   * @Param(type="get", name="name", validation="string:1..32", description="Name of the newly added tag to given exercise")
+   * @Param(type="query", name="name", validation="string:1..32", description="Name of the newly added tag to given exercise")
    * @throws BadRequestException
    * @throws NotFoundException
    * @throws ForbiddenRequestException

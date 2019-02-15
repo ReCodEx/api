@@ -167,7 +167,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
         case "post":
           $value = $this->getPostField($name, $required);
           break;
-        case "get":
+        case "query":
           $value = $this->getQueryField($name, $required);
           break;
         default:
