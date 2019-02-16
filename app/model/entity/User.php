@@ -343,17 +343,17 @@ class User
   /**
    * @ORM\Column(type="datetime", nullable=true)
    * @var DateTime
-	 * When the last authentication or token renewal occurred.
+   * When the last authentication or token renewal occurred.
    */
   protected $lastAuthenticationAt = null;
 
-	/**
-	 * Update the last authentication time to present.
-	 */
-	public function updateLastAuthenticationAt() {
-		if ($this->isDeleted()) {
-			throw new ApiException("Cannot update user who has already been deleted."); 
-		}
-		$lastAuthenticationAt = new DataTime();
-	}
+  /**
+   * Update the last authentication time to present.
+   */
+  public function updateLastAuthenticationAt() {
+    if ($this->isDeleted()) {
+      throw new ApiException("Cannot update user who has already been deleted."); 
+    }
+    $lastAuthenticationAt = new DataTime();
+  }
 }

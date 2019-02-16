@@ -14,10 +14,10 @@ $configurator->setTempDirectory(TEMP_DIR);
 $configurator->addParameters(['appDir' => $appDir]);
 
 $configurator->createRobotLoader()
-	->addDirectory($appDir)
+  ->addDirectory($appDir)
   ->addDirectory(__DIR__ . '/base')
   ->addDirectory(__DIR__ . '/Authorizator')
-	->register();
+  ->register();
 
 $configurator->addConfig(__DIR__ . '/../app/config/config.neon');
 
