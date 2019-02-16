@@ -377,33 +377,33 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $exercise = current($this->exercises->findAll());
-		$exerciseLimits = $exercise->getExerciseLimits()->first();
-		$environmentId = $exerciseLimits->getRuntimeEnvironment()->getId();
-		$hwGroupId = $exerciseLimits->getHardwareGroup()->getId();
+    $exerciseLimits = $exercise->getExerciseLimits()->first();
+    $environmentId = $exerciseLimits->getRuntimeEnvironment()->getId();
+    $hwGroupId = $exerciseLimits->getHardwareGroup()->getId();
 
     // prepare limits arrays
     $limits = [
-			$hwGroupId => [
-				$environmentId => [
-					'1' => ['wall-time' => 1.0, 'memory' => 1024],
-					'2' => ['wall-time' => 2.0, 'memory' => 1024]		
-				]
-			]
+      $hwGroupId => [
+        $environmentId => [
+          '1' => ['wall-time' => 1.0, 'memory' => 1024],
+          '2' => ['wall-time' => 2.0, 'memory' => 1024]    
+        ]
+      ]
     ];
 
-		$payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
-			[
-				'action' => 'setLimits',
-				'id' => $exercise->getId(),
-			],
-			[ 'limits' => $limits ]
-		);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
+      [
+        'action' => 'setLimits',
+        'id' => $exercise->getId(),
+      ],
+      [ 'limits' => $limits ]
+    );
 
-		$limits = PresenterTestHelper::flattenNestedStructure($limits);
-		$payload = PresenterTestHelper::flattenNestedStructure($payload);
-		foreach ($limits as $name => $value) {
-			Assert::equal($value, $payload[$name]);
-		}
+    $limits = PresenterTestHelper::flattenNestedStructure($limits);
+    $payload = PresenterTestHelper::flattenNestedStructure($payload);
+    foreach ($limits as $name => $value) {
+      Assert::equal($value, $payload[$name]);
+    }
   }
 
   public function testSetLimitsIncorrect()
@@ -411,37 +411,37 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     PresenterTestHelper::loginDefaultAdmin($this->container);
 
     // create new hardware group
-		$hwGroup = new HardwareGroup("new limits hwgroup", "name", "desc",
-			"memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300");
+    $hwGroup = new HardwareGroup("new limits hwgroup", "name", "desc",
+      "memory: 1048576\ncpuTimePerTest: 60\ncpuTimePerExercise: 300\nwallTimePerTest: 60\nwallTimePerExercise: 300");
     $this->presenter->hardwareGroups->persist($hwGroup);
 
     $exercise = current($this->exercises->findAll());
-		$exercise->addHardwareGroup($hwGroup);
-		$this->exercises->flush();
+    $exercise->addHardwareGroup($hwGroup);
+    $this->exercises->flush();
 
     $exerciseLimits = $exercise->getExerciseLimits()->first();
-		$environmentId = $exerciseLimits->getRuntimeEnvironment()->getId();
-		$hwGroupId = $hwGroup->getId();
+    $environmentId = $exerciseLimits->getRuntimeEnvironment()->getId();
+    $hwGroupId = $hwGroup->getId();
 
     // prepare limits arrays
     $limits = [
-			$hwGroupId => [
-				$environmentId => [
-					'1' => ['wall-time' => 0.0, 'memory' => 1024],
-					'2' => ['wall-time' => 0.0, 'memory' => 1024]		
-				]
-			]
+      $hwGroupId => [
+        $environmentId => [
+          '1' => ['wall-time' => 0.0, 'memory' => 1024],
+          '2' => ['wall-time' => 0.0, 'memory' => 1024]    
+        ]
+      ]
     ];
 
-		Assert::exception(function () use ($exercise, $limits) {
-			PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
-				[
-					'action' => 'setLimits',
-					'id' => $exercise->getId(),
-				],
-				[ 'limits' => $limits ]
-			);
-		}, ExerciseConfigException::class);
+    Assert::exception(function () use ($exercise, $limits) {
+      PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
+        [
+          'action' => 'setLimits',
+          'id' => $exercise->getId(),
+        ],
+        [ 'limits' => $limits ]
+      );
+    }, ExerciseConfigException::class);
   }
 
   public function testRemoveHardwareGroupLimits()

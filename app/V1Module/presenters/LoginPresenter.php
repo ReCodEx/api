@@ -99,10 +99,10 @@ class LoginPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-		$user = $this->credentialsAuthenticator->authenticate($username, $password);
-		$user->updateLastAuthenticationAt();
-		$this->users->flush();		
-		$this->sendAccessTokenResponse($user);
+    $user = $this->credentialsAuthenticator->authenticate($username, $password);
+    $user->updateLastAuthenticationAt();
+    $this->users->flush();    
+    $this->sendAccessTokenResponse($user);
   }
 
   /**
@@ -120,8 +120,8 @@ class LoginPresenter extends BasePresenter {
     $req = $this->getRequest();
     $service = $this->externalServiceAuthenticator->findService($serviceId, $type);
     $user = $this->externalServiceAuthenticator->authenticate($service, $req->getPost());
-		$user->updateLastAuthenticationAt();
-		$this->users->flush();
+    $user->updateLastAuthenticationAt();
+    $this->users->flush();
     $this->sendAccessTokenResponse($user);
   }
 
@@ -166,10 +166,10 @@ class LoginPresenter extends BasePresenter {
     $token = $this->getAccessToken();
 
     $user = $this->getCurrentUser();
-		$user->updateLastAuthenticationAt();
-		$this->users->flush();
+    $user->updateLastAuthenticationAt();
+    $this->users->flush();
 
-		$this->sendSuccessResponse([
+    $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueRefreshedToken($token),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
@@ -221,8 +221,8 @@ class LoginPresenter extends BasePresenter {
     }
 
     $user = $this->getCurrentUser();
-		$user->updateLastAuthenticationAt();
-		$this->users->flush();
+    $user->updateLastAuthenticationAt();
+    $this->users->flush();
 
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user, $scopes, $expiration),

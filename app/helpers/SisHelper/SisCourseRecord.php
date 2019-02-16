@@ -37,8 +37,8 @@ class SisCourseRecord implements JsonSerializable {
   private $oddWeeks;
 
   private static $typeMap = [
-	  "P" => "lecture",
-	  "X" => "lab"
+    "P" => "lecture",
+    "X" => "lab"
   ];
 
   /**
