@@ -10,6 +10,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
+use App\Model\Repository\Users;
 use App\Model\View\UserViewFactory;
 use App\Security\AccessToken;
 use App\Security\AccessManager;
@@ -46,6 +47,12 @@ class LoginPresenter extends BasePresenter {
    * @inject
    */
   public $logins;
+
+  /**
+   * @var Users
+   * @inject
+   */
+  public $users;
 
   /**
    * @var UserViewFactory
@@ -92,8 +99,10 @@ class LoginPresenter extends BasePresenter {
     $username = $req->getPost("username");
     $password = $req->getPost("password");
 
-    $user = $this->credentialsAuthenticator->authenticate($username, $password);
-    $this->sendAccessTokenResponse($user);
+		$user = $this->credentialsAuthenticator->authenticate($username, $password);
+		$user->updateLastAuthenticationAt();
+		$this->users->flush();		
+		$this->sendAccessTokenResponse($user);
   }
 
   /**
@@ -111,6 +120,8 @@ class LoginPresenter extends BasePresenter {
     $req = $this->getRequest();
     $service = $this->externalServiceAuthenticator->findService($serviceId, $type);
     $user = $this->externalServiceAuthenticator->authenticate($service, $req->getPost());
+		$user->updateLastAuthenticationAt();
+		$this->users->flush();
     $this->sendAccessTokenResponse($user);
   }
 
@@ -155,7 +166,10 @@ class LoginPresenter extends BasePresenter {
     $token = $this->getAccessToken();
 
     $user = $this->getCurrentUser();
-    $this->sendSuccessResponse([
+		$user->updateLastAuthenticationAt();
+		$this->users->flush();
+
+		$this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueRefreshedToken($token),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
@@ -207,6 +221,8 @@ class LoginPresenter extends BasePresenter {
     }
 
     $user = $this->getCurrentUser();
+		$user->updateLastAuthenticationAt();
+		$this->users->flush();
 
     $this->sendSuccessResponse([
       "accessToken" => $this->accessManager->issueToken($user, $scopes, $expiration),

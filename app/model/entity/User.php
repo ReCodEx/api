@@ -10,6 +10,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use forxer\Gravatar\Gravatar;
+use App\Exceptions\ApiException;
 
 /**
  * @ORM\Entity
@@ -37,6 +38,7 @@ use forxer\Gravatar\Gravatar;
  * @method Collection getExternalLogins()
  * @method setTokenValidityThreshold(DateTime $threshold)
  * @method DateTime|null getTokenValidityThreshold()
+ * @method DateTime|null getLastAuthenticationAt()
  */
 class User
 {
@@ -336,4 +338,22 @@ class User
   public function getCreatedAt(): DateTime {
     return $this->createdAt;
   }
+
+
+  /**
+   * @ORM\Column(type="datetime", nullable=true)
+   * @var DateTime
+	 * When the last authentication or token renewal occurred.
+   */
+  protected $lastAuthenticationAt = null;
+
+	/**
+	 * Update the last authentication time to present.
+	 */
+	public function updateLastAuthenticationAt() {
+		if ($this->isDeleted()) {
+			throw new ApiException("Cannot update user who has already been deleted."); 
+		}
+		$lastAuthenticationAt = new DataTime();
+	}
 }
