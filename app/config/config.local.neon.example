@@ -64,6 +64,8 @@ parameters:
         verify_peer_name: false
         allow_self_signed: true
 
+  removeInactiveUsers:
+    threshold: "2 years" # how long the user should have been inactive to warant the removal (null = never remove students, 1 month is minimum)
 
 doctrine:
   host: localhost
