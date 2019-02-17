@@ -191,6 +191,9 @@ parameters:
     anonymizedName: "@@anonymized"  # String used as replacement for anonymized name a user
     deletedEmailSuffix: "@@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
 
+  removeInactiveUsers:
+    threshold: null # how long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum)
+
 application:
   errorPresenter: V1:ApiError
   mapping:
@@ -271,6 +274,7 @@ services:
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
   - App\Console\CleanupPipelineConfigs
+  - App\Console\RemoveInactiveUsers(%removeInactiveUsers.threshold%)
 
   # migrations commands
   - Doctrine\Migrations\Tools\Console\Command\ExecuteCommand

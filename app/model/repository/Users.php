@@ -84,4 +84,22 @@ class Users extends BaseSoftDeleteRepository {
     return $this->findBy([ "role" => $roles ]);
   }
 
+  /**
+   * Find all users who have their last authentication activity before and after given two dates.
+   * A null value in the lastAuthenticationAt property bares the meaning of "never", so it satisfies any
+   * $before value and no (not null) $after value.
+   * @param DateTime|null $before Only users with last activity before given date (i.e., not active after given date) are returned.
+   * @param DateTime|null $after Only users with last activity after given date (i.e., have been active after give date) are returned.
+   */
+  public function findByLastAuthentication(?DateTime $before, ?DateTime $after = null)
+  {
+    $qb = $this->createQueryBuilder('u'); // takes care of softdelete cases
+    if ($before) {
+      $qb->andWhere('u.lastAuthenticationAt <= :before OR u.lastAuthenticationAt IS NULL')->setParameter('before', $before);
+    }
+    if ($after) {
+      $qb->andWhere('u.lastAuthenticationAt >= :after')->setParameter('after', $after);
+    }
+    return $query = $qb->getQuery()->getResult();
+  }
 }
