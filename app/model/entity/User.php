@@ -354,6 +354,6 @@ class User
     if ($this->isDeleted()) {
       throw new ApiException("Cannot update user who has already been deleted."); 
     }
-    $lastAuthenticationAt = new DataTime();
+    $this->lastAuthenticationAt = new DateTime();
   }
 }

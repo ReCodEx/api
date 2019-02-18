@@ -8,6 +8,7 @@ use Kdyby\Doctrine\EntityManager;
 use Doctrine\ORM\Query;
 use App\Model\Entity\User;
 use App\Exceptions\InvalidArgumentException;
+use DateTime;
 
 /**
  * @method User findOrThrow(string $id)
