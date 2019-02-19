@@ -5,9 +5,9 @@ namespace App\Model\Repository;
 use App\Exceptions\NotFoundException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Nette;
 use Kdyby\Doctrine\EntityManager;
-
+use Nette;
+use DateTime;
 
 class BaseRepository {
   use Nette\SmartObject;
@@ -22,6 +22,10 @@ class BaseRepository {
 
   public function get($id) {
     return $this->repository->find($id);
+  }
+
+  public function getTotalCount() {
+    return $this->repository->count([]);
   }
 
   public function findAll() {
@@ -54,6 +58,23 @@ class BaseRepository {
     return $entity;
   }
 
+  /**
+   * Find all entities created in given time interval.
+   * @param DateTime|null $since Only entities created after this date are returned.
+   * @param DateTime|null $until Only entities created before this date are returned.
+   */
+  public function findByCreatedAt(?DateTime $since, ?DateTime $until)
+  {
+    $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+    if ($since) {
+      $qb->andWhere('e.createdAt >= :since')->setParameter('since', $since);
+    }
+    if ($until) {
+      $qb->andWhere('e.createdAt <= :until')->setParameter('until', $until);
+    }
+    return $qb->getQuery()->getResult();
+  }
+
   public function persist($entity, $autoFlush = true) {
     $this->em->persist($entity);
     if ($autoFlush === true) {
@@ -80,6 +101,10 @@ class BaseRepository {
     return $this->repository->matching($params);
   }
 
+  public function createQueryBuilder(string $alias, string $indexBy = null)
+  {
+    return $this->repository->createQueryBuilder($alias, $indexBy);
+  }
 
   /**
    * Internal simple search of repository based on given string.

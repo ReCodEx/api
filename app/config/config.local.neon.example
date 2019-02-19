@@ -65,7 +65,9 @@ parameters:
         allow_self_signed: true
 
   removeInactiveUsers:
-    threshold: "2 years" # how long the user should have been inactive to warant the removal (null = never remove students, 1 month is minimum)
+    # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
+    # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
+    threshold: "2 years"
 
 doctrine:
   host: localhost

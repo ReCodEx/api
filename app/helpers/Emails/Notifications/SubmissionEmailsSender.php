@@ -37,7 +37,7 @@ class SubmissionEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "submissionEvaluatedPrefix"], "Submission Evaluated - ");
+    $this->submissionEvaluatedPrefix = Arrays::get($params, ["emails", "subject"], "Submission Evaluated - ");
     $this->submissionRedirectUrl = Arrays::get($params, ["submissionRedirectUrl"], "https://recodex.mff.cuni.cz");
     $this->submissionNotificationThreshold = Arrays::get($params, ["submissionNotificationThreshold"], "-5 minutes");
   }

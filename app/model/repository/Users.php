@@ -101,6 +101,6 @@ class Users extends BaseSoftDeleteRepository {
     if ($after) {
       $qb->andWhere('u.lastAuthenticationAt >= :after')->setParameter('after', $after);
     }
-    return $query = $qb->getQuery()->getResult();
+    return $qb->getQuery()->getResult();
   }
 }

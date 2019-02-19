@@ -61,5 +61,4 @@ class Assignments extends BaseSoftDeleteRepository {
 
     return $qb->getQuery()->getResult();
   }
-
 }
