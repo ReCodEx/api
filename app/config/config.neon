@@ -148,6 +148,13 @@ parameters:
       solutionPointsUpdatedPrefix: "Assignment Points Updated - "
       shadowPointsUpdatedPrefix: "Shadow Assignment Points Awarded - "
 
+  generalStatsNotifications:
+    period: "1 week"
+    emails:
+      from: %emails.from%
+      to: %failures.emails.to%
+      subject: "General Status Overview"
+
   forgottenPassword:  # user messages for changing passwords
     redirectUrl: "%webapp.address%/forgotten-password/change#{token}"  # URL of web application where the password can be changed
     tokenExpiration: 600  # expiration timeout of temporary token (in seconds), 10 minutes
@@ -192,7 +199,9 @@ parameters:
     deletedEmailSuffix: "@@deleted.recodex"  # Suffix string appended to an email address of a user, when account is deleted
 
   removeInactiveUsers:
-    threshold: null # how long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum)
+    # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
+    # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
+    threshold: null 
 
 application:
   errorPresenter: V1:ApiError
@@ -270,6 +279,7 @@ services:
   - App\Console\GenerateSwagger(@router)
   - App\Console\CleanupUploads
   - App\Console\SendAssignmentDeadlineNotification(%assignmentNotifications.emails.assignmentDeadlineThresholdFrom%, %assignmentNotifications.emails.assignmentDeadlineThresholdTo%)
+  - App\Console\GeneralStatsNotification
   - App\Console\ExportDatabase
   - App\Console\CleanupLocalizedTexts
   - App\Console\CleanupExerciseConfigs
@@ -363,6 +373,7 @@ services:
   - App\Helpers\UserActions
   - App\Helpers\ExerciseConfig\ExerciseConfigChecker
   - App\Helpers\AnonymizationHelper(@App\Model\Repository\Users, @App\Model\Repository\Logins, @App\Model\Repository\ExternalLogins, %anonymization%)
+  - App\Helpers\GeneralStatsHelper(%removeInactiveUsers.threshold%)
 
   # emails
   - App\Helpers\Emails\EmailLocalizationHelper
@@ -373,6 +384,7 @@ services:
   - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
+  - App\Helpers\Notifications\GeneralStatsEmailsSender(@App\Helpers\EmailHelper, %generalStatsNotifications%)
   - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
 
   # models - repositories

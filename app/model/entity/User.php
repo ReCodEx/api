@@ -351,9 +351,6 @@ class User
    * Update the last authentication time to present.
    */
   public function updateLastAuthenticationAt() {
-    if ($this->isDeleted()) {
-      throw new ApiException("Cannot update user who has already been deleted."); 
-    }
     $this->lastAuthenticationAt = new DateTime();
   }
 }

@@ -1,0 +1,34 @@
+<p>
+  Gathered general statistics for last period ({$period}).
+</p>
+
+<table>
+  <tr>
+    <td>Users:</td>
+    <td>{$totalUsers} ({$createdUsers} new{if $inactiveUsers}, {$inactiveUsers} inactive{/if})<td>
+  </tr>
+  <tr>
+    <td>Groups:</td>
+    <td>{$totalGroups} ({$archivedGroups} archived)<td>
+  </tr>
+  <tr>
+    <td>Exercises:</td>
+    <td>{$totalExercises} ({$createdExercises} new)<td>
+  </tr>
+  <tr>
+    <td>Assignments:</td>
+    <td>{$totalAssignments} ({$createdAssignments} new)<td>
+  </tr>
+  <tr>
+    <td>Solutions:</td>
+    <td>{$totalSolutions} ({$createdSolutions} new)<td>
+  </tr>
+  <tr>
+    <td>New Evaluations:</td>
+    <td>{$createdSubmissions}<td>
+  </tr>
+  <tr>
+    <td>Failed Evaluations:</td>
+    <td>{$failedSubmissions}<td>
+  </tr>
+</table>

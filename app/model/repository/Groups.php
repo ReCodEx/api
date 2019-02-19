@@ -311,4 +311,13 @@ class Groups extends BaseSoftDeleteRepository  {
     }
     return array_keys($res);
   }
+
+  /**
+   * Get total number of archived groups.
+   */
+  public function getArchivedCount(): int
+  {
+    $groups = $this->findAll();
+    return count($this->filterGroupsArchived($groups, true));
+  }
 }

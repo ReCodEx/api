@@ -13,6 +13,12 @@ class BaseSoftDeleteRepository extends BaseRepository {
     $this->softDeleteColumn = $softDeleteColumn;
   }
 
+  public function getTotalCount() {
+    return $this->repository->count([
+      $this->softDeleteColumn => null
+    ]);
+  }
+
   public function findAll() {
     return $this->repository->findBy([
       $this->softDeleteColumn => null
