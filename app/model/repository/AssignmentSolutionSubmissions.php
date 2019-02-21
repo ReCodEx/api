@@ -23,13 +23,6 @@ class AssignmentSolutionSubmissions extends BaseRepository {
    */
   public function findByCreatedAt(?DateTime $since, ?DateTime $until)
   {
-    $qb = $this->createQueryBuilder('s'); // takes care of softdelete cases
-    if ($since) {
-      $qb->andWhere('s.submittedAt >= :since')->setParameter('since', $since);
-    }
-    if ($until) {
-      $qb->andWhere('s.submittedAt <= :until')->setParameter('until', $until);
-    }
-    return $qb->getQuery()->getResult();
+    return $this->findByDateTimeColumn($since, $until, 'submittedAt');
   }
 }

@@ -17,22 +17,13 @@ use App\Model\Repository\ExternalLogins;
 class AnonymizationHelper {
   use Nette\SmartObject;
 
-  /**
-   * @var Users
-   * @inject
-   */
+  /** @var Users */
   public $users;
 
-  /**
-   * @var Logins
-   * @inject
-   */
+  /** @var Logins */
   protected $logins;
 
-  /**
-   * @var ExternalLogins
-   * @inject
-   */
+  /** @var ExternalLogins */
   protected $externalLogins;
 
   /**

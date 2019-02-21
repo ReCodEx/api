@@ -103,10 +103,11 @@ parameters:
     subjectPrefix: "ReCodEx - "
     debugMode: false  # in debug mode, no messages are sent via SMPT
     archivingDir: ""  # a directory where copies of all emails sent are stored (in text files)
+    defaultAdminTo: "Administrator <admin@example.com>"  # admin mail address
 
   failures:  # admin messages on errors
     emails:  # additional info for sending mails
-      to: "Administrator <admin@example.com>"  # admin mail address
+      to: %emails.defaultAdminTo%  # admin mail address
       from: %emails.from%  # source address
       subjectPrefix: "Failure Report - "  # prefix of mail subject
 
@@ -152,7 +153,7 @@ parameters:
     period: "1 week"
     emails:
       from: %emails.from%
-      to: %failures.emails.to%
+      to: %emails.defaultAdminTo%
       subject: "General Status Overview"
 
   forgottenPassword:  # user messages for changing passwords
