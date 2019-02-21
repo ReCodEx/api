@@ -106,7 +106,7 @@ class GeneralStats {
 class GeneralStatsHelper {
   use Nette\SmartObject;
 
-  /** @var string */
+  /** @var string|null */
   private $inactivityThreshold;
 
   /** @var Users */
@@ -136,7 +136,7 @@ class GeneralStatsHelper {
   /**
    * @param array $params Injected configuration parameters.
    */
-  public function __construct(string $inactivityThreshold, Users $users, Groups $groups, Exercises $exercises, Assignments $assignments,
+  public function __construct(?string $inactivityThreshold, Users $users, Groups $groups, Exercises $exercises, Assignments $assignments,
     Solutions $solutions, AssignmentSolutionSubmissions $assignmentSubmissions, ReferenceSolutionSubmissions $referenceSubmissions,
     SubmissionFailures $submissionFailures)
   {
@@ -153,6 +153,9 @@ class GeneralStatsHelper {
 
   private function getInactiveUsersCount()
   {
+    if (!$this->inactivityThreshold) {
+      return 0;
+    }
     $before = new DateTime();
     $before->sub(DateInterval::createFromDateString($this->inactivityThreshold));
     $beforeSafe = new DateTime(); // safe guard (so we do not delete all users)

@@ -45,7 +45,7 @@ parameters:
     footerUrl: https://recodex.mff.cuni.cz
     from: "ReCodEx <noreply@recodex.mff.cuni.cz>"
     defaultAdminTo: "Administrator <admin@example.com>"
-    #debugMode: true  # in debug mode, no messages are sent via SMPT
+    #debugMode: true  # in debug mode, no messages are sent via SMTP
     #archivingDir: "%appDir%/../log/email-debug"  # a directory where copies of all emails sent are stored (in text files)
 
   mail:
