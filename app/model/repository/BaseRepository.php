@@ -58,6 +58,25 @@ class BaseRepository {
     return $entity;
   }
 
+
+  /**
+   * Find all entities which have selected datetime column in given time interval.
+   * @param DateTime|null $since Only entities created after this date are returned.
+   * @param DateTime|null $until Only entities created before this date are returned.
+   * @param string $column Name of the column used for filtering.
+   */
+  protected function findByDateTimeColumn(?DateTime $since, ?DateTime $until, $column = 'createdAt')
+  {
+    $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
+    if ($since) {
+      $qb->andWhere("e.$column >= :since")->setParameter('since', $since);
+    }
+    if ($until) {
+      $qb->andWhere("e.$column <= :until")->setParameter('until', $until);
+    }
+    return $qb->getQuery()->getResult();
+  }
+
   /**
    * Find all entities created in given time interval.
    * @param DateTime|null $since Only entities created after this date are returned.
@@ -65,14 +84,7 @@ class BaseRepository {
    */
   public function findByCreatedAt(?DateTime $since, ?DateTime $until)
   {
-    $qb = $this->createQueryBuilder('e'); // takes care of softdelete cases
-    if ($since) {
-      $qb->andWhere('e.createdAt >= :since')->setParameter('since', $since);
-    }
-    if ($until) {
-      $qb->andWhere('e.createdAt <= :until')->setParameter('until', $until);
-    }
-    return $qb->getQuery()->getResult();
+    return $this->findByDateTimeColumn($since, $until);
   }
 
   public function persist($entity, $autoFlush = true) {
@@ -101,7 +113,7 @@ class BaseRepository {
     return $this->repository->matching($params);
   }
 
-  public function createQueryBuilder(string $alias, string $indexBy = null)
+  protected function createQueryBuilder(string $alias, string $indexBy = null)
   {
     return $this->repository->createQueryBuilder($alias, $indexBy);
   }

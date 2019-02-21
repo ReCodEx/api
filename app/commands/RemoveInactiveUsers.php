@@ -41,7 +41,10 @@ class RemoveInactiveUsers extends Command {
   }
 
   protected function execute(InputInterface $input, OutputInterface $output) {
-    if (!$this->inactivityThreshold) return;
+    if (!$this->inactivityThreshold) {
+      return;
+    }
+    
     $silent = $input->getOption('silent');
 
     $before = new DateTime();

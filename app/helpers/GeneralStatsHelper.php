@@ -109,40 +109,22 @@ class GeneralStatsHelper {
   /** @var string */
   private $inactivityThreshold;
 
-  /**
-   * @var Users
-   * @inject
-   */
+  /** @var Users */
   public $users;
 
-  /**
-   * @var Groups
-   * @inject
-   */
+  /** @var Groups */
   public $groups;
 
-  /**
-   * @var Exercises
-   * @inject
-   */
+  /** @var Exercises */
   public $exercises;
 
-  /**
-   * @var Assignments
-   * @inject
-   */
+  /** @var Assignments */
   public $assignments;
 
-  /**
-   * @var Solutions
-   * @inject
-   */
+  /** @var Solutions */
   public $solutions;
 
-  /**
-   * @var AssignmentSolutionSubmissions
-   * @inject
-   */
+  /** @var AssignmentSolutionSubmissions */
   public $assignmentSubmissions;
 
   /** @var ReferenceSolutionSubmissions */
