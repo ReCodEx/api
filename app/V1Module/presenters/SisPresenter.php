@@ -304,6 +304,40 @@ class SisPresenter extends BasePresenter {
   }
 
   /**
+   * @param array $captions List of captions [ lang => caption ].
+   * @param string Suffix expected to be appended to captions of all languages.
+   * @param Group $parentGroup The uniqueness is ensured only amongst the siblings.
+   * @return bool True if at least one caption is in conflict.
+   */
+  private function areCaptionsDuplicit(array $captions, string $suffix, Group $parentGroup) {
+    foreach ($captions as $lang => $caption) {
+      if (count($this->groups->findByName($lang, $caption . $suffix, $parentGroup->getInstance(), $parentGroup)) > 0) {
+        return true;
+      }
+    }
+  }
+
+  /**
+   * Make sure new group captions (in all languages) are unique. If not, new unique names are created by appending value of a counter.
+   * @param array $captions List of captions [ lang => caption ].
+   * @param Group $parentGroup The uniqueness is ensured only amongst the siblings.
+   */
+  private function makeCaptionsUnique(array &$captions, Group $parentGroup) {
+    // Trial and error approach to find suitable suffix to make the captions unique (starting with empty suffix).
+    $counter = 1;
+    $suffix = '';
+    while ($this->areCaptionsDuplicit($captions, $suffix, $parentGroup)) {
+      ++$counter;
+      $suffix = " [$counter]";
+    }
+
+    // Acceptable suffix was found, lets append it...
+    foreach ($captions as &$caption) {
+      $caption .= $suffix;
+    }
+  }
+
+  /**
    * Create a new group based on a SIS group
    * @POST
    * @param $courseId
@@ -332,6 +366,7 @@ class SisPresenter extends BasePresenter {
 
     $group = new Group($remoteCourse->getCourseId(), $parentGroup->getInstance(), $user, $parentGroup);
 
+    $captions = [];
     foreach (["en", "cs"] as $language) {
       // Assemble new group name from course data....
       if ($remoteCourse->getDayOfWeek() !== null &&
@@ -341,14 +376,17 @@ class SisPresenter extends BasePresenter {
         if ($remoteCourse->isFortnightly()) {
           $timeInfo .= ', ' . $this->oddWeeksToString($remoteCourse->getOddWeeks(), $language);
         }
-        $caption = sprintf("%s (%s, %s)", $remoteCourse->getCaption($language), $timeInfo, $remoteCourse->getRoom());
+        $captions[$language] = sprintf("%s (%s, %s)", $remoteCourse->getCaption($language), $timeInfo, $remoteCourse->getRoom());
       } else {
-        $caption = $remoteCourse->getCaption($language);
+        $captions[$language] = $remoteCourse->getCaption($language);
       }
+    }
 
+    $this->makeCaptionsUnique($captions, $parentGroup);
+
+    foreach ($captions as $language => $caption) {
       $localization = new LocalizedGroup($language, $caption, $remoteCourse->getAnnotation($language));
       $group->addLocalizedText($localization);
-
       $this->groups->persist($localization, false);
     }
 
