@@ -236,7 +236,9 @@ class TestGroupsPresenter extends Tester\TestCase
         'externalId' => 'external identification of exercise',
         'parentGroupId' => null,
         'publicStats' => true,
-        'isPublic' => true
+        'isPublic' => true,
+        'hasThreshold' => false,
+        'isOrganizational' => false,
       ]
     );
     $response = $this->presenter->run($request);
