@@ -2,6 +2,7 @@
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongCredentialsException;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
@@ -212,7 +213,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     Assert::throws(function () use ($request) {
         $this->presenter->run($request);
-    }, BadRequestException::class, "Bad Request - Simple registration is disabled in configuration.");
+    }, ForbiddenRequestException::class);
   }
 
   public function testCreateAccountIcorrectInstance()

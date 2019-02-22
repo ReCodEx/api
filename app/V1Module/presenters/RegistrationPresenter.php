@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
@@ -18,6 +19,7 @@ use App\Helpers\ExternalLogin\ExternalServiceAuthenticator;
 use App\Helpers\EmailVerificationHelper;
 use App\Helpers\RegistrationConfig;
 use App\Security\Roles;
+use App\Security\ACL\IUserPermissions;
 use Nette\Http\IResponse;
 use ZxcvbnPhp\Zxcvbn;
 
@@ -75,6 +77,12 @@ class RegistrationPresenter extends BasePresenter {
   public $userViewFactory;
 
   /**
+   * @var IUserPermissions
+   * @inject
+   */
+  public $userAcl;
+
+  /**
    * @var RegistrationConfig
    * @inject
    */
@@ -97,6 +105,15 @@ class RegistrationPresenter extends BasePresenter {
     return $instance;
   }
 
+  public function checkCreateAccount() {
+    if (!$this->registrationConfig->isEnabled()) {
+      // If the registration is not enabled in general, creator must be logged in and have priviledges.
+      if (!$this->userAcl->canCreate()) {
+        throw new ForbiddenRequestException();
+      }
+    }
+  }
+
   /**
    * Create a user account
    * @POST
@@ -113,10 +130,6 @@ class RegistrationPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   public function actionCreateAccount() {
-    if (!$this->registrationConfig->isEnabled()) {
-      throw new BadRequestException("Simple registration is disabled in configuration.");
-    }
-
     $req = $this->getRequest();
 
     // check if the email is free
