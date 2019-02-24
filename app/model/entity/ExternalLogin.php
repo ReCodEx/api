@@ -13,6 +13,7 @@ use Nette\Utils\Validators;
  * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"auth_service", "external_id"})})
  *
  * @method string getExternalId()
+ * @method string getAuthService()
  * @method User getUser()
  */
 class ExternalLogin

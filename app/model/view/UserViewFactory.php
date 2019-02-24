@@ -6,6 +6,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Security\ACL\IUserPermissions;
+use App\Security\Identity;
 
 
 /**
@@ -24,11 +25,31 @@ class UserViewFactory {
    */
   public $logins;
 
-  public function __construct(IUserPermissions $userAcl, Logins $logins) {
+  /** @var User */
+  private $loggedInUser = null;
+
+  public function __construct(IUserPermissions $userAcl, Logins $logins, \Nette\Security\User $user) {
     $this->userAcl = $userAcl;
     $this->logins = $logins;
-  }
+    $identity = $user->getIdentity();
+    if ($identity !== null && $identity instanceof Identity) {
+      $this->loggedInUser = $identity->getUserData();
+    }
+ }
 
+  /**
+   * Get a structure with external IDs of an user, that the logged user may see.
+   * @param User $user Who's external IDs are returned.
+   * @return array
+   */
+  private function getExternalIds(User $user) {
+    if (!$this->loggedInUser) {
+      return [];
+    }
+
+    $filter = array_keys($this->loggedInUser->getConsolidatedExternalLogins());
+    return $user->getConsolidatedExternalLogins($filter);
+  }
 
   /**
    * @param User $user
@@ -63,6 +84,7 @@ class UserViewFactory {
         "isLocal" => $user->hasLocalAccount(),
         "isExternal" => $user->hasExternalAccounts(),
         "isAllowed" => $user->isAllowed(),
+        "externalIds" => $this->getExternalIds($user),
       ];
     }
 

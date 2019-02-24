@@ -332,6 +332,50 @@ class User
   }
 
   /**
+   * Return an associative array [ service => externalId ] for the user.
+   * If there are multiple IDs for the same service, they are concatenated in an array.
+   * If a filter is provided, only services specified on the filter list are yielded.
+   * @param array|null A list of services to be included in the result. Null = all services.
+   * @return array
+   */
+  public function getConsolidatedExternalLogins(?array $filter = null)
+  {
+    if ($filter === []) {
+      return [];  // why should we bother...
+    }
+
+    // assemble the result structure [ service => ids ]
+    $res = [];
+    foreach ($this->externalLogins as $externalLogin) {
+      if (empty($res[$externalLogin->getAuthService()])) {
+        $res[$externalLogin->getAuthService()] = [];
+      }
+      $res[$externalLogin->getAuthService()][] = $externalLogin->getExternalId();
+    }
+
+    // single IDs (per service) are turned into scalars
+    foreach ($res as &$externalIds) {
+      if (count($externalIds) === 1) {
+        $externalIds = reset($externalIds);
+      }
+    }
+    unset($externalIds);  // make sure this reference is not accidentaly reused
+
+    // filter the list if necessary
+    if ($filter !== null) {
+      $resFiltered = [];
+      foreach ($filter as $service) {
+        if (!empty($res[$service])) {
+          $resFiltered[$service] = $res[$service];
+        }
+      }
+      return $resFiltered;
+    }
+
+    return $res;
+  }
+
+  /**
    * Return date and time when the user was created.
    * @return DateTime
    */
