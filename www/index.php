@@ -4,7 +4,7 @@
 header("Access-Control-Allow-Origin: *");
 $acReqHeaders = (!empty($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
   ? $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-  : "headers, Authorization, Accept-Language, Content-Type";
+  : "headers, Authorization, Accept-Language, Content-Type, X-ReCodEx-lang";
 header("Access-Control-Allow-Headers: $acReqHeaders");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS");
 unset($acReqHeaders);  // Make sure we do not leave any mess at global scope
