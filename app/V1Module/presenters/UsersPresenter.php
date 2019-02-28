@@ -327,6 +327,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="vimMode", validation="bool", description="Flag if vim keybinding is used", required=false)
    * @Param(type="post", name="openedSidebar", validation="bool", description="Flag if the sidebar of the web-app should be opened by default.", required=false)
    * @Param(type="post", name="defaultLanguage", validation="string", description="Default language of UI", required=false)
+   * @Param(type="post", name="defaultPage", validation="string", description="Default page of the UI", required=false)
    * @Param(type="post", name="useGravatar", validation="bool", description="Flag if the UI should display gravatars or not", required=false)
    * @Param(type="post", name="newAssignmentEmails", validation="bool", description="Flag if email should be sent to user when new assignment was created", required=false)
    * @Param(type="post", name="assignmentDeadlineEmails", validation="bool", description="Flag if email should be sent to user if assignment deadline is nearby", required=false)
@@ -350,7 +351,9 @@ class UsersPresenter extends BasePresenter {
     $openedSidebar = $req->getPost("openedSidebar") !== null
       ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getOpenedSidebar();
-    $defaultLanguage = $req->getPost("defaultLanguage") !== null ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage();
+    $defaultLanguage = trim($req->getPost("defaultLanguage") !== null ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage());
+    $defaultPage = trim($req->getPost("defaultPage") !== null ? $req->getPost("defaultPage") : $settings->getDefaultPage());
+    $defaultPage = $defaultPage === '' ? null : $defaultPage;  // empty string is interpreted as null
     $newAssignmentEmails = $req->getPost("newAssignmentEmails") !== null
       ? filter_var($req->getPost("newAssignmentEmails"), FILTER_VALIDATE_BOOLEAN)
       : $settings->getNewAssignmentEmails();
@@ -374,6 +377,7 @@ class UsersPresenter extends BasePresenter {
     $settings->setVimMode($vimMode);
     $settings->setOpenedSidebar($openedSidebar);
     $settings->setDefaultLanguage($defaultLanguage);
+    $settings->setDefaultPage($defaultPage);
     $settings->setNewAssignmentEmails($newAssignmentEmails);
     $settings->setAssignmentDeadlineEmails($assignmentDeadlineEmails);
     $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
