@@ -12,6 +12,7 @@ use JsonSerializable;
  * @method bool getVimMode()
  * @method bool getOpenedSidebar()
  * @method bool getUseGravatar()
+ * @method ?string getDefaultPage()
  * @method string getDefaultLanguage()
  * @method bool getNewAssignmentEmails()
  * @method bool getAssignmentDeadlineEmails()
@@ -22,7 +23,8 @@ use JsonSerializable;
  * @method setVimMode(bool $vimMode)
  * @method setOpenedSidebar(bool $opened)
  * @method setUseGravatar(bool $use)
- * @method setDefaultLanguage(bool $language)
+ * @method setDefaultPage(?string $page)
+ * @method setDefaultLanguage(string $language)
  * @method setNewAssignmentEmails(bool $flag)
  * @method setAssignmentDeadlineEmails(bool $flag)
  * @method setSubmissionEvaluatedEmails(bool $flag)
@@ -38,13 +40,15 @@ class UserSettings implements JsonSerializable
     bool $vimMode = false,
     string $defaultLanguage = "en",
     bool $openedSidebar = true,
-    bool $useGravatar = true
+    bool $useGravatar = true,
+    string $defaultPage = null
   ) {
     $this->darkTheme = $darkTheme;
     $this->vimMode = $vimMode;
     $this->defaultLanguage = $defaultLanguage;
     $this->openedSidebar = $openedSidebar;
     $this->useGravatar = $useGravatar;
+    $this->defaultPage = $defaultPage;
 
     $this->newAssignmentEmails = true;
     $this->assignmentDeadlineEmails = true;
@@ -71,7 +75,7 @@ class UserSettings implements JsonSerializable
   protected $vimMode;
 
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", length=32)
    */
   protected $defaultLanguage;
 
@@ -84,6 +88,12 @@ class UserSettings implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $useGravatar;
+
+  /**
+   * @ORM\Column(type="string", nullable=true)
+   * Default page identifier (set and interpreted by the UI only).
+   */
+  protected $defaultPage = null;
 
 
   /*******************
@@ -123,6 +133,7 @@ class UserSettings implements JsonSerializable
       "defaultLanguage" => $this->defaultLanguage,
       "openedSidebar" => $this->openedSidebar,
       "useGravatar" => $this->useGravatar,
+      "defaultPage" => $this->defaultPage,
       "newAssignmentEmails" => $this->newAssignmentEmails,
       "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
       "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
