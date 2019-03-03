@@ -53,6 +53,7 @@ class BoxService
       StringToArrayBox::$BOX_TYPE => StringToArrayBox::class,
       FilesNamesBox::$BOX_TYPE => FilesNamesBox::class,
       CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
+      PrologCompilationBox::$BOX_TYPE => PrologCompilationBox::class,
     ];
   }
 
