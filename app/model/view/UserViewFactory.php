@@ -40,23 +40,28 @@ class UserViewFactory {
   /**
    * Get a structure with external IDs of an user, that the logged user may see.
    * @param User $user Who's external IDs are returned.
+   * @param bool $canViewAllExternalIds
    * @return array
    */
-  private function getExternalIds(User $user) {
-    if (!$this->loggedInUser) {
-      return [];
+  private function getExternalIds(User $user, bool $canViewAllExternalIds = false) {
+    if (!$canViewAllExternalIds) {
+      if (!$this->loggedInUser) {
+        return [];
+      }
+      $filter = array_keys($this->loggedInUser->getConsolidatedExternalLogins());
+    } else {
+      $filter = null; // no filterings
     }
-
-    $filter = array_keys($this->loggedInUser->getConsolidatedExternalLogins());
     return $user->getConsolidatedExternalLogins($filter);
   }
 
   /**
    * @param User $user
    * @param bool $canViewPrivate
+   * @param bool $canViewAllExternalIds
    * @return array
    */
-  private function getUserData(User $user, bool $canViewPrivate) {
+  private function getUserData(User $user, bool $canViewPrivate, bool $canViewAllExternalIds = false) {
     $privateData = null;
     if ($canViewPrivate) {
       $login = $this->logins->findByUserId($user->getId());
@@ -84,7 +89,7 @@ class UserViewFactory {
         "isLocal" => $user->hasLocalAccount(),
         "isExternal" => $user->hasExternalAccounts(),
         "isAllowed" => $user->isAllowed(),
-        "externalIds" => $this->getExternalIds($user),
+        "externalIds" => $this->getExternalIds($user, $canViewAllExternalIds),
       ];
     }
 
@@ -104,7 +109,7 @@ class UserViewFactory {
    * @return array
    */
   public function getFullUser(User $user) {
-    return $this->getUserData($user, true);
+    return $this->getUserData($user, true, true);
   }
 
   /**
