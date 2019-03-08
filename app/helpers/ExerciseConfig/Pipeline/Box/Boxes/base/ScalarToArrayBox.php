@@ -92,6 +92,12 @@ abstract class ScalarToArrayBox extends Box
    * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
+    if ($this->getInputPortValue(self::$IN_PORT_KEY)->isEmpty()) {
+      // pointless usage of box, but hell, we have to be ready for that
+      $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue(null);
+      return [];
+    }
+
     // will not produce tasks, only convert scalar value into single-item array
     $in = $this->getInputPortValue(self::$IN_PORT_KEY)->getValue();
     $this->getOutputPortValue(self::$OUT_PORT_KEY)->setValue([ $in ]);
