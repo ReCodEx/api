@@ -40,6 +40,10 @@ abstract class FetchBox extends Box
    * @throws ExerciseConfigException
    */
   protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array {
+    if ($remote->isEmpty()) {
+      // nothing to be downloaded here
+      return [];
+    }
 
     // variable is empty, this means there is no request to rename fetched
     // files, therefore we have to fill variable with remote file names
