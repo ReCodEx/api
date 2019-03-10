@@ -14,6 +14,7 @@ use App\Helpers\EvaluationResults as ER;
  * @ORM\Entity
  *
  * @method ReferenceExerciseSolution getReferenceSolution()
+ * @method Collection getFailures()
  */
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
@@ -49,6 +50,12 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       $evaluationData = $this->evaluation->getData(true, true, true);
     }
 
+    $failures = $this->getFailures()->filter(function (SubmissionFailure $failure) {
+      return $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR;
+    })->map(function (SubmissionFailure $failure) {
+      return $failure->toSimpleArray();
+    })->toArray();
+
     return [
       "id" => $this->id,
       "referenceSolutionId" => $this->referenceSolution->getId(),
@@ -57,7 +64,8 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       "evaluation" => $evaluationData,
       "submittedAt" => $this->submittedAt->getTimestamp(),
       "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
-      "isDebug" => $this->isDebug
+      "isDebug" => $this->isDebug,
+      "failures" => $failures
     ];
   }
 
