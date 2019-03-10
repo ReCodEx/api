@@ -14,6 +14,7 @@ use App\Helpers\EvaluationStatus as ES;
  * @ORM\Entity
  *
  * @method AssignmentSolution getAssignmentSolution()
+ * @method Collection getFailures()
  */
 class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {

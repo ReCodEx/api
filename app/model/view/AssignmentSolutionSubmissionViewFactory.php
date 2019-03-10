@@ -3,6 +3,7 @@
 namespace App\Model\View;
 
 use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\SubmissionFailure;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Helpers\EvaluationStatus\EvaluationStatus;
 
@@ -37,6 +38,12 @@ class AssignmentSolutionSubmissionViewFactory {
       $evaluationData = $submission->getEvaluation()->getData($canViewDetails, $canViewValues, $canViewJudgeOutput);
     }
 
+    $failures = $submission->getFailures()->filter(function (SubmissionFailure $failure) {
+      return $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR;
+    })->map(function (SubmissionFailure $failure) {
+      return $failure->toSimpleArray();
+    })->toArray();
+
     return [
       "id" => $submission->getId(),
       "assignmentSolutionId" => $submission->getAssignmentSolution()->getId(),
@@ -45,7 +52,8 @@ class AssignmentSolutionSubmissionViewFactory {
       "evaluation" => $evaluationData,
       "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
       "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null,
-      "isDebug" => $submission->isDebug()
+      "isDebug" => $submission->isDebug(),
+      "failures" => $failures
     ];
   }
 }
