@@ -13,6 +13,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method string getDescription()
  * @method DateTime getCreatedAt()
  * @method string getResolutionNote()
+ * @method string getType()
  */
 class SubmissionFailure implements JsonSerializable {
 
@@ -119,7 +120,16 @@ class SubmissionFailure implements JsonSerializable {
     return $this->assignmentSolutionSubmission ?? $this->referenceSolutionSubmission;
   }
 
-  function jsonSerialize() {
+  public function toSimpleArray() {
+    return [
+      "description" => $this->description,
+      "createdAt" => $this->createdAt->getTimestamp(),
+      "resolvedAt" => $this->resolvedAt ? $this->resolvedAt->getTimestamp() : null,
+      "resolutionNote" => $this->resolutionNote
+    ];
+  }
+
+  public function jsonSerialize() {
     $assignmentSolution = $this->assignmentSolutionSubmission ? $this->assignmentSolutionSubmission->getAssignmentSolution() : null;
     $assignment = $assignmentSolution ? $assignmentSolution->getAssignment() : null;
     $referenceSolution = $this->referenceSolutionSubmission ? $this->referenceSolutionSubmission->getReferenceSolution() : null;
