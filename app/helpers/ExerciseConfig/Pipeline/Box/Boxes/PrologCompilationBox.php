@@ -47,7 +47,7 @@ class PrologCompilationBox extends CompilationBox
   }
 
   /**
-   * JudgeNormalBox constructor.
+   * Constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
@@ -110,14 +110,16 @@ class PrologCompilationBox extends CompilationBox
       $args = array_merge($args,
         $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
+
+    array_push($args,
+      "-o",
+      $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
+      "-c"
+    );
+
     $task->setCommandArguments(
       array_merge(
         $args,
-        [
-          "-o",
-          $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-          "-c"
-        ],
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
         [ $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR) ]
