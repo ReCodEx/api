@@ -51,7 +51,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     }
 
     $failures = $this->getFailures()->filter(function (SubmissionFailure $failure) {
-      return $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR;
+      return $failure->isConfigErrorFailure();
     })->map(function (SubmissionFailure $failure) {
       return $failure->toSimpleArray();
     })->toArray();

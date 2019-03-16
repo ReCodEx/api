@@ -40,6 +40,11 @@ class SubmissionFailure implements JsonSerializable {
   const TYPE_CONFIG_ERROR = "config_error";
 
   /**
+   * The exercise configuration is invalid and it cannot be compiled, due to user error
+   */
+  const TYPE_SOFT_CONFIG_ERROR = "soft_config_error";
+
+  /**
    * @ORM\Id
    * @ORM\Column(type="guid")
    * @ORM\GeneratedValue(strategy="UUID")
@@ -118,6 +123,10 @@ class SubmissionFailure implements JsonSerializable {
 
   public function getSubmission(): Submission {
     return $this->assignmentSolutionSubmission ?? $this->referenceSolutionSubmission;
+  }
+
+  public function isConfigErrorFailure(): bool {
+    return $this->type === self::TYPE_CONFIG_ERROR || $this->type === self::TYPE_SOFT_CONFIG_ERROR;
   }
 
   public function toSimpleArray() {

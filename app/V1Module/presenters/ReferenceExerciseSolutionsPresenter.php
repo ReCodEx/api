@@ -3,6 +3,8 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\ExerciseCompilationException;
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\InternalServerErrorException;
 use App\Exceptions\InvalidArgumentException;
@@ -475,16 +477,22 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     try {
       $generatorResult = $this->jobConfigGenerator
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
-    } catch (Exception $e) {
+    } catch (ExerciseConfigException | ExerciseCompilationException $e) {
       $submission = new ReferenceSolutionSubmission($referenceSolution, null,
         "", $this->getCurrentUser(), $isDebug);
       $this->referenceSubmissions->persist($submission, false);
 
-      $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_CONFIG_ERROR, $e->getMessage(), $submission);
+      $failureType = $e instanceof ExerciseCompilationSoftException ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
+      $sendEmail = $e instanceof  ExerciseCompilationSoftException ? false : true;
+
+      $failure = SubmissionFailure::forReferenceSubmission($failureType, $e->getMessage(), $submission);
       $this->submissionFailures->persist($failure);
 
-      $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
-      $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
+      if ($sendEmail) {
+        $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
+        $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
+      }
+
       throw $e; // rethrow
     }
 

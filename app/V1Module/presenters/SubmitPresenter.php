@@ -2,6 +2,8 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ExerciseCompilationException;
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\JobConfigStorageException;
@@ -254,15 +256,20 @@ class SubmitPresenter extends BasePresenter {
    * @param Exception $exception
    * @param string $failureType
    * @param string $reportType
+   * @param bool $sendEmail
    * @throws Exception
    */
   private function submissionFailed(AssignmentSolutionSubmission $submission, Exception $exception,
                                     string $failureType = SubmissionFailure::TYPE_BROKER_REJECT,
-                                    string $reportType = FailureHelper::TYPE_BACKEND_ERROR) {
+                                    string $reportType = FailureHelper::TYPE_BACKEND_ERROR,
+                                    bool $sendEmail = true) {
     $failure = SubmissionFailure::forSubmission($failureType, $exception->getMessage(), $submission);
     $this->submissionFailures->persist($failure);
-    $reportMessage = "Submission '{$submission->getId()}' errored - {$exception->getMessage()}";
-    $this->failureHelper->report($reportType, $reportMessage);
+
+    if ($sendEmail) {
+      $reportMessage = "Submission '{$submission->getId()}' errored - {$exception->getMessage()}";
+      $this->failureHelper->report($reportType, $reportMessage);
+    }
     throw $exception; // rethrow
   }
 
@@ -297,11 +304,14 @@ class SubmitPresenter extends BasePresenter {
           $solution->getAssignment(),
           $solution->getSolution()->getRuntimeEnvironment(),
           $compilationParams);
-    } catch (Exception $e) {
+    } catch (ExerciseConfigException | ExerciseCompilationException $e) {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
-      $this->submissionFailed($submission, $e, SubmissionFailure::TYPE_CONFIG_ERROR,
-        FailureHelper::TYPE_API_ERROR);
+
+      $failureType = $e instanceof ExerciseCompilationSoftException ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
+      $sendEmail = $e instanceof  ExerciseCompilationSoftException ? false : true;
+
+      $this->submissionFailed($submission, $e, $failureType, FailureHelper::TYPE_API_ERROR, $sendEmail);
       // this return is here just to fool static analysis,
       // submissionFailed method throws an exception and therefore following return is never reached
       return [];

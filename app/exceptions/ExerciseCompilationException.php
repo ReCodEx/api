@@ -13,8 +13,9 @@ class ExerciseCompilationException extends ApiException {
   /**
    * Create instance with further description.
    * @param string $msg description
+   * @param int $code
    */
-  public function __construct(string $msg = 'Please contact system administrator') {
-    parent::__construct("Exercise compilation error - $msg", IResponse::S500_INTERNAL_SERVER_ERROR);
+  public function __construct(string $msg = 'Please contact system administrator', $code = IResponse::S500_INTERNAL_SERVER_ERROR) {
+    parent::__construct("Exercise compilation error - $msg", $code);
   }
 }
