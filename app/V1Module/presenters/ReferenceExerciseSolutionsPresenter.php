@@ -477,7 +477,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     try {
       $generatorResult = $this->jobConfigGenerator
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
-    } catch (ExerciseConfigException | ExerciseCompilationException $e) {
+    } catch (ExerciseConfigException | ExerciseCompilationException | JobConfigStorageException $e) {
       $submission = new ReferenceSolutionSubmission($referenceSolution, null,
         "", $this->getCurrentUser(), $isDebug);
       $this->referenceSubmissions->persist($submission, false);
