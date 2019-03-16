@@ -340,7 +340,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws SubmissionEvaluationFailedException
    * @throws ParseException
    * @throws BadRequestException
-   * @throws SubmissionFailedException
    */
   public function actionSubmit(string $exerciseId) {
     $exercise = $this->exercises->findOrThrow($exerciseId);
@@ -431,7 +430,6 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws ParseException
    * @throws BadRequestException
-   * @throws SubmissionFailedException
    * @throws NotFoundException
    */
   public function actionResubmitAll($exerciseId) {
@@ -459,7 +457,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @return array
    * @throws ForbiddenRequestException
    * @throws ParseException
-   * @throws SubmissionFailedException
+   * @throws Exception
    */
   private function finishSubmission(
       ReferenceExerciseSolution $referenceSolution,
@@ -485,9 +483,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_CONFIG_ERROR, $e->getMessage(), $submission);
       $this->submissionFailures->persist($failure);
 
-      $reportMessage = "Failed to generate job config for reference submission '{$submission->getId()}''";
+      $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
       $this->failureHelper->report(FailureHelper::TYPE_API_ERROR, $reportMessage);
-      throw new SubmissionFailedException($e->getMessage());
+      throw $e; // rethrow
     }
 
     foreach ($hwGroups->getValues() as $hwGroup) {

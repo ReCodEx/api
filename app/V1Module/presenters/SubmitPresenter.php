@@ -201,7 +201,6 @@ class SubmitPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
    * @throws NotFoundException
-   * @throws SubmissionFailedException
    * @throws ParseException
    */
   public function actionSubmit(string $id) {
@@ -252,21 +251,19 @@ class SubmitPresenter extends BasePresenter {
 
   /**
    * @param AssignmentSolutionSubmission $submission
-   * @param string $message
+   * @param Exception $exception
    * @param string $failureType
    * @param string $reportType
-   * @param string $reportMessage
-   * @throws SubmissionFailedException
+   * @throws Exception
    */
-  private function submissionFailed(AssignmentSolutionSubmission $submission, string $message,
+  private function submissionFailed(AssignmentSolutionSubmission $submission, Exception $exception,
                                     string $failureType = SubmissionFailure::TYPE_BROKER_REJECT,
-                                    string $reportType = FailureHelper::TYPE_BACKEND_ERROR,
-                                    string $reportMessage = null) {
-    $failure = SubmissionFailure::forSubmission($failureType, $message, $submission);
+                                    string $reportType = FailureHelper::TYPE_BACKEND_ERROR) {
+    $failure = SubmissionFailure::forSubmission($failureType, $exception->getMessage(), $submission);
     $this->submissionFailures->persist($failure);
-    $reportMessage = $reportMessage ?? "Failed to send submission {$submission->getId()} to the broker";
+    $reportMessage = "Submission '{$submission->getId()}' errored - {$exception->getMessage()}";
     $this->failureHelper->report($reportType, $reportMessage);
-    throw new SubmissionFailedException($message);
+    throw $exception; // rethrow
   }
 
   /**
@@ -276,8 +273,8 @@ class SubmitPresenter extends BasePresenter {
    * @return array The response that can be sent to the client
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @throws SubmissionFailedException
    * @throws ParseException
+   * @throws Exception
    */
   private function finishSubmission(AssignmentSolution $solution, bool $isDebug = false) {
     if ($solution->getId() === null) {
@@ -303,9 +300,8 @@ class SubmitPresenter extends BasePresenter {
     } catch (Exception $e) {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
-      $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,
-        FailureHelper::TYPE_API_ERROR,
-        "Failed to generate job config for {$submission->getId()}");
+      $this->submissionFailed($submission, $e, SubmissionFailure::TYPE_CONFIG_ERROR,
+        FailureHelper::TYPE_API_ERROR);
       // this return is here just to fool static analysis,
       // submissionFailed method throws an exception and therefore following return is never reached
       return [];
@@ -326,7 +322,7 @@ class SubmitPresenter extends BasePresenter {
         $generatorResult->getJobConfig()
       );
     } catch (Exception $e) {
-      $this->submissionFailed($submission, $e->getMessage());
+      $this->submissionFailed($submission, $e);
     }
 
     // If the submission was accepted we now have the URL where to look for the results later -> persist it
@@ -361,7 +357,8 @@ class SubmitPresenter extends BasePresenter {
    * @Param(type="post", name="debug", validation="bool", required=false, "Debugging resubmit with all logs and outputs")
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @throws SubmissionFailedException
+   * @throws NotFoundException
+   * @throws ParseException
    */
   public function actionResubmit(string $id) {
     $req = $this->getRequest();
@@ -384,7 +381,8 @@ class SubmitPresenter extends BasePresenter {
    * @param string $id Identifier of the assignment
    * @throws ForbiddenRequestException
    * @throws InvalidArgumentException
-   * @throws SubmissionFailedException
+   * @throws NotFoundException
+   * @throws ParseException
    */
   public function actionResubmitAll(string $id) {
     $assignment = $this->assignments->findOrThrow($id);

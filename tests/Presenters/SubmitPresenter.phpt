@@ -1,6 +1,7 @@
 <?php
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\BrokerProxy;
 use App\Helpers\FileServerProxy;
@@ -277,7 +278,7 @@ class TestSubmitPresenter extends Tester\TestCase
     /** @var Mockery\Mock | JobConfig\Generator $mockGenerator */
     $mockGenerator = Mockery::mock(JobConfig\Generator::class);
     $mockGenerator->shouldReceive("generateJobConfig")->withAnyArgs()
-      ->andThrow(new \App\Exceptions\ExerciseConfigException());
+      ->andThrow(new ExerciseConfigException());
     $this->presenter->jobConfigGenerator = $mockGenerator;
 
     // mock fileserver and broker proxies
@@ -303,7 +304,7 @@ class TestSubmitPresenter extends Tester\TestCase
 
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
-    }, SubmissionFailedException::class);
+    }, ExerciseConfigException::class);
 
     $newFailureCount = count($this->presenter->submissionFailures->findAll());
     Assert::same($failureCount + 1, $newFailureCount);
