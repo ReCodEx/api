@@ -2,7 +2,7 @@
 
 include '../../../bootstrap.php';
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FetchFilesBox;
@@ -40,7 +40,7 @@ class TestFetchFilesBox extends Tester\TestCase
     Assert::exception(function () {
       $params = CompilationParams::create(["2.in"]);
       $this->box->compile($params);
-    }, ExerciseConfigException::class, "Exercise configuration error - File '2.in' is already defined by author of the exercise");
+    }, ExerciseCompilationException::class, "Exercise compilation error - File '2.in' is already defined by author of the exercise");
   }
 
   public function testCorrect() {

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\JobConfigStorageException;
 use App\Helpers\Evaluation\IExercise;
@@ -79,6 +80,7 @@ class Generator {
    * @return GeneratorResult
    * @throws ExerciseConfigException
    * @throws JobConfigStorageException
+   * @throws ExerciseCompilationException
    */
   public function generateJobConfig(User $user, IExercise $exerciseAssignment,
       RuntimeEnvironment $runtimeEnvironment, CompilationParams $params): GeneratorResult {

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -37,6 +38,7 @@ abstract class FetchBox extends Box
    * @param Variable $local
    * @param CompilationParams $params
    * @return Task[]
+   * @throws ExerciseCompilationException
    * @throws ExerciseConfigException
    */
   protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array {
@@ -58,7 +60,7 @@ abstract class FetchBox extends Box
 
       // check if soon-to-be fetched file does not collide with files given by user
       if (in_array($basename, $params->getFiles())) {
-        throw new ExerciseConfigException("File '{$basename}' is already defined by author of the exercise");
+        throw new ExerciseCompilationException("File '{$basename}' is already defined by author of the exercise");
       }
 
       // create task

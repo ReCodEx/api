@@ -2,7 +2,7 @@
 
 include '../../bootstrap.php';
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
@@ -214,7 +214,7 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::exception(function () {
       $context = CompilationContext::create(new ExerciseConfig(), new VariablesTable(), [], self::$exerciseFiles, self::$testsNames, self::$environment);
       $this->merger->merge($context, CompilationParams::create());
-    }, ExerciseConfigException::class);
+    }, ExerciseCompilationException::class);
   }
 
   public function testEmptyPipelines() {
@@ -237,7 +237,7 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::exception(function () use ($config, $envVariablesTable) {
       $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
       $this->merger->merge($context, CompilationParams::create());
-    }, ExerciseConfigException::class);
+    }, ExerciseCompilationException::class);
   }
 
   public function testNonExistingPipeline() {
@@ -248,7 +248,7 @@ class TestPipelinesMerger extends Tester\TestCase
     Assert::exception(function () use ($config, $envVariablesTable) {
       $context = CompilationContext::create($config, $envVariablesTable, [], self::$exerciseFiles, self::$testsNames, self::$environment);
       $this->merger->merge($context, CompilationParams::create());
-    }, ExerciseConfigException::class);
+    }, ExerciseCompilationException::class);
   }
 
 

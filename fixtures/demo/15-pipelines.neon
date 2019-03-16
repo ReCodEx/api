@@ -71,9 +71,9 @@ App\Model\Entity\PipelineConfig:
                   portsIn: []
                   portsOut:
                     input:
-                       type: file
-                       value: input-file
-                  type: file-in
+                       type: file[]
+                       value: input-files
+                  type: files-in
                 - name: test
                   portsIn: []
                   portsOut:

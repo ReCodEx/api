@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -110,6 +111,7 @@ class JudgeBox extends Box
    * Determine and return judge execution binary.
    * @return array pair of binary and list of arguments
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function getJudgeBinaryAndArgs(): array {
     if ($this->hasInputPortValue(self::$CUSTOM_JUDGE_PORT_KEY) &&
@@ -158,7 +160,7 @@ class JudgeBox extends Box
     } else if (!empty($judgeTypes[$judgeType])) {
       return $judgeTypes[$judgeType];
     } else {
-      throw new ExerciseConfigException("Unknown judge type");
+      throw new ExerciseCompilationException("Unknown judge type");
     }
   }
 
@@ -167,6 +169,7 @@ class JudgeBox extends Box
    * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function compile(CompilationParams $params): array {
     $task = new Task();

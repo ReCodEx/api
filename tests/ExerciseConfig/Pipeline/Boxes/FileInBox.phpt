@@ -2,7 +2,7 @@
 
 include '../../../bootstrap.php';
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxMeta;
 use App\Helpers\ExerciseConfig\Pipeline\Box\FileInBox;
@@ -41,7 +41,7 @@ class TestFileInBox extends Tester\TestCase
     Assert::exception(function () {
       $params = CompilationParams::create(["input.in"]);
       $this->box->compile($params);
-    }, ExerciseConfigException::class, "Exercise configuration error - File 'input.in' is already defined by author of the exercise");
+    }, ExerciseCompilationException::class, "Exercise compilation error - File 'input.in' is already defined by author of the exercise");
   }
 
   public function testRemoteCorrect() {

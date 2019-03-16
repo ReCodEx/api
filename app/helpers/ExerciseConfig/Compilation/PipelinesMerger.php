@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
@@ -254,6 +255,7 @@ class PipelinesMerger {
    * @param CompilationParams $params
    * @return MergeTree new instance of merge tree
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function processPipeline(string $testId, PipelineVars $pipelineVars,
       CompilationContext $context, CompilationParams $params): MergeTree {
@@ -265,7 +267,7 @@ class PipelinesMerger {
       $pipelineConfig = $this->pipelinesCache->getNewPipelineConfig($pipelineId);
       $pipelineFiles = $pipelineEntity->getHashedSupplementaryFiles();
     } catch (NotFoundException $e) {
-      throw new ExerciseConfigException("Pipeline '$pipelineId' not found in environment");
+      throw new ExerciseCompilationException("Pipeline '$pipelineId' not found in environment");
     }
 
     // build tree for given pipeline
@@ -287,6 +289,7 @@ class PipelinesMerger {
    * @param CompilationParams $params
    * @return MergeTree
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function processTest(string $testId, Test $test, CompilationContext $context,
       CompilationParams $params): MergeTree {
@@ -298,7 +301,7 @@ class PipelinesMerger {
 
     // check if there are any pipelines in specified environment
     if (count($testPipelines) === 0) {
-      throw new ExerciseConfigException("Exercise configuration does not specify any pipelines for environment '$runtimeEnvironmentId' and test '$testId'");
+      throw new ExerciseCompilationException("Exercise configuration does not specify any pipelines for environment '$runtimeEnvironmentId' and test '$testId'");
     }
 
     // go through all pipelines and merge their data boxes into resulting array
@@ -321,17 +324,18 @@ class PipelinesMerger {
    * @param CompilationParams $params
    * @return MergeTree[]
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function merge(CompilationContext $context, CompilationParams $params): array {
     if (count($context->getExerciseConfig()->getTests()) === 0) {
-      throw new ExerciseConfigException("Exercise configuration does not specify any tests");
+      throw new ExerciseCompilationException("Exercise configuration does not specify any tests");
     }
 
     $tests = array();
     foreach ($context->getExerciseConfig()->getTests() as $testId => $test) {
       // find test identification in tests names array and retrieve test name
       if (!array_key_exists($testId, $context->getTestsNames())) {
-        throw new ExerciseConfigException("Test with id '{$testId}' does not exist in exercise.");
+        throw new ExerciseCompilationException("Test with id '{$testId}' does not exist in exercise.");
       }
       $testName = $context->getTestsNames()[$testId];
 

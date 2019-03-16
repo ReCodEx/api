@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -106,6 +107,7 @@ class JoinPipelinesBox extends Box
    * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function compile(CompilationParams $params): array {
     /**
@@ -131,7 +133,7 @@ class JoinPipelinesBox extends Box
     if ($inputVariable->isValueArray() && $outputVariable->isValueArray()) {
       // both variable and input variable are arrays
       if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
-        throw new ExerciseConfigException("Different count of remote variables and local variables in box '{$this->getName()}'");
+        throw new ExerciseCompilationException("Different count of remote variables and local variables in box '{$this->getName()}'");
       }
 
       $inputs = $inputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR);
@@ -141,7 +143,7 @@ class JoinPipelinesBox extends Box
       $inputs = [$inputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR)];
       $outputs = [$outputVariable->getDirPrefixedValue(ConfigParams::$SOURCE_DIR)];
     } else {
-      throw new ExerciseConfigException("Incompatible types of variables in joining box '{$this->getName()}'");
+      throw new ExerciseCompilationException("Incompatible types of variables in joining box '{$this->getName()}'");
     }
 
     // better be safe
