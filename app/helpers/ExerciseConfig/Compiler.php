@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ExerciseCompilationException;
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
@@ -62,7 +63,7 @@ class Compiler {
     // check submitted files if they are unique
     $uniqueFiles = array_unique($params->getFiles());
     if (count($params->getFiles()) !== count($uniqueFiles)) {
-      throw new ExerciseCompilationException("Submitted files contains two or more files with the same name.");
+      throw new ExerciseCompilationSoftException("Submitted files contains two or more files with the same name.");
     }
 
     if ($exercise->getExerciseConfig() === null) {

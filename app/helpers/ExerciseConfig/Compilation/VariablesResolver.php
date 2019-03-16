@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Compilation;
 
 use App\Exceptions\ExerciseCompilationException;
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
@@ -38,7 +39,7 @@ class VariablesResolver {
     // but user which submitted solution did not provide the value for reference
     $reference = $variable->getReference();
     if (!$params->getSolutionParams()->getVariable($reference)) {
-      throw new ExerciseCompilationException("Variable '{$reference}' was not provided on submit");
+      throw new ExerciseCompilationSoftException("Variable '{$reference}' was not provided on submit");
     }
 
     // set user provided variable to actual variable
@@ -48,7 +49,7 @@ class VariablesResolver {
     if ($variable->isFile()) {
       foreach ($variable->getValueAsArray() as $value) {
         if (!in_array($value, $params->getFiles())) {
-          throw new ExerciseCompilationException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
+          throw new ExerciseCompilationSoftException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
         }
       }
     }
@@ -79,7 +80,7 @@ class VariablesResolver {
 
     if (empty($matches)) {
       // there were no matches, but variable value cannot be empty!
-      throw new ExerciseCompilationException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
+      throw new ExerciseCompilationSoftException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
     }
 
     // construct resulting variable from given variable info

@@ -3,6 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseCompilationException;
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -114,7 +115,6 @@ abstract class DataInBox extends Box
    * @param string $local
    * @param CompilationParams $params
    * @return Task
-   * @throws ExerciseConfigException
    * @throws ExerciseCompilationException
    */
   protected function compileTask(bool $isRemote, string $input, string $local, CompilationParams $params): Task {
@@ -125,7 +125,7 @@ abstract class DataInBox extends Box
       // check if soon-to-be fetched file does not collide with files given by user
       $basename = basename($local);
       if (in_array($basename, $params->getFiles())) {
-        throw new ExerciseCompilationException("File '{$basename}' is already defined by author of the exercise");
+        throw new ExerciseCompilationSoftException("File '{$basename}' is already defined by author of the exercise");
       }
 
       // remote file has to have fetch task
