@@ -41,6 +41,7 @@ use App\Responses\GuzzleResponse;
 use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IExercisePermissions;
 use App\Security\ACL\IReferenceExerciseSolutionPermissions;
+use Exception;
 use Tracy\ILogger;
 
 /**
@@ -476,7 +477,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
     try {
       $generatorResult = $this->jobConfigGenerator
         ->generateJobConfig($this->getCurrentUser(), $exercise, $runtimeEnvironment, $compilationParams);
-    } catch (ExerciseConfigException | JobConfigStorageException $e) {
+    } catch (Exception $e) {
       $submission = new ReferenceSolutionSubmission($referenceSolution, null,
         "", $this->getCurrentUser(), $isDebug);
       $this->referenceSubmissions->persist($submission, false);
@@ -514,7 +515,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
             "expectedTasksCount" => $generatorResult->getJobConfig()->getTasksCount()
           ]
         ];
-      } catch (SubmissionFailedException $e) {
+      } catch (Exception $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
         $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $submission);
         $this->submissionFailures->persist($failure, false);

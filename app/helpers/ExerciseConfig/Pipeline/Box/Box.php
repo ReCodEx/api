@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -91,6 +92,7 @@ abstract class Box implements JsonSerializable
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return Task[]
+   * @throws ExerciseCompilationException in case of any error
    */
   public abstract function compile(CompilationParams $params): array;
 

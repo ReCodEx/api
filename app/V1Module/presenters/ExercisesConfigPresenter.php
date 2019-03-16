@@ -2,10 +2,13 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\ParseException;
 use App\Helpers\ExerciseConfig\Helper;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\Transformer;
@@ -290,9 +293,11 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="config", description="A list of basic high level exercise configuration", validation="array")
    * @param string $id Identifier of the exercise
+   * @throws ExerciseConfigException
    * @throws ForbiddenRequestException
    * @throws NotFoundException
-   * @throws ExerciseConfigException
+   * @throws ApiException
+   * @throws ParseException
    */
   public function actionSetConfiguration(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
@@ -341,7 +346,6 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @Param(type="post", name="runtimeEnvironmentId", validation="string:1..", description="Environment identifier", required=false)
    * @Param(type="post", name="pipelinesIds", validation="array", description="Identifiers of selected pipelines for one test")
-   * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws ExerciseConfigException
    */
@@ -427,9 +431,12 @@ class ExercisesConfigPresenter extends BasePresenter {
    * @param string $id Identifier of the exercise
    * @param string $runtimeEnvironmentId
    * @param string $hwGroupId
+   * @throws ApiException
+   * @throws ExerciseConfigException
    * @throws ForbiddenRequestException
    * @throws NotFoundException
-   * @throws ExerciseConfigException
+   * @throws ParseException
+   * @throws ExerciseCompilationException
    */
   public function actionSetHardwareGroupLimits(string $id, string $runtimeEnvironmentId, string $hwGroupId) {
     /** @var Exercise $exercise */

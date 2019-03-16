@@ -2,14 +2,13 @@
 
 namespace App\Helpers\ExerciseConfig;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IExercise;
 use App\Helpers\ExerciseConfig\Compilation\BaseCompiler;
 use App\Helpers\ExerciseConfig\Compilation\CompilationContext;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\JobConfig\JobConfig;
-use App\Model\Entity\Assignment;
-use App\Model\Entity\Exercise;
 use App\Model\Entity\HardwareGroup;
 use App\Model\Entity\RuntimeEnvironment;
 
@@ -50,30 +49,31 @@ class Compiler {
    * @param CompilationParams $params
    * @return JobConfig
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function compile(IExercise $exercise,
       RuntimeEnvironment $runtimeEnvironment,
       CompilationParams $params): JobConfig {
 
     if (!static::checkConfigurationType($exercise->getConfigurationType())) {
-      throw new ExerciseConfigException("Unsupported configuration type");
+      throw new ExerciseCompilationException("Unsupported configuration type");
     }
 
     // check submitted files if they are unique
     $uniqueFiles = array_unique($params->getFiles());
     if (count($params->getFiles()) !== count($uniqueFiles)) {
-      throw new ExerciseConfigException("Submitted files contains two or more files with the same name.");
+      throw new ExerciseCompilationException("Submitted files contains two or more files with the same name.");
     }
 
     if ($exercise->getExerciseConfig() === null) {
-      throw new ExerciseConfigException("The exercise has no configuration");
+      throw new ExerciseCompilationException("The exercise has no configuration");
     }
 
     $exerciseConfig = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
     $environmentConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($runtimeEnvironment);
 
     if ($environmentConfig === null) {
-      throw new ExerciseConfigException(sprintf(
+      throw new ExerciseCompilationException(sprintf(
         "The exercise has no configuration for environment '%s'",
         $runtimeEnvironment->getId()
       ));

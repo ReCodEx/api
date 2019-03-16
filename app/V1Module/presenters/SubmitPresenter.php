@@ -300,7 +300,7 @@ class SubmitPresenter extends BasePresenter {
           $solution->getAssignment(),
           $solution->getSolution()->getRuntimeEnvironment(),
           $compilationParams);
-    } catch (ExerciseConfigException | JobConfigStorageException $e) {
+    } catch (Exception $e) {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
       $this->submissionFailed($submission, $e->getMessage(), SubmissionFailure::TYPE_CONFIG_ERROR,

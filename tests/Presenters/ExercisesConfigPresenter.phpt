@@ -193,7 +193,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           ["name" => "1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
           ["name" => "2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input-file", "type" => "file", "value" => "defValB"],
+            ["name" => "input-files", "type" => "file[]", "value" => ["defValB"]],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValB"]
           ]]]]
@@ -205,7 +205,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
           ["name" => "1", "pipelines" => [["name" => $compilationPipeline->getId(), "variables" => [
           ]]]],
           ["name" => "2", "pipelines" => [["name" => $testPipeline->getId(), "variables" => [
-            ["name" => "input-file", "type" => "file", "value" => "defValB"],
+            ["name" => "input-files", "type" => "file[]", "value" => ["defValB"]],
             ["name" => "binary-file", "type" => "file", "value" => "defValB"],
             ["name" => "expected-output", "type" => "file", "value" => "BValC"]
           ]]]]
@@ -270,7 +270,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
     $testPipelineVars = $payload[1]["variables"];
     Assert::count(2, $testPipelineVars);
-    Assert::equal("input-file", $testPipelineVars[0]->getName());
+    Assert::equal("input-files", $testPipelineVars[0]->getName());
     Assert::equal("expected-output", $testPipelineVars[1]->getName());
   }
 

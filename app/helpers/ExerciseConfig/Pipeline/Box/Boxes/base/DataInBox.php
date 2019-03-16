@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -62,6 +63,7 @@ abstract class DataInBox extends Box
    * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   protected function compileInternal(?Variable $inputVariable,
       Variable $variable, CompilationParams $params): array {
@@ -93,7 +95,7 @@ abstract class DataInBox extends Box
 
     // counts are not the same, this is really bad situation, end it now!
     if (count($inputFiles) !== count($files)) {
-      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", $this->getName()));
+      throw new ExerciseCompilationException(sprintf("Different count of remote variables and local variables in box '%s'", $this->getName()));
     }
 
     // general foreach for both local and remote files
@@ -113,6 +115,7 @@ abstract class DataInBox extends Box
    * @param CompilationParams $params
    * @return Task
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   protected function compileTask(bool $isRemote, string $input, string $local, CompilationParams $params): Task {
     $task = new Task();
@@ -122,7 +125,7 @@ abstract class DataInBox extends Box
       // check if soon-to-be fetched file does not collide with files given by user
       $basename = basename($local);
       if (in_array($basename, $params->getFiles())) {
-        throw new ExerciseConfigException("File '{$basename}' is already defined by author of the exercise");
+        throw new ExerciseCompilationException("File '{$basename}' is already defined by author of the exercise");
       }
 
       // remote file has to have fetch task

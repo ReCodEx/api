@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
@@ -99,6 +100,7 @@ class FilesInBox extends DataInBox
    * @param CompilationParams $params
    * @return Task[]
    * @throws ExerciseConfigException in case of compilation error
+   * @throws ExerciseCompilationException
    */
   public function compile(CompilationParams $params): array {
 
@@ -108,7 +110,7 @@ class FilesInBox extends DataInBox
 
     // input variable is not array
     if ($inputVariable && !$inputVariable->isValueArray()) {
-      throw new ExerciseConfigException(sprintf("Remote variable and local variable both have different type in box '%s'", $this->getName()));
+      throw new ExerciseCompilationException(sprintf("Remote variable and local variable both have different type in box '%s'", $this->getName()));
     }
 
     // compilation

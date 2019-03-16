@@ -2,13 +2,10 @@
 
 namespace App\Helpers\Notifications;
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
-use App\Helpers\Emails\EmailLocalizationHelper;
-use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\GeneralStatsHelper;
 use App\Helpers\GeneralStats;
-use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Helpers\EmailHelper;
 use DateTime;
 use DateInterval;
@@ -38,14 +35,14 @@ class GeneralStatsEmailsSender {
    * Constructor.
    * @param EmailHelper $emailHelper
    * @param array $params
-   * @throws ExerciseConfigException
+   * @throws InvalidStateException
    */
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
     $recipient = Arrays::get($params, ["emails", "to"]);
     if (!$recipient) {
-      throw new ExerciseConfigException("Missing recipient (To) address in GeneralStatsEmailsSender configuration.");
+      throw new InvalidStateException("Missing recipient (To) address in GeneralStatsEmailsSender configuration.");
     }
     $this->recipient = is_array($recipient) ? $recipient : [$recipient];
     $this->subject = Arrays::get($params, ["emails", "subject"], "General Status Overview");

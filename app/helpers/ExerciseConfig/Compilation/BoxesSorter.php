@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\Node;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
@@ -22,7 +22,7 @@ class BoxesSorter {
    * Topological sort of given tree, stack oriented.
    * @param MergeTree $mergeTree
    * @return PortNode[]
-   * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function topologicalSort(MergeTree $mergeTree): array {
     // Okey, let's make this crystal clear...
@@ -66,7 +66,7 @@ class BoxesSorter {
           continue;
         }
 
-        throw new ExerciseConfigException("Cycle in tree detected in node '{$node->getBox()->getName()}'.");
+        throw new ExerciseCompilationException("Cycle in tree detected in node '{$node->getBox()->getName()}'.");
       }
 
       // visit current node
@@ -94,7 +94,7 @@ class BoxesSorter {
    * Sort tree and return newly created rooted tree.
    * @param MergeTree $mergeTree
    * @return RootedTree
-   * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function sortTree(MergeTree $mergeTree): RootedTree {
 
@@ -125,7 +125,7 @@ class BoxesSorter {
       foreach ($sorted[$i]->getParents() as $parent) {
         $index = array_search($parent, $sorted, true);
         if ($index === false) {
-          throw new ExerciseConfigException("Malformed internal compilation structure. PortNode not found.");
+          throw new ExerciseCompilationException("Malformed internal compilation structure. PortNode not found.");
         }
         $current->addDependency($nodes[$index]);
       }
@@ -142,7 +142,7 @@ class BoxesSorter {
    * For each test sort its boxes to order which makes execution sense.
    * @param MergeTree[] $tests
    * @return RootedTree[]
-   * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function sort(array $tests): array {
 

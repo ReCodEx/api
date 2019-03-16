@@ -2,9 +2,9 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
-use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
@@ -90,7 +90,8 @@ class FetchFilesBox extends FetchBox
    * Compile box into set of low-level tasks.
    * @param CompilationParams $params
    * @return Task[]
-   * @throws ExerciseConfigException in case of compilation error
+   * @throws ExerciseCompilationException
+   * @throws ExerciseConfigException
    */
   public function compile(CompilationParams $params): array {
 
@@ -100,7 +101,7 @@ class FetchFilesBox extends FetchBox
 
     // both variable and input variable are arrays
     if (count($remoteVariable->getValue()) !== count($variable->getValue())) {
-      throw new ExerciseConfigException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FETCH_TYPE));
+      throw new ExerciseCompilationException(sprintf("Different count of remote variables and local variables in box '%s'", self::$FETCH_TYPE));
     }
 
     return $this->compileInternal($remoteVariable, $variable, $params);

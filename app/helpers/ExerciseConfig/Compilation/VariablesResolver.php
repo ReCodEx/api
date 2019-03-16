@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Compilation;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
@@ -9,7 +10,6 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\Wildcards;
-use Nette\Utils\Arrays;
 
 
 /**
@@ -27,6 +27,7 @@ class VariablesResolver {
    * @param Variable|null $variable
    * @param CompilationParams $params
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveSubmitVariableReference(?Variable $variable, CompilationParams $params) {
     if (!$variable || !$variable->isReference()) {
@@ -37,7 +38,7 @@ class VariablesResolver {
     // but user which submitted solution did not provide the value for reference
     $reference = $variable->getReference();
     if (!$params->getSolutionParams()->getVariable($reference)) {
-      throw new ExerciseConfigException("Variable '{$reference}' was not provided on submit");
+      throw new ExerciseCompilationException("Variable '{$reference}' was not provided on submit");
     }
 
     // set user provided variable to actual variable
@@ -47,7 +48,7 @@ class VariablesResolver {
     if ($variable->isFile()) {
       foreach ($variable->getValueAsArray() as $value) {
         if (!in_array($value, $params->getFiles())) {
-          throw new ExerciseConfigException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
+          throw new ExerciseCompilationException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
         }
       }
     }
@@ -60,6 +61,7 @@ class VariablesResolver {
    * @param string[] $submittedFiles
    * @return Variable|null
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveFileInputsRegexp(?Variable $variable,
       array $submittedFiles): ?Variable {
@@ -77,7 +79,7 @@ class VariablesResolver {
 
     if (empty($matches)) {
       // there were no matches, but variable value cannot be empty!
-      throw new ExerciseConfigException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
+      throw new ExerciseCompilationException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
     }
 
     // construct resulting variable from given variable info
@@ -98,13 +100,13 @@ class VariablesResolver {
    * @param array $values
    * @param array $files
    * @return array resolved files
-   * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveRemoteFileHashValue(array $values, array $files): array {
     $newValues = [];
     foreach ($values as $value) {
       if (!array_key_exists($value, $files)) {
-        throw new ExerciseConfigException("File '{$value}' does not exist in exercise or pipeline.");
+        throw new ExerciseCompilationException("File '{$value}' does not exist in exercise or pipeline.");
       }
 
       $newValues[] = $files[$value];
@@ -118,6 +120,7 @@ class VariablesResolver {
    * @param Variable|null $variable
    * @param array $files indexed by file names, containing file hashes
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveRemoteFileHash(?Variable $variable, array $files) {
     if (!$variable || $variable->isEmpty() || !$variable->isRemoteFile()) {
@@ -142,6 +145,7 @@ class VariablesResolver {
    * @param CompilationContext $context
    * @param CompilationParams $params
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function resolveForInputNodes(MergeTree $mergeTree, VariablesTable $exerciseVariables,
       VariablesTable $pipelineVariables, CompilationContext $context, CompilationParams $params) {
@@ -154,14 +158,14 @@ class VariablesResolver {
 
       // input data box should have only one output port, but there can be multiple children
       if (count($node->getChildren()) === 0) {
-        throw new ExerciseConfigException("Input ports not found for variable '{$variableName}'");
+        throw new ExerciseCompilationException("Input ports not found for variable '{$variableName}'");
       }
 
       // variable value in local pipeline config
       $variable = $pipelineVariables->get($variableName);
       if (!$variable) {
         // something is really wrong there... just leave and do not look back
-        throw new ExerciseConfigException("Variable '$variableName' from input data box could not be resolved");
+        throw new ExerciseCompilationException("Variable '$variableName' from input data box could not be resolved");
       }
 
       // find references
@@ -192,7 +196,7 @@ class VariablesResolver {
         $inputPortName = array_search($node, $child->getParents());
         if ($inputPortName === false) {
           // input node not found in parents of the next one
-          throw new ExerciseConfigException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
+          throw new ExerciseCompilationException("Malformed tree - input node '{$inputBox->getName()}' not found in child '{$child->getBox()->getName()}'");
         }
 
         $child->getBox()->getInputPort($inputPortName)->setVariableValue($variable);
@@ -208,6 +212,7 @@ class VariablesResolver {
    * @param CompilationParams $params
    * @return Variable
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function findReferenceIfAny(Variable $variable,
       VariablesTable $environmentVariables,
@@ -225,7 +230,7 @@ class VariablesResolver {
 
       // reference could not be found
       if (!$variable) {
-        throw new ExerciseConfigException("Variable reference '{$referenceName}' could not be resolved");
+        throw new ExerciseCompilationException("Variable reference '{$referenceName}' could not be resolved");
       }
     }
 
@@ -246,6 +251,7 @@ class VariablesResolver {
    * @param CompilationContext $context
    * @param CompilationParams $params
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveForVariable(?PortNode $parent, PortNode $child,
       string $inPortName, ?string $outPortName, VariablesTable $exerciseVariables,
@@ -275,14 +281,14 @@ class VariablesResolver {
 
     // check if variable name is the same in both ports
     if ($outPort !== null && $variableName !== $outPort->getVariable()) {
-      throw new ExerciseConfigException("Malformed tree - variables in corresponding ports ($inPortName, $outPortName) do not matches");
+      throw new ExerciseCompilationException("Malformed tree - variables in corresponding ports ($inPortName, $outPortName) do not matches");
     }
 
     // get the variable from the correct table
     $variable = $pipelineVariables->get($variableName);
     // something's fishy here... better leave now
     if (!$variable) {
-      throw new ExerciseConfigException("Variable '$variableName' could not be resolved");
+      throw new ExerciseCompilationException("Variable '$variableName' could not be resolved");
     }
 
     // variable is reference, try to find its value in external variables tables
@@ -307,6 +313,7 @@ class VariablesResolver {
    * @param CompilationContext $context
    * @param CompilationParams $params
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   private function resolveForOtherNodes(MergeTree $mergeTree, VariablesTable $exerciseVariables,
       VariablesTable $pipelineVariables, array $pipelineFiles, CompilationContext $context,
@@ -317,7 +324,7 @@ class VariablesResolver {
         $outPortName = $parent === null ? null : $parent->findChildPort($node);
         if ($parent !== null && $outPortName === null) {
           // I do not like what you got!
-          throw new ExerciseConfigException("Malformed tree - node '{$node->getBox()->getName()}' not found in parent '{$parent->getBox()->getName()}'");
+          throw new ExerciseCompilationException("Malformed tree - node '{$node->getBox()->getName()}' not found in parent '{$parent->getBox()->getName()}'");
         }
 
         $this->resolveForVariable($parent, $node, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context, $params);
@@ -328,7 +335,7 @@ class VariablesResolver {
           $inPortName = $child->findParentPort($node);
           if (!$inPortName) {
             // Oh boy, here we go throwing exceptions again!
-            throw new ExerciseConfigException("Malformed tree - node '{$node->getBox()->getName()}' not found in child '{$child->getBox()->getName()}'");
+            throw new ExerciseCompilationException("Malformed tree - node '{$node->getBox()->getName()}' not found in child '{$child->getBox()->getName()}'");
           }
 
           $this->resolveForVariable($node, $child, $inPortName, $outPortName, $exerciseVariables, $pipelineVariables, $pipelineFiles, $context, $params);
@@ -346,6 +353,7 @@ class VariablesResolver {
    * @param CompilationContext $context
    * @param CompilationParams $params
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function resolve(MergeTree $mergeTree, VariablesTable $exerciseVariables, VariablesTable $pipelineVariables,
       array $pipelineFiles, CompilationContext $context, CompilationParams $params) {

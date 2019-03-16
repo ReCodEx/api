@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
@@ -121,6 +122,7 @@ class CopyFilesToDirBox extends Box
    * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationException
    */
   public function compile(CompilationParams $params): array {
     /**
@@ -143,7 +145,7 @@ class CopyFilesToDirBox extends Box
     }
 
     if (count($inputVariable->getValue()) !== count($outputVariable->getValue())) {
-      throw new ExerciseConfigException("Different count of files (source vs dest) in copy box");
+      throw new ExerciseCompilationException("Different count of files (source vs dest) in copy box");
     }
 
     $inputs = array_values($inputVariable->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));

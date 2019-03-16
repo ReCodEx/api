@@ -2,6 +2,7 @@
 namespace App\Helpers\ExerciseConfig;
 
 use App\Exceptions\ApiException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseConfigException;
 use App\Exceptions\ParseException;
 use App\Helpers\EntityMetadata\Solution\SolutionParams;
@@ -47,7 +48,7 @@ class ExerciseConfigChecker {
    * TODO when we implement a mechanism that ensures further constraints on submitted files, it must be reflected here
    * @param RuntimeEnvironment $environment
    * @return string[]
-   * @throws ApiException
+   * @throws ParseException
    */
   private function conjureSubmittedFiles(RuntimeEnvironment $environment): array {
     return array_map(function($extension) {
@@ -130,7 +131,6 @@ class ExerciseConfigChecker {
    * @param Exercise $exercise
    * @return bool false if broken flag was set
    * @throws ParseException
-   * @throws ApiException
    */
   private function validateEnvironmentConfigurations(Exercise $exercise): bool {
     /** @var RuntimeEnvironment $environment */
@@ -157,7 +157,7 @@ class ExerciseConfigChecker {
         );
       }
       $exercise->setNotBroken();
-    } catch (ExerciseConfigException $exception) {
+    } catch (ExerciseConfigException | ExerciseCompilationException $exception) {
       $exercise->setBroken(sprintf(
         "Error in exercise configuration for environment '%s': %s",
         $environment !== null ? $environment->getId() : "UNKNOWN",
@@ -173,7 +173,6 @@ class ExerciseConfigChecker {
    * Check the configuration of an exercise (including all environment configs) and set the `isBroken` flag if there is
    * an error.
    * @param Exercise $exercise the exercise whose configuration should be checked
-   * @throws ApiException
    * @throws ParseException
    */
   public function check(Exercise $exercise) {

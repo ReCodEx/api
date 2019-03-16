@@ -2,7 +2,7 @@
 
 include '../../bootstrap.php';
 
-use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\ExerciseCompilationException;
 use App\Helpers\ExerciseConfig\Compilation\BoxesSorter;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
@@ -477,7 +477,7 @@ class TestBoxesSorter extends Tester\TestCase
 
     Assert::exception(function () use ($treeArr) {
       $this->sorter->sort($treeArr);
-    }, ExerciseConfigException::class);
+    }, ExerciseCompilationException::class);
   }
 
   /**
@@ -507,7 +507,7 @@ class TestBoxesSorter extends Tester\TestCase
 
     Assert::exception(function () use ($treeArr) {
       $this->sorter->sort($treeArr);
-    }, ExerciseConfigException::class);
+    }, ExerciseCompilationException::class);
   }
 
 }
