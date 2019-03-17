@@ -14,7 +14,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\WrongHttpMethodException;
 use App\Exceptions\NotImplementedException;
 use App\Exceptions\InvalidArgumentException;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 
 use App\Security\AccessManager;
 use App\Security\Authorizator;
@@ -171,7 +171,7 @@ class BasePresenter extends \App\Presenters\BasePresenter {
           $value = $this->getQueryField($name, $required);
           break;
         default:
-          throw new InternalServerErrorException("Unknown parameter type '$type'");
+          throw new InternalServerException("Unknown parameter type '$type'");
       }
 
       if ($validationRule !== null && $value !== null) {

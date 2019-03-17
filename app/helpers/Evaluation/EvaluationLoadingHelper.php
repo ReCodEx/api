@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\ReferenceSolutionSubmission;
@@ -43,7 +43,7 @@ class EvaluationLoadingHelper {
    *
    * @param Submission $submission
    * @return bool
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function loadEvaluation(Submission $submission): bool {
     if ($submission->hasEvaluation()) {
@@ -79,7 +79,7 @@ class EvaluationLoadingHelper {
             $submission
           );
         } else {
-          throw new InternalServerErrorException("Unknown submission type '{$submission->getClassName()}'");
+          throw new InternalServerException("Unknown submission type '{$submission->getClassName()}'");
         }
 
         $this->entityManager->persist($failure);

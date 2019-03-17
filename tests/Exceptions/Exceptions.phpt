@@ -8,7 +8,7 @@ use App\Exceptions\CASMissingInfoException;
 use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\HttpBasicAuthException;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidMembershipException;
@@ -93,12 +93,12 @@ class TestExceptions extends Tester\TestCase
   public function testInternalServerErrorException() {
     Assert::exception(function() {
       try {
-        throw new InternalServerErrorException("message");
+        throw new InternalServerException("message");
       } catch (\Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
-    }, InternalServerErrorException::CLASS);
+    }, InternalServerException::CLASS);
   }
 
   public function testInvalidAccessTokenException() {

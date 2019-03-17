@@ -7,7 +7,7 @@ use Nette\Http\IResponse;
  * Occurs when everything goes south and application cannot perform
  * requested operation in a proper and expected way.
  */
-class InternalServerErrorException extends ApiException {
+class InternalServerException extends ApiException {
   /**
    * Create instance with further details.
    * @param string $details description

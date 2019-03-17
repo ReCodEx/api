@@ -6,7 +6,7 @@ use App\Exceptions\BadRequestException;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\JobConfigStorageException;
 use App\Exceptions\NotReadyException;
@@ -222,7 +222,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * Get reference solution evaluations for an exercise solution.
    * @GET
    * @param string $solutionId identifier of the reference exercise solution
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function actionEvaluations(string $solutionId) {
     $solution = $this->referenceSolutions->findOrThrow($solutionId);
@@ -248,7 +248,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $evaluationId identifier of the reference exercise evaluation
    * @throws NotFoundException
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function actionEvaluation(string $evaluationId) {
     $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
@@ -582,7 +582,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws NotFoundException
    * @throws NotReadyException
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    * @throws \Nette\Application\AbortException
    */
   public function actionDownloadResultArchive(string $evaluationId) {
