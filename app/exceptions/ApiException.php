@@ -2,23 +2,40 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Nette\Http\IResponse;
 
 /**
  * The great grandfather of almost all exceptions which can occur
- * in whole application. Has same means of constructions
- * as the greatest exception, the native one.
+ * in whole application. In addition to classical exceptions, this one adds
+ * a bit of spices to the mix with custom defined error code and error
+ * parameters.
  */
-class ApiException extends \Exception {
+class ApiException extends Exception {
+
+  /** @var string */
+  private $frontendErrorCode;
+  /** @var mixed */
+  private $frontendErrorParams;
 
   /**
-   * Classic php exception constructor.
-   * @param string    $msg      Error message
-   * @param int       $code     Error code
-   * @param \Exception $previous Previous exception
+   * Constructor.
+   * @param string $msg Error message
+   * @param int $code Error code
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
+   * @param Exception $previous Previous exception
    */
-  public function __construct($msg = "Unexpected API error", $code = IResponse::S500_INTERNAL_SERVER_ERROR, $previous = null) {
+  public function __construct(
+    $msg = "Unexpected API error",
+    $code = IResponse::S500_INTERNAL_SERVER_ERROR,
+    $frontendErrorCode = ErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+    $frontendErrorParams = null,
+    $previous = null
+  ) {
     parent::__construct($msg, $code, $previous);
+    $this->frontendErrorCode = $frontendErrorCode;
+    $this->frontendErrorParams = $frontendErrorParams;
   }
 
   /**
@@ -29,4 +46,19 @@ class ApiException extends \Exception {
     return [];
   }
 
+  /**
+   * Custom defined, far more fine-grained numeric exception code.
+   * @return int
+   */
+  public function getFrontendErrorCode(): string {
+    return $this->frontendErrorCode;
+  }
+
+  /**
+   * Parameters which might be appended to error response.
+   * @return mixed
+   */
+  public function getFrontendErrorParams() {
+    return $this->frontendErrorParams;
+  }
 }
