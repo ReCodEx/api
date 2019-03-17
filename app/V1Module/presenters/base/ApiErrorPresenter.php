@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ApiException;
+use App\Exceptions\ErrorMappings;
 use App\Helpers\UserActions;
 
 use Exception;
@@ -32,8 +33,9 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   public $userActions;
 
   /**
-   * @param  Exception
+   * @param Exception
    * @return void
+   * @throws \Nette\Application\AbortException
    */
   public function renderDefault($exception) {
     // first let us log the whole error thingy
@@ -42,7 +44,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     if ($exception instanceof ApiException) {
       $this->handleAPIException($exception);
     } elseif ($exception instanceof BadRequestException) {
-      $this->sendErrorResponse($exception->getCode(), "Bad Request");
+      $this->sendErrorResponse($exception->getCode(), "Bad Request", ErrorMappings::E400_000__BAD_REQUEST);
     } elseif ($exception instanceof ConnectionException) {
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Database is offline");
     } else {
@@ -52,16 +54,17 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   }
 
   /**
-    * Send an error response based on a known type of exceptions - derived from ApiException
-    * @param  ApiException $exception The exception which caused the error
-    */
+   * Send an error response based on a known type of exceptions - derived from ApiException
+   * @param ApiException $exception The exception which caused the error
+   * @throws \Nette\Application\AbortException
+   */
   protected function handleAPIException(ApiException $exception) {
     $res = $this->getHttpResponse();
     $additionalHeaders = $exception->getAdditionalHttpHeaders();
     foreach ($additionalHeaders as $name => $value) {
       $res->setHeader($name, $value);
     }
-    $this->sendErrorResponse($exception->getCode(), $exception->getMessage());
+    $this->sendErrorResponse($exception->getCode(), $exception->getMessage(), $exception->getFrontendErrorCode(), $exception->getFrontendErrorParams());
   }
 
   /**
@@ -80,12 +83,20 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   }
 
   /**
-    * Send a JSON response with a specific HTTP code
-    * @param  int      $code    HTTP code of the response
-    * @param  string   $msg     Human readable description of the error
-    * @return void
-    */
-  protected function sendErrorResponse(int $code, string $msg) {
+   * Send a JSON response with a specific HTTP code
+   * @param int $code HTTP code of the response
+   * @param string $msg Human readable description of the error
+   * @param string $frontendErrorCode custom defined, far more fine-grained exception code
+   * @param mixed $frontendErrorParams parameters belonging to error
+   * @return void
+   * @throws \Nette\Application\AbortException
+   */
+  protected function sendErrorResponse(
+    int $code,
+    string $msg,
+    string $frontendErrorCode = ErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+    $frontendErrorParams = null
+  ) {
     // log the action done by the current user
     if ($this->getUser()->isLoggedIn()) {
       // determine the action name from the application request
@@ -105,9 +116,13 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     // send the error message in the standard format
     $this->getHttpResponse()->setCode($code);
     $this->sendJson([
-        "code"      => $code,
-        "success"   => false,
-        "msg"       => $msg
+        "code" => $code,
+        "success" => false,
+        "error" => [
+          "message" => $msg,
+          "code" => $frontendErrorCode,
+          "parameters" => $frontendErrorParams
+        ]
     ]);
   }
 
