@@ -3,7 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
@@ -102,7 +102,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Get information about solutions.
    * @GET
    * @param string $id Identifier of the solution
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function actionSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
@@ -178,7 +178,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * Get information about the evaluation of a submission
    * @GET
    * @param string $evaluationId Identifier of the submission
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function actionEvaluation(string $evaluationId) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
@@ -373,7 +373,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @GET
    * @param string $evaluationId
    * @throws NotFoundException
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    * @throws \Nette\Application\AbortException
    */
   public function actionDownloadResultArchive(string $evaluationId) {

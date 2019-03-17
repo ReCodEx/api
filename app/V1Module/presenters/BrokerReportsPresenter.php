@@ -3,7 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\HttpBasicAuthException;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\NotImplementedException;
@@ -98,7 +98,7 @@ class BrokerReportsPresenter extends BasePresenter {
    * @Param(name="status", type="post", description="The new status of the job")
    * @Param(name="message", type="post", required=false, description="A textual explanation of the status change")
    * @param string $jobId Identifier of the job whose status is being reported
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    * @throws NotFoundException
    * @throws InvalidStateException
    */
@@ -155,13 +155,13 @@ class BrokerReportsPresenter extends BasePresenter {
    * Announce a backend error that is not related to any job (meant to be called by the backend)
    * @POST
    * @Param(name="message", type="post", description="A textual description of the error")
-   * @throws InternalServerErrorException
+   * @throws InternalServerException
    */
   public function actionError() {
     $req = $this->getRequest();
     $message = $req->getPost("message");
     if (!$this->failureHelper->report(FailureHelper::TYPE_BACKEND_ERROR, $message)) {
-      throw new InternalServerErrorException("Error could not have been reported to the admin because of an internal server error.");
+      throw new InternalServerException("Error could not have been reported to the admin because of an internal server error.");
     }
 
     $this->sendSuccessResponse("Error was reported.");

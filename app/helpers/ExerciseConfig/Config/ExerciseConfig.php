@@ -3,7 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 use Symfony\Component\Yaml\Yaml;
 use JsonSerializable;
-use App\Exceptions\InternalServerErrorException;
+use App\Exceptions\InternalServerException;
 
 
 /**
@@ -103,7 +103,7 @@ class ExerciseConfig implements JsonSerializable {
     $test = $this->getTest($oldId);
     if ($test) {
       if ($this->getTest($newId)) {
-        throw new InternalServerErrorException("Serious internal error. Newly created test ID is already present in exercise config!");
+        throw new InternalServerException("Serious internal error. Newly created test ID is already present in exercise config!");
       }
       $this->removeTest($oldId)->addTest($newId, $test);
     }
