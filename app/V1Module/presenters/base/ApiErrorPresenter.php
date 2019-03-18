@@ -3,7 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ApiException;
-use App\Exceptions\ErrorMappings;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\UserActions;
 
 use Exception;
@@ -44,7 +44,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
     if ($exception instanceof ApiException) {
       $this->handleAPIException($exception);
     } elseif ($exception instanceof BadRequestException) {
-      $this->sendErrorResponse($exception->getCode(), "Bad Request", ErrorMappings::E400_000__BAD_REQUEST);
+      $this->sendErrorResponse($exception->getCode(), "Bad Request", FrontendErrorMappings::E400_000__BAD_REQUEST);
     } elseif ($exception instanceof ConnectionException) {
       $this->sendErrorResponse(IResponse::S500_INTERNAL_SERVER_ERROR, "Database is offline");
     } else {
@@ -94,7 +94,7 @@ class ApiErrorPresenter extends \App\Presenters\BasePresenter {
   protected function sendErrorResponse(
     int $code,
     string $msg,
-    string $frontendErrorCode = ErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+    string $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
     $frontendErrorParams = null
   ) {
     // log the action done by the current user

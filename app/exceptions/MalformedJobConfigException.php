@@ -20,9 +20,16 @@ class MalformedJobConfigException extends ApiException {
    * @param string $msg description
    * @param ParseException $originalException Optional pointer to original exception of YAML parser.
    *                                          Line numbers and snippets can be found there.
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
    */
-  public function __construct(string $msg = 'Please contact your supervisor', ParseException $originalException = null) {
-    parent::__construct("Job configuration is malformed - $msg", IResponse::S400_BAD_REQUEST);
+  public function __construct(
+    string $msg = 'Please contact your supervisor',
+    ParseException $originalException = null,
+    string $frontendErrorCode = FrontendErrorMappings::E400_100__JOB_CONFIG,
+    $frontendErrorParams = null
+  ) {
+    parent::__construct("Job configuration is malformed - $msg", IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
     $this->originalException = $originalException;
   }
 

@@ -29,7 +29,7 @@ class ApiException extends Exception {
   public function __construct(
     $msg = "Unexpected API error",
     $code = IResponse::S500_INTERNAL_SERVER_ERROR,
-    $frontendErrorCode = ErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+    $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
     $frontendErrorParams = null,
     $previous = null
   ) {

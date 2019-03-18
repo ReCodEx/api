@@ -13,8 +13,15 @@ class ForbiddenRequestException extends ApiException {
    * Create with further description and optionally HTTP error code.
    * @param string $msg description
    * @param int $code HTTP error code, defaulted to 403
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
    */
-  public function __construct(string $msg = "Forbidden Request - Access denied", $code = IResponse::S403_FORBIDDEN) {
-    parent::__construct($msg, $code);
+  public function __construct(
+    string $msg = "Forbidden Request - Access denied",
+    $code = IResponse::S403_FORBIDDEN,
+    string $frontendErrorCode = FrontendErrorMappings::E403_000__FORBIDDEN,
+    $frontendErrorParams = null
+  ) {
+    parent::__construct($msg, $code, $frontendErrorCode, $frontendErrorParams);
   }
 }

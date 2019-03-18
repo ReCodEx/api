@@ -11,8 +11,14 @@ class InternalServerException extends ApiException {
   /**
    * Create instance with further details.
    * @param string $details description
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
    */
-  public function __construct(string $details = 'please contact the administrator of the service') {
-    parent::__construct("Internal Server Error - $details", IResponse::S500_INTERNAL_SERVER_ERROR);
+  public function __construct(
+    string $details = 'please contact the administrator of the service',
+    string $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
+    $frontendErrorParams = null
+  ) {
+    parent::__construct("Internal Server Error - $details", IResponse::S500_INTERNAL_SERVER_ERROR, $frontendErrorCode, $frontendErrorParams);
   }
 }
