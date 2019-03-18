@@ -12,8 +12,14 @@ class ExerciseConfigException extends ApiException {
   /**
    * Create instance with further description.
    * @param string $msg description
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
    */
-  public function __construct(string $msg = 'Please contact system administrator') {
-    parent::__construct("Exercise configuration error - $msg", IResponse::S400_BAD_REQUEST);
+  public function __construct(
+    string $msg = 'Please contact system administrator',
+    string $frontendErrorCode = FrontendErrorMappings::E400_200__EXERCISE_CONFIG,
+    $frontendErrorParams = null
+  ) {
+    parent::__construct("Exercise configuration error - $msg", IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
   }
 }

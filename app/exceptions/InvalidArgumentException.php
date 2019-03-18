@@ -10,10 +10,20 @@ use Nette\Http\IResponse;
 class InvalidArgumentException extends ApiException {
   /**
    * Creates exception with invalid argument name and some further description.
-   * @param string $arg name of argument
+   * @param string $argument name of argument
    * @param string $msg further message
+   * @param string $frontendErrorCode
    */
-  public function __construct(string $arg, string $msg = 'check the API documentation for more information about validation rules') {
-    parent::__construct("Invalid Argument '$arg' - $msg", IResponse::S400_BAD_REQUEST);
+  public function __construct(
+    string $argument,
+    string $msg = 'check the API documentation for more information about validation rules',
+    string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST
+  ) {
+    parent::__construct(
+      "Invalid Argument '$argument' - $msg",
+      IResponse::S400_BAD_REQUEST,
+      $frontendErrorCode,
+      [ "argument" => $argument ]
+    );
   }
 }

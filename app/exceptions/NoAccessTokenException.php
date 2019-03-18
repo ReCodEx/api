@@ -12,7 +12,7 @@ class NoAccessTokenException extends ApiException {
    * No need for defining anything, just create it.
    */
   public function __construct() {
-    parent::__construct("You must provide an access token for this action.", IResponse::S401_UNAUTHORIZED);
+    parent::__construct("You must provide an access token for this action.", IResponse::S401_UNAUTHORIZED, FrontendErrorMappings::E401_001__NO_TOKEN);
   }
 
   public function getAdditionalHttpHeaders() {

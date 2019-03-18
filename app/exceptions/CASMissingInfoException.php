@@ -11,8 +11,14 @@ class CASMissingInfoException extends ApiException {
   /**
    * Create instance with textual description.
    * @param string $msg description
+   * @param string $frontendErrorCode
+   * @param null $frontendErrorParams
    */
-  public function __construct(string $msg = "Reading CAS attribute failed") {
-    parent::__construct($msg, IResponse::S409_CONFLICT);
+  public function __construct(
+    string $msg = "Reading CAS attribute failed",
+    string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST,
+    $frontendErrorParams = null
+  ) {
+    parent::__construct($msg, IResponse::S409_CONFLICT, $frontendErrorCode, $frontendErrorParams);
   }
 }
