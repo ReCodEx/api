@@ -188,7 +188,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableB, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[1], $this->exerVarTableB, $this->pipeVarTableB, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Variable 'test-bb-input' from input data box could not be resolved");
+    }, ExerciseCompilationException::class, "Exercise submission error - Variable 'test-bb-input' from input data box could not be resolved");
   }
 
   public function testMissingReferencedVariable() {
@@ -197,7 +197,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Variable reference 'test-a-reference-variable' could not be resolved");
+    }, ExerciseCompilationException::class, "Exercise submission error - Variable reference 'test-a-reference-variable' could not be resolved");
   }
 
   public function testVariableNamesNotMatchesInInputBox() {
@@ -209,7 +209,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Variable 'something which does not exist' from input data box could not be resolved");
+    }, ExerciseCompilationException::class, "Exercise submission error - Variable 'something which does not exist' from input data box could not be resolved");
   }
 
   public function testVariableNamesNotMatchesInOtherBox() {
@@ -221,7 +221,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Malformed tree - variables in corresponding ports (data-out, data-out) do not matches");
+    }, ExerciseCompilationException::class, "Exercise submission error - Malformed tree - variables in corresponding ports (data-out, data-out) do not matches");
   }
 
   public function testMissingVariableInPipelinesTable() {
@@ -230,7 +230,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Variable 'test-a-pre-exec' could not be resolved");
+    }, ExerciseCompilationException::class, "Exercise submission error - Variable 'test-a-pre-exec' could not be resolved");
   }
 
   public function testBadConnectionBetweenInputNodesParentNotFound() {
@@ -239,7 +239,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Malformed tree - input node 'in' not found in child 'exec'");
+    }, ExerciseCompilationException::class, "Exercise submission error - Malformed tree - input node 'in' not found in child 'exec'");
   }
 
   public function testBadConnectionBetweenNodesParentNotFound() {
@@ -248,7 +248,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Malformed tree - node 'exec' not found in child 'out'");
+    }, ExerciseCompilationException::class, "Exercise submission error - Malformed tree - node 'exec' not found in child 'out'");
   }
 
   public function testBadConnectionBetweenNodesChildNotFound() {
@@ -257,7 +257,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Malformed tree - node 'exec' not found in parent 'pre-exec'");
+    }, ExerciseCompilationException::class, "Exercise submission error - Malformed tree - node 'exec' not found in parent 'pre-exec'");
   }
 
   public function testUnknownHashOfFile() {
@@ -265,7 +265,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], [], [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, [], $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - File 'input.A.name' does not exist in exercise or pipeline.");
+    }, ExerciseCompilationException::class, "Exercise submission error - File 'input.A.name' does not exist in exercise or pipeline.");
   }
 
   public function testNotMatchingRegexp() {
@@ -274,7 +274,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"], false, new SolutionParams(self::$solutionParams));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - None of the submitted files matched regular expression 'out*' in variable 'test-a-input'");
+    }, ExerciseCompilationException::class, "Exercise submission error - None of the submitted files matched regular expression 'out*' in variable 'test-a-input'");
   }
 
   public function testNotDefinedSubmitReference() {
@@ -282,7 +282,7 @@ class TestVariablesResolver extends Tester\TestCase
       $context = CompilationContext::create(new ExerciseConfig(), $this->envVarTableA, [], self::$exerciseFiles, [], "");
       $params = CompilationParams::create(["infile"]);
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - Variable 'submitFileRef' was not provided on submit");
+    }, ExerciseCompilationException::class, "Exercise submission error - Variable 'submitFileRef' was not provided on submit");
   }
 
   public function testNotSubmittedFileFromSubmitReference() {
@@ -294,7 +294,7 @@ class TestVariablesResolver extends Tester\TestCase
         ]
       ]));
       $this->resolver->resolve($this->treeArray[0], $this->exerVarTableA, $this->pipeVarTableA, self::$pipelineFiles, $context, $params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - File 'wrong.file.in' in variable 'submitFileRef' could not be found among submitted files");
+    }, ExerciseCompilationException::class, "Exercise submission error - File 'wrong.file.in' in variable 'submitFileRef' could not be found among submitted files");
   }
 
   public function testRegexp() {

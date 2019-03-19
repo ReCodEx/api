@@ -14,7 +14,7 @@ class ExerciseCompilationSoftException extends ExerciseCompilationException {
    * Constructor.
    * @param string $msg description
    */
-  public function __construct(string $msg = 'Please contact system administrator') {
+  public function __construct(string $msg = 'Please, check the exercise instructions') {
     parent::__construct($msg, IResponse::S400_BAD_REQUEST);
   }
 }
