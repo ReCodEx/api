@@ -40,7 +40,7 @@ class TestFetchFilesBox extends Tester\TestCase
     Assert::exception(function () {
       $params = CompilationParams::create(["2.in"]);
       $this->box->compile($params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - File '2.in' is already defined by author of the exercise");
+    }, ExerciseCompilationException::class, "Exercise submission error - File '2.in' is already defined by author of the exercise");
   }
 
   public function testCorrect() {

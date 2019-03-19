@@ -40,14 +40,14 @@ class TestFilesInBox extends Tester\TestCase
     Assert::exception(function () {
       $this->box->getInputVariable()->setValue(["first"]);
       $this->box->compile(CompilationParams::create());
-    }, ExerciseCompilationException::class, "Exercise compilation error - Different count of remote variables and local variables in box ''");
+    }, ExerciseCompilationException::class, "Exercise submission error - Different count of remote variables and local variables in box ''");
   }
 
   public function testRemoteFileAndSameFileProvidedByUser() {
     Assert::exception(function () {
       $params = CompilationParams::create(["2.in"]);
       $this->box->compile($params);
-    }, ExerciseCompilationException::class, "Exercise compilation error - File '2.in' is already defined by author of the exercise");
+    }, ExerciseCompilationException::class, "Exercise submission error - File '2.in' is already defined by author of the exercise");
   }
 
   public function testRemoteCorrect() {

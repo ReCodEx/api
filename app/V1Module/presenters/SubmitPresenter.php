@@ -308,7 +308,8 @@ class SubmitPresenter extends BasePresenter {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
 
-      $failureType = $e instanceof ExerciseCompilationSoftException ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
+      $failureType = $e instanceof ExerciseCompilationSoftException ?
+        SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
       $sendEmail = $e instanceof  ExerciseCompilationSoftException ? false : true;
 
       $this->submissionFailed($submission, $e, $failureType, FailureHelper::TYPE_API_ERROR, $sendEmail);
