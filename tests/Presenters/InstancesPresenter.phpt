@@ -69,7 +69,7 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal(1, count($result['payload']));
-    $instance = array_pop($result['payload'])->jsonSerialize();
+    $instance = array_pop($result['payload']);
     Assert::equal("Frankenstein University, Atlantida", $instance['name']);
   }
 
@@ -82,7 +82,7 @@ class TestInstancesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::equal(1, count($result['payload']));
-    $instance = array_pop($result['payload'])->jsonSerialize();
+    $instance = array_pop($result['payload']);
     Assert::equal("Frankenstein University, Atlantida", $instance['name']);
   }
 
@@ -100,7 +100,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     $result = $response->getPayload();
     Assert::equal(201, $result['code']);
-    $instance = $result['payload']->jsonSerialize();
+    $instance = $result['payload'];
     Assert::equal("NIOT", $instance['name']);
     Assert::true($instance['isOpen']);
     Assert::equal("Just a new instance", $instance['description']);
@@ -126,7 +126,7 @@ class TestInstancesPresenter extends Tester\TestCase
 
     /** @var Instance $instance */
     $instance = $result['payload'];
-    Assert::equal(false, $instance->getIsOpen());
+    Assert::equal(false, $instance['isOpen']);
   }
 
   public function testDeleteInstance()
@@ -140,7 +140,7 @@ class TestInstancesPresenter extends Tester\TestCase
         ['name' => 'NIOT', 'description' => 'Just a new instance', 'isOpen' => 'true']
     );
     $response = $this->presenter->run($request);
-    $newInstanceId = $response->getPayload()['payload']->getId();
+    $newInstanceId = $response->getPayload()['payload']['id'];
 
     $allInstances = $this->presenter->instances->findAll();
     Assert::equal(2, count($allInstances));

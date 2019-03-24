@@ -155,13 +155,11 @@ class GroupViewFactory {
   /**
    * Get as much group detail info as your permissions grants you.
    * @param Group $group
+   * @param bool $ignoreArchived
    * @return array
    */
   public function getGroup(Group $group, bool $ignoreArchived = true): array {
     $canView = $this->groupAcl->canViewDetail($group);
-    /** @var LocalizedGroup $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($group->getLocalizedTexts());
-
     $privateData = null;
     if ($canView) {
       $privateData = [
@@ -212,6 +210,7 @@ class GroupViewFactory {
   /**
    * Get group data which current user can view about given groups.
    * @param Group[] $groups
+   * @param bool $ignoreArchived
    * @return array
    */
   public function getGroups(array $groups, bool $ignoreArchived = true): array {

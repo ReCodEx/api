@@ -8,6 +8,7 @@ use App\Model\Entity\Group;
 use App\Model\Entity\LocalizedGroup;
 use App\Model\Entity\User;
 use App\Model\View\GroupViewFactory;
+use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IGroupPermissions;
 use App\Security\ACL\IInstancePermissions;
@@ -67,6 +68,13 @@ class InstancesPresenter extends BasePresenter {
    */
   public $userAcl;
 
+  /**
+   * @var InstanceViewFactory
+   * @inject
+   */
+  public $instanceViewFactory;
+
+
   public function checkDefault() {
     if (!$this->instanceAcl->canViewAll()) {
       throw new ForbiddenRequestException();
@@ -81,7 +89,7 @@ class InstancesPresenter extends BasePresenter {
     $instances = array_filter($this->instances->findAll(),
         function (Instance $instance) { return $instance->isAllowed(); }
     );
-    $this->sendSuccessResponse(array_values($instances));
+    $this->sendSuccessResponse($this->instanceViewFactory->getInstances($instances));
   }
 
   public function checkCreateInstance() {
@@ -114,7 +122,7 @@ class InstancesPresenter extends BasePresenter {
     $this->instances->persist($instance->getRootGroup(), false);
     $this->instances->persist($localizedRootGroup, false);
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance, IResponse::S201_CREATED);
+    $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance), IResponse::S201_CREATED);
   }
 
   public function checkUpdateInstance(string $id) {
@@ -139,7 +147,7 @@ class InstancesPresenter extends BasePresenter {
 
     $instance->setIsOpen($isOpen);
     $this->instances->persist($instance);
-    $this->sendSuccessResponse($instance);
+    $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance));
   }
 
   public function checkDeleteInstance(string $id) {
@@ -184,7 +192,7 @@ class InstancesPresenter extends BasePresenter {
    */
   public function actionDetail(string $id) {
     $instance = $this->instances->findOrThrow($id);
-    $this->sendSuccessResponse($instance);
+    $this->sendSuccessResponse($this->instanceViewFactory->getInstance($instance));
   }
 
   public function checkLicences(string $id) {
