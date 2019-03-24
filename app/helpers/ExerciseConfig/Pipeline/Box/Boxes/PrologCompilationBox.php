@@ -20,6 +20,7 @@ class PrologCompilationBox extends CompilationBox
   public static $BOX_TYPE = "prolog-compilation";
   public static $PROLOG_BINARY = "/usr/bin/swipl";
   public static $DEFAULT_NAME = "SWI-Prolog Compilation";
+  public static $INIT_FILE_PORT_KEY = "init-file";
   public static $WRAPPER_FILE_PORT_KEY = "compilation-wrapper";
 
   private static $initialized = false;
@@ -34,6 +35,7 @@ class PrologCompilationBox extends CompilationBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta())->setName(self::$INIT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$WRAPPER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$RUNNER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
@@ -111,20 +113,22 @@ class PrologCompilationBox extends CompilationBox
         $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
 
+    $initFile = $this->getInputPortValue(self::$INIT_FILE_PORT_KEY)->getValue();
+    $sourceFiles = $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
+    $extraFiles = $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
+    $runnerFile = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR);
+
     array_push($args,
       "-o",
       $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-      "-c"
+      "-c",
+      $initFile,
+      ...$sourceFiles
     );
+    array_push($args, ...$extraFiles);
+    array_push($args, $runnerFile);
 
-    $task->setCommandArguments(
-      array_merge(
-        $args,
-        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-        $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
-        [ $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR) ]
-      )
-    );
+    $task->setCommandArguments($args);
 
     // check if file produced by compilation was successfully created
     $binary = $this->getOutputPortValue(self::$BINARY_FILE_PORT_KEY)->getDirPrefixedValue(ConfigParams::$SOURCE_DIR);
