@@ -542,8 +542,7 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal(1, count($instances));
 
     $instance = array_pop($instances);
-    Assert::type(\App\Model\Entity\Instance::class, $instance);
-    Assert::equal($user->getInstances()->first()->getId(), $instance->getId());
+    Assert::equal($user->getInstances()->first()->getId(), $instance['id']);
   }
 
   public function testExercises()

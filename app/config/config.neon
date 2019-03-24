@@ -430,6 +430,7 @@ services:
   - App\Model\View\ReferenceExerciseSolutionViewFactory
   - App\Model\View\ShadowAssignmentViewFactory
   - App\Model\View\PipelineViewFactory
+  - App\Model\View\InstanceViewFactory
 
 doctrine:
   user: 'root'
