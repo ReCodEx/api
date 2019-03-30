@@ -2,6 +2,7 @@
 
 namespace App\V1Module\Presenters;
 
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
 use App\Exceptions\ForbiddenRequestException;
@@ -149,7 +150,10 @@ class RegistrationPresenter extends BasePresenter {
     $password = $req->getPost("password");
     $passwordConfirm = $req->getPost("passwordConfirm");
     if ($password !== $passwordConfirm) {
-      throw new WrongCredentialsException("Provided passwords do not match");
+      throw new WrongCredentialsException(
+        "Provided passwords do not match",
+        FrontendErrorMappings::E400_102__WRONG_CREDENTIALS_PASSWDS_NOT_MATCH
+      );
     }
 
     $user = new User(
