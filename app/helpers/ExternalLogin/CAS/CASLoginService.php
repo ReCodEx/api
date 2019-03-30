@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExternalLogin\CAS;
 
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException as AppInvalidArgumentException;
 use App\Helpers\ExternalLogin\IExternalLoginService;
 use App\Helpers\ExternalLogin\UserData;
@@ -138,7 +139,11 @@ class CASLoginService implements IExternalLoginService {
         // Internal XML errors are logges as warnings
         $this->logger->log($e, ILogger::WARNING);
       }
-      throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+      throw new WrongCredentialsException(
+        "The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.",
+        FrontendErrorMappings::E400_131__WRONG_CREDENTIALS_CAS_CORRUPTED_TICKET,
+        [ "ticket" => $ticket ]
+      );
     }
     return $xml;
   }
@@ -171,10 +176,18 @@ class CASLoginService implements IExternalLoginService {
         // A trick that utilizes JSON serialization of SimpleXML objects to convert the XML into an array.
         $data = JSON::decode(JSON::encode((array)$xml), JSON::FORCE_ARRAY);
       } catch (JsonException $e) {
-        throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.");
+        throw new WrongCredentialsException(
+          "The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete.",
+          FrontendErrorMappings::E400_131__WRONG_CREDENTIALS_CAS_CORRUPTED_TICKET,
+          [ "ticket" => $ticket ]
+        );
       }
     } else {
-        throw new WrongCredentialsException("The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable.");
+        throw new WrongCredentialsException(
+          "The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable.",
+          FrontendErrorMappings::E400_132__WRONG_CREDENTIALS_CAS_UNAVAILABLE,
+          [ "ticket" => $ticket ]
+        );
     }
 
     return $data;
@@ -206,7 +219,11 @@ class CASLoginService implements IExternalLoginService {
       $info = Arrays::get($data, ["authenticationSuccess", "attributes"]);
     } catch (InvalidArgumentException $e) {
       $this->logger->log("Ticket validation did not return successful response with attributes:\n" . var_export($data, true), ILogger::ERROR);
-      throw new WrongCredentialsException("The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.");
+      throw new WrongCredentialsException(
+        "The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used.",
+        FrontendErrorMappings::E400_130__WRONG_CREDENTIALS_CAS_INVALID_TICKET,
+        [ "ticket" => $ticket ]
+      );
     }
 
     try {
@@ -215,7 +232,10 @@ class CASLoginService implements IExternalLoginService {
       $lastName = LDAPHelper::getScalar(Arrays::get($info, $this->lastNameField));
     } catch (InvalidArgumentException $e) {
       $this->logger->log("The user attributes received from the CAS are incomplete:\n" . var_export($data, true), ILogger::ERROR);
-      throw new CASMissingInfoException("The user attributes received from the CAS are incomplete.");
+      throw new CASMissingInfoException(
+        "The user attributes received from the CAS are incomplete.",
+        FrontendErrorMappings::E409_102__CONFLICT_CAS_ATTRIBUTES_INCOMPLETE
+      );
     }
 
     try {
@@ -223,7 +243,10 @@ class CASLoginService implements IExternalLoginService {
       $emails = LDAPHelper::getArray(Arrays::get($info, $this->emailField));
     } catch (InvalidArgumentException $e) {
       $this->logger->log("The user attributes received from the CAS are incomplete (email missing):\n" . var_export($data, true), ILogger::ERROR);
-      throw new CASMissingInfoException("The user attributes received from the CAS do not contain an email address, which is required.");
+      throw new CASMissingInfoException(
+        "The user attributes received from the CAS do not contain an email address, which is required.",
+        FrontendErrorMappings::E409_101__CONFLICT_CAS_EMAIL_MISSING
+      );
     }
 
     if ($onlyAuthenticate) {
@@ -243,7 +266,10 @@ class CASLoginService implements IExternalLoginService {
     if (!$role) {
       $aff = join(', ', $affiliation);
       $this->logger->log("Given 'affiliation' attributes ($aff) for user '$ukco' does not correspond to any role.", ILogger::ERROR);
-      throw new CASMissingInfoException("The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student nor to an employee of MFF.");
+      throw new CASMissingInfoException(
+        "The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student nor to an employee of MFF.",
+        FrontendErrorMappings::E409_100__CONFLICT_CAS_BAD_AFFILIATION
+      );
     }
 
     return new UserData($ukco, $emails, $firstName, $lastName, "", "", $role);

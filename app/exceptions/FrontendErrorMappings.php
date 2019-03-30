@@ -11,8 +11,34 @@ class FrontendErrorMappings
   /** General bad request */
   const E400_000__BAD_REQUEST = "400-000";
 
-  /** General wrong credentials */
+  /** Invalid credentials */
   const E400_100__WRONG_CREDENTIALS = "400-100";
+  /** The username or password is incorrect */
+  const E400_101__WRONG_CREDENTIALS_LOCAL = "400-101";
+  /** Provided passwords do not match */
+  const E400_102__WRONG_CREDENTIALS_PASSWDS_NOT_MATCH = "400-102";
+  /** Your current password does not match */
+  const E400_103__WRONG_CREDENTIALS_PASSWD_NOT_MATCH = "400-103";
+  /** External authentication failed. */
+  const E400_104__WRONG_CREDENTIALS_EXT_FAILED = "400-104";
+  /** User authenticated through '$service' has no corresponding account in ReCodEx. Please register to ReCodEx first. */
+  const E400_105__WRONG_CREDENTIALS_EXT_USER_NOT_FOUND = "400-105";
+  /** User is already registered using '$service'. */
+  const E400_106__WRONG_CREDENTIALS_EXT_USER_REGISTERED = "400-106";
+  /** Email address '$email' cannot be paired with a specific user in CAS. */
+  const E400_120__WRONG_CREDENTIALS_LDAP_EMAIL_NOT_PAIRED = "400-120";
+  /** The UKCO given by the user is not a number. */
+  const E400_121__WRONG_CREDENTIALS_LDAP_UKCO_NOT_NUMBER = "400-121";
+  /** This account cannot be used for authentication to ReCodEx. The password is probably not verified. */
+  const E400_122__WRONG_CREDENTIALS_LDAP_NOT_VERIFIED = "400-122";
+  /** Too many unsuccessful tries. You won't be able to log in for a short amount of time. */
+  const E400_123__WRONG_CREDENTIALS_LDAP_TOO_MANY_TRIES = "400-123";
+  /** The ticket '$ticket' is not valid and does not belong to a CUNI student or staff or it was already used. */
+  const E400_130__WRONG_CREDENTIALS_CAS_INVALID_TICKET = "400-130";
+  /** The ticket '$ticket' cannot be validated as the response from the server is corrupted or incomplete. */
+  const E400_131__WRONG_CREDENTIALS_CAS_CORRUPTED_TICKET = "400-131";
+  /** The ticket '$ticket' cannot be validated as the CUNI CAS service is unavailable. */
+  const E400_132__WRONG_CREDENTIALS_CAS_UNAVAILABLE = "400-132";
 
   /** General job config error */
   const E400_200__JOB_CONFIG = "400-200";
@@ -21,15 +47,15 @@ class FrontendErrorMappings
 
   /** General exercise compilation error */
   const E400_400__EXERCISE_COMPILATION = "400-400";
-  /** File '{$filename}' is already defined by author of the exercise */
+  /** File '$filename' is already defined by author of the exercise */
   const E400_401__EXERCISE_COMPILATION_FILE_DEFINED = "400-401";
   /** Submitted files contains two or more files with the same name */
   const E400_402__EXERCISE_COMPILATION_DUPLICATE_FILES = "400-402";
-  /** None of the submitted files matched regular expression '{$regex}' in variable '{$variable}' */
+  /** None of the submitted files matched regular expression '$regex' in variable '$variable' */
   const E400_403__EXERCISE_COMPILATION_VAR_NOT_MATCHED = "400-403";
-  /** Variable '{$variable}' was not provided on submit */
+  /** Variable '$variable' was not provided on submit */
   const E400_404__EXERCISE_COMPILATION_VAR_NOT_PROVIDED = "400-404";
-  /** File '{$filename}' in variable '{$variable}' could not be found among submitted files */
+  /** File '$filename' in variable '$variable' could not be found among submitted files */
   const E400_405__EXERCISE_COMPILATION_FILE_NOT_PROVIDED = "400-405";
 
   /** General unauthorized */
@@ -53,6 +79,12 @@ class FrontendErrorMappings
 
   /** General conflict */
   const E409_000__CONFLICT = "409-000";
+  /** The user attributes received from the CAS has no affiliation attributes that would allow registration in ReCodEx. Authenticated account does not belong to a student nor to an employee of MFF. */
+  const E409_100__CONFLICT_CAS_BAD_AFFILIATION = "409-100";
+  /** The user attributes received from the CAS do not contain an email address, which is required. */
+  const E409_101__CONFLICT_CAS_EMAIL_MISSING = "409-101";
+  /** The user attributes received from the CAS are incomplete. */
+  const E409_102__CONFLICT_CAS_ATTRIBUTES_INCOMPLETE = "409-102";
 
   /** General internal server error */
   const E500_000__INTERNAL_SERVER_ERROR = "500-000";

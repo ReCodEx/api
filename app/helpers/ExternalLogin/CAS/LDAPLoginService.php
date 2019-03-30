@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExternalLogin\CAS;
 
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Helpers\ExternalLogin\IExternalLoginService;
 use App\Helpers\ExternalLogin\UserData;
@@ -82,12 +83,19 @@ class LDAPLoginService implements IExternalLoginService {
     if (Validators::isEmail($username)) {
       $username = $this->getUKCO($username);
       if ($username === null) {
-        throw new WrongCredentialsException("Email address '$username' cannot be paired with a specific user in CAS.");
+        throw new WrongCredentialsException(
+          "Email address '$username' cannot be paired with a specific user in CAS.",
+          FrontendErrorMappings::E400_120__WRONG_CREDENTIALS_LDAP_EMAIL_NOT_PAIRED,
+          [ "email" => $username ]
+        );
       }
     }
 
     if (!Validators::isNumeric($username)) {
-      throw new WrongCredentialsException("The UKCO given by the user is not a number.");
+      throw new WrongCredentialsException(
+        "The UKCO given by the user is not a number.",
+        FrontendErrorMappings::E400_121__WRONG_CREDENTIALS_LDAP_UKCO_NOT_NUMBER
+      );
     }
 
     return $username;

@@ -15,7 +15,7 @@ class InvalidStateException extends ApiException {
    */
   public function __construct(
     string $msg = 'check the API documentation for more information about validation rules',
-    string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST,
+    string $frontendErrorCode = FrontendErrorMappings::E500_000__INTERNAL_SERVER_ERROR,
     $frontendErrorParams = null
   ) {
     parent::__construct("Invalid State - $msg", IResponse::S500_INTERNAL_SERVER_ERROR, $frontendErrorCode, $frontendErrorParams);

@@ -3,6 +3,7 @@
 namespace App\Helpers\ExternalLogin;
 
 use App\Exceptions\BadRequestException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidStateException;
 use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Instance;
@@ -111,7 +112,11 @@ class ExternalServiceAuthenticator {
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
 
     if ($user !== null) {
-      throw new WrongCredentialsException("User is already registered using '{$service->getServiceId()}'.");
+      throw new WrongCredentialsException(
+        "User is already registered using '{$service->getServiceId()}'.",
+        FrontendErrorMappings::E400_106__WRONG_CREDENTIALS_EXT_USER_REGISTERED,
+        [ "service" => $service->getServiceId() ]
+      );
     }
 
     // try to connect new user to already existing ones
@@ -137,12 +142,19 @@ class ExternalServiceAuthenticator {
    */
   private function findUser(IExternalLoginService $service, ?UserData $userData): User {
     if ($userData === null) {
-      throw new WrongCredentialsException("Authentication failed.");
+      throw new WrongCredentialsException(
+        "External authentication failed.",
+        FrontendErrorMappings::E400_104__WRONG_CREDENTIALS_EXT_FAILED
+      );
     }
 
     $user = $this->externalLogins->getUser($service->getServiceId(), $userData->getId());
     if ($user === null) {
-      throw new WrongCredentialsException("User authenticated through '{$service->getServiceId()}' has no corresponding account in ReCodEx. Please register to ReCodEx first.");
+      throw new WrongCredentialsException(
+        "User authenticated through '{$service->getServiceId()}' has no corresponding account in ReCodEx. Please register to ReCodEx first.",
+        FrontendErrorMappings::E400_105__WRONG_CREDENTIALS_EXT_USER_NOT_FOUND,
+        [ "service" => $service->getServiceId() ]
+      );
     }
 
     return $user;
@@ -175,7 +187,7 @@ class ExternalServiceAuthenticator {
     } else if (count($unconnectedUsers) > 1) {
       // multiple recodex accounts were found for emails in CAS
       throw new InvalidStateException(
-        sprintf("LDAP user '%s' has multiple specified emails (%s) which are also registered locally in ReCodEx",
+        sprintf("User '%s' has multiple specified emails (%s) which are also registered locally in ReCodEx",
           $userData->getId(), join(", ", $userData->getEmails())));
     }
 

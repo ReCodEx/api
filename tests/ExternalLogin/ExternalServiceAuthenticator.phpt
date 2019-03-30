@@ -77,7 +77,7 @@ class ExternalServiceAuthenticatorTestCase extends Tester\TestCase {
     $authenticator = new ExternalServiceAuthenticator($externalLogins, $users, $logins, $serviceA);
       Assert::throws(function () use ($authenticator, $serviceA) {
         $authenticator->authenticate($serviceA, []);
-      }, WrongCredentialsException::class, "Authentication failed.");
+      }, WrongCredentialsException::class, "External authentication failed.");
   }
 
   public function testAuthenticateMissingUser() {

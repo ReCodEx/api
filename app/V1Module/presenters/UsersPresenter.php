@@ -3,6 +3,7 @@
 namespace App\V1Module\Presenters;
 
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\WrongCredentialsException;
@@ -306,13 +307,19 @@ class UsersPresenter extends BasePresenter {
     if ($login->passwordsMatchOrEmpty($oldPassword)) {
       // check if new passwords match each other
       if ($password !== $passwordConfirm) {
-        throw new WrongCredentialsException("Provided passwords do not match");
+        throw new WrongCredentialsException(
+          "Provided passwords do not match",
+          FrontendErrorMappings::E400_102__WRONG_CREDENTIALS_PASSWDS_NOT_MATCH
+        );
       }
 
       $login->changePassword($password);
       $login->getUser()->setTokenValidityThreshold(new DateTime());
     } else {
-      throw new WrongCredentialsException("Your current password does not match");
+      throw new WrongCredentialsException(
+        "Your current password does not match",
+        FrontendErrorMappings::E400_103__WRONG_CREDENTIALS_PASSWD_NOT_MATCH
+      );
     }
 
     return true;

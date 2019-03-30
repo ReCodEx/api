@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\FrontendErrorMappings;
 use Toyota\Component\Ldap\Core\Manager;
 use Toyota\Component\Ldap\Core\Node;
 use Toyota\Component\Ldap\Platform\Native\Driver;
@@ -101,7 +102,10 @@ class LdapUserUtils {
       $code = self::getErrorCode($e->getMessage());
       switch ($code) {
         case self::ERROR_INAPPROPRIATE_AUTHENTICATION:
-          throw new WrongCredentialsException("This account cannot be used for authentication to ReCodEx. The password is probably not verified.");
+          throw new WrongCredentialsException(
+            "This account cannot be used for authentication to ReCodEx. The password is probably not verified.",
+            FrontendErrorMappings::E400_122__WRONG_CREDENTIALS_LDAP_NOT_VERIFIED
+          );
 
         case self::ERROR_WRONG_CREDENTIALS:  // wrong password
           throw new WrongCredentialsException();
@@ -110,7 +114,10 @@ class LdapUserUtils {
           throw new WrongCredentialsException();
 
         case self::ERROR_TOO_MANY_UNSUCCESSFUL_TRIES:
-          throw new WrongCredentialsException("Too many unsuccessful tries. You won't be able to log in for a short amount of time.");
+          throw new WrongCredentialsException(
+            "Too many unsuccessful tries. You won't be able to log in for a short amount of time.",
+            FrontendErrorMappings::E400_123__WRONG_CREDENTIALS_LDAP_TOO_MANY_TRIES
+          );
 
         default:
           throw new LdapConnectException();
