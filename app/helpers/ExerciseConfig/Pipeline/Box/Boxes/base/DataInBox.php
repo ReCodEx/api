@@ -128,7 +128,7 @@ abstract class DataInBox extends Box
       if (in_array($basename, $params->getFiles())) {
         throw new ExerciseCompilationSoftException(
           "File '{$basename}' is already defined by author of the exercise",
-          FrontendErrorMappings::E400_301__EXERCISE_COMPILATION_FILE_DEFINED,
+          FrontendErrorMappings::E400_401__EXERCISE_COMPILATION_FILE_DEFINED,
           [ "filename" => $basename ]
         );
       }

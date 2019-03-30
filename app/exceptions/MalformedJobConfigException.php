@@ -26,7 +26,7 @@ class MalformedJobConfigException extends ApiException {
   public function __construct(
     string $msg = 'Please contact your supervisor',
     ParseException $originalException = null,
-    string $frontendErrorCode = FrontendErrorMappings::E400_100__JOB_CONFIG,
+    string $frontendErrorCode = FrontendErrorMappings::E400_200__JOB_CONFIG,
     $frontendErrorParams = null
   ) {
     parent::__construct("Job configuration is malformed - $msg", IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);

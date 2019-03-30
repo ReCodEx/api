@@ -18,7 +18,7 @@ class ExerciseCompilationSoftException extends ExerciseCompilationException {
    */
   public function __construct(
     string $msg = 'Please, check the exercise instructions',
-    string $frontendErrorCode = FrontendErrorMappings::E400_300__EXERCISE_COMPILATION,
+    string $frontendErrorCode = FrontendErrorMappings::E400_400__EXERCISE_COMPILATION,
     $frontendErrorParams = null
   ) {
     parent::__construct($msg, IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
