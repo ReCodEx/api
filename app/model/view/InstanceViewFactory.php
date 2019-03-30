@@ -32,8 +32,8 @@ class InstanceViewFactory {
 
     return [
       "id" => $instance->getId(),
-      "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "",  # BC
-      "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "",  # BC
+      "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "", // BC
+      "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "", // BC
       "hasValidLicence" => $instance->hasValidLicence(),
       "isOpen" => $instance->isOpen(),
       "isAllowed" => $instance->isAllowed(),

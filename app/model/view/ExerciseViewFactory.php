@@ -22,7 +22,7 @@ class ExerciseViewFactory {
 
     return [
       "id" => $exercise->getId(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", # BC
+      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", // BC
       "version" => $exercise->getVersion(),
       "createdAt" => $exercise->getCreatedAt()->getTimestamp(),
       "updatedAt" => $exercise->getUpdatedAt()->getTimestamp(),
@@ -35,7 +35,7 @@ class ExerciseViewFactory {
       "groupsIds" => $exercise->getGroupsIds(),
       "isPublic" => $exercise->isPublic(),
       "isLocked" => $exercise->isLocked(),
-      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", # BC
+      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
       "supplementaryFilesIds" => $exercise->getSupplementaryFilesIds(),
       "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
       "configurationType" => $exercise->getConfigurationType(),
