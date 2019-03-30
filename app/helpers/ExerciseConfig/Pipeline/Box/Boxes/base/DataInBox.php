@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\BoxCategories;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
@@ -125,7 +126,11 @@ abstract class DataInBox extends Box
       // check if soon-to-be fetched file does not collide with files given by user
       $basename = basename($local);
       if (in_array($basename, $params->getFiles())) {
-        throw new ExerciseCompilationSoftException("File '{$basename}' is already defined by author of the exercise");
+        throw new ExerciseCompilationSoftException(
+          "File '{$basename}' is already defined by author of the exercise",
+          FrontendErrorMappings::E400_301__EXERCISE_COMPILATION_FILE_DEFINED,
+          [ "filename" => $basename ]
+        );
       }
 
       // remote file has to have fetch task
