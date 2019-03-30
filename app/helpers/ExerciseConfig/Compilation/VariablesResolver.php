@@ -5,6 +5,7 @@ namespace App\Helpers\ExerciseConfig\Compilation;
 use App\Exceptions\ExerciseCompilationException;
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\ExerciseConfig\Compilation\Tree\MergeTree;
 use App\Helpers\ExerciseConfig\Compilation\Tree\PortNode;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
@@ -39,7 +40,11 @@ class VariablesResolver {
     // but user which submitted solution did not provide the value for reference
     $reference = $variable->getReference();
     if (!$params->getSolutionParams()->getVariable($reference)) {
-      throw new ExerciseCompilationSoftException("Variable '{$reference}' was not provided on submit");
+      throw new ExerciseCompilationSoftException(
+        "Variable '{$reference}' was not provided on submit",
+        FrontendErrorMappings::E400_304__EXERCISE_COMPILATION_VAR_NOT_PROVIDED,
+        [ "variable" => $reference ]
+      );
     }
 
     // set user provided variable to actual variable
@@ -49,7 +54,11 @@ class VariablesResolver {
     if ($variable->isFile()) {
       foreach ($variable->getValueAsArray() as $value) {
         if (!in_array($value, $params->getFiles())) {
-          throw new ExerciseCompilationSoftException("File '{$value}' in variable '{$reference}' could not be found among submitted files");
+          throw new ExerciseCompilationSoftException(
+            "File '{$value}' in variable '{$reference}' could not be found among submitted files",
+            FrontendErrorMappings::E400_305__EXERCISE_COMPILATION_FILE_NOT_PROVIDED,
+            [ "filename" => $value, "variable" => $reference ]
+          );
         }
       }
     }
@@ -80,7 +89,11 @@ class VariablesResolver {
 
     if (empty($matches)) {
       // there were no matches, but variable value cannot be empty!
-      throw new ExerciseCompilationSoftException("None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'");
+      throw new ExerciseCompilationSoftException(
+        "None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'",
+        FrontendErrorMappings::E400_303__EXERCISE_COMPILATION_VAR_NOT_MATCHED,
+        [ "regex" => $value, "variable" => $variable->getName() ]
+      );
     }
 
     // construct resulting variable from given variable info
