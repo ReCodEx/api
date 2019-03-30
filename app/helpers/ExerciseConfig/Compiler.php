@@ -66,7 +66,7 @@ class Compiler {
     if (count($params->getFiles()) !== count($uniqueFiles)) {
       throw new ExerciseCompilationSoftException(
         "Submitted files contains two or more files with the same name.",
-        FrontendErrorMappings::E400_302__EXERCISE_COMPILATION_DUPLICATE_FILES
+        FrontendErrorMappings::E400_402__EXERCISE_COMPILATION_DUPLICATE_FILES
       );
     }
 

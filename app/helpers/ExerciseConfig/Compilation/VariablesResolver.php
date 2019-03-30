@@ -42,7 +42,7 @@ class VariablesResolver {
     if (!$params->getSolutionParams()->getVariable($reference)) {
       throw new ExerciseCompilationSoftException(
         "Variable '{$reference}' was not provided on submit",
-        FrontendErrorMappings::E400_304__EXERCISE_COMPILATION_VAR_NOT_PROVIDED,
+        FrontendErrorMappings::E400_404__EXERCISE_COMPILATION_VAR_NOT_PROVIDED,
         [ "variable" => $reference ]
       );
     }
@@ -56,7 +56,7 @@ class VariablesResolver {
         if (!in_array($value, $params->getFiles())) {
           throw new ExerciseCompilationSoftException(
             "File '{$value}' in variable '{$reference}' could not be found among submitted files",
-            FrontendErrorMappings::E400_305__EXERCISE_COMPILATION_FILE_NOT_PROVIDED,
+            FrontendErrorMappings::E400_405__EXERCISE_COMPILATION_FILE_NOT_PROVIDED,
             [ "filename" => $value, "variable" => $reference ]
           );
         }
@@ -91,7 +91,7 @@ class VariablesResolver {
       // there were no matches, but variable value cannot be empty!
       throw new ExerciseCompilationSoftException(
         "None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'",
-        FrontendErrorMappings::E400_303__EXERCISE_COMPILATION_VAR_NOT_MATCHED,
+        FrontendErrorMappings::E400_403__EXERCISE_COMPILATION_VAR_NOT_MATCHED,
         [ "regex" => $value, "variable" => $variable->getName() ]
       );
     }
