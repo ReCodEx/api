@@ -76,8 +76,8 @@ class ExternalServiceAuthenticator {
    * @param IExternalLoginService $service
    * @param array $credentials
    * @return User
+   * @throws BadRequestException
    * @throws WrongCredentialsException
-   * @throws InvalidStateException
    */
   public function authenticate(IExternalLoginService $service, $credentials) {
     $user = null;
@@ -104,8 +104,8 @@ class ExternalServiceAuthenticator {
    * @param Instance $instance
    * @param array $credentials
    * @return User
+   * @throws BadRequestException
    * @throws WrongCredentialsException
-   * @throws InvalidStateException
    */
   public function register(IExternalLoginService $service, Instance $instance, $credentials): User {
     $userData = $service->getUser($credentials); // throws if the user cannot be logged in
@@ -162,11 +162,11 @@ class ExternalServiceAuthenticator {
 
 
   /**
-   * Try connecting given LDAP user to local ReCodEx user account.
+   * Try connecting given external user to local ReCodEx user account.
    * @param IExternalLoginService $service
    * @param UserData $userData
    * @return User|null
-   * @throws InvalidStateException
+   * @throws BadRequestException
    */
   private function tryConnect(IExternalLoginService $service, UserData $userData): ?User {
     $unconnectedUsers = [];
@@ -182,13 +182,16 @@ class ExternalServiceAuthenticator {
     }
 
     if (count($unconnectedUsers) === 0) {
-      // no recodex users are suitable for connecting to CAS account
+      // no recodex users are suitable for connecting to external service account
       return null;
     } else if (count($unconnectedUsers) > 1) {
-      // multiple recodex accounts were found for emails in CAS
-      throw new InvalidStateException(
+      // multiple recodex accounts were found for emails in external service
+      throw new BadRequestException(
         sprintf("User '%s' has multiple specified emails (%s) which are also registered locally in ReCodEx",
-          $userData->getId(), join(", ", $userData->getEmails())));
+          $userData->getId(), join(", ", $userData->getEmails())),
+        FrontendErrorMappings::E400_001__BAD_REQUEST_EXT_MULTIPLE_USERS_FOUND,
+        [ "user" => $userData->getId(), "emails" => $userData->getEmails() ]
+      );
     }
 
     // there was only one suitable user, try to connect it

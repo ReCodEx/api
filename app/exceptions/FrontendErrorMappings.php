@@ -10,6 +10,8 @@ class FrontendErrorMappings
 
   /** General bad request */
   const E400_000__BAD_REQUEST = "400-000";
+  /** User '$user' has multiple specified emails ($emails) which are also registered locally in ReCodEx */
+  const E400_001__BAD_REQUEST_EXT_MULTIPLE_USERS_FOUND = "400-001";
 
   /** Invalid credentials */
   const E400_100__WRONG_CREDENTIALS = "400-100";
