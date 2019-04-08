@@ -54,6 +54,8 @@ class BoxService
       FilesNamesBox::$BOX_TYPE => FilesNamesBox::class,
       CustomCompilationBox::$CUSTOM_COMPILATION_TYPE => CustomCompilationBox::class,
       PrologCompilationBox::$BOX_TYPE => PrologCompilationBox::class,
+      HaskellCompilationBox::$BOX_TYPE => HaskellCompilationBox::class,
+      HaskellExecutionBox::$BOX_TYPE => HaskellExecutionBox::class,
     ];
   }
 

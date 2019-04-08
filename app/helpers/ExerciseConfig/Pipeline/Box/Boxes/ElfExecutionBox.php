@@ -17,7 +17,6 @@ class ElfExecutionBox extends ExecutionBox
 {
   /** Type key */
   public static $ELF_EXEC_TYPE = "elf-exec";
-  public static $BINARY_FILE_PORT_KEY = "binary-file";
   public static $DEFAULT_NAME = "ELF Execution";
 
   private static $initialized = false;
@@ -31,7 +30,7 @@ class ElfExecutionBox extends ExecutionBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
-        new Port((new PortMeta())->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE))
@@ -95,8 +94,8 @@ class ElfExecutionBox extends ExecutionBox
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
     $task->setCommandBinary($this->getInputPortValue(self::$BINARY_FILE_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR));
-    if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
-      $task->setCommandArguments($this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $task->setCommandArguments($this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
 
     return [$task];
