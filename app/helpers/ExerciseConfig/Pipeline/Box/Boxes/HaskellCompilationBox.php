@@ -110,7 +110,7 @@ class HaskellCompilationBox extends CompilationBox
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
         [
           "-e",
-          "True"
+          ""
         ]
       )
     );

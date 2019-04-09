@@ -36,7 +36,6 @@ class HaskellExecutionBox extends ExecutionBox
       self::$defaultInputPorts = array(
         new Port((new PortMeta())->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$STRING_TYPE)),
@@ -111,13 +110,8 @@ class HaskellExecutionBox extends ExecutionBox
       throw new ExerciseCompilationSoftException("Name of the entry-point contains illicit characters");
     }
 
-    $args = [];
-    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
-      $args = $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue();
-    }
     $task->setCommandArguments(
       array_merge(
-        $args,
         $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
         $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
         [
