@@ -110,7 +110,7 @@ class HaskellExecutionBox extends ExecutionBox
     if (!preg_match('/^([A-Z][a-zA-Z0-9_]*[.])?[a-z][a-zA-Z0-9_]*$/', $entry)) {
       throw new ExerciseCompilationSoftException(
         "Name of the entry-point contains illicit characters",
-        FrontendErrorMappings::E400_401__EXERCISE_COMPILATION_FILE_DEFINED
+        FrontendErrorMappings::E400_406__EXERCISE_COMPILATION_BAD_ENTRY_POINT_NAME
       );
     }
 
