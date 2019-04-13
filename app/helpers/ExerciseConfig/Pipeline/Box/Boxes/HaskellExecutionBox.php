@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
+use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
@@ -11,14 +12,15 @@ use App\Helpers\ExerciseConfig\VariableTypes;
 
 
 /**
- * Box which represents execution of given javascript.
+ * Box which represents execution Haskell scripts. Input binary file is
+ * pseudo-link between haskell compilation and this box.
  */
-class NodeRunBox extends ExecutionBox
+class HaskellExecutionBox extends ExecutionBox
 {
   /** Type key */
-  public static $NODE_RUN_TYPE = "node";
-  public static $NODE_BINARY = "/usr/bin/node";
-  public static $DEFAULT_NAME = "Node.js Execution";
+  public static $BOX_TYPE = "haskell-exec";
+  public static $HASKELL_BINARY = "/usr/bin/ghci";
+  public static $DEFAULT_NAME = "Haskell Execution";
 
   private static $initialized = false;
   private static $defaultInputPorts;
@@ -32,11 +34,11 @@ class NodeRunBox extends ExecutionBox
     if (!self::$initialized) {
       self::$initialized = true;
       self::$defaultInputPorts = array(
+        new Port((new PortMeta())->setName(self::$BINARY_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$SOURCE_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-        new Port((new PortMeta())->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$FILE_TYPE)),
+        new Port((new PortMeta())->setName(self::$ENTRY_POINT_KEY)->setType(VariableTypes::$STRING_TYPE)),
         new Port((new PortMeta())->setName(self::$EXTRA_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
       );
       self::$defaultOutputPorts = array(
@@ -47,7 +49,7 @@ class NodeRunBox extends ExecutionBox
   }
 
   /**
-   * ElfExecutionBox constructor.
+   * HaskellExecutionBox constructor.
    * @param BoxMeta $meta
    */
   public function __construct(BoxMeta $meta) {
@@ -60,7 +62,7 @@ class NodeRunBox extends ExecutionBox
    * @return string
    */
   public function getType(): string {
-    return self::$NODE_RUN_TYPE;
+    return self::$BOX_TYPE;
   }
 
   /**
@@ -96,16 +98,28 @@ class NodeRunBox extends ExecutionBox
    * @param CompilationParams $params
    * @return array
    * @throws ExerciseConfigException
+   * @throws ExerciseCompilationSoftException
    */
   public function compile(CompilationParams $params): array {
     $task = $this->compileBaseTask($params);
-    $task->setCommandBinary(self::$NODE_BINARY);
+    $task->setCommandBinary(self::$HASKELL_BINARY);
 
-    $args = [$this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue()];
-    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
-      $args = array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
+    // check entry
+    $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
+    if (!preg_match('/^([A-Z][a-zA-Z0-9_]*[.])?[a-z][a-zA-Z0-9_]*$/', $entry)) {
+      throw new ExerciseCompilationSoftException("Name of the entry-point contains illicit characters");
     }
-    $task->setCommandArguments($args);
+
+    $task->setCommandArguments(
+      array_merge(
+        $this->getInputPortValue(self::$SOURCE_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
+        $this->getInputPortValue(self::$EXTRA_FILES_PORT_KEY)->getValue(ConfigParams::$EVAL_DIR),
+        [
+          "-e",
+          "{$entry} ()"
+        ]
+      )
+    );
 
     return [$task];
   }

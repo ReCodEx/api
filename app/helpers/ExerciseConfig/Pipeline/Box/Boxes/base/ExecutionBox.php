@@ -21,7 +21,7 @@ use Nette\Utils\Random;
  */
 abstract class ExecutionBox extends Box
 {
-  public static $EXECUTION_ARGS_PORT_KEY = "args";
+  public static $ARGS_PORT_KEY = "args";
   public static $INPUT_FILES_PORT_KEY = "input-files";
   public static $SOURCE_FILES_PORT_KEY = "source-files";
   public static $STDIN_FILE_PORT_KEY = "stdin";
@@ -30,6 +30,7 @@ abstract class ExecutionBox extends Box
   public static $RUNNER_FILE_PORT_KEY = "runner";
   public static $ENTRY_POINT_KEY = "entry-point";
   public static $EXTRA_FILES_PORT_KEY = "extra-files";
+  public static $BINARY_FILE_PORT_KEY = "binary-file";
 
 
   /**
