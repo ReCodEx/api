@@ -59,6 +59,8 @@ class FrontendErrorMappings
   const E400_404__EXERCISE_COMPILATION_VARIABLE_NOT_PROVIDED = "400-404";
   /** File '$filename' in variable '$variable' could not be found among submitted files */
   const E400_405__EXERCISE_COMPILATION_FILE_NOT_PROVIDED = "400-405";
+  /** Name of the entry-point contains illicit characters */
+  const E400_406__EXERCISE_COMPILATION_BAD_ENTRY_POINT_NAME = "400-406";
 
   /** General unauthorized */
   const E401_000__UNAUTHORIZED = "401-000";
