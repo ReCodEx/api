@@ -4,6 +4,7 @@ namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Exceptions\ExerciseCompilationSoftException;
 use App\Exceptions\ExerciseConfigException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\ExerciseConfig\Compilation\CompilationParams;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
@@ -107,7 +108,10 @@ class HaskellExecutionBox extends ExecutionBox
     // check entry
     $entry = $this->getInputPortValue(self::$ENTRY_POINT_KEY)->getValue();
     if (!preg_match('/^([A-Z][a-zA-Z0-9_]*[.])?[a-z][a-zA-Z0-9_]*$/', $entry)) {
-      throw new ExerciseCompilationSoftException("Name of the entry-point contains illicit characters");
+      throw new ExerciseCompilationSoftException(
+        "Name of the entry-point contains illicit characters",
+        FrontendErrorMappings::E400_401__EXERCISE_COMPILATION_FILE_DEFINED
+      );
     }
 
     $task->setCommandArguments(
