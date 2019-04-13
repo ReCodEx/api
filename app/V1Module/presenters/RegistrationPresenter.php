@@ -152,7 +152,7 @@ class RegistrationPresenter extends BasePresenter {
     if ($password !== $passwordConfirm) {
       throw new WrongCredentialsException(
         "Provided passwords do not match",
-        FrontendErrorMappings::E400_102__WRONG_CREDENTIALS_PASSWDS_NOT_MATCH
+        FrontendErrorMappings::E400_102__WRONG_CREDENTIALS_PASSWORDS_NOT_MATCH
       );
     }
 
