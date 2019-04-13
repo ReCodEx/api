@@ -35,7 +35,7 @@ class JavaRunBox extends ExecutionBox
       self::$initialized = true;
       self::$defaultInputPorts = array(
         new Port((new PortMeta())->setName(self::$RUNNER_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
-        new Port((new PortMeta())->setName(self::$EXECUTION_ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
+        new Port((new PortMeta())->setName(self::$ARGS_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$STDIN_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
         new Port((new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
         new Port((new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
@@ -118,8 +118,8 @@ class JavaRunBox extends ExecutionBox
     $args = array_merge($args, $classpath);
 
     $args = array_merge($args, [ $runnerClass, "run" ]);
-    if ($this->hasInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)) {
-      $args = array_merge($args, $this->getInputPortValue(self::$EXECUTION_ARGS_PORT_KEY)->getValue());
+    if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
+      $args = array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
     $task->setCommandArguments($args);
 

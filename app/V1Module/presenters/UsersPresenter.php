@@ -16,6 +16,7 @@ use App\Helpers\EmailVerificationHelper;
 use App\Helpers\AnonymizationHelper;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\GroupViewFactory;
+use App\Model\View\InstanceViewFactory;
 use App\Model\View\UserViewFactory;
 use App\Security\ACL\IUserPermissions;
 use App\Security\Roles;
@@ -73,6 +74,12 @@ class UsersPresenter extends BasePresenter {
    * @inject
    */
   public $roles;
+
+  /**
+   * @var InstanceViewFactory
+   * @inject
+   */
+  public $instanceViewFactory;
 
 
   public function checkDefault() {
@@ -494,11 +501,12 @@ class UsersPresenter extends BasePresenter {
    * Get a list of instances where a user is registered
    * @GET
    * @param string $id Identifier of the user
+   * @throws NotFoundException
    */
   public function actionInstances(string $id) {
     $user = $this->users->findOrThrow($id);
 
-    $this->sendSuccessResponse($user->getInstances()->getValues());
+    $this->sendSuccessResponse($this->instanceViewFactory->getInstances($user->getInstances()->toArray()));
   }
 
   public function checkExercises(string $id) {

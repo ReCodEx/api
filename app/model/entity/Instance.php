@@ -6,8 +6,6 @@ use App\Helpers\Localizations;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Criteria;
-use JsonSerializable;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -22,11 +20,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method setIsOpen(bool $isOpen)
  * @method Collection getLicences()
  */
-class Instance implements JsonSerializable
+class Instance
 {
   use MagicAccessors;
   use UpdateableEntity;
   use DeleteableEntity;
+  use CreateableEntity;
 
   /**
    * @ORM\Id
@@ -51,11 +50,6 @@ class Instance implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $isAllowed;
-
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
 
   /**
    * @ORM\ManyToOne(targetEntity="User")
@@ -124,25 +118,6 @@ class Instance implements JsonSerializable
 
   public function isAllowed() {
     return $this->isAllowed;
-  }
-
-  public function jsonSerialize() {
-    /** @var LocalizedGroup $localizedRootGroup */
-    $localizedRootGroup = Localizations::getPrimaryLocalization($this->rootGroup->getLocalizedTexts());
-
-    return [
-      "id" => $this->id,
-      "name" => $localizedRootGroup ? $localizedRootGroup->getName() : "",
-      "description" => $localizedRootGroup ? $localizedRootGroup->getDescription() : "",
-      "hasValidLicence" => $this->hasValidLicence(),
-      "isOpen" => $this->isOpen,
-      "isAllowed" => $this->isAllowed,
-      "createdAt" => $this->createdAt->getTimestamp(),
-      "updatedAt" => $this->updatedAt->getTimestamp(),
-      "deletedAt" => $this->deletedAt ? $this->deletedAt->getTimestamp() : null,
-      "admin" => $this->getAdmin() ? $this->getAdmin()->getId() : null,
-      "rootGroupId" => $this->rootGroup !== null ? $this->rootGroup->getId() : null
-    ];
   }
 
   public function __construct(){
