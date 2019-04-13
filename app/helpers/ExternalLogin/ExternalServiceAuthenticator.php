@@ -114,7 +114,7 @@ class ExternalServiceAuthenticator {
     if ($user !== null) {
       throw new WrongCredentialsException(
         "User is already registered using '{$service->getServiceId()}'.",
-        FrontendErrorMappings::E400_106__WRONG_CREDENTIALS_EXT_USER_REGISTERED,
+        FrontendErrorMappings::E400_106__WRONG_CREDENTIALS_EXTERNAL_USER_REGISTERED,
         [ "service" => $service->getServiceId() ]
       );
     }
@@ -144,7 +144,7 @@ class ExternalServiceAuthenticator {
     if ($userData === null) {
       throw new WrongCredentialsException(
         "External authentication failed.",
-        FrontendErrorMappings::E400_104__WRONG_CREDENTIALS_EXT_FAILED
+        FrontendErrorMappings::E400_104__WRONG_CREDENTIALS_EXTERNAL_FAILED
       );
     }
 
@@ -152,7 +152,7 @@ class ExternalServiceAuthenticator {
     if ($user === null) {
       throw new WrongCredentialsException(
         "User authenticated through '{$service->getServiceId()}' has no corresponding account in ReCodEx. Please register to ReCodEx first.",
-        FrontendErrorMappings::E400_105__WRONG_CREDENTIALS_EXT_USER_NOT_FOUND,
+        FrontendErrorMappings::E400_105__WRONG_CREDENTIALS_EXTERNAL_USER_NOT_FOUND,
         [ "service" => $service->getServiceId() ]
       );
     }

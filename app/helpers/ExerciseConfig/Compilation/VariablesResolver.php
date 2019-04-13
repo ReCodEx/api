@@ -42,7 +42,7 @@ class VariablesResolver {
     if (!$params->getSolutionParams()->getVariable($reference)) {
       throw new ExerciseCompilationSoftException(
         "Variable '{$reference}' was not provided on submit",
-        FrontendErrorMappings::E400_404__EXERCISE_COMPILATION_VAR_NOT_PROVIDED,
+        FrontendErrorMappings::E400_404__EXERCISE_COMPILATION_VARIABLE_NOT_PROVIDED,
         [ "variable" => $reference ]
       );
     }
@@ -91,7 +91,7 @@ class VariablesResolver {
       // there were no matches, but variable value cannot be empty!
       throw new ExerciseCompilationSoftException(
         "None of the submitted files matched regular expression '{$value}' in variable '{$variable->getName()}'",
-        FrontendErrorMappings::E400_403__EXERCISE_COMPILATION_VAR_NOT_MATCHED,
+        FrontendErrorMappings::E400_403__EXERCISE_COMPILATION_VARIABLE_NOT_MATCHED,
         [ "regex" => $value, "variable" => $variable->getName() ]
       );
     }

@@ -18,15 +18,15 @@ class FrontendErrorMappings
   /** The username or password is incorrect */
   const E400_101__WRONG_CREDENTIALS_LOCAL = "400-101";
   /** Provided passwords do not match */
-  const E400_102__WRONG_CREDENTIALS_PASSWDS_NOT_MATCH = "400-102";
+  const E400_102__WRONG_CREDENTIALS_PASSWORDS_NOT_MATCH = "400-102";
   /** Your current password does not match */
-  const E400_103__WRONG_CREDENTIALS_PASSWD_NOT_MATCH = "400-103";
+  const E400_103__WRONG_CREDENTIALS_CURRENT_PASSWORD_NOT_MATCH = "400-103";
   /** External authentication failed. */
-  const E400_104__WRONG_CREDENTIALS_EXT_FAILED = "400-104";
+  const E400_104__WRONG_CREDENTIALS_EXTERNAL_FAILED = "400-104";
   /** User authenticated through '$service' has no corresponding account in ReCodEx. Please register to ReCodEx first. */
-  const E400_105__WRONG_CREDENTIALS_EXT_USER_NOT_FOUND = "400-105";
+  const E400_105__WRONG_CREDENTIALS_EXTERNAL_USER_NOT_FOUND = "400-105";
   /** User is already registered using '$service'. */
-  const E400_106__WRONG_CREDENTIALS_EXT_USER_REGISTERED = "400-106";
+  const E400_106__WRONG_CREDENTIALS_EXTERNAL_USER_REGISTERED = "400-106";
   /** Email address '$email' cannot be paired with a specific user in CAS. */
   const E400_120__WRONG_CREDENTIALS_LDAP_EMAIL_NOT_PAIRED = "400-120";
   /** The UKCO given by the user is not a number. */
@@ -54,9 +54,9 @@ class FrontendErrorMappings
   /** Submitted files contains two or more files with the same name */
   const E400_402__EXERCISE_COMPILATION_DUPLICATE_FILES = "400-402";
   /** None of the submitted files matched regular expression '$regex' in variable '$variable' */
-  const E400_403__EXERCISE_COMPILATION_VAR_NOT_MATCHED = "400-403";
+  const E400_403__EXERCISE_COMPILATION_VARIABLE_NOT_MATCHED = "400-403";
   /** Variable '$variable' was not provided on submit */
-  const E400_404__EXERCISE_COMPILATION_VAR_NOT_PROVIDED = "400-404";
+  const E400_404__EXERCISE_COMPILATION_VARIABLE_NOT_PROVIDED = "400-404";
   /** File '$filename' in variable '$variable' could not be found among submitted files */
   const E400_405__EXERCISE_COMPILATION_FILE_NOT_PROVIDED = "400-405";
 
