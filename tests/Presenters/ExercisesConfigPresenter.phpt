@@ -9,6 +9,7 @@ use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
 use Tester\Assert;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * @testCase
@@ -515,8 +516,9 @@ class TestExercisesConfigPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
 
-    $payload = $result['payload'];
-    Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100", $payload);
+    $payload = Yaml::parse($result['payload']);
+    $expected = Yaml::parse($config);
+    Assert::equal($expected, $payload);
   }
 
   public function testGetTests() {
