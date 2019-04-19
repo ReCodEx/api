@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Evaluation;
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\ExerciseConfigException;
 
 /**
  * Interface for score computations. Purpose is to merge scores of all
@@ -23,6 +24,15 @@ interface IScoreCalculator {
    * @return bool If the config is valid or not
    */
   public function isScoreConfigValid(string $scoreConfig): bool;
+
+  /**
+   * Performs validation and normalization on config string.
+   * This should be used instead of validation when the score config is processed as API input.
+   * @param string $scoreConfig YAML configuration for the score calculator
+   * @return string Normalized and polished YAML with score configuration
+   * @throws ExerciseConfigException
+   */
+  public function validateAndNormalizeScore(string $scoreConfig): string;
 
   /**
    * Make default configuration for array of test names. Each test will

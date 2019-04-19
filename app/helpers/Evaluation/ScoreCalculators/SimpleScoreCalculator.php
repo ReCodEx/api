@@ -3,6 +3,7 @@
 namespace App\Helpers\Evaluation;
 
 use App\Exceptions\SubmissionEvaluationFailedException;
+use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IScoreCalculator;
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -17,6 +18,32 @@ use Symfony\Component\Yaml\Exception\ParseException;
  * weights can be arbitrary, what matters are ratios.
  */
 class SimpleScoreCalculator implements IScoreCalculator {
+  /**
+   * Internal function that safely retrieves score config weights.
+   * @param string $scoreConfig
+   * @return array|null Null if the config is invalid, name => weight array otherwise.
+   */
+  private function getTestWeights(string $scoreConfig): ?array {
+    try {
+      $config = Yaml::parse($scoreConfig);
+      $normalizedWeights = [];
+
+      if (isset($config['testWeights']) && is_array($config['testWeights'])) {
+        foreach ($config['testWeights'] as $name => $value) {
+          if (!is_integer($value)) {
+            return null;
+          }
+          $normalizedWeights[trim($name)] = $value;
+        }
+      } else {
+        return null;
+      }
+    } catch (ParseException $e) {
+      return null;
+    }
+
+    return $normalizedWeights;
+  }
 
   /**
    * Function that computes the resulting score from simple YML config and test results score
@@ -26,12 +53,10 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @throws SubmissionEvaluationFailedException
    */
   public function computeScore(string $scoreConfig, array $testResults): float {
-    if (!$this->isScoreConfigValid($scoreConfig)) {
+    $weights = $this->getTestWeights($scoreConfig);
+    if ($weights === null) {
       throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
     }
-
-    $config = Yaml::parse($scoreConfig);
-    $weights = $config['testWeights'];
 
     // assign zero ratio to all tests which does not have specified value
     foreach ($testResults as $name => $score) {
@@ -57,23 +82,22 @@ class SimpleScoreCalculator implements IScoreCalculator {
    * @return bool If the configuration is valid or not
    */
   public function isScoreConfigValid(string $scoreConfig): bool {
-    try {
-      $config = Yaml::parse($scoreConfig);
+    return $this->getTestWeights($scoreConfig) !== null;
+  }
 
-      if (isset($config['testWeights']) && is_array($config['testWeights'])) {
-        foreach ($config['testWeights'] as $value) {
-          if (!is_integer($value)) {
-            return false;
-          }
-        }
-      } else {
-        return false;
-      }
-    } catch (ParseException $e) {
-      return false;
+  /**
+   * Performs validation and normalization on config string.
+   * This should be used instead of validation when the score config is processed as API input.
+   * @param string $scoreConfig YAML configuration for the score calculator
+   * @return string Normalized and polished YAML with score configuration
+   * @throws ExerciseConfigException
+   */
+  public function validateAndNormalizeScore(string $scoreConfig): string {
+    $weights = $this->getTestWeights($scoreConfig);
+    if ($weights === null) {
+      throw new ExerciseConfigException("Exercise score configuration is not valid");
     }
-
-    return true;
+    return Yaml::dump([ 'testWeights' => $weights ]);
   }
 
   /**

@@ -653,12 +653,10 @@ class ExercisesConfigPresenter extends BasePresenter {
 
     // validate score configuration
     $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
-    if (!$calculator->isScoreConfigValid($config)) {
-      throw new ExerciseConfigException("Exercise score configuration is not valid");
-    }
+    $normalizedConfig = $calculator->validateAndNormalizeScore($config);  // throws if validation fails
 
     $exercise->updatedNow();
-    $exercise->setScoreConfig($config);
+    $exercise->setScoreConfig($normalizedConfig);
     $this->exercises->flush();
 
     // check exercise configuration
