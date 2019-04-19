@@ -170,7 +170,7 @@ class RegistrationPresenter extends BasePresenter {
     $this->users->persist($user);
 
     // email verification
-    $this->emailVerificationHelper->process($user);
+    $this->emailVerificationHelper->process($user, true); // true = account has just been created
 
     // add new user to implicit groups
     foreach ($this->registrationConfig->getImplicitGroupsIds() as $groupId) {
@@ -209,7 +209,7 @@ class RegistrationPresenter extends BasePresenter {
 
     // email verification
     if (!$user->isVerified()) {
-      $this->emailVerificationHelper->process($user);
+      $this->emailVerificationHelper->process($user, true); // true = account has just been created
     }
 
     // successful!

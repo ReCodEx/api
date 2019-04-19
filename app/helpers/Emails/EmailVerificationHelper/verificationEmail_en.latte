@@ -1,4 +1,11 @@
+{if $firstTime}
+<h3>Welcome to ReCodEx</h3>
+<p>
+  Your account associated with {$email} address was successfully created.
+</p>
+{else}
 <h3>Verification of email address {$email}</h3>
+{/if}
 <p>
     ReCodEx would like to verify your email address.
     Email verification is necessary to ensure correct functionality of all ReCodEx services.
