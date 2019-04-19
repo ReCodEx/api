@@ -77,16 +77,17 @@ class EmailVerificationHelper {
   /**
    * Generate access token and send it to the given email.
    * @param User $user
+   * @param bool $firstTime True if this is the first time the verification is requested (account has just been created).
    * @return bool If sending was successful or not
    * @throws InvalidStateException
    */
-  public function process(User $user) {
+  public function process(User $user, bool $firstTime = false) {
     // prepare all necessary things
     $token = $this->accessManager->issueToken(
       $user, [TokenScope::EMAIL_VERIFICATION], $this->tokenExpiration, ["email" => $user->getEmail()]
     );
 
-    return $this->sendEmail($user, $token);
+    return $this->sendEmail($user, $token, $firstTime);
   }
 
   /**
@@ -115,14 +116,15 @@ class EmailVerificationHelper {
    * Send an email with the token for the verification of the email address of the user.
    * @param User $user
    * @param string $token
+   * @param bool $firstTime
    * @return bool
    * @throws InvalidStateException
    * @throws Exception
    */
-  private function sendEmail(User $user, string $token): bool {
+  private function sendEmail(User $user, string $token, bool $firstTime = false): bool {
     $locale = $user->getSettings()->getDefaultLanguage();
     $subject = $this->createSubject($user);
-    $message = $this->createBody($user, $locale, $token);
+    $message = $this->createBody($user, $locale, $token, $firstTime);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -148,10 +150,11 @@ class EmailVerificationHelper {
    * @param User $user
    * @param string $locale
    * @param string $token
+   * @param bool $firstTime
    * @return string
    * @throws InvalidStateException
    */
-  private function createBody(User $user, string $locale, string $token): string {
+  private function createBody(User $user, string $locale, string $token, bool $firstTime): string {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
@@ -162,7 +165,8 @@ class EmailVerificationHelper {
     return $latte->renderToString($template, [
       "email" => $user->getEmail(),
       "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
-      "expiresAfter" => $expiresAfter->format("H:i")
+      "expiresAfter" => $expiresAfter->format("H:i"),
+      "firstTime" => $firstTime,
     ]);
   }
 

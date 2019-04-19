@@ -334,7 +334,7 @@ class TestRegistrationPresenter extends Tester\TestCase
 
     // mock verification email helper
     $mockVerificationEmail = Mockery::mock(EmailVerificationHelper::class);
-    $mockVerificationEmail->shouldReceive("process")->with($user)->once();
+    $mockVerificationEmail->shouldReceive("process")->with($user, true)->once();
     $this->presenter->emailVerificationHelper = $mockVerificationEmail;
 
     $request = new Nette\Application\Request($this->presenterPath, 'POST',
