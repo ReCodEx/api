@@ -38,7 +38,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new BadRequestException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -49,7 +49,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new CASMissingInfoException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -59,8 +59,8 @@ class TestExceptions extends Tester\TestCase
   public function testCannotReceiveUploadedFileException() {
     Assert::exception(function() {
       try {
-        throw new CannotReceiveUploadedFileException("message");
-      } catch (\Exception $e) {
+        throw new CannotReceiveUploadedFileException("message", -1);
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -71,7 +71,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new ForbiddenRequestException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -82,7 +82,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new HttpBasicAuthException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         Assert::count(1, $e->getAdditionalHttpHeaders());
         throw $e;
@@ -94,7 +94,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new InternalServerException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -105,7 +105,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new InvalidAccessTokenException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         Assert::count(1, $e->getAdditionalHttpHeaders());
         throw $e;
@@ -117,7 +117,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new InvalidArgumentException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -128,7 +128,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new InvalidMembershipException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -139,7 +139,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new InvalidStateException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -150,7 +150,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new JobConfigLoadingException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -161,7 +161,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new JobConfigStorageException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -172,7 +172,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new LdapConnectException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -183,7 +183,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new MalformedJobConfigException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -194,7 +194,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new NoAccessTokenException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         Assert::count(1, $e->getAdditionalHttpHeaders());
         throw $e;
@@ -206,7 +206,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new NotImplementedException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -217,7 +217,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new NotReadyException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -228,7 +228,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new ResultsLoadingException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -239,7 +239,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new SubmissionEvaluationFailedException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -250,7 +250,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new SubmissionFailedException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -261,7 +261,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new UnauthorizedException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         Assert::count(1, $e->getAdditionalHttpHeaders());
         throw $e;
@@ -273,7 +273,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new UploadedFileException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
@@ -284,7 +284,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new WrongCredentialsException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         Assert::count(1, $e->getAdditionalHttpHeaders());
         throw $e;
@@ -296,7 +296,7 @@ class TestExceptions extends Tester\TestCase
     Assert::exception(function() {
       try {
         throw new WrongHttpMethodException("message");
-      } catch (\Exception $e) {
+      } catch (Exception $e) {
         Assert::true(strlen($e->getMessage()) > 0);
         throw $e;
       }
