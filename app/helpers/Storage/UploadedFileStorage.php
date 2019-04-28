@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\UploadedFile;
 use App\Model\Entity\User;
@@ -34,12 +35,13 @@ class UploadedFileStorage {
    * Save the file into storage
    * @param FileUpload $file The file to be stored
    * @param User $user User who uploaded the file
-   * @return UploadedFile|null If the operation is not successful, null is returned
+   * @return UploadedFile
    * @throws InvalidArgumentException
+   * @throws InternalServerException
    */
   public function store(FileUpload $file, User $user) {
     if (!$file->isOk()) {
-      return null;
+      throw new InvalidArgumentException("file", "File was not uploaded successfully");
     }
 
     list($fileName, $fileExt) = $this->splitFileName($file->getName());
@@ -54,7 +56,7 @@ class UploadedFileStorage {
       $filePath = $this->getFilePath($user->getId(), $sanitizedFileName, $sanitizedFileExt);
       $file->move($filePath); // moving might fail with Nette\InvalidStateException if the user does not have sufficient rights to the FS
     } catch (Nette\InvalidStateException $e) {
-      return null;
+      throw new InternalServerException("Cannot move uploaded file to internal server storage");
     }
 
     $uploadedFileName = $fileExt !== null ? sprintf("%s.%s", $fileName, strtolower($fileExt)) : $fileName;

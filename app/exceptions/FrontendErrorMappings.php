@@ -92,7 +92,7 @@ class FrontendErrorMappings
 
   /** General internal server error */
   const E500_000__INTERNAL_SERVER_ERROR = "500-000";
-  /** Cannot receive uploaded file */
+  /** Cannot receive uploaded file '$filename' due to '$errorCode' */
   const E500_001__CANNOT_RECEIVE_FILE = "500-001";
   /** General LDAP connection exception */
   const E500_002__LDAP_CONNECTION = "500-002";

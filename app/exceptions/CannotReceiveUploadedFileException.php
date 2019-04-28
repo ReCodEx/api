@@ -11,14 +11,15 @@ class CannotReceiveUploadedFileException extends ApiException {
 
   /**
    * Creates instance with provided file name.
-   * @param string $name  Name of the file which cannot be received
+   * @param string $name Name of the file which cannot be received
+   * @param int $code PHP error code
    */
-  public function __construct(string $name) {
+  public function __construct(string $name, int $code) {
     parent::__construct(
-      "Cannot receive uploaded file '$name'",
+      "Cannot receive uploaded file '$name' due to '$code'",
       IResponse::S500_INTERNAL_SERVER_ERROR,
       FrontendErrorMappings::E500_001__CANNOT_RECEIVE_FILE,
-      [ "filename" => $name ]
+      [ "filename" => $name, "errorCode" => $code ]
     );
   }
 

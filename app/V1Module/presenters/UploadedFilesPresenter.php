@@ -6,6 +6,7 @@ use App\Exceptions\CannotReceiveUploadedFileException;
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
 
+use App\Exceptions\InternalServerException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\FileServerProxy;
@@ -147,6 +148,7 @@ class UploadedFilesPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    * @throws BadRequestException
    * @throws CannotReceiveUploadedFileException
+   * @throws InternalServerException
    */
   public function actionUpload() {
     $user = $this->getCurrentUser();
@@ -158,12 +160,11 @@ class UploadedFilesPresenter extends BasePresenter {
     }
 
     $file = array_pop($files);
-    $uploadedFile = $this->fileStorage->store($file, $user);
-
-    if ($uploadedFile === null) {
-      throw new CannotReceiveUploadedFileException($file->getName());
+    if (!$file->isOk()) {
+      throw new CannotReceiveUploadedFileException($file->getName(), $file->getError());
     }
 
+    $uploadedFile = $this->fileStorage->store($file, $user);
     $this->uploadedFiles->persist($uploadedFile);
     $this->uploadedFiles->flush();
     $this->sendSuccessResponse($uploadedFile);
