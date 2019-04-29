@@ -50,21 +50,22 @@ class AssignmentSolutions extends BaseRepository {
    * @return AssignmentSolution|null
    */
   public function findBestSolution(Assignment $assignment, User $user): ?AssignmentSolution {
-    $solutions = $this->findBestSolutionsForAssignments([$assignment], $user);
+    $solutions = $this->findBestUserSolutionsForAssignments([$assignment], $user);
     return Arrays::get($solutions, $assignment->getId(), null);
   }
 
   /**
    * Get valid submissions for given assignments and user.
    * @param Assignment[] $assignments
-   * @param User $user
+   * @param User|null $user If null, solutions of all users are returned
    * @return AssignmentSolution[]
    */
-  private function findValidSolutionsForAssignments(array $assignments, User $user) {
-    $solutions = $this->findBy([
-      "solution.author" => $user,
-      "assignment" => $assignments,
-    ], [
+  private function findValidSolutionsForAssignments(array $assignments, ?User $user = null) {
+    $findBy = [ "assignment" => $assignments ];
+    if ($user !== null) {
+      $findBy["solution.author"] = $user;
+    }
+    $solutions = $this->findBy($findBy, [
       "solution.createdAt" => "DESC"
     ]);
 
@@ -86,13 +87,76 @@ class AssignmentSolutions extends BaseRepository {
   }
 
   /**
+   * Local function used to determine the best solution in a collection.
+   * @param AssignmentSolution|null $best The best solution found so far
+   * @param AssignmentSolution $solution Solution to be compared with the best solution
+   * @return AssignmentSolution Better of the two given solutions
+   */
+  private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution)
+  {
+    if ($best === null) {
+      return $solution;
+    }
+
+    if ($best->isAccepted()) {
+      return $best;
+    }
+
+    if ($solution->isAccepted()) {
+      return $solution;
+    }
+
+    if ($best->getTotalPoints() < $solution->getTotalPoints()
+      || ($best->getTotalPoints() === $solution->getTotalPoints()
+      && $best->getSolution()->getCreatedAt() < $solution->getSolution()->getCreatedAt())) {
+      return $solution;
+    }
+
+    return $best;
+  }
+
+
+  /**
+   * Find best solutions of given assignments (for all users).
+   * @param Assignment[] $assignments
+   * @return AssignmentSolution[] A nested associative array indexed by author id and by assignment id (nested level)
+   *                              with values of a solution entity (the best one for the author-assignment)
+   */
+  public function findBestSolutionsForAssignments(array $assignments): array {
+    $result = [];
+    $solutions = $this->findValidSolutionsForAssignments($assignments); // for all users
+    foreach ($solutions as $solution) {
+      $assignment = $solution->getAssignment();
+      if ($assignment === null) {
+        continue;
+      }
+      $assignmentId = $assignment->getId();
+
+      $author = $solution->getSolution()->getAuthor();
+      if ($author === null) {
+        continue;
+      }
+      $authorId = $author->getId();
+
+      if (!array_key_exists($authorId, $result)) {
+        $result[$authorId] = [];
+      }
+
+      $best = Arrays::get($result[$authorId], $assignmentId, null);
+      $result[$authorId][$assignmentId] = self::compareBestSolution($best, $solution);
+    }
+
+    return $result;
+  }
+
+  /**
    * Find best solutions of given assignments for user.
    * @param Assignment[] $assignments
    * @param User $user
    * @return AssignmentSolution[] An associative array indexed by assignment id
    * with values of a solution entity (the best one for the assignment)
    */
-  public function findBestSolutionsForAssignments(array $assignments, User $user): array {
+  public function findBestUserSolutionsForAssignments(array $assignments, User $user): array {
     $result = [];
     $solutions = $this->findValidSolutionsForAssignments($assignments, $user);
     foreach ($solutions as $solution) {
@@ -102,28 +166,11 @@ class AssignmentSolutions extends BaseRepository {
       }
 
       $best = Arrays::get($result, $assignment->getId(), null);
-
-      if ($best === null) {
-        $result[$assignment->getId()] = $solution;
-        continue;
-      }
-
-
-      if ($best->isAccepted()) {
-        continue;
-      }
-
-      if ($solution->isAccepted()) {
-        $result[$assignment->getId()] = $solution;
-        continue;
-      }
-
-      if ($best->getTotalPoints() < $solution->getTotalPoints()) {
-        $result[$assignment->getId()] = $solution;
-      }
+      $result[$assignment->getId()] = self::compareBestSolution($best, $solution);
     }
 
     return $result;
   }
+
 
 }
