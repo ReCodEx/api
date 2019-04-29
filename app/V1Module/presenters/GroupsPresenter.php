@@ -573,16 +573,9 @@ class GroupsPresenter extends BasePresenter {
       $user = $this->getCurrentUser();
       $stats = $this->groupViewFactory->getStudentsStats($group, $user);
       $this->sendSuccessResponse([$stats]);
+    } else {
+      $this->sendSuccessResponse($this->groupViewFactory->getAllStudentsStats($group));
     }
-
-    $this->sendSuccessResponse(
-      array_map(
-        function ($student) use ($group) {
-          return $this->groupViewFactory->getStudentsStats($group, $student);
-        },
-        $group->getStudents()->getValues()
-      )
-    );
   }
 
   public function checkStudentsStats(string $id, string $userId) {

@@ -90,15 +90,8 @@ class GroupViewFactory {
       0);
   }
 
-  /**
-   * Get the statistics of an individual student.
-   * @param Group $group
-   * @param User $student Student of this group
-   * @return array Students statistics
-   */
-  public function getStudentsStats(Group $group, User $student) {
+  private function getStudentStatsInternal(Group $group, User $student, array $assignmentSolutions) {
     $maxPoints = $group->getMaxPoints();
-    $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues(), $student);
     $shadowPointsMap = $this->shadowAssignmentPointsRepository->findPointsForAssignments($group->getShadowAssignments()->getValues(), $student);
     $gainedPoints = $this->getPointsGainedByStudentForSolutions($assignmentSolutions);
     $gainedPoints += $this->getPointsForShadowAssignments($shadowPointsMap);
@@ -151,6 +144,34 @@ class GroupViewFactory {
       "assignments" => $assignments,
       "shadowAssignments" => $shadowAssignments
     ];
+  }
+
+  /**
+   * Get the statistics of an individual student.
+   * @param Group $group
+   * @param User $student Student of this group
+   * @return array Students statistics
+   */
+  public function getStudentsStats(Group $group, User $student) {
+    $assignmentSolutions = $this->assignmentSolutions->findBestUserSolutionsForAssignments($group->getAssignments()->getValues(), $student);
+    return $this->getStudentStatsInternal($group, $student, $assignmentSolutions);
+  }
+
+  /**
+   * Get the statistics of all students.
+   * @param Group $group
+   * @param User $student Student of this group
+   * @return array Students statistics
+   */
+  public function getAllStudentsStats(Group $group) {
+    $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues());
+    return array_map(
+      function ($student) use ($group, $assignmentSolutions) {
+        $solutions = array_key_exists($student->getId(), $assignmentSolutions) ? $assignmentSolutions[$student->getId()] : [];
+        return $this->getStudentStatsInternal($group, $student, $solutions);
+      },
+      $group->getStudents()->getValues()
+    );
   }
 
   /**
