@@ -117,7 +117,8 @@ class GroupViewFactory {
         "points" => [
           "total" => $assignment->getMaxPointsBeforeFirstDeadline(),
           "gained" => $best ? $best->getPoints() : null,
-          "bonus" => $best ? $best->getBonusPoints() : null
+          "bonus" => $best ? $best->getBonusPoints() : null,
+          "bestSolutionId" => $best ? $best->getId() : null,
         ]
       ];
     }
