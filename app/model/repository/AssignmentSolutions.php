@@ -55,20 +55,11 @@ class AssignmentSolutions extends BaseRepository {
   }
 
   /**
-   * Get valid submissions for given assignments and user.
-   * @param Assignment[] $assignments
-   * @param User|null $user If null, solutions of all users are returned
+   * Helper function that filters array of solutions so only valid solutions remain.
+   * @param AssignmentSolution[] $solutions
    * @return AssignmentSolution[]
    */
-  private function findValidSolutionsForAssignments(array $assignments, ?User $user = null) {
-    $findBy = [ "assignment" => $assignments ];
-    if ($user !== null) {
-      $findBy["solution.author"] = $user;
-    }
-    $solutions = $this->findBy($findBy, [
-      "solution.createdAt" => "DESC"
-    ]);
-
+  private static function filterValidSolutions(array $solutions): array {
     return array_values(array_filter($solutions, function (AssignmentSolution $solution) {
       $submission = $solution->getLastSubmission();
       if ($submission === null || $submission->isFailed() || $submission->getResultsUrl() === null) {
@@ -87,13 +78,29 @@ class AssignmentSolutions extends BaseRepository {
   }
 
   /**
+   * Get valid submissions for given assignments and user.
+   * @param Assignment[] $assignments
+   * @param User|null $user If null, solutions of all users are returned
+   * @return AssignmentSolution[]
+   */
+  private function findValidSolutionsForAssignments(array $assignments, ?User $user = null) {
+    $findBy = [ "assignment" => $assignments ];
+    if ($user !== null) {
+      $findBy["solution.author"] = $user;
+    }
+    $solutions = $this->findBy($findBy, [
+      "solution.createdAt" => "DESC"
+    ]);
+    return self::filterValidSolutions($solutions);
+  }
+
+  /**
    * Local function used to determine the best solution in a collection.
    * @param AssignmentSolution|null $best The best solution found so far
    * @param AssignmentSolution $solution Solution to be compared with the best solution
    * @return AssignmentSolution Better of the two given solutions
    */
-  private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution)
-  {
+  private static function compareBestSolution(?AssignmentSolution $best, AssignmentSolution $solution) {
     if ($best === null) {
       return $solution;
     }
@@ -122,7 +129,6 @@ class AssignmentSolutions extends BaseRepository {
 
     return $best;
   }
-
 
   /**
    * Find best solutions of given assignments (for all users).
@@ -189,17 +195,19 @@ class AssignmentSolutions extends BaseRepository {
    */
   public function filterBestSolutions(array $solutions) {
     $result = [];
-    foreach ($solutions as $solution) {
+    $validSolutions = self::filterValidSolutions($solutions);
+    foreach ($validSolutions as $solution) {
       $assignment = $solution->getAssignment();
       if ($assignment === null) {
         continue;
       }
-      $assignmentId = $assignment->getId();
 
       $author = $solution->getSolution()->getAuthor();
       if ($author === null) {
         continue;
       }
+
+      // composed key (we need uniqueness, and do not want to create nested arrays)
       $key = $assignment->getId() . ':' . $author->getId();
 
       $best = Arrays::get($result, $key, null);

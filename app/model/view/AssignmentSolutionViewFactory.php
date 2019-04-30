@@ -56,11 +56,11 @@ class AssignmentSolutionViewFactory {
    * @throws InternalServerException
    */
   private function isBestSolution(AssignmentSolution $solution): bool {
-    $best = $this->solutions->findBestUserSolutionsForAssignments([ $solution->getAssignment() ], $solution->getSolution()->getAuthor());
+    $best = $this->solutions->findBestSolution($solution->getAssignment(), $solution->getSolution()->getAuthor());
     if ($best) {
-      $bestId = reset($best)->getId();
-      return $bestId === $solution->getId();
+      return $best->getId() === $solution->getId();
     }
+
     throw new InternalServerException("Something is terribly wrong. We have a solution, yet we cannot find any solutions for corresponding assignment and author.");
   }
 
