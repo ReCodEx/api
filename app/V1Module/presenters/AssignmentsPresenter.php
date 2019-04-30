@@ -487,12 +487,13 @@ class AssignmentsPresenter extends BasePresenter {
   public function actionSolutions(string $id) {
     $assignment = $this->assignments->findOrThrow($id);
 
-    $solutions = array_filter($assignment->getAssignmentSolutions()->getValues(),
-      function (AssignmentSolution $solution) {
-        return $this->assignmentSolutionAcl->canViewDetail($solution);
-      });
+    $allSolutions = $assignment->getAssignmentSolutions()->getValues();
+    $bestSolutions = $this->assignmentSolutions->filterBestSolutions($allSolutions);
+    $solutions = array_filter($allSolutions, function (AssignmentSolution $solution) {
+      return $this->assignmentSolutionAcl->canViewDetail($solution);
+    });
 
-    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
+    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions, $bestSolutions));
   }
 
   public function checkUserSolutions(string $id, string $userId) {
@@ -514,12 +515,13 @@ class AssignmentsPresenter extends BasePresenter {
     $assignment = $this->assignments->findOrThrow($id);
     $user = $this->users->findOrThrow($userId);
 
-    $solutions = array_filter($this->assignmentSolutions->findSolutions($assignment, $user),
-      function (AssignmentSolution $solution) {
-        return $this->assignmentSolutionAcl->canViewDetail($solution);
+    $allSolutions = $this->assignmentSolutions->findSolutions($assignment, $user);
+    $bestSolutions = $this->assignmentSolutions->filterBestSolutions($allSolutions);
+    $solutions = array_filter($allSolutions, function (AssignmentSolution $solution) {
+      return $this->assignmentSolutionAcl->canViewDetail($solution);
     });
 
-    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions));
+    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getUserSolutionsData($solutions, $bestSolutions));
   }
 
   public function checkBestSolution(string $id, string $userId) {
@@ -554,7 +556,7 @@ class AssignmentsPresenter extends BasePresenter {
     }
 
     $this->sendSuccessResponse(
-      $this->assignmentSolutionViewFactory->getSolutionData($solution)
+      $this->assignmentSolutionViewFactory->getSolutionData($solution, true)  // true = isBestSolution hint
     );
   }
 
@@ -592,7 +594,7 @@ class AssignmentsPresenter extends BasePresenter {
       }
 
       $bestSubmissions[$student->getId()] =
-        $this->assignmentSolutionViewFactory->getSolutionData($solution);
+        $this->assignmentSolutionViewFactory->getSolutionData($solution, true);  // true = isBestSolution hint
     }
 
     $this->sendSuccessResponse($bestSubmissions);

@@ -4,9 +4,11 @@ namespace App\Model\View;
 
 use App\Helpers\PermissionHints;
 use App\Model\Repository\Comments;
+use App\Model\Repository\AssignmentSolutions;
 use App\Model\Entity\AssignmentSolution;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 use App\Security\UserStorage;
+use App\Exceptions\InternalServerException;
 
 /**
  * Factory for solution views which somehow do not fit into json serialization of entities.
@@ -24,6 +26,11 @@ class AssignmentSolutionViewFactory {
   private $comments;
 
   /**
+   * @var AssignmentSolutions
+   */
+  private $solutions;
+
+  /**
    * @var UserStorage
    */
   private $userStorage;
@@ -33,21 +40,40 @@ class AssignmentSolutionViewFactory {
    */
   private $submissionViewFactory;
 
-  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments,
+  public function __construct(IAssignmentSolutionPermissions $assignmentSolutionAcl, Comments $comments, AssignmentSolutions $solutions,
       UserStorage $userStorage, AssignmentSolutionSubmissionViewFactory $submissionViewFactory) {
     $this->assignmentSolutionAcl = $assignmentSolutionAcl;
     $this->comments = $comments;
+    $this->solutions = $solutions;
     $this->userStorage = $userStorage;
     $this->submissionViewFactory = $submissionViewFactory;
   }
 
+  /**
+   * Determine whether given solution is the best solution for the author and corresponding assignment.
+   * @param AssignmentSolution $solution
+   * @return bool
+   * @throws InternalServerException
+   */
+  private function isBestSolution(AssignmentSolution $solution): bool {
+    $best = $this->solutions->findBestUserSolutionsForAssignments([ $solution->getAssignment() ], $solution->getSolution()->getAuthor());
+    if ($best) {
+      $bestId = reset($best)->getId();
+      return $bestId === $solution->getId();
+    }
+    throw new InternalServerException("Something is terribly wrong. We have a solution, yet we cannot find any solutions for corresponding assignment and author.");
+  }
 
   /**
    * Parametrized view.
    * @param AssignmentSolution $solution
+   * @param bool|array|null $bestSolutionsHints If bool value is provided, it holds the `isBestSolution` value already.
+   *                                            If array value is provided, it holds index of best solutions.
+   *                                            Otherwise the view factory determines the `isBestSolution` value on its own.
    * @return array
+   * @throws InternalServerException
    */
-  public function getSolutionData(AssignmentSolution $solution) {
+  public function getSolutionData(AssignmentSolution $solution, $bestSolutionsHints = null) {
     // Get permission details
     $canViewResubmissions = $this->assignmentSolutionAcl->canViewResubmissions($solution);
 
@@ -62,6 +88,16 @@ class AssignmentSolutionViewFactory {
     $user = $this->userStorage->getUserData();
     $threadCommentsCount = ($thread && $user) ? $this->comments->getThreadCommentsCount($thread, $user) : 0;
 
+    if ($bestSolutionsHints !== null) {
+      if (is_array($bestSolutionsHints)) {
+        $isBestSolution = array_key_exists($solution->getId(), $bestSolutionsHints);
+      } else {
+        $isBestSolution = (bool)$bestSolutionsHints;
+      }
+    } else {
+      $isBestSolution = $this->isBestSolution($solution);
+    }
+
     return [
       "id" => $solution->getId(),
       "note" => $solution->getNote(),
@@ -70,6 +106,7 @@ class AssignmentSolutionViewFactory {
       "runtimeEnvironmentId" => $solution->getSolution()->getRuntimeEnvironment()->getId(),
       "maxPoints" => $solution->getMaxPoints(),
       "accepted" => $solution->getAccepted(),
+      "isBestSolution" => $isBestSolution,
       "actualPoints" => $solution->getPoints(),
       "bonusPoints" => $solution->getBonusPoints(),
       "overriddenPoints" => $solution->getOverriddenPoints(),
@@ -87,11 +124,26 @@ class AssignmentSolutionViewFactory {
   /**
    * Parametrized view.
    * @param AssignmentSolution[] $solutions
+   * @param bool|array|null $bestSolutionsHints If bool value is provided, it holds the `isBestSolution` value already for all solutions.
+   *                                            If iterrable value is provided, it holds a list of best solutions
+   *                                            Otherwise the view factory determines the `isBestSolution` value on its own.
    * @return array
    */
-  public function getUserSolutionsData(array $solutions) {
-    $solutions = array_map(function (AssignmentSolution $solution) {
-      return $this->getSolutionData($solution);
+  public function getUserSolutionsData(array $solutions, $bestSolutionsHints = null) {
+    $hint = null;
+    if ($bestSolutionsHints !== null) {
+      if (is_bool($bestSolutionsHints)) {
+        $hint = $bestSolutionsHints;
+      } else {
+        $hint = []; // lets build an index (ids are the keys)
+        foreach($bestSolutionsHints as $solution) {
+          $hint[$solution->getId()] = true;
+        }
+      }
+    }
+
+    $solutions = array_map(function (AssignmentSolution $solution) use($hint) {
+      return $this->getSolutionData($solution, $hint);
     }, $solutions);
     return array_values($solutions);
   }
