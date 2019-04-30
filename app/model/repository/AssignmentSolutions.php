@@ -106,10 +106,18 @@ class AssignmentSolutions extends BaseRepository {
       return $solution;
     }
 
-    if ($best->getTotalPoints() < $solution->getTotalPoints()
-      || ($best->getTotalPoints() === $solution->getTotalPoints()
-      && $best->getSolution()->getCreatedAt() < $solution->getSolution()->getCreatedAt())) {
+    $pointsCmp = $best->getTotalPoints() <=> $solution->getTotalPoints();
+    if ($pointsCmp === -1) {  // first we compare points
       return $solution;
+    } elseif ($pointsCmp === 0) { // then time of creation
+      $createdAtCmp = $best->getSolution()->getCreatedAt() <=> $solution->getSolution()->getCreatedAt();
+      if ($createdAtCmp === -1) {
+        return $solution;      
+      } elseif ($createdAtCmp === 0) { // finally we compare IDs lexicographically (to be deterministic in very rare cases)
+        if (($best->getId() <=> $solution->getId()) === -1) {
+          return $solution;
+        }
+      }
     }
 
     return $best;
@@ -172,5 +180,32 @@ class AssignmentSolutions extends BaseRepository {
     return $result;
   }
 
+  /**
+   * Filter the given *complete* array of solutions so that only best solutions remain.
+   * Term *complete* means that if solution S of assignment A and user U is in the input set,
+   * all solutions from A by user U are also in the set.
+   * @param AssignmentSolution[] $solutions
+   * @return AssignmentSolution[]
+   */
+  public function filterBestSolutions(array $solutions) {
+    $result = [];
+    foreach ($solutions as $solution) {
+      $assignment = $solution->getAssignment();
+      if ($assignment === null) {
+        continue;
+      }
+      $assignmentId = $assignment->getId();
 
+      $author = $solution->getSolution()->getAuthor();
+      if ($author === null) {
+        continue;
+      }
+      $key = $assignment->getId() . ':' . $author->getId();
+
+      $best = Arrays::get($result, $key, null);
+      $result[$key] = self::compareBestSolution($best, $solution);
+    }
+
+    return array_values($result);
+  }
 }

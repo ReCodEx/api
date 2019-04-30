@@ -90,6 +90,14 @@ class GroupViewFactory {
       0);
   }
 
+  /**
+   * Get the statistics of an individual student.
+   * @param Group $group
+   * @param User $student Student of this group
+   * @param array $assignmentSolutions Loaded assignment solutions of the student for all assignments in the group.
+   *                                   This varialble allows us bulk-load optimizations for the solutions.
+   * @return array Students statistics
+   */
   private function getStudentStatsInternal(Group $group, User $student, array $assignmentSolutions) {
     $maxPoints = $group->getMaxPoints();
     $shadowPointsMap = $this->shadowAssignmentPointsRepository->findPointsForAssignments($group->getShadowAssignments()->getValues(), $student);
@@ -160,8 +168,7 @@ class GroupViewFactory {
   /**
    * Get the statistics of all students.
    * @param Group $group
-   * @param User $student Student of this group
-   * @return array Students statistics
+   * @return array Statistics for all students of the group
    */
   public function getAllStudentsStats(Group $group) {
     $assignmentSolutions = $this->assignmentSolutions->findBestSolutionsForAssignments($group->getAssignments()->getValues());
