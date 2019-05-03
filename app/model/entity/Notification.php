@@ -149,6 +149,7 @@ class Notification implements JsonSerializable
       "visibleTo" => $this->visibleTo->getTimestamp(),
       "localizedTexts" => $this->localizedTexts->getValues(),
       "groupsIds" => $this->getGroupsIds(),
+      "role" => $this->role,
       "type" => $this->type
     ];
   }
