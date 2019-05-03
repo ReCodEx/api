@@ -485,8 +485,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
       $failureType = $e instanceof ExerciseCompilationSoftException ? SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
       $sendEmail = $e instanceof  ExerciseCompilationSoftException ? false : true;
 
-      $failure = SubmissionFailure::forReferenceSubmission($failureType, $e->getMessage(), $submission);
+      $failure = SubmissionFailure::create($failureType, $e->getMessage());
+      $submission->setFailure($failure);
       $this->submissionFailures->persist($failure);
+      $this->referenceSubmissions->persist($submission);
 
       if ($sendEmail) {
         $reportMessage = "Reference submission '{$submission->getId()}' errored - {$e->getMessage()}";
@@ -523,8 +525,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter {
         ];
       } catch (Exception $e) {
         $this->logger->log("Reference evaluation exception: " . $e->getMessage(), ILogger::EXCEPTION);
-        $failure = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage(), $submission);
+        $failure = SubmissionFailure::create(SubmissionFailure::TYPE_BROKER_REJECT, $e->getMessage());
+        $submission->setFailure($failure);
         $this->submissionFailures->persist($failure, false);
+        $this->referenceSubmissions->persist($submission, false);
         $errors[$hwGroup->getId()] = $e->getMessage();
       }
     }

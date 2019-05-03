@@ -53,7 +53,7 @@ abstract class Submission implements IEvaluable
   protected $jobConfigPath;
 
   /**
-   * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="SolutionEvaluation", cascade={"persist", "remove"}, fetch="EAGER")
    * @var SolutionEvaluation
    */
   protected $evaluation;

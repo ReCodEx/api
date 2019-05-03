@@ -66,26 +66,18 @@ class EvaluationLoadingHelper {
         // the result cannot be loaded even though the result MUST be ready at this point
         $message = "Loading evaluation results failed with exception '{$e->getMessage()}'";
 
-        if ($submission instanceof AssignmentSolutionSubmission) {
-          $failure = SubmissionFailure::forSubmission(
-            SubmissionFailure::TYPE_LOADING_FAILURE,
-            $message,
-            $submission
-          );
-        } else if ($submission instanceof ReferenceSolutionSubmission) {
-          $failure = SubmissionFailure::forReferenceSubmission(
-            SubmissionFailure::TYPE_LOADING_FAILURE,
-            $message,
-            $submission
-          );
+        if ($submission instanceof AssignmentSolutionSubmission || $submission instanceof ReferenceSolutionSubmission) {
+          $failure = SubmissionFailure::create(SubmissionFailure::TYPE_LOADING_FAILURE, $message);
+          $submission->setFailure($failure);
         } else {
           throw new InternalServerException("Unknown submission type '{$submission->getClassName()}'");
         }
 
         $this->entityManager->persist($failure);
+        $this->entityManager->persist($submission);
         $this->entityManager->flush($failure);
 
-        $this->failureHelper->reportSubmissionFailure($failure, FailureHelper::TYPE_API_ERROR);
+        $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_API_ERROR);
         return false;
       }
     } catch (OptimisticLockException $e) {}

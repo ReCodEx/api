@@ -77,8 +77,6 @@ class TestBrokerReportsPresenter extends Tester\TestCase
   public function testJobFailed()
   {
     $submission = current($this->presenter->submissions->findAll());
-    $failureCount = count($this->presenter->submissionFailures->findBySubmission($submission));
-
     $request = new Request("V1:BrokerReports", "POST", [
         "action" => "jobStatus",
         "jobId" => AssignmentSolution::JOB_TYPE . '_' . $submission->id
@@ -95,15 +93,13 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     Assert::same(200, $result["code"]);
     Assert::same("OK", $result["payload"]);
 
-    $newFailureCount = count($this->presenter->submissionFailures->findBySubmission($submission));
-    Assert::same($failureCount + 1, $newFailureCount, "There should be a new failure report for the submission");
-  }
+    $this->presenter->submissions->refresh($submission);
+    Assert::true($submission->getFailure() !== null);
+ }
 
   public function testReferenceEvaluationFailed()
   {
     $submission = current($this->presenter->referenceSolutionSubmissions->findAll());
-    $failureCount = count($this->presenter->submissionFailures->findByReferenceSolutionEvaluation($submission));
-
     $request = new Request("V1:BrokerReports", "POST", [
       "action" => "jobStatus",
       "jobId" => ReferenceSolutionSubmission::JOB_TYPE . '_' . $submission->id
@@ -120,8 +116,8 @@ class TestBrokerReportsPresenter extends Tester\TestCase
     Assert::same(200, $result["code"]);
     Assert::same("OK", $result["payload"]);
 
-    $newFailureCount = count($this->presenter->submissionFailures->findByReferenceSolutionEvaluation($submission));
-    Assert::same($failureCount + 1, $newFailureCount, "There should be a new failure report for the solution");
+    $this->presenter->referenceSolutionSubmissions->refresh($submission);
+    Assert::true($submission->getFailure() !== null);
   }
 }
 

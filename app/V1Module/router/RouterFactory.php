@@ -312,7 +312,6 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix", "SubmissionFailures:");
     $router[] = new GetRoute("$prefix/unresolved", "SubmissionFailures:unresolved");
-    $router[] = new GetRoute("$prefix/submission/<id>", "SubmissionFailures:listBySubmission");
     $router[] = new GetRoute("$prefix/<id>", "SubmissionFailures:detail");
     $router[] = new PostRoute("$prefix/<id>/resolve", "SubmissionFailures:resolve");
     return $router;

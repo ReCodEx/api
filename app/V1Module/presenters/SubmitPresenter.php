@@ -263,8 +263,10 @@ class SubmitPresenter extends BasePresenter {
                                     string $failureType = SubmissionFailure::TYPE_BROKER_REJECT,
                                     string $reportType = FailureHelper::TYPE_BACKEND_ERROR,
                                     bool $sendEmail = true) {
-    $failure = SubmissionFailure::forSubmission($failureType, $exception->getMessage(), $submission);
+    $failure = SubmissionFailure::create($failureType, $exception->getMessage());
+    $submission->setFailure($failure);
     $this->submissionFailures->persist($failure);
+    $this->assignmentSubmissions->persist($submission);
 
     if ($sendEmail) {
       $reportMessage = "Submission '{$submission->getId()}' errored - {$exception->getMessage()}";

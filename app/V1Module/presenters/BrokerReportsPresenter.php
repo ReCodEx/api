@@ -129,19 +129,22 @@ class BrokerReportsPresenter extends BasePresenter {
       case self::STATUS_FAILED:
         $message = $this->getRequest()->getPost("message") ?: "";
         $reportMessage = "Broker reports job '$jobId' (type: '{$job->getType()}', id: '{$job->getId()}') processing failure: $message";
+        $failureReport = SubmissionFailure::create(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage);
 
         switch ($job->getType()) {
           case AssignmentSolution::JOB_TYPE:
             $submission = $this->submissions->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage, $submission);
+            $submission->setFailure($failureReport);
             $this->submissionFailures->persist($failureReport);
-            $this->failureHelper->reportSubmissionFailure($failureReport, FailureHelper::TYPE_BACKEND_ERROR);
+            $this->submissions->persist($submission);
+            $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_BACKEND_ERROR);
             break;
           case ReferenceSolutionSubmission::JOB_TYPE:
-            $referenceSolutionEvaluation = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
-            $failureReport = SubmissionFailure::forReferenceSubmission(SubmissionFailure::TYPE_EVALUATION_FAILURE, $reportMessage, $referenceSolutionEvaluation);
+            $submission = $this->referenceSolutionSubmissions->findOrThrow($job->getId());
+            $submission->setFailure($failureReport);
             $this->submissionFailures->persist($failureReport);
-            $this->failureHelper->reportSubmissionFailure($failureReport, FailureHelper::TYPE_BACKEND_ERROR);
+            $this->referenceSolutionSubmissions->persist($submission);
+            $this->failureHelper->reportSubmissionFailure($submission, FailureHelper::TYPE_BACKEND_ERROR);
             break;
         }
 

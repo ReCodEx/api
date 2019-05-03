@@ -14,7 +14,8 @@ use App\Helpers\EvaluationResults as ER;
  * @ORM\Entity
  *
  * @method ReferenceExerciseSolution getReferenceSolution()
- * @method Collection getFailures()
+ * @method SubmissionFailure getFailure()
+ * @method setFailure(SubmissionFailure $failure)
  */
 class ReferenceSolutionSubmission extends Submission implements JsonSerializable, ES\IEvaluable
 {
@@ -38,11 +39,10 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
   }
 
   /**
-   * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="referenceSolutionSubmission", cascade={"remove"})
+   * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"}, inversedBy="referenceSolutionSubmission", fetch="EAGER")
+   * @var SubmissionFailure
    */
-  protected $failures;
-
+  protected $failure;
 
   public function jsonSerialize() {
     $evaluationData = null;
@@ -50,12 +50,13 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       $evaluationData = $this->evaluation->getData(true, true, true);
     }
 
-    $failures = $this->getFailures()->filter(function (SubmissionFailure $failure) {
-      return $failure->isConfigErrorFailure();
-    })->map(function (SubmissionFailure $failure) {
-      return $failure->toSimpleArray();
-    })->toArray();
-
+    $failure = $this->getFailure();
+    if ($failure && $failure->isConfigErrorFailure()) {
+      $failures = [ $failure->toSimpleArray() ];  // BC - failures were originally many-to-one
+    } else {
+      $failures = [];
+    }
+    
     return [
       "id" => $this->id,
       "referenceSolutionId" => $this->referenceSolution->getId(),
@@ -65,7 +66,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       "submittedAt" => $this->submittedAt->getTimestamp(),
       "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
       "isDebug" => $this->isDebug,
-      "failures" => $failures
+      "failures" => $failures,
     ];
   }
 
@@ -75,13 +76,12 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
     parent::__construct($submittedBy, $jobConfigPath, $isDebug);
     $this->referenceSolution = $referenceSolution;
     $this->hwGroup = $hwGroup;
-    $this->failures = new ArrayCollection();
 
     $referenceSolution->addSubmission($this);
   }
 
   function isFailed(): bool {
-    return $this->failures->count() > 0;
+    return $this->failure !== null;
   }
 
   function isCorrect(): bool {

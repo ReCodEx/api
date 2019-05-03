@@ -14,7 +14,8 @@ use App\Helpers\EvaluationStatus as ES;
  * @ORM\Entity
  *
  * @method AssignmentSolution getAssignmentSolution()
- * @method Collection getFailures()
+ * @method SubmissionFailure getFailure()
+ * @method setFailure(SubmissionFailure $failure)
  */
 class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
 {
@@ -28,21 +29,20 @@ class AssignmentSolutionSubmission extends Submission implements ES\IEvaluable
   protected $assignmentSolution;
 
   /**
-   * @var Collection
-   * @ORM\OneToMany(targetEntity="SubmissionFailure", mappedBy="assignmentSolutionSubmission", cascade={"remove"})
+   * @ORM\OneToOne(targetEntity="SubmissionFailure", cascade={"persist", "remove"}, inversedBy="assignmentSolutionSubmission", fetch="EAGER")
+   * @var SubmissionFailure
    */
-  protected $failures;
+  protected $failure;
 
 
   public function __construct(AssignmentSolution $assignmentSolution,
       string $jobConfigPath, User $submittedBy, bool $isDebug = false) {
     parent::__construct($submittedBy, $jobConfigPath, $isDebug);
     $this->assignmentSolution = $assignmentSolution;
-    $this->failures = new ArrayCollection();
   }
 
   function isFailed(): bool {
-    return $this->failures->count() > 0;
+    return $this->failure !== null;
   }
 
   function isCorrect(): bool {

@@ -74,23 +74,6 @@ class TestSubmissionFailures extends Tester\TestCase
     Assert::same($failure, $result["payload"]);
   }
 
-  public function testListBySubmission()
-  {
-    $submission = current($this->presenter->submissions->findAll());
-    $request = new Request("V1:SubmissionFailures", "GET", ["action" => "listBySubmission", "submissionId" => $submission->id], []);
-    $response = $this->presenter->run($request);
-    Assert::type(JsonResponse::class, $response);
-
-    $result = $response->getPayload();
-    Assert::true(count($result["payload"]) > 0);
-
-    /** @var SubmissionFailure $item */
-    foreach ($result["payload"] as $item) {
-      Assert::type(SubmissionFailure::class, $item);
-      Assert::same($submission, $item->getAssignmentSolutionSubmission());
-    }
-  }
-
   public function testResolveWithoutEmail()
   {
     $mockFailuresSender = Mockery::mock();

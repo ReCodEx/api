@@ -20,16 +20,4 @@ class SubmissionFailures extends BaseRepository {
       "resolvedAt" => null
     ]);
   }
-
-  public function findBySubmission(AssignmentSolutionSubmission $submission) {
-    return $this->findBy([
-      "assignmentSolutionSubmission" => $submission
-    ]);
-  }
-
-  public function findByReferenceSolutionEvaluation(ReferenceSolutionSubmission $evaluation) {
-    return $this->findBy([
-      "referenceSolutionSubmission" => $evaluation
-    ]);
-  }
 }

@@ -41,7 +41,7 @@ class ReferenceExerciseSolution
   protected $description;
 
   /**
-   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"})
+   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
    */
   protected $solution;
 
