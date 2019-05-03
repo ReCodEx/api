@@ -33,6 +33,22 @@ App\Model\Entity\AssignmentSolution:
                 - "@demoSolution<current()>"
         bonusPoints: 1
 
+App\Model\Entity\SubmissionFailure:
+    "resolvedSubmissionFailure":
+        __construct:
+            create:
+                - evaluation_failure
+                - Things went south
+                - "<dateTime()>"
+        resolve:
+            - Got it!
+    unresolvedSubmissionFailure:
+        __construct:
+            create:
+                - evaluation_failure
+                - Things went south
+                - "<dateTime()>"
+
 App\Model\Entity\AssignmentSolutionSubmission:
     "submission{1..2}":
         __construct:
@@ -48,21 +64,17 @@ App\Model\Entity\AssignmentSolutionSubmission:
             - @submitUser1
         resultsUrl: localhost/results/hehe.zip
         evaluation: "@evaluation<current()>"
-
-App\Model\Entity\SubmissionFailure:
-    "resolvedSubmissionFailure":
+    "submission5":
         __construct:
-            forSubmission:
-                - evaluation_failure
-                - Things went south
-                - @submission1
-                - "<dateTime()>"
-        resolve:
-            - Got it!
-    unresolvedSubmissionFailure:
+            - "@solution1"
+            - "jobConfigPath"
+            - @submitUser1
+        resultsUrl: localhost/results/hehe.zip
+        failure: "@resolvedSubmissionFailure"
+    "submission6":
         __construct:
-            forSubmission:
-                - evaluation_failure
-                - Things went south
-                - @submission1
-                - "<dateTime()>"
+            - "@solution1"
+            - "jobConfigPath"
+            - @submitUser1
+        resultsUrl: localhost/results/hehe.zip
+        failure: "@unresolvedSubmissionFailure"

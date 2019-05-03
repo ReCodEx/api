@@ -38,11 +38,12 @@ class AssignmentSolutionSubmissionViewFactory {
       $evaluationData = $submission->getEvaluation()->getData($canViewDetails, $canViewValues, $canViewJudgeOutput);
     }
 
-    $failures = $submission->getFailures()->filter(function (SubmissionFailure $failure) {
-      return $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR;
-    })->map(function (SubmissionFailure $failure) {
-      return $failure->toSimpleArray();
-    })->toArray();
+    $failure = $submission->getFailure();
+    if ($failure && $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR) {
+      $failures = [ $failure->toSimpleArray() ];  // BC - failures were originally many-to-one
+    } else {
+      $failures = [];
+    }
 
     return [
       "id" => $submission->getId(),
@@ -53,7 +54,7 @@ class AssignmentSolutionSubmissionViewFactory {
       "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
       "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null,
       "isDebug" => $submission->isDebug(),
-      "failures" => $failures
+      "failures" => $failures,
     ];
   }
 }

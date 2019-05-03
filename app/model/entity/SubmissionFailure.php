@@ -62,14 +62,12 @@ class SubmissionFailure implements JsonSerializable {
   protected $description;
 
   /**
-   * @ORM\ManyToOne(targetEntity="AssignmentSolutionSubmission", inversedBy="failures")
-   * @ORM\JoinColumn(nullable=true)
+   * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", mappedBy="failure")
    */
   protected $assignmentSolutionSubmission;
 
   /**
-   * @ORM\ManyToOne(targetEntity="ReferenceSolutionSubmission", inversedBy="failures")
-   * @ORM\JoinColumn(nullable=true)
+   * @ORM\OneToOne(targetEntity="ReferenceSolutionSubmission", mappedBy="failure")
    */
   protected $referenceSolutionSubmission;
 
@@ -93,29 +91,18 @@ class SubmissionFailure implements JsonSerializable {
    * SubmissionFailure constructor.
    * @param string $type
    * @param string $description
-   * @param AssignmentSolutionSubmission|null $submission
-   * @param ReferenceSolutionSubmission|null $referenceSolutionSubmission
    * @param DateTime|null $createdAt
    */
-  private function __construct(string $type, string $description,
-      AssignmentSolutionSubmission $submission = null,
-      ReferenceSolutionSubmission $referenceSolutionSubmission = null,
-      DateTime $createdAt = null) {
+  private function __construct(string $type, string $description, DateTime $createdAt = null) {
     $this->type = $type;
     $this->description = $description;
-    $this->assignmentSolutionSubmission = $submission;
-    $this->referenceSolutionSubmission = $referenceSolutionSubmission;
     $this->createdAt = $createdAt ?: new DateTime();
   }
 
-  public static function forSubmission(string $type, string $description, AssignmentSolutionSubmission $submission, DateTime $createdAt = null) {
-    return new static($type, $description, $submission, null, $createdAt);
+  public static function create(string $type, string $description, DateTime $createdAt = null) {
+    return new static($type, $description, $createdAt);
   }
-
-  public static function forReferenceSubmission(string $type, string $description, ReferenceSolutionSubmission $evaluation, DateTime $createdAt = null) {
-    return new static($type, $description, null, $evaluation, $createdAt);
-  }
-
+  
   public function resolve(string $note, DateTime $resolvedAt = null) {
     $this->resolvedAt = $resolvedAt ?: new DateTime();
     $this->resolutionNote = $note;

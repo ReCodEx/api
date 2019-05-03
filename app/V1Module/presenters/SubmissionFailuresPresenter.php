@@ -69,23 +69,6 @@ class SubmissionFailuresPresenter extends BasePresenter {
     $this->sendSuccessResponse($this->submissionFailures->findUnresolved());
   }
 
-  public function checkListBySubmission(string $submissionId) {
-    $submission = $this->submissions->findOrThrow($submissionId);
-    if (!$this->submissionFailureAcl->canViewForAssignmentSolutionSubmission($submission)) {
-      throw new ForbiddenRequestException();
-    }
-  }
-
-  /**
-   * List all failures of a single submission
-   * @GET
-   * @param $submissionId string An identifier of the submission
-   */
-  public function actionListBySubmission(string $submissionId) {
-    $submission = $this->submissions->findOrThrow($submissionId);
-    $this->sendSuccessResponse($this->submissionFailures->findBySubmission($submission));
-  }
-
   public function checkDetail(string $id) {
     $failure = $this->submissionFailures->findOrThrow($id);
     if (!$this->submissionFailureAcl->canView($failure)) {

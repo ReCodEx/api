@@ -76,7 +76,7 @@ class AssignmentSolution
 
   /**
    * @var Solution
-   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"})
+   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
    */
   protected $solution;
 

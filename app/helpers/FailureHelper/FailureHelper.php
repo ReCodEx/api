@@ -3,7 +3,8 @@
 namespace App\Helpers;
 
 use App\Helpers\Emails\EmailLocalizationHelper;
-use App\Model\Entity\SubmissionFailure;
+use App\Model\Entity\AssignmentSolutionSubmission;
+use App\Model\Entity\ReferenceSolutionSubmission;
 use Exception;
 use Nette\Utils\Arrays;
 use Kdyby\Doctrine\EntityManager;
@@ -76,14 +77,20 @@ class FailureHelper {
     );
   }
 
-  public function reportSubmissionFailure(SubmissionFailure $failure, string $type) {
-    $submission = $failure->getSubmission();
-    $this->report($type, sprintf(
-      "Failure of submission with ID '%s' and type '%s': %s",
-      $submission->getId(),
-      $submission->getJobType(),
-      $failure->getDescription()
-    ));
+  /**
+   * @param AssignmentSolutionSubmission|ReferenceSolutionSubmission $submission
+   * @param string $type
+   */
+  public function reportSubmissionFailure($submission, string $type) {
+    $failure = $submission->getFailure();
+    if ($failure !== null) {
+      $this->report($type, sprintf(
+        "Failure of submission with ID '%s' and type '%s': %s",
+        $submission->getId(),
+        $submission->getJobType(),
+        $failure->getDescription()
+      ));
+    }
   }
 
   /**
