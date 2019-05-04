@@ -309,6 +309,8 @@ class SubmitPresenter extends BasePresenter {
     } catch (ExerciseConfigException | ExerciseCompilationException | JobConfigStorageException $e) {
       $submission = new AssignmentSolutionSubmission($solution, "", $this->getCurrentUser(), $isDebug);
       $this->assignmentSubmissions->persist($submission, false);
+      $solution->setLastSubmission($submission);
+      $this->assignmentSolutions->persist($solution);
 
       $failureType = $e instanceof ExerciseCompilationSoftException ?
         SubmissionFailure::TYPE_SOFT_CONFIG_ERROR : SubmissionFailure::TYPE_CONFIG_ERROR;
@@ -324,6 +326,8 @@ class SubmitPresenter extends BasePresenter {
     $submission = new AssignmentSolutionSubmission($solution,
       $generatorResult->getJobConfigPath(), $this->getCurrentUser(), $isDebug);
     $this->assignmentSubmissions->persist($submission);
+    $solution->setLastSubmission($submission);
+    $this->assignmentSolutions->persist($solution);
 
     // initiate submission
     $resultsUrl = null;
