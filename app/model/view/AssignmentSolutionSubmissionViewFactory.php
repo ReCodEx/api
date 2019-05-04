@@ -39,10 +39,10 @@ class AssignmentSolutionSubmissionViewFactory {
     }
 
     $failure = $submission->getFailure();
-    if ($failure && $failure->getType() === SubmissionFailure::TYPE_CONFIG_ERROR) {
-      $failures = [ $failure->toSimpleArray() ];  // BC - failures were originally many-to-one
+    if ($failure && $failure->isConfigErrorFailure()) {
+      $failure = $failure->toSimpleArray();
     } else {
-      $failures = [];
+      $failure = null;
     }
 
     return [
@@ -54,7 +54,7 @@ class AssignmentSolutionSubmissionViewFactory {
       "submittedAt" => $submission->getSubmittedAt()->getTimestamp(),
       "submittedBy" => $submission->getSubmittedBy() ? $submission->getSubmittedBy()->getId() : null,
       "isDebug" => $submission->isDebug(),
-      "failures" => $failures,
+      "failure" => $failure,
     ];
   }
 }
