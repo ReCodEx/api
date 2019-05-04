@@ -52,9 +52,9 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
 
     $failure = $this->getFailure();
     if ($failure && $failure->isConfigErrorFailure()) {
-      $failures = [ $failure->toSimpleArray() ];  // BC - failures were originally many-to-one
+      $failure = $failure->toSimpleArray();
     } else {
-      $failures = [];
+      $failure = null;
     }
     
     return [
@@ -66,7 +66,7 @@ class ReferenceSolutionSubmission extends Submission implements JsonSerializable
       "submittedAt" => $this->submittedAt->getTimestamp(),
       "submittedBy" => $this->submittedBy ? $this->submittedBy->getId() : null,
       "isDebug" => $this->isDebug,
-      "failures" => $failures,
+      "failure" => $failure,
     ];
   }
 
