@@ -208,6 +208,8 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    */
   public function actionDeleteEvaluation(string $evaluationId) {
     $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
+    $solution = $submission->getAssignmentSolution();
+    $solution->setLastSubmission($this->assignmentSolutionSubmissions->getLastSubmission($solution, $submission));
     $this->assignmentSolutionSubmissions->remove($submission);
     $this->assignmentSolutionSubmissions->flush();
     $this->sendSuccessResponse("OK");

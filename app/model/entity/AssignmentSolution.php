@@ -24,6 +24,8 @@ use App\Exceptions\ForbiddenRequestException;
  * @method int getOverriddenPoints()
  * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
+ * @method ?AssignmentSolutionSubmission getLastSubmission()
+ * @method setLastSubmission(AssignmentSolutionSubmission)
  */
 class AssignmentSolution
 {
@@ -108,12 +110,11 @@ class AssignmentSolution
       return $this->overriddenPoints;
     }
 
-    $lastSubmission = $this->getLastSubmission();
-    if ($lastSubmission === null) {
+    if ($this->lastSubmission === null) {
       return null;
     }
 
-    $evaluation = $lastSubmission->getEvaluation();
+    $evaluation = $this->lastSubmission->getEvaluation();
     if ($evaluation === null) {
       return null;
     }
@@ -140,13 +141,14 @@ class AssignmentSolution
   protected $submissions;
 
   /**
-   * Get last submission for this solution which is taken as the best one.
-   * @return AssignmentSolutionSubmission|null
+   * This is a reference to the last (by submittedAt) submission attached to this solution.
+   * The reference should speed up loading in many cases since the last submission is the only one that counts.
+   * However, in the future, this behavior might be altered, so we can activeley select, which submission is "relevant".
+   * 
+   * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
+   * @var AssignmentSolutionSubmission|null
    */
-  public function getLastSubmission(): ?AssignmentSolutionSubmission {
-    $result = $this->submissions->first();
-    return $result ? $result : null;
-  }
+  protected $lastSubmission = null;
 
   /**
    * @return string[]

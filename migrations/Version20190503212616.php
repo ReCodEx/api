@@ -62,8 +62,8 @@ final class Version20190503212616 extends AbstractMigration
             if ($failure['reference_solution_submission_id']) {
               $this->connection->executeQuery('UPDATE reference_solution_submission SET failure_id = :failureId WHERE id = :submissionId',
                   [ 'submissionId' => $failure['reference_solution_submission_id'], 'failureId' => $failure['id'] ]);
-          }
-      }
+            }
+        }
     }
 
 
