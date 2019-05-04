@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait ExerciseData {
   /**
-   * @ORM\Column(type="string")
+   * @ORM\Column(type="string", options={"default":"simpleExerciseConfig"})
    */
   protected $configurationType;
 

@@ -172,7 +172,7 @@ class Group
   }
 
   /**
-   * @ORM\Column(type="boolean")
+   * @ORM\Column(type="boolean", options={"default":0})
    */
   protected $isOrganizational = false;
 
