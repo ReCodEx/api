@@ -10,6 +10,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\MappedSuperclass
+ * @ORM\Table(indexes={@ORM\Index(name="submitted_at_idx", columns={"submitted_at"})})
  *
  * @method string getId()
  * @method string getResultsUrl()

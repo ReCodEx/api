@@ -120,9 +120,9 @@ class Exercise implements IExercise
   protected $isLocked;
 
   /**
-   * @ORM\Column(type="boolean")
+   * @ORM\Column(type="boolean", options={"default":0})
    */
-  protected $isBroken;
+  protected $isBroken = false;
 
   public function isPublic() {
     return $this->isPublic;
