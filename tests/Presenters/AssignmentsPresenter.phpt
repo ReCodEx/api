@@ -515,22 +515,30 @@ class TestAssignmentsPresenter extends Tester\TestCase
   public function testBestSolution()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
+    $assignments = $this->presenter->assignments->findAll();
+    foreach ($assignments as $assignment) {
+      $assignmentSolutions = $assignment->getAssignmentSolutions()->toArray();
+      foreach ($assignmentSolutions as $baseSolution) {
+        $user = $baseSolution->getSolution()->getAuthor();
+        $best = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
 
-    $assignment = current($this->presenter->assignments->findAll());
-    $user = $assignment->getAssignmentSolutions()->first()->getSolution()->getAuthor();
-    $submission = $this->presenter->assignmentSolutions->findBestSolution($assignment, $user);
+        $request = new Nette\Application\Request('V1:Assignments', 'GET',
+          ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    $request = new Nette\Application\Request('V1:Assignments', 'GET',
-      ['action' => 'bestSolution', 'id' => $assignment->getId(), 'userId' => $user->getId()]
-    );
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-
-    $payload = $result['payload'];
-    Assert::equal($submission->getId(), $payload['id']);
+        $payload = $result['payload'];
+        if ($best) {
+          Assert::equal($best->getId(), $payload['id']);
+        } else {
+          Assert::equal(null, $payload);
+        }
+      }
+    }
   }
 
   public function testBestSolutions()

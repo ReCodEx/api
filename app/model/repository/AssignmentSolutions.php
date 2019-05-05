@@ -88,9 +88,7 @@ class AssignmentSolutions extends BaseRepository {
     if ($user !== null) {
       $findBy["solution.author"] = $user;
     }
-    $solutions = $this->findBy($findBy, [
-      "solution.createdAt" => "DESC"
-    ]);
+    $solutions = $this->findBy($findBy);
     return self::filterValidSolutions($solutions);
   }
 

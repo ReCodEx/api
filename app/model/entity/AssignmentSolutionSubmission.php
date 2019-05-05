@@ -12,6 +12,7 @@ use App\Helpers\EvaluationStatus as ES;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(name="assignment_solution_submission_submitted_at_idx", columns={"submitted_at"})})
  *
  * @method AssignmentSolution getAssignmentSolution()
  * @method SubmissionFailure getFailure()

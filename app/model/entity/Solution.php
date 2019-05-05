@@ -13,7 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * @ORM\Entity
- * @ORM\Table(indexes={@ORM\Index(name="created_at_idx", columns={"created_at"})})
+ * @ORM\Table(indexes={@ORM\Index(name="solution_created_at_idx", columns={"created_at"})})
  * 
  * @method string getId()
  * @method Collection getFiles()
