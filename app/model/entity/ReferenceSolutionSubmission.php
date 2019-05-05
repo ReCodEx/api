@@ -12,6 +12,7 @@ use App\Helpers\EvaluationResults as ER;
 
 /**
  * @ORM\Entity
+ * @ORM\Table(indexes={@ORM\Index(name="ref_solution_submission_submitted_at_idx", columns={"submitted_at"})})
  *
  * @method ReferenceExerciseSolution getReferenceSolution()
  * @method SubmissionFailure getFailure()

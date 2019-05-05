@@ -25,13 +25,22 @@ App\Model\Entity\SolutionFile:
             - "@demoSolution<current()>"
 
 App\Model\Entity\AssignmentSolution:
-    "solution{1..2}":
+    "solution1":
         __construct:
             createSolution:
                 - "Random note"
                 - @demoAssignment
-                - "@demoSolution<current()>"
+                - "@demoSolution1"
         bonusPoints: 1
+        lastSubmission: @submission6
+    "solution2":
+        __construct:
+            createSolution:
+                - "Random note"
+                - @demoAssignment
+                - "@demoSolution2"
+        bonusPoints: 1
+        lastSubmission: @submission4
 
 App\Model\Entity\SubmissionFailure:
     "resolvedSubmissionFailure":
