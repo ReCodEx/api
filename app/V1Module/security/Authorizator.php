@@ -48,7 +48,7 @@ abstract class Authorizator implements IAuthorizator {
     return false;
   }
 
-  protected function isInRole($target, $role): bool {
-    return $this->roles->isInRole($target, $role);
+  protected function isInRole(string $actualTestedRole, string $minimalRequestedRole): bool {
+    return $this->roles->isInRole($actualTestedRole, $minimalRequestedRole);
   }
 }

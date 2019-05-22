@@ -63,7 +63,7 @@ class NotificationsPresenter extends BasePresenter {
         return $this->notificationAcl->canViewDetail($notification);
       });
 
-    $this->sendSuccessResponse($notifications);
+    $this->sendSuccessResponse(array_values($notifications));
   }
 
   public function checkAll() {
@@ -83,7 +83,7 @@ class NotificationsPresenter extends BasePresenter {
         return $this->notificationAcl->canViewDetail($notification);
       });
 
-    $this->sendSuccessResponse($notifications);
+    $this->sendSuccessResponse(array_values($notifications));
   }
 
   public function checkCreate() {

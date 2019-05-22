@@ -27,7 +27,7 @@ class NotificationPermissionPolicy implements IPermissionPolicy {
       return false;
     }
 
-    return $this->roles->isInRole($notification->getRole(), $user->getRole());
+    return $this->roles->isInRole($user->getRole(), $notification->getRole());
   }
 
   public function isGlobal(Identity $identity, Notification $notification) {
