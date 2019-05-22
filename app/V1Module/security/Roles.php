@@ -14,23 +14,32 @@ abstract class Roles
   public const EMPOWERED_SUPERVISOR_ROLE = "empowered-supervisor";
   public const SUPERADMIN_ROLE = "superadmin";
 
-  protected $roles = [];
+  /**
+   * @var array
+   * Indices are role names, values holds a list of all parents (from which a role inherits permissions).
+   */
+  protected $rolesParents = [];
 
 
   public abstract function setup();
 
-  protected function addRole($role, $parents) {
-    $this->roles[$role] = $parents;
+  protected function addRole(string $role, array $parents) {
+    $this->rolesParents[$role] = $parents;
   }
 
-  public function isInRole($target, $role): bool {
-    if ($target === $role) {
+  /**
+   * Verify whether given actual role has at least the permissions of minimal requested role.
+   * @param string $actualTestedRole
+   * @param string $minimalRequestedRole
+   */
+  public function isInRole(string $actualTestedRole, string $minimalRequestedRole): bool {
+    if ($actualTestedRole === $minimalRequestedRole) {
       return true;
     }
 
-    if (array_key_exists($target, $this->roles)) {
-      foreach ($this->roles[$target] as $parent) {
-        if ($this->isInRole($parent, $role)) {
+    if (array_key_exists($actualTestedRole, $this->rolesParents)) {
+      foreach ($this->rolesParents[$actualTestedRole] as $parent) {
+        if ($this->isInRole($parent, $minimalRequestedRole)) {
           return true;
         }
       }
@@ -45,7 +54,7 @@ abstract class Roles
    * @return bool true if given role is valid
    */
   public function validateRole(string $role): bool {
-    if (array_key_exists($role, $this->roles)) {
+    if (array_key_exists($role, $this->rolesParents)) {
       return true;
     }
 
