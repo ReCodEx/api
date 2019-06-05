@@ -10,6 +10,7 @@ use App\Exceptions\WrongCredentialsException;
 use App\Model\Entity\Group;
 use App\Model\Entity\Login;
 use App\Model\Entity\User;
+use App\Model\Entity\UserUiData;
 use App\Model\Repository\Logins;
 use App\Exceptions\BadRequestException;
 use App\Helpers\EmailVerificationHelper;
@@ -398,6 +399,42 @@ class UsersPresenter extends BasePresenter {
     $settings->setSolutionCommentsEmails($solutionCommentsEmails);
     $settings->setPointsChangedEmails($pointsChangedEmails);
     $settings->setUseGravatar($useGravatar);
+
+    $this->users->persist($user);
+    $this->sendSuccessResponse($this->userViewFactory->getUser($user));
+  }
+
+  public function checkUpdateUiData(string $id) {
+    $user = $this->users->findOrThrow($id);
+
+    if (!$this->userAcl->canUpdateProfile($user)) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Update the user-specific structured UI data
+   * @POST
+   * @param string $id Identifier of the user
+   * @Param(type="post", name="uiData", validation="array|null", description="Structured user-specific UI data")
+   * @throws NotFoundException
+   */
+  public function actionUpdateUiData(string $id) {
+    $req = $this->getRequest();
+    $user = $this->users->findOrThrow($id);
+
+    $newUiData = $req->getPost("uiData");
+    if ($newUiData) {
+      $uiData = $user->getUiData();
+      if (!$uiData) {
+        $uiData = new UserUiData($newUiData);
+        $user->setUiData($uiData);  
+      } else {
+        $uiData->setData($newUiData);
+      }
+    } else {
+      $user->setUiData(null);
+    }
 
     $this->users->persist($user);
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
