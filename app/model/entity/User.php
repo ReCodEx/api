@@ -397,4 +397,24 @@ class User
   public function updateLastAuthenticationAt() {
     $this->lastAuthenticationAt = new DateTime();
   }
+
+  /**
+   * @ORM\OneToOne(targetEntity="UserUiData", cascade={"persist", "remove"}, orphanRemoval=true)
+   */
+  protected $uiData = null;
+
+  /**
+   * @return UserUiData|null
+   */
+  public function getUiData(): ?UserUiData {
+    return $this->uiData;
+  }
+
+  /**
+   * @param UserUiData|null
+   */
+  public function setUiData(?UserUiData $uiData) {
+    $this->uiData = $uiData;
+  }
+
 }

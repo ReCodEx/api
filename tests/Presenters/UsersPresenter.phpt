@@ -11,6 +11,7 @@ use App\Model\Entity\User;
 use App\Model\Repository\Logins;
 use App\Model\Repository\ExternalLogins;
 use App\Model\Repository\Users;
+use App\Model\View\UserViewFactory;
 use App\Security\Roles;
 use App\V1Module\Presenters\UsersPresenter;
 use Tester\Assert;
@@ -77,7 +78,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testGetAllUsers()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET', ['action' => 'default']);
     $response = $this->presenter->run($request);
@@ -188,7 +189,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testDetail()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -205,7 +206,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testUpdateProfileWithoutEmailAndPassword()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $firstName = "firstNameUpdated";
@@ -239,7 +240,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testUpdateProfileWithEmailAndWithoutPassword()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $firstName = "firstNameUpdated";
@@ -280,7 +281,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testUpdateProfileWithoutEmailAndWithPassword()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
     $login = $this->presenter->logins->findByUsernameOrThrow($user->getEmail());
 
@@ -396,7 +397,16 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testUpdateSettings()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Testing hack
+    // User view factory remembers logged in user (so we need to reset it after login)
+    $this->presenter->userViewFactory = new UserViewFactory(
+      $this->container->getByType(\App\Security\ACL\IUserPermissions::class),
+      $this->container->getByType(\App\Model\Repository\Logins::class),
+      $this->container->getByType(\Nette\Security\User::class)
+    );
+
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $darkTheme = false;
@@ -431,6 +441,37 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::equal($newAssignmentEmails, $settings->getNewAssignmentEmails());
     Assert::equal($assignmentDeadlineEmails, $settings->getAssignmentDeadlineEmails());
     Assert::equal($submissionEvaluatedEmails, $settings->getSubmissionEvaluatedEmails());
+  }
+
+  public function testUpdateUiData()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Testing hack
+    // User view factory remembers logged in user (so we need to reset it after login)
+    $this->presenter->userViewFactory = new UserViewFactory(
+      $this->container->getByType(\App\Security\ACL\IUserPermissions::class),
+      $this->container->getByType(\App\Model\Repository\Logins::class),
+      $this->container->getByType(\Nette\Security\User::class)
+    );
+
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $uiData = [
+      'lastSelectedGroup' => '1234',
+      'stretcherSize' => 42,
+      'nestedStructure' => [
+        'pos1' => 19,
+        'pos2' => 33,
+        'open' => false,
+      ],
+    ];
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, $this->presenterPath, 'POST',
+      [ 'action' => 'updateUiData', 'id' => $user->getId() ],
+      [ 'uiData' => $uiData ]
+    );
+
+    Assert::equal($uiData, $payload["privateData"]["uiData"]);
   }
 
   public function testCreateLocalAccount()
@@ -490,7 +531,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testStudentGroups()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::STUDENT_GROUP_MEMBER_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -526,7 +567,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testInstances()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',
@@ -547,7 +588,7 @@ class TestUsersPresenter extends Tester\TestCase
 
   public function testExercises()
   {
-    $token = PresenterTestHelper::loginDefaultAdmin($this->container);
+    PresenterTestHelper::loginDefaultAdmin($this->container);
     $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
     $request = new Nette\Application\Request($this->presenterPath, 'GET',

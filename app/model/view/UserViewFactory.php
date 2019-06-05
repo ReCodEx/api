@@ -55,13 +55,17 @@ class UserViewFactory {
     return $user->getConsolidatedExternalLogins($filter);
   }
 
+  private function isUserLoggedInUser(User $user) {
+    return $this->loggedInUser && $this->loggedInUser->getId() === $user->getId();
+  }
+
   /**
    * @param User $user
    * @param bool $canViewPrivate
-   * @param bool $canViewAllExternalIds
+   * @param bool $reallyShowEverything
    * @return array
    */
-  private function getUserData(User $user, bool $canViewPrivate, bool $canViewAllExternalIds = false) {
+  private function getUserData(User $user, bool $canViewPrivate, bool $reallyShowEverything = false) {
     $privateData = null;
     if ($canViewPrivate) {
       $login = $this->logins->findByUserId($user->getId());
@@ -84,13 +88,18 @@ class UserViewFactory {
           "studentOf" => $studentOf->map(function (Group $group) { return $group->getId(); })->getValues(),
           "supervisorOf" => $supervisorOf->map(function (Group $group) { return $group->getId(); })->getValues()
         ],
-        "settings" => $user->getSettings(),
         "emptyLocalPassword" => $emptyLocalPassword,
         "isLocal" => $user->hasLocalAccount(),
         "isExternal" => $user->hasExternalAccounts(),
         "isAllowed" => $user->isAllowed(),
-        "externalIds" => $this->getExternalIds($user, $canViewAllExternalIds),
+        "externalIds" => $this->getExternalIds($user, $reallyShowEverything),
       ];
+
+      if ($reallyShowEverything || $this->isUserLoggedInUser($user)) {
+        $uiData = $user->getUiData();
+        $privateData["uiData"] = $uiData ? $uiData->getData() : null;
+        $privateData["settings"] = $user->getSettings();
+      }
     }
 
     return [
@@ -109,7 +118,7 @@ class UserViewFactory {
    * @return array
    */
   public function getFullUser(User $user) {
-    return $this->getUserData($user, true, true);
+    return $this->getUserData($user, true, true); // true, true = really show everyting
   }
 
   /**
