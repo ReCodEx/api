@@ -113,10 +113,23 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, ["x", "y"]);
+    $token = $manager->issueToken($user, null, ["x", "y"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::equal(["x", "y"], $payload->scopes);
+  }
+
+  public function testIssueTokenWithEffectiveRole() {
+    $users = Mockery::mock(App\Model\Repository\Users::class);
+    $verificationKey = "abc";
+    $manager = new AccessManager([ "verificationKey" => $verificationKey ], $users);
+
+    $user = Mockery::mock(App\Model\Entity\User::CLASS);
+    $user->shouldReceive("getId")->andReturn("123456");
+    $token = $manager->issueToken($user, "role-eff");
+
+    $payload = JWT::decode($token, $verificationKey, ["HS256"]);
+    Assert::equal("role-eff", $payload->effrole);
   }
 
   public function testIssueTokenWithExplicitExpiration() {
@@ -126,7 +139,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, [], 30);
+    $token = $manager->issueToken($user, null, [], 30);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);
@@ -139,7 +152,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
-    $token = $manager->issueToken($user, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
+    $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
     Assert::true((time() + 30) >= $payload->exp);

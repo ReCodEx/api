@@ -93,8 +93,8 @@ class ForgottenPasswordHelper {
     $this->em->flush();
 
     // prepare all necessary things
-    $token = $this->accessManager->issueToken($login->getUser(), [TokenScope::CHANGE_PASSWORD],
-      $this->tokenExpiration);
+    $token = $this->accessManager->issueToken($login->getUser(), null,
+      [TokenScope::CHANGE_PASSWORD], $this->tokenExpiration);
 
     $locale = $login->getUser()->getSettings()->getDefaultLanguage();
     $subject = $this->createSubject($login);

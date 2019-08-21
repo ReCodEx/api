@@ -103,13 +103,14 @@ class AccessManager {
 
   /**
    * Issue a new JWT for the user with optional scopes and optional explicit expiration time.
-   * @param   User $user
-   * @param   string[] $scopes Array of scopes
-   * @param   int $exp Expiration of the token in seconds
-   * @param   array $payload
+   * @param User $user
+   * @param string|null $effectiveRole Effective user role for issued token
+   * @param string[] $scopes Array of scopes
+   * @param int $exp Expiration of the token in seconds
+   * @param array $payload
    * @return string
    */
-  public function issueToken(User $user, array $scopes = [], int $exp = null, array $payload = []) {
+  public function issueToken(User $user, string $effectiveRole = null, array $scopes = [], int $exp = null, array $payload = []) {
     if ($exp === null) {
       $exp = $this->expiration;
     }
@@ -123,6 +124,7 @@ class AccessManager {
         "nbf" => time(),
         "exp" => time() + $exp,
         "sub" => $user->getId(),
+        "effrole" => $effectiveRole,
         "scopes" => $scopes
       ]
     ));
@@ -131,7 +133,7 @@ class AccessManager {
   }
 
   public function issueRefreshedToken(AccessToken $token): string {
-    return $this->issueToken($this->getUser($token), $token->getScopes(), $token->getExpirationTime(), $token->getPayloadData());
+    return $this->issueToken($this->getUser($token), null, $token->getScopes(), $token->getExpirationTime(), $token->getPayloadData());
   }
 
   /**
