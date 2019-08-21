@@ -17,7 +17,7 @@ interface ITestResource1Permissions {
 /**
  * @testCase
  */
-class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
+class TestAuthorizatorWithScopeRoles extends Tester\TestCase
 {
   use MockeryTrait;
 
@@ -35,7 +35,7 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
 
   public function __construct()
   {
-    $this->loader = new Loader(TEMP_DIR . '/security', __DIR__ . '/config/with_effective_roles.neon', [
+    $this->loader = new Loader(TEMP_DIR . '/security', __DIR__ . '/config/with_scope_roles.neon', [
       'resource1' => ITestResource1Permissions::class
     ], Mockery::mock(\App\Security\UserStorage::class));
   }
@@ -47,7 +47,7 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
     $this->authorizator = $this->loader->loadAuthorizator($this->policies, $this->roles);
   }
 
-  public function testNoEffectiveRoles()
+  public function testNoScopeRoles()
   {
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'normal_role' ]),
@@ -59,7 +59,7 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
     ));
   }
 
-  public function testRestrictedEffectiveRole()
+  public function testRestrictedScopeRole()
   {
     Assert::false($this->authorizator->isAllowed(
       new MockIdentity([ 'normal_role' ], [ 'effective_role_2' ]),
@@ -95,7 +95,7 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
     ));
   }
 
-  public function testBothEffectiveRoles()
+  public function testBothScopeRoles()
   {
     Assert::true($this->authorizator->isAllowed(
       new MockIdentity([ 'normal_role' ], [ 'effective_role_2', 'effective_role_1' ]),
@@ -108,4 +108,4 @@ class TestAuthorizatorWithEffectiveRoles extends Tester\TestCase
   }
 }
 
-(new TestAuthorizatorWithEffectiveRoles())->run();
+(new TestAuthorizatorWithScopeRoles())->run();

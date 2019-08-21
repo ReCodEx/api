@@ -3,13 +3,15 @@
 class MockIdentity extends App\Security\Identity
 {
   private $roles;
-  private $effectiveRoles;
+  private $scopeRoles;
+  private $effectiveRole;
 
-  public function __construct(array $roles, array $effectiveRoles = [])
+  public function __construct(array $roles, array $scopeRoles = [], string $effectiveRole = null)
   {
     parent::__construct(null, null);
     $this->roles = $roles;
-    $this->effectiveRoles = $effectiveRoles;
+    $this->scopeRoles = $scopeRoles;
+    $this->effectiveRole = $effectiveRole;
   }
 
   public function getRoles()
@@ -19,6 +21,11 @@ class MockIdentity extends App\Security\Identity
 
   function getScopeRoles()
   {
-    return $this->effectiveRoles;
+    return $this->scopeRoles;
+  }
+
+  function getEffectiveRole(): ?string
+  {
+    return $this->effectiveRole;
   }
 }
