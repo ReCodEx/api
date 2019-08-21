@@ -135,7 +135,7 @@ class PresenterTestHelper
 
     /** @var \App\Security\AccessManager $accessManager */
     $accessManager = $container->getByType(\App\Security\AccessManager::class);
-    $tokenText = $accessManager->issueToken($user, [TokenScope::MASTER, TokenScope::REFRESH]);
+    $tokenText = $accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH]);
     $token = $accessManager->decodeToken($tokenText);
 
     $userSession->login(new \App\Security\Identity($user, $token));

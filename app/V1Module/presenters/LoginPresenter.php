@@ -75,7 +75,7 @@ class LoginPresenter extends BasePresenter {
    * @throws InvalidAccessTokenException
    */
   private function sendAccessTokenResponse(User $user) {
-    $token = $this->accessManager->issueToken($user, [TokenScope::MASTER, TokenScope::REFRESH]);
+    $token = $this->accessManager->issueToken($user, null, [TokenScope::MASTER, TokenScope::REFRESH]);
     $this->getUser()->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
     $this->sendSuccessResponse([
@@ -101,7 +101,7 @@ class LoginPresenter extends BasePresenter {
 
     $user = $this->credentialsAuthenticator->authenticate($username, $password);
     $user->updateLastAuthenticationAt();
-    $this->users->flush();    
+    $this->users->flush();
     $this->sendAccessTokenResponse($user);
   }
 
@@ -225,7 +225,7 @@ class LoginPresenter extends BasePresenter {
     $this->users->flush();
 
     $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user, $scopes, $expiration),
+      "accessToken" => $this->accessManager->issueToken($user, null, $scopes, $expiration),
       "user" => $this->userViewFactory->getFullUser($user)
     ]);
   }

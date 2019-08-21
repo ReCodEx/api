@@ -84,7 +84,7 @@ class EmailVerificationHelper {
   public function process(User $user, bool $firstTime = false) {
     // prepare all necessary things
     $token = $this->accessManager->issueToken(
-      $user, [TokenScope::EMAIL_VERIFICATION], $this->tokenExpiration, ["email" => $user->getEmail()]
+      $user, null, [TokenScope::EMAIL_VERIFICATION], $this->tokenExpiration, ["email" => $user->getEmail()]
     );
 
     return $this->sendEmail($user, $token, $firstTime);

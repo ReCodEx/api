@@ -11,6 +11,9 @@ class AccessToken {
   /** @var string|null The subject */
   private $sub = null;
 
+  /** @var string|null Effective user role of this token */
+  private $effrole = null;
+
   /** @var string[] Array of scopes this access can access */
   private $scopes = [];
 
@@ -28,6 +31,10 @@ class AccessToken {
 
     if (isset($payload->scopes)) {
       $this->scopes = $payload->scopes;
+    }
+
+    if (isset($payload->effrole)) {
+      $this->effrole = $payload->effrole;
     }
 
     $this->payload = $payload;
@@ -89,6 +96,10 @@ class AccessToken {
 
   public function getScopes(): array {
     return $this->scopes;
+  }
+
+  public function getEffectiveRole(): ?string {
+    return $this->effrole;
   }
 
   /**
