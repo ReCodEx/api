@@ -26,10 +26,6 @@ class SolutionCommentsEmailsSender {
   /** @var string */
   private $sender;
   /** @var string */
-  private $assignmentSolutionCommentPrefix;
-  /** @var string */
-  private $referenceSolutionCommentPrefix;
-  /** @var string */
   private $assignmentSolutionRedirectUrl;
   /** @var string */
   private $referenceSolutionRedirectUrl;
@@ -44,8 +40,6 @@ class SolutionCommentsEmailsSender {
     $this->emailHelper = $emailHelper;
     $this->localizationHelper = $localizationHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->assignmentSolutionCommentPrefix = Arrays::get($params, ["emails", "assignmentSolutionCommentPrefix"], "Assignment Solution Comment - ");
-    $this->referenceSolutionCommentPrefix = Arrays::get($params, ["emails", "referenceSolutionCommentPrefix"], "Reference Solution Comment - ");
     $this->assignmentSolutionRedirectUrl = Arrays::get($params, ["assignmentSolutionRedirectUrl"], "https://recodex.mff.cuni.cz");
     $this->referenceSolutionRedirectUrl = Arrays::get($params, ["referenceSolutionRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
@@ -90,7 +84,7 @@ class SolutionCommentsEmailsSender {
 
     return $this->localizationHelper->sendLocalizedEmail(
       $recipients,
-      function ($toUsers, $emails, $locale) use ($solution, $baseSolution, $comment) {
+      function ($toUsers, $emails, $locale) use ($solution, $comment) {
         if ($solution instanceof AssignmentSolution) {
           list($subject, $body) = $this->createAssignmentSolutionComment($solution, $comment, $locale);
         } else {

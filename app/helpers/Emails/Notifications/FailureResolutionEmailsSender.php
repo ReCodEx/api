@@ -21,8 +21,6 @@ class FailureResolutionEmailsSender {
 
   /** @var string */
   private $sender;
-  /** @var string */
-  private $failureResolvedPrefix;
 
 
   /**
@@ -32,7 +30,6 @@ class FailureResolutionEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->failureResolvedPrefix = Arrays::get($params, ["emails", "failureResolvedPrefix"], "Submission Failure Resolved - ");
   }
 
   /**
@@ -63,7 +60,7 @@ class FailureResolutionEmailsSender {
    * @param SubmissionFailure $failure
    * @param string $title
    * @param string $locale
-   * @return string{]
+   * @return string[]
    * @throws InvalidStateException
    */
   private function createFailureResolved(SubmissionFailure $failure, string $title, string $locale): array {

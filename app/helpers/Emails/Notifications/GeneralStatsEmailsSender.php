@@ -26,9 +26,6 @@ class GeneralStatsEmailsSender {
   private $recipient;
 
   /** @var string */
-  private $subject;
-
-  /** @var string */
   private $period;
 
   /**
@@ -45,7 +42,6 @@ class GeneralStatsEmailsSender {
       throw new InvalidStateException("Missing recipient (To) address in GeneralStatsEmailsSender configuration.");
     }
     $this->recipient = is_array($recipient) ? $recipient : [$recipient];
-    $this->subject = Arrays::get($params, ["emails", "subject"], "General Status Overview");
     $this->period = Arrays::get($params, ["period"], "1 week");
   }
 

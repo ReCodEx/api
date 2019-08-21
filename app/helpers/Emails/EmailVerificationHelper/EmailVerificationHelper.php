@@ -37,12 +37,6 @@ class EmailVerificationHelper {
   private $sender;
 
   /**
-   * Prefix of mail subject to be used
-   * @var string
-   */
-  private $subjectPrefix;
-
-  /**
    * URL which will be sent to user with token.
    * @var string
    */
@@ -69,7 +63,6 @@ class EmailVerificationHelper {
     $this->emailHelper = $emailHelper;
     $this->accessManager = $accessManager;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->subjectPrefix = Arrays::get($params, ["emails", "subjectPrefix"], "Email Verification Request - ");
     $this->redirectUrl = Arrays::get($params, ["redirectUrl"], "https://recodex.mff.cuni.cz");
     $this->tokenExpiration = Arrays::get($params, ["tokenExpiration"], 10 * 60); // default value: 10 minutes
   }

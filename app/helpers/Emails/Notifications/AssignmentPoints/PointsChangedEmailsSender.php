@@ -22,10 +22,6 @@ class PointsChangedEmailsSender {
   /** @var string */
   private $sender;
   /** @var string */
-  private $solutionPointsUpdatedPrefix;
-  /** @var string */
-  private $shadowPointsUpdatedPrefix;
-  /** @var string */
   private $solutionPointsRedirectUrl;
   /** @var string */
   private $shadowPointsRedirectUrl;
@@ -39,8 +35,6 @@ class PointsChangedEmailsSender {
   public function __construct(EmailHelper $emailHelper, array $params) {
     $this->emailHelper = $emailHelper;
     $this->sender = Arrays::get($params, ["emails", "from"], "noreply@recodex.mff.cuni.cz");
-    $this->solutionPointsUpdatedPrefix = Arrays::get($params, ["emails", "solutionPointsUpdatedPrefix"], "Assignment Points Updated - ");
-    $this->shadowPointsUpdatedPrefix = Arrays::get($params, ["emails", "shadowPointsUpdatedPrefix"], "Shadow Assignment Points Awarded - ");
     $this->solutionPointsRedirectUrl = Arrays::get($params, ["solutionPointsRedirectUrl"], "https://recodex.mff.cuni.cz");
     $this->shadowPointsRedirectUrl = Arrays::get($params, ["shadowPointsRedirectUrl"], "https://recodex.mff.cuni.cz");
   }
