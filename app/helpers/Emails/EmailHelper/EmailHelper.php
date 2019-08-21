@@ -137,7 +137,7 @@ class EmailHelper {
       "githubUrl" => $this->githubUrl
     ];
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/email_{locale}.latte");
-    $html = $latte->renderToString($template, $params);
+    list($_, $html) = $latte->renderEmail($template, $params);
 
     // Prepare the message ...
     $message = new Message();

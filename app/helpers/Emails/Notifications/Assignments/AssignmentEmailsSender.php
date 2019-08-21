@@ -83,8 +83,7 @@ class AssignmentEmailsSender {
     return $this->localizationHelper->sendLocalizedEmail(
       $recipients,
       function ($toUsers, $emails, $locale) use ($assignment) {
-        $subject = $this->newAssignmentPrefix .
-          EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName();
+        list($subject, $text) = $this->renderNewAssignment($assignment, $locale);
 
         // Send the mail
         return $this->emailHelper->send(
@@ -92,7 +91,7 @@ class AssignmentEmailsSender {
           [],
           $locale,
           $subject,
-          $this->createNewAssignmentBody($assignment, $locale),
+          $text,
           $emails
         );
       }
@@ -103,15 +102,15 @@ class AssignmentEmailsSender {
    * Prepare and format body of the new assignment mail
    * @param AssignmentBase $assignment
    * @param string $locale
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createNewAssignmentBody(AssignmentBase $assignment, string $locale): string {
+  private function renderNewAssignment(AssignmentBase $assignment, string $locale): array {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     if ($assignment instanceof Assignment) {
       $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/newAssignmentEmail_{locale}.latte");
-      return $latte->renderToString($template, [
+      return $latte->renderEmail($template, [
         "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
         "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
         "firstDeadline" => $assignment->getFirstDeadline(),
@@ -123,7 +122,7 @@ class AssignmentEmailsSender {
       ]);
     } else if ($assignment instanceof ShadowAssignment) {
       $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/newShadowAssignmentEmail_{locale}.latte");
-      return $latte->renderToString($template, [
+      return $latte->renderEmail($template, [
         "name" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
         "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
         "maxPoints" => $assignment->getMaxPoints(),
