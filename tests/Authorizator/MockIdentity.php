@@ -17,7 +17,7 @@ class MockIdentity extends App\Security\Identity
     return $this->roles;
   }
 
-  function getEffectiveRoles()
+  function getScopeRoles()
   {
     return $this->effectiveRoles;
   }

@@ -33,9 +33,9 @@ abstract class Authorizator implements IAuthorizator {
     $this->queriedIdentity = $identity;
     $this->queriedContext = $context;
 
-    $effectiveRoles = $identity->getEffectiveRoles();
+    $scopeRoles = $identity->getScopeRoles();
     return $this->checkPermissionsForRoleList($identity->getRoles(), $resource, $privilege)
-      && ($effectiveRoles === [] || $this->checkPermissionsForRoleList($effectiveRoles, $resource, $privilege));
+      && ($scopeRoles === [] || $this->checkPermissionsForRoleList($scopeRoles, $resource, $privilege));
   }
 
   protected function checkPermissionsForRoleList($roleList, $resource, $privilege): bool {
