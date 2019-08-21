@@ -4,6 +4,7 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\WrongCredentialsException;
@@ -17,6 +18,7 @@ use App\Security\AccessManager;
 use App\Security\ACL\IUserPermissions;
 use App\Security\CredentialsAuthenticator;
 use App\Security\Identity;
+use App\Security\Roles;
 use App\Security\TokenScope;
 use Nette\Security\AuthenticationException;
 
@@ -65,6 +67,12 @@ class LoginPresenter extends BasePresenter {
    * @inject
    */
   public $userAcl;
+
+  /**
+   * @var Roles
+   * @inject
+   */
+  public $roles;
 
 
   /**
@@ -185,26 +193,44 @@ class LoginPresenter extends BasePresenter {
    * Issue a new access token with a restricted set of scopes
    * @POST
    * @LoggedIn
+   * @Param(type="post", name="effectiveRole", required=false, validation="string", description="Effective user role contained within issued token")
    * @Param(type="post", name="scopes", validation="list", description="A list of requested scopes")
    * @Param(type="post", required=false, name="expiration", validation="numericint", description="How long should the token be valid (in seconds)")
+   * @throws BadRequestException
    * @throws ForbiddenRequestException
+   * @throws InvalidArgumentException
    */
   public function actionIssueRestrictedToken() {
     $request = $this->getRequest();
     // The scopes are not filtered in any way - the ACL won't allow anything that the user cannot do in a full session
     $scopes = $request->getPost("scopes");
+    $effectiveRole = $request->getPost("effectiveRole");
 
+    $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
+    $this->validateScopeRoles($scopes, $expiration);
+    $this->validateEffectiveRole($effectiveRole);
+
+    $user = $this->getCurrentUser();
+    $user->updateLastAuthenticationAt();
+    $this->users->flush();
+
+    $this->sendSuccessResponse([
+      "accessToken" => $this->accessManager->issueToken($user, $effectiveRole, $scopes, $expiration),
+      "user" => $this->userViewFactory->getFullUser($user)
+    ]);
+  }
+
+  private function validateScopeRoles(?array $scopes, $expiration) {
     $forbiddenScopes = [
       TokenScope::CHANGE_PASSWORD => "Password change tokens can only be issued through the password reset endpoint",
       TokenScope::EMAIL_VERIFICATION => "E-mail verification tokens must be received via e-mail"
     ];
 
+    // check if any of given scopes is among the forbidden ones
     $violations = array_intersect(array_keys($forbiddenScopes), $scopes);
     if ($violations) {
       throw new ForbiddenRequestException($forbiddenScopes[$violations[0]]);
     }
-
-    $expiration = $request->getPost("expiration") !== null ? intval($request->getPost("expiration")) : null;
 
     $restrictedScopes = [
       TokenScope::MASTER => $this->accessManager->getExpiration()
@@ -219,15 +245,25 @@ class LoginPresenter extends BasePresenter {
         ));
       }
     }
+  }
 
-    $user = $this->getCurrentUser();
-    $user->updateLastAuthenticationAt();
-    $this->users->flush();
+  private function validateEffectiveRole(?string $effectiveRole) {
+    if ($effectiveRole == null) {
+      return;
+    }
 
-    $this->sendSuccessResponse([
-      "accessToken" => $this->accessManager->issueToken($user, null, $scopes, $expiration),
-      "user" => $this->userViewFactory->getFullUser($user)
-    ]);
+    if (!$this->roles->validateRole($effectiveRole)) {
+      throw new InvalidArgumentException("effectiveRole", "Unknown user role '$effectiveRole'");
+    }
+
+    $role = $this->getCurrentUser()->getRole();
+    if (!$this->roles->isInRole($role, $effectiveRole)) {
+      throw new BadRequestException(
+        "Cannot issue token with effective role '$effectiveRole' higher than the actual one '$role'",
+        FrontendErrorMappings::E400_002__BAD_REQUEST_FORBIDDEN_EFFECTIVE_ROLE,
+        ["effectiveRole" => $effectiveRole, "role" => $role]
+      );
+    }
   }
 
 }
