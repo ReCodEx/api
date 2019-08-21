@@ -40,10 +40,10 @@ class Identity implements Nette\Security\IIdentity
   }
 
   /**
-   * Returns a list of roles that the user is a member of (in current session).
+   * Returns a list of scope roles that the user is a member of (in current session).
    * @return array
    */
-  function getEffectiveRoles()
+  function getScopeRoles()
   {
     if (!$this->token) {
       return [];
