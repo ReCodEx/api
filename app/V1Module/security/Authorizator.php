@@ -20,7 +20,6 @@ abstract class Authorizator implements IAuthorizator {
   /** @var Roles */
   protected $roles;
 
-  private $initialized = false;
 
   public function __construct(PolicyRegistry $policy, Roles $roles) {
     $this->policy = $policy;
@@ -34,8 +33,10 @@ abstract class Authorizator implements IAuthorizator {
     $this->queriedContext = $context;
 
     $scopeRoles = $identity->getScopeRoles();
+    $effectiveRole = $identity->getEffectiveRole();
     return $this->checkPermissionsForRoleList($identity->getRoles(), $resource, $privilege)
-      && ($scopeRoles === [] || $this->checkPermissionsForRoleList($scopeRoles, $resource, $privilege));
+      && ($scopeRoles === [] || $this->checkPermissionsForRoleList($scopeRoles, $resource, $privilege))
+      && ($effectiveRole === null || $this->checkPermissions($effectiveRole, $resource, $privilege));
   }
 
   protected function checkPermissionsForRoleList($roleList, $resource, $privilege): bool {

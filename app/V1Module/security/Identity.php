@@ -52,6 +52,18 @@ class Identity implements Nette\Security\IIdentity
     return array_map(function (string $role) { return "scope-" . $role; }, $this->token->getScopes());
   }
 
+  /**
+   * Return effective role that user uses in current session.
+   * @return string|null
+   */
+  public function getEffectiveRole(): ?string {
+    if (!$this->token) {
+      return null;
+    }
+
+    return $this->token->getEffectiveRole();
+  }
+
   function getUserData()
   {
     return $this->user;
