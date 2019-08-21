@@ -35,7 +35,7 @@ class EmailLatteFactory {
    */
   public static function latte(): LatteWrapper {
     $latte = new Engine();
-    $latte->setTempDirectory(__DIR__ . "../../../../temp");
+    $latte->setTempDirectory(__DIR__ . "/../../../temp");
 
     // macros
     $latte->addMacro("emailSubject", EmailMacros::install($latte->getCompiler()));
