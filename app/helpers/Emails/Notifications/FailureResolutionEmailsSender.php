@@ -48,14 +48,14 @@ class FailureResolutionEmailsSender {
     /** @var LocalizedExercise $text */
     $text = EmailLocalizationHelper::getLocalization($locale, $submission->getExercise()->getLocalizedTexts());
     $title = $text !== null ? $text->getName() : "UNKNOWN";
-    $subject = $this->failureResolvedPrefix . $title;
+    list($subject, $message) = $this->createFailureResolved($failure, $title, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$submission->getAuthor()->getEmail()],
       $locale,
       $subject,
-      $this->createFailureResolvedBody($failure, $title, $locale)
+      $message
     );
   }
 
@@ -63,13 +63,13 @@ class FailureResolutionEmailsSender {
    * @param SubmissionFailure $failure
    * @param string $title
    * @param string $locale
-   * @return string
+   * @return string{]
    * @throws InvalidStateException
    */
-  private function createFailureResolvedBody(SubmissionFailure $failure, string $title, string $locale): string {
+  private function createFailureResolved(SubmissionFailure $failure, string $title, string $locale): array {
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/failureResolved_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "title" => $title,
       "date" => $failure->getCreatedAt(),
       "note" => $failure->getResolutionNote()

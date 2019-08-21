@@ -58,26 +58,27 @@ class GeneralStatsEmailsSender {
     $since = new DateTime();
     $since->sub(DateInterval::createFromDateString($this->period));
     $generalStats = $generalStatsHelper->gatherStats($since);
+    list($subject, $text) = $this->createGeneralStats($generalStats);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       $this->recipient,
       "en",
-      $this->subject,
-      $this->createGeneralStatsBody($generalStats)
+      $subject,
+      $text
     );
   }
 
   /**
    * Prepare and format body of the mail
    * @param GeneralStats $generalStats
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    */
-  private function createGeneralStatsBody(GeneralStats $generalStats): string {
+  private function createGeneralStats(GeneralStats $generalStats): array {
     $latte = EmailLatteFactory::latte();
     $values = (array)$generalStats;
     $values['period'] = $this->period;
-    return $latte->renderToString(__DIR__ . "/generalStats.latte", $values);
+    return $latte->renderEmail(__DIR__ . "/generalStats.latte", $values);
   }
 }

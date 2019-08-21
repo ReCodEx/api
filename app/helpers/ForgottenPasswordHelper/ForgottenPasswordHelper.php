@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\InvalidStateException;
+use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Security\TokenScope;
@@ -97,8 +98,7 @@ class ForgottenPasswordHelper {
       [TokenScope::CHANGE_PASSWORD], $this->tokenExpiration);
 
     $locale = $login->getUser()->getSettings()->getDefaultLanguage();
-    $subject = $this->createSubject($login);
-    $message = $this->createBody($login, $locale, $token);
+    list($subject, $message) = $this->createEmail($login, $locale, $token);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -111,31 +111,22 @@ class ForgottenPasswordHelper {
   }
 
   /**
-   * Creates and returns subject of email message.
-   * @param Login $login
-   * @return string
-   */
-  private function createSubject(Login $login): string {
-    return $this->subjectPrefix . $login->getUsername();
-  }
-
-  /**
    * Creates and return body of email message.
    * @param Login $login
    * @param string $locale
    * @param string $token
-   * @return string
+   * @return string[]
    * @throws InvalidStateException
    */
-  private function createBody(Login $login, string $locale, string $token): string {
+  private function createEmail(Login $login, string $locale, string $token): array {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
 
     // render the HTML to string using Latte engine
-    $latte = new Latte\Engine();
+    $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/resetPasswordEmail_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "username" => $login->getUsername(),
       "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i")

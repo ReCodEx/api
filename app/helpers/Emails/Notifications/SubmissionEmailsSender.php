@@ -71,8 +71,7 @@ class SubmissionEmailsSender {
     }
 
     $locale = $user->getSettings()->getDefaultLanguage();
-    $subject = $this->submissionEvaluatedPrefix .
-      EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName();
+    list($subject, $text) = $this->createSubmissionEvaluated($submission, $locale);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -80,7 +79,7 @@ class SubmissionEmailsSender {
       [$user->getEmail()],
       $locale,
       $subject,
-      $this->createSubmissionEvaluatedBody($submission, $locale)
+      $text
     );
   }
 
@@ -88,16 +87,16 @@ class SubmissionEmailsSender {
    * Prepare and format body of the mail
    * @param AssignmentSolutionSubmission $submission
    * @param string $locale
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createSubmissionEvaluatedBody(AssignmentSolutionSubmission $submission, string $locale): string {
+  private function createSubmissionEvaluated(AssignmentSolutionSubmission $submission, string $locale): array {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/submissionEvaluated_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
       "date" => $submission->getEvaluation()->getEvaluatedAt(),

@@ -66,15 +66,14 @@ class PointsChangedEmailsSender {
     }
 
     $locale = $author->getSettings()->getDefaultLanguage();
-    $subject = $this->solutionPointsUpdatedPrefix .
-      EmailLocalizationHelper::getLocalization($locale, $solution->getAssignment()->getLocalizedTexts())->getName();
+    list($subject, $text) = $this->createSolutionPointsUpdated($solution, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$author->getEmail()],
       $locale,
       $subject,
-      $this->createSolutionPointsUpdatedBody($solution, $locale)
+      $text
     );
   }
 
@@ -82,16 +81,16 @@ class PointsChangedEmailsSender {
    * Prepare and format body of the assignment points updated mail.
    * @param AssignmentSolution $solution
    * @param string $locale
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createSolutionPointsUpdatedBody(AssignmentSolution $solution, string $locale): string {
+  private function createSolutionPointsUpdated(AssignmentSolution $solution, string $locale): array {
     $assignment = $solution->getAssignment();
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/solutionPointsUpdated_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
       "points" => $solution->getPoints(),
@@ -127,15 +126,14 @@ class PointsChangedEmailsSender {
     }
 
     $locale = $awardee->getSettings()->getDefaultLanguage();
-    $subject = $this->shadowPointsUpdatedPrefix .
-      EmailLocalizationHelper::getLocalization($locale, $points->getShadowAssignment()->getLocalizedTexts())->getName();
+    list($subject, $text) = $this->createShadowPointsUpdated($points, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$awardee->getEmail()],
       $locale,
       $subject,
-      $this->createShadowPointsUpdatedBody($points, $locale)
+      $text
     );
   }
 
@@ -143,16 +141,16 @@ class PointsChangedEmailsSender {
    * Prepare and format body of the shadow assignment points updated mail.
    * @param ShadowAssignmentPoints $points
    * @param string $locale
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createShadowPointsUpdatedBody(ShadowAssignmentPoints $points, string $locale): string {
+  private function createShadowPointsUpdated(ShadowAssignmentPoints $points, string $locale): array {
     $assignment = $points->getShadowAssignment();
 
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/shadowPointsUpdated_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts())->getName(),
       "points" => $points->getPoints(),
