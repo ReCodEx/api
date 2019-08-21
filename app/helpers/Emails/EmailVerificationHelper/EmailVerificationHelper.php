@@ -123,8 +123,7 @@ class EmailVerificationHelper {
    */
   private function sendEmail(User $user, string $token, bool $firstTime = false): bool {
     $locale = $user->getSettings()->getDefaultLanguage();
-    $subject = $this->createSubject($user);
-    $message = $this->createBody($user, $locale, $token, $firstTime);
+    list($subject, $message) = $this->createEmail($user, $locale, $token, $firstTime);
 
     // Send the mail
     return $this->emailHelper->send(
@@ -137,24 +136,15 @@ class EmailVerificationHelper {
   }
 
   /**
-   * Creates and returns subject of email message.
-   * @param User $user
-   * @return string
-   */
-  private function createSubject(User $user): string {
-    return $this->subjectPrefix . $user->getEmail();
-  }
-
-  /**
    * Creates and return body of email message.
    * @param User $user
    * @param string $locale
    * @param string $token
    * @param bool $firstTime
-   * @return string
+   * @return string[]
    * @throws InvalidStateException
    */
-  private function createBody(User $user, string $locale, string $token, bool $firstTime): string {
+  private function createEmail(User $user, string $locale, string $token, bool $firstTime): array {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));
@@ -162,7 +152,7 @@ class EmailVerificationHelper {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/verificationEmail_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "email" => $user->getEmail(),
       "link" => EmailLinkHelper::getLink($this->redirectUrl, ["token" => $token]),
       "expiresAfter" => $expiresAfter->format("H:i"),

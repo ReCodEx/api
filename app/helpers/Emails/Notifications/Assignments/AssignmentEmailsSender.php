@@ -166,8 +166,7 @@ class AssignmentEmailsSender {
     return $this->localizationHelper->sendLocalizedEmail(
       $recipients,
       function ($toUsers, $emails, $locale) use ($assignment) {
-        $subject = $this->assignmentDeadlinePrefix .
-          EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName();
+        list($subject, $text) = $this->createAssignmentDeadline($assignment, $locale);
 
         // Send the mail
         return $this->emailHelper->send(
@@ -175,7 +174,7 @@ class AssignmentEmailsSender {
           [],
           $locale,
           $subject,
-          $this->createAssignmentDeadlineBody($assignment, $locale),
+          $text,
           $emails
         );
       }
@@ -186,15 +185,15 @@ class AssignmentEmailsSender {
    * Prepare and format body of the assignment deadline mail
    * @param Assignment $assignment
    * @param string $locale
-   * @return string Formatted mail body to be sent
+   * @return string[] list of subject and formatted mail body to be sent
    * @throws InvalidStateException
    */
-  private function createAssignmentDeadlineBody(Assignment $assignment, string $locale): string {
+  private function createAssignmentDeadline(Assignment $assignment, string $locale): array {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $localizedGroup = EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts());
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/assignmentDeadline_{locale}.latte");
-    return $latte->renderToString($template, [
+    return $latte->renderEmail($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "group" => $localizedGroup ? $localizedGroup->getName() : "",
       "firstDeadline" => $assignment->getFirstDeadline(),
