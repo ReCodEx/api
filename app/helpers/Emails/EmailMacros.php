@@ -28,7 +28,8 @@ class EmailMacros extends MacroSet {
   }
 
   public function macroEmailSubject(MacroNode $node, Latte\PhpWriter $writer) {
-    return 'ob_start(function () {})';
+    // given lambda which returns null protects ob_start() against flush when error occurs 
+    return 'ob_start(function () { return null; })';
   }
 
   public function macroEndEmailSubject(MacroNode $node, Latte\PhpWriter $writer) {
