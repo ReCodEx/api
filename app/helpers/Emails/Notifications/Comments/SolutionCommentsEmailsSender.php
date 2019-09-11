@@ -7,6 +7,7 @@ use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
 use App\Model\Entity\ReferenceExerciseSolution;
@@ -86,9 +87,9 @@ class SolutionCommentsEmailsSender {
       $recipients,
       function ($toUsers, $emails, $locale) use ($solution, $comment) {
         if ($solution instanceof AssignmentSolution) {
-          list($subject, $body) = $this->createAssignmentSolutionComment($solution, $comment, $locale);
+          $result = $this->createAssignmentSolutionComment($solution, $comment, $locale);
         } else {
-          list($subject, $body) = $this->createReferenceSolutionComment($solution, $comment, $locale);
+          $result = $this->createReferenceSolutionComment($solution, $comment, $locale);
         }
 
         // Send the mail
@@ -96,8 +97,8 @@ class SolutionCommentsEmailsSender {
           $this->sender,
           [],
           $locale,
-          $subject,
-          $body,
+          $result->getSubject(),
+          $result->getText(),
           $emails
         );
       }
@@ -125,10 +126,10 @@ class SolutionCommentsEmailsSender {
    * @param AssignmentSolution $solution
    * @param Comment $comment
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createAssignmentSolutionComment(AssignmentSolution $solution, Comment $comment, string $locale): array {
+  private function createAssignmentSolutionComment(AssignmentSolution $solution, Comment $comment, string $locale): EmailRenderResult {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/assignmentSolutionComment_{locale}.latte");
@@ -166,10 +167,10 @@ class SolutionCommentsEmailsSender {
    * @param ReferenceExerciseSolution $solution
    * @param Comment $comment
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createReferenceSolutionComment(ReferenceExerciseSolution $solution, Comment $comment, string $locale): array {
+  private function createReferenceSolutionComment(ReferenceExerciseSolution $solution, Comment $comment, string $locale): EmailRenderResult {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/referenceSolutionComment_{locale}.latte");

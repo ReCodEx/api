@@ -5,6 +5,7 @@ use App\Exceptions\InvalidStateException;
 use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\SubmissionFailure;
 use Nette\SmartObject;
@@ -45,14 +46,14 @@ class FailureResolutionEmailsSender {
     /** @var LocalizedExercise $text */
     $text = EmailLocalizationHelper::getLocalization($locale, $submission->getExercise()->getLocalizedTexts());
     $title = $text !== null ? $text->getName() : "UNKNOWN";
-    list($subject, $message) = $this->createFailureResolved($failure, $title, $locale);
+    $result = $this->createFailureResolved($failure, $title, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$submission->getAuthor()->getEmail()],
       $locale,
-      $subject,
-      $message
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -60,10 +61,10 @@ class FailureResolutionEmailsSender {
    * @param SubmissionFailure $failure
    * @param string $title
    * @param string $locale
-   * @return string[]
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createFailureResolved(SubmissionFailure $failure, string $title, string $locale): array {
+  private function createFailureResolved(SubmissionFailure $failure, string $title, string $locale): EmailRenderResult {
     $latte = EmailLatteFactory::latte();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/failureResolved_{locale}.latte");
     return $latte->renderEmail($template, [

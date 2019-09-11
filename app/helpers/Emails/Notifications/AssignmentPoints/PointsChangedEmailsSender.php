@@ -7,6 +7,7 @@ use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ShadowAssignmentPoints;
 use Nette\Utils\Arrays;
@@ -60,14 +61,14 @@ class PointsChangedEmailsSender {
     }
 
     $locale = $author->getSettings()->getDefaultLanguage();
-    list($subject, $text) = $this->createSolutionPointsUpdated($solution, $locale);
+    $result = $this->createSolutionPointsUpdated($solution, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$author->getEmail()],
       $locale,
-      $subject,
-      $text
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -75,10 +76,10 @@ class PointsChangedEmailsSender {
    * Prepare and format body of the assignment points updated mail.
    * @param AssignmentSolution $solution
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createSolutionPointsUpdated(AssignmentSolution $solution, string $locale): array {
+  private function createSolutionPointsUpdated(AssignmentSolution $solution, string $locale): EmailRenderResult {
     $assignment = $solution->getAssignment();
 
     // render the HTML to string using Latte engine
@@ -120,14 +121,14 @@ class PointsChangedEmailsSender {
     }
 
     $locale = $awardee->getSettings()->getDefaultLanguage();
-    list($subject, $text) = $this->createShadowPointsUpdated($points, $locale);
+    $result = $this->createShadowPointsUpdated($points, $locale);
 
     return $this->emailHelper->send(
       $this->sender,
       [$awardee->getEmail()],
       $locale,
-      $subject,
-      $text
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -135,10 +136,10 @@ class PointsChangedEmailsSender {
    * Prepare and format body of the shadow assignment points updated mail.
    * @param ShadowAssignmentPoints $points
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createShadowPointsUpdated(ShadowAssignmentPoints $points, string $locale): array {
+  private function createShadowPointsUpdated(ShadowAssignmentPoints $points, string $locale): EmailRenderResult {
     $assignment = $points->getShadowAssignment();
 
     // render the HTML to string using Latte engine
