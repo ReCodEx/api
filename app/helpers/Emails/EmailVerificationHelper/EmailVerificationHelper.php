@@ -9,6 +9,7 @@ use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Security\TokenScope;
 use Exception;
 use Latte;
@@ -116,15 +117,15 @@ class EmailVerificationHelper {
    */
   private function sendEmail(User $user, string $token, bool $firstTime = false): bool {
     $locale = $user->getSettings()->getDefaultLanguage();
-    list($subject, $message) = $this->createEmail($user, $locale, $token, $firstTime);
+    $result = $this->createEmail($user, $locale, $token, $firstTime);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [ $user->getEmail() ],
       $locale,
-      $subject,
-      $message
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -134,10 +135,10 @@ class EmailVerificationHelper {
    * @param string $locale
    * @param string $token
    * @param bool $firstTime
-   * @return string[]
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createEmail(User $user, string $locale, string $token, bool $firstTime): array {
+  private function createEmail(User $user, string $locale, string $token, bool $firstTime): EmailRenderResult {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));

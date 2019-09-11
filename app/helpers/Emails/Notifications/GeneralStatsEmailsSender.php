@@ -4,6 +4,7 @@ namespace App\Helpers\Notifications;
 
 use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Helpers\GeneralStatsHelper;
 use App\Helpers\GeneralStats;
 use App\Helpers\EmailHelper;
@@ -54,24 +55,24 @@ class GeneralStatsEmailsSender {
     $since = new DateTime();
     $since->sub(DateInterval::createFromDateString($this->period));
     $generalStats = $generalStatsHelper->gatherStats($since);
-    list($subject, $text) = $this->createGeneralStats($generalStats);
+    $result = $this->createGeneralStats($generalStats);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       $this->recipient,
       "en",
-      $subject,
-      $text
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
   /**
    * Prepare and format body of the mail
    * @param GeneralStats $generalStats
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    */
-  private function createGeneralStats(GeneralStats $generalStats): array {
+  private function createGeneralStats(GeneralStats $generalStats): EmailRenderResult {
     $latte = EmailLatteFactory::latte();
     $values = (array)$generalStats;
     $values['period'] = $this->period;

@@ -6,6 +6,7 @@ use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailLocalizationHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Security\TokenScope;
 use Exception;
 use Latte;
@@ -92,15 +93,15 @@ class ForgottenPasswordHelper {
       $this->tokenExpiration);
 
     $locale = $login->getUser()->getSettings()->getDefaultLanguage();
-    list($subject, $message) = $this->createEmail($login, $locale, $token);
+    $result = $this->createEmail($login, $locale, $token);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [ $login->getUser()->getEmail() ],
       $locale,
-      $subject,
-      $message
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -109,10 +110,10 @@ class ForgottenPasswordHelper {
    * @param Login $login
    * @param string $locale
    * @param string $token
-   * @return string[]
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createEmail(Login $login, string $locale, string $token): array {
+  private function createEmail(Login $login, string $locale, string $token): EmailRenderResult {
     // show to user a minute less, so he doesn't waste time ;-)
     $exp = $this->tokenExpiration - 60;
     $expiresAfter = (new DateTime())->add(new DateInterval("PT{$exp}S"));

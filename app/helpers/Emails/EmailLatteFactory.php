@@ -5,6 +5,28 @@ namespace App\Helpers\Emails;
 use Latte;
 use Latte\Engine;
 
+/**
+ * Holds result of rendering email, namely it contains subject and text of the email.
+ */
+class EmailRenderResult {
+
+  private $subject;
+  private $text;
+
+  public function __construct(?string $subject, ?string $text) {
+    $this->subject = $subject;
+    $this->text = $text;
+  }
+
+  public function getSubject(): ?string {
+    return $this->subject;
+  }
+
+  public function getText(): ?string {
+    return $this->text;
+  }
+}
+
 class LatteWrapper {
 
   private $latte;
@@ -15,12 +37,12 @@ class LatteWrapper {
 
   /**
    * Returns array with two elements, first one is subject of the mail, second one text of the email.
-   * @return string[]
+   * @return EmailRenderResult
    */
-  public function renderEmail($name, array $params = [], $block = null): array {
+  public function renderEmail($name, array $params = [], $block = null): EmailRenderResult {
     EmailSubject::clear();
     $text = $this->latte->renderToString($name, $params, $block); // has to be called before retrieving subject
-    return [EmailSubject::$subject, $text];
+    return new EmailRenderResult(EmailSubject::$subject, $text);
   }
 }
 

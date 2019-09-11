@@ -6,6 +6,7 @@ use App\Exceptions\InvalidStateException;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Helpers\EmailHelper;
 use DateTime;
@@ -68,15 +69,15 @@ class SubmissionEmailsSender {
     }
 
     $locale = $user->getSettings()->getDefaultLanguage();
-    list($subject, $text) = $this->createSubmissionEvaluated($submission, $locale);
+    $result = $this->createSubmissionEvaluated($submission, $locale);
 
     // Send the mail
     return $this->emailHelper->send(
       $this->sender,
       [$user->getEmail()],
       $locale,
-      $subject,
-      $text
+      $result->getSubject(),
+      $result->getText()
     );
   }
 
@@ -84,10 +85,10 @@ class SubmissionEmailsSender {
    * Prepare and format body of the mail
    * @param AssignmentSolutionSubmission $submission
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createSubmissionEvaluated(AssignmentSolutionSubmission $submission, string $locale): array {
+  private function createSubmissionEvaluated(AssignmentSolutionSubmission $submission, string $locale): EmailRenderResult {
     $assignment = $submission->getAssignmentSolution()->getAssignment();
 
     // render the HTML to string using Latte engine

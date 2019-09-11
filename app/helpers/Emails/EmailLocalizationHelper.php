@@ -5,7 +5,6 @@ namespace App\Helpers\Emails;
 use App\Exceptions\InvalidStateException;
 use App\Model\Entity\LocalizedEntity;
 use App\Model\Entity\User;
-use App\Security\Identity;
 use Doctrine\Common\Collections\Collection;
 use Nette;
 

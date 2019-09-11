@@ -137,13 +137,13 @@ class EmailHelper {
       "githubUrl" => $this->githubUrl
     ];
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/email_{locale}.latte");
-    list($_, $html) = $latte->renderEmail($template, $params);
+    $result = $latte->renderEmail($template, $params);
 
     // Prepare the message ...
     $message = new Message();
     $message->setFrom($from)
       ->setSubject($subject)
-      ->setHtmlBody($html);
+      ->setHtmlBody($result->getText());
 
     foreach ($to as $receiver) {
       $message->addTo($receiver);

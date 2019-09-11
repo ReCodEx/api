@@ -7,6 +7,7 @@ use App\Helpers\EmailHelper;
 use App\Helpers\Emails\EmailLatteFactory;
 use App\Helpers\Emails\EmailLocalizationHelper;
 use App\Helpers\Emails\EmailLinkHelper;
+use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
 use App\Model\Entity\ShadowAssignment;
@@ -77,15 +78,15 @@ class AssignmentEmailsSender {
     return $this->localizationHelper->sendLocalizedEmail(
       $recipients,
       function ($toUsers, $emails, $locale) use ($assignment) {
-        list($subject, $text) = $this->renderNewAssignment($assignment, $locale);
+        $result = $this->renderNewAssignment($assignment, $locale);
 
         // Send the mail
         return $this->emailHelper->send(
           $this->sender,
           [],
           $locale,
-          $subject,
-          $text,
+          $result->getSubject(),
+          $result->getText(),
           $emails
         );
       }
@@ -96,10 +97,10 @@ class AssignmentEmailsSender {
    * Prepare and format body of the new assignment mail
    * @param AssignmentBase $assignment
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function renderNewAssignment(AssignmentBase $assignment, string $locale): array {
+  private function renderNewAssignment(AssignmentBase $assignment, string $locale): EmailRenderResult {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     if ($assignment instanceof Assignment) {
@@ -160,15 +161,15 @@ class AssignmentEmailsSender {
     return $this->localizationHelper->sendLocalizedEmail(
       $recipients,
       function ($toUsers, $emails, $locale) use ($assignment) {
-        list($subject, $text) = $this->createAssignmentDeadline($assignment, $locale);
+        $result = $this->createAssignmentDeadline($assignment, $locale);
 
         // Send the mail
         return $this->emailHelper->send(
           $this->sender,
           [],
           $locale,
-          $subject,
-          $text,
+          $result->getSubject(),
+          $result->getText(),
           $emails
         );
       }
@@ -179,10 +180,10 @@ class AssignmentEmailsSender {
    * Prepare and format body of the assignment deadline mail
    * @param Assignment $assignment
    * @param string $locale
-   * @return string[] list of subject and formatted mail body to be sent
+   * @return EmailRenderResult
    * @throws InvalidStateException
    */
-  private function createAssignmentDeadline(Assignment $assignment, string $locale): array {
+  private function createAssignmentDeadline(Assignment $assignment, string $locale): EmailRenderResult {
     // render the HTML to string using Latte engine
     $latte = EmailLatteFactory::latte();
     $localizedGroup = EmailLocalizationHelper::getLocalization($locale, $assignment->getGroup()->getLocalizedTexts());
