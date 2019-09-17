@@ -395,6 +395,50 @@ class TestUsersPresenter extends Tester\TestCase
     Assert::true($updatedUser["avatarUrl"] !== null);
   }
 
+  public function testForceUpdatePassword()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+    $newPassword = 'secretPasswd';
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, $this->presenterPath, 'POST',
+      ['action' => 'updateProfile', 'id' => $user->getId()],
+      [
+        'degreesBeforeName' => '',
+        'degreesAfterName' => '',
+        'gravatarUrlEnabled' => false,
+        'password' => $newPassword,
+        'passwordConfirm' => $newPassword,
+      ]
+    );
+
+    $updatedUser = $payload["user"];
+    Assert::equal($updatedUser["privateData"]["email"], PresenterTestHelper::GROUP_SUPERVISOR_LOGIN);
+
+    $login = $this->logins->findByUsernameOrThrow($user->getEmail());
+    Assert::true($login->passwordsMatch($newPassword));
+  }
+
+  public function testCannotSelfForceUpdatePassword()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $user = $this->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    $newPassword = 'secretPasswd';
+
+    Assert::exception(function () use ($user, $newPassword) {
+      PresenterTestHelper::performPresenterRequest($this->presenter, $this->presenterPath, 'POST',
+        ['action' => 'updateProfile', 'id' => $user->getId()],
+        [
+          'degreesBeforeName' => '',
+          'degreesAfterName' => '',
+          'gravatarUrlEnabled' => false,
+          'password' => $newPassword,
+          'passwordConfirm' => $newPassword,
+        ]
+      );
+    }, App\Exceptions\WrongCredentialsException::class);
+  }
+
   public function testUpdateSettings()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);

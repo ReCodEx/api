@@ -2,12 +2,7 @@
 
 namespace App\Security;
 
-use Nette\Security as NS;
-
 abstract class Authorizator implements IAuthorizator {
-  /** @var NS\Permission */
-  protected $acl;
-
   /** @var Identity */
   protected $queriedIdentity;
 
