@@ -305,7 +305,8 @@ class UsersPresenter extends BasePresenter {
     }
 
     // passwords need to be handled differently
-    if ($login->passwordsMatchOrEmpty($oldPassword)) {
+    if ($login->passwordsMatchOrEmpty($oldPassword) ||
+      (!$oldPassword && $this->userAcl->canForceChangePassword($login->getUser()))) {
       // check if new passwords match each other
       if ($password !== $passwordConfirm) {
         throw new WrongCredentialsException(

@@ -15,12 +15,23 @@ roles:
 
     - name: superadmin
 
-permissions:
-    - allow: true
-      role: superadmin
-
+permissions:    
     - allow: true
       role: scope-master
+
+    #######################################
+    # Superadmin can do (almost) anything #
+    #######################################
+
+    - allow: false
+      resource: user
+      actions:
+        - forceChangePassword
+      conditions:
+        - user.isSameUser
+
+    - allow: true
+      role: superadmin
 
     #############################
     # User takeover permissions #
@@ -251,17 +262,15 @@ permissions:
       role: supervisor-student
       resource: user
       actions:
-          - viewDetail
+        - viewDetail
       conditions: user.isSupervisorOfJoinedGroup
 
     - allow: true
       role: supervisor
       resource: user
       actions:
-          - viewDetail
-          - viewAll
-
-
+        - viewDetail
+        - viewAll
 
     ##########################
     # Assignment permissions #
