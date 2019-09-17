@@ -21,4 +21,5 @@ interface IUserPermissions {
   function canSetRole(User $user): bool;
   function canSetIsAllowed(User $user): bool;
   function canInvalidateTokens(User $user): bool;
+  function canForceChangePassword(User $user): bool;
 }

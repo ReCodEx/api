@@ -35,12 +35,12 @@ abstract class Roles
    * @param string $minimalRequestedRole
    */
   public function isInRole(string $actualTestedRole, string $minimalRequestedRole): bool {
-    if ($actualTestedRole === self::SUPERADMIN_ROLE) {
-      return true;  // special case -- superadmin takes it all...
-    }
-
     if ($actualTestedRole === $minimalRequestedRole) {
       return true;
+    }
+
+    if ($actualTestedRole === self::SUPERADMIN_ROLE && substr($minimalRequestedRole, 0, strlen('scope-')) !== 'scope-') {
+      return true;  // special case -- superadmin takes it all, except for the scopes
     }
 
     if (array_key_exists($actualTestedRole, $this->rolesParents)) {
