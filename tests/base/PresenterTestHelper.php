@@ -22,6 +22,8 @@ class PresenterTestHelper
   const STUDENT_GROUP_MEMBER_LOGIN = "demoGroupMember1@example.com";
   const STUDENT_GROUP_MEMBER_PASSWORD = "";
 
+  const GROUP_SUPERVISOR_LOGIN = "demoGroupSupervisor@example.com";
+
   private static function createEntityManager(string $dbPath, Configuration $configuration, EventManager $eventManager): EntityManager {
     return EntityManager::create(
       ["driver" => "pdo_sqlite", "path" => $dbPath],
