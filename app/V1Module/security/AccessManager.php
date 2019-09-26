@@ -109,8 +109,13 @@ class AccessManager {
    * @param int $exp Expiration of the token in seconds
    * @param array $payload
    * @return string
+   * @throws ForbiddenRequestException
    */
   public function issueToken(User $user, string $effectiveRole = null, array $scopes = [], int $exp = null, array $payload = []) {
+    if (!$user->isAllowed()) {
+      throw new ForbiddenRequestException();
+    }
+
     if ($exp === null) {
       $exp = $this->expiration;
     }
