@@ -5,6 +5,7 @@ use App\Security\AccessToken;
 use App\Security\AccessManager;
 use Tester\Assert;
 use App\Exceptions\InvalidAccessTokenException;
+use App\Exceptions\ForbiddenRequestException;
 use App\Model\Repository\Users;
 
 use Firebase\JWT\JWT;
@@ -94,6 +95,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(true);
     $token = $manager->issueToken($user);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
@@ -106,6 +108,25 @@ class TestAccessManager extends Tester\TestCase
     Assert::equal([], $payload->scopes);
   }
 
+  public function testIssueTokenFailsForDisabledUser() {
+    $users = Mockery::mock(App\Model\Repository\Users::class);
+    $verificationKey = "abc";
+    $manager = new AccessManager([
+      "verificationKey" => $verificationKey,
+      "issuer" => "X",
+      "audience" => "Y",
+      "expiration" => 123
+    ], $users);
+
+    $user = Mockery::mock(App\Model\Entity\User::CLASS);
+    $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(false);
+
+    Assert::exception(function () use ($manager, $user) {
+      $manager->issueToken($user);
+    }, ForbiddenRequestException::class);
+  }
+
   public function testIssueTokenWithScopes() {
     $users = Mockery::mock(App\Model\Repository\Users::class);
     $verificationKey = "abc";
@@ -113,6 +134,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(true);
     $token = $manager->issueToken($user, null, ["x", "y"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
@@ -126,6 +148,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(true);
     $token = $manager->issueToken($user, "role-eff");
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
@@ -139,6 +162,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(true);
     $token = $manager->issueToken($user, null, [], 30);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
@@ -152,6 +176,7 @@ class TestAccessManager extends Tester\TestCase
 
     $user = Mockery::mock(App\Model\Entity\User::CLASS);
     $user->shouldReceive("getId")->andReturn("123456");
+    $user->shouldReceive("isAllowed")->andReturn(true);
     $token = $manager->issueToken($user, null, [], 30, ["sub" => "abcde", "xyz" => "uvw"]);
 
     $payload = JWT::decode($token, $verificationKey, ["HS256"]);
