@@ -76,6 +76,10 @@ class FrontendErrorMappings
 
   /** General forbidden */
   const E403_000__FORBIDDEN = "403-000";
+  /** Forbidden since the user account does not exist */
+  const E403_001__USER_NOT_EXIST = "403-001";
+  /** Forbidden since the user account is disabled */
+  const E403_001__USER_NOT_ALLOWED = "403-002";
 
   /** General not found */
   const E404_000__NOT_FOUND = "404-000";
