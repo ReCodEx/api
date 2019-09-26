@@ -7,8 +7,10 @@ use App\Model\Repository\Users;
 
 use App\Exceptions\InvalidAccessTokenException;
 use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\FrontendErrorMappings;
 
 use Nette\Http\IRequest;
+use Nette\Http\IResponse;
 use Nette\Utils\Strings;
 use Nette\Utils\Arrays;
 
@@ -94,8 +96,14 @@ class AccessManager {
   public function getUser(AccessToken $token): User {
     /** @var User $user */
     $user = $this->users->get($token->getUserId());
-    if (!$user || $user->isAllowed() === false) {
-      throw new ForbiddenRequestException();
+    if (!$user) {
+      throw new ForbiddenRequestException("Forbidden Request - User does not exist",
+        IResponse::S403_FORBIDDEN, FrontendErrorMappings::E403_001__USER_NOT_EXIST);
+    }
+
+    if (!$user->isAllowed()) {
+      throw new ForbiddenRequestException("Forbidden Request - User account was disabled",
+        IResponse::S403_FORBIDDEN, FrontendErrorMappings::E403_001__USER_NOT_ALLOWED);
     }
 
     return $user;
@@ -113,7 +121,8 @@ class AccessManager {
    */
   public function issueToken(User $user, string $effectiveRole = null, array $scopes = [], int $exp = null, array $payload = []) {
     if (!$user->isAllowed()) {
-      throw new ForbiddenRequestException();
+      throw new ForbiddenRequestException("Forbidden Request - User account was disabled",
+        IResponse::S403_FORBIDDEN, FrontendErrorMappings::E403_001__USER_NOT_ALLOWED);
     }
 
     if ($exp === null) {
