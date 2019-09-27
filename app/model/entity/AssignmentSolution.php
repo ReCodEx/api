@@ -25,7 +25,7 @@ use App\Exceptions\ForbiddenRequestException;
  * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
  * @method AssignmentSolutionSubmission getLastSubmission()
- * @method setLastSubmission(AssignmentSolutionSubmission $submission)
+ * @method setLastSubmission(AssignmentSolutionSubmission? $submission)
  */
 class AssignmentSolution
 {

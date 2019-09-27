@@ -133,7 +133,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws ForbiddenRequestException
    */
   public function actionDeleteSolution(string $id) {
-    $this->assignmentSolutions->remove($this->assignmentSolutions->findOrThrow($id));
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    $solution->setLastSubmission(null); // break cyclic dependency, so submissions may be deleted on cascade
+    $this->assignmentSolutions->flush();
+    $this->assignmentSolutions->remove($solution);
     $this->sendSuccessResponse("OK");
   }
 
