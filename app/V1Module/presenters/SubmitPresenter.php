@@ -147,9 +147,8 @@ class SubmitPresenter extends BasePresenter {
     return $assignment->isVisibleToStudents() &&
       $assignment->getGroup() &&
       $assignment->getGroup()->hasValidLicence() &&
-      ($user !== null &&
-        count($this->assignmentSolutions->findValidSolutions($assignment, $user))
-        <= $assignment->getSubmissionsCountLimit());
+      $user !== null &&
+      count($this->assignmentSolutions->findValidSolutions($assignment, $user)) < $assignment->getSubmissionsCountLimit();
   }
 
   /**
