@@ -4,6 +4,9 @@ namespace App\V1Module\Presenters;
 
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
+use App\Exceptions\ForbiddenRequestException;
+use App\Exceptions\FrontendErrorMappings;
 use App\Helpers\Localizations;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\ShadowAssignment;
@@ -15,8 +18,6 @@ use App\Model\Repository\Groups;
 use App\Model\Repository\Users;
 use App\Model\Repository\Instances;
 use App\Model\Repository\GroupMemberships;
-use App\Exceptions\BadRequestException;
-use App\Exceptions\ForbiddenRequestException;
 use App\Model\View\ExerciseViewFactory;
 use App\Model\View\AssignmentViewFactory;
 use App\Model\View\ShadowAssignmentViewFactory;
@@ -335,6 +336,56 @@ class GroupsPresenter extends BasePresenter {
 
     $this->groups->persist($group);
     $this->sendSuccessResponse($this->groupViewFactory->getGroup($group));
+  }
+
+  public function checkRelocate(string $id, string $newParentId) {
+    $group = $this->groups->findOrThrow($id);
+    $newParent = $this->groups->findOrThrow($newParentId);
+
+    if ($group->isArchived() || $newParent->isArchived()) {
+      throw new BadRequestException("Cannot manipulate with archived group.", FrontendErrorMappings::E400_501__GROUP_ARCHIVED);
+    }
+
+    if (!$this->groupAcl->canRelocate($group)
+      || !$this->groupAcl->canAddSubgroup($newParent)
+    ) {
+      throw new ForbiddenRequestException();
+    }
+  }
+
+  /**
+   * Relocate the group under a different parent.
+   * @POST
+   * @param string $id An identifier of the relocated group
+   * @param string $newParentId An identifier of the new parent group
+   * @throws NotFoundException
+   * @throws BadRequestException
+   */
+  public function actionRelocate(string $id, string $newParentId) {
+    $group = $this->groups->findOrThrow($id);
+    $newParent = $this->groups->findOrThrow($newParentId);
+    
+    if ($group->getInstance() !== null && $group->getInstance()->getRootGroup() === $group) {
+      throw new BadRequestException(
+        "The root group of an instance cannot relocate.",
+        FrontendErrorMappings::E400_502__GROUP_INSTANCE_ROOT_CANNOT_RELOCATE,
+        [ 'groupId' => $id, 'instanceId' => $group->getInstance()->getId() ]
+      );
+    }
+
+    foreach ($this->groups->groupsAncestralClosure([ $newParent ]) as $parent) {
+      if ($parent->getId() === $id) { // group cannot be relocated under its descendant
+        throw new BadRequestException(
+          "The relocation would create a loop in the group hierarchy.",
+          FrontendErrorMappings::E400_503__GROUP_RELOCATION_WOULD_CREATE_LOOP,
+          [ 'groupId' => $id, 'newParentId' => $newParentId ]
+        );      
+      }
+    }
+
+    $group->setParentGroup($newParent);
+    $this->groups->persist($group);
+    $this->forward('Groups:', [ 'instanceId' => $newParent->getInstance()->getId(), 'ancestors' => true ]); // return all groups
   }
 
   public function checkRemoveGroup(string $id) {

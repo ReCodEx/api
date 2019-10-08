@@ -53,7 +53,7 @@ class Groups extends BaseSoftDeleteRepository  {
   /**
    * Check if the name of the group is free within group and instance.
    */
-  public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup) {
+  public function findByName(string $locale, string $name, Instance $instance, ?Group $parentGroup = null) {
     $textsQb = $this->em->createQueryBuilder();
     $textsQb->addSelect("l")->from(LocalizedGroup::class, "l");
     $textsQb->where($textsQb->expr()->eq("l.name", ":name"));
@@ -99,8 +99,6 @@ class Groups extends BaseSoftDeleteRepository  {
       }
 
       $groupsQb->andWhere($groupsQb->expr()->orX(...$criteria));
-    } else {
-      $groupsQb->andWhere($groupsQb->expr()->isNull("p.id"));
     }
 
     $groupsQb->setParameters($parameters);
@@ -265,7 +263,7 @@ class Groups extends BaseSoftDeleteRepository  {
       $groups = $this->filterGroupsArchived($groups, $onlyArchived, $minDate);
     }
 
-    return $groups;
+    return array_values($groups);
   }
 
   /**

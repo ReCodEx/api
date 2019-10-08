@@ -174,7 +174,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $instances = $this->instances->findAll();
     $instance = reset($instances);
-    $groups = $this->groups->findByName("en", "Demo group", $instance, null);
+    $groups = $this->groups->findByName("en", "Demo group", $instance);
     $group = reset($groups);
 
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -191,7 +191,7 @@ class TestExercisesPresenter extends Tester\TestCase
   {
     $instances = $this->instances->findAll();
     $instance = reset($instances);
-    $groups = $this->groups->findByName("en", "Private group", $instance, null);
+    $groups = $this->groups->findByName("en", "Private group", $instance);
     $group = reset($groups);
 
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);

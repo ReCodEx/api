@@ -64,6 +64,15 @@ class FrontendErrorMappings
   /** Name of the entry-point contains illicit characters */
   const E400_406__EXERCISE_COMPILATION_BAD_ENTRY_POINT_NAME = "400-406";
 
+  /** General error when manipulating with a group */
+  const E400_500__GROUP_ERROR = "400-500";
+  /** The group is archived, so it cannot be updated */
+  const E400_501__GROUP_ARCHIVED = "400-501";
+  /** Root group of an instance cannot be relocated under another group. */
+  const E400_502__GROUP_INSTANCE_ROOT_CANNOT_RELOCATE = "400-502";
+  /** Relocation of a group would create a loop in the tree hierarchy (new parent is a child of a group or group itself). */
+  const E400_503__GROUP_RELOCATION_WOULD_CREATE_LOOP = "400-503";
+
   /** General unauthorized */
   const E401_000__UNAUTHORIZED = "401-000";
   /** Token was not provided in request */
