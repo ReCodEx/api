@@ -26,6 +26,7 @@ interface IGroupPermissions
   function canUpdate(Group $group): bool;
   function canRemove(Group $group): bool;
   function canArchive(Group $group): bool;
+  function canRelocate(Group $group): bool;
   function canViewExercises(Group $group): bool;
   function canAssignExercise(Group $group, Exercise $exercise): bool;
   function canCreateExercise(Group $group): bool;

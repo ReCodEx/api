@@ -18,6 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @method addAssignment(Assignment $assignment)
  * @method addShadowAssignment(ShadowAssignment $assignment)
  * @method addChildGroup(Group $group)
+ * @method removeChildGroup(Group $group)
  * @method string getExternalId()
  * @method string getDescription()
  * @method float getThreshold()
@@ -57,9 +58,14 @@ class Group
       $admin->makeSupervisorOf($this);
     }
 
+    // If no parent group is given, the group is connected right under the root group
+    if ($parentGroup === null && $instance) {
+      $parentGroup = $instance->getRootGroup();
+    }
+
     $this->parentGroup = $parentGroup;
-    if ($parentGroup !== null) {
-      $this->parentGroup->addChildGroup($this);
+    if ($parentGroup !== null) { // this still might be true, when the root group of an instance is being created
+      $parentGroup->addChildGroup($this);
     }
 
     $this->isOrganizational = $isOrganizational;
@@ -199,10 +205,10 @@ class Group
    * @return array
    */
   public function getAllSubgroups() {
-    $subtrees = $this->childGroups->map(function (Group $group) {
+    $subtrees = $this->getChildGroups()->map(function (Group $group) {
       return $group->getAllSubgroups();
     });
-    return array_merge($this->childGroups->getValues(), ...$subtrees);
+    return array_merge($this->getChildGroups()->getValues(), ...$subtrees);
   }
 
   /**
@@ -318,7 +324,7 @@ class Group
       return true;
     }
 
-    foreach ($this->childGroups as $childGroup) {
+    foreach ($this->getChildGroups() as $childGroup) {
       if ($childGroup->isMemberOfSubgroup($user)) {
         return true;
       }
@@ -423,7 +429,7 @@ class Group
       return true;
     }
 
-    foreach ($this->childGroups as $childGroup) {
+    foreach ($this->getChildGroups() as $childGroup) {
       if ($childGroup->isAdminOrSupervisorOfSubgroup($user)) {
         return true;
       }
@@ -574,10 +580,23 @@ class Group
       return $this->parentGroup->isDeleted() ? null : $this->parentGroup;
     }
 
-    if ($this->instance->getRootGroup() !== $this) {
-      return $this->instance->getRootGroup();
-    }
+    return $this->parentGroup;
+  }
 
-    return null;
+
+  /**
+   * Change the parent root of the group.
+   * Note that this is low level function. It is callers responsibility to verify that such change is valid.
+   * @param Group $newParent Target parent under which this group is relocated
+   */
+  public function setParentGroup(Group $newParent) {
+    if ($this->parentGroup !== $newParent) {
+      if ($this->parentGroup) {
+        $this->parentGroup->removeChildGroup($this);
+      }
+
+      $this->parentGroup = $newParent;
+      $newParent->addChildGroup($this);
+    }
   }
 }

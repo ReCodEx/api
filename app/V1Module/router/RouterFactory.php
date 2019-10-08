@@ -216,6 +216,7 @@ class RouterFactory {
 
     $router[] = new PostRoute("$prefix/<id>/organizational", "Groups:setOrganizational");
     $router[] = new PostRoute("$prefix/<id>/archived", "Groups:setArchived");
+    $router[] = new PostRoute("$prefix/<id>/relocate/<newParentId>", "Groups:relocate");
 
     $router[] = new GetRoute("$prefix/<id>/students", "Groups:students");
     $router[] = new GetRoute("$prefix/<id>/students/stats", "Groups:stats");

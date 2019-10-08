@@ -78,6 +78,28 @@ class TestGroupsPresenter extends Tester\TestCase
     return $group;
   }
 
+  private function getAllGroupsInDepth($depth, $filter = null, $root = null) {
+    if (!$root) {
+      $rootCandidates = array_filter($this->presenter->groups->findAll(), function (Group $g) { return $g->getParentGroup() === null; });
+      Assert::count(1, $rootCandidates);
+      $root = reset($rootCandidates);
+    }
+
+    if ($depth === 0) {
+      if ($filter) {
+        return $filter($root) ? [ $root ] : []; 
+      } else {
+        return [ $root ];
+      }
+    }
+    
+    $res = [];
+    foreach ($root->getChildGroups() as $child) {
+      $res = array_merge($res, $this->getAllGroupsInDepth($depth-1, $filter, $child));
+    }
+    return $res;
+  }
+
   public function testListAllGroupsBySupervisor()
   {
     $token = PresenterTestHelper::login($this->container, $this->groupSupervisorLogin, $this->groupSupervisorPassword);
@@ -820,6 +842,123 @@ class TestGroupsPresenter extends Tester\TestCase
     Assert::exception(function () use ($request) {
       $this->presenter->run($request);
     }, BadRequestException::class);
+  }
+
+  public function testSetArchived()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $groupsLvl2 = $this->getAllGroupsInDepth(2, function(Group $g) { return !$g->isArchived(); });
+    Assert::true(count($groupsLvl2) > 0);
+
+    $group = reset($groupsLvl2);
+    $parent = $group->getParentGroup();
+
+    PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+      ['action' => 'setArchived', 'id' => $parent->getId()], [ 'value' => true ]
+    );
+    
+    $this->presenter->groups->refresh($parent);
+    $this->presenter->groups->refresh($group);
+
+    Assert::true($parent->isArchived());
+    Assert::true($group->isArchived());
+  }
+
+  public function testUnsetArchived()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $archivedGroups = array_filter($this->presenter->groups->findAll(), function (Group $g) { return $g->isDirectlyArchived(); });
+    Assert::true(count($archivedGroups) > 0);
+    $group = reset($archivedGroups);
+    Assert::true($group->isArchived());
+
+    PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+      ['action' => 'setArchived', 'id' => $group->getId()], [ 'value' => false ]
+    );
+    
+    $this->presenter->groups->refresh($group);
+    Assert::false($group->isArchived());
+  }
+
+  public function testRelocate()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $groupsLvl2 = $this->getAllGroupsInDepth(2, function(Group $g) { return !$g->isArchived(); });
+    Assert::true(count($groupsLvl2) > 0);
+
+    $group = reset($groupsLvl2);
+    $parent = $group->getParentGroup();
+    $root = $parent->getParentGroup();
+
+    PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+      ['action' => 'relocate', 'id' => $group->getId(), 'newParentId' => $root->getId() ]
+    );
+
+    $this->presenter->groups->refresh($root);
+    $this->presenter->groups->refresh($parent);
+    $this->presenter->groups->refresh($group);
+
+    Assert::equal($group->getParentGroup()->getId(), $root->getId());
+  }
+
+  public function testRelocateCreateLoop()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $groupsLvl2 = $this->getAllGroupsInDepth(2, function(Group $g) { return !$g->isArchived(); });
+    Assert::true(count($groupsLvl2) > 0);
+
+    $group = reset($groupsLvl2);
+    $parent = $group->getParentGroup();
+
+    Assert::exception(function () use ($group, $parent) {
+      PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+        ['action' => 'relocate', 'id' => $parent->getId(), 'newParentId' => $group->getId() ]
+      );
+    }, App\Exceptions\BadRequestException::class);
+  }
+
+  public function testRelocateSelfAsParent()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $groupsLvl2 = $this->getAllGroupsInDepth(2, function(Group $g) { return !$g->isArchived(); });
+    Assert::true(count($groupsLvl2) > 0);
+    $group = reset($groupsLvl2);
+
+    Assert::exception(function () use ($group) {
+      PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+        ['action' => 'relocate', 'id' => $group->getId(), 'newParentId' => $group->getId() ]
+      );
+    }, App\Exceptions\BadRequestException::class);    
+  }
+
+  public function testRelocateToArchived()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+
+    // Prepare data
+    $groupsLvl2 = $this->getAllGroupsInDepth(2, function(Group $g) { return !$g->isArchived(); });
+    Assert::true(count($groupsLvl2) > 0);
+    $group = reset($groupsLvl2);
+
+    $archivedGroups = array_filter($this->presenter->groups->findAll(), function (Group $g) { return $g->isArchived(); });
+    Assert::true(count($archivedGroups) > 0);
+    $archived = reset($archivedGroups);
+
+    Assert::exception(function () use ($group, $archived) {
+      PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Groups', 'POST',
+        ['action' => 'relocate', 'id' => $group->getId(), 'newParentId' => $archived->getId() ]
+      );
+    }, App\Exceptions\BadRequestException::class);    
   }
 
   public function testRemoveAdmin()
