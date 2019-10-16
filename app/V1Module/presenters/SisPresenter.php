@@ -225,7 +225,8 @@ class SisPresenter extends BasePresenter {
   }
 
   /**
-   * Get ReCodEx group bound to SIS groups of which the user is a student
+   * Get ReCodEx groups bound to SIS groups of which the user is a student.
+   * Organizational and archived groups are filtered out from the result.
    * @GET
    * @param $userId
    * @param $year
@@ -250,7 +251,7 @@ class SisPresenter extends BasePresenter {
           /** @var Group $group */
           $group = $binding->getGroup();
 
-          if (!array_key_exists($group->getId(), $groups)) {
+          if (!array_key_exists($group->getId(), $groups) && !$group->isOrganizational() && !$group->isArchived()) {
             $groups[$group->getId()] = $this->groupViewFactory->getGroup($group);
           }
         }
