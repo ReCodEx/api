@@ -1,15 +1,15 @@
 {emailSubject}Submission Evaluated - {$assignment}{/emailSubject}
 <h3>Your submission of the assignment '{$assignment}' was evaluated</h3>
 <p>
-    Your submission of the assignment '{$assignment}' submitted don {$date|localizedDate:'en'}
+    Your submission of the assignment '{$assignment}' submitted on {$date|localizedDate:'en'}
     in the group '{$group}' was evaluated.
     The solution has status {$status} and was awarded {$points} of {$maxPoints} points.
 </p>
 <p>
-    These notifications are sent only when the evaluation takes longer time
-    or the solution was resubmitted for evaluation.
-    The resubmission can be initiated by a teacher or by administrator
-    (e.g., when exercise configuration is changed or a bug in the system is fixed).
+    These notifications are sent only when the evaluation takes a longer amount of time
+    or a solution was resubmitted for evaluation.
+    A resubmission can be initiated by a teacher or by an administrator
+    (e.g., when the exercise configuration has changed or a bug in the system has been fixed).
 </p>
 <p>
     You may see the results at: <a href="{$link}">{$link}</a>.
