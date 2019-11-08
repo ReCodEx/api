@@ -131,11 +131,11 @@ class JavacCompilationBox extends CompilationBox
     $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
-    // set wildcards for class files, which are derived from compiled classes
-    $wildClassFiles = [
-      self::$COMPILATION_SUBDIR . ConfigParams::$PATH_DELIM . self::$CLASS_FILES_WILDCARD
-    ];
-    $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue($wildClassFiles);
+    // originally output of javac was wildcard '*.class', this is no longer true
+    // currently the whole directory with compiled classes is handed over to the
+    // upcoming tasks, but the type of the port was not changed
+    // Therefore this might require reimplementation in future!
+    $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue(self::$COMPILATION_SUBDIR);
 
     $compileTask->setCommandArguments(
       array_merge(

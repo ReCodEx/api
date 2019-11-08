@@ -11,9 +11,9 @@ class JavaUtils
 
   public static function constructClasspath(?Variable $jarFiles) {
     if ($jarFiles && !$jarFiles->isEmpty()) {
-      $classpath = ".";
+      $classpath = JavaUtils::CURRENT_DIR;
       foreach ($jarFiles->getValueAsArray() as $jar) {
-        $classpath .= ":" . $jar;
+        $classpath .= JavaUtils::PATH_DELIM . $jar;
       }
 
       return [
