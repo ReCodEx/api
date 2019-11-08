@@ -117,7 +117,13 @@ class JavaRunBox extends ExecutionBox
     $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
     $args = array_merge($args, $classpath);
 
-    $args = array_merge($args, [ $runnerClass, "run" ]);
+    // even if type of this port is file array, we completely rely on the fact
+    // that the class files are from JavacCompilationBox which actually sets as
+    // output the compilation directory rather than the resulting class files
+    // Therefore this might require reimplementation in future!
+    $compiledDir = $this->getInputPortValue(self::$CLASS_FILES_PORT_KEY)->getValue();
+
+    $args = array_merge($args, [ $runnerClass, "run", $compiledDir ]);
     if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
       $args = array_merge($args, $this->getInputPortValue(self::$ARGS_PORT_KEY)->getValue());
     }
