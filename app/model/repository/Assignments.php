@@ -39,7 +39,7 @@ class Assignments extends BaseSoftDeleteRepository {
   public function findByDeadline(DateTime $from, DateTime $to) {
     $qb = $this->createQueryBuilder("a");
 
-    $qb->where(
+    $qb->andWhere(
       $qb->expr()->orX(
         $qb->expr()->andX(
           $qb->expr()->gt("a.firstDeadline", ":from"),
