@@ -48,7 +48,8 @@ class SendAssignmentDeadlineNotification extends Command {
     }
 
     foreach ($this->assignments->findByDeadline($from, $to) as $assignment) {
-      if ($assignment->isVisibleToStudents()) {
+      $group = $assignment->getGroup();
+      if ($assignment->isVisibleToStudents() && $group && !$group->isArchived()) {
         $this->sender->assignmentDeadline($assignment);
       }
     }
