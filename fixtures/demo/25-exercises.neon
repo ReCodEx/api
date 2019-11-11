@@ -89,13 +89,14 @@ App\Model\Entity\Exercise:
         __construct:
             create:
                 - @demoAdmin
-                - @demoGroup
+                - @demoChildGroup
         difficulty: "moderate"
         addLocalizedText:
             - @privateAdminExerciseText
         runtimeEnvironments:
             - @CRuntime
             - @JavaRuntime
+            - @MonoRuntime
         hardwareGroups:
             - @demoHWGroup
             - @demoHWGroup2
@@ -104,6 +105,7 @@ App\Model\Entity\Exercise:
         exerciseEnvironmentConfigs:
             - @demoEnvironmentConfig
             - @demoJavaEnvironmentConfig
+            - @demoMonoEnvironmentConfig
         exerciseTests:
             - @demoExerciseTest1
             - @demoExerciseTest2

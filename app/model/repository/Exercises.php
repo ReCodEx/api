@@ -5,6 +5,7 @@ namespace App\Model\Repository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\LocalizedExercise;
@@ -62,12 +63,56 @@ class Exercises extends BaseSoftDeleteRepository {
     });
   }
 
+  /**
+   * Augment given query builder and add filter that covers groups of residence of the exercise.
+   * @param QueryBuilder $qb
+   * @param mixed $groupsIds Value of the filter
+   * @param Groups $groups Doctrine groups repository
+   */
+  private function getPreparedForPaginationGroupsFilter(QueryBuilder $qb, $groupsIds, Groups $groups)
+  {
+    if (!is_array($groupsIds)) {
+      $groupsIds = [ $groupsIds ];
+    }
+
+    // Each group has a separate OR clause ...
+    $orExpr = $qb->expr()->orX();
+    $counter = 0;
+    foreach ($groups->groupsIdsAncestralClosure($groupsIds) as $id) {
+      $var = "group" . ++$counter;
+      $orExpr->add($qb->expr()->isMemberOf(":$var", "e.groups"));
+      $qb->setParameter($var, $id);
+    }
+    $qb->andWhere($orExpr);
+  }
+
+  /**
+   * Augment given query builder and add filter that handles runtime environments.
+   * @param QueryBuilder $qb
+   * @param mixed $groupsIds Value of the filter
+   * @param Groups $groups Doctrine groups repository
+   */
+  private function getPreparedForPaginationEnvsFilter(QueryBuilder $qb, $envs)
+  {
+    if (!is_array($envs)) {
+      $envs = [ $envs ];
+    }
+    
+    $orExpr = $qb->expr()->orX();
+    $counter = 0;
+    foreach ($envs as $env) {
+      $var = "env" . ++$counter;
+      $orExpr->add($qb->expr()->isMemberOf(":$var", "e.runtimeEnvironments"));
+      $qb->setParameter($var, $env);
+    }
+    $qb->andWhere($orExpr);
+}
 
   /**
    * Get a list of exercises filtered and ordered for pagination.
    * The exercises must be paginated manually, since they are tested by ACLs.
    * @param Pagination $pagination Pagination configuration object.
-   * @param Groups Groups entity manager.
+   * @param Groups $groups Doctrine groups repository
    * @return Exercise[]
    */
   public function getPreparedForPagination(Pagination $pagination, Groups $groups)
@@ -98,20 +143,7 @@ class Exercises extends BaseSoftDeleteRepository {
 
     // Only exercises in explicitly given groups (or their ascendants) ...
     if ($pagination->hasFilter("groupsIds")) {
-      $groupsIds = $pagination->getFilter("groupsIds");
-      if (!is_array($groupsIds)) {
-        $groupsIds = [ $groupsIds ];
-      }
-
-      // Each group has a separate OR clause ...
-      $orExpr = $qb->expr()->orX();
-      $gcounter = 0;
-      foreach ($groups->groupsIdsAncestralClosure($groupsIds) as $id) {
-        $var = "group" . ++$gcounter;
-        $orExpr->add($qb->expr()->isMemberOf(":$var", "e.groups"));
-        $qb->setParameter($var, $id);
-      }
-      $qb->andWhere($orExpr);
+      $this->getPreparedForPaginationGroupsFilter($qb, $pagination->getFilter("groupsIds"), $groups);
     }
 
     // Only exercises with given tags
@@ -123,6 +155,11 @@ class Exercises extends BaseSoftDeleteRepository {
 
       $qb->join("e.exerciseTags", "et")
         ->andWhere($qb->expr()->in("et.name", $tagNames));
+    }
+
+    // Only exercises of specific RTEs (at least one RTE is present)
+    if ($pagination->hasFilter("runtimeEnvironments", true)) { // true = not empty
+      $this->getPreparedForPaginationEnvsFilter($qb, $pagination->getFilter("runtimeEnvironments"));
     }
 
     if ($pagination->getOrderBy() === "name") {

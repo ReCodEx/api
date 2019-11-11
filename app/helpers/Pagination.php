@@ -114,10 +114,16 @@ class Pagination {
 
   /**
    * True if filter of given name is present.
+   * @param string $name Identifier of the filter
+   * @param bool $notEmpty If true, the filter value must also be not empty.
    */
-  public function hasFilter(string $name)
+  public function hasFilter(string $name, bool $notEmpty = false)
   {
-    return array_key_exists($name, $this->filters);
+    if ($notEmpty) {
+      return !empty($this->filters[$name]);
+    } else {
+      return array_key_exists($name, $this->filters);
+    }
   }
 
   /**
