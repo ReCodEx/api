@@ -7,6 +7,7 @@ use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Pipeline;
+use App\Model\Entity\Group;
 use App\Security\AccessManager;
 use App\V1Module\Presenters\ExercisesPresenter;
 use Tester\Assert;
@@ -153,6 +154,39 @@ class TestExercisesPresenter extends Tester\TestCase
     $result = $response->getPayload();
     Assert::equal(200, $result['code']);
     Assert::count(4, $result['payload']['items']);
+  }
+
+  public function testAdminListFilterGroupsExercises()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $groups = array_filter($this->presenter->groups->findAll(), function (Group $g) {
+      $texts = $g->getLocalizedTexts()->getValues();
+      return reset($texts)->getName() === 'Demo group';
+    });
+    Assert::true(count($groups) === 1);
+    $group = reset($groups);
+
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'groupsIds' => $group->getId() ] ]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(6, $result['payload']['items']); // total 7 exercises, but one is in the child group (filtered out)
+  }
+
+  public function testAdminListFilterEnvExercises()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+
+    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'runtimeEnvironments' => 'mono' ] ]);
+    $response = $this->presenter->run($request);
+    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+    $result = $response->getPayload();
+    Assert::equal(200, $result['code']);
+    Assert::count(1, $result['payload']['items']);
   }
 
   public function testGetAllExercisesAuthors()

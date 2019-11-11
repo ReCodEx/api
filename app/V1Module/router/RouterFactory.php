@@ -126,8 +126,10 @@ class RouterFactory {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix", "Exercises:");
     $router[] = new PostRoute("$prefix", "Exercises:create");
-    $router[] = new GetRoute("$prefix/authors", "Exercises:authors");
     $router[] = new PostRoute("$prefix/list", "Exercises:listByIds");
+    $router[] = new GetRoute("$prefix/authors", "Exercises:authors");
+    $router[] = new GetRoute("$prefix/tags", "Exercises:allTags");
+
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new DeleteRoute("$prefix/<id>", "Exercises:remove");
     $router[] = new PostRoute("$prefix/<id>", "Exercises:updateDetail");
@@ -140,7 +142,6 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>/groups/<groupId>", "Exercises:detachGroup");
     $router[] = new PostRoute("$prefix/<id>/pipelines/<pipelineId>", "Exercises:attachPipeline");
     $router[] = new DeleteRoute("$prefix/<id>/pipelines/<pipelineId>", "Exercises:detachPipeline");
-    $router[] = new GetRoute("$prefix/tags", "Exercises:allTags");
     $router[] = new PostRoute("$prefix/<id>/tags/<name>", "Exercises:addTag");
     $router[] = new DeleteRoute("$prefix/<id>/tags/<name>", "Exercises:removeTag");
 

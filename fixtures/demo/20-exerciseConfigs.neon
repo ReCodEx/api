@@ -17,6 +17,15 @@ App\Model\Entity\ExerciseEnvironmentConfig:
                 value: "*.java"
               '''
             - @demoAdmin
+    demoMonoEnvironmentConfig:
+        __construct:
+            - @MonoRuntime
+            - '''
+              - name: "source-files"
+                type: "file[]"
+                value: "*.cs"
+              '''
+            - @demoAdmin
 
 App\Model\Entity\ExerciseTest:
     demoExerciseTest1:
