@@ -209,7 +209,7 @@ class Exercise implements IExercise
 
   /**
    * @var Collection
-   * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise", cascade={"persist", "remove"})
+   * @ORM\OneToMany(targetEntity="ExerciseTag", mappedBy="exercise", cascade={"persist", "remove"}, orphanRemoval=true)
    */
   protected $tags;
 
