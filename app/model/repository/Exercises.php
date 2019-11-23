@@ -8,6 +8,7 @@ use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Kdyby\Doctrine\EntityManager;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Model\Entity\Group;
 use App\Model\Entity\User;
@@ -153,8 +154,10 @@ class Exercises extends BaseSoftDeleteRepository {
         $tagNames = [ $tagNames ];
       }
 
-      $qb->join("e.exerciseTags", "et")
-        ->andWhere($qb->expr()->in("et.name", $tagNames));
+      $sub = $qb->getEntityManager()->createQueryBuilder()->select("tags")->from(ExerciseTag::class, "tags");
+      $sub->andWhere($qb->expr()->eq("tags.exercise", "e.id")); // only tags of examined exercise
+      $sub->andWhere($sub->expr()->in("tags.name", $tagNames)); // at least one tag has to match
+      $qb->andWhere($qb->expr()->exists($sub->getDQL()));
     }
 
     // Only exercises of specific RTEs (at least one RTE is present)

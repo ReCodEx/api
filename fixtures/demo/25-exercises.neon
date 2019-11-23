@@ -191,3 +191,8 @@ App\Model\Entity\ExerciseTag:
             - "tag2"
             - @demoAdmin
             - @demoExercise
+    demoTag3:
+        __construct:
+            - "tag3"
+            - @demoAdmin
+            - @privateAdminExercise

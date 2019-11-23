@@ -179,14 +179,33 @@ class TestExercisesPresenter extends Tester\TestCase
   public function testAdminListFilterEnvExercises()
   {
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'default', 'filters' => [ 'runtimeEnvironments' => 'mono' ] ]);
+    Assert::count(1, $payload['items']);
+  }
 
-    $request = new Nette\Application\Request('V1:Exercises', 'GET', ['action' => 'default', 'filters' => [ 'runtimeEnvironments' => 'mono' ] ]);
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+  public function testAdminListFilterTagsExercises1()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'default', 'filters' => [ 'tags' => ['tag1', 'tag2'] ] ]);
+    Assert::count(1, $payload['items']);
+  }
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::count(1, $result['payload']['items']);
+  public function testAdminListFilterTagsExercises2()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'default', 'filters' => [ 'tags' => ['tag1', 'tag3'] ] ]);
+    Assert::count(2, $payload['items']);
+  }
+
+  public function testAdminListFilterTagsExercises3()
+  {
+    $token = PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'default', 'filters' => [ 'tags' => ['notExistingTag'] ] ]);
+    Assert::count(0, $payload['items']);
   }
 
   public function testGetAllExercisesAuthors()
@@ -605,7 +624,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
       ['action' => 'allTags']);
 
-    Assert::equal(["tag1", "tag2"], $payload);
+    Assert::equal(["tag1", "tag2", "tag3"], $payload);
   }
 
   public function testAddTag() {
