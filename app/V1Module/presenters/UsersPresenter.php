@@ -350,6 +350,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="submissionEvaluatedEmails", validation="bool", description="Flag if email should be sent to user when resubmission was evaluated", required=false)
    * @Param(type="post", name="solutionCommentsEmails", validation="bool", description="Flag if email should be sent to user when new submission comment is added", required=false)
    * @Param(type="post", name="pointsChangedEmails", validation="bool", description="Flag if email should be sent to user when the points were awarded for assignment", required=false)
+   * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", description="Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment", required=false)
    * @throws NotFoundException
    */
   public function actionUpdateSettings(string $id) {
@@ -357,50 +358,36 @@ class UsersPresenter extends BasePresenter {
     $user = $this->users->findOrThrow($id);
     $settings = $user->getSettings();
 
-    // This monstrosity is in a desperate need of refactoring...
-    $darkTheme = $req->getPost("darkTheme") !== null
-      ? filter_var($req->getPost("darkTheme"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getDarkTheme();
-    $vimMode = $req->getPost("vimMode") !== null
-      ? filter_var($req->getPost("vimMode"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getVimMode();
-    $openedSidebar = $req->getPost("openedSidebar") !== null
-      ? filter_var($req->getPost("openedSidebar"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getOpenedSidebar();
-    $defaultLanguage = trim($req->getPost("defaultLanguage") !== null ? $req->getPost("defaultLanguage") : $settings->getDefaultLanguage());
-    $defaultPage = trim($req->getPost("defaultPage") !== null ? $req->getPost("defaultPage") : $settings->getDefaultPage());
-    $defaultPage = $defaultPage === '' ? null : $defaultPage;  // empty string is interpreted as null
-    $newAssignmentEmails = $req->getPost("newAssignmentEmails") !== null
-      ? filter_var($req->getPost("newAssignmentEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getNewAssignmentEmails();
-    $assignmentDeadlineEmails = $req->getPost("assignmentDeadlineEmails") !== null
-      ? filter_var($req->getPost("assignmentDeadlineEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getAssignmentDeadlineEmails();
-    $submissionEvaluatedEmails = $req->getPost("submissionEvaluatedEmails") !== null
-      ? filter_var($req->getPost("submissionEvaluatedEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getSubmissionEvaluatedEmails();
-    $solutionCommentsEmails = $req->getPost("solutionCommentsEmails") !== null
-      ? filter_var($req->getPost("solutionCommentsEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getSolutionCommentsEmails();
-    $pointsChangedEmails = $req->getPost("pointsChangedEmails") !== null
-      ? filter_var($req->getPost("pointsChangedEmails"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getPointsChangedEmails();
-    $useGravatar = $req->getPost("useGravatar") !== null
-      ? filter_var($req->getPost("useGravatar"), FILTER_VALIDATE_BOOLEAN)
-      : $settings->getUseGravatar();
+    // handle boolean flags
+    $knownBoolFlags = [
+      "darkTheme",
+      "vimMode",
+      "openedSidebar",
+      "useGravatar",
+      "newAssignmentEmails",
+      "assignmentDeadlineEmails",
+      "submissionEvaluatedEmails",
+      "solutionCommentsEmails",
+      "pointsChangedEmails",
+      "assignmentSubmitAfterAcceptedEmails",
+    ];
 
-    $settings->setDarkTheme($darkTheme);
-    $settings->setVimMode($vimMode);
-    $settings->setOpenedSidebar($openedSidebar);
-    $settings->setDefaultLanguage($defaultLanguage);
-    $settings->setDefaultPage($defaultPage);
-    $settings->setNewAssignmentEmails($newAssignmentEmails);
-    $settings->setAssignmentDeadlineEmails($assignmentDeadlineEmails);
-    $settings->setSubmissionEvaluatedEmails($submissionEvaluatedEmails);
-    $settings->setSolutionCommentsEmails($solutionCommentsEmails);
-    $settings->setPointsChangedEmails($pointsChangedEmails);
-    $settings->setUseGravatar($useGravatar);
+    foreach ($knownBoolFlags as $flag) {
+      if ($req->getPost($flag) !== null) {
+        $settings->setFlag($flag, filter_var($req->getPost($flag), FILTER_VALIDATE_BOOLEAN));
+      }
+    }
 
+    // handle string flags
+    if ($req->getPost("defaultLanguage") !== null) {
+      $settings->setDefaultLanguage( trim($req->getPost("defaultLanguage")) );
+    }
+    if ($req->getPost("defaultPage") !== null) {
+      $defaultPage = trim($req->getPost("defaultPage"));
+      $defaultPage = $defaultPage === '' ? null : $defaultPage;  // empty string is interpreted as null
+      $settings->setDefaultPage($defaultPage);
+    }
+  
     $this->users->persist($user);
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }

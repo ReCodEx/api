@@ -119,7 +119,7 @@ parameters:
       assignmentDeadlineThresholdTo: +2 days
 
   submissionNotifications:
-    submissionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
+    solutionRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}/solution/{solutionId}"
     submissionNotificationThreshold: -5 minutes
     emails:
       from: %emails.from%
@@ -372,7 +372,7 @@ services:
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
-  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, %submissionNotifications%)
+  - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, @App\Model\Repository\AssignmentSolutions, %submissionNotifications%)
   - App\Helpers\Notifications\GeneralStatsEmailsSender(@App\Helpers\EmailHelper, %generalStatsNotifications%)
   - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)
 

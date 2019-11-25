@@ -4,6 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use Exception;
 
 /**
  * @ORM\Entity
@@ -19,6 +20,7 @@ use JsonSerializable;
  * @method bool getSubmissionEvaluatedEmails()
  * @method bool getSolutionCommentsEmails()
  * @method bool getPointsChangedEmails()
+ * @method bool getAssignmentSubmitAfterAcceptedEmails()
  * @method setDarkTheme(bool $darkTheme)
  * @method setVimMode(bool $vimMode)
  * @method setOpenedSidebar(bool $opened)
@@ -30,6 +32,7 @@ use JsonSerializable;
  * @method setSubmissionEvaluatedEmails(bool $flag)
  * @method setSolutionCommentsEmails(bool $flag)
  * @method setPointsChangedEmails(bool $flag)
+ * @method setAssignmentSubmitAfterAcceptedEmails(bool $flag)
  */
 class UserSettings implements JsonSerializable
 {
@@ -55,6 +58,7 @@ class UserSettings implements JsonSerializable
     $this->submissionEvaluatedEmails = true;
     $this->solutionCommentsEmails = true;
     $this->pointsChangedEmails = true;
+    $this->assignmentSubmitAfterAcceptedEmails = false;
   }
 
   /**
@@ -125,6 +129,34 @@ class UserSettings implements JsonSerializable
    */
   protected $pointsChangedEmails;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $assignmentSubmitAfterAcceptedEmails;
+
+  /**
+   * Get arbitrary bool flag by its name.
+   * @param string $name
+   * @return bool
+   */
+  public function getFlag(string $name): bool {
+    if (!property_exists($this, $name) || !is_bool($this->$name)) {
+      throw new Exception("Attempting to set unknown flag '$name' in the user settings.");
+    }
+    return $this->$name;
+  }
+
+  /**
+   * Set arbitrary bool flag by its name.
+   * @param string $name
+   * @param bool $value
+   */
+  public function setFlag(string $name, bool $value) {
+    if (!property_exists($this, $name) || !is_bool($this->$name)) {
+      throw new Exception("Attempting to set unknown flag '$name' in the user settings.");
+    }
+    $this->$name = $value;
+  }
 
   public function jsonSerialize() {
     return [
@@ -138,7 +170,8 @@ class UserSettings implements JsonSerializable
       "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
       "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
       "solutionCommentsEmails" => $this->solutionCommentsEmails,
-      "pointsChangedEmails" => $this->pointsChangedEmails
+      "pointsChangedEmails" => $this->pointsChangedEmails,
+      "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
     ];
   }
 }
