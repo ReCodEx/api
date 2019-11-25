@@ -10,6 +10,7 @@ use App\Helpers\Emails\EmailLinkHelper;
 use App\Helpers\Emails\EmailRenderResult;
 use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentBase;
+use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\ShadowAssignment;
 use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
@@ -33,7 +34,6 @@ class AssignmentEmailsSender {
   private $assignmentRedirectUrl;
   /** @var string */
   private $shadowRedirectUrl;
-
 
   /**
    * Constructor.
@@ -197,5 +197,4 @@ class AssignmentEmailsSender {
       "link" => EmailLinkHelper::getLink($this->assignmentRedirectUrl, ["id" => $assignment->getId()])
     ]);
   }
-
 }
