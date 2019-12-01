@@ -41,62 +41,87 @@ App\Model\Entity\PipelineConfig:
 
 	pipelineConfig9:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: javarun.class }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compilation, type: custom-compilation, portsIn: { compiler-exec: { type: 'string', value: compiler-exec }, args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\n    - { name: binary, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: compiler-exec, type: 'string', value: /usr/bin/go }\n    - { name: args, type: 'string[]', value: ['build', '-o', 'a.out'] }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: binary-file, type: file, value: a.out }\n"
 			- @demoAdmin
 
 	pipelineConfig10:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: javarun.class }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: sources-out, type: files-out, portsIn: { output: { type: file[], value: source-files } }, portsOut: {  } }\n    - { name: compilation, type: haskell-compilation, portsIn: { args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\n    - { name: binary, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: extras-out, type: files-out, portsIn: { output: { type: file[], value: extra-files } }, portsOut: {  } }\nvariables:\n    - { name: args, type: 'string[]', value: {  } }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: binary-file, type: file, value: '' }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n"
 			- @demoAdmin
 
 	pipelineConfig11:
 		__construct:
-			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compilation, type: javac, portsIn: { args: { type: 'string[]', value: '' }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { class-files: { type: 'file[]', value: classes } } }\n    - { name: classes, type: files-out, portsIn: { output: { type: 'file[]', value: classes } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\n    - { name: jars-passed, type: files-out, portsIn: { output: { type: 'file[]', value: jar-files } }, portsOut: {  } }\nvariables:\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: classes, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: 'file', value: binary-file } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: exec, type: haskell-exec, portsIn: { stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: string, value: entry-point }, binary-file: { type: 'file', value: binary-file }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\nvariables:\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: string, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n    - { name: binary-file, type: 'file', value: '' }\n"
 			- @demoAdmin
 
 	pipelineConfig12:
 		__construct:
-			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: external-sources, type: fetch-files, portsIn: { remote: { type: 'remote-file[]', value: external-sources } }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: compilation, type: mcs, portsIn: { args: { type: 'string[]', value: '' }, main-class: { type: string, value: main-class }, external-sources: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { assembly: { type: file, value: assembly } } }\n    - { name: assembly, type: file-out, portsIn: { output: { type: file, value: assembly } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: external-sources, type: 'remote-file[]', value: [Reader.cs, Wrapper.cs] }\n    - { name: input-files, type: 'file[]', value: [ReCodEx_Csharp_Reader.cs, ReCodEx_Csharp_Wrapper.cs] }\n    - { name: main-class, type: string, value: CodEx.Wrapper }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: javarun.class }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig13:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: runner-fetch, type: fetch-file, portsIn: { remote: { type: remote-file, value: remote-runner } }, portsOut: { input: { type: file, value: runner-file } } }\n    - { name: classes, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: classes } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: java-runner, portsIn: { runner: { type: file, value: runner-file }, args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, class-files: { type: 'file[]', value: classes }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\nvariables:\n    - { name: remote-runner, type: remote-file, value: javarun.class }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: runner-file, type: file, value: javarun.class }\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: classes, type: 'file[]', value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig14:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n"
+			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compilation, type: javac, portsIn: { args: { type: 'string[]', value: '' }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files }, jar-files: { type: 'file[]', value: jar-files } }, portsOut: { class-files: { type: 'file[]', value: classes } } }\n    - { name: classes, type: files-out, portsIn: { output: { type: 'file[]', value: classes } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: jars, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: jar-files } } }\n    - { name: jars-passed, type: files-out, portsIn: { output: { type: 'file[]', value: jar-files } }, portsOut: {  } }\nvariables:\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: classes, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: jar-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig15:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: node, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: external-sources, type: fetch-files, portsIn: { remote: { type: 'remote-file[]', value: external-sources } }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: compilation, type: mcs, portsIn: { args: { type: 'string[]', value: '' }, main-class: { type: string, value: main-class }, external-sources: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { assembly: { type: file, value: assembly } } }\n    - { name: assembly, type: file-out, portsIn: { output: { type: file, value: assembly } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: external-sources, type: 'remote-file[]', value: [Reader.cs, Wrapper.cs] }\n    - { name: input-files, type: 'file[]', value: [ReCodEx_Csharp_Reader.cs, ReCodEx_Csharp_Wrapper.cs] }\n    - { name: main-class, type: string, value: CodEx.Wrapper }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n"
 			- @demoAdmin
 
 	pipelineConfig16:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: node, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n"
 			- @demoAdmin
 
 	pipelineConfig17:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: php, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: binary, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: assembly } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: mono-exec, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, assembly: { type: file, value: assembly } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: assembly, type: file, value: program.exe }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n"
 			- @demoAdmin
 
 	pipelineConfig18:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: php, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: node, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig19:
 		__construct:
-			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: node, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
 			- @demoAdmin
 
 	pipelineConfig20:
 		__construct:
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: php, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- @demoAdmin
+
+	pipelineConfig21:
+		__construct:
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: php, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, source-files: { type: 'file[]', value: source-files }, entry-point: { type: file, value: entry-point }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- @demoAdmin
+
+	pipelineConfig22:
+		__construct:
+			- "boxes:\n    - { name: fetch-init, type: fetch-file, portsIn: { remote: { type: remote-file, value: init-filename } }, portsOut: { input: { type: file, value: init } } }\n    - { name: fetch-wrapper, type: fetch-file, portsIn: { remote: { type: remote-file, value: wrapper-filename } }, portsOut: { input: { type: file, value: wrapper } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compilation, type: prolog-compilation, portsIn: { compilation-wrapper: { type: 'file', value: wrapper }, init-file: { type: 'file', value: init }, runner: { type: 'file', value: runner }, args: { type: 'string[]', value: args }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\n    - { name: binary, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: args, type: 'string[]', value: ['-q', '-g', 'recodex_main'] }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: binary-file, type: file, value: a.out }\n    - { name: init, type: file, value: recodex-init.pl }\n    - { name: init-filename, type: remote-file, value: recodex-init.pl }\n    - { name: wrapper, type: file, value: recodex-swipl-wrapper.sh }\n    - { name: wrapper-filename, type: remote-file, value: recodex-swipl-wrapper.sh }\n    - { name: runner, type: file, value: recodex-wrapper.pl }\n    - { name: runner-filename, type: remote-file, value: recodex-wrapper.pl }\n"
+			- @demoAdmin
+
+	pipelineConfig23:
+		__construct:
+			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: '' }, output-file: { type: file, value: actual-output } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: $actual-output }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- @demoAdmin
+
+	pipelineConfig24:
+		__construct:
 			- "boxes:\n    - { name: input, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: stdin-file } } }\n    - { name: source, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: expected, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: expected-output } } }\n    - { name: judge, type: judge, portsIn: { judge-type: { type: string, value: judge-type }, actual-output: { type: file, value: actual-output }, expected-output: { type: file, value: expected-output }, args: { type: 'string[]', value: judge-args }, custom-judge: { type: file, value: custom-judge } }, portsOut: {  } }\n    - { name: run, type: python3, portsIn: { args: { type: 'string[]', value: run-args }, stdin: { type: file, value: stdin-file }, input-files: { type: 'file[]', value: input-files }, entry-point: { type: file, value: entry-point }, runner: { type: file, value: runner }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { stdout: { type: file, value: actual-output }, output-file: { type: file, value: '' } } }\n    - { name: input-files, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: input-files } } }\n    - { name: custom-judge, type: file-in, portsIn: {  }, portsOut: { input: { type: file, value: custom-judge } } }\n    - { name: fetch-runner, type: fetch-file, portsIn: { remote: { type: remote-file, value: runner-filename } }, portsOut: { input: { type: file, value: runner } } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\nvariables:\n    - { name: run-args, type: 'string[]', value: $run-args }\n    - { name: judge-type, type: string, value: $judge-type }\n    - { name: actual-output, type: file, value: '' }\n    - { name: expected-output, type: file, value: expected.out }\n    - { name: source-files, type: 'file[]', value: '' }\n    - { name: stdin-file, type: file, value: '' }\n    - { name: input-files, type: 'file[]', value: $actual-inputs }\n    - { name: custom-judge, type: file, value: '' }\n    - { name: judge-args, type: 'string[]', value: $judge-args }\n    - { name: entry-point, type: file, value: $entry-point }\n    - { name: runner, type: file, value: '' }\n    - { name: runner-filename, type: remote-file, value: runner.py }\n    - { name: extra-files, type: 'file[]', value: {  } }\n"
+			- @demoAdmin
+
+	pipelineConfig25:
+		__construct:
+			- "boxes:\n    - { name: sources, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: source-files } } }\n    - { name: compilation, type: custom-compilation, portsIn: { compiler-exec: { type: 'string', value: compiler-exec }, args: { type: 'string[]', value: merged-args }, source-files: { type: 'file[]', value: source-files }, extra-files: { type: 'file[]', value: extra-files } }, portsOut: { binary-file: { type: file, value: binary-file } } }\n    - { name: binary, type: file-out, portsIn: { output: { type: file, value: binary-file } }, portsOut: {  } }\n    - { name: extras, type: files-in, portsIn: {  }, portsOut: { input: { type: 'file[]', value: extra-files } } }\n    - { name: entry-point-to-text, type: file-name, portsIn: { in: { type: 'file', value: entry-point } }, portsOut: { out: { type: 'string', value: entry-point-text } } }\n    - { name: entry-point-text-to-array, type: string-to-array, portsIn: { in: { type: 'string', value: entry-point-text } }, portsOut: { out: { type: 'string[]', value: entry-point-text-array } } }\n    - { name: merge-args, type: merge-strings, portsIn: { in1: { type: 'string[]', value: args }, in2: { type: 'string[]', value: entry-point-text-array} }, portsOut: { out: { type: 'string[]', value: merged-args } } }\nvariables:\n    - { name: compiler-exec, type: 'string', value: /usr/bin/rustc }\n    - { name: merged-args, type: 'string[]', value: {  } }\n    - { name: args, type: 'string[]', value: ['-o', 'a.out'] }\n    - { name: entry-point, type: 'file', value: $entry-point }\n    - { name: entry-point-text, type: 'string', value: '' }\n    - { name: entry-point-text-array, type: 'string[]', value: {  } }\n    - { name: source-files, type: 'file[]', value: {  } }\n    - { name: extra-files, type: 'file[]', value: $extra-file-names }\n    - { name: binary-file, type: file, value: a.out }\n"
 			- @demoAdmin
 
 App\Model\Entity\Pipeline:
@@ -146,6 +171,8 @@ App\Model\Entity\Pipeline:
 			- @c-gcc-linux
 			- @cxx-gcc-linux
 			- @freepascal-linux
+			- @go
+			- @rust
 
 	pipeline5:
 		__construct:
@@ -159,6 +186,9 @@ App\Model\Entity\Pipeline:
 			- @c-gcc-linux
 			- @cxx-gcc-linux
 			- @freepascal-linux
+			- @go
+			- @prolog
+			- @rust
 
 	pipeline6:
 		__construct:
@@ -198,132 +228,187 @@ App\Model\Entity\Pipeline:
 			create:
 				- null
 
-		name: "Java execution & evaluation [outfile]"
-		description: "Executes Java application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\n\nInput variables:\n\n* classes - Java class files which should be executed, main class is automatically found and executed\n* run-args - array of string arguments for execution (not for JVM)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script\n* jar-files - optional jar files which should be used during compilation and execution"
+		name: Go Compilation
+		description: "Go compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `go` and there are no default options.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig9
 		runtimeEnvironments:
-			- @java
+			- @go
 
 	pipeline10:
 		__construct:
 			create:
 				- null
 
-		name: "Java execution & evaluation [stdout]"
-		description: "Executes Java application and run judge on standard output outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\n\nInput variables:\n\n* classes - Java class files which should be executed, main class is automatically found and executed\n* run-args - array of string arguments for execution (not for JVM)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script\n* jar-files - optional jar files which should be used during compilation and execution"
+		name: Haskell Compilation
+		description: "Haskell compilation using GHC which compiles submitted files by user and provided extra files from exercise author.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* binary-file - pseudo-link from this compilation to Haskell execution"
 		pipelineConfig: @pipelineConfig10
 		runtimeEnvironments:
-			- @java
+			- @haskell
 
 	pipeline11:
 		__construct:
 			create:
 				- null
 
-		name: Javac Compilation
-		description: "Java compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `javac`.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n* jar-files - optional jar files which should be used during compilation and execution\n\nOutput variables:\n\n* classes - compiled files with bytecode which can be further processed in following pipelines\n* jar-files - jar files passed from compilation to execution"
+		name: "Haskell execution & evaluation [stdout]"
+		description: "Executes Haskell application using GHCI and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - Haskell function which will be considered as entry point and run\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig11
 		runtimeEnvironments:
-			- @java
+			- @haskell
 
 	pipeline12:
 		__construct:
 			create:
 				- null
 
-		name: MCS Compilation
-		description: "C# compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `csc`. During compilation there are added special `CodEx.Reader` and `CodEx.Wrapper` classes. `CodEx.Wrapper` is marked as main class and is effectively entry point in resulting assembly.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* assembly - compiled bytecode CLR assembly which can be further processed in following pipelines"
+		name: "Java execution & evaluation [outfile]"
+		description: "Executes Java application and run judge on file outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\n\nInput variables:\n\n* classes - Java class files which should be executed, main class is automatically found and executed\n* run-args - array of string arguments for execution (not for JVM)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script\n* jar-files - optional jar files which should be used during compilation and execution"
 		pipelineConfig: @pipelineConfig12
 		runtimeEnvironments:
-			- @mono
+			- @java
 
 	pipeline13:
 		__construct:
 			create:
 				- null
 
-		name: "Mono execution & evaluation [outfile]"
-		description: "Executes C# application and run judge on file outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "Java execution & evaluation [stdout]"
+		description: "Executes Java application and run judge on standard output outputted from execution. Special `javarun.class` files is used as main entry point to the application. This class will try to find main class among submitted ones and execute it.\n\nInput variables:\n\n* classes - Java class files which should be executed, main class is automatically found and executed\n* run-args - array of string arguments for execution (not for JVM)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script\n* jar-files - optional jar files which should be used during compilation and execution"
 		pipelineConfig: @pipelineConfig13
 		runtimeEnvironments:
-			- @mono
+			- @java
 
 	pipeline14:
 		__construct:
 			create:
 				- null
 
-		name: "Mono execution & evaluation [stdout]"
-		description: "Executes C# application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: Javac Compilation
+		description: "Java compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `javac`.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n* jar-files - optional jar files which should be used during compilation and execution\n\nOutput variables:\n\n* classes - compiled files with bytecode which can be further processed in following pipelines\n* jar-files - jar files passed from compilation to execution"
 		pipelineConfig: @pipelineConfig14
 		runtimeEnvironments:
-			- @mono
+			- @java
 
 	pipeline15:
 		__construct:
 			create:
 				- null
 
-		name: "Node.js execution & evaluation [outfile]"
-		description: "Executes Node.js application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: MCS Compilation
+		description: "C# compilation which compiles submitted files by user and provided extra files from exercise author. Compiler is `csc`. During compilation there are added special `CodEx.Reader` and `CodEx.Wrapper` classes. `CodEx.Wrapper` is marked as main class and is effectively entry point in resulting assembly.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* assembly - compiled bytecode CLR assembly which can be further processed in following pipelines"
 		pipelineConfig: @pipelineConfig15
 		runtimeEnvironments:
-			- @node-linux
+			- @mono
 
 	pipeline16:
 		__construct:
 			create:
 				- null
 
-		name: "Node.js execution & evaluation [stdout]"
-		description: "Executes Node.js application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "Mono execution & evaluation [outfile]"
+		description: "Executes C# application and run judge on file outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig16
 		runtimeEnvironments:
-			- @node-linux
+			- @mono
 
 	pipeline17:
 		__construct:
 			create:
 				- null
 
-		name: "PHP execution & evaluation [outfile]"
-		description: "Executes PHP application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "Mono execution & evaluation [stdout]"
+		description: "Executes C# application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* assembly - assembly file which will be executed\n* run-args - array of string arguments for execution (not for CLR)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig17
 		runtimeEnvironments:
-			- @php-linux
+			- @mono
 
 	pipeline18:
 		__construct:
 			create:
 				- null
 
-		name: "PHP execution & evaluation [stdout]"
-		description: "Executes PHP application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "Node.js execution & evaluation [outfile]"
+		description: "Executes Node.js application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig18
 		runtimeEnvironments:
-			- @php-linux
+			- @node-linux
 
 	pipeline19:
 		__construct:
 			create:
 				- null
 
-		name: "Python execution & evaluation [outfile]"
-		description: "Executes Python application and run judge on file outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "Node.js execution & evaluation [stdout]"
+		description: "Executes Node.js application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Node.js runtime\n* run-args - array of string arguments for execution (not for Node.js runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig19
 		runtimeEnvironments:
-			- @python3
+			- @node-linux
 
 	pipeline20:
 		__construct:
 			create:
 				- null
 
-		name: "Python execution & evaluation [stdout]"
-		description: "Executes Python application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* pyc-files - compiled python files which will be executed\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		name: "PHP execution & evaluation [outfile]"
+		description: "Executes PHP application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
 		pipelineConfig: @pipelineConfig20
 		runtimeEnvironments:
+			- @php-linux
+
+	pipeline21:
+		__construct:
+			create:
+				- null
+
+		name: "PHP execution & evaluation [stdout]"
+		description: "Executes PHP application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in PHP runtime\n* run-args - array of string arguments for execution (not for PHP runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		pipelineConfig: @pipelineConfig21
+		runtimeEnvironments:
+			- @php-linux
+
+	pipeline22:
+		__construct:
+			create:
+				- null
+
+		name: Prolog Compilation
+		description: "Prolog compilation which compiles submitted files by user and provided extra files from exercise author. \nSpecial Prolog wrapper is added to solution, this wrapper reads a query from stdin, gather its solutions and print them to stdout. \nCompiler is `swipl` prolog interpreter implementation.\n\nInput variables:\n\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
+		pipelineConfig: @pipelineConfig22
+		runtimeEnvironments:
+			- @prolog
+
+	pipeline23:
+		__construct:
+			create:
+				- null
+
+		name: "Python execution & evaluation [outfile]"
+		description: "Executes Python application and run judge on file outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		pipelineConfig: @pipelineConfig23
+		runtimeEnvironments:
 			- @python3
+
+	pipeline24:
+		__construct:
+			create:
+				- null
+
+		name: "Python execution & evaluation [stdout]"
+		description: "Executes Python application and run judge on standard output outputted from execution.\n\nInput variables:\n\n* source-files - files submitted by user which will be executed\n* extra-files - files given by exercise author, will be added to execution\n* entry-point - file which will be considered as entry point and run in Python runtime\n* run-args - array of string arguments for execution (not for Python runtime)\n* stdin-file - file which will be connected to standard input of execution\n* input-files - array of files given by author of exercise, can be used during execution\n* actual-inputs - corresponds with `input-files` and can contain array of new names for given input files\n* actual-output - file which is outputted by execution has to be somehow identified, this variable should contain its name\n* expected-output - file with expected results, will be used during judging\n* judge-type - textual representation of any supported judge if author wants to use built-in ones\n* judge-args - array of strings which will be used as additional arguments for judge\n* custom-judge - author of exercise can provide special file for judging either as binary or executable script"
+		pipelineConfig: @pipelineConfig24
+		runtimeEnvironments:
+			- @python3
+
+	pipeline25:
+		__construct:
+			create:
+				- null
+
+		name: Rust Compilation
+		description: "Rust compilation which compiles submitted files by user and provided extra files from exercise author. The entry point for `rustc` compiler has to be provided, either by exercise author or during submission of solution. Compiler is `rustc` and there are no default options.\n\nInput variables:\n\n* entry-point - Rust source code file which acts as a bootstrapper for the application\n* source-files - files submitted by user which will be compiled\n* extra-files - files given by exercise author, will be added to compilation\n* extra-file-names - optionally extra files can be renamed during fetching, for which this variable is present\n\nOutput variables:\n\n* binary-file - binary file outputted from compilation can be further processed in following pipelines"
+		pipelineConfig: @pipelineConfig25
+		runtimeEnvironments:
+			- @rust
 
 App\Model\Entity\BooleanPipelineParameter:
 	pipeline1_isCompilationPipeline:
@@ -403,45 +488,59 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline9_isExecutionPipeline:
+	pipeline9_isCompilationPipeline:
 		__construct:
 			- @pipeline9
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline10_hasExtraFiles:
+		__construct:
+			- @pipeline10
+			- hasExtraFiles
+
+		value: true
+
+	pipeline10_isCompilationPipeline:
+		__construct:
+			- @pipeline10
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline11_isExecutionPipeline:
+		__construct:
+			- @pipeline11
 			- isExecutionPipeline
 
 		value: true
 
-	pipeline9_producesFiles:
+	pipeline11_producesStdout:
 		__construct:
-			- @pipeline9
-			- producesFiles
-
-		value: true
-
-	pipeline10_isExecutionPipeline:
-		__construct:
-			- @pipeline10
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline10_producesStdout:
-		__construct:
-			- @pipeline10
+			- @pipeline11
 			- producesStdout
 
 		value: true
 
-	pipeline11_isCompilationPipeline:
+	pipeline11_hasEntryPoint:
 		__construct:
 			- @pipeline11
-			- isCompilationPipeline
+			- hasEntryPoint
 
 		value: true
 
-	pipeline12_isCompilationPipeline:
+	pipeline12_isExecutionPipeline:
 		__construct:
 			- @pipeline12
-			- isCompilationPipeline
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline12_producesFiles:
+		__construct:
+			- @pipeline12
+			- producesFiles
 
 		value: true
 
@@ -452,52 +551,24 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline13_producesFiles:
+	pipeline13_producesStdout:
 		__construct:
 			- @pipeline13
-			- producesFiles
-
-		value: true
-
-	pipeline14_isExecutionPipeline:
-		__construct:
-			- @pipeline14
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline14_producesStdout:
-		__construct:
-			- @pipeline14
 			- producesStdout
 
 		value: true
 
-	pipeline15_hasEntryPoint:
+	pipeline14_isCompilationPipeline:
 		__construct:
-			- @pipeline15
-			- hasEntryPoint
+			- @pipeline14
+			- isCompilationPipeline
 
 		value: true
 
-	pipeline15_isExecutionPipeline:
+	pipeline15_isCompilationPipeline:
 		__construct:
 			- @pipeline15
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline15_producesFiles:
-		__construct:
-			- @pipeline15
-			- producesFiles
-
-		value: true
-
-	pipeline16_hasEntryPoint:
-		__construct:
-			- @pipeline16
-			- hasEntryPoint
+			- isCompilationPipeline
 
 		value: true
 
@@ -508,10 +579,10 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline16_producesStdout:
+	pipeline16_producesFiles:
 		__construct:
 			- @pipeline16
-			- producesStdout
+			- producesFiles
 
 		value: true
 
@@ -522,30 +593,9 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline17_producesFiles:
+	pipeline17_producesStdout:
 		__construct:
 			- @pipeline17
-			- producesFiles
-
-		value: true
-
-	pipeline17_hasEntryPoint:
-		__construct:
-			- @pipeline17
-			- hasEntryPoint
-
-		value: true
-
-	pipeline18_isExecutionPipeline:
-		__construct:
-			- @pipeline18
-			- isExecutionPipeline
-
-		value: true
-
-	pipeline18_producesStdout:
-		__construct:
-			- @pipeline18
 			- producesStdout
 
 		value: true
@@ -557,16 +607,16 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline19_isExecutionPipeline:
+	pipeline18_isExecutionPipeline:
 		__construct:
-			- @pipeline19
+			- @pipeline18
 			- isExecutionPipeline
 
 		value: true
 
-	pipeline19_producesFiles:
+	pipeline18_producesFiles:
 		__construct:
-			- @pipeline19
+			- @pipeline18
 			- producesFiles
 
 		value: true
@@ -578,6 +628,20 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
+	pipeline19_isExecutionPipeline:
+		__construct:
+			- @pipeline19
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline19_producesStdout:
+		__construct:
+			- @pipeline19
+			- producesStdout
+
+		value: true
+
 	pipeline20_isExecutionPipeline:
 		__construct:
 			- @pipeline20
@@ -585,16 +649,107 @@ App\Model\Entity\BooleanPipelineParameter:
 
 		value: true
 
-	pipeline20_producesStdout:
+	pipeline20_producesFiles:
 		__construct:
 			- @pipeline20
-			- producesStdout
+			- producesFiles
 
 		value: true
 
 	pipeline20_hasEntryPoint:
 		__construct:
 			- @pipeline20
+			- hasEntryPoint
+
+		value: true
+
+	pipeline21_isExecutionPipeline:
+		__construct:
+			- @pipeline21
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline21_producesStdout:
+		__construct:
+			- @pipeline21
+			- producesStdout
+
+		value: true
+
+	pipeline21_hasEntryPoint:
+		__construct:
+			- @pipeline21
+			- hasEntryPoint
+
+		value: true
+
+	pipeline22_isCompilationPipeline:
+		__construct:
+			- @pipeline22
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline22_hasExtraFiles:
+		__construct:
+			- @pipeline22
+			- hasExtraFiles
+
+		value: true
+
+	pipeline23_isExecutionPipeline:
+		__construct:
+			- @pipeline23
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline23_producesFiles:
+		__construct:
+			- @pipeline23
+			- producesFiles
+
+		value: true
+
+	pipeline23_hasEntryPoint:
+		__construct:
+			- @pipeline23
+			- hasEntryPoint
+
+		value: true
+
+	pipeline24_isExecutionPipeline:
+		__construct:
+			- @pipeline24
+			- isExecutionPipeline
+
+		value: true
+
+	pipeline24_producesStdout:
+		__construct:
+			- @pipeline24
+			- producesStdout
+
+		value: true
+
+	pipeline24_hasEntryPoint:
+		__construct:
+			- @pipeline24
+			- hasEntryPoint
+
+		value: true
+
+	pipeline25_isCompilationPipeline:
+		__construct:
+			- @pipeline25
+			- isCompilationPipeline
+
+		value: true
+
+	pipeline25_hasEntryPoint:
+		__construct:
+			- @pipeline25
 			- hasEntryPoint
 
 		value: true
