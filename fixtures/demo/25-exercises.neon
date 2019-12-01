@@ -191,8 +191,13 @@ App\Model\Entity\ExerciseTag:
             - "tag2"
             - @demoAdmin
             - @demoExercise
-    demoTag3:
+    demoTag3a:
         __construct:
             - "tag3"
             - @demoAdmin
             - @privateAdminExercise
+    demoTag3b:
+        __construct:
+            - "tag3"
+            - @demoAdmin
+            - @sampleExercise_aloha

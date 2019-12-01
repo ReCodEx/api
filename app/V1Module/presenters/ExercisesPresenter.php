@@ -694,6 +694,76 @@ class ExercisesPresenter extends BasePresenter {
     $this->sendSuccessResponse($tags);
   }
 
+  public function checkTagsStats() {
+    if (!$this->exerciseAcl->canViewTagsStats()) {
+      throw new ForbiddenRequestException("You are not allowed to view tags statistics");
+    }
+  }
+
+  /**
+   * Get list of global exercise tag names along with how many times they have been used.
+   * @GET
+   */
+  public function actionTagsStats() {
+    $stats = $this->exerciseTags->getStatistics();
+    $this->sendSuccessResponse($stats);
+  }
+
+  public function checkTagsUpdateGlobal(string $tag) {
+    if (!$this->exerciseAcl->canUpdateTagsGlobal()) {
+      throw new ForbiddenRequestException("You are not allowed to update tags globally");
+    }
+  }
+
+  /**
+   * Update the tag globally. At the moment, the 'update' means 'rename' as there is no other relevant function available.
+   * @POST
+   * @param string $tag Tag to be updated
+   * @Param(type="query", name="renameTo", validation="string:1..32", required=false, description="New name of the tag")
+   * @Param(type="query", name="force", validation="bool", required=false, description="If true, the rename will be allowed even if the new tag name exists (tags will be merged). Otherwise, name collisions will result in error.")
+   */
+  public function actionTagsUpdateGlobal(string $tag, string $renameTo = null, bool $force = false) {
+    // Check whether at least one modification action is present (so far, we have only renameTo)
+    if ($renameTo === null) {
+      throw new BadRequestException("Nothing to update.");
+    }
+
+    if (!$this->exerciseTags->verifyTagName($renameTo)) {
+      throw new InvalidArgumentException("renameTo", "tag name contains illicit characters");
+    }
+
+    if (!$force && $this->exerciseTags->tagExists($renameTo)) {
+      throw new InvalidArgumentException("renameTo", "new tag name collides with existing name (use force to override)");
+    }
+
+    $renameCount = $this->exerciseTags->renameTag($tag, $renameTo);
+
+    $this->sendSuccessResponse([
+      'tag' => $renameTo,
+      'oldName' => $tag,
+      'count' => $renameCount,
+    ]);
+  }
+  
+  public function checkTagsRemoveGlobal(string $tag) {
+    if (!$this->exerciseAcl->canRemoveTagsGlobal()) {
+      throw new ForbiddenRequestException("You are not allowed to remove tags globally");
+    }
+  }
+
+  /**
+   * Remove a tag from all exercises.
+   * @POST
+   * @param string $tag Tag to be removed
+   */
+  public function actionTagsRemoveGlobal(string $tag) {
+    $removeCount = $this->exerciseTags->removeTag($tag);
+    $this->sendSuccessResponse([
+      'tag' => $tag,
+      'count' => $removeCount,
+    ]);
+  }
+
   public function checkAddTag(string $id) {
     $exercise = $this->exercises->findOrThrow($id);
     if (!$this->exerciseAcl->canAddTag($exercise)) {
@@ -713,7 +783,7 @@ class ExercisesPresenter extends BasePresenter {
    * @throws InvalidArgumentException
    */
   public function actionAddTag(string $id, string $name) {
-    if (!preg_match('/^[-a-zA-Z0-9_]+$/', $name)) {
+    if (!$this->exerciseTags->verifyTagName($name)) {
       throw new InvalidArgumentException("name", "tag name contains illicit characters");
     }
 

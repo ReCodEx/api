@@ -53,7 +53,7 @@ class CleanupPipelineConfigs extends Command {
     $limit = clone $now;
     $limit->modify("-14 days");
 
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
     $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
 
     $deleted += $deleteQuery->execute();

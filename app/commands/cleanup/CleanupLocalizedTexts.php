@@ -66,7 +66,7 @@ class CleanupLocalizedTexts extends Command {
 
     $limit = clone $now;
     $limit->modify("-14 days");
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
 
     $deleteQuery->setParameter("ids", $usedTexts, Connection::PARAM_STR_ARRAY);
 

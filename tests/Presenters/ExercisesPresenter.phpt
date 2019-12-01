@@ -3,6 +3,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\BadRequestException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\InvalidArgumentException;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
@@ -197,7 +198,7 @@ class TestExercisesPresenter extends Tester\TestCase
     $token = PresenterTestHelper::login($this->container, $this->adminLogin);
     $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
       ['action' => 'default', 'filters' => [ 'tags' => ['tag1', 'tag3'] ] ]);
-    Assert::count(2, $payload['items']);
+    Assert::count(3, $payload['items']);
   }
 
   public function testAdminListFilterTagsExercises3()
@@ -625,6 +626,74 @@ class TestExercisesPresenter extends Tester\TestCase
       ['action' => 'allTags']);
 
     Assert::equal(["tag1", "tag2", "tag3"], $payload);
+  }
+
+  public function testTagsStats() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsStats']);
+    Assert::equal(["tag1" => '1', "tag2" => '1', "tag3" => '2'], $payload);
+  }
+
+  public function testTagsRename() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $tag = 'tag3';
+    $renameTo = 'tagX';
+    $exercises = array_filter($this->presenter->exercises->findAll(), function($exercise) use($tag) {
+      return $this->presenter->exerciseTags->findByNameAndExercise($tag, $exercise) !== null;
+    });
+    Assert::true(count($exercises) > 0);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsUpdateGlobal', 'tag' => $tag, 'renameTo' => $renameTo]);
+
+    Assert::equal(count($exercises), $payload['count']);
+    foreach ($exercises as $exercise) {
+      Assert::true($this->presenter->exerciseTags->findByNameAndExercise($renameTo, $exercise) !== null);
+    }
+  }
+
+  public function testTagsRenameCollide() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    Assert::exception(function() {
+      PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsUpdateGlobal', 'tag' => 'tag3', 'renameTo' => 'tag2']);
+    }, InvalidArgumentException::class);
+  }
+
+  public function testTagsRenameForce() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $tag = 'tag3';
+    $renameTo = 'tag2';
+    $exercises = array_filter($this->presenter->exercises->findAll(), function($exercise) use($tag) {
+      return $this->presenter->exerciseTags->findByNameAndExercise($tag, $exercise) !== null;
+    });
+    Assert::true(count($exercises) > 0);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsUpdateGlobal', 'tag' => $tag, 'renameTo' => $renameTo, 'force' => true]);
+
+    Assert::equal(count($exercises), $payload['count']);
+    $stats = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsStats']);
+    Assert::equal(["tag1" => '1', "tag2" => '3'], $stats);
+  }
+
+  public function testTagsRemove() {
+    PresenterTestHelper::login($this->container, $this->adminLogin);
+    $tag = 'tag3';
+    $exercises = array_filter($this->presenter->exercises->findAll(), function($exercise) use($tag) {
+      return $this->presenter->exerciseTags->findByNameAndExercise($tag, $exercise) !== null;
+    });
+    Assert::true(count($exercises) > 0);
+
+    $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsRemoveGlobal', 'tag' => $tag]);
+
+    Assert::equal(count($exercises), $payload['count']);
+    $stats = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Exercises', 'GET',
+      ['action' => 'tagsStats']);
+    Assert::equal(["tag1" => '1', "tag2" => '1'], $stats);
   }
 
   public function testAddTag() {
