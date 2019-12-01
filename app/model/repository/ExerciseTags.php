@@ -12,11 +12,25 @@ class ExerciseTags extends BaseRepository {
     parent::__construct($em, ExerciseTag::class);
   }
 
+  /**
+   * Verify whether given string can be used as a tag name.
+   * @param string $name
+   * @return bool
+   */
+  public function verifyTagName(string $name): bool
+  {
+    return preg_match('/^[-a-zA-Z0-9_]{1,32}$/', $name);
+  }
+
   public function findByNameAndExercise(string $name, Exercise $exercise): ?ExerciseTag {
     return $this->findOneBy([
-      "name" => $name,
-      "exercise" => $exercise
+      'name' => $name,
+      'exercise' => $exercise
     ]);
+  }
+
+  public function tagExists(string $name): bool {
+    return $this->findOneBy([ 'name' => $name ]) !== null;
   }
 
   /**
@@ -24,8 +38,42 @@ class ExerciseTags extends BaseRepository {
    * @return string[]
    */
   public function findAllDistinctNames(): array {
-    $qb = $this->repository->createQueryBuilder("e")->select("e.name")->distinct();
+    $qb = $this->createQueryBuilder('et')->select('et.name')->distinct();
     $result = $qb->getQuery()->getResult();
-    return array_column($result, "name");
+    return array_column($result, 'name');
+  }
+
+  /**
+   * Computes, how many times is each tag used.
+   * @return array Array indexed by tag names, values are numbers of adjacent exercises.
+   */
+  public function getStatistics(): array {
+    $qb = $this->createQueryBuilder('et')->select(['et.name', 'COUNT(et.id) AS cnt'])->groupBy('et.name');
+    $result = $qb->getQuery()->getScalarResult();
+    return array_column($result, 'cnt', 'name');
+  }
+
+  /**
+   * Rename tag globally (possibly merge two tags).
+   * @param string $oldName Tag to be renamed
+   * @param string $newName
+   * @return mixed Number of rows affected
+   */
+  public function renameTag(string $oldName, string $newName) {
+    $qb = $this->repository->createQueryBuilder();
+    $qb->update(ExerciseTag::class, 'et')->set('et.name', ':newName')->where('et.name = :oldName')
+      ->setParameter('oldName', $oldName)->setParameter('newName', $newName);
+    return $qb->getQuery()->execute();
+  }
+
+  /**
+   * Remove tag globally (from all exercises).
+   * @param string $name
+   * @return mixed Number of rows removed
+   */
+  public function removeTag(string $name) {
+    $qb = $this->repository->createQueryBuilder();
+    $qb->delete(ExerciseTag::class, 'et')->where('et.name = :name')->setParameter('name', $name);
+    return $qb->getQuery()->execute();
   }
 }

@@ -33,6 +33,9 @@ interface IExercisePermissions {
   function canDetachGroup(Exercise $exercise, Group $group): bool;
 
   function canViewAllTags(): bool;
+  function canViewTagsStats(): bool;
+  function canUpdateTagsGlobal(): bool;
+  function canRemoveTagsGlobal(): bool;
   function canAddTag(Exercise $exercise): bool;
   function canRemoveTag(Exercise $exercise): bool;
 }

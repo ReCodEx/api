@@ -129,6 +129,9 @@ class RouterFactory {
     $router[] = new PostRoute("$prefix/list", "Exercises:listByIds");
     $router[] = new GetRoute("$prefix/authors", "Exercises:authors");
     $router[] = new GetRoute("$prefix/tags", "Exercises:allTags");
+    $router[] = new GetRoute("$prefix/tags-stats", "Exercises:tagsStats");
+    $router[] = new PostRoute("$prefix/tags/<tag>", "Exercises:tagsUpdateGlobal");
+    $router[] = new DeleteRoute("$prefix/tags/<tag>", "Exercises:tagsRemoveGlobal");
 
     $router[] = new GetRoute("$prefix/<id>", "Exercises:detail");
     $router[] = new DeleteRoute("$prefix/<id>", "Exercises:remove");

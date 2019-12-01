@@ -67,7 +67,7 @@ class CleanupExerciseConfigs extends Command {
       WHERE c.createdAt <= :date AND c.id NOT IN (:ids)
     ');
 
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
     $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
     return $deleteQuery->execute();
   }
@@ -95,7 +95,7 @@ class CleanupExerciseConfigs extends Command {
       WHERE c.createdAt <= :date AND c.id NOT IN (:ids)
     ');
 
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
     $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
     return $deleteQuery->execute();
   }
@@ -127,7 +127,7 @@ class CleanupExerciseConfigs extends Command {
       WHERE l.createdAt <= :date AND l.id NOT IN (:ids)
     ');
 
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
     $deleteQuery->setParameter("ids", $usedLimits, Connection::PARAM_STR_ARRAY);
     return $deleteQuery->execute();
   }
@@ -159,7 +159,7 @@ class CleanupExerciseConfigs extends Command {
       WHERE t.createdAt <= :date AND t.id NOT IN (:ids)
     ');
 
-    $deleteQuery->setParameter(":date", $limit);
+    $deleteQuery->setParameter("date", $limit);
     $deleteQuery->setParameter("ids", array_keys($usedTests), Connection::PARAM_STR_ARRAY);
     return $deleteQuery->execute();
   }
