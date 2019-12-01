@@ -6,7 +6,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "C (GCC)"
 			- "[c, h]"
 			- GNU/Linux
-			- C language compiled with GCC
+			- C language compiled with GCC 9.2
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{c,h}\""
 
 	cpp-bison-flex:
@@ -16,7 +16,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "Compilers (C++, Bison, Flex)"
 			- "[cpp,h,hpp,y,lex]"
 			- GNU/Linux
-			- "C++17 language compiled with GCC 7.3 with Flex (2.5.37) and Bison (3.0.4) tools"
+			- "C++17 language compiled with GCC (9.2) with Flex (2.5.37) and Bison (3.0.4) tools"
 			- "- name: \"source-files-cpp\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\"\n- name: \"source-file-bison\"\n  type: \"file\"\n  value: \"*.y\"\n- name: \"source-file-flex\"\n  type: \"file[]\"\n  value: \"*.lex\"\n"
 
 	cxx-gcc-linux:
@@ -26,7 +26,7 @@ App\Model\Entity\RuntimeEnvironment:
 			- "C++ (GCC)"
 			- "[cpp, h, hpp]"
 			- GNU/Linux
-			- C++17 language compiled with GCC 7.3
+			- C++17 language compiled with GCC 9.2
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{cpp,h,hpp}\""
 
 	data-linux:
@@ -48,6 +48,26 @@ App\Model\Entity\RuntimeEnvironment:
 			- GNU/Linux
 			- Pascal compiled with FreePascal
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{pas,lpr}\""
+
+	go:
+		__construct:
+			- go
+			- Go
+			- Go
+			- "[go]"
+			- GNU/Linux
+			- Go compiled with default Go compiler
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{go}\""
+
+	haskell:
+		__construct:
+			- haskell
+			- Haskell
+			- Haskell
+			- "[hs]"
+			- GNU/Linux
+			- Haskell functional language compiled with GHC compiler
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.hs\""
 
 	java:
 		__construct:
@@ -89,6 +109,16 @@ App\Model\Entity\RuntimeEnvironment:
 			- PHP scripts executed with official PHP interpreter
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.php\""
 
+	prolog:
+		__construct:
+			- prolog
+			- Prolog
+			- "Prolog (SWI)"
+			- "[pl, pro]"
+			- GNU/Linux
+			- Prolog scripts executed with SWI Prolog interpreter
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{pl,pro}\""
+
 	python3:
 		__construct:
 			- python3
@@ -98,4 +128,14 @@ App\Model\Entity\RuntimeEnvironment:
 			- GNU/Linux
 			- Python executed in Python 3 runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.py\""
+
+	rust:
+		__construct:
+			- rust
+			- Rust
+			- Rust
+			- "[rs]"
+			- GNU/Linux
+			- Rust compiled with rustc compiler
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{rs}\""
 
