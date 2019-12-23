@@ -15,7 +15,7 @@ roles:
 
     - name: superadmin
 
-permissions:    
+permissions:
     - allow: true
       role: scope-master
 
@@ -393,6 +393,7 @@ permissions:
           - delete
           - setBonusPoints
           - setAccepted
+          - setFlag
           - downloadResultArchive
       conditions:
           - assignmentSolution.isSupervisor

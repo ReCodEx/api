@@ -264,6 +264,72 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
+  public function checkSetFlag(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canSetFlag($solution)) {
+      throw new ForbiddenRequestException("You cannot change flags for this submission");
+    }
+  }
+
+  /**
+   * Set flag of the assignment solution.
+   * @POST
+   * @param string $id identifier of the solution
+   * @param string $flag name of the flag which should to be changed
+   * @Param(type="post", name="value", required=true, validation=boolean, description="True or false which should be set to given flag name")
+   * @throws NotFoundException
+   * @throws \Nette\Application\AbortException
+   * @throws \Exception
+   */
+  public function actionSetFlag(string $id, string $flag) {
+    $req = $this->getRequest();
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if ($solution->getAssignment() === null) {
+      throw new NotFoundException("Assignment for solution '$id' was deleted");
+    }
+
+    if ($solution->getSolution()->getAuthor() === null) {
+      throw new NotFoundException("Author of solution '$id' was deleted");
+    }
+
+    // map of boolean flag names with the information about uniqueness
+    $knownBoolFlags = [
+      "accepted" => true,
+      "reviewed" => false
+    ];
+
+    if (!array_key_exists($flag, $knownBoolFlags)) {
+      throw new BadRequestException("Trying to set unknown boolean flag '$flag' to the solution");
+    }
+
+    // handle given flag
+    $unique = $knownBoolFlags[$flag];
+    if ($req->getPost("value") !== null) {
+      $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+      $solution->setFlag($flag, $value);
+
+      // handle unique flags
+      if ($unique && $value) {
+        // flag has to be set to false for all other submissions
+        $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
+        foreach ($assignmentSubmissions as $assignmentSubmission) {
+          $assignmentSubmission->setFlag($flag, false);
+        }
+      }
+    }
+
+    // finally flush all changed to the database
+    $this->assignmentSolutions->flush();
+
+    // forward to student statistics of group
+    $groupOfSubmission = $solution->getAssignment()->getGroup();
+    if ($groupOfSubmission === null) {
+      throw new NotFoundException("Group for assignment '$id' was not found");
+    }
+
+    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
+  }
+
   public function checkSetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
@@ -274,7 +340,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   /**
    * Set solution of student as accepted, this solution will be then presented as the best one.
    * @POST
-   * @param string $id identifier of the submission
+   * @param string $id identifier of the solution
    * @throws \Nette\Application\AbortException
    * @throws NotFoundException
    */
@@ -317,7 +383,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   /**
    * Set solution of student as unaccepted if it was.
    * @DELETE
-   * @param string $id identifier of the submission
+   * @param string $id identifier of the solution
    * @throws \Nette\Application\AbortException
    * @throws NotFoundException
    */
