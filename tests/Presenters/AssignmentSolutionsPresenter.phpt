@@ -153,7 +153,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::equal(857, $solution->getOverriddenPoints());
   }
 
-  public function testSetAcceptedSubmission()
+  public function testSetAccepted()
   {
     $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     /** @var AssignmentSolution $submission */
@@ -171,7 +171,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'POST',
-      ['action' => 'setAcceptedSubmission', 'id' => $submission->getId()]
+      ['action' => 'setAccepted', 'id' => $submission->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
@@ -181,7 +181,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::true($submission->isAccepted());
   }
 
-  public function testUnsetAcceptedSubmission()
+  public function testUnsetAccepted()
   {
     $allSubmissions = $this->presenter->assignmentSolutions->findAll();
     /** @var AssignmentSolution $submission */
@@ -203,7 +203,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     $request = new Nette\Application\Request('V1:AssignmentSolutions',
       'DELETE',
-      ['action' => 'unsetAcceptedSubmission', 'id' => $submission->getId()]
+      ['action' => 'unsetAccepted', 'id' => $submission->getId()]
     );
     $response = $this->presenter->run($request);
     Assert::same(Nette\Application\Responses\ForwardResponse::class, get_class($response));
