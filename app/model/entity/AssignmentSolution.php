@@ -92,6 +92,15 @@ class AssignmentSolution
   }
 
   /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $reviewed;
+
+  public function isReviewed(): bool {
+    return $this->reviewed;
+  }
+
+  /**
    * @ORM\Column(type="integer")
    */
   protected $bonusPoints;
@@ -144,7 +153,7 @@ class AssignmentSolution
    * This is a reference to the last (by submittedAt) submission attached to this solution.
    * The reference should speed up loading in many cases since the last submission is the only one that counts.
    * However, in the future, this behavior might be altered, so we can activeley select, which submission is "relevant".
-   * 
+   *
    * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
    * @var AssignmentSolutionSubmission|null
    */
@@ -164,6 +173,7 @@ class AssignmentSolution
    */
   private function __construct() {
     $this->accepted = false;
+    $this->reviewed = false;
     $this->bonusPoints = 0;
     $this->submissions = new ArrayCollection();
     $this->overriddenPoints = null;
