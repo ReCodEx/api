@@ -2,7 +2,7 @@
 
 namespace App\Helpers\ExerciseConfig\Pipeline\Ports;
 
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use JsonSerializable;
 
 

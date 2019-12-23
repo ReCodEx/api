@@ -6,7 +6,7 @@ use App\Helpers\ExerciseConfig\Environment;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\VariableFactory;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 

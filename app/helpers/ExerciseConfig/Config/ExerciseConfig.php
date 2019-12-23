@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\ExerciseConfig;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use JsonSerializable;
 use App\Exceptions\InternalServerException;
 

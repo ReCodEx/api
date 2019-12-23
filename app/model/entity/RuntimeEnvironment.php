@@ -4,8 +4,8 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 use App\Exceptions\ParseException as AppParseException;
 
 /**
@@ -54,7 +54,7 @@ class RuntimeEnvironment implements JsonSerializable
   public function getExtensionsList() {
     try {
       $parsedConfig = Yaml::parse($this->extensions);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
     }
 
@@ -84,7 +84,7 @@ class RuntimeEnvironment implements JsonSerializable
   public function getParsedVariables(): array {
     try {
       return Yaml::parse($this->defaultVariables);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
     }
   }

@@ -10,7 +10,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\JudgeBox;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 

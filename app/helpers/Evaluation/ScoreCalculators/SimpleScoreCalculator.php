@@ -5,8 +5,8 @@ namespace App\Helpers\Evaluation;
 use App\Exceptions\SubmissionEvaluationFailedException;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\Evaluation\IScoreCalculator;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 
 /**
  * Simple score calculator. It expect config in YAML format such as:
@@ -38,7 +38,7 @@ class SimpleScoreCalculator implements IScoreCalculator {
       } else {
         return null;
       }
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       return null;
     }
 

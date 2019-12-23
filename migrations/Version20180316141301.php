@@ -5,7 +5,7 @@ namespace Migrations;
 use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Migrate Node, PHP and Python to reflect new entry points and multiple file inputs.

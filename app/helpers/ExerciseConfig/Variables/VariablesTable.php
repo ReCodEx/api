@@ -5,7 +5,7 @@ use ArrayIterator;
 use IteratorAggregate;
 use JsonSerializable;
 use Nette\Utils\Arrays;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Traversable;
 
 /**

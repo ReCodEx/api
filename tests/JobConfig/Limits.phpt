@@ -5,7 +5,7 @@ include '../bootstrap.php';
 use Tester\Assert;
 use App\Helpers\JobConfig\Loader;
 use App\Helpers\JobConfig\UndefinedLimits;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * @testCase

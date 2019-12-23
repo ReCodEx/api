@@ -6,7 +6,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Box;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataInBox;
 use App\Helpers\ExerciseConfig\Pipeline\Box\DataOutBox;
 use JsonSerializable;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Represents pipeline which contains list of boxes.

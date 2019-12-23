@@ -7,7 +7,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\ExerciseConfig\VariableTypes;
 use JsonSerializable;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Port structure which contains type information and possibly reference to

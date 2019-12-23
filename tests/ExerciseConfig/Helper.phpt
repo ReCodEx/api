@@ -17,7 +17,7 @@ use App\Model\Entity\RuntimeEnvironment;
 use App\Model\Entity\User;
 use App\Model\Entity\Instance;
 use Mockery\Mock;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Tester\Assert;
 
 

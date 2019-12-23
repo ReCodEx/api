@@ -6,8 +6,8 @@ use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\YamlException;
+use App\Helpers\Yaml;
 use DateTime;
 
 
@@ -83,7 +83,7 @@ class PipelineConfig
   public function getParsedPipeline() {
     try {
       return Yaml::parse($this->pipelineConfig);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new ExerciseConfigException("Pipeline is not a valid YAML and it cannot be parsed.");
     }
   }

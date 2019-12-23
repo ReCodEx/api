@@ -8,8 +8,8 @@ use App\Exceptions\JobConfigStorageException;
 use App\Model\Entity\User;
 use Nette\Caching\Cache;
 use Nette\Caching\Storages\MemoryStorage;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 
 /**
  * Storage of job configuration which is designed to load them from
@@ -35,15 +35,9 @@ class Storage {
    */
   private $jobConfigDir;
 
-  /**
-   * @var bool
-   */
-  private $humanReadable;
-
-  public function __construct(string $jobConfigDir, $humanReadable = false) {
+  public function __construct(string $jobConfigDir) {
     $this->jobConfigDir = $jobConfigDir;
     $this->jobLoader = new Loader();
-    $this->humanReadable = $humanReadable;
   }
 
   /**
@@ -178,11 +172,11 @@ class Storage {
   public function parse(string $config): JobConfig {
     try {
       $parsedConfig = Yaml::parse($config);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new MalformedJobConfigException("Assignment configuration file is not a valid YAML file and it cannot be parsed.", $e);
     }
 
-    return $this->jobLoader->loadJobConfig($parsedConfig, $this->humanReadable);
+    return $this->jobLoader->loadJobConfig($parsedConfig);
   }
 
 }

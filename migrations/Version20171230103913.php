@@ -4,7 +4,7 @@ namespace Migrations;
 
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Pascal compilation can accept multiple files. Execute appropriate migrations.

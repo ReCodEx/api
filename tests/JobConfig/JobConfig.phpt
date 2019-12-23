@@ -6,7 +6,7 @@ use Tester\Assert;
 use App\Exceptions\JobConfigLoadingException;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\JobConfig\Loader;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use App\Helpers\JobConfig\UndefinedLimits;
 use App\Helpers\JobConfig\Limits;
 

@@ -318,12 +318,11 @@ class Loader {
   /**
    * Build and check job configuration from given structured data.
    * @param array $data
-   * @param bool $humanReadable
    * @return JobConfig
    * @throws JobConfigLoadingException
    */
-  public function loadJobConfig($data, $humanReadable = false): JobConfig {
-    $config = new JobConfig($humanReadable);
+  public function loadJobConfig($data): JobConfig {
+    $config = new JobConfig();
 
     if (!is_array($data)) {
       throw new JobConfigLoadingException("Job configuration is not in correct format");

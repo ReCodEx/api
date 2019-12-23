@@ -5,8 +5,8 @@ namespace App\Model\Entity;
 use App\Exceptions\ExerciseConfigException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\YamlException;
+use App\Helpers\Yaml;
 
 /**
  * @ORM\Entity
@@ -86,7 +86,7 @@ class ExerciseEnvironmentConfig
   public function getParsedVariablesTable(): array {
     try {
       return Yaml::parse($this->variablesTable);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new ExerciseConfigException("Variables table is not a valid YAML and it cannot be parsed.");
     }
   }

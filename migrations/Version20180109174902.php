@@ -4,7 +4,7 @@ namespace Migrations;
 
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Added python compilation, refactor whole pipeline and also python execution.

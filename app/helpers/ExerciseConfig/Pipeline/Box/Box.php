@@ -10,7 +10,7 @@ use App\Helpers\ExerciseConfig\Pipeline\Ports\UndefinedPort;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 use JsonSerializable;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 
 /**

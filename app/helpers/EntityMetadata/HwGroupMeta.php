@@ -2,7 +2,7 @@
 
 namespace App\Helpers\EntityMetadata;
 
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 
 /**

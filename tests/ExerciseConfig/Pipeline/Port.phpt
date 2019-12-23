@@ -6,7 +6,7 @@ use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\BoxService;
 use App\Helpers\ExerciseConfig\Pipeline\Ports\PortMeta;
 use App\Helpers\ExerciseConfig\VariableTypes;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 

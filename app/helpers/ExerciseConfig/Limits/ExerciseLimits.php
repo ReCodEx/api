@@ -3,7 +3,7 @@
 namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\InternalServerException;
 use Nette\Utils\Arrays;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use JsonSerializable;
 
 

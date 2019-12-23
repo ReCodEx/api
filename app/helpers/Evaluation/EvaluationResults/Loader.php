@@ -4,8 +4,8 @@ namespace App\Helpers\EvaluationResults;
 
 use App\Helpers\JobConfig\JobConfig;
 use App\Exceptions\SubmissionEvaluationFailedException;
-use Symfony\Component\Yaml\Yaml;
-use Symfony\Component\Yaml\Exception\ParseException;
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 
 /**
  * Loader class providing factory method for parsing evaluation results
@@ -22,7 +22,7 @@ class Loader {
   public static function parseResults(string $results, JobConfig $config): EvaluationResults {
     try {
       $parsedResults = Yaml::parse($results);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new SubmissionEvaluationFailedException("YAML parsing error - {$e->getMessage()}");
     }
 
