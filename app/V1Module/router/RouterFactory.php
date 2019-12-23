@@ -301,8 +301,8 @@ class RouterFactory {
     $router[] = new DeleteRoute("$prefix/<id>", "AssignmentSolutions:deleteSolution");
     $router[] = new PostRoute("$prefix/<id>/bonus-points", "AssignmentSolutions:setBonusPoints");
     $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
-    $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAcceptedSubmission");
-    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAcceptedSubmission");
+    $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAccepted");
+    $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAccepted");
     $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
     $router[] = new GetRoute("$prefix/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
     return $router;

@@ -264,7 +264,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->sendSuccessResponse("OK");
   }
 
-  public function checkSetAcceptedSubmission(string $id) {
+  public function checkSetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
@@ -278,7 +278,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws \Nette\Application\AbortException
    * @throws NotFoundException
    */
-  public function actionSetAcceptedSubmission(string $id) {
+  public function actionSetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if ($solution->getAssignment() === null) {
       throw new NotFoundException("Assignment for solution '$id' was deleted");
@@ -307,7 +307,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
-  public function checkUnsetAcceptedSubmission(string $id) {
+  public function checkUnsetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
       throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
@@ -321,7 +321,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @throws \Nette\Application\AbortException
    * @throws NotFoundException
    */
-  public function actionUnsetAcceptedSubmission(string $id) {
+  public function actionUnsetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if ($solution->getAssignment() === null) {
       throw new NotFoundException("Assignment for solution '$id' was not found");
