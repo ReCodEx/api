@@ -14,7 +14,6 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method string getNote()
  * @method Solution getSolution()
  * @method bool getAccepted()
- * @method setAccepted(bool $accepted)
  * @method int getBonusPoints()
  * @method setBonusPoints(int $points)
  * @method int getOverriddenPoints()
@@ -84,18 +83,10 @@ class AssignmentSolution
    */
   protected $accepted;
 
-  public function isAccepted(): bool {
-    return $this->accepted;
-  }
-
   /**
    * @ORM\Column(type="boolean")
    */
   protected $reviewed;
-
-  public function isReviewed(): bool {
-    return $this->reviewed;
-  }
 
   /**
    * @ORM\Column(type="integer")
@@ -196,4 +187,23 @@ class AssignmentSolution
     return $entity;
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  /// GETTERS AND SETTERS
+  ///
+
+  public function isAccepted(): bool {
+    return $this->accepted;
+  }
+
+  public function setAccepted(bool $accepted): void {
+    $this->accepted = $accepted;
+  }
+
+  public function isReviewed(): bool {
+    return $this->reviewed;
+  }
+
+  public function setReviewed(bool $reviewed): void {
+    $this->reviewed = $reviewed;
+  }
 }

@@ -304,19 +304,17 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
     // handle given flag
     $unique = $knownBoolFlags[$flag];
-    if ($req->getPost("value") !== null) {
-      $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
-      $solution->setFlag($flag, $value);
-
-      // handle unique flags
-      if ($unique && $value) {
-        // flag has to be set to false for all other submissions
-        $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
-        foreach ($assignmentSubmissions as $assignmentSubmission) {
-          $assignmentSubmission->setFlag($flag, false);
-        }
+    $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
+    // handle unique flags
+    if ($unique && $value) {
+      // flag has to be set to false for all other submissions
+      $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
+      foreach ($assignmentSubmissions as $assignmentSubmission) {
+        $assignmentSubmission->setFlag($flag, false);
       }
     }
+    // handle given flag
+    $solution->setFlag($flag, $value);
 
     // finally flush all changed to the database
     $this->assignmentSolutions->flush();
