@@ -2,6 +2,7 @@
 
 namespace App\Model\Entity;
 
+use Exception;
 use ReflectionClass;
 
 trait FlagAccessor {

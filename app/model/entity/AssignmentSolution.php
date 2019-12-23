@@ -26,6 +26,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 class AssignmentSolution
 {
   use MagicAccessors;
+  use FlagAccessor;
 
   const JOB_TYPE = "student";
 

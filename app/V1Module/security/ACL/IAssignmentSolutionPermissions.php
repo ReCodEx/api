@@ -11,6 +11,7 @@ interface IAssignmentSolutionPermissions {
   function canDelete(AssignmentSolution $assignmentSolution): bool;
   function canSetBonusPoints(AssignmentSolution $assignmentSolution): bool;
   function canSetAccepted(AssignmentSolution $assignmentSolution): bool;
+  function canSetFlag(AssignmentSolution $assignmentSolution): bool;
   function canViewResubmissions(AssignmentSolution $assignmentSolution): bool;
 
   function canViewEvaluation(AssignmentSolution $assignmentSolution): bool;
