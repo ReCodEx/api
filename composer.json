@@ -23,6 +23,7 @@
 	},
 	"require": {
 		"php": ">=7.2",
+		"ext-yaml": ">=2.0",
 		"nette/application": "^2.4",
 		"nette/bootstrap": "^2.4",
 		"nette/caching": "^2.5",

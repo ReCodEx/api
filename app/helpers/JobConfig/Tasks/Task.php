@@ -3,7 +3,7 @@
 namespace App\Helpers\JobConfig\Tasks;
 
 use App\Helpers\JobConfig\SandboxConfig;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 
 /**

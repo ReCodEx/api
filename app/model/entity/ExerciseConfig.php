@@ -5,8 +5,8 @@ namespace App\Model\Entity;
 use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\YamlException;
+use App\Helpers\Yaml;
 use DateTime;
 
 /**
@@ -72,7 +72,7 @@ class ExerciseConfig
   public function getParsedConfig() {
     try {
       return Yaml::parse($this->config);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new ExerciseConfigException("Exercise configuration is not a valid YAML and it cannot be parsed.");
     }
   }

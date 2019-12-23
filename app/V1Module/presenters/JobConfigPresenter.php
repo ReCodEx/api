@@ -34,11 +34,13 @@ class JobConfigPresenter extends BasePresenter {
       $this->sendSuccessResponse([]);
     } catch (MalformedJobConfigException $e) {
       $parserException = $e->getOriginalException();
-      if ($parserException != null) {
+      if ($parserException !== null) {
         $error = [
           "message" => $parserException->getMessage(),
-          "line" => $parserException->getParsedLine(),
-          "snippet" => $parserException->getSnippet()
+        ];
+      } else {
+        $error = [
+          "message" => $e->getMessage(),
         ];
       }
     } catch (JobConfigLoadingException $e) {

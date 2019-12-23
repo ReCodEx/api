@@ -7,7 +7,7 @@ use App\Helpers\JobConfig\JobConfig;
 use App\Helpers\JobConfig\TestConfig;
 use App\Helpers\JobConfig\JobId;
 
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Evaluation results of whole job

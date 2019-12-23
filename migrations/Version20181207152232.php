@@ -5,7 +5,7 @@ namespace Migrations;
 use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Remove python compilation pipelines and replace them with passthrough ones.

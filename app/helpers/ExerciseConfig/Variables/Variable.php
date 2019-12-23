@@ -6,7 +6,7 @@ namespace App\Helpers\ExerciseConfig;
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\Pipeline\Box\Params\ConfigParams;
 use JsonSerializable;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use Nette\Utils\Strings;
 
 /**

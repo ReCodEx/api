@@ -3,7 +3,7 @@
 namespace App\Helpers\ExerciseConfig\Pipeline\Box;
 
 use App\Helpers\ExerciseConfig\Pipeline\Ports\Port;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use JsonSerializable;
 
 

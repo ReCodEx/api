@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 use Nette\Http\IResponse;
-use Symfony\Component\Yaml\Exception\ParseException;
+use App\Helpers\YamlException;
 
 /**
  * Used when configuration cannot be loaded from file, or given text is
@@ -18,14 +18,14 @@ class MalformedJobConfigException extends ApiException {
   /**
    * Creates instance with further description.
    * @param string $msg description
-   * @param ParseException $originalException Optional pointer to original exception of YAML parser.
+   * @param YamlException $originalException Optional pointer to original exception of YAML parser.
    *                                          Line numbers and snippets can be found there.
    * @param string $frontendErrorCode
    * @param null $frontendErrorParams
    */
   public function __construct(
     string $msg = 'Please contact your supervisor',
-    ParseException $originalException = null,
+    YamlException $originalException = null,
     string $frontendErrorCode = FrontendErrorMappings::E400_200__JOB_CONFIG,
     $frontendErrorParams = null
   ) {
@@ -36,7 +36,7 @@ class MalformedJobConfigException extends ApiException {
   /**
    * Get original exception of YAML parser
    */
-  public function getOriginalException() {
+  public function getOriginalException(): YamlException {
     return $this->originalException;
   }
 

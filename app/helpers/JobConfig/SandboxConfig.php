@@ -3,7 +3,7 @@
 namespace App\Helpers\JobConfig;
 use App\Exceptions\MalformedJobConfigException;
 use Nette\Utils\Arrays;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 
 /**

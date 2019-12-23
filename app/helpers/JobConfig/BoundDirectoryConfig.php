@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Helpers\JobConfig;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 
 /**

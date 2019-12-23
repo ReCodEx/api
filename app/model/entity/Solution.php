@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use JsonSerializable;
 use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 use DateTime;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * @ORM\Entity

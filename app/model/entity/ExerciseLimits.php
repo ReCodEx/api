@@ -6,8 +6,8 @@ use App\Exceptions\ExerciseConfigException;
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Yaml\Exception\ParseException;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\YamlException;
+use App\Helpers\Yaml;
 use DateTime;
 
 /**
@@ -90,7 +90,7 @@ class ExerciseLimits implements JsonSerializable
   public function getParsedLimits() {
     try {
       return Yaml::parse($this->limits);
-    } catch (ParseException $e) {
+    } catch (YamlException $e) {
       throw new ExerciseConfigException("Exercise limits configuration is not a valid YAML and it cannot be parsed.");
     }
   }

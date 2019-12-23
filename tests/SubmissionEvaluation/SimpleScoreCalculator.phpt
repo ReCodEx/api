@@ -83,12 +83,12 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
   public function testDefaultConfig() {
     $config = $this->getCalc()->getDefaultConfig(["A test", "B", "test C", "Test D"]);
-    Assert::equal("testWeights:\n    'A test': 100\n    B: 100\n    'test C': 100\n    'Test D': 100\n", $config);
+    Assert::equal("---\ntestWeights:\n  A test: 100\n  B: 100\n  test C: 100\n  Test D: 100\n...\n", $config);
   }
 
   public function testEmptyDefaultConfig() {
     $config = $this->getCalc()->getDefaultConfig([]);
-    Assert::equal("testWeights: {  }\n", $config);
+    Assert::equal("---\ntestWeights: []\n...\n", $config);
   }
 
   public function testValidateEmptyWeights() {

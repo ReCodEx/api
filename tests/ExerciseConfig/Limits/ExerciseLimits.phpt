@@ -7,7 +7,7 @@ use App\Helpers\ExerciseConfig\VariableFactory;
 use Tester\Assert;
 use App\Helpers\ExerciseConfig\Loader;
 use App\Helpers\ExerciseConfig\ExerciseLimits;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 class TestExerciseLimits extends Tester\TestCase
 {

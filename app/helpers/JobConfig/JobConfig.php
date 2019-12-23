@@ -2,7 +2,7 @@
 
 namespace App\Helpers\JobConfig;
 
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 use App\Exceptions\ForbiddenRequestException;
 use App\Helpers\JobConfig\SubmissionHeader;
 use App\Helpers\JobConfig\Tasks\Task;
@@ -18,8 +18,6 @@ class JobConfig {
   /** Tasks config key */
   const TASKS_KEY = "tasks";
 
-  /** @var bool Serialize so that humans are happy with the YAML code */
-  private $humanReadable;
   /** @var array Additional top level data */
   private $data = [];
   /** @var SubmissionHeader Holds data about this job submission */
@@ -30,9 +28,8 @@ class JobConfig {
   /**
    * Construct basic instance of JobConfig.
    */
-  public function __construct($humanReadable = false) {
+  public function __construct() {
     $this->submissionHeader = new SubmissionHeader();
-    $this->humanReadable = $humanReadable;
   }
 
   /**
@@ -260,7 +257,7 @@ class JobConfig {
    * @return string
    */
   public function __toString() {
-    return Yaml::dump($this->toArray(), $this->humanReadable === true ? 100 : -1); // do not inline yaml - 100 nesting limit ~ "infinity"
+    return Yaml::dump($this->toArray());
   }
 
 }

@@ -9,7 +9,6 @@ parameters:
 
   jobConfig:
     storageDir: %appDir%/../job_config
-    humanReadable: true
 
   api:
     address: https://recodex.mff.cuni.cz:4000
@@ -331,7 +330,7 @@ services:
   - App\Helpers\UploadedFileStorage(%uploadDir%)
   - App\Helpers\EvaluationLoader
   - App\Helpers\EvaluationPointsLoader
-  - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%, %jobConfig.humanReadable%)
+  - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\JobConfig\Generator
   - App\Helpers\Evaluation\SimpleScoreCalculator

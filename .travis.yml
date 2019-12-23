@@ -10,8 +10,10 @@ cache:
     - $HOME/.composer/cache/files
 
 before_install:
+  - printf "\n" | pecl install yaml
   - echo "memory_limit=1G" >> test.ini
   - echo "opcache.enable_cli=0" >> test.ini
+  - echo "extension=yaml.so" >> test.ini
 
 install:
   - composer install --no-interaction --prefer-dist

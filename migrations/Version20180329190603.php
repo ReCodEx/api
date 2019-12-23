@@ -5,7 +5,7 @@ namespace Migrations;
 use Doctrine\DBAL\DBALException;
 use Doctrine\Migrations\AbstractMigration;
 use Doctrine\DBAL\Schema\Schema;
-use Symfony\Component\Yaml\Yaml;
+use App\Helpers\Yaml;
 
 /**
  * Extra files in Node and PHP environments have to be plugged in to execution

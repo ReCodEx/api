@@ -92,7 +92,7 @@ tasks:
     $result = $response->getPayload();
 
     Assert::same(200, $result["code"]);
-    Assert::equal(4, $result["payload"]["line"]);
+    Assert::truthy($result["payload"]["message"]);
   }
 
   public function testValidation3()
