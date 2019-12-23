@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
-use Exception;
+use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
 /**
  * @ORM\Entity
@@ -36,7 +36,8 @@ use Exception;
  */
 class UserSettings implements JsonSerializable
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+  use MagicAccessors;
+  use FlagAccessor;
 
   public function __construct(
     bool $darkTheme = true,
@@ -133,30 +134,6 @@ class UserSettings implements JsonSerializable
    * @ORM\Column(type="boolean")
    */
   protected $assignmentSubmitAfterAcceptedEmails;
-
-  /**
-   * Get arbitrary bool flag by its name.
-   * @param string $name
-   * @return bool
-   */
-  public function getFlag(string $name): bool {
-    if (!property_exists($this, $name) || !is_bool($this->$name)) {
-      throw new Exception("Attempting to set unknown flag '$name' in the user settings.");
-    }
-    return $this->$name;
-  }
-
-  /**
-   * Set arbitrary bool flag by its name.
-   * @param string $name
-   * @param bool $value
-   */
-  public function setFlag(string $name, bool $value) {
-    if (!property_exists($this, $name) || !is_bool($this->$name)) {
-      throw new Exception("Attempting to set unknown flag '$name' in the user settings.");
-    }
-    $this->$name = $value;
-  }
 
   public function jsonSerialize() {
     return [
