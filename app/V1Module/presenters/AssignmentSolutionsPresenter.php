@@ -307,7 +307,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
     // handle unique flags
     if ($unique && $value) {
-      // flag has to be set to false for all other submissions
+      // flag has to be set to false for all other submissions of a user
       $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
       foreach ($assignmentSubmissions as $assignmentSubmission) {
         $assignmentSubmission->setFlag($flag, false);
@@ -337,6 +337,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
   /**
    * Set solution of student as accepted, this solution will be then presented as the best one.
+   * @DEPRECATED
    * @POST
    * @param string $id identifier of the solution
    * @throws \Nette\Application\AbortException
@@ -380,6 +381,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
 
   /**
    * Set solution of student as unaccepted if it was.
+   * @DEPRECATED
    * @DELETE
    * @param string $id identifier of the solution
    * @throws \Nette\Application\AbortException
