@@ -47,7 +47,6 @@ class RouterFactory {
     $router[] = self::createForgottenPasswordRoutes("$prefix/forgotten-password");
     $router[] = self::createRuntimeEnvironmentsRoutes("$prefix/runtime-environments");
     $router[] = self::createHardwareGroupsRoutes("$prefix/hardware-groups");
-    $router[] = self::createJobConfigRoutes("$prefix/job-config");
     $router[] = self::createPipelinesRoutes("$prefix/pipelines");
     $router[] = self::createSisRouter("$prefix/extensions/sis");
     $router[] = self::createEmailsRoutes("$prefix/emails");
@@ -410,17 +409,6 @@ class RouterFactory {
   private static function createHardwareGroupsRoutes(string $prefix): RouteList {
     $router = new RouteList();
     $router[] = new GetRoute("$prefix", "HardwareGroups:");
-    return $router;
-  }
-
-  /**
-   * Adds all JobConfigPresenter endpoints to given router.
-   * @param string $prefix Route prefix
-   * @return RouteList All endpoint routes
-   */
-  private static function createJobConfigRoutes(string $prefix) {
-    $router = new RouteList();
-    $router[] = new PostRoute("$prefix/validate", "JobConfig:validate");
     return $router;
   }
 
