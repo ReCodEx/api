@@ -119,6 +119,30 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     );
   }
 
+  public function checkUpdateSolution(string $id) {
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    if (!$this->assignmentSolutionAcl->canUpdate($solution)) {
+      throw new ForbiddenRequestException("You cannot update the solution");
+    }
+  }
+
+  /**
+   * Update details about the solution (note, etc...)
+   * @POST
+   * @Param(type="post", name="note", description="A note by the author of the solution")
+   * @param string $id Identifier of the solution
+   * @throws NotFoundException
+   * @throws InternalServerException
+   */
+  public function actionUpdateSolution(string $id) {
+    $req = $this->getRequest();
+    $solution = $this->assignmentSolutions->findOrThrow($id);
+    $solution->setNote($req->getPost("note"));
+
+    $this->assignmentSolutions->flush();
+    $this->sendSuccessResponse($this->assignmentSolutionViewFactory->getSolutionData($solution));
+  }
+
   public function checkDeleteSolution(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canDelete($solution)) {

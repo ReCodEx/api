@@ -298,6 +298,7 @@ class RouterFactory {
     $router[] = new GetRoute("$prefix/evaluation/<evaluationId>/download-result", "AssignmentSolutions:downloadResultArchive");
 
     $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
+    $router[] = new PostRoute("$prefix/<id>", "AssignmentSolutions:updateSolution");
     $router[] = new DeleteRoute("$prefix/<id>", "AssignmentSolutions:deleteSolution");
     $router[] = new PostRoute("$prefix/<id>/bonus-points", "AssignmentSolutions:setBonusPoints");
     $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");

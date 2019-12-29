@@ -11,7 +11,6 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @ORM\Entity
  *
  * @method string getId()
- * @method string getNote()
  * @method Solution getSolution()
  * @method bool getAccepted()
  * @method int getBonusPoints()
@@ -20,7 +19,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method setOverriddenPoints(?int $points)
  * @method Collection getSubmissions()
  * @method AssignmentSolutionSubmission getLastSubmission()
- * @method setLastSubmission(AssignmentSolutionSubmission? $submission)
+ * @method setLastSubmission(?AssignmentSolutionSubmission $submission)
  */
 class AssignmentSolution
 {
@@ -205,5 +204,13 @@ class AssignmentSolution
 
   public function setReviewed(bool $reviewed): void {
     $this->reviewed = $reviewed;
+  }
+
+  public function getNote(): ?string {
+    return $this->note;
+  }
+
+  public function setNote(?string $note): void {
+    $this->note = $note;
   }
 }
