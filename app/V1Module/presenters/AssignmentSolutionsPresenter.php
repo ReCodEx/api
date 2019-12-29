@@ -25,7 +25,7 @@ use App\Responses\ZipFilesResponse;
 use App\Security\ACL\IAssignmentSolutionPermissions;
 
 /**
- * Endpoints for manipulation of solution submissions
+ * Endpoints for manipulation of assignment solutions
  * @LoggedIn
  */
 class AssignmentSolutionsPresenter extends BasePresenter {
@@ -254,7 +254,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
    * @POST
    * @Param(type="post", name="bonusPoints", validation="numericint", description="New amount of bonus points, can be negative number")
    * @Param(type="post", name="overriddenPoints", required=false, description="Overrides points assigned to solution by the system")
-   * @param string $id Identifier of the submission
+   * @param string $id Identifier of the solution
    * @throws NotFoundException
    * @throws InvalidArgumentException
    * @throws InvalidStateException
@@ -291,7 +291,7 @@ class AssignmentSolutionsPresenter extends BasePresenter {
   public function checkSetFlag(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetFlag($solution)) {
-      throw new ForbiddenRequestException("You cannot change flags for this submission");
+      throw new ForbiddenRequestException("You cannot change flags for this solution");
     }
   }
 
@@ -331,10 +331,10 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $value = filter_var($req->getPost("value"), FILTER_VALIDATE_BOOLEAN);
     // handle unique flags
     if ($unique && $value) {
-      // flag has to be set to false for all other submissions of a user
-      $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
-      foreach ($assignmentSubmissions as $assignmentSubmission) {
-        $assignmentSubmission->setFlag($flag, false);
+      // flag has to be set to false for all other solutions of a user
+      $assignmentSolutions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
+      foreach ($assignmentSolutions as $assignmentSolution) {
+        $assignmentSolution->setFlag($flag, false);
       }
     }
     // handle given flag
@@ -344,18 +344,18 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->assignmentSolutions->flush();
 
     // forward to student statistics of group
-    $groupOfSubmission = $solution->getAssignment()->getGroup();
-    if ($groupOfSubmission === null) {
+    $groupOfSolution = $solution->getAssignment()->getGroup();
+    if ($groupOfSolution === null) {
       throw new NotFoundException("Group for assignment '$id' was not found");
     }
 
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
+    $this->forward('Groups:studentsStats', $groupOfSolution->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
   public function checkSetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
-      throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
+      throw new ForbiddenRequestException("You cannot change accepted flag for this solution");
     }
   }
 
@@ -377,29 +377,29 @@ class AssignmentSolutionsPresenter extends BasePresenter {
       throw new NotFoundException("Author of solution '$id' was deleted");
     }
 
-    // accepted flag has to be set to false for all other submissions
-    $assignmentSubmissions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
-    foreach ($assignmentSubmissions as $assignmentSubmission) {
-      $assignmentSubmission->setAccepted(false);
+    // accepted flag has to be set to false for all other solutions
+    $assignmentSolutions = $this->assignmentSolutions->findSolutions($solution->getAssignment(), $solution->getSolution()->getAuthor());
+    foreach ($assignmentSolutions as $assignmentSolution) {
+      $assignmentSolution->setAccepted(false);
     }
 
-    // finally set the right submission as accepted
+    // finally set the right solution as accepted
     $solution->setAccepted(true);
     $this->assignmentSolutions->flush();
 
     // forward to student statistics of group
-    $groupOfSubmission = $solution->getAssignment()->getGroup();
-    if ($groupOfSubmission === null) {
+    $groupOfSolution = $solution->getAssignment()->getGroup();
+    if ($groupOfSolution === null) {
       throw new NotFoundException("Group for assignment '$id' was not found");
     }
 
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
+    $this->forward('Groups:studentsStats', $groupOfSolution->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
   public function checkUnsetAccepted(string $id) {
     $solution = $this->assignmentSolutions->findOrThrow($id);
     if (!$this->assignmentSolutionAcl->canSetAccepted($solution)) {
-      throw new ForbiddenRequestException("You cannot change accepted flag for this submission");
+      throw new ForbiddenRequestException("You cannot change accepted flag for this solution");
     }
   }
 
@@ -426,8 +426,8 @@ class AssignmentSolutionsPresenter extends BasePresenter {
     $this->assignmentSolutions->flush();
 
     // forward to student statistics of group
-    $groupOfSubmission = $solution->getAssignment()->getGroup();
-    $this->forward('Groups:studentsStats', $groupOfSubmission->getId(), $solution->getSolution()->getAuthor()->getId());
+    $groupOfSolution = $solution->getAssignment()->getGroup();
+    $this->forward('Groups:studentsStats', $groupOfSolution->getId(), $solution->getSolution()->getAuthor()->getId());
   }
 
   public function checkDownloadSolutionArchive(string $id) {
