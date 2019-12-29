@@ -69,6 +69,24 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::same($solution->getId(), $result['payload']['id']);
   }
 
+  public function testUpdateSolution()
+  {
+    PresenterTestHelper::loginDefaultAdmin($this->container);
+    $solution = current($this->presenter->assignmentSolutions->findAll());
+
+    $result = PresenterTestHelper::performPresenterRequest(
+      $this->presenter,
+      'V1:AssignmentSolutions',
+      'POST',
+      ['action' => 'updateSolution', 'id' => $solution->id],
+      ['note' => 'changed note of the solution']
+    );
+
+    $solution = $this->presenter->assignmentSolutions->get($solution->id);
+    Assert::equal('changed note of the solution', $result['note']);
+    Assert::equal('changed note of the solution', $solution->getNote());
+  }
+
   public function testGetEvaluations()
   {
     PresenterTestHelper::loginDefaultAdmin($this->container);
@@ -124,7 +142,6 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
     Assert::count($submissionsCount-1, $remainingSubmissions);
     Assert::notContains($submission->getId(), array_map(function($eval) { return $eval->getId(); }, $remainingSubmissions));
   }
-
 
   public function testSetBonusPoints()
   {
