@@ -369,6 +369,7 @@ permissions:
       actions:
           - viewDetail
           - viewEvaluation
+          - update
       conditions:
           - assignmentSolution.isAuthor
 
@@ -390,6 +391,7 @@ permissions:
           - viewEvaluationValues
           - deleteEvaluation
           - viewResubmissions
+          - update
           - delete
           - setBonusPoints
           - setAccepted
