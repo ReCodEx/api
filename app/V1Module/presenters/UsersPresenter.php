@@ -351,6 +351,7 @@ class UsersPresenter extends BasePresenter {
    * @Param(type="post", name="solutionCommentsEmails", validation="bool", description="Flag if email should be sent to user when new submission comment is added", required=false)
    * @Param(type="post", name="pointsChangedEmails", validation="bool", description="Flag if email should be sent to user when the points were awarded for assignment", required=false)
    * @Param(type="post", name="assignmentSubmitAfterAcceptedEmails", validation="bool", description="Flag if email should be sent to group supervisor if a student submits new solution for already accepted assignment", required=false)
+   * @Param(type="post", name="assignmentSubmitAfterReviewedEmails", validation="bool", description="Flag if email should be sent to group supervisor if a student submits new solution for already reviewed and not accepted assignment", required=false)
    * @throws NotFoundException
    */
   public function actionUpdateSettings(string $id) {
@@ -370,6 +371,7 @@ class UsersPresenter extends BasePresenter {
       "solutionCommentsEmails",
       "pointsChangedEmails",
       "assignmentSubmitAfterAcceptedEmails",
+      "assignmentSubmitAfterReviewedEmails"
     ];
 
     foreach ($knownBoolFlags as $flag) {
@@ -387,7 +389,7 @@ class UsersPresenter extends BasePresenter {
       $defaultPage = $defaultPage === '' ? null : $defaultPage;  // empty string is interpreted as null
       $settings->setDefaultPage($defaultPage);
     }
-  
+
     $this->users->persist($user);
     $this->sendSuccessResponse($this->userViewFactory->getUser($user));
   }
@@ -416,7 +418,7 @@ class UsersPresenter extends BasePresenter {
       $uiData = $user->getUiData();
       if (!$uiData) {
         $uiData = new UserUiData($newUiData);
-        $user->setUiData($uiData);  
+        $user->setUiData($uiData);
       } else {
         $uiData->setData($newUiData);
       }
