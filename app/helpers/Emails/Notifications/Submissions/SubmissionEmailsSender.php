@@ -12,6 +12,7 @@ use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\AssignmentSolutionSubmission;
 use App\Model\Entity\Group;
+use App\Model\Entity\User;
 use App\Model\Repository\AssignmentSolutions;
 use Nette\Utils\Arrays;
 use DateTime;
@@ -69,12 +70,20 @@ class SubmissionEmailsSender
       return false;
     }
 
-    // Handle evaluation notification...
+    // Handle evaluation notifications...
+    return $this->handleEvaluationNotifications($solution, $submission, $user) &&
+      $this->handleTeacherNotifications($solution, $submission, $user);
+  }
+
+  /**
+   * @throws InvalidStateException
+   */
+  private function handleEvaluationNotifications(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
     $threshold = (new DateTime())->modify($this->submissionNotificationThreshold);
     if ($user->getSettings()->getSubmissionEvaluatedEmails() && $solution->getSolution()->getCreatedAt() < $threshold) {
       $locale = $user->getSettings()->getDefaultLanguage();
-      $result = $this->createSubmissionEvaluated($assignment, $submission, $locale);
-  
+      $result = $this->createSubmissionEvaluated($solution->getAssignment(), $submission, $locale);
+
       // Send the mail
       return $this->emailHelper->send(
         $this->sender,
@@ -82,18 +91,24 @@ class SubmissionEmailsSender
         $locale,
         $result->getSubject(),
         $result->getText()
-      );  
+      );
     }
 
-    // Handle teacher notifications...
-    $best = $this->assignmentSolutions->findBestSolution($assignment, $user);
-    $recipients = $this->getGroupSupervisorsRecipients($assignment->getGroup());
+    return true;
+  }
+
+  private function handleTeacherNotifications(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
+    $success = true;
+
+    // Already approved solution notification
+    $best = $this->assignmentSolutions->findBestSolution($solution->getAssignment(), $user);
+    $recipients = $this->getGroupSupervisorsRecipients($solution->getAssignment()->getGroup(), "assignmentSubmitAfterAcceptedEmails");
     if ($best->getAccepted() && count($recipients) > 0) {
-      return $this->localizationHelper->sendLocalizedEmail(
+      $success = $success && $this->localizationHelper->sendLocalizedEmail(
         $recipients,
-        function ($toUsers, $emails, $locale) use ($assignment, $solution, $submission) {
-          $result = $this->createNewSubmissionAfterAcceptance($assignment, $solution, $submission, $locale);
-  
+        function ($toUsers, $emails, $locale) use ($solution, $submission) {
+          $result = $this->createNewSubmissionAfterAcceptance($solution->getAssignment(), $solution, $submission, $locale);
+
           // Send the mail
           return $this->emailHelper->send(
             $this->sender,
@@ -104,29 +119,51 @@ class SubmissionEmailsSender
             $emails
           );
         }
-      );  
+      );
     }
 
-    return true;
+    // Already reviewed solutions notification
+    $recipients = $this->getGroupSupervisorsRecipients($solution->getAssignment()->getGroup(), "assignmentSubmitAfterReviewedEmails");
+    if ($this->shouldSendAfterReview($solution, $user) && count($recipients) > 0) {
+      $success = $success && $this->localizationHelper->sendLocalizedEmail(
+          $recipients,
+          function ($toUsers, $emails, $locale) use ($solution, $submission) {
+            $result = $this->createNewSubmissionAfterReview($solution->getAssignment(), $solution, $submission, $locale);
+
+            // Send the mail
+            return $this->emailHelper->send(
+              $this->sender,
+              [],
+              $locale,
+              $result->getSubject(),
+              $result->getText(),
+              $emails
+            );
+          }
+        );
+    }
+
+    return $success;
   }
 
   /**
-   * Return all teachers (supervisors and admins) which are willing to recieve these notifications
+   * Return all teachers (supervisors and admins) which are willing to receive these notifications
    * @param Group $group
+   * @param string $flag flag from user-settings which decides if email should be sent
    * @return array
    */
-  private function getGroupSupervisorsRecipients(Group $group): array
+  private function getGroupSupervisorsRecipients(Group $group, string $flag): array
   {
     $recipients = [];
 
     foreach ($group->getSupervisors() as $supervisor) {
-      if ($supervisor->getSettings()->getAssignmentSubmitAfterAcceptedEmails()) {
+      if ($supervisor->getSettings()->getFlag($flag)) {
         $recipients[$supervisor->getId()] = $supervisor;
       }
     }
 
     foreach ($group->getPrimaryAdmins() as $admin) {
-      if ($admin->getSettings()->getAssignmentSubmitAfterAcceptedEmails()) {
+      if ($admin->getSettings()->getFlag($flag)) {
         $recipients[$admin->getId()] = $admin;
       }
     }
@@ -134,8 +171,21 @@ class SubmissionEmailsSender
     return array_values($recipients);
   }
 
+  private function shouldSendAfterReview(AssignmentSolution $solution, User $user): bool {
+    $solutions = $this->assignmentSolutions->findValidSolutions($solution->getAssignment(), $user);
+    $anyReviewed = false;
+    $anyAccepted = false;
+    foreach ($solutions as $oSolution) {
+      $anyReviewed = $anyReviewed || $oSolution->isReviewed();
+      $anyAccepted = $anyAccepted || $oSolution->isAccepted();
+    }
+
+    return $anyReviewed && !$anyAccepted;
+  }
+
   /**
    * Prepare and format body of the mail
+   * @param Assignment $assignment
    * @param AssignmentSolutionSubmission $submission
    * @param string $locale
    * @return EmailRenderResult
@@ -164,6 +214,7 @@ class SubmissionEmailsSender
    * Prepare and format body of the "new submission after the acceptance" mail
    * @param Assignment $assignment
    * @param AssignmentSolution $solution
+   * @param AssignmentSolutionSubmission $submission
    * @param string $locale
    * @return EmailRenderResult
    * @throws InvalidStateException
@@ -175,6 +226,33 @@ class SubmissionEmailsSender
     $latte = EmailLatteFactory::latte();
     $user = $solution->getSolution()->getAuthor();
     $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/newSubmissionAfterAcceptance_{locale}.latte");
+    return $latte->renderEmail($template, [
+      "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
+      "user" => $user ? $user->getName() : "",
+      "score" => (int)($submission->getEvaluation()->getScore()*100),
+      "link" => EmailLinkHelper::getLink($this->solutionRedirectUrl, [
+        "assignmentId" => $assignment->getId(),
+        "solutionId" => $solution->getId(),
+      ]),
+    ]);
+  }
+
+  /**
+   * Prepare and format body of the "new submission after the review" mail
+   * @param Assignment $assignment
+   * @param AssignmentSolution $solution
+   * @param AssignmentSolutionSubmission $submission
+   * @param string $locale
+   * @return EmailRenderResult
+   * @throws InvalidStateException
+   */
+  private function createNewSubmissionAfterReview(Assignment $assignment, AssignmentSolution $solution,
+                                                  AssignmentSolutionSubmission $submission, string $locale): EmailRenderResult
+  {
+    // render the HTML to string using Latte engine
+    $latte = EmailLatteFactory::latte();
+    $user = $solution->getSolution()->getAuthor();
+    $template = EmailLocalizationHelper::getTemplate($locale, __DIR__ . "/newSubmissionAfterReview_{locale}.latte");
     return $latte->renderEmail($template, [
       "assignment" => EmailLocalizationHelper::getLocalization($locale, $assignment->getLocalizedTexts())->getName(),
       "user" => $user ? $user->getName() : "",
