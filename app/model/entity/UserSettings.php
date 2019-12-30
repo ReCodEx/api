@@ -60,6 +60,7 @@ class UserSettings implements JsonSerializable
     $this->solutionCommentsEmails = true;
     $this->pointsChangedEmails = true;
     $this->assignmentSubmitAfterAcceptedEmails = false;
+    $this->assignmentSubmitAfterReviewedEmails = false;
   }
 
   /**
@@ -135,6 +136,11 @@ class UserSettings implements JsonSerializable
    */
   protected $assignmentSubmitAfterAcceptedEmails;
 
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  protected $assignmentSubmitAfterReviewedEmails;
+
   public function jsonSerialize() {
     return [
       "darkTheme" => $this->darkTheme,
@@ -149,6 +155,7 @@ class UserSettings implements JsonSerializable
       "solutionCommentsEmails" => $this->solutionCommentsEmails,
       "pointsChangedEmails" => $this->pointsChangedEmails,
       "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
+      "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails
     ];
   }
 }
