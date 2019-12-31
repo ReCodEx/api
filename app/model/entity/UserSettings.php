@@ -155,7 +155,7 @@ class UserSettings implements JsonSerializable
       "solutionCommentsEmails" => $this->solutionCommentsEmails,
       "pointsChangedEmails" => $this->pointsChangedEmails,
       "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
-      "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails
+      "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
     ];
   }
 }

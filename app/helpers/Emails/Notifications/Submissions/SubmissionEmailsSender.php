@@ -71,14 +71,16 @@ class SubmissionEmailsSender
     }
 
     // Handle evaluation notifications...
-    return $this->handleEvaluationNotifications($solution, $submission, $user) &&
-      $this->handleTeacherNotifications($solution, $submission, $user);
+    $resultSubmissionEvaluated = $this->handleSubmissionEvaluated($solution, $submission, $user);
+    $resultSubmissionAfterAcceptance = $this->handleSubmissionAfterAcceptance($solution, $submission, $user);
+    $resultSubmissionAfterReview = $this->handleSubmissionAfterReview($solution, $submission, $user);
+    return $resultSubmissionEvaluated && $resultSubmissionAfterAcceptance && $resultSubmissionAfterReview;
   }
 
   /**
    * @throws InvalidStateException
    */
-  private function handleEvaluationNotifications(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
+  private function handleSubmissionEvaluated(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
     $threshold = (new DateTime())->modify($this->submissionNotificationThreshold);
     if ($user->getSettings()->getSubmissionEvaluatedEmails() && $solution->getSolution()->getCreatedAt() < $threshold) {
       $locale = $user->getSettings()->getDefaultLanguage();
@@ -97,14 +99,12 @@ class SubmissionEmailsSender
     return true;
   }
 
-  private function handleTeacherNotifications(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
-    $success = true;
-
+  private function handleSubmissionAfterAcceptance(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
     // Already approved solution notification
     $best = $this->assignmentSolutions->findBestSolution($solution->getAssignment(), $user);
     $recipients = $this->getGroupSupervisorsRecipients($solution->getAssignment()->getGroup(), "assignmentSubmitAfterAcceptedEmails");
     if ($best->getAccepted() && count($recipients) > 0) {
-      $success = $success && $this->localizationHelper->sendLocalizedEmail(
+      return $this->localizationHelper->sendLocalizedEmail(
         $recipients,
         function ($toUsers, $emails, $locale) use ($solution, $submission) {
           $result = $this->createNewSubmissionAfterAcceptance($solution->getAssignment(), $solution, $submission, $locale);
@@ -122,10 +122,14 @@ class SubmissionEmailsSender
       );
     }
 
+    return true;
+  }
+
+  private function handleSubmissionAfterReview(AssignmentSolution $solution, AssignmentSolutionSubmission $submission, User $user): bool {
     // Already reviewed solutions notification
     $recipients = $this->getGroupSupervisorsRecipients($solution->getAssignment()->getGroup(), "assignmentSubmitAfterReviewedEmails");
     if ($this->shouldSendAfterReview($solution, $user) && count($recipients) > 0) {
-      $success = $success && $this->localizationHelper->sendLocalizedEmail(
+      return $this->localizationHelper->sendLocalizedEmail(
           $recipients,
           function ($toUsers, $emails, $locale) use ($solution, $submission) {
             $result = $this->createNewSubmissionAfterReview($solution->getAssignment(), $solution, $submission, $locale);
@@ -143,7 +147,7 @@ class SubmissionEmailsSender
         );
     }
 
-    return $success;
+    return true;
   }
 
   /**
