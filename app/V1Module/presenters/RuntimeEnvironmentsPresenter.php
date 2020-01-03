@@ -6,37 +6,38 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Model\Repository\RuntimeEnvironments;
 use App\Security\ACL\IRuntimeEnvironmentPermissions;
 
-
 /**
  * Runtime environments endpoints
  */
-class RuntimeEnvironmentsPresenter extends BasePresenter {
+class RuntimeEnvironmentsPresenter extends BasePresenter
+{
 
-  /**
-   * @var RuntimeEnvironments
-   * @inject
-   */
-  public $runtimeEnvironments;
+    /**
+     * @var RuntimeEnvironments
+     * @inject
+     */
+    public $runtimeEnvironments;
 
-  /**
-   * @var IRuntimeEnvironmentPermissions
-   * @inject
-   */
-  public $runtimeEnvironmentAcl;
+    /**
+     * @var IRuntimeEnvironmentPermissions
+     * @inject
+     */
+    public $runtimeEnvironmentAcl;
 
-  public function checkDefault() {
-    if (!$this->runtimeEnvironmentAcl->canViewAll()) {
-      throw new ForbiddenRequestException();
+    public function checkDefault()
+    {
+        if (!$this->runtimeEnvironmentAcl->canViewAll()) {
+            throw new ForbiddenRequestException();
+        }
     }
-  }
 
-  /**
-   * Get a list of all runtime environments
-   * @GET
-   */
-  public function actionDefault() {
-    $environments = $this->runtimeEnvironments->findAll();
-    $this->sendSuccessResponse($environments);
-  }
-
+    /**
+     * Get a list of all runtime environments
+     * @GET
+     */
+    public function actionDefault()
+    {
+        $environments = $this->runtimeEnvironments->findAll();
+        $this->sendSuccessResponse($environments);
+    }
 }

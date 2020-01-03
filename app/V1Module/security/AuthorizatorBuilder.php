@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Security;
 
 use LogicException;
@@ -10,141 +11,159 @@ use Nette\Reflection;
 use Nette\Utils\Arrays;
 use ReflectionException;
 
-class AuthorizatorBuilder {
-  private $checkCounter;
+class AuthorizatorBuilder
+{
+    private $checkCounter;
 
-  public function getClassName($uniqueId) {
-    return "AuthorizatorImpl_" . $uniqueId;
-  }
+    public function getClassName($uniqueId)
+    {
+        return "AuthorizatorImpl_" . $uniqueId;
+    }
 
-  public function build($aclInterfaces, $permissions, $uniqueId): ClassType {
-    $this->checkCounter = 0;
+    public function build($aclInterfaces, $permissions, $uniqueId): ClassType
+    {
+        $this->checkCounter = 0;
 
-    $class = new ClassType($this->getClassName($uniqueId));
-    $class->addExtend(Authorizator::class);
+        $class = new ClassType($this->getClassName($uniqueId));
+        $class->addExtend(Authorizator::class);
 
-    $check = $class->addMethod("checkPermissions");
-    $check->setReturnType("bool");
-    $check->addParameter("role")->setTypeHint("string");
-    $check->addParameter("resource")->setTypeHint("string");
-    $check->addParameter("privilege")->setTypeHint("string");
+        $check = $class->addMethod("checkPermissions");
+        $check->setReturnType("bool");
+        $check->addParameter("role")->setTypeHint("string");
+        $check->addParameter("resource")->setTypeHint("string");
+        $check->addParameter("privilege")->setTypeHint("string");
 
-    foreach ($permissions as $i => $rule) {
-      $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));
+        foreach ($permissions as $i => $rule) {
+            $all = new PhpLiteral(sprintf("%s::ALL", Permission::class));
 
-      $allow = Arrays::get($rule, "allow", true);
-      $role = Arrays::get($rule, "role", null);
-      $resource = Arrays::get($rule, "resource", null);
-      $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
-      $actions = Arrays::get($rule, "actions", []);
-      $actions = $actions !== $all ? (array) $actions : $actions;
+            $allow = Arrays::get($rule, "allow", true);
+            $role = Arrays::get($rule, "role", null);
+            $resource = Arrays::get($rule, "resource", null);
+            $interface = $resource !== null ? Reflection\ClassType::from(Arrays::get($aclInterfaces, $resource)) : null;
+            $actions = Arrays::get($rule, "actions", []);
+            $actions = $actions !== $all ? (array)$actions : $actions;
 
-      $assertion = null;
-      $conditions = (array) Arrays::get($rule, "conditions", []);
+            $assertion = null;
+            $conditions = (array)Arrays::get($rule, "conditions", []);
 
-      if (count($conditions) > 0) {
-        $assertion = $class->addMethod(sprintf("_assertion_%s", $i));
+            if (count($conditions) > 0) {
+                $assertion = $class->addMethod(sprintf("_assertion_%s", $i));
 
-        $checkVariables = [];
-        $condition = $this->loadConditionClauses($conditions, $interface, $actions, $checkVariables);
+                $checkVariables = [];
+                $condition = $this->loadConditionClauses($conditions, $interface, $actions, $checkVariables);
 
-        foreach ($checkVariables as $variableName => $variableValue) {
-          $assertion->addBody("? = ?;", [new PhpLiteral($variableName), new PhpLiteral($variableValue)]);
+                foreach ($checkVariables as $variableName => $variableValue) {
+                    $assertion->addBody("? = ?;", [new PhpLiteral($variableName), new PhpLiteral($variableValue)]);
+                }
+
+                $assertion->addBody("return ?;", [new PhpLiteral($condition)]);
+            }
+
+            $actionsString = '"' . implode('", "', $actions) . '"';
+
+            $check->addBody(
+                'if (? && ? && ? && ?) {',
+                [
+                    $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : true,
+                    $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : true,
+                    count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : true,
+                    $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : true
+                ]
+            );
+            $check->addBody('return ?;', [$allow]);
+            $check->addBody('}');
         }
 
-        $assertion->addBody("return ?;", [new PhpLiteral($condition)]);
-      }
+        $check->addBody('return false;');
 
-      $actionsString = '"' . implode('", "', $actions) . '"';
-
-      $check->addBody('if (? && ? && ? && ?) {', [
-        $role !== null ? new PhpLiteral(sprintf('$this->isInRole($role, "%s")', $role)) : true,
-        $resource !== null ? new PhpLiteral(sprintf('$resource === "%s"', $resource)) : true,
-        count($actions) > 0 ? new PhpLiteral(sprintf('in_array($privilege, [%s])', $actionsString)) : true,
-        $assertion !== null ? new PhpLiteral(sprintf('$this->%s()', $assertion->getName())) : true
-      ]);
-      $check->addBody('return ?;', [$allow]);
-      $check->addBody('}');
+        return $class;
     }
 
-    $check->addBody('return false;');
+    private function loadConditionClauses($conditions, $interface, &$actions, array &$checkValues)
+    {
+        $type = "and";
 
-    return $class;
-  }
+        if (!is_array($conditions)) {
+            list($conditionTarget, $condition) = explode(".", $conditions, 2);
 
-  private function loadConditionClauses($conditions, $interface, &$actions, array &$checkValues) {
-    $type = "and";
+            foreach ($actions as $action) {
+                $this->checkActionProvidesContext($interface, $action, $conditionTarget);
+            }
 
-    if (!is_array($conditions)) {
-      list($conditionTarget, $condition) = explode(".", $conditions, 2);
+            $checkVariable = "\$check_" . $this->checkCounter++;
+            $checkValues[$checkVariable] = Helpers::format(
+                '$this->policy->check(?, ?, $this->queriedIdentity)',
+                new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
+                $condition
+            );
 
-      foreach ($actions as $action) {
-        $this->checkActionProvidesContext($interface, $action, $conditionTarget);
-      }
+            return $checkVariable;
+        }
 
-      $checkVariable = "\$check_" . $this->checkCounter++;
-      $checkValues[$checkVariable] = Helpers::format(
-       '$this->policy->check(?, ?, $this->queriedIdentity)',
-        new PhpLiteral(sprintf('$this->queriedContext["%s"]', $conditionTarget)),
-        $condition
-      );
+        if (count($conditions) === 1) {
+            if (array_key_exists("or", $conditions)) {
+                $type = "or";
+                $conditions = $conditions["or"];
+            } else {
+                if (array_key_exists("and", $conditions)) {
+                    $conditions = $conditions["and"];
+                }
+            }
+        }
 
-      return $checkVariable;
+        if (!Arrays::isList($conditions)) {
+            throw new LogicException("Incorrect usage of and/or condition clauses");
+        }
+
+        $children = [];
+        foreach ($conditions as $condition) {
+            $children[] = $this->loadConditionClauses($condition, $interface, $actions, $checkValues);
+        }
+
+        if ($type === "and") {
+            return Helpers::format("(?)", new PhpLiteral(join(" && ", $children)));
+        } else {
+            if ($type === "or") {
+                return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
+            } else {
+                return new PhpLiteral("true");
+            }
+        }
     }
 
-    if (count($conditions) === 1) {
-      if (array_key_exists("or", $conditions)) {
-        $type = "or";
-        $conditions = $conditions["or"];
-      } else if (array_key_exists("and", $conditions)) {
-        $conditions = $conditions["and"];
-      }
-    }
+    private function checkActionProvidesContext(?Reflection\ClassType $interface, string $action, string $contextItem)
+    {
+        if ($interface === null) {
+            throw new LogicException(
+                "No resource was specified for this rule - context (and condition checking) is not available"
+            );
+        }
 
-    if (!Arrays::isList($conditions)) {
-      throw new LogicException("Incorrect usage of and/or condition clauses");
-    }
+        try {
+            $method = $interface->getMethod("can" . ucfirst($action));
+        } catch (ReflectionException $e) {
+            throw new LogicException(
+                sprintf(
+                    "No method for action '%s' exists in interface '%s'",
+                    $action,
+                    $interface->getName()
+                )
+            );
+        }
 
-    $children = [];
-    foreach ($conditions as $condition) {
-      $children[] = $this->loadConditionClauses($condition, $interface, $actions, $checkValues);
-    }
+        foreach ($method->getParameters() as $parameter) {
+            if ($parameter->getName() === $contextItem) {
+                return;
+            }
+        }
 
-    if ($type === "and") {
-      return Helpers::format("(?)", new PhpLiteral(join(" && ", $children)));
-    } else if ($type === "or") {
-      return Helpers::format("(?)", new PhpLiteral(join(" || ", $children)));
-    } else {
-      return new PhpLiteral("true");
+        throw new LogicException(
+            sprintf(
+                "Context item '%s' is not available for action '%s' of interface '%s'",
+                $contextItem,
+                $action,
+                $interface->getName()
+            )
+        );
     }
-  }
-
-  private function checkActionProvidesContext(?Reflection\ClassType $interface, string $action, string $contextItem) {
-    if ($interface === null) {
-      throw new LogicException("No resource was specified for this rule - context (and condition checking) is not available");
-    }
-
-    try {
-      $method = $interface->getMethod("can" . ucfirst($action));
-    } catch (ReflectionException $e) {
-      throw new LogicException(sprintf(
-        "No method for action '%s' exists in interface '%s'",
-        $action,
-        $interface->getName()
-      ));
-    }
-
-    foreach ($method->getParameters() as $parameter) {
-      if ($parameter->getName() === $contextItem) {
-        return;
-      }
-    }
-
-    throw new LogicException(sprintf(
-      "Context item '%s' is not available for action '%s' of interface '%s'",
-      $contextItem,
-      $action,
-      $interface->getName()
-    ));
-  }
 }

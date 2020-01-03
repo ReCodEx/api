@@ -23,194 +23,210 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  */
 class AssignmentSolution
 {
-  use MagicAccessors;
-  use FlagAccessor;
+    use MagicAccessors;
+    use FlagAccessor;
 
-  const JOB_TYPE = "student";
+    const JOB_TYPE = "student";
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $note;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $note;
 
-  /**
-   * @var Assignment
-   * @ORM\ManyToOne(targetEntity="Assignment")
-   */
-  protected $assignment;
+    /**
+     * @var Assignment
+     * @ORM\ManyToOne(targetEntity="Assignment")
+     */
+    protected $assignment;
 
-  public function getAssignment(): ?Assignment {
-    return $this->assignment->isDeleted() ? null : $this->assignment;
-  }
-
-  /**
-   * Determine if submission was made after deadline.
-   * @return bool
-   */
-  public function isAfterDeadline() {
-    return $this->assignment->isAfterDeadline($this->solution->getCreatedAt());
-  }
-
-  public function getMaxPoints() {
-    return $this->assignment->getMaxPoints($this->solution->getCreatedAt());
-  }
-
-  /**
-   * Get actual points treshold in points.
-   * @return int minimal points which submission has to gain
-   */
-  public function getPointsThreshold(): int {
-    $threshold = $this->assignment->getPointsPercentualThreshold();
-    return floor($this->getMaxPoints() * $threshold);
-  }
-
-  /**
-   * @var Solution
-   * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
-   */
-  protected $solution;
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $accepted;
-
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $reviewed;
-
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $bonusPoints;
-
-  /**
-   * @ORM\Column(type="integer", nullable=true)
-   */
-  protected $overriddenPoints;
-
-  /**
-   * Get points acquired by evaluation. If evaluation is not present return null.
-   * @return int|null
-   */
-  public function getPoints(): ?int {
-    if ($this->overriddenPoints !== null) {
-      return $this->overriddenPoints;
+    public function getAssignment(): ?Assignment
+    {
+        return $this->assignment->isDeleted() ? null : $this->assignment;
     }
 
-    if ($this->lastSubmission === null) {
-      return null;
+    /**
+     * Determine if submission was made after deadline.
+     * @return bool
+     */
+    public function isAfterDeadline()
+    {
+        return $this->assignment->isAfterDeadline($this->solution->getCreatedAt());
     }
 
-    $evaluation = $this->lastSubmission->getEvaluation();
-    if ($evaluation === null) {
-      return null;
+    public function getMaxPoints()
+    {
+        return $this->assignment->getMaxPoints($this->solution->getCreatedAt());
     }
 
-    return $evaluation->getPoints();
-  }
+    /**
+     * Get actual points treshold in points.
+     * @return int minimal points which submission has to gain
+     */
+    public function getPointsThreshold(): int
+    {
+        $threshold = $this->assignment->getPointsPercentualThreshold();
+        return floor($this->getMaxPoints() * $threshold);
+    }
 
-  /**
-   * Get total points which this solution got. Including bonus points and points
-   * for evaluation.
-   * @return int
-   */
-  public function getTotalPoints() {
-    $points = $this->getPoints() ?? 0;
-    return $points + $this->bonusPoints;
-  }
+    /**
+     * @var Solution
+     * @ORM\ManyToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
+     */
+    protected $solution;
 
-  /**
-   * Note that order by annotation has to be present!
-   *
-   * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution", cascade={"remove"})
-   * @ORM\OrderBy({"submittedAt" = "DESC"})
-   */
-  protected $submissions;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $accepted;
 
-  /**
-   * This is a reference to the last (by submittedAt) submission attached to this solution.
-   * The reference should speed up loading in many cases since the last submission is the only one that counts.
-   * However, in the future, this behavior might be altered, so we can activeley select, which submission is "relevant".
-   *
-   * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
-   * @var AssignmentSolutionSubmission|null
-   */
-  protected $lastSubmission = null;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $reviewed;
 
-  /**
-   * @return string[]
-   */
-  public function getSubmissionsIds(): array {
-    return $this->submissions->map(function (AssignmentSolutionSubmission $submission) {
-      return $submission->getId();
-    })->getValues();
-  }
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $bonusPoints;
 
-  /**
-   * AssignmentSolution constructor.
-   */
-  private function __construct() {
-    $this->accepted = false;
-    $this->reviewed = false;
-    $this->bonusPoints = 0;
-    $this->submissions = new ArrayCollection();
-    $this->overriddenPoints = null;
-  }
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    protected $overriddenPoints;
 
-  /**
-   * The name of the user
-   * @param string $note
-   * @param Assignment $assignment
-   * @param Solution $solution
-   * @return AssignmentSolution
-   */
-  public static function createSolution(
-    string $note,
-    Assignment $assignment,
-    Solution $solution
-  ) {
-    $entity = new AssignmentSolution();
-    $entity->assignment = $assignment;
-    $entity->note = $note;
-    $entity->solution = $solution;
+    /**
+     * Get points acquired by evaluation. If evaluation is not present return null.
+     * @return int|null
+     */
+    public function getPoints(): ?int
+    {
+        if ($this->overriddenPoints !== null) {
+            return $this->overriddenPoints;
+        }
 
-    return $entity;
-  }
+        if ($this->lastSubmission === null) {
+            return null;
+        }
 
-  //////////////////////////////////////////////////////////////////////////////
-  /// GETTERS AND SETTERS
-  ///
+        $evaluation = $this->lastSubmission->getEvaluation();
+        if ($evaluation === null) {
+            return null;
+        }
 
-  public function isAccepted(): bool {
-    return $this->accepted;
-  }
+        return $evaluation->getPoints();
+    }
 
-  public function setAccepted(bool $accepted): void {
-    $this->accepted = $accepted;
-  }
+    /**
+     * Get total points which this solution got. Including bonus points and points
+     * for evaluation.
+     * @return int
+     */
+    public function getTotalPoints()
+    {
+        $points = $this->getPoints() ?? 0;
+        return $points + $this->bonusPoints;
+    }
 
-  public function isReviewed(): bool {
-    return $this->reviewed;
-  }
+    /**
+     * Note that order by annotation has to be present!
+     *
+     * @ORM\OneToMany(targetEntity="AssignmentSolutionSubmission", mappedBy="assignmentSolution", cascade={"remove"})
+     * @ORM\OrderBy({"submittedAt" = "DESC"})
+     */
+    protected $submissions;
 
-  public function setReviewed(bool $reviewed): void {
-    $this->reviewed = $reviewed;
-  }
+    /**
+     * This is a reference to the last (by submittedAt) submission attached to this solution.
+     * The reference should speed up loading in many cases since the last submission is the only one that counts.
+     * However, in the future, this behavior might be altered, so we can activeley select, which submission is "relevant".
+     *
+     * @ORM\OneToOne(targetEntity="AssignmentSolutionSubmission", fetch="EAGER")
+     * @var AssignmentSolutionSubmission|null
+     */
+    protected $lastSubmission = null;
 
-  public function getNote(): ?string {
-    return $this->note;
-  }
+    /**
+     * @return string[]
+     */
+    public function getSubmissionsIds(): array
+    {
+        return $this->submissions->map(
+            function (AssignmentSolutionSubmission $submission) {
+                return $submission->getId();
+            }
+        )->getValues();
+    }
 
-  public function setNote(?string $note): void {
-    $this->note = $note;
-  }
+    /**
+     * AssignmentSolution constructor.
+     */
+    private function __construct()
+    {
+        $this->accepted = false;
+        $this->reviewed = false;
+        $this->bonusPoints = 0;
+        $this->submissions = new ArrayCollection();
+        $this->overriddenPoints = null;
+    }
+
+    /**
+     * The name of the user
+     * @param string $note
+     * @param Assignment $assignment
+     * @param Solution $solution
+     * @return AssignmentSolution
+     */
+    public static function createSolution(
+        string $note,
+        Assignment $assignment,
+        Solution $solution
+    ) {
+        $entity = new AssignmentSolution();
+        $entity->assignment = $assignment;
+        $entity->note = $note;
+        $entity->solution = $solution;
+
+        return $entity;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    /// GETTERS AND SETTERS
+    ///
+
+    public function isAccepted(): bool
+    {
+        return $this->accepted;
+    }
+
+    public function setAccepted(bool $accepted): void
+    {
+        $this->accepted = $accepted;
+    }
+
+    public function isReviewed(): bool
+    {
+        return $this->reviewed;
+    }
+
+    public function setReviewed(bool $reviewed): void
+    {
+        $this->reviewed = $reviewed;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): void
+    {
+        $this->note = $note;
+    }
 }

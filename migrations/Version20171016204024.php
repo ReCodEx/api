@@ -16,7 +16,7 @@ class Version20171016204024 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-      $this->addSql('ALTER TABLE solution_evaluation DROP evaluation_failed');
+        $this->addSql('ALTER TABLE solution_evaluation DROP evaluation_failed');
     }
 
     /**
@@ -25,6 +25,8 @@ class Version20171016204024 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-      $this->addSql('ALTER TABLE solution_evaluation ADD evaluation_failed TINYINT(1) DEFAULT 0 COMMENT \'(DC2Type:boolean)\'');
+        $this->addSql(
+            'ALTER TABLE solution_evaluation ADD evaluation_failed TINYINT(1) DEFAULT 0 COMMENT \'(DC2Type:boolean)\''
+        );
     }
 }

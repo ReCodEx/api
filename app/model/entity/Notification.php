@@ -24,133 +24,145 @@ use JsonSerializable;
  */
 class Notification implements JsonSerializable
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @var User
-   * @ORM\ManyToOne(targetEntity="User")
-   */
-  protected $author;
+    /**
+     * @var User
+     * @ORM\ManyToOne(targetEntity="User")
+     */
+    protected $author;
 
-  public function getAuthor(): ?User {
-    return $this->author->isDeleted() ? null : $this->author;
-  }
+    public function getAuthor(): ?User
+    {
+        return $this->author->isDeleted() ? null : $this->author;
+    }
 
-  /**
-   * @var DateTime
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
+    /**
+     * @var DateTime
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
-  /**
-   * @var DateTime
-   * @ORM\Column(type="datetime")
-   */
-  protected $visibleFrom;
+    /**
+     * @var DateTime
+     * @ORM\Column(type="datetime")
+     */
+    protected $visibleFrom;
 
-  /**
-   * @var DateTime
-   * @ORM\Column(type="datetime")
-   */
-  protected $visibleTo;
+    /**
+     * @var DateTime
+     * @ORM\Column(type="datetime")
+     */
+    protected $visibleTo;
 
-  /**
-   * @var Collection|Selectable
-   * @ORM\ManyToMany(targetEntity="LocalizedNotification", indexBy="locale", cascade={"persist"})
-   */
-  protected $localizedTexts;
+    /**
+     * @var Collection|Selectable
+     * @ORM\ManyToMany(targetEntity="LocalizedNotification", indexBy="locale", cascade={"persist"})
+     */
+    protected $localizedTexts;
 
-  public function getLocalizedTexts(): Collection {
-    return $this->localizedTexts;
-  }
+    public function getLocalizedTexts(): Collection
+    {
+        return $this->localizedTexts;
+    }
 
-  public function addLocalizedText(LocalizedNotification $localizedText) {
-    $this->localizedTexts->add($localizedText);
-  }
+    public function addLocalizedText(LocalizedNotification $localizedText)
+    {
+        $this->localizedTexts->add($localizedText);
+    }
 
-  /**
-   * Get localized text based on given locale.
-   * @param string $locale
-   * @return LocalizedNotification|null
-   */
-  public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity {
-    $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
-    $first = $this->localizedTexts->matching($criteria)->first();
-    return $first === false ? null : $first;
-  }
+    /**
+     * Get localized text based on given locale.
+     * @param string $locale
+     * @return LocalizedNotification|null
+     */
+    public function getLocalizedTextByLocale(string $locale): ?LocalizedEntity
+    {
+        $criteria = Criteria::create()->where(Criteria::expr()->eq("locale", $locale));
+        $first = $this->localizedTexts->matching($criteria)->first();
+        return $first === false ? null : $first;
+    }
 
-  /**
-   * @ORM\ManyToMany(targetEntity="Group")
-   */
-  protected $groups;
+    /**
+     * @ORM\ManyToMany(targetEntity="Group")
+     */
+    protected $groups;
 
-  /**
-   * @return Collection
-   */
-  public function getGroups() {
-    return $this->groups->filter(function (Group $group) {
-      return !$group->isDeleted();
-    });
-  }
+    /**
+     * @return Collection
+     */
+    public function getGroups()
+    {
+        return $this->groups->filter(
+            function (Group $group) {
+                return !$group->isDeleted();
+            }
+        );
+    }
 
-  public function addGroup(Group $group) {
-    $this->groups->add($group);
-  }
+    public function addGroup(Group $group)
+    {
+        $this->groups->add($group);
+    }
 
-  /**
-   * Get IDs of all assigned groups.
-   * @return string[]
-   */
-  public function getGroupsIds() {
-    return $this->getGroups()->map(function(Group $group) {
-      return $group->getId();
-    })->getValues();
-  }
+    /**
+     * Get IDs of all assigned groups.
+     * @return string[]
+     */
+    public function getGroupsIds()
+    {
+        return $this->getGroups()->map(
+            function (Group $group) {
+                return $group->getId();
+            }
+        )->getValues();
+    }
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $role;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $role;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $type;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $type;
 
 
-  /**
-   * Notification constructor.
-   * @param User $author
-   */
-  public function __construct(
-    User $author
-  ) {
-    $this->author = $author;
-    $this->createdAt = new DateTime();
-    $this->visibleFrom = new DateTime();
-    $this->visibleTo = new DateTime();
-    $this->localizedTexts = new ArrayCollection();
-    $this->groups = new ArrayCollection();
-  }
+    /**
+     * Notification constructor.
+     * @param User $author
+     */
+    public function __construct(
+        User $author
+    ) {
+        $this->author = $author;
+        $this->createdAt = new DateTime();
+        $this->visibleFrom = new DateTime();
+        $this->visibleTo = new DateTime();
+        $this->localizedTexts = new ArrayCollection();
+        $this->groups = new ArrayCollection();
+    }
 
-  public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
-      "createdAt" => $this->createdAt->getTimestamp(),
-      "visibleFrom" => $this->visibleFrom->getTimestamp(),
-      "visibleTo" => $this->visibleTo->getTimestamp(),
-      "localizedTexts" => $this->localizedTexts->getValues(),
-      "groupsIds" => $this->getGroupsIds(),
-      "role" => $this->role,
-      "type" => $this->type
-    ];
-  }
+    public function jsonSerialize()
+    {
+        return [
+            "id" => $this->id,
+            "authorId" => $this->getAuthor() ? $this->getAuthor()->getId() : null,
+            "createdAt" => $this->createdAt->getTimestamp(),
+            "visibleFrom" => $this->visibleFrom->getTimestamp(),
+            "visibleTo" => $this->visibleTo->getTimestamp(),
+            "localizedTexts" => $this->localizedTexts->getValues(),
+            "groupsIds" => $this->getGroupsIds(),
+            "role" => $this->role,
+            "type" => $this->type
+        ];
+    }
 }

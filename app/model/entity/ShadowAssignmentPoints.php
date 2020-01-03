@@ -21,76 +21,84 @@ use DateTime;
  */
 class ShadowAssignmentPoints
 {
-  use MagicAccessors;
-  use UpdateableEntity;
+    use MagicAccessors;
+    use UpdateableEntity;
 
-  public function __construct(int $points, string $note, ShadowAssignment $shadowAssignment, User $author,
-                              User $awardee, ?DateTime $awardedAt) {
-    $this->points = $points;
-    $this->shadowAssignment = $shadowAssignment;
-    $this->note = $note;
-    $this->author = $author;
-    $this->awardee = $awardee;
-    $this->createdAt = new DateTime();
-    $this->updatedAt = new DateTime();
-    $this->awardedAt = $awardedAt;
-  }
+    public function __construct(
+        int $points,
+        string $note,
+        ShadowAssignment $shadowAssignment,
+        User $author,
+        User $awardee,
+        ?DateTime $awardedAt
+    ) {
+        $this->points = $points;
+        $this->shadowAssignment = $shadowAssignment;
+        $this->note = $note;
+        $this->author = $author;
+        $this->awardee = $awardee;
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
+        $this->awardedAt = $awardedAt;
+    }
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="integer")
-   */
-  protected $points;
+    /**
+     * @ORM\Column(type="integer")
+     */
+    protected $points;
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $note;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $note;
 
-  /**
-   * @var ShadowAssignment
-   * @ORM\ManyToOne(targetEntity="ShadowAssignment")
-   */
-  protected $shadowAssignment;
+    /**
+     * @var ShadowAssignment
+     * @ORM\ManyToOne(targetEntity="ShadowAssignment")
+     */
+    protected $shadowAssignment;
 
-  public function getShadowAssignment(): ?ShadowAssignment {
-    return $this->shadowAssignment->isDeleted() ? null : $this->shadowAssignment;
-  }
+    public function getShadowAssignment(): ?ShadowAssignment
+    {
+        return $this->shadowAssignment->isDeleted() ? null : $this->shadowAssignment;
+    }
 
-  /**
-   * @ORM\ManyToOne(targetEntity="User")
-   * Author is the person (typically teacher) who authorized the points.
-   */
-  protected $author;
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     * Author is the person (typically teacher) who authorized the points.
+     */
+    protected $author;
 
-  public function getAuthor(): ?User {
-    return $this->author->isDeleted() ? null : $this->author;
-  }
+    public function getAuthor(): ?User
+    {
+        return $this->author->isDeleted() ? null : $this->author;
+    }
 
-  /**
-   * @ORM\ManyToOne(targetEntity="User")
-   * Awardee is the person (typically student) who accepted (benefit from) the points.
-   */
-  protected $awardee;
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     * Awardee is the person (typically student) who accepted (benefit from) the points.
+     */
+    protected $awardee;
 
-  public function getAwardee(): ?User {
-    return $this->awardee->isDeleted() ? null : $this->awardee;
-  }
+    public function getAwardee(): ?User
+    {
+        return $this->awardee->isDeleted() ? null : $this->awardee;
+    }
 
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $awardedAt;
-
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $awardedAt;
 }

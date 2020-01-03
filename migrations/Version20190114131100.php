@@ -16,15 +16,19 @@ class Version20190114131100 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
 
-        $this->addSql('UPDATE pipeline_config SET pipeline_config = :config WHERE id =
+        $this->addSql(
+            'UPDATE pipeline_config SET pipeline_config = :config WHERE id =
           (SELECT p.pipeline_config_id FROM pipeline AS p
           JOIN pipeline_parameter AS pp ON pp.pipeline_id = p.id
           WHERE pp.name = :name AND pp.boolean_value = 1 LIMIT 1)',
-          [
-            'name' => 'judgeOnlyPipeline',
-            'config' => <<<'PIPELINE_LITERAL_ENDS'
+            [
+                'name' => 'judgeOnlyPipeline',
+                'config' => <<<'PIPELINE_LITERAL_ENDS'
 ---
 boxes:
   -
@@ -156,7 +160,8 @@ variables:
     type: string[]
     value: []
 PIPELINE_LITERAL_ENDS
-          ]);
+            ]
+        );
     }
 
     /**
@@ -164,6 +169,6 @@ PIPELINE_LITERAL_ENDS
      */
     public function down(Schema $schema): void
     {
-      $this->throwIrreversibleMigrationException();
+        $this->throwIrreversibleMigrationException();
     }
 }

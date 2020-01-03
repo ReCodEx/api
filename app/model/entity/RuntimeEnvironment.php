@@ -21,103 +21,105 @@ use App\Exceptions\ParseException as AppParseException;
  */
 class RuntimeEnvironment implements JsonSerializable
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="string", length=32)
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="string", length=32)
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $name;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $name;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $longName;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $longName;
 
-  /**
-   * List of extensions in YAML format. No extension is also extension.
-   * Example: [ "cpp", "hpp", "h", "" ]
-   * @ORM\Column(type="string")
-   */
-  protected $extensions;
+    /**
+     * List of extensions in YAML format. No extension is also extension.
+     * Example: [ "cpp", "hpp", "h", "" ]
+     * @ORM\Column(type="string")
+     */
+    protected $extensions;
 
-  /**
-   * Parse given string into yaml structure and return it.
-   * @return array decoded YAML
-   * @throws AppParseException in case of parsing error
-   */
-  public function getExtensionsList() {
-    try {
-      $parsedConfig = Yaml::parse($this->extensions);
-    } catch (YamlException $e) {
-      throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
+    /**
+     * Parse given string into yaml structure and return it.
+     * @return array decoded YAML
+     * @throws AppParseException in case of parsing error
+     */
+    public function getExtensionsList()
+    {
+        try {
+            $parsedConfig = Yaml::parse($this->extensions);
+        } catch (YamlException $e) {
+            throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
+        }
+
+        return $parsedConfig;
     }
 
-    return $parsedConfig;
-  }
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $platform;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $platform;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $description;
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $description;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $defaultVariables;
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $defaultVariables;
-
-  /**
-   * Parse variables into yaml structure and return it.
-   * @return array decoded YAML
-   * @throws AppParseException
-   */
-  public function getParsedVariables(): array {
-    try {
-      return Yaml::parse($this->defaultVariables);
-    } catch (YamlException $e) {
-      throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
+    /**
+     * Parse variables into yaml structure and return it.
+     * @return array decoded YAML
+     * @throws AppParseException
+     */
+    public function getParsedVariables(): array
+    {
+        try {
+            return Yaml::parse($this->defaultVariables);
+        } catch (YamlException $e) {
+            throw new AppParseException("Yaml cannot be parsed: " . $e->getMessage());
+        }
     }
-  }
 
 
-  public function __construct(
-    $id,
-    $name,
-    $language,
-    $extensions,
-    $platform,
-    $description,
-    $defaultVariables = "[]"
-  ) {
-    $this->id = $id;
-    $this->name = $name;
-    $this->longName = $language;
-    $this->extensions = $extensions;
-    $this->platform = $platform;
-    $this->description = $description;
-    $this->defaultVariables = $defaultVariables;
-  }
+    public function __construct(
+        $id,
+        $name,
+        $language,
+        $extensions,
+        $platform,
+        $description,
+        $defaultVariables = "[]"
+    ) {
+        $this->id = $id;
+        $this->name = $name;
+        $this->longName = $language;
+        $this->extensions = $extensions;
+        $this->platform = $platform;
+        $this->description = $description;
+        $this->defaultVariables = $defaultVariables;
+    }
 
-  public function jsonSerialize() {
-    return [
-      "id" => $this->id,
-      "name" => $this->name,
-      "longName" => $this->longName,
-      "extensions" => $this->extensions,
-      "platform" => $this->platform,
-      "description" => $this->description,
-      "defaultVariables" => $this->getParsedVariables()
-    ];
-  }
-
+    public function jsonSerialize()
+    {
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            "longName" => $this->longName,
+            "extensions" => $this->extensions,
+            "platform" => $this->platform,
+            "description" => $this->description,
+            "defaultVariables" => $this->getParsedVariables()
+        ];
+    }
 }

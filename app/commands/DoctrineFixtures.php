@@ -21,126 +21,146 @@ use Zenify\DoctrineFixtures\Contract\Alice\AliceLoaderInterface;
  * in add/fixtures directory. Also, 'db:fill' command is registered to provide
  * convenient usage of this function.
  */
-class DoctrineFixtures extends Command {
+class DoctrineFixtures extends Command
+{
 
-  /**
-   * Loader of YAML files with database values
-   * @var AliceLoaderInterface
-   */
-  private $aliceLoader;
+    /**
+     * Loader of YAML files with database values
+     * @var AliceLoaderInterface
+     */
+    private $aliceLoader;
 
-  /**
-   * Database connection used to clear database
-   * @var DBAL\Connection
-   */
-  private $dbConnection;
+    /**
+     * Database connection used to clear database
+     * @var DBAL\Connection
+     */
+    private $dbConnection;
 
-  /**
-   * Entity manager used for setting of db metadata
-   * @var EntityManager
-   */
-  private $em;
+    /**
+     * Entity manager used for setting of db metadata
+     * @var EntityManager
+     */
+    private $em;
 
-  /**
-   * Constructor, some magic with fixtures
-   * @param AliceLoaderInterface $aliceLoader Fixture loader
-   * @param DBAL\Connection $dbConnection Database connection
-   * @param EntityManager $entityManager
-   */
-  public function __construct(AliceLoaderInterface $aliceLoader,
-      DBAL\Connection $dbConnection, EntityManager $entityManager) {
-    parent::__construct();
-    $this->aliceLoader = $aliceLoader;
-    $this->dbConnection = $dbConnection;
-    $this->em = $entityManager;
-  }
-
-  /**
-   * Register the 'db:fill' command in the framework
-   */
-  protected function configure() {
-    $this->setName('db:fill')->setDescription('Clear the database and fill it with initial data.');
-    $this->addOption('test', 't', InputOption::VALUE_OPTIONAL, 'Determines if command was executed within tests', false);
-    $this->addArgument('groups', InputArgument::IS_ARRAY, 'Fixture groups to be loaded', ['base']);
-  }
-
-  /**
-   * Execute the database filling.
-   * @param InputInterface $input Console input, not used
-   * @param OutputInterface $output Console output for logging
-   * @return int 0 on success, 1 on error
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->clearDatabase();
-
-    if ($input->getOption("test")) {
-      // Pipeline fixtures can set their own ids
-      $metadata = $this->em->getClassMetadata(Pipeline::class);
-      $metadata->setIdGenerator(new AssignedGenerator());
+    /**
+     * Constructor, some magic with fixtures
+     * @param AliceLoaderInterface $aliceLoader Fixture loader
+     * @param DBAL\Connection $dbConnection Database connection
+     * @param EntityManager $entityManager
+     */
+    public function __construct(
+        AliceLoaderInterface $aliceLoader,
+        DBAL\Connection $dbConnection,
+        EntityManager $entityManager
+    ) {
+        parent::__construct();
+        $this->aliceLoader = $aliceLoader;
+        $this->dbConnection = $dbConnection;
+        $this->em = $entityManager;
     }
 
-    $fixtureDir = __DIR__ . '/../../fixtures';
-    $fixtureFiles = [];
-
-    foreach ($input->getArgument("groups") as $group) {
-      $groupFiles = [];
-
-      /** @var SplFileInfo $file */
-      foreach (Finder::findFiles("*.neon", "*.yml", "*.yaml")->in($fixtureDir . "/" . $group) as $file) {
-        $groupFiles[] = $file->getRealPath();
-      }
-
-      sort($groupFiles);
-      $fixtureFiles = array_merge($fixtureFiles, $groupFiles);
+    /**
+     * Register the 'db:fill' command in the framework
+     */
+    protected function configure()
+    {
+        $this->setName('db:fill')->setDescription('Clear the database and fill it with initial data.');
+        $this->addOption(
+            'test',
+            't',
+            InputOption::VALUE_OPTIONAL,
+            'Determines if command was executed within tests',
+            false
+        );
+        $this->addArgument('groups', InputArgument::IS_ARRAY, 'Fixture groups to be loaded', ['base']);
     }
 
-    $this->aliceLoader->load($fixtureFiles);
+    /**
+     * Execute the database filling.
+     * @param InputInterface $input Console input, not used
+     * @param OutputInterface $output Console output for logging
+     * @return int 0 on success, 1 on error
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->clearDatabase();
 
-    $output->writeln('<info>[OK] - DB:FILL</info>');
-    return 0;
-  }
-
-  /**
-   * Truncate all tables in the database
-   */
-  protected function clearDatabase()
-  {
-    $platform = $this->dbConnection->getDatabasePlatform()->getName();
-
-    if ($platform === 'mysql') {
-      $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 0");
-    } else if ($platform === 'sqlite') {
-      $this->dbConnection->executeQuery("PRAGMA foreign_keys = OFF");
-    }
-
-    foreach ($this->dbConnection->getSchemaManager()->listTables() as $table) {
-      $tableName = $table->getName();
-      if ($tableName === "doctrine_migrations") {
-        // do not clear migrations table... it is crucial
-        continue;
-      }
-
-      if ($platform === 'mysql') {
-        if (!Strings::startsWith($tableName, '``')) {
-          $tableName = '`' . $tableName . '`';
+        if ($input->getOption("test")) {
+            // Pipeline fixtures can set their own ids
+            $metadata = $this->em->getClassMetadata(Pipeline::class);
+            $metadata->setIdGenerator(new AssignedGenerator());
         }
-      } else if ($platform === 'sqlite') {
-        if (!Strings::startsWith($tableName, '``')) {
-          $tableName = '"' . $tableName . '"';
+
+        $fixtureDir = __DIR__ . '/../../fixtures';
+        $fixtureFiles = [];
+
+        foreach ($input->getArgument("groups") as $group) {
+            $groupFiles = [];
+
+            /** @var SplFileInfo $file */
+            foreach (Finder::findFiles("*.neon", "*.yml", "*.yaml")->in($fixtureDir . "/" . $group) as $file) {
+                $groupFiles[] = $file->getRealPath();
+            }
+
+            sort($groupFiles);
+            $fixtureFiles = array_merge($fixtureFiles, $groupFiles);
         }
-      }
 
-      if ($platform === "mysql") {
-        $this->dbConnection->executeQuery(sprintf("TRUNCATE %s", $tableName));
-      } else if ($platform === "sqlite") {
-        $this->dbConnection->executeQuery(sprintf("DELETE FROM %s", $tableName));
-      }
+        $this->aliceLoader->load($fixtureFiles);
+
+        $output->writeln('<info>[OK] - DB:FILL</info>');
+        return 0;
     }
 
-    if ($platform === 'pdo_mysql') {
-      $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 1");
-    } else if ($platform === 'sqlite') {
-      $this->dbConnection->executeQuery("PRAGMA foreign_keys = ON");
+    /**
+     * Truncate all tables in the database
+     */
+    protected function clearDatabase()
+    {
+        $platform = $this->dbConnection->getDatabasePlatform()->getName();
+
+        if ($platform === 'mysql') {
+            $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 0");
+        } else {
+            if ($platform === 'sqlite') {
+                $this->dbConnection->executeQuery("PRAGMA foreign_keys = OFF");
+            }
+        }
+
+        foreach ($this->dbConnection->getSchemaManager()->listTables() as $table) {
+            $tableName = $table->getName();
+            if ($tableName === "doctrine_migrations") {
+                // do not clear migrations table... it is crucial
+                continue;
+            }
+
+            if ($platform === 'mysql') {
+                if (!Strings::startsWith($tableName, '``')) {
+                    $tableName = '`' . $tableName . '`';
+                }
+            } else {
+                if ($platform === 'sqlite') {
+                    if (!Strings::startsWith($tableName, '``')) {
+                        $tableName = '"' . $tableName . '"';
+                    }
+                }
+            }
+
+            if ($platform === "mysql") {
+                $this->dbConnection->executeQuery(sprintf("TRUNCATE %s", $tableName));
+            } else {
+                if ($platform === "sqlite") {
+                    $this->dbConnection->executeQuery(sprintf("DELETE FROM %s", $tableName));
+                }
+            }
+        }
+
+        if ($platform === 'pdo_mysql') {
+            $this->dbConnection->executeQuery("SET FOREIGN_KEY_CHECKS = 1");
+        } else {
+            if ($platform === 'sqlite') {
+                $this->dbConnection->executeQuery("PRAGMA foreign_keys = ON");
+            }
+        }
     }
-  }
 }

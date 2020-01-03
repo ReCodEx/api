@@ -16,8 +16,13 @@ class Version20180802100829 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
-        $this->addSql('ALTER TABLE login DROP INDEX IDX_AA08CB10A76ED395, ADD UNIQUE INDEX UNIQ_AA08CB10A76ED395 (user_id)');
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
+        $this->addSql(
+            'ALTER TABLE login DROP INDEX IDX_AA08CB10A76ED395, ADD UNIQUE INDEX UNIQ_AA08CB10A76ED395 (user_id)'
+        );
     }
 
     /**
@@ -26,7 +31,10 @@ class Version20180802100829 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
         $this->addSql('ALTER TABLE login DROP INDEX UNIQ_AA08CB10A76ED395, ADD INDEX IDX_AA08CB10A76ED395 (user_id)');
     }
 }

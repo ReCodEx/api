@@ -1,29 +1,31 @@
 <?php
+
 namespace App\Helpers;
+
 use Nette;
 use Nette\Utils\Arrays;
 
 class BrokerConfig
 {
-  use Nette\SmartObject;
+    use Nette\SmartObject;
 
-  protected $authUsername;
+    protected $authUsername;
 
-  protected $authPassword;
+    protected $authPassword;
 
-  public function __construct($config)
-  {
-    $this->authUsername = Arrays::get($config, ["auth", "username"]);
-    $this->authPassword = Arrays::get($config, ["auth", "password"]);
-  }
+    public function __construct($config)
+    {
+        $this->authUsername = Arrays::get($config, ["auth", "username"]);
+        $this->authPassword = Arrays::get($config, ["auth", "password"]);
+    }
 
-  public function getAuthUsername()
-  {
-    return $this->authUsername;
-  }
+    public function getAuthUsername()
+    {
+        return $this->authUsername;
+    }
 
-  public function getAuthPassword()
-  {
-    return $this->authPassword;
-  }
+    public function getAuthPassword()
+    {
+        return $this->authPassword;
+    }
 }
