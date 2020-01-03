@@ -17,59 +17,64 @@ use JsonSerializable;
  */
 class ReferenceExerciseSolution
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
-   */
-  protected $exercise;
+    /**
+     * @ORM\ManyToOne(targetEntity="Exercise", inversedBy="referenceSolutions")
+     */
+    protected $exercise;
 
-  public function getExercise(): ?Exercise {
-    return $this->exercise->isDeleted() ? null : $this->exercise;
-  }
+    public function getExercise(): ?Exercise
+    {
+        return $this->exercise->isDeleted() ? null : $this->exercise;
+    }
 
-  /**
-   * @ORM\Column(type="text")
-   */
-  protected $description;
+    /**
+     * @ORM\Column(type="text")
+     */
+    protected $description;
 
-  /**
-   * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
-   */
-  protected $solution;
+    /**
+     * @ORM\OneToOne(targetEntity="Solution", cascade={"persist", "remove"}, fetch="EAGER")
+     */
+    protected $solution;
 
-  /**
-   * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
-   */
-  protected $submissions;
+    /**
+     * @ORM\OneToMany(targetEntity="ReferenceSolutionSubmission", mappedBy="referenceSolution", cascade={"remove"})
+     */
+    protected $submissions;
 
-  /**
-   * Add submission to solution entity.
-   * @param ReferenceSolutionSubmission $submission
-   */
-  public function addSubmission(ReferenceSolutionSubmission $submission) {
-    $this->submissions->add($submission);
-  }
+    /**
+     * Add submission to solution entity.
+     * @param ReferenceSolutionSubmission $submission
+     */
+    public function addSubmission(ReferenceSolutionSubmission $submission)
+    {
+        $this->submissions->add($submission);
+    }
 
-  public function getFiles() {
-    return $this->solution->getFiles();
-  }
+    public function getFiles()
+    {
+        return $this->solution->getFiles();
+    }
 
-  public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime) {
-    $this->exercise = $exercise;
-    $this->description = $description;
-    $this->solution = new Solution($user, $runtime);
-    $this->submissions = new ArrayCollection();
-  }
+    public function __construct(Exercise $exercise, User $user, string $description, RuntimeEnvironment $runtime)
+    {
+        $this->exercise = $exercise;
+        $this->description = $description;
+        $this->solution = new Solution($user, $runtime);
+        $this->submissions = new ArrayCollection();
+    }
 
-  public function getRuntimeEnvironment() {
-    return $this->solution->getRuntimeEnvironment();
-  }
+    public function getRuntimeEnvironment()
+    {
+        return $this->solution->getRuntimeEnvironment();
+    }
 }

@@ -1,38 +1,40 @@
 <?php
 
 namespace App\Helpers\JobConfig\Tasks;
-use App\Exceptions\JobConfigLoadingException;
 
+use App\Exceptions\JobConfigLoadingException;
 
 /**
  * Holder for task which has initiation type set.
  */
-class InitiationTaskType {
-  /** Initiation task type value */
-  const TASK_TYPE = "initiation";
+class InitiationTaskType
+{
+    /** Initiation task type value */
+    const TASK_TYPE = "initiation";
 
-  /** @var Task Initiation task */
-  private $task;
+    /** @var Task Initiation task */
+    private $task;
 
-  /**
-   * Checks and store initiation task.
-   * @param Task $task
-   * @throws JobConfigLoadingException
-   */
-  public function __construct(Task $task) {
-    if (!$task->isInitiationTask()) {
-      throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
+    /**
+     * Checks and store initiation task.
+     * @param Task $task
+     * @throws JobConfigLoadingException
+     */
+    public function __construct(Task $task)
+    {
+        if (!$task->isInitiationTask()) {
+            throw new JobConfigLoadingException("Given task does not have type '" . self::TASK_TYPE . "'");
+        }
+
+        $this->task = $task;
     }
 
-    $this->task = $task;
-  }
-
-  /**
-   * Get initiation task which was given and checked during construction.
-   * @return Task
-   */
-  public function getTask(): Task {
-    return $this->task;
-  }
-
+    /**
+     * Get initiation task which was given and checked during construction.
+     * @return Task
+     */
+    public function getTask(): Task
+    {
+        return $this->task;
+    }
 }

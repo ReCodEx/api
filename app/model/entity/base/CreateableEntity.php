@@ -5,19 +5,22 @@ namespace App\Model\Entity;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-trait CreateableEntity {
+trait CreateableEntity
+{
 
-  /**
-   * @ORM\Column(type="datetime")
-   * @var DateTime
-   */
-  protected $createdAt;
+    /**
+     * @ORM\Column(type="datetime")
+     * @var DateTime
+     */
+    protected $createdAt;
 
-  public function getCreatedAt(): DateTime {
-    return $this->createdAt;
-  }
+    public function getCreatedAt(): DateTime
+    {
+        return $this->createdAt;
+    }
 
-  public function createdNow() {
-    $this->createdAt = new DateTime();
-  }
+    public function createdNow()
+    {
+        $this->createdAt = new DateTime();
+    }
 }

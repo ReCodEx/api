@@ -2,8 +2,8 @@
 
 trait MockeryTrait
 {
-  protected function tearDown()
-  {
-    Mockery::close();
-  }
+    protected function tearDown()
+    {
+        Mockery::close();
+    }
 }

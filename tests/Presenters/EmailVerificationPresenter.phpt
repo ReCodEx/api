@@ -1,4 +1,5 @@
 <?php
+
 $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Security\Identity;
@@ -15,92 +16,96 @@ use Tester\Assert;
  */
 class TestEmailVerificationPresenter extends Tester\TestCase
 {
-  /** @var GroupsPresenter */
-  protected $presenter;
+    /** @var GroupsPresenter */
+    protected $presenter;
 
-  /** @var Kdyby\Doctrine\EntityManager */
-  protected $em;
+    /** @var Kdyby\Doctrine\EntityManager */
+    protected $em;
 
-  /** @var  Nette\DI\Container */
-  protected $container;
+    /** @var  Nette\DI\Container */
+    protected $container;
 
-  /** @var Nette\Security\User */
-  private $user;
+    /** @var Nette\Security\User */
+    private $user;
 
-  /** @var \App\Security\AccessManager */
-  private $accessManager;
+    /** @var \App\Security\AccessManager */
+    private $accessManager;
 
-  public function __construct()
-  {
-    global $container;
-    $this->container = $container;
-    $this->em = PresenterTestHelper::getEntityManager($container);
-    $this->user = $container->getByType(\Nette\Security\User::class);
-    $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
-  }
-
-  protected function setUp()
-  {
-    PresenterTestHelper::fillDatabase($this->container);
-    $this->presenter = PresenterTestHelper::createPresenter($this->container, EmailVerificationPresenter::class);
-  }
-
-  protected function tearDown()
-  {
-    if ($this->user->isLoggedIn()) {
-      $this->user->logout(true);
+    public function __construct()
+    {
+        global $container;
+        $this->container = $container;
+        $this->em = PresenterTestHelper::getEntityManager($container);
+        $this->user = $container->getByType(\Nette\Security\User::class);
+        $this->accessManager = $container->getByType(\App\Security\AccessManager::class);
     }
-  }
 
-  public function testResendVerificationEmail()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+    protected function setUp()
+    {
+        PresenterTestHelper::fillDatabase($this->container);
+        $this->presenter = PresenterTestHelper::createPresenter($this->container, EmailVerificationPresenter::class);
+    }
 
-    /** @var Mockery\Mock | EmailHelper $mockEmailVerificationHelper */
-    $mockEmailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
-    $mockEmailVerificationHelper->shouldReceive("process")->with($user)->andReturn(true);
-    $this->presenter->emailVerificationHelper = $mockEmailVerificationHelper;
+    protected function tearDown()
+    {
+        if ($this->user->isLoggedIn()) {
+            $this->user->logout(true);
+        }
+    }
 
-    $request = new Nette\Application\Request(
-      'V1:EmailVerification',
-      'POST',
-      ['action' => 'resendVerificationEmail']
-    );
+    public function testResendVerificationEmail()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        /** @var Mockery\Mock | EmailHelper $mockEmailVerificationHelper */
+        $mockEmailVerificationHelper = Mockery::mock(EmailVerificationHelper::class);
+        $mockEmailVerificationHelper->shouldReceive("process")->with($user)->andReturn(true);
+        $this->presenter->emailVerificationHelper = $mockEmailVerificationHelper;
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:EmailVerification',
+            'POST',
+            ['action' => 'resendVerificationEmail']
+        );
 
-  public function testEmailVerification()
-  {
-    PresenterTestHelper::loginDefaultAdmin($this->container);
-    $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-    // prepare token for email verification
-    $token = $this->accessManager->issueToken(
-      $user, null, [TokenScope::EMAIL_VERIFICATION], 600, ["email" => $user->getEmail()]
-    );
-    // login with obtained token
-    $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
-    $request = new Nette\Application\Request(
-      'V1:EmailVerification',
-      'POST',
-      ['action' => 'emailVerification']
-    );
+    public function testEmailVerification()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
 
-    $response = $this->presenter->run($request);
-    Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        // prepare token for email verification
+        $token = $this->accessManager->issueToken(
+            $user,
+            null,
+            [TokenScope::EMAIL_VERIFICATION],
+            600,
+            ["email" => $user->getEmail()]
+        );
+        // login with obtained token
+        $this->presenter->user->login(new Identity($user, $this->accessManager->decodeToken($token)));
 
-    $result = $response->getPayload();
-    Assert::equal(200, $result['code']);
-    Assert::equal("OK", $result['payload']);
-  }
+        $request = new Nette\Application\Request(
+            'V1:EmailVerification',
+            'POST',
+            ['action' => 'emailVerification']
+        );
+
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        Assert::equal("OK", $result['payload']);
+    }
 
 }
 

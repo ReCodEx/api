@@ -21,190 +21,201 @@ use Symfony\Component\Console\Output\OutputInterface;
  * YAML file in fixtures/generated directory. Also, 'db:export' command is
  * registered to provide convenient usage of this function.
  */
-class ExportDatabase extends Command {
+class ExportDatabase extends Command
+{
 
-  /**
-   * @var RuntimeEnvironments
-   */
-  private $runtimeEnvironments;
+    /**
+     * @var RuntimeEnvironments
+     */
+    private $runtimeEnvironments;
 
-  /**
-   * @var Pipelines
-   */
-  private $pipelines;
+    /**
+     * @var Pipelines
+     */
+    private $pipelines;
 
-  /**
-   * @var HardwareGroups
-   */
-  private $hardwareGroups;
+    /**
+     * @var HardwareGroups
+     */
+    private $hardwareGroups;
 
-  /**
-   * Constructor
-   * @param RuntimeEnvironments $runtimeEnvironments
-   * @param Pipelines $pipelines
-   * @param HardwareGroups $hardwareGroups
-   */
-  public function __construct(RuntimeEnvironments $runtimeEnvironments,
-      Pipelines $pipelines, HardwareGroups $hardwareGroups) {
-    parent::__construct();
-    $this->runtimeEnvironments = $runtimeEnvironments;
-    $this->pipelines = $pipelines;
-    $this->hardwareGroups = $hardwareGroups;
-  }
-
-  /**
-   * Register the 'db:export' command in the framework
-   */
-  protected function configure() {
-    $this->setName('db:export')->setDescription('Export some of the data from database.');
-  }
-
-  /**
-   * Execute the database exporting.
-   * @param InputInterface $input Console input, not used
-   * @param OutputInterface $output Console output for logging
-   * @return int 0 on success, 1 on error
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-
-    $fixtureDir = __DIR__ . '/../../fixtures/generated/';
-    FileSystem::createDir($fixtureDir);
-
-    // export data from database
-    $this->exportRuntimes($fixtureDir);
-    $this->exportPipelines($fixtureDir);
-    $this->exportHardwareGroups($fixtureDir);
-
-    $output->writeln('<info>[OK] - DB:EXPORT</info>');
-    return 0;
-  }
-
-  /**
-   * Helper function which will encode array like input to neon formatted string.
-   * @param $content
-   * @return string
-   */
-  private function encodeResult($content): string {
-    return Neon::encode($content, Encoder::BLOCK);
-  }
-
-  /**
-   * Replace CRLF newlines with the Unix ones.
-   * @param string $content
-   * @return string
-   */
-  private function correctDbNewlines(string $content): string {
-    return preg_replace('~\r\n?~', "\n", $content);
-  }
-
-  private function exportHardwareGroups(string $fixtureDir) {
-    $content = [];
-    $content[HardwareGroup::class] = [];
-
-    foreach ($this->hardwareGroups->findBy([], ["id" => "ASC"]) as $group) {
-      /** @var HardwareGroup $group */
-
-      $constructArr = [];
-      $constructArr[] = $group->getId();
-      $constructArr[] = $group->getName();
-      $constructArr[] = $this->correctDbNewlines($group->getDescription());
-      $constructArr[] = $this->correctDbNewlines($group->getMetadataString());
-
-      $groupArr = [];
-      $groupArr["__construct"] = $constructArr;
-
-      $content[HardwareGroup::class][$group->getId()] = $groupArr;
+    /**
+     * Constructor
+     * @param RuntimeEnvironments $runtimeEnvironments
+     * @param Pipelines $pipelines
+     * @param HardwareGroups $hardwareGroups
+     */
+    public function __construct(
+        RuntimeEnvironments $runtimeEnvironments,
+        Pipelines $pipelines,
+        HardwareGroups $hardwareGroups
+    ) {
+        parent::__construct();
+        $this->runtimeEnvironments = $runtimeEnvironments;
+        $this->pipelines = $pipelines;
+        $this->hardwareGroups = $hardwareGroups;
     }
 
-    FileSystem::write($fixtureDir . "10-hwGroups.neon", $this->encodeResult($content));
-  }
-
-  private function exportRuntimes($fixtureDir) {
-    $content = [];
-    $content[RuntimeEnvironment::class] = [];
-
-    foreach ($this->runtimeEnvironments->findBy([], ["id" => "ASC"]) as $runtime) {
-      /** @var RuntimeEnvironment $runtime */
-
-      $constructArr = [];
-      $constructArr[] = $runtime->getId();
-      $constructArr[] = $runtime->getName();
-      $constructArr[] = $runtime->getLongName();
-      $constructArr[] = $runtime->getExtensions();
-      $constructArr[] = $runtime->getPlatform();
-      $constructArr[] = $runtime->getDescription();
-      $constructArr[] = $this->correctDbNewlines($runtime->getDefaultVariables());
-
-      $runtimeArr = [];
-      $runtimeArr["__construct"] = $constructArr;
-
-      $content[RuntimeEnvironment::class][$runtime->getId()] = $runtimeArr;
+    /**
+     * Register the 'db:export' command in the framework
+     */
+    protected function configure()
+    {
+        $this->setName('db:export')->setDescription('Export some of the data from database.');
     }
 
-    FileSystem::write($fixtureDir . "10-runtimes.neon", $this->encodeResult($content));
-  }
+    /**
+     * Execute the database exporting.
+     * @param InputInterface $input Console input, not used
+     * @param OutputInterface $output Console output for logging
+     * @return int 0 on success, 1 on error
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $fixtureDir = __DIR__ . '/../../fixtures/generated/';
+        FileSystem::createDir($fixtureDir);
 
-  private function exportPipelines($fixtureDir) {
-    $content = [];
-    $content[PipelineConfig::class] = [];
-    $content[Pipeline::class] = [];
+        // export data from database
+        $this->exportRuntimes($fixtureDir);
+        $this->exportPipelines($fixtureDir);
+        $this->exportHardwareGroups($fixtureDir);
 
-    // pipelines cache... first we have to process pipeline configurations
-    // indexed by pipeline config fixtures identification
-    $pipelines = [];
-
-    $index = 0;
-    foreach ($this->pipelines->findBy(["author" => null], ["name" => "ASC"]) as $pipeline) {
-      /** @var Pipeline $pipeline */
-
-      $index++;
-      $configId = "pipelineConfig" . $index;
-      $config = $pipeline->getPipelineConfig();
-      $pipelines[$configId] = $pipeline;
-
-      // create yaml config
-      $constructArr = [];
-      $constructArr[] = $this->correctDbNewlines($config->getPipelineConfig());
-      $constructArr[] = "@demoAdmin";
-
-      $configArr = [];
-      $configArr["__construct"] = $constructArr;
-      $content[PipelineConfig::class][$configId] = $configArr;
+        $output->writeln('<info>[OK] - DB:EXPORT</info>');
+        return 0;
     }
 
-    $index = 0;
-    foreach ($pipelines as $configId => $pipeline) {
-      $index++;
-
-      $constructArr = [];
-      $constructArr["create"] = [];
-      $constructArr["create"][] = null;
-
-      $pipelineArr = [];
-      $pipelineArr["__construct"] = $constructArr;
-      $pipelineArr["name"] = $pipeline->getName();
-      $pipelineArr["description"] = $this->correctDbNewlines($pipeline->getDescription());
-      $pipelineArr["pipelineConfig"] = "@" . $configId;
-
-      $pipelineArr["runtimeEnvironments"] = array_map(function (RuntimeEnvironment $env) {
-        return sprintf("@%s", $env->getId());
-      }, $pipeline->getRuntimeEnvironments()->getValues());
-
-      $content[Pipeline::class]["pipeline" . $index] = $pipelineArr;
-
-      foreach ($pipeline->getParameters() as $parameter) {
-        $content[get_class($parameter)][sprintf("pipeline%d_%s", $index, $parameter->getName())] = [
-          "__construct" => [
-            "@pipeline" . $index,
-            $parameter->getName(),
-          ],
-          "value" => $parameter->getValue(),
-        ];
-      }
-
+    /**
+     * Helper function which will encode array like input to neon formatted string.
+     * @param $content
+     * @return string
+     */
+    private function encodeResult($content): string
+    {
+        return Neon::encode($content, Encoder::BLOCK);
     }
 
-    FileSystem::write($fixtureDir . "15-pipelines.neon", $this->encodeResult($content));
-  }
+    /**
+     * Replace CRLF newlines with the Unix ones.
+     * @param string $content
+     * @return string
+     */
+    private function correctDbNewlines(string $content): string
+    {
+        return preg_replace('~\r\n?~', "\n", $content);
+    }
 
+    private function exportHardwareGroups(string $fixtureDir)
+    {
+        $content = [];
+        $content[HardwareGroup::class] = [];
+
+        foreach ($this->hardwareGroups->findBy([], ["id" => "ASC"]) as $group) {
+            /** @var HardwareGroup $group */
+
+            $constructArr = [];
+            $constructArr[] = $group->getId();
+            $constructArr[] = $group->getName();
+            $constructArr[] = $this->correctDbNewlines($group->getDescription());
+            $constructArr[] = $this->correctDbNewlines($group->getMetadataString());
+
+            $groupArr = [];
+            $groupArr["__construct"] = $constructArr;
+
+            $content[HardwareGroup::class][$group->getId()] = $groupArr;
+        }
+
+        FileSystem::write($fixtureDir . "10-hwGroups.neon", $this->encodeResult($content));
+    }
+
+    private function exportRuntimes($fixtureDir)
+    {
+        $content = [];
+        $content[RuntimeEnvironment::class] = [];
+
+        foreach ($this->runtimeEnvironments->findBy([], ["id" => "ASC"]) as $runtime) {
+            /** @var RuntimeEnvironment $runtime */
+
+            $constructArr = [];
+            $constructArr[] = $runtime->getId();
+            $constructArr[] = $runtime->getName();
+            $constructArr[] = $runtime->getLongName();
+            $constructArr[] = $runtime->getExtensions();
+            $constructArr[] = $runtime->getPlatform();
+            $constructArr[] = $runtime->getDescription();
+            $constructArr[] = $this->correctDbNewlines($runtime->getDefaultVariables());
+
+            $runtimeArr = [];
+            $runtimeArr["__construct"] = $constructArr;
+
+            $content[RuntimeEnvironment::class][$runtime->getId()] = $runtimeArr;
+        }
+
+        FileSystem::write($fixtureDir . "10-runtimes.neon", $this->encodeResult($content));
+    }
+
+    private function exportPipelines($fixtureDir)
+    {
+        $content = [];
+        $content[PipelineConfig::class] = [];
+        $content[Pipeline::class] = [];
+
+        // pipelines cache... first we have to process pipeline configurations
+        // indexed by pipeline config fixtures identification
+        $pipelines = [];
+
+        $index = 0;
+        foreach ($this->pipelines->findBy(["author" => null], ["name" => "ASC"]) as $pipeline) {
+            /** @var Pipeline $pipeline */
+
+            $index++;
+            $configId = "pipelineConfig" . $index;
+            $config = $pipeline->getPipelineConfig();
+            $pipelines[$configId] = $pipeline;
+
+            // create yaml config
+            $constructArr = [];
+            $constructArr[] = $this->correctDbNewlines($config->getPipelineConfig());
+            $constructArr[] = "@demoAdmin";
+
+            $configArr = [];
+            $configArr["__construct"] = $constructArr;
+            $content[PipelineConfig::class][$configId] = $configArr;
+        }
+
+        $index = 0;
+        foreach ($pipelines as $configId => $pipeline) {
+            $index++;
+
+            $constructArr = [];
+            $constructArr["create"] = [];
+            $constructArr["create"][] = null;
+
+            $pipelineArr = [];
+            $pipelineArr["__construct"] = $constructArr;
+            $pipelineArr["name"] = $pipeline->getName();
+            $pipelineArr["description"] = $this->correctDbNewlines($pipeline->getDescription());
+            $pipelineArr["pipelineConfig"] = "@" . $configId;
+
+            $pipelineArr["runtimeEnvironments"] = array_map(
+                function (RuntimeEnvironment $env) {
+                    return sprintf("@%s", $env->getId());
+                },
+                $pipeline->getRuntimeEnvironments()->getValues()
+            );
+
+            $content[Pipeline::class]["pipeline" . $index] = $pipelineArr;
+
+            foreach ($pipeline->getParameters() as $parameter) {
+                $content[get_class($parameter)][sprintf("pipeline%d_%s", $index, $parameter->getName())] = [
+                    "__construct" => [
+                        "@pipeline" . $index,
+                        $parameter->getName(),
+                    ],
+                    "value" => $parameter->getValue(),
+                ];
+            }
+        }
+
+        FileSystem::write($fixtureDir . "15-pipelines.neon", $this->encodeResult($content));
+    }
 }

@@ -19,40 +19,51 @@ use Tester\Assert;
  */
 class TestFetchFileBox extends Tester\TestCase
 {
-  /**
-   * @var FetchFileBox
-   */
-  private $box;
+    /**
+     * @var FetchFileBox
+     */
+    private $box;
 
-  public function __construct() {
-    $inputPort = (new Port((new PortMeta())->setName(FetchFileBox::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_TYPE)));
-    $inputPort->setVariableValue(new Variable(VariableTypes::$REMOTE_FILE_TYPE, "", "input.in"));
+    public function __construct()
+    {
+        $inputPort = (new Port(
+            (new PortMeta())->setName(FetchFileBox::$REMOTE_PORT_KEY)->setType(VariableTypes::$REMOTE_FILE_TYPE)
+        ));
+        $inputPort->setVariableValue(new Variable(VariableTypes::$REMOTE_FILE_TYPE, "", "input.in"));
 
-    $outputPort = (new Port((new PortMeta())->setName(FetchFileBox::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)));
-    $outputPort->setVariableValue(new Variable(VariableTypes::$FILE_TYPE, "", "input.in"));
+        $outputPort = (new Port(
+            (new PortMeta())->setName(FetchFileBox::$INPUT_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)
+        ));
+        $outputPort->setVariableValue(new Variable(VariableTypes::$FILE_TYPE, "", "input.in"));
 
-    $meta = (new BoxMeta())->addInputPort($inputPort)->addOutputPort($outputPort);
-    $this->box = new FetchFileBox($meta);
-    $this->box->validateMetadata();
-  }
+        $meta = (new BoxMeta())->addInputPort($inputPort)->addOutputPort($outputPort);
+        $this->box = new FetchFileBox($meta);
+        $this->box->validateMetadata();
+    }
 
 
-  public function testSameFileProvidedByUser() {
-    Assert::exception(function () {
-      $params = CompilationParams::create(["input.in"]);
-      $this->box->compile($params);
-    }, ExerciseCompilationException::class, "Exercise submission error - File 'input.in' is already defined by author of the exercise");
-  }
+    public function testSameFileProvidedByUser()
+    {
+        Assert::exception(
+            function () {
+                $params = CompilationParams::create(["input.in"]);
+                $this->box->compile($params);
+            },
+            ExerciseCompilationException::class,
+            "Exercise submission error - File 'input.in' is already defined by author of the exercise"
+        );
+    }
 
-  public function testCorrect() {
-    $tasks = $this->box->compile(CompilationParams::create());
-    Assert::count(1, $tasks);
+    public function testCorrect()
+    {
+        $tasks = $this->box->compile(CompilationParams::create());
+        Assert::count(1, $tasks);
 
-    $task = $tasks[0];
-    Assert::equal("fetch", $task->getCommandBinary());
-    Assert::equal(["input.in", '${SOURCE_DIR}/input.in'], $task->getCommandArguments());
-    Assert::equal(Priorities::$DEFAULT, $task->getPriority());
-  }
+        $task = $tasks[0];
+        Assert::equal("fetch", $task->getCommandBinary());
+        Assert::equal(["input.in", '${SOURCE_DIR}/input.in'], $task->getCommandArguments());
+        Assert::equal(Priorities::$DEFAULT, $task->getPriority());
+    }
 
 }
 

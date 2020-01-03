@@ -16,9 +16,14 @@ class Version20180128125439 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
 
-        $this->addSql('ALTER TABLE sis_valid_term ADD beginning DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\', ADD `end` DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\', ADD advertise_until DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\'');
+        $this->addSql(
+            'ALTER TABLE sis_valid_term ADD beginning DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\', ADD `end` DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\', ADD advertise_until DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime)\''
+        );
     }
 
     /**
@@ -27,7 +32,10 @@ class Version20180128125439 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
+        $this->abortIf(
+            $this->connection->getDatabasePlatform()->getName() !== 'mysql',
+            'Migration can only be executed safely on \'mysql\'.'
+        );
 
         $this->addSql('ALTER TABLE sis_valid_term DROP beginning, DROP `end`, DROP advertise_until');
     }

@@ -1,6 +1,6 @@
 <?php
-namespace App\Security\Policies;
 
+namespace App\Security\Policies;
 
 use App\Model\Entity\Instance;
 use App\Model\Entity\User;
@@ -9,60 +9,66 @@ use App\Security\Roles;
 
 class UserPermissionPolicy implements IPermissionPolicy
 {
-  public function getAssociatedClass() {
-    return User::class;
-  }
-
-  public function isSameUser(Identity $identity, User $user): bool {
-    $currentUser = $identity->getUserData();
-    return $currentUser !== null && $currentUser === $user;
-  }
-
-  public function isInSameInstance(Identity $identity, User $user): bool {
-    $currentUser = $identity->getUserData();
-    if ($currentUser === null) {
-      return false;
+    public function getAssociatedClass()
+    {
+        return User::class;
     }
 
-    return $currentUser->getInstances()->exists(
-      function ($key, Instance $instance) use ($user) {
-        return $user->getInstances()->contains($instance);
-      });
-  }
-
-  public function isNotExternalAccount(Identity $identity, User $user): bool {
-    $currentUser = $identity->getUserData();
-    if (!$currentUser) {
-      return false;
+    public function isSameUser(Identity $identity, User $user): bool
+    {
+        $currentUser = $identity->getUserData();
+        return $currentUser !== null && $currentUser === $user;
     }
 
-    return !$user->hasExternalAccounts();
-  }
+    public function isInSameInstance(Identity $identity, User $user): bool
+    {
+        $currentUser = $identity->getUserData();
+        if ($currentUser === null) {
+            return false;
+        }
 
-  public function isSupervisor(Identity $identity, User $user) {
-    $currentUser = $identity->getUserData();
-    if (!$currentUser) {
-      return false;
+        return $currentUser->getInstances()->exists(
+            function ($key, Instance $instance) use ($user) {
+                return $user->getInstances()->contains($instance);
+            }
+        );
     }
 
-    return $user->getRole() === Roles::SUPERVISOR_ROLE;
-  }
+    public function isNotExternalAccount(Identity $identity, User $user): bool
+    {
+        $currentUser = $identity->getUserData();
+        if (!$currentUser) {
+            return false;
+        }
 
-  /**
-   * Logged user is supervisor of any group of which the tested user is member.
-   */
-  public function isSupervisorOfJoinedGroup(Identity $identity, User $user): bool {
-    $currentUser = $identity->getUserData();
-    if ($currentUser === null) {
-      return false;
+        return !$user->hasExternalAccounts();
     }
 
-    foreach ($user->getGroupsAsStudent() as $group) {
-      if ($group->isSupervisorOf($currentUser) || $group->isAdminOf($currentUser)) {
-        return true;
-      }
-    }
-    return false;
-  }
+    public function isSupervisor(Identity $identity, User $user)
+    {
+        $currentUser = $identity->getUserData();
+        if (!$currentUser) {
+            return false;
+        }
 
+        return $user->getRole() === Roles::SUPERVISOR_ROLE;
+    }
+
+    /**
+     * Logged user is supervisor of any group of which the tested user is member.
+     */
+    public function isSupervisorOfJoinedGroup(Identity $identity, User $user): bool
+    {
+        $currentUser = $identity->getUserData();
+        if ($currentUser === null) {
+            return false;
+        }
+
+        foreach ($user->getGroupsAsStudent() as $group) {
+            if ($group->isSupervisorOf($currentUser) || $group->isAdminOf($currentUser)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

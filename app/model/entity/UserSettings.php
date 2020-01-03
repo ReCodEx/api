@@ -36,126 +36,127 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  */
 class UserSettings implements JsonSerializable
 {
-  use MagicAccessors;
-  use FlagAccessor;
+    use MagicAccessors;
+    use FlagAccessor;
 
-  public function __construct(
-    bool $darkTheme = true,
-    bool $vimMode = false,
-    string $defaultLanguage = "en",
-    bool $openedSidebar = true,
-    bool $useGravatar = true,
-    string $defaultPage = null
-  ) {
-    $this->darkTheme = $darkTheme;
-    $this->vimMode = $vimMode;
-    $this->defaultLanguage = $defaultLanguage;
-    $this->openedSidebar = $openedSidebar;
-    $this->useGravatar = $useGravatar;
-    $this->defaultPage = $defaultPage;
+    public function __construct(
+        bool $darkTheme = true,
+        bool $vimMode = false,
+        string $defaultLanguage = "en",
+        bool $openedSidebar = true,
+        bool $useGravatar = true,
+        string $defaultPage = null
+    ) {
+        $this->darkTheme = $darkTheme;
+        $this->vimMode = $vimMode;
+        $this->defaultLanguage = $defaultLanguage;
+        $this->openedSidebar = $openedSidebar;
+        $this->useGravatar = $useGravatar;
+        $this->defaultPage = $defaultPage;
 
-    $this->newAssignmentEmails = true;
-    $this->assignmentDeadlineEmails = true;
-    $this->submissionEvaluatedEmails = true;
-    $this->solutionCommentsEmails = true;
-    $this->pointsChangedEmails = true;
-    $this->assignmentSubmitAfterAcceptedEmails = false;
-    $this->assignmentSubmitAfterReviewedEmails = false;
-  }
+        $this->newAssignmentEmails = true;
+        $this->assignmentDeadlineEmails = true;
+        $this->submissionEvaluatedEmails = true;
+        $this->solutionCommentsEmails = true;
+        $this->pointsChangedEmails = true;
+        $this->assignmentSubmitAfterAcceptedEmails = false;
+        $this->assignmentSubmitAfterReviewedEmails = false;
+    }
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $darkTheme;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $darkTheme;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $vimMode;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $vimMode;
 
-  /**
-   * @ORM\Column(type="string", length=32)
-   */
-  protected $defaultLanguage;
+    /**
+     * @ORM\Column(type="string", length=32)
+     */
+    protected $defaultLanguage;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $openedSidebar;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $openedSidebar;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $useGravatar;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $useGravatar;
 
-  /**
-   * @ORM\Column(type="string", nullable=true)
-   * Default page identifier (set and interpreted by the UI only).
-   */
-  protected $defaultPage = null;
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     * Default page identifier (set and interpreted by the UI only).
+     */
+    protected $defaultPage = null;
 
 
-  /*******************
-   * Emails settings *
-   *******************/
+    /*******************
+     * Emails settings *
+     *******************/
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $newAssignmentEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $newAssignmentEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $assignmentDeadlineEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $assignmentDeadlineEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $submissionEvaluatedEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $submissionEvaluatedEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $solutionCommentsEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $solutionCommentsEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $pointsChangedEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $pointsChangedEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $assignmentSubmitAfterAcceptedEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $assignmentSubmitAfterAcceptedEmails;
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $assignmentSubmitAfterReviewedEmails;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $assignmentSubmitAfterReviewedEmails;
 
-  public function jsonSerialize() {
-    return [
-      "darkTheme" => $this->darkTheme,
-      "vimMode" => $this->vimMode,
-      "defaultLanguage" => $this->defaultLanguage,
-      "openedSidebar" => $this->openedSidebar,
-      "useGravatar" => $this->useGravatar,
-      "defaultPage" => $this->defaultPage,
-      "newAssignmentEmails" => $this->newAssignmentEmails,
-      "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
-      "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
-      "solutionCommentsEmails" => $this->solutionCommentsEmails,
-      "pointsChangedEmails" => $this->pointsChangedEmails,
-      "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
-      "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
-    ];
-  }
+    public function jsonSerialize()
+    {
+        return [
+            "darkTheme" => $this->darkTheme,
+            "vimMode" => $this->vimMode,
+            "defaultLanguage" => $this->defaultLanguage,
+            "openedSidebar" => $this->openedSidebar,
+            "useGravatar" => $this->useGravatar,
+            "defaultPage" => $this->defaultPage,
+            "newAssignmentEmails" => $this->newAssignmentEmails,
+            "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
+            "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
+            "solutionCommentsEmails" => $this->solutionCommentsEmails,
+            "pointsChangedEmails" => $this->pointsChangedEmails,
+            "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
+            "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
+        ];
+    }
 }

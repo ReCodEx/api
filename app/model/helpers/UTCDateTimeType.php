@@ -12,38 +12,42 @@ use Doctrine\DBAL\Types\DateTimeType;
  */
 class UTCDateTimeType extends DateTimeType
 {
-  private static $utc;
-  private static function getUtc() {
-    return self::$utc ? self::$utc : self::$utc = new \DateTimeZone('UTC');
-  }
+    private static $utc;
 
-  public function convertToDatabaseValue($value, AbstractPlatform $platform) {
-    if ($value instanceof \DateTime) {
-      $value->setTimezone(self::getUtc());
+    private static function getUtc()
+    {
+        return self::$utc ? self::$utc : self::$utc = new \DateTimeZone('UTC');
     }
 
-    return parent::convertToDatabaseValue($value, $platform);
-  }
+    public function convertToDatabaseValue($value, AbstractPlatform $platform)
+    {
+        if ($value instanceof \DateTime) {
+            $value->setTimezone(self::getUtc());
+        }
 
-  public function convertToPHPValue($value, AbstractPlatform $platform) {
-    if (null === $value || $value instanceof \DateTime) {
-      return $value;
+        return parent::convertToDatabaseValue($value, $platform);
     }
 
-    $converted = \DateTime::createFromFormat(
-      $platform->getDateTimeFormatString(),
-      $value,
-      self::getUtc()
-    );
+    public function convertToPHPValue($value, AbstractPlatform $platform)
+    {
+        if (null === $value || $value instanceof \DateTime) {
+            return $value;
+        }
 
-    if (! $converted) {
-      throw ConversionException::conversionFailedFormat(
-        $value,
-        $this->getName(),
-        $platform->getDateTimeFormatString()
-      );
+        $converted = \DateTime::createFromFormat(
+            $platform->getDateTimeFormatString(),
+            $value,
+            self::getUtc()
+        );
+
+        if (!$converted) {
+            throw ConversionException::conversionFailedFormat(
+                $value,
+                $this->getName(),
+                $platform->getDateTimeFormatString()
+            );
+        }
+
+        return $converted;
     }
-
-    return $converted;
-  }
 }

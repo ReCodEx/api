@@ -1,68 +1,78 @@
 <?php
-namespace App\Security\Policies;
 
+namespace App\Security\Policies;
 
 use App\Model\Entity\Exercise;
 use App\Model\Entity\Group;
 use App\Security\Identity;
 
-class ExercisePermissionPolicy implements IPermissionPolicy {
+class ExercisePermissionPolicy implements IPermissionPolicy
+{
 
-  public function getAssociatedClass() {
-    return Exercise::class;
-  }
-
-  public function isAuthor(Identity $identity, Exercise $exercise) {
-    $user = $identity->getUserData();
-    if ($user === null) {
-      return false;
+    public function getAssociatedClass()
+    {
+        return Exercise::class;
     }
 
-    return $user === $exercise->getAuthor();
-  }
+    public function isAuthor(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
+        if ($user === null) {
+            return false;
+        }
 
-  public function isSubGroupSupervisor(Identity $identity, Exercise $exercise) {
-    $user = $identity->getUserData();
-
-    if ($user === null || $exercise->getGroups()->isEmpty() ||
-        $exercise->isPublic() === false) {
-      return false;
+        return $user === $exercise->getAuthor();
     }
 
-    /** @var Group $group */
-    foreach ($exercise->getGroups() as $group) {
-      if ($group->isAdminOrSupervisorOfSubgroup($user)) {
-        return true;
-      }
+    public function isSubGroupSupervisor(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
+
+        if (
+            $user === null || $exercise->getGroups()->isEmpty() ||
+            $exercise->isPublic() === false
+        ) {
+            return false;
+        }
+
+        /** @var Group $group */
+        foreach ($exercise->getGroups() as $group) {
+            if ($group->isAdminOrSupervisorOfSubgroup($user)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    return false;
-  }
+    public function isSuperGroupAdmin(Identity $identity, Exercise $exercise)
+    {
+        $user = $identity->getUserData();
 
-  public function isSuperGroupAdmin(Identity $identity, Exercise $exercise) {
-    $user = $identity->getUserData();
+        if (
+            $user === null || $exercise->getGroups()->isEmpty() ||
+            $exercise->isPublic() === false
+        ) {
+            return false;
+        }
 
-    if ($user === null || $exercise->getGroups()->isEmpty() ||
-      $exercise->isPublic() === false) {
-      return false;
+        /** @var Group $group */
+        foreach ($exercise->getGroups() as $group) {
+            if ($group->isAdminOf($user)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    /** @var Group $group */
-    foreach ($exercise->getGroups() as $group) {
-      if ($group->isAdminOf($user)) {
-        return true;
-      }
+    public function isPublic(Identity $identity, Exercise $exercise)
+    {
+        return $exercise->isPublic() && $exercise->getGroups()->isEmpty();
     }
 
-    return false;
-  }
-
-  public function isPublic(Identity $identity, Exercise $exercise) {
-    return $exercise->isPublic() && $exercise->getGroups()->isEmpty();
-  }
-
-  public function hasAtLeastTwoAttachedGroups(Identity $identity, Exercise $exercise) {
-    return $exercise->getGroups()->count() > 1;
-  }
-
+    public function hasAtLeastTwoAttachedGroups(Identity $identity, Exercise $exercise)
+    {
+        return $exercise->getGroups()->count() > 1;
+    }
 }

@@ -1,69 +1,71 @@
 {
-	"name": "recodex/api",
-	"description": "Web api of ReCodEx Code Evaluator.",
-	"homepage": "https://github.com/ReCodEx/api",
-	"type": "project",
-	"license": ["MIT"],
-	"authors": [
-		{
-			"name": "ReCodEx Team",
-			"homepage": "https://github.com/ReCodEx/api/graphs/contributors"
-		}
-	],
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/ReCodEx/DoctrineFixtures"
-		}
-	],
-	"scripts": {
-		"post-install-cmd": [
-			"composer dump-autoload --optimize --classmap-authoritative"
-		]
-	},
-	"require": {
-		"php": ">=7.2",
-		"ext-yaml": ">=2.0",
-		"nette/application": "^2.4",
-		"nette/bootstrap": "^2.4",
-		"nette/caching": "^2.5",
-		"nette/database": "^2.4",
-		"nette/di": "^2.4",
-		"nette/finder": "^2.4",
-		"nette/forms": "^2.4",
-		"nette/http": "^2.4",
-		"nette/mail": "^2.4",
-		"nette/robot-loader": "^2.4",
-		"nette/safe-stream": "^2.3",
-		"nette/security": "^2.4",
-		"nette/utils": "^2.5",
-		"latte/latte": "^2.4",
-		"tracy/tracy": "^2.5",
-		"dg/adminer-custom": "^1.17",
-		"kdyby/doctrine": "master@dev",
-		"kdyby/doctrine-magic-accessors": "*",
-		"kdyby/doctrine-cache": ">=2.6.1",
-		"kdyby/console": ">=2.7.1",
-		"kdyby/events": ">=3.1.2",
-		"gedmo/doctrine-extensions": "@stable",
-		"zenify/doctrine-fixtures": "dev-deps-update@dev",
-		"doctrine/orm": "^2.6",
-		"doctrine/dbal": "^2.9",
-		"doctrine/migrations": "^2.0",
-		"guzzlehttp/guzzle": "~6.3",
-		"symfony/yaml": "^3.1",
-		"symfony/process": "^3.3.0",
-		"firebase/php-jwt": "^5.0",
-		"forxer/gravatar": "^2.1",
-		"mrdm-nl/ldap": "^1.1",
-		"bjeavons/zxcvbn-php": "^0.3.0",
-		"limenet/git-version": "^0.1"
-	},
-	"require-dev": {
-		"nette/tester": "^2.1",
-		"mockery/mockery": "@stable",
-		"mikey179/vfsstream": "@stable",
-		"phpstan/phpstan": "@stable"
-	},
-	"minimum-stability": "stable"
+  "name": "recodex/api",
+  "description": "Web api of ReCodEx Code Evaluator.",
+  "homepage": "https://github.com/ReCodEx/api",
+  "type": "project",
+  "license": [
+    "MIT"
+  ],
+  "authors": [
+    {
+      "name": "ReCodEx Team",
+      "homepage": "https://github.com/ReCodEx/api/graphs/contributors"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/ReCodEx/DoctrineFixtures"
+    }
+  ],
+  "scripts": {
+    "post-install-cmd": [
+      "composer dump-autoload --optimize --classmap-authoritative"
+    ]
+  },
+  "require": {
+    "php": ">=7.2",
+    "ext-yaml": ">=2.0",
+    "nette/application": "^2.4",
+    "nette/bootstrap": "^2.4",
+    "nette/caching": "^2.5",
+    "nette/database": "^2.4",
+    "nette/di": "^2.4",
+    "nette/finder": "^2.4",
+    "nette/forms": "^2.4",
+    "nette/http": "^2.4",
+    "nette/mail": "^2.4",
+    "nette/robot-loader": "^2.4",
+    "nette/safe-stream": "^2.3",
+    "nette/security": "^2.4",
+    "nette/utils": "^2.5",
+    "latte/latte": "^2.4",
+    "tracy/tracy": "^2.5",
+    "dg/adminer-custom": "^1.17",
+    "kdyby/doctrine": "master@dev",
+    "kdyby/doctrine-magic-accessors": "*",
+    "kdyby/doctrine-cache": ">=2.6.1",
+    "kdyby/console": ">=2.7.1",
+    "kdyby/events": ">=3.1.2",
+    "gedmo/doctrine-extensions": "@stable",
+    "zenify/doctrine-fixtures": "dev-deps-update@dev",
+    "doctrine/orm": "^2.6",
+    "doctrine/dbal": "^2.9",
+    "doctrine/migrations": "^2.0",
+    "guzzlehttp/guzzle": "~6.3",
+    "symfony/yaml": "^3.1",
+    "symfony/process": "^3.3.0",
+    "firebase/php-jwt": "^5.0",
+    "forxer/gravatar": "^2.1",
+    "mrdm-nl/ldap": "^1.1",
+    "bjeavons/zxcvbn-php": "^0.3.0",
+    "limenet/git-version": "^0.1"
+  },
+  "require-dev": {
+    "nette/tester": "^2.1",
+    "mockery/mockery": "@stable",
+    "mikey179/vfsstream": "@stable",
+    "phpstan/phpstan": "@stable"
+  },
+  "minimum-stability": "stable"
 }

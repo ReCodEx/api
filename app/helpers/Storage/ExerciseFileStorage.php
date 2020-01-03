@@ -13,47 +13,61 @@ use Nette\Http\FileUpload;
 /**
  * Stores uploaded supplementary exercise files on fileserver
  */
-class ExerciseFileStorage {
-  use Nette\SmartObject;
+class ExerciseFileStorage
+{
+    use Nette\SmartObject;
 
-  /**
-   * @var FileServerProxy
-   */
-  private $fileServer;
+    /**
+     * @var FileServerProxy
+     */
+    private $fileServer;
 
-  /**
-   * Constructor
-   * @param FileServerProxy $fileServer
-   */
-  public function __construct(FileServerProxy $fileServer) {
-    $this->fileServer = $fileServer;
-  }
+    /**
+     * Constructor
+     * @param FileServerProxy $fileServer
+     */
+    public function __construct(FileServerProxy $fileServer)
+    {
+        $this->fileServer = $fileServer;
+    }
 
-  /**
-   * Save the file into fileserver and return database entity
-   * @param UploadedFile|FileUpload $file The file to be stored
-   * @param Exercise $exercise
-   * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
-   * @throws SubmissionFailedException
-   */
-  public function storeExerciseFile(UploadedFile $file, Exercise $exercise) {
-    $result = current($this->fileServer->sendSupplementaryFiles([$file]));
-    $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndExercise($file, $exercise, basename($result), $result);
+    /**
+     * Save the file into fileserver and return database entity
+     * @param UploadedFile|FileUpload $file The file to be stored
+     * @param Exercise $exercise
+     * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
+     * @throws SubmissionFailedException
+     */
+    public function storeExerciseFile(UploadedFile $file, Exercise $exercise)
+    {
+        $result = current($this->fileServer->sendSupplementaryFiles([$file]));
+        $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndExercise(
+            $file,
+            $exercise,
+            basename($result),
+            $result
+        );
 
-    return $exerciseFile;
-  }
+        return $exerciseFile;
+    }
 
-  /**
-   * Save the file into fileserver and return database entity
-   * @param UploadedFile|FileUpload $file The file to be stored
-   * @param Pipeline $pipeline
-   * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
-   * @throws SubmissionFailedException
-   */
-  public function storePipelineFile(UploadedFile $file, Pipeline $pipeline) {
-    $result = current($this->fileServer->sendSupplementaryFiles([$file]));
-    $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndPipeline($file, $pipeline, basename($result), $result);
+    /**
+     * Save the file into fileserver and return database entity
+     * @param UploadedFile|FileUpload $file The file to be stored
+     * @param Pipeline $pipeline
+     * @return SupplementaryExerciseFile|null If the operation is not successful, null is returned
+     * @throws SubmissionFailedException
+     */
+    public function storePipelineFile(UploadedFile $file, Pipeline $pipeline)
+    {
+        $result = current($this->fileServer->sendSupplementaryFiles([$file]));
+        $exerciseFile = SupplementaryExerciseFile::fromUploadedFileAndPipeline(
+            $file,
+            $pipeline,
+            basename($result),
+            $result
+        );
 
-    return $exerciseFile;
-  }
+        return $exerciseFile;
+    }
 }

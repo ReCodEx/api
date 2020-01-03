@@ -8,9 +8,11 @@ use Kdyby\Doctrine\EntityManager;
 /**
  * @method ExerciseTest findOrThrow($id)
  */
-class ExerciseTests extends BaseRepository {
+class ExerciseTests extends BaseRepository
+{
 
-  public function __construct(EntityManager $em) {
-    parent::__construct($em, ExerciseTest::class);
-  }
+    public function __construct(EntityManager $em)
+    {
+        parent::__construct($em, ExerciseTest::class);
+    }
 }

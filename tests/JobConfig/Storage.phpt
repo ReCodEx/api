@@ -11,85 +11,96 @@ use Nette\Utils\Strings;
 
 class TestJobConfigStorage extends Tester\TestCase
 {
-  private $jobConfigFileName;
+    private $jobConfigFileName;
 
-  /** @var Storage */
-  private $storage;
+    /** @var Storage */
+    private $storage;
 
-  public function setUp() {
-    $filePath = sys_get_temp_dir() . '/test-job-config-loader.yml';
-    file_put_contents($filePath, self::$jobConfig);
-    $this->jobConfigFileName = $filePath;
-    $this->storage = new Storage(sys_get_temp_dir());
-  }
+    public function setUp()
+    {
+        $filePath = sys_get_temp_dir() . '/test-job-config-loader.yml';
+        file_put_contents($filePath, self::$jobConfig);
+        $this->jobConfigFileName = $filePath;
+        $this->storage = new Storage(sys_get_temp_dir());
+    }
 
-  public function tearDown() {
-    @unlink($this->jobConfigFileName); // the file might not already exist
-  }
+    public function tearDown()
+    {
+        @unlink($this->jobConfigFileName); // the file might not already exist
+    }
 
-  public function testArchiving() {
-    $oldContents = file_get_contents($this->jobConfigFileName);
-    $newFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
-    $newContents = file_get_contents($newFilePath);
-    $newFileName = pathinfo($newFilePath, PATHINFO_FILENAME);
-    Assert::true(Strings::startsWith($newFileName, "my_custom_prefix_"));
-    Assert::equal($oldContents, $newContents);
+    public function testArchiving()
+    {
+        $oldContents = file_get_contents($this->jobConfigFileName);
+        $newFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
+        $newContents = file_get_contents($newFilePath);
+        $newFileName = pathinfo($newFilePath, PATHINFO_FILENAME);
+        Assert::true(Strings::startsWith($newFileName, "my_custom_prefix_"));
+        Assert::equal($oldContents, $newContents);
 
-    // cleanup
-    unlink($newFilePath);
-  }
+        // cleanup
+        unlink($newFilePath);
+    }
 
-  public function testArchivingMultipleTimes() {
-    // first make sure the file is real
-    Assert::true(is_file($this->jobConfigFileName));
+    public function testArchivingMultipleTimes()
+    {
+        // first make sure the file is real
+        Assert::true(is_file($this->jobConfigFileName));
 
-    $firstArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
-    file_put_contents($this->jobConfigFileName, self::$jobConfig);
-    $secondArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
+        $firstArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
+        file_put_contents($this->jobConfigFileName, self::$jobConfig);
+        $secondArchivedFilePath = $this->storage->archive($this->jobConfigFileName, "my_custom_prefix_");
 
-    // both archives must exist
-    Assert::true(is_file($firstArchivedFilePath));
-    Assert::true(is_file($secondArchivedFilePath));
+        // both archives must exist
+        Assert::true(is_file($firstArchivedFilePath));
+        Assert::true(is_file($secondArchivedFilePath));
 
-    // test the suffixes
-    Assert::true(Strings::endsWith($firstArchivedFilePath, "_1.yml"));
-    Assert::true(Strings::endsWith($secondArchivedFilePath, "_2.yml"));
+        // test the suffixes
+        Assert::true(Strings::endsWith($firstArchivedFilePath, "_1.yml"));
+        Assert::true(Strings::endsWith($secondArchivedFilePath, "_2.yml"));
 
-    // cleanup
-    unlink($firstArchivedFilePath);
-    unlink($secondArchivedFilePath);
-  }
+        // cleanup
+        unlink($firstArchivedFilePath);
+        unlink($secondArchivedFilePath);
+    }
 
-  public function testCanBeLoaded() {
-    $jobConfig = $this->storage->parse(self::$jobConfig);
-    Assert::type(JobConfig::CLASS, $jobConfig);
-    Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
-  }
+    public function testCanBeLoaded()
+    {
+        $jobConfig = $this->storage->parse(self::$jobConfig);
+        Assert::type(JobConfig::CLASS, $jobConfig);
+        Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
+    }
 
-  public function testRejectInvalidYaml() {
-    Assert::exception(function() {
-        $invalidCfg = "bla bla:
+    public function testRejectInvalidYaml()
+    {
+        Assert::exception(
+            function () {
+                $invalidCfg = "bla bla:
             \t- ratatat:
             - foo
             - bar";
-        $this->storage->parse($invalidCfg);
-    }, MalformedJobConfigException::CLASS);
-  }
+                $this->storage->parse($invalidCfg);
+            },
+            MalformedJobConfigException::CLASS
+        );
+    }
 
-  public function testLoadFromFile() {
-    $jobConfig = $this->storage->get($this->jobConfigFileName);
-    Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
-    Assert::type(JobConfig::CLASS, $jobConfig);
-  }
+    public function testLoadFromFile()
+    {
+        $jobConfig = $this->storage->get($this->jobConfigFileName);
+        Assert::equal("hippoes", $jobConfig->getSubmissionHeader()->getId());
+        Assert::type(JobConfig::CLASS, $jobConfig);
+    }
 
-  public function testCorrectInterpretation() {
-    $jobConfig = $this->storage->parse(self::$jobConfig);
-    Assert::equal(31, $jobConfig->getTasksCount());
-    Assert::equal(31, count($jobConfig->getTasks()));
-    Assert::equal(6, count($jobConfig->getTests()));
-  }
+    public function testCorrectInterpretation()
+    {
+        $jobConfig = $this->storage->parse(self::$jobConfig);
+        Assert::equal(31, $jobConfig->getTasksCount());
+        Assert::equal(31, count($jobConfig->getTasks()));
+        Assert::equal(6, count($jobConfig->getTests()));
+    }
 
-  static $jobConfig = <<<'EOS'
+    static $jobConfig = <<<'EOS'
 # Hippoes config file
 # prerequisites: judge binary in /usr/bin/recodex-judge-normal
 #                reachable input and output files - in /tmp/tmpxxxxxx/tasks for our testing file_server.py

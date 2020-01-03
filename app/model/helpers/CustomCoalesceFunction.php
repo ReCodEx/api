@@ -38,22 +38,21 @@ class CoalesceSubselectsFunction extends FunctionNode
      */
     public function parse(\Doctrine\ORM\Query\Parser $parser)
     {
-      $parser->match(Lexer::T_IDENTIFIER);
-      $parser->match(Lexer::T_OPEN_PARENTHESIS);
-
-      $parser->match(Lexer::T_OPEN_PARENTHESIS);
-      $this->subselectExpressions[] = $parser->Subselect();
-      $parser->match(Lexer::T_CLOSE_PARENTHESIS);
-
-      while ($parser->getLexer()->isNextToken(Lexer::T_COMMA)) {
-        $parser->match(Lexer::T_COMMA);
+        $parser->match(Lexer::T_IDENTIFIER);
+        $parser->match(Lexer::T_OPEN_PARENTHESIS);
 
         $parser->match(Lexer::T_OPEN_PARENTHESIS);
         $this->subselectExpressions[] = $parser->Subselect();
         $parser->match(Lexer::T_CLOSE_PARENTHESIS);
-      }
 
-      $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        while ($parser->getLexer()->isNextToken(Lexer::T_COMMA)) {
+            $parser->match(Lexer::T_COMMA);
+
+            $parser->match(Lexer::T_OPEN_PARENTHESIS);
+            $this->subselectExpressions[] = $parser->Subselect();
+            $parser->match(Lexer::T_CLOSE_PARENTHESIS);
+        }
+
+        $parser->match(Lexer::T_CLOSE_PARENTHESIS);
     }
 }
-

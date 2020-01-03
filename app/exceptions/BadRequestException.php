@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Exceptions;
+
 use Nette\Http\IResponse;
 
 /**
@@ -8,18 +9,24 @@ use Nette\Http\IResponse;
  * spotted in some cases of role checking errors. Proper 400 HTTP error code is
  * sent back to client.
  */
-class BadRequestException extends ApiException {
-  /**
-   * Create instance with textual description.
-   * @param string $msg description
-   * @param string $frontendErrorCode
-   * @param null $frontendErrorParams
-   */
-  public function __construct(
-    string $msg = 'one or more parameters are missing',
-    string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST,
-    $frontendErrorParams = null
-  ) {
-    parent::__construct("Bad Request - $msg", IResponse::S400_BAD_REQUEST, $frontendErrorCode, $frontendErrorParams);
-  }
+class BadRequestException extends ApiException
+{
+    /**
+     * Create instance with textual description.
+     * @param string $msg description
+     * @param string $frontendErrorCode
+     * @param null $frontendErrorParams
+     */
+    public function __construct(
+        string $msg = 'one or more parameters are missing',
+        string $frontendErrorCode = FrontendErrorMappings::E400_000__BAD_REQUEST,
+        $frontendErrorParams = null
+    ) {
+        parent::__construct(
+            "Bad Request - $msg",
+            IResponse::S400_BAD_REQUEST,
+            $frontendErrorCode,
+            $frontendErrorParams
+        );
+    }
 }

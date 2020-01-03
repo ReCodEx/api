@@ -14,80 +14,83 @@ use App\Helpers\ExerciseConfig\Pipeline\Box\Params\TaskCommands;
 use App\Helpers\ExerciseConfig\Variable;
 use App\Helpers\JobConfig\Tasks\Task;
 
-
 /**
  * Abstract box representing internal pipeline resource.
  */
 abstract class FetchBox extends Box
 {
 
-  /**
-   * DataInBox constructor.
-   * @param BoxMeta $meta
-   */
-  public function __construct(BoxMeta $meta) {
-    parent::__construct($meta);
-  }
-
-
-  public function getCategory(): string {
-    return BoxCategories::$INNER;
-  }
-
-  /**
-   * Compile task from given information.
-   * @param Variable $remote
-   * @param Variable $local
-   * @param CompilationParams $params
-   * @return Task[]
-   * @throws ExerciseCompilationException
-   * @throws ExerciseConfigException
-   */
-  protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array {
-    if ($remote->isEmpty()) {
-      // nothing to be downloaded here
-      return [];
+    /**
+     * DataInBox constructor.
+     * @param BoxMeta $meta
+     */
+    public function __construct(BoxMeta $meta)
+    {
+        parent::__construct($meta);
     }
 
-    // variable is empty, this means there is no request to rename fetched
-    // files, therefore we have to fill variable with remote file names
-    if ($local->isEmpty()) {
-      $local->setValue($remote->getValue());
+
+    public function getCategory(): string
+    {
+        return BoxCategories::$INNER;
     }
 
-    // prepare arrays which will be processed
-    $remoteFiles = array_values($remote->getValueAsArray());
-    $files = array_values($local->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
+    /**
+     * Compile task from given information.
+     * @param Variable $remote
+     * @param Variable $local
+     * @param CompilationParams $params
+     * @return Task[]
+     * @throws ExerciseCompilationException
+     * @throws ExerciseConfigException
+     */
+    protected function compileInternal(Variable $remote, Variable $local, CompilationParams $params): array
+    {
+        if ($remote->isEmpty()) {
+            // nothing to be downloaded here
+            return [];
+        }
 
-    $tasks = [];
-    for ($i = 0; $i < count($files); ++$i) {
-      $file = $files[$i];
-      $basename = basename($file);
+        // variable is empty, this means there is no request to rename fetched
+        // files, therefore we have to fill variable with remote file names
+        if ($local->isEmpty()) {
+            $local->setValue($remote->getValue());
+        }
 
-      // check if soon-to-be fetched file does not collide with files given by user
-      if (in_array($basename, $params->getFiles())) {
-        throw new ExerciseCompilationSoftException(
-          "File '{$basename}' is already defined by author of the exercise",
-          FrontendErrorMappings::E400_401__EXERCISE_COMPILATION_FILE_DEFINED,
-          [ "filename" => $basename ]
-        );
-      }
+        // prepare arrays which will be processed
+        $remoteFiles = array_values($remote->getValueAsArray());
+        $files = array_values($local->getDirPrefixedValueAsArray(ConfigParams::$SOURCE_DIR));
 
-      // create task
-      $task = new Task();
-      $task->setPriority(Priorities::$DEFAULT);
+        $tasks = [];
+        for ($i = 0; $i < count($files); ++$i) {
+            $file = $files[$i];
+            $basename = basename($file);
 
-      // remote file has to have fetch task
-      $task->setCommandBinary(TaskCommands::$FETCH);
-      $task->setCommandArguments([
-        $remoteFiles[$i],
-        $file
-      ]);
+            // check if soon-to-be fetched file does not collide with files given by user
+            if (in_array($basename, $params->getFiles())) {
+                throw new ExerciseCompilationSoftException(
+                    "File '{$basename}' is already defined by author of the exercise",
+                    FrontendErrorMappings::E400_401__EXERCISE_COMPILATION_FILE_DEFINED,
+                    ["filename" => $basename]
+                );
+            }
 
-      // add task to result
-      $tasks[] = $task;
+            // create task
+            $task = new Task();
+            $task->setPriority(Priorities::$DEFAULT);
+
+            // remote file has to have fetch task
+            $task->setCommandBinary(TaskCommands::$FETCH);
+            $task->setCommandArguments(
+                [
+                    $remoteFiles[$i],
+                    $file
+                ]
+            );
+
+            // add task to result
+            $tasks[] = $task;
+        }
+        return $tasks;
     }
-    return $tasks;
-  }
-
 }

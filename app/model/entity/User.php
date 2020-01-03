@@ -42,379 +42,414 @@ use App\Exceptions\ApiException;
  */
 class User
 {
-  use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
-  use DeleteableEntity;
+    use \Kdyby\Doctrine\MagicAccessors\MagicAccessors;
+    use DeleteableEntity;
 
-  public function __construct(
-    string $email,
-    string $firstName,
-    string $lastName,
-    string $degreesBeforeName,
-    string $degreesAfterName,
-    ?string $role,
-    Instance $instance,
-    bool $instanceAdmin = false
-  ) {
-    $this->firstName = $firstName;
-    $this->lastName = $lastName;
-    $this->degreesBeforeName = $degreesBeforeName;
-    $this->degreesAfterName = $degreesAfterName;
-    $this->email = $email;
-    $this->isVerified = false;
-    $this->isAllowed = true;
-    $this->memberships = new ArrayCollection();
-    $this->exercises = new ArrayCollection();
-    $this->createdAt = new DateTime();
-    $this->instances = new ArrayCollection([$instance]);
-    $instance->addMember($this);
-    $this->settings = new UserSettings(true, false, "en");
-    $this->login = null;
-    $this->externalLogins = new ArrayCollection();
-    $this->avatarUrl = null;
+    public function __construct(
+        string $email,
+        string $firstName,
+        string $lastName,
+        string $degreesBeforeName,
+        string $degreesAfterName,
+        ?string $role,
+        Instance $instance,
+        bool $instanceAdmin = false
+    ) {
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->degreesBeforeName = $degreesBeforeName;
+        $this->degreesAfterName = $degreesAfterName;
+        $this->email = $email;
+        $this->isVerified = false;
+        $this->isAllowed = true;
+        $this->memberships = new ArrayCollection();
+        $this->exercises = new ArrayCollection();
+        $this->createdAt = new DateTime();
+        $this->instances = new ArrayCollection([$instance]);
+        $instance->addMember($this);
+        $this->settings = new UserSettings(true, false, "en");
+        $this->login = null;
+        $this->externalLogins = new ArrayCollection();
+        $this->avatarUrl = null;
 
-    if (empty($role)) {
-      $this->role = Roles::STUDENT_ROLE;
-    } else {
-      $this->role = $role;
+        if (empty($role)) {
+            $this->role = Roles::STUDENT_ROLE;
+        } else {
+            $this->role = $role;
+        }
+
+        if ($instanceAdmin) {
+            $instance->setAdmin($this);
+        }
     }
 
-    if ($instanceAdmin) {
-      $instance->setAdmin($this);
+    /**
+     * @ORM\Id
+     * @ORM\Column(type="guid")
+     * @ORM\GeneratedValue(strategy="UUID")
+     */
+    protected $id;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $degreesBeforeName;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $firstName;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $lastName;
+
+    public function getName()
+    {
+        return trim("{$this->degreesBeforeName} {$this->firstName} {$this->lastName} {$this->degreesAfterName}");
     }
-  }
 
-  /**
-   * @ORM\Id
-   * @ORM\Column(type="guid")
-   * @ORM\GeneratedValue(strategy="UUID")
-   */
-  protected $id;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $degreesAfterName;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $degreesBeforeName;
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $email;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $firstName;
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    protected $avatarUrl;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $lastName;
+    /**
+     * If true, then set gravatar image based on user email.
+     * @param bool $useGravatar
+     */
+    public function setGravatar(bool $useGravatar = true)
+    {
+        $this->avatarUrl = !$useGravatar ? null :
+            Gravatar::image($this->email, 200, "retro", "g", "png", false)->getUrl();
+    }
 
-  public function getName() {
-    return trim("{$this->degreesBeforeName} {$this->firstName} {$this->lastName} {$this->degreesAfterName}");
-  }
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isVerified;
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $degreesAfterName;
+    public function isVerified()
+    {
+        return $this->isVerified;
+    }
 
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $email;
+    public function setVerified($verified = true)
+    {
+        $this->isVerified = $verified;
+    }
 
-  /**
-   * @ORM\Column(type="string", nullable=true)
-   */
-  protected $avatarUrl;
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $isAllowed;
 
-  /**
-   * If true, then set gravatar image based on user email.
-   * @param bool $useGravatar
-   */
-  public function setGravatar(bool $useGravatar = true) {
-    $this->avatarUrl = !$useGravatar ? null :
-      Gravatar::image($this->email, 200, "retro", "g", "png", false)->getUrl();
-  }
+    public function isAllowed()
+    {
+        return $this->isAllowed;
+    }
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isVerified;
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $createdAt;
 
-  public function isVerified() { return $this->isVerified; }
+    /**
+     * @ORM\ManyToMany(targetEntity="Instance", inversedBy="members")
+     */
+    protected $instances;
 
-  public function setVerified($verified = true) {
-    $this->isVerified = $verified;
-  }
+    public function belongsTo(Instance $instance)
+    {
+        return $this->instances->contains($instance);
+    }
 
-  /**
-   * @ORM\Column(type="boolean")
-   */
-  protected $isAllowed;
+    public function getInstancesIds()
+    {
+        return $this->instances->map(
+            function (Instance $instance) {
+                return $instance->getId();
+            }
+        )->getValues();
+    }
 
-  public function isAllowed() { return $this->isAllowed; }
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $tokenValidityThreshold;
 
-  /**
-   * @ORM\Column(type="datetime")
-   */
-  protected $createdAt;
+    /**
+     * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
+     */
+    protected $settings;
 
-  /**
-   * @ORM\ManyToMany(targetEntity="Instance", inversedBy="members")
-   */
-  protected $instances;
+    /**
+     * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
+     */
+    protected $memberships;
 
-  public function belongsTo(Instance $instance) {
-    return $this->instances->contains($instance);
-  }
-
-  public function getInstancesIds() {
-    return $this->instances->map(function (Instance $instance) {
-      return $instance->getId();
-    })->getValues();
-  }
-
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   */
-  protected $tokenValidityThreshold;
-
-  /**
-   * @ORM\OneToOne(targetEntity="UserSettings", cascade={"persist"})
-   */
-  protected $settings;
-
-  /**
-   * @ORM\OneToMany(targetEntity="GroupMembership", mappedBy="user", cascade={"all"})
-   */
-  protected $memberships;
-
-  protected function findMembership(Group $group, string $type) {
-    $filter = Criteria::create()
+    protected function findMembership(Group $group, string $type)
+    {
+        $filter = Criteria::create()
             ->where(Criteria::expr()->eq("group", $group))
             ->andWhere(Criteria::expr()->eq("type", $type));
-    $filtered = $this->memberships->matching($filter);
-    if ($filtered->isEmpty()) {
-      return null;
-    }
-
-    if ($filtered->count() > 1) {
-      // @todo: handle this situation, when this user is double member of the same group
-    }
-
-    return $filtered->first();
-  }
-
-  public function findMembershipAsStudent(Group $group) {
-    return $this->findMembership($group, GroupMembership::TYPE_STUDENT);
-  }
-
-  public function findMembershipAsSupervisor(Group $group) {
-    return $this->findMembership($group, GroupMembership::TYPE_SUPERVISOR);
-  }
-
-  protected function getMemberships() {
-    return $this->memberships->filter(function (GroupMembership $membership) {
-      return $membership->getGroup()->getDeletedAt() === null;
-    });
-  }
-
-  /**
-   * Returns array with all groups in which this user has given type.
-   * @param string $type
-   * @return ArrayCollection
-   */
-  protected function findGroupMemberships($type) {
-    $filter = Criteria::create()
-            ->where(Criteria::expr()->eq("type", $type));
-    return $this->getMemberships()->matching($filter)->getValues();
-  }
-
-  public function findGroupMembershipsAsSupervisor() {
-    return $this->findGroupMemberships(GroupMembership::TYPE_SUPERVISOR);
-  }
-
-  public function findGroupMembershipsAsStudent() {
-    return $this->findGroupMemberships(GroupMembership::TYPE_STUDENT);
-  }
-
-  protected function addMembership(Group $group, string $type) {
-    $membership = new GroupMembership($group, $this, $type, GroupMembership::STATUS_ACTIVE);
-    $this->memberships->add($membership);
-    $group->addMembership($membership);
-  }
-
-  protected function makeMemberOf(Group $group, string $type) {
-    $membership = $this->findMembership($group, $type);
-    if ($membership === null) {
-      $this->addMembership($group, $type);
-    } else {
-      $membership->setType($type);
-      $membership->setStatus(GroupMembership::STATUS_ACTIVE);
-    }
-  }
-
-  public function getGroups(string $type = null) {
-    $result = $this->getMemberships();
-
-    if ($type !== null) {
-      $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
-      $result = $result->matching($filter);
-    }
-
-    return $result->map(
-      function (GroupMembership $membership) {
-        return $membership->getGroup();
-      }
-    );
-  }
-
-  public function getGroupsAsStudent() {
-    return $this->getGroups(GroupMembership::TYPE_STUDENT);
-  }
-
-  public function makeStudentOf(Group $group) {
-    $this->makeMemberOf($group, GroupMembership::TYPE_STUDENT);
-  }
-
-  public function getGroupsAsSupervisor() {
-    return $this->getGroups(GroupMembership::TYPE_SUPERVISOR);
-  }
-
-  public function makeSupervisorOf(Group $group) {
-    $this->makeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
-  }
-
-  /**
-   * @ORM\OneToMany(targetEntity="Exercise", mappedBy="author")
-   */
-  protected $exercises;
-
-  /**
-   * @ORM\Column(type="string")
-   */
-  protected $role;
-
-  /**
-   * @ORM\OneToMany(targetEntity="ExternalLogin", mappedBy="user", cascade={"all"})
-   */
-  protected $externalLogins;
-
-  /**
-   * @ORM\OneToOne(targetEntity="Login", mappedBy="user", cascade={"all"})
-   */
-  protected $login;
-
-
-  /**
-   * @return array
-   */
-  public function getNameParts(): array {
-    return [
-      "degreesBeforeName" => $this->degreesBeforeName,
-      "firstName" => $this->firstName,
-      "lastName" => $this->lastName,
-      "degreesAfterName" => $this->degreesAfterName,
-    ];
-  }
-
-  /**
-   * Returns true if the user entity is associated with a local login entity.
-   * @return bool
-   */
-  public function hasLocalAccount(): bool {
-    return $this->login !== null;
-  }
-
-  /**
-   * Returns true if the user entity is associated with a external login entity.
-   * @return bool
-   */
-  public function hasExternalAccounts(): bool {
-    return !$this->externalLogins->isEmpty();
-  }
-
-  /**
-   * Return an associative array [ service => externalId ] for the user.
-   * If there are multiple IDs for the same service, they are concatenated in an array.
-   * If a filter is provided, only services specified on the filter list are yielded.
-   * @param array|null A list of services to be included in the result. Null = all services.
-   * @return array
-   */
-  public function getConsolidatedExternalLogins(?array $filter = null)
-  {
-    if ($filter === []) {
-      return [];  // why should we bother...
-    }
-
-    // assemble the result structure [ service => ids ]
-    $res = [];
-    foreach ($this->externalLogins as $externalLogin) {
-      if (empty($res[$externalLogin->getAuthService()])) {
-        $res[$externalLogin->getAuthService()] = [];
-      }
-      $res[$externalLogin->getAuthService()][] = $externalLogin->getExternalId();
-    }
-
-    // single IDs (per service) are turned into scalars
-    foreach ($res as &$externalIds) {
-      if (count($externalIds) === 1) {
-        $externalIds = reset($externalIds);
-      }
-    }
-    unset($externalIds);  // make sure this reference is not accidentaly reused
-
-    // filter the list if necessary
-    if ($filter !== null) {
-      $resFiltered = [];
-      foreach ($filter as $service) {
-        if (!empty($res[$service])) {
-          $resFiltered[$service] = $res[$service];
+        $filtered = $this->memberships->matching($filter);
+        if ($filtered->isEmpty()) {
+            return null;
         }
-      }
-      return $resFiltered;
+
+        if ($filtered->count() > 1) {
+            // @todo: handle this situation, when this user is double member of the same group
+        }
+
+        return $filtered->first();
     }
 
-    return $res;
-  }
+    public function findMembershipAsStudent(Group $group)
+    {
+        return $this->findMembership($group, GroupMembership::TYPE_STUDENT);
+    }
 
-  /**
-   * Return date and time when the user was created.
-   * @return DateTime
-   */
-  public function getCreatedAt(): DateTime {
-    return $this->createdAt;
-  }
+    public function findMembershipAsSupervisor(Group $group)
+    {
+        return $this->findMembership($group, GroupMembership::TYPE_SUPERVISOR);
+    }
+
+    protected function getMemberships()
+    {
+        return $this->memberships->filter(
+            function (GroupMembership $membership) {
+                return $membership->getGroup()->getDeletedAt() === null;
+            }
+        );
+    }
+
+    /**
+     * Returns array with all groups in which this user has given type.
+     * @param string $type
+     * @return ArrayCollection
+     */
+    protected function findGroupMemberships($type)
+    {
+        $filter = Criteria::create()
+            ->where(Criteria::expr()->eq("type", $type));
+        return $this->getMemberships()->matching($filter)->getValues();
+    }
+
+    public function findGroupMembershipsAsSupervisor()
+    {
+        return $this->findGroupMemberships(GroupMembership::TYPE_SUPERVISOR);
+    }
+
+    public function findGroupMembershipsAsStudent()
+    {
+        return $this->findGroupMemberships(GroupMembership::TYPE_STUDENT);
+    }
+
+    protected function addMembership(Group $group, string $type)
+    {
+        $membership = new GroupMembership($group, $this, $type, GroupMembership::STATUS_ACTIVE);
+        $this->memberships->add($membership);
+        $group->addMembership($membership);
+    }
+
+    protected function makeMemberOf(Group $group, string $type)
+    {
+        $membership = $this->findMembership($group, $type);
+        if ($membership === null) {
+            $this->addMembership($group, $type);
+        } else {
+            $membership->setType($type);
+            $membership->setStatus(GroupMembership::STATUS_ACTIVE);
+        }
+    }
+
+    public function getGroups(string $type = null)
+    {
+        $result = $this->getMemberships();
+
+        if ($type !== null) {
+            $filter = Criteria::create()->where(Criteria::expr()->eq("type", $type));
+            $result = $result->matching($filter);
+        }
+
+        return $result->map(
+            function (GroupMembership $membership) {
+                return $membership->getGroup();
+            }
+        );
+    }
+
+    public function getGroupsAsStudent()
+    {
+        return $this->getGroups(GroupMembership::TYPE_STUDENT);
+    }
+
+    public function makeStudentOf(Group $group)
+    {
+        $this->makeMemberOf($group, GroupMembership::TYPE_STUDENT);
+    }
+
+    public function getGroupsAsSupervisor()
+    {
+        return $this->getGroups(GroupMembership::TYPE_SUPERVISOR);
+    }
+
+    public function makeSupervisorOf(Group $group)
+    {
+        $this->makeMemberOf($group, GroupMembership::TYPE_SUPERVISOR);
+    }
+
+    /**
+     * @ORM\OneToMany(targetEntity="Exercise", mappedBy="author")
+     */
+    protected $exercises;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    protected $role;
+
+    /**
+     * @ORM\OneToMany(targetEntity="ExternalLogin", mappedBy="user", cascade={"all"})
+     */
+    protected $externalLogins;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Login", mappedBy="user", cascade={"all"})
+     */
+    protected $login;
 
 
-  /**
-   * @ORM\Column(type="datetime", nullable=true)
-   * @var DateTime
-   * When the last authentication or token renewal occurred.
-   */
-  protected $lastAuthenticationAt = null;
+    /**
+     * @return array
+     */
+    public function getNameParts(): array
+    {
+        return [
+            "degreesBeforeName" => $this->degreesBeforeName,
+            "firstName" => $this->firstName,
+            "lastName" => $this->lastName,
+            "degreesAfterName" => $this->degreesAfterName,
+        ];
+    }
 
-  /**
-   * Update the last authentication time to present.
-   */
-  public function updateLastAuthenticationAt() {
-    $this->lastAuthenticationAt = new DateTime();
-  }
+    /**
+     * Returns true if the user entity is associated with a local login entity.
+     * @return bool
+     */
+    public function hasLocalAccount(): bool
+    {
+        return $this->login !== null;
+    }
 
-  /**
-   * @ORM\OneToOne(targetEntity="UserUiData", cascade={"persist", "remove"}, orphanRemoval=true)
-   */
-  protected $uiData = null;
+    /**
+     * Returns true if the user entity is associated with a external login entity.
+     * @return bool
+     */
+    public function hasExternalAccounts(): bool
+    {
+        return !$this->externalLogins->isEmpty();
+    }
 
-  /**
-   * @return UserUiData|null
-   */
-  public function getUiData(): ?UserUiData {
-    return $this->uiData;
-  }
+    /**
+     * Return an associative array [ service => externalId ] for the user.
+     * If there are multiple IDs for the same service, they are concatenated in an array.
+     * If a filter is provided, only services specified on the filter list are yielded.
+     * @param array|null A list of services to be included in the result. Null = all services.
+     * @return array
+     */
+    public function getConsolidatedExternalLogins(?array $filter = null)
+    {
+        if ($filter === []) {
+            return [];  // why should we bother...
+        }
 
-  /**
-   * @param UserUiData|null
-   */
-  public function setUiData(?UserUiData $uiData) {
-    $this->uiData = $uiData;
-  }
+        // assemble the result structure [ service => ids ]
+        $res = [];
+        foreach ($this->externalLogins as $externalLogin) {
+            if (empty($res[$externalLogin->getAuthService()])) {
+                $res[$externalLogin->getAuthService()] = [];
+            }
+            $res[$externalLogin->getAuthService()][] = $externalLogin->getExternalId();
+        }
 
+        // single IDs (per service) are turned into scalars
+        foreach ($res as &$externalIds) {
+            if (count($externalIds) === 1) {
+                $externalIds = reset($externalIds);
+            }
+        }
+        unset($externalIds);  // make sure this reference is not accidentaly reused
+
+        // filter the list if necessary
+        if ($filter !== null) {
+            $resFiltered = [];
+            foreach ($filter as $service) {
+                if (!empty($res[$service])) {
+                    $resFiltered[$service] = $res[$service];
+                }
+            }
+            return $resFiltered;
+        }
+
+        return $res;
+    }
+
+    /**
+     * Return date and time when the user was created.
+     * @return DateTime
+     */
+    public function getCreatedAt(): DateTime
+    {
+        return $this->createdAt;
+    }
+
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     * @var DateTime
+     * When the last authentication or token renewal occurred.
+     */
+    protected $lastAuthenticationAt = null;
+
+    /**
+     * Update the last authentication time to present.
+     */
+    public function updateLastAuthenticationAt()
+    {
+        $this->lastAuthenticationAt = new DateTime();
+    }
+
+    /**
+     * @ORM\OneToOne(targetEntity="UserUiData", cascade={"persist", "remove"}, orphanRemoval=true)
+     */
+    protected $uiData = null;
+
+    /**
+     * @return UserUiData|null
+     */
+    public function getUiData(): ?UserUiData
+    {
+        return $this->uiData;
+    }
+
+    /**
+     * @param UserUiData|null
+     */
+    public function setUiData(?UserUiData $uiData)
+    {
+        $this->uiData = $uiData;
+    }
 }

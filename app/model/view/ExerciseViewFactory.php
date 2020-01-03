@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Model\View;
 
 use App\Helpers\Localizations;
@@ -8,42 +9,51 @@ use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\LocalizedExercise;
 use App\Security\ACL\IExercisePermissions;
 
-class ExerciseViewFactory {
-  private $exercisePermissions;
+class ExerciseViewFactory
+{
+    private $exercisePermissions;
 
-  public function __construct(IExercisePermissions $exercisePermissions) {
-    $this->exercisePermissions = $exercisePermissions;
-  }
+    public function __construct(IExercisePermissions $exercisePermissions)
+    {
+        $this->exercisePermissions = $exercisePermissions;
+    }
 
-  public function getExercise(Exercise $exercise) {
-    /** @var LocalizedExercise $primaryLocalization */
-    $primaryLocalization = Localizations::getPrimaryLocalization($exercise->getLocalizedTexts());
-    $forkedFrom = $exercise->getForkedFrom();
+    public function getExercise(Exercise $exercise)
+    {
+        /** @var LocalizedExercise $primaryLocalization */
+        $primaryLocalization = Localizations::getPrimaryLocalization($exercise->getLocalizedTexts());
+        $forkedFrom = $exercise->getForkedFrom();
 
-    return [
-      "id" => $exercise->getId(),
-      "name" => $primaryLocalization ? $primaryLocalization->getName() : "", // BC
-      "version" => $exercise->getVersion(),
-      "createdAt" => $exercise->getCreatedAt()->getTimestamp(),
-      "updatedAt" => $exercise->getUpdatedAt()->getTimestamp(),
-      "localizedTexts" => $exercise->getLocalizedTexts()->getValues(),
-      "difficulty" => $exercise->getDifficulty(),
-      "runtimeEnvironments" => $exercise->getRuntimeEnvironments()->getValues(),
-      "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
-      "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
-      "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
-      "groupsIds" => $exercise->getGroupsIds(),
-      "isPublic" => $exercise->isPublic(),
-      "isLocked" => $exercise->isLocked(),
-      "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
-      "supplementaryFilesIds" => $exercise->getSupplementaryFilesIds(),
-      "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
-      "configurationType" => $exercise->getConfigurationType(),
-      "isBroken" => $exercise->isBroken(),
-      "validationError" => $exercise->getValidationError(),
-      "hasReferenceSolutions" => !$exercise->getReferenceSolutions()->isEmpty(),
-      "tags" => array_values($exercise->getTags()->map(function (ExerciseTag $tag) { return $tag->getName(); })->toArray()),
-      "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
-    ];
-  }
+        return [
+            "id" => $exercise->getId(),
+            "name" => $primaryLocalization ? $primaryLocalization->getName() : "", // BC
+            "version" => $exercise->getVersion(),
+            "createdAt" => $exercise->getCreatedAt()->getTimestamp(),
+            "updatedAt" => $exercise->getUpdatedAt()->getTimestamp(),
+            "localizedTexts" => $exercise->getLocalizedTexts()->getValues(),
+            "difficulty" => $exercise->getDifficulty(),
+            "runtimeEnvironments" => $exercise->getRuntimeEnvironments()->getValues(),
+            "hardwareGroups" => $exercise->getHardwareGroups()->getValues(),
+            "forkedFrom" => $forkedFrom ? $forkedFrom->getId() : null,
+            "authorId" => $exercise->getAuthor() ? $exercise->getAuthor()->getId() : null,
+            "groupsIds" => $exercise->getGroupsIds(),
+            "isPublic" => $exercise->isPublic(),
+            "isLocked" => $exercise->isLocked(),
+            "description" => $primaryLocalization ? $primaryLocalization->getDescription() : "", // BC
+            "supplementaryFilesIds" => $exercise->getSupplementaryFilesIds(),
+            "attachmentFilesIds" => $exercise->getAttachmentFilesIds(),
+            "configurationType" => $exercise->getConfigurationType(),
+            "isBroken" => $exercise->isBroken(),
+            "validationError" => $exercise->getValidationError(),
+            "hasReferenceSolutions" => !$exercise->getReferenceSolutions()->isEmpty(),
+            "tags" => array_values(
+                $exercise->getTags()->map(
+                    function (ExerciseTag $tag) {
+                        return $tag->getName();
+                    }
+                )->toArray()
+            ),
+            "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
+        ];
+    }
 }
