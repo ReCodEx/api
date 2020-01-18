@@ -56,7 +56,9 @@ class BoxService
             PrologCompilationBox::$BOX_TYPE => PrologCompilationBox::class,
             HaskellCompilationBox::$BOX_TYPE => HaskellCompilationBox::class,
             HaskellExecutionBox::$BOX_TYPE => HaskellExecutionBox::class,
-            FileNameBox::$BOX_TYPE => FileNameBox::class
+            FileNameBox::$BOX_TYPE => FileNameBox::class,
+            JvmCompilationBox::$BOX_TYPE => JvmCompilationBox::class,
+            JvmRunBox::$BOX_TYPE => JvmRunBox::class
         ];
     }
 
