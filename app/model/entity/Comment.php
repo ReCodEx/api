@@ -69,7 +69,7 @@ class Comment implements JsonSerializable
     protected $postedAt;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", length=65535)
      */
     protected $text;
 

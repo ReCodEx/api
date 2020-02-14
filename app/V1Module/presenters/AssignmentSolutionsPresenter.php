@@ -133,7 +133,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
     /**
      * Update details about the solution (note, etc...)
      * @POST
-     * @Param(type="post", name="note", description="A note by the author of the solution")
+     * @Param(type="post", name="note", validation="string:0..1024", description="A note by the author of the solution")
      * @param string $id Identifier of the solution
      * @throws NotFoundException
      * @throws InternalServerException

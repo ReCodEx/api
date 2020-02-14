@@ -110,7 +110,7 @@ class CommentsPresenter extends BasePresenter
     /**
      * Add a comment to a thread
      * @POST
-     * @Param(type="post", name="text", validation="string:1..", description="Text of the comment")
+     * @Param(type="post", name="text", validation="string:1..65535", description="Text of the comment")
      * @Param(type="post", name="isPrivate", validation="string", description="True if the comment is private")
      * @param string $id Identifier of the comment thread
      * @throws ForbiddenRequestException

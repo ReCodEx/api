@@ -268,7 +268,7 @@ class InstancesPresenter extends BasePresenter
     /**
      * Update an existing license for an instance
      * @POST
-     * @Param(type="post", name="note", validation="string:2..", required=false, description="A note for users or administrators")
+     * @Param(type="post", name="note", validation="string:2..255", required=false, description="A note for users or administrators")
      * @Param(type="post", name="validUntil", validation="string", required=false, description="Expiration date of the license")
      * @Param(type="post", name="isValid", validation="bool", required=false, description="Administrator switch to toggle licence validity")
      * @param string $licenceId Identifier of the licence

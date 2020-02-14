@@ -200,7 +200,7 @@ class SubmitPresenter extends BasePresenter
     /**
      * Submit a solution of an assignment
      * @POST
-     * @Param(type="post", name="note", description="A note by the author of the solution")
+     * @Param(type="post", name="note", validation="string:0..1024", description="A note by the author of the solution")
      * @Param(type="post", name="userId", required=false, description="Author of the submission")
      * @Param(type="post", name="files", description="Submitted files")
      * @Param(type="post", name="runtimeEnvironmentId", description="Identifier of the runtime environment used for evaluation")

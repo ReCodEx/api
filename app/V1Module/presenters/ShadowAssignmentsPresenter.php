@@ -343,7 +343,7 @@ class ShadowAssignmentsPresenter extends BasePresenter
      * @POST
      * @param string $pointsId Identifier of the shadow assignment points
      * @Param(type="post", name="points", validation="numericint", description="Number of points assigned to the user")
-     * @Param(type="post", name="note", validation="string", description="Note about newly created points")
+     * @Param(type="post", name="note", validation="string:0..1024", description="Note about newly created points")
      * @Param(type="post", name="awardedAt", validation="timestamp", required=false, description="Datetime when the points were awarded, whatever that means")
      * @throws NotFoundException
      * @throws InvalidStateException
