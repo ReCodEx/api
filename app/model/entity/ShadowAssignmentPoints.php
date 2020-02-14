@@ -55,7 +55,7 @@ class ShadowAssignmentPoints
     protected $points;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", length=1024)
      */
     protected $note;
 

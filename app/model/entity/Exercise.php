@@ -3,7 +3,7 @@
 namespace App\Model\Entity;
 
 use App\Helpers\Evaluation\IExercise;
-use \DateTime;
+use DateTime;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -156,7 +156,7 @@ class Exercise implements IExercise
     }
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", length=65535)
      */
     protected $validationError;
 

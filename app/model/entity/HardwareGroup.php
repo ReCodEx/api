@@ -28,12 +28,12 @@ class HardwareGroup implements JsonSerializable
     protected $name;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", length=1024)
      */
     protected $description;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", length=65535)
      */
     protected $metadata;
 

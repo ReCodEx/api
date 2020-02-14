@@ -36,7 +36,7 @@ class AssignmentSolution
     protected $id;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="string", length=1024)
      */
     protected $note;
 

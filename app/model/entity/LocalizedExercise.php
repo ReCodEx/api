@@ -50,7 +50,7 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
 
     /**
      * A link to an external assignment for students
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="string", length=1024, nullable=true)
      */
     protected $externalAssignmentLink;
 

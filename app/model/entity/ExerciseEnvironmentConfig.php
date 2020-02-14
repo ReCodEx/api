@@ -31,7 +31,7 @@ class ExerciseEnvironmentConfig
     protected $runtimeEnvironment;
 
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", length=65535)
      */
     protected $variablesTable;
 
