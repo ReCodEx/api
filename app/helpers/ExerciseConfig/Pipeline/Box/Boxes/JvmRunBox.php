@@ -19,6 +19,7 @@ class JvmRunBox extends ExecutionBox
     public static $CLASS_FILES_PORT_KEY = "class-files";
     public static $JAR_FILES_PORT_KEY = "jar-files";
     public static $RUNNER_EXEC_PORT_KEY = "runner-exec";
+    public static $CLASSPATH_PORT_KEY = "classpath";
     public static $DEFAULT_NAME = "JVM Custom Runner";
 
     private static $initialized = false;
@@ -44,7 +45,8 @@ class JvmRunBox extends ExecutionBox
                     (new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
                 ),
                 new Port((new PortMeta())->setName(self::$JAR_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
-                new Port((new PortMeta())->setName(self::$RUNNER_EXEC_PORT_KEY)->setType(VariableTypes::$STRING_TYPE))
+                new Port((new PortMeta())->setName(self::$RUNNER_EXEC_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
+                new Port((new PortMeta())->setName(self::$CLASSPATH_PORT_KEY)->setType(VariableTypes::$STRING_ARRAY_TYPE))
             );
             self::$defaultOutputPorts = array(
                 new Port((new PortMeta())->setName(self::$STDOUT_FILE_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)),
@@ -123,16 +125,20 @@ class JvmRunBox extends ExecutionBox
             $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
         }
 
-        $args = [];
-        // if there were some provided jar files, lets add them to the command line args
-        $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
-        $args = array_merge($args, $classpath);
-
         // even if type of this port is file array, we completely rely on the fact
-        // that the class files are from JavacCompilationBox which actually sets as
+        // that the class files are from JvmCompilationBox which actually sets as
         // output the compilation directory rather than the resulting class files
         // Therefore this might require reimplementation in future!
         $compiledDir = $this->getInputPortValue(self::$CLASS_FILES_PORT_KEY)->getValue();
+
+        $args = [];
+        // if there were some provided jar files, lets add them to the command line args
+        $classpath = JavaUtils::constructClasspath(
+            $this->getInputPortValue(self::$JAR_FILES_PORT_KEY),
+            $compiledDir,
+            $this->getInputPortValue(self::$CLASSPATH_PORT_KEY)
+        );
+        $args = array_merge($args, $classpath);
 
         $args = array_merge($args, [$runnerClass, "run", $compiledDir]);
         if ($this->hasInputPortValue(self::$ARGS_PORT_KEY)) {
