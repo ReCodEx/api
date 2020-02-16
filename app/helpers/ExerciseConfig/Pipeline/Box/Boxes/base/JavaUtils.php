@@ -9,20 +9,32 @@ class JavaUtils
     const CURRENT_DIR = ".";
     const PATH_DELIM = ":";
 
-    public static function constructClasspath(?Variable $jarFiles)
+    public static function constructClasspath(?Variable $jarFiles, ?string $compiledClassesDirectory = null, ?Variable $classpath = null)
     {
-        if ($jarFiles && !$jarFiles->isEmpty()) {
-            $classpath = JavaUtils::CURRENT_DIR;
-            foreach ($jarFiles->getValueAsArray() as $jar) {
-                $classpath .= JavaUtils::PATH_DELIM . $jar;
-            }
+        $result = [];
 
-            return [
-                "-classpath",
-                $classpath
-            ];
+        // jar filed specified by exercise author
+        if ($jarFiles && !$jarFiles->isEmpty()) {
+            foreach ($jarFiles->getValueAsArray() as $jar) {
+                $result[] = $jar;
+            }
         }
 
-        return [];
+        if (!empty($compiledClassesDirectory)) {
+            $result[] = $compiledClassesDirectory;
+        }
+
+        // might be used for worker local jar files (groovy stdlib or kotlin stdlib)
+        if ($classpath && !$classpath->isEmpty()) {
+            foreach ($classpath->getValueAsArray() as $cp) {
+                $result[] = $cp;
+            }
+        }
+
+        if (empty($result)) {
+            return [];
+        }
+
+        return ["-classpath", JavaUtils::CURRENT_DIR . self::PATH_DELIM . join(self::PATH_DELIM, $result)];
     }
 }
