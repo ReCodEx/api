@@ -63,16 +63,21 @@ class AssignmentSolutionViewFactory
      */
     private function isBestSolution(AssignmentSolution $solution): bool
     {
-        $best = $this->solutions->findBestSolution($solution->getAssignment(), $solution->getSolution()->getAuthor());
+        $assignment = $solution->getAssignment();
+        if (!$assignment) {
+            return false;
+        }
+        $best = $this->solutions->findBestSolution($assignment, $solution->getSolution()->getAuthor());
         return $best ? $best->getId() === $solution->getId() : false;
     }
 
     /**
      * Parametrized view.
      * @param AssignmentSolution $solution
-     * @param bool|array|null $bestSolutionsHints If bool value is provided, it holds the `isBestSolution` value already.
-     *                                            If array value is provided, it holds index of best solutions.
-     *                                            Otherwise the view factory determines the `isBestSolution` value on its own.
+     * @param bool|array|null $bestSolutionsHints
+     *   If bool value is provided, it holds the `isBestSolution` value already.
+     *   If array value is provided, it holds index of best solutions.
+     *   Otherwise the view factory determines the `isBestSolution` value on its own.
      * @return array
      * @throws InternalServerException
      */
@@ -129,9 +134,10 @@ class AssignmentSolutionViewFactory
     /**
      * Parametrized view.
      * @param AssignmentSolution[] $solutions
-     * @param bool|array|null $bestSolutionsHints If bool value is provided, it holds the `isBestSolution` value already for all solutions.
-     *                                            If iterrable value is provided, it holds a list of best solutions
-     *                                            Otherwise the view factory determines the `isBestSolution` value on its own.
+     * @param bool|array|null $bestSolutionsHints
+     *   If bool value is provided, it holds the `isBestSolution` value already for all solutions.
+     *   If iterrable value is provided, it holds a list of best solutions
+     *   Otherwise the view factory determines the `isBestSolution` value on its own.
      * @return array
      */
     public function getUserSolutionsData(array $solutions, $bestSolutionsHints = null)
