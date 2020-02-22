@@ -22,8 +22,7 @@ class JvmCompilationBox extends CompilationBox
     /** Type key */
     public static $BOX_TYPE = "jvm-compilation";
     public static $COMPILATION_SUBDIR = 'compiled-classes';
-    public static $CLASS_FILES_WILDCARD = "*.class";
-    public static $CLASS_FILES_PORT_KEY = "class-files";
+    public static $CLASS_FILES_DIR_PORT_KEY = "class-files-dir";
     public static $JAR_FILES_PORT_KEY = "jar-files";
     public static $COMPILER_EXEC_PORT_KEY = "compiler-exec";
     public static $DEFAULT_NAME = "JVM Custom Compilation";
@@ -53,7 +52,7 @@ class JvmCompilationBox extends CompilationBox
             );
             self::$defaultOutputPorts = array(
                 new Port(
-                    (new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
+                    (new PortMeta())->setName(self::$CLASS_FILES_DIR_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)
                 )
             );
         }
@@ -147,11 +146,8 @@ class JvmCompilationBox extends CompilationBox
         $classpath = JavaUtils::constructClasspath($this->getInputPortValue(self::$JAR_FILES_PORT_KEY));
         $args = array_merge($args, $classpath);
 
-        // originally output of javac was wildcard '*.class', this is no longer true
-        // currently the whole directory with compiled classes is handed over to the
-        // upcoming tasks, but the type of the port was not changed
-        // Therefore this might require reimplementation in future!
-        $this->getOutputPortValue(self::$CLASS_FILES_PORT_KEY)->setValue(self::$COMPILATION_SUBDIR);
+        // the whole directory with compiled classes is handed over to the upcoming tasks
+        $this->getOutputPortValue(self::$CLASS_FILES_DIR_PORT_KEY)->setValue(self::$COMPILATION_SUBDIR);
 
         $compileTask->setCommandArguments(
             array_merge(
