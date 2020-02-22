@@ -108,6 +108,8 @@ class AssignmentViewFactory
                     "upToDate" => $assignment->areRuntimeEnvironmentsInSync()
                 ]
             ],
+            "solutionFilesLimit" => $assignment->getSolutionFilesLimit(),
+            "solutionSizeLimit" => $assignment->getSolutionSizeLimit(),
             "permissionHints" => PermissionHints::get($this->assignmentAcl, $assignment)
         ];
     }

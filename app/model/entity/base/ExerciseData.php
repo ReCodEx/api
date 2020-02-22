@@ -357,4 +357,36 @@ trait ExerciseData
             }
         )->getValues();
     }
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * How many files may one submit in a solution.
+     */
+    protected $solutionFilesLimit = null;
+
+    public function getSolutionFilesLimit(): ?int
+    {
+        return $this->solutionFilesLimit;
+    }
+
+    public function setSolutionFilesLimit(?int $filesLimit)
+    {
+        $this->solutionFilesLimit = $filesLimit;
+    }
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * Maximal allowed size in KiB of all files submitted for a solution.
+     */
+    protected $solutionSizeLimit = null;
+
+    public function getSolutionSizeLimit(): ?int
+    {
+        return $this->solutionSizeLimit;
+    }
+
+    public function setSolutionSizeLimit(?int $sizeLimit)
+    {
+        $this->solutionSizeLimit = $sizeLimit;
+    }
 }

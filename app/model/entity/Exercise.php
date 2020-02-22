@@ -279,7 +279,9 @@ class Exercise implements IExercise
         bool $isLocked = true,
         string $scoreCalculator = null,
         string $scoreConfig = "",
-        string $configurationType = "simpleExerciseConfig"
+        string $configurationType = "simpleExerciseConfig",
+        int $solutionFilesLimit = null,
+        int $solutionSizeLimit = null
     ) {
         $this->version = $version;
         $this->createdAt = new DateTime();
@@ -306,6 +308,8 @@ class Exercise implements IExercise
         $this->scoreCalculator = $scoreCalculator;
         $this->scoreConfig = $scoreConfig;
         $this->configurationType = $configurationType;
+        $this->solutionFilesLimit = $solutionFilesLimit;
+        $this->solutionSizeLimit = $solutionSizeLimit;
         $this->validationError = "";
         $this->tags = new ArrayCollection();
     }
@@ -353,7 +357,9 @@ class Exercise implements IExercise
             true,
             $exercise->scoreCalculator,
             $exercise->scoreConfig,
-            $exercise->configurationType
+            $exercise->configurationType,
+            $exercise->solutionFilesLimit,
+            $exercise->solutionSizeLimit
         );
     }
 

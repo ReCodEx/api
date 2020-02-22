@@ -89,11 +89,13 @@ class Assignment extends AssignmentBase implements IExercise
         $this->version = 1;
         $this->isBonus = $isBonus;
         $this->pointsPercentualThreshold = $pointsPercentualThreshold;
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
         $this->configurationType = $exercise->getConfigurationType();
         $this->supplementaryEvaluationFiles = $exercise->getSupplementaryEvaluationFiles();
         $this->attachmentFiles = $exercise->getAttachmentFiles();
+        $this->solutionFilesLimit = $exercise->getSolutionFilesLimit();
+        $this->solutionSizeLimit = $exercise->getSolutionSizeLimit();
     }
 
     public static function assignToGroup(

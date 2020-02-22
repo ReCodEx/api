@@ -374,7 +374,9 @@ class TestExercisesPresenter extends Tester\TestCase
                         'name' => 'new name',
                         'description' => 'some neaty description'
                     ]
-                ]
+                ],
+                'solutionFilesLimit' => 3,
+                'solutionSizeLimit' => 42,
             ]
         );
         $response = $this->presenter->run($request);
@@ -410,6 +412,8 @@ class TestExercisesPresenter extends Tester\TestCase
                 }
             )
         );
+        Assert::equal(3, $result['payload']['solutionFilesLimit']);
+        Assert::equal(42, $result['payload']['solutionSizeLimit']);
     }
 
     public function testValidatePipeline()

@@ -542,6 +542,39 @@ class TestSubmitPresenter extends Tester\TestCase
 
         $user = current($this->presenter->users->findAll());
         $assignment = current($this->assignments->findAll());
+        $assignment->setSolutionFilesLimit(2);
+        $assignment->setSolutionSizeLimit(42);
+        $environment = $assignment->getRuntimeEnvironments()->first();
+        $ext = current($environment->getExtensionsList());
+
+        // save fake files into db
+        $file1 = new UploadedFile("file1." . $ext, new \DateTime(), 20000, $user, "file1." . $ext);
+        $file2 = new UploadedFile("file2." . $ext, new \DateTime(), 20000, $user, "file2." . $ext);
+        $this->presenter->files->persist($file1);
+        $this->presenter->files->persist($file2);
+        $this->presenter->files->flush();
+        $files = [$file1->getId(), $file2->getId()];
+
+        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
+
+        Assert::count(4, $payload);
+        Assert::true(array_key_exists("environments", $payload));
+        Assert::true(array_key_exists("submitVariables", $payload));
+        Assert::true($payload["countLimitOK"]);
+        Assert::true($payload["sizeLimitOK"]);
+
+        Assert::equal([$environment->getId()], $payload["environments"]);
+        Assert::count(2, $payload["submitVariables"]);
+    }
+
+    public function testPreSubmitFailCountLimit()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $user = current($this->presenter->users->findAll());
+        $assignment = current($this->assignments->findAll());
+        $assignment->setSolutionFilesLimit(1);
         $environment = $assignment->getRuntimeEnvironments()->first();
         $ext = current($environment->getExtensionsList());
 
@@ -553,26 +586,37 @@ class TestSubmitPresenter extends Tester\TestCase
         $this->presenter->files->flush();
         $files = [$file1->getId(), $file2->getId()];
 
-        $request = new Nette\Application\Request(
-            'V1:Submit', 'POST',
-            ['action' => 'preSubmit', 'id' => $assignment->getId()],
-            ['files' => $files]
-        );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
 
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $payload = $result["payload"];
-        Assert::count(2, $payload);
-        Assert::true(array_key_exists("environments", $payload));
-        Assert::true(array_key_exists("submitVariables", $payload));
-
-        Assert::equal([$environment->getId()], $payload["environments"]);
-        Assert::count(2, $payload["submitVariables"]);
+        Assert::false($payload["countLimitOK"]);
+        Assert::true($payload["sizeLimitOK"]);
     }
 
+    public function testPreSubmitFailSizeLimit()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+
+        $user = current($this->presenter->users->findAll());
+        $assignment = current($this->assignments->findAll());
+        $assignment->setSolutionSizeLimit(42);
+        $environment = $assignment->getRuntimeEnvironments()->first();
+        $ext = current($environment->getExtensionsList());
+
+        // save fake files into db
+        $file1 = new UploadedFile("file1." . $ext, new \DateTime(), 40000, $user, "file1." . $ext);
+        $file2 = new UploadedFile("file2." . $ext, new \DateTime(), 40000, $user, "file2." . $ext);
+        $this->presenter->files->persist($file1);
+        $this->presenter->files->persist($file2);
+        $this->presenter->files->flush();
+        $files = [$file1->getId(), $file2->getId()];
+
+        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:Submit', 'POST',
+            ['action' => 'preSubmit', 'id' => $assignment->getId()], ['files' => $files]);
+
+        Assert::true($payload["countLimitOK"]);
+        Assert::false($payload["sizeLimitOK"]);
+    }
 }
 
 (new TestSubmitPresenter())->run();

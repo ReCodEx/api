@@ -165,6 +165,20 @@ class SubmitPresenter extends BasePresenter
         return $userId !== null ? $this->users->findOrThrow($userId) : $this->getCurrentUser();
     }
 
+    /**
+     * Compute total size of all uploaded files.
+     * @param UploadedFile[] $uploadedFiles
+     * @return int
+     */
+    private function getFilesSize(array $uploadedFiles): int
+    {
+        $size = 0;
+        foreach ($uploadedFiles as $uploadedFile) {
+            $size += $uploadedFile->getFileSize();
+        }
+        return $size;
+    }
+
 
     public function checkCanSubmit(string $id, string $userId = null)
     {
@@ -231,6 +245,15 @@ class SubmitPresenter extends BasePresenter
         $uploadedFiles = $this->files->findAllById($req->getPost("files"));
         if (count($uploadedFiles) === 0) {
             throw new InvalidArgumentException("files", "No files were uploaded");
+        }
+        if ($assignment->getSolutionFilesLimit() !== null && count($uploadedFiles) > $assignment->getSolutionFilesLimit()) {
+            throw new InvalidArgumentException("files", "Number of uploaded files exceeds assignment limits");
+        }
+        if (
+            $assignment->getSolutionSizeLimit() !== null
+            && $this->getFilesSize($uploadedFiles) > $assignment->getSolutionSizeLimit() * 1024 // limit is in KiB
+        ) {
+            throw new InvalidArgumentException("files", "Total size of uploaded files exceeds assignment limits");
         }
 
         // create Solution object
@@ -490,7 +513,11 @@ class SubmitPresenter extends BasePresenter
         $this->sendSuccessResponse(
             [
                 "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($assignment, $filenames),
-                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($assignment)
+                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($assignment),
+                "countLimitOK" => $assignment->getSolutionFilesLimit() === null
+                    || count($uploadedFiles) <= $assignment->getSolutionFilesLimit(),
+                "sizeLimitOK" => $assignment->getSolutionSizeLimit() === null
+                    || $this->getFilesSize($uploadedFiles) <= $assignment->getSolutionSizeLimit() * 1024, // limit is in KiB
             ]
         );
     }

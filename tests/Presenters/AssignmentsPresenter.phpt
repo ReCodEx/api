@@ -141,6 +141,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         $visibleFrom = (new \DateTime())->getTimestamp();
         $isBonus = true;
         $pointsPercentualThreshold = 90.0;
+        $solutionFilesLimit = 3;
+        $solutionSizeLimit = null;
 
         $request = new Nette\Application\Request(
             'V1:Assignments', 'POST',
@@ -160,6 +162,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'visibleFrom' => $visibleFrom,
                 'isBonus' => $isBonus,
                 'pointsPercentualThreshold' => $pointsPercentualThreshold,
+                'solutionFilesLimit' => $solutionFilesLimit,
+                'solutionSizeLimit' => $solutionSizeLimit,
             ]
         );
         $response = $this->presenter->run($request);
@@ -183,6 +187,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         Assert::equal($visibleFrom, $updatedAssignment["visibleFrom"]);
         Assert::equal($isBonus, $updatedAssignment["isBonus"]);
         Assert::equal($pointsPercentualThreshold, $updatedAssignment["pointsPercentualThreshold"]);
+        Assert::equal($solutionFilesLimit, $updatedAssignment['solutionFilesLimit']);
+        Assert::equal($solutionSizeLimit, $updatedAssignment['solutionSizeLimit']);
 
         // check localized texts
         Assert::count(1, $updatedAssignment["localizedTexts"]);
@@ -228,6 +234,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'canViewJudgeOutputs' => false,
                 'isBonus' => false,
                 'pointsPercentualThreshold' => 50.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => 42,
             ]
         );
         $response = $this->presenter->run($request);
@@ -240,6 +248,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
         /** @var Assignment $updatedAssignment */
         $updatedAssignment = $result['payload'];
         Assert::true($updatedAssignment["isPublic"]);
+        Assert::equal(null, $updatedAssignment["solutionFilesLimit"]);
+        Assert::equal(42, $updatedAssignment["solutionSizeLimit"]);
     }
 
     public function testAddStudentHints()
@@ -270,6 +280,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => 3,
+                'solutionSizeLimit' => 42,
                 'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
             ]
         );
@@ -310,6 +322,8 @@ class TestAssignmentsPresenter extends Tester\TestCase
                 'maxPointsBeforeSecondDeadline' => 543,
                 'isBonus' => true,
                 'pointsPercentualThreshold' => 90.0,
+                'solutionFilesLimit' => null,
+                'solutionSizeLimit' => null,
                 'disabledRuntimeEnvironmentIds' => [$disabledEnv->getId()]
             ]
         );
