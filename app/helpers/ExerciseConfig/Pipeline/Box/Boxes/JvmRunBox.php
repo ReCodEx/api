@@ -56,7 +56,7 @@ class JvmRunBox extends ExecutionBox
     }
 
     /**
-     * ElfExecutionBox constructor.
+     * JvmRunBox constructor.
      * @param BoxMeta $meta
      */
     public function __construct(BoxMeta $meta)
@@ -122,6 +122,9 @@ class JvmRunBox extends ExecutionBox
         $runnerClass = $this->getInputPortValue(self::$RUNNER_FILE_PORT_KEY)->getValue();
         if (Strings::endsWith($runnerClass, ".class")) {
             $runnerLength = Strings::length($runnerClass);
+            // as we can see above, we have runner class with '.class' extension
+            // to be able to run this class we have to get its name without
+            // the extension, hence the 6 characters has to be trimmed
             $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
         }
 

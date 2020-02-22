@@ -59,7 +59,7 @@ class JvmCompilationBox extends CompilationBox
     }
 
     /**
-     * JudgeNormalBox constructor.
+     * JvmCompilationBox constructor.
      * @param BoxMeta $meta
      */
     public function __construct(BoxMeta $meta)
@@ -124,8 +124,8 @@ class JvmCompilationBox extends CompilationBox
         $mkdirTask->setCommandBinary(TaskCommands::$MKDIR);
         $mkdirTask->setCommandArguments(
             [
-                ConfigParams::$SOURCE_DIR . $this->getDirectory(
-                ) . ConfigParams::$PATH_DELIM . self::$COMPILATION_SUBDIR
+                ConfigParams::$SOURCE_DIR . $this->getDirectory() .
+                ConfigParams::$PATH_DELIM . self::$COMPILATION_SUBDIR
             ]
         );
 
