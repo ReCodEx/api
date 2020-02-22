@@ -35,6 +35,7 @@ class JavaUtils
             return [];
         }
 
-        return ["-classpath", JavaUtils::CURRENT_DIR . self::PATH_DELIM . join(self::PATH_DELIM, $result)];
+        array_unshift($result, JavaUtils::CURRENT_DIR);
+        return ["-classpath", join(self::PATH_DELIM, $result)];
     }
 }
