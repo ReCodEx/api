@@ -206,7 +206,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
             }
         }
 
-        if (isset($post[$param])) {
+        if (array_key_exists($param, $post)) {
             return $post[$param];
         } else {
             if ($required) {

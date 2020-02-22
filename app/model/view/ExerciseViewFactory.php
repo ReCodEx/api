@@ -53,6 +53,8 @@ class ExerciseViewFactory
                     }
                 )->toArray()
             ),
+            "solutionFilesLimit" => $exercise->getSolutionFilesLimit(),
+            "solutionSizeLimit" => $exercise->getSolutionSizeLimit(),
             "permissionHints" => PermissionHints::get($this->exercisePermissions, $exercise)
         ];
     }

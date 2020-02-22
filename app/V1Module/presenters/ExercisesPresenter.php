@@ -281,6 +281,10 @@ class ExercisesPresenter extends BasePresenter
      * @Param(type="post", name="isPublic", description="Exercise can be public or private", validation="bool", required=false)
      * @Param(type="post", name="isLocked", description="If true, the exercise cannot be assigned", validation="bool", required=false)
      * @Param(type="post", name="configurationType", description="Identifies the way the evaluation of the exercise is configured", validation="string", required=false)
+     * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
+     *   description="Maximal number of files in a solution being submitted (default for assignments)")
+     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
+     *   description="Maximal size (KiB) of all files in a solution being submitted (default for assignments)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */
@@ -301,12 +305,14 @@ class ExercisesPresenter extends BasePresenter
             ); // @todo better exception
         }
 
-        // make changes to newly created exercise
+        // make changes to the exercise
         $exercise->setDifficulty($difficulty);
         $exercise->setIsPublic($isPublic);
         $exercise->updatedNow();
         $exercise->incrementVersion();
         $exercise->setLocked($isLocked);
+        $exercise->setSolutionFilesLimit($req->getPost("solutionFilesLimit"));
+        $exercise->setSolutionSizeLimit($req->getPost("solutionSizeLimit"));
 
         $configurationType = $req->getPost("configurationType");
         if ($configurationType) {
