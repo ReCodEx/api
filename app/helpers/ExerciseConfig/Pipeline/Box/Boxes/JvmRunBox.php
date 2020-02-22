@@ -16,7 +16,7 @@ class JvmRunBox extends ExecutionBox
 {
     /** Type key */
     public static $BOX_TYPE = "jvm-runner";
-    public static $CLASS_FILES_PORT_KEY = "class-files";
+    public static $CLASS_FILES_DIR_PORT_KEY = "class-files-dir";
     public static $JAR_FILES_PORT_KEY = "jar-files";
     public static $RUNNER_EXEC_PORT_KEY = "runner-exec";
     public static $CLASSPATH_PORT_KEY = "classpath";
@@ -42,7 +42,7 @@ class JvmRunBox extends ExecutionBox
                     (new PortMeta())->setName(self::$INPUT_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
                 ),
                 new Port(
-                    (new PortMeta())->setName(self::$CLASS_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)
+                    (new PortMeta())->setName(self::$CLASS_FILES_DIR_PORT_KEY)->setType(VariableTypes::$FILE_TYPE)
                 ),
                 new Port((new PortMeta())->setName(self::$JAR_FILES_PORT_KEY)->setType(VariableTypes::$FILE_ARRAY_TYPE)),
                 new Port((new PortMeta())->setName(self::$RUNNER_EXEC_PORT_KEY)->setType(VariableTypes::$STRING_TYPE)),
@@ -125,11 +125,8 @@ class JvmRunBox extends ExecutionBox
             $runnerClass = Strings::substring($runnerClass, 0, $runnerLength - 6);
         }
 
-        // even if type of this port is file array, we completely rely on the fact
-        // that the class files are from JvmCompilationBox which actually sets as
-        // output the compilation directory rather than the resulting class files
-        // Therefore this might require reimplementation in future!
-        $compiledDir = $this->getInputPortValue(self::$CLASS_FILES_PORT_KEY)->getValue();
+        // get directory where compiled classes resides
+        $compiledDir = $this->getInputPortValue(self::$CLASS_FILES_DIR_PORT_KEY)->getValue();
 
         $args = [];
         // if there were some provided jar files, lets add them to the command line args
