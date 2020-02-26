@@ -20,9 +20,6 @@ use App\Security\Authorizator;
 use App\Model\Repository\Users;
 use App\Helpers\UserActions;
 use App\Helpers\Validators;
-use App\Helpers\IResponseDecorator;
-//use Nette\Utils\Validators;
-
 use Nette\Application\Application;
 use Nette\Http\IResponse;
 use Nette\Reflection;
@@ -230,7 +227,7 @@ class BasePresenter extends \App\Presenters\BasePresenter
     {
         foreach (["int", "integer"] as $rule) {
             if ($validationRule === $rule || Strings::startsWith($validationRule, $rule . ":")) {
-                throw new LogicException("Validation rule '$validationRule' won't work for request parameters");
+                throw new LogicException("Validation rule '$validationRule' will not work for request parameters");
             }
         }
 
@@ -238,7 +235,8 @@ class BasePresenter extends \App\Presenters\BasePresenter
         if (Validators::is($value, $validationRule) === false) {
             throw new InvalidArgumentException(
                 $param,
-                $msg !== null ? $msg : "The value '$value' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
+                $msg ?? "The value '" . ($value ?? 'null')
+                    . "' does not match validation rule '$validationRule' - for more information check the documentation of Nette\\Utils\\Validators"
             );
         }
 

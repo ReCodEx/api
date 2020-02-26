@@ -32,7 +32,8 @@ class Validators extends Utils\Validators
      */
     public static function preprocessValue($value, $validationRule)
     {
-        foreach (explode('|', $validationRule) as $item) {
+        $options = explode('|', $validationRule);
+        foreach ($options as $item) {
             $item = explode(':', $item, 2);
             if ($item[0] == 'bool' || $item[0] == 'boolean') {
                 // converts all possible string representations of boolean to boolean
