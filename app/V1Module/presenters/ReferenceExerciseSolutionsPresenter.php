@@ -328,20 +328,22 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
             throw new InvalidArgumentException("files", "No files were uploaded");
         }
 
-        // prepare file names into separate array
-        $filenames = array_values(
-            array_map(
-                function (UploadedFile $uploadedFile) {
-                    return $uploadedFile->getName();
-                },
-                $uploadedFiles
-            )
-        );
+        // prepare file names into separate array and sum total upload size
+        $filenames = [];
+        $uploadedSize = 0;
+        foreach ($uploadedFiles as $uploadedFile) {
+            $filenames[] = $uploadedFile->getName();
+            $uploadedSize += $uploadedFile->getFileSize();
+        }
 
         $this->sendSuccessResponse(
             [
                 "environments" => $this->exerciseConfigHelper->getEnvironmentsForFiles($exercise, $filenames),
-                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($exercise)
+                "submitVariables" => $this->exerciseConfigHelper->getSubmitVariablesForExercise($exercise),
+                "countLimitOK" => $exercise->getSolutionFilesLimit() === null
+                    || count($uploadedFiles) <= $exercise->getSolutionFilesLimit(),
+                "sizeLimitOK" => $exercise->getSolutionSizeLimit() === null
+                    || $uploadedSize <= $exercise->getSolutionSizeLimit() * 1024, // limit is in KiB
             ]
         );
     }
