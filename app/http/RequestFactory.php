@@ -41,7 +41,7 @@ class RequestFactory extends Nette\Http\RequestFactory
             }
         }
 
-        // If JSON body is present, replace the result of original HTTP request factory with new post data.s
+        // If JSON body is present, replace the result of original HTTP request factory with new post data.
         if (!empty($json)) {
             $request = parent::createHttpRequest();
             return new Nette\Http\Request(
