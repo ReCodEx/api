@@ -1,7 +1,7 @@
 %define name recodex-api
 %define short_name api
-%define version 1.13.0
-%define unmangled_version cd4ae43bba0d4d29b196e2a7bfb622bcded794cb
+%define version 1.20.0
+%define unmangled_version d59975357c86fd09f4222aa28f0d5bcdfca05d04
 %define release 1
 
 Summary: ReCodEx API component
@@ -17,7 +17,7 @@ Url: https://github.com/ReCodEx/api
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
-Requires: composer php php-fpm php-json php-mysqlnd php-ldap php-pecl-zip php-pecl-zmq php-xml
+Requires: git php73-php php73-php-json php73-php-mysqlnd php73-php-ldap php73-php-pecl-zip php73-php-pecl-zmq php73-php-xml php73-php-intl php73-php-mbstring
 
 #Source0: %{name}-%{unmangled_version}.tar.gz
 Source0: https://github.com/ReCodEx/%{short_name}/archive/%{unmangled_version}.tar.gz#/%{short_name}-%{unmangled_version}.tar.gz
@@ -29,6 +29,7 @@ REST API of ReCodEx programmer testing solution.
 
 %prep
 %setup -n %{short_name}-%{unmangled_version}
+curl "https://getcomposer.org/composer-stable.phar" -o composer-stable.phar
 
 %build
 # Nothing to do here
@@ -42,7 +43,7 @@ mkdir -p %{buildroot}/opt/recodex-api/temp
 cp -r www %{buildroot}/opt/recodex-api/www
 cp -r app %{buildroot}/opt/recodex-api/app
 cp -r migrations %{buildroot}/opt/recodex-api/migrations
-cp composer.json composer.lock cleaner %{buildroot}/opt/recodex-api/
+cp composer.json composer.lock composer-stable.phar cleaner %{buildroot}/opt/recodex-api/
 mv %{buildroot}/opt/recodex-api/app/config/config.local.neon.example %{buildroot}/opt/recodex-api/app/config/config.local.neon
 
 %clean
@@ -50,21 +51,12 @@ mv %{buildroot}/opt/recodex-api/app/config/config.local.neon.example %{buildroot
 
 %post
 # Install dependencies
-composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
+php73 /opt/recodex-api/composer-stable.phar install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader --working-dir=/opt/recodex-api/
 
 # Run cleaner after installation
 /opt/recodex-api/cleaner
 
-# Run migrations
-php /opt/recodex-api/www/index.php migrations:migrate
-
-# Run cleaner again
-/opt/recodex-api/cleaner
-
-%systemd_post 'php-fpm.service'
-
 %postun
-%systemd_postun_with_restart 'php-fpm.service'
 
 %pre
 getent group recodex >/dev/null || groupadd -r recodex
@@ -72,7 +64,6 @@ getent passwd recodex >/dev/null || useradd -r -g recodex -d %{_sysconfdir}/reco
 exit 0
 
 %preun
-%systemd_preun 'php-fpm.service'
 
 %files
 %defattr(-,recodex,recodex)
@@ -95,6 +86,7 @@ exit 0
 /opt/recodex-api/app/web.config
 /opt/recodex-api/composer.json
 /opt/recodex-api/composer.lock
+/opt/recodex-api/composer-stable.phar
 %attr(0755,recodex,recodex) /opt/recodex-api/cleaner
 /opt/recodex-api/app/.htaccess
 /opt/recodex-api/www/.htaccess
