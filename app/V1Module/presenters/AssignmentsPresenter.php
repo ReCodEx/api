@@ -173,7 +173,7 @@ class AssignmentsPresenter extends BasePresenter
      * @Param(type="post", name="maxPointsBeforeFirstDeadline", validation="numericint", description="A maximum of points that can be awarded for a submission before first deadline")
      * @Param(type="post", name="submissionsCountLimit", validation="numericint", description="A maximum amount of submissions by a student for the assignment")
      * @Param(type="post", name="solutionFilesLimit", validation="numericint|null", description="Maximal number of files in a solution being submitted")
-     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null", description="Maximal size (KiB) of all files in a solution being submitted")
+     * @Param(type="post", name="solutionSizeLimit", validation="numericint|null", description="Maximal size (bytes) of all files in a solution being submitted")
      * @Param(type="post", name="allowSecondDeadline", validation="bool", description="Should there be a second deadline for students who didn't make the first one?")
      * @Param(type="post", name="visibleFrom", validation="timestamp", required=false, description="Date from which this assignment will be visible to students")
      * @Param(type="post", name="canViewLimitRatios", validation="bool", description="Can all users view ratio of theirs solution memory and time usages and assignment limits?")

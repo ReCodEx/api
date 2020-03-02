@@ -343,7 +343,7 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
                 "countLimitOK" => $exercise->getSolutionFilesLimit() === null
                     || count($uploadedFiles) <= $exercise->getSolutionFilesLimit(),
                 "sizeLimitOK" => $exercise->getSolutionSizeLimit() === null
-                    || $uploadedSize <= $exercise->getSolutionSizeLimit() * 1024, // limit is in KiB
+                    || $uploadedSize <= $exercise->getSolutionSizeLimit(),
             ]
         );
     }

@@ -376,7 +376,7 @@ trait ExerciseData
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * Maximal allowed size in KiB of all files submitted for a solution.
+     * Maximal allowed size (in bytes) of all files submitted for a solution.
      */
     protected $solutionSizeLimit = null;
 
