@@ -214,7 +214,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $user = current($this->presenter->users->findAll());
         $exercise = current($this->exercises->findAll());
         $exercise->setSolutionFilesLimit(2);
-        $exercise->setSolutionSizeLimit(2);
+        $exercise->setSolutionSizeLimit(2048);
         $environment = $exercise->getRuntimeEnvironments()->first();
         $ext = current($environment->getExtensionsList());
 
@@ -299,8 +299,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $ext = current($environment->getExtensionsList());
 
         // save fake files into db
-        $file1 = new UploadedFile("file1." . $ext, new \DateTime(), 1024, $user, "file1." . $ext);
-        $file2 = new UploadedFile("file2." . $ext, new \DateTime(), 1025, $user, "file2." . $ext);
+        $file1 = new UploadedFile("file1." . $ext, new \DateTime(), 1, $user, "file1." . $ext);
+        $file2 = new UploadedFile("file2." . $ext, new \DateTime(), 2, $user, "file2." . $ext);
         $this->presenter->files->persist($file1);
         $this->presenter->files->persist($file2);
         $this->presenter->files->flush();

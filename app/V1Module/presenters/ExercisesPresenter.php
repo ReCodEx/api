@@ -284,7 +284,7 @@ class ExercisesPresenter extends BasePresenter
      * @Param(type="post", name="solutionFilesLimit", validation="numericint|null",
      *   description="Maximal number of files in a solution being submitted (default for assignments)")
      * @Param(type="post", name="solutionSizeLimit", validation="numericint|null",
-     *   description="Maximal size (KiB) of all files in a solution being submitted (default for assignments)")
+     *   description="Maximal size (bytes) of all files in a solution being submitted (default for assignments)")
      * @throws BadRequestException
      * @throws InvalidArgumentException
      */

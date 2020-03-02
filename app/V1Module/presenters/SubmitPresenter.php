@@ -251,7 +251,7 @@ class SubmitPresenter extends BasePresenter
         }
         if (
             $assignment->getSolutionSizeLimit() !== null
-            && $this->getFilesSize($uploadedFiles) > $assignment->getSolutionSizeLimit() * 1024 // limit is in KiB
+            && $this->getFilesSize($uploadedFiles) > $assignment->getSolutionSizeLimit()
         ) {
             throw new InvalidArgumentException("files", "Total size of uploaded files exceeds assignment limits");
         }
@@ -517,7 +517,7 @@ class SubmitPresenter extends BasePresenter
                 "countLimitOK" => $assignment->getSolutionFilesLimit() === null
                     || count($uploadedFiles) <= $assignment->getSolutionFilesLimit(),
                 "sizeLimitOK" => $assignment->getSolutionSizeLimit() === null
-                    || $this->getFilesSize($uploadedFiles) <= $assignment->getSolutionSizeLimit() * 1024, // limit is in KiB
+                    || $this->getFilesSize($uploadedFiles) <= $assignment->getSolutionSizeLimit(),
             ]
         );
     }
