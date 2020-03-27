@@ -429,6 +429,7 @@ permissions:
           or:
               - comment.isAuthor
               - comment.isSupervisorInGroupOfCommentedSolution
+              - comment.isSupervisorInGroupOfCommentedAssignment
 
     - allow: true # TODO
       role: student

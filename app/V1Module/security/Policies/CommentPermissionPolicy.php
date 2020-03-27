@@ -2,21 +2,25 @@
 
 namespace App\Security\Policies;
 
+use App\Model\Entity\Assignment;
 use App\Model\Entity\AssignmentSolution;
 use App\Model\Entity\Comment;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Security\Identity;
 
 class CommentPermissionPolicy implements IPermissionPolicy
 {
+    private $assignments;
     private $assignmentSolutions;
 
-    public function __construct(AssignmentSolutions $assignmentSolutions)
+    public function __construct(Assignments $assignments, AssignmentSolutions $assignmentSolutions)
     {
+        $this->assignments = $assignments;
         $this->assignmentSolutions = $assignmentSolutions;
     }
 
-    function getAssociatedClass()
+    public function getAssociatedClass()
     {
         return Comment::class;
     }
@@ -59,6 +63,24 @@ class CommentPermissionPolicy implements IPermissionPolicy
         }
 
         $group = $solution->getAssignment()->getGroup();
+        return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
+    }
+
+
+    public function isSupervisorInGroupOfCommentedAssignment(Identity $identity, Comment $comment)
+    {
+        $user = $identity->getUserData();
+        if (!$user) {
+            return false;
+        }
+
+        /** @var Assignment $assignment */
+        $assignment = $this->assignments->get($comment->getCommentThread()->getId());
+        if ($assignment === null) {
+            return false;
+        }
+
+        $group = $assignment->getGroup();
         return $group && ($group->isSupervisorOf($user) || $group->isAdminOf($user));
     }
 }
