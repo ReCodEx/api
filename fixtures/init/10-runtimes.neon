@@ -1,4 +1,14 @@
 App\Model\Entity\RuntimeEnvironment:
+	bash:
+		__construct:
+			- bash
+			- Bash
+			- "Bash (Bourne Again SHell)"
+			- "[sh]"
+			- GNU/Linux
+			- Shell scripts executed with Bash
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.sh\""
+
 	c-gcc-linux:
 		__construct:
 			- c-gcc-linux
@@ -59,6 +69,16 @@ App\Model\Entity\RuntimeEnvironment:
 			- Go compiled with default Go compiler
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{go}\""
 
+	groovy:
+		__construct:
+			- groovy
+			- Groovy
+			- Apache Groovy
+			- "[groovy]"
+			- GNU/Linux
+			- "Apache Groovy programming language compiled with groovyc (2.5.10) and executed with java"
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.groovy\""
+
 	haskell:
 		__construct:
 			- haskell
@@ -78,6 +98,16 @@ App\Model\Entity\RuntimeEnvironment:
 			- GNU/Linux
 			- Java compiled and executed in OpenJDK runtime
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.java\""
+
+	kotlin:
+		__construct:
+			- kotlin
+			- Kotlin
+			- Kotlin Programming Language
+			- "[kt]"
+			- GNU/Linux
+			- "Kotlin Programming Language compiled with kotlinc (1.3.71) and executed with java"
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.kt\""
 
 	mono:
 		__construct:
@@ -138,4 +168,14 @@ App\Model\Entity\RuntimeEnvironment:
 			- GNU/Linux
 			- Rust compiled with rustc compiler
 			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.{rs}\""
+
+	scala:
+		__construct:
+			- scala
+			- Scala
+			- Scala Programming Language
+			- "[scala]"
+			- GNU/Linux
+			- "Scala Programming Language compiled with scalac (2.13.1) and executed with scala"
+			- "- name: \"source-files\"\n  type: \"file[]\"\n  value: \"*.scala\""
 
