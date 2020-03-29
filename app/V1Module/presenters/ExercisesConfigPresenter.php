@@ -16,7 +16,7 @@ use App\Helpers\ExerciseConfig\Updater;
 use App\Helpers\ExerciseConfig\Validator;
 use App\Helpers\ExerciseConfig\VariablesTable;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
-use App\Helpers\ExerciseRestrictionsConfig;
+use App\Helpers\ExercisesConfig;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
@@ -119,7 +119,7 @@ class ExercisesConfigPresenter extends BasePresenter
     public $calculators;
 
     /**
-     * @var ExerciseRestrictionsConfig
+     * @var ExercisesConfig
      * @inject
      */
     public $exerciseRestrictionsConfig;

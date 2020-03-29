@@ -174,7 +174,14 @@ parameters:
     submissionsCountLimitLimit: 100  # maximum value for assignment.submissionCountLimit
     maxPointsLimit: 10000  # limit for maximal points (both before first and second deadline)
 
-  exerciseRestrictions: {}
+  exercises:
+    # Restrictions
+    testCountLimit: 100
+    supplementaryFileCountLimit: 200
+    supplementaryFileSizeLimit: 268435456  # 256 MiB
+    # Default values for newly created exercises
+    solutionFilesLimitDefault: 10  # at most 10 files per solution
+    solutionSizeLimitDefault: 262144  # 256 KiB is the maximal size for all submitted files
 
   migrations:
     table: doctrine_migrations # database table for applied migrations
@@ -315,7 +322,7 @@ services:
   - App\Helpers\AssignmentRestrictionsConfig(%assignmentRestrictions%)
   - App\Helpers\BrokerConfig(%broker%)
   - App\Helpers\EmailsConfig(%emails%)
-  - App\Helpers\ExerciseRestrictionsConfig(%exerciseRestrictions%)
+  - App\Helpers\ExercisesConfig(%exercises%)
   - App\Helpers\MonitorConfig(%monitor%)
   - App\Helpers\RegistrationConfig(%localRegistration%)
   - App\Helpers\UploadsConfig(%uploads%)

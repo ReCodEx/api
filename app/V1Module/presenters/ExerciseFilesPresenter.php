@@ -7,7 +7,7 @@ use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\SubmissionFailedException;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
-use App\Helpers\ExerciseRestrictionsConfig;
+use App\Helpers\ExercisesConfig;
 use App\Helpers\FileServerProxy;
 use App\Helpers\UploadedFileStorage;
 use App\Model\Entity\SupplementaryExerciseFile;
@@ -74,7 +74,7 @@ class ExerciseFilesPresenter extends BasePresenter
     public $exerciseAcl;
 
     /**
-     * @var ExerciseRestrictionsConfig
+     * @var ExercisesConfig
      * @inject
      */
     public $restrictionsConfig;

@@ -5,7 +5,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 use App\Exceptions\ExerciseConfigException;
 use App\Helpers\ExerciseConfig\PipelineVars;
 use App\Helpers\ExerciseConfig\Test;
-use App\Helpers\ExerciseRestrictionsConfig;
+use App\Helpers\ExercisesConfig;
 use App\Model\Entity\ExerciseTest;
 use App\Model\Entity\HardwareGroup;
 use App\V1Module\Presenters\ExercisesConfigPresenter;
@@ -691,7 +691,7 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercise = current($this->exercises->findAll());
 
-        $restrictions = new ExerciseRestrictionsConfig(
+        $restrictions = new ExercisesConfig(
             [
                 "testLimit" => 10
             ]

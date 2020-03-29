@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use App\Helpers\ExercisesConfig;
 
 /**
  * @ORM\Entity
@@ -314,7 +315,7 @@ class Exercise implements IExercise
         $this->tags = new ArrayCollection();
     }
 
-    public static function create(User $user, Group $group): Exercise
+    public static function create(User $user, Group $group, ExercisesConfig $config = null): Exercise
     {
         return new self(
             1,
@@ -331,7 +332,14 @@ class Exercise implements IExercise
             new ArrayCollection([$group]),
             null,
             null,
-            $user
+            $user,
+            false, // isPublic
+            true, // isLocked
+            null, // scoreCalculator
+            "", // scoreConfig
+            "simpleExerciseConfig",
+            $config ? $config->getSolutionFilesLimitDefault() : null,
+            $config ? $config->getSolutionSizeLimitDefault() : null
         );
     }
 
