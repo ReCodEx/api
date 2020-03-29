@@ -4,7 +4,7 @@ $container = require_once __DIR__ . "/../bootstrap.php";
 
 use App\Exceptions\NotFoundException;
 use App\Helpers\ExerciseFileStorage;
-use App\Helpers\ExerciseRestrictionsConfig;
+use App\Helpers\ExercisesConfig;
 use App\Helpers\FileServerProxy;
 use App\Model\Entity\AttachmentFile;
 use App\Model\Entity\UploadedFile;
@@ -144,7 +144,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $fileLimit = 10;
 
-        $restrictions = new ExerciseRestrictionsConfig(
+        $restrictions = new ExercisesConfig(
             [
                 "supplementaryFileCountLimit" => $fileLimit
             ]
@@ -204,7 +204,7 @@ class TestExerciseFilesPresenter extends Tester\TestCase
         $user = $this->presenter->users->getByEmail(PresenterTestHelper::ADMIN_LOGIN);
         $sizeLimit = 5 * 1024;
 
-        $restrictions = new ExerciseRestrictionsConfig(
+        $restrictions = new ExercisesConfig(
             [
                 "supplementaryFileSizeLimit" => $sizeLimit
             ]

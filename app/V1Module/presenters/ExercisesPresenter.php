@@ -8,6 +8,7 @@ use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\InvalidArgumentException;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\ParseException;
+use App\Helpers\ExercisesConfig;
 use App\Helpers\ExerciseConfig\Compiler;
 use App\Helpers\ExerciseConfig\ExerciseConfigChecker;
 use App\Helpers\ExerciseConfig\Updater;
@@ -102,6 +103,12 @@ class ExercisesPresenter extends BasePresenter
      * @inject
      */
     public $exerciseConfigUpdater;
+
+    /**
+     * @var ExercisesConfig
+     * @inject
+     */
+    public $exercisesConfigParams;
 
     /**
      * @var ExerciseConfigChecker
@@ -485,7 +492,7 @@ class ExercisesPresenter extends BasePresenter
         }
 
         // create exercise and fill some predefined details
-        $exercise = Exercise::create($user, $group);
+        $exercise = Exercise::create($user, $group, $this->exercisesConfigParams);
         $localizedExercise = new LocalizedExercise(
             $user->getSettings()->getDefaultLanguage(),
             "Exercise by " . $user->getName(),
