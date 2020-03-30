@@ -19,6 +19,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method bool getAssignmentDeadlineEmails()
  * @method bool getSubmissionEvaluatedEmails()
  * @method bool getSolutionCommentsEmails()
+ * @method bool getAssignmentCommentsEmails()
  * @method bool getPointsChangedEmails()
  * @method bool getAssignmentSubmitAfterAcceptedEmails()
  * @method setDarkTheme(bool $darkTheme)
@@ -31,6 +32,7 @@ use Kdyby\Doctrine\MagicAccessors\MagicAccessors;
  * @method setAssignmentDeadlineEmails(bool $flag)
  * @method setSubmissionEvaluatedEmails(bool $flag)
  * @method setSolutionCommentsEmails(bool $flag)
+ * @method setAssignmentCommentsEmails(bool $flag)
  * @method setPointsChangedEmails(bool $flag)
  * @method setAssignmentSubmitAfterAcceptedEmails(bool $flag)
  */
@@ -58,6 +60,7 @@ class UserSettings implements JsonSerializable
         $this->assignmentDeadlineEmails = true;
         $this->submissionEvaluatedEmails = true;
         $this->solutionCommentsEmails = true;
+        $this->assignmentCommentsEmails = true;
         $this->pointsChangedEmails = true;
         $this->assignmentSubmitAfterAcceptedEmails = false;
         $this->assignmentSubmitAfterReviewedEmails = false;
@@ -129,6 +132,11 @@ class UserSettings implements JsonSerializable
     /**
      * @ORM\Column(type="boolean")
      */
+    protected $assignmentCommentsEmails;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
     protected $pointsChangedEmails;
 
     /**
@@ -154,6 +162,7 @@ class UserSettings implements JsonSerializable
             "assignmentDeadlineEmails" => $this->assignmentDeadlineEmails,
             "submissionEvaluatedEmails" => $this->submissionEvaluatedEmails,
             "solutionCommentsEmails" => $this->solutionCommentsEmails,
+            "assignmentCommentsEmails" => $this->assignmentCommentsEmails,
             "pointsChangedEmails" => $this->pointsChangedEmails,
             "assignmentSubmitAfterAcceptedEmails" => $this->assignmentSubmitAfterAcceptedEmails,
             "assignmentSubmitAfterReviewedEmails" => $this->assignmentSubmitAfterReviewedEmails,
