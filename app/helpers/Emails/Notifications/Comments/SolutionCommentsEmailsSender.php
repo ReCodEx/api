@@ -162,8 +162,8 @@ class SolutionCommentsEmailsSender
                     $locale,
                     $solution->getAssignment()->getLocalizedTexts()
                 )->getName(),
-                "solutionAuthor" => $solution->getSolution()->getAuthor() ? $solution->getSolution()->getAuthor(
-                )->getName() : "",
+                "solutionAuthor" => $solution->getSolution()->getAuthor()
+                    ? $solution->getSolution()->getAuthor()->getName() : "",
                 "author" => $comment->getUser() ? $comment->getUser()->getName() : "",
                 "date" => $comment->getPostedAt(),
                 "comment" => $comment->getText(),
@@ -218,8 +218,8 @@ class SolutionCommentsEmailsSender
                     $locale,
                     $solution->getExercise()->getLocalizedTexts()
                 )->getName(),
-                "solutionAuthor" => $solution->getSolution()->getAuthor() ? $solution->getSolution()->getAuthor(
-                )->getName() : "",
+                "solutionAuthor" => $solution->getSolution()->getAuthor()
+                    ? $solution->getSolution()->getAuthor()->getName() : "",
                 "author" => $comment->getUser() ? $comment->getUser()->getName() : "",
                 "date" => $comment->getPostedAt(),
                 "comment" => $comment->getText(),

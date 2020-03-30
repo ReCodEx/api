@@ -133,6 +133,11 @@ parameters:
     emails:
       from: %emails.from%
 
+  assignmentCommentsNotifications:
+    assignmentRedirectUrl: "%webapp.address%/app/assignment/{assignmentId}"
+    emails:
+      from: %emails.from%
+
   pointsChangedNotifications:
     solutionPointsRedirectUrl: "%webapp.address%/app/assignment/{id}"
     shadowPointsRedirectUrl: "%webapp.address%/app/shadow-assignment/{id}"
@@ -378,6 +383,7 @@ services:
   - App\Helpers\Notifications\AssignmentEmailsSender(@App\Helpers\EmailHelper, @App\Model\Repository\AssignmentSolutions, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentNotifications%)
   - App\Helpers\Notifications\FailureResolutionEmailsSender(@App\Helpers\EmailHelper, %failureResolutionNotifications%)
   - App\Helpers\Notifications\SolutionCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %solutionCommentsNotifications%)
+  - App\Helpers\Notifications\AssignmentCommentsEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, %assignmentCommentsNotifications%)
   - App\Helpers\Notifications\SubmissionEmailsSender(@App\Helpers\EmailHelper, @App\Helpers\Emails\EmailLocalizationHelper, @App\Model\Repository\AssignmentSolutions, %submissionNotifications%)
   - App\Helpers\Notifications\GeneralStatsEmailsSender(@App\Helpers\EmailHelper, %generalStatsNotifications%)
   - App\Helpers\Notifications\PointsChangedEmailsSender(@App\Helpers\EmailHelper, %pointsChangedNotifications%)

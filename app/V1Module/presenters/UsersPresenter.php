@@ -414,6 +414,7 @@ class UsersPresenter extends BasePresenter
             "assignmentDeadlineEmails",
             "submissionEvaluatedEmails",
             "solutionCommentsEmails",
+            "assignmentCommentsEmails",
             "pointsChangedEmails",
             "assignmentSubmitAfterAcceptedEmails",
             "assignmentSubmitAfterReviewedEmails"

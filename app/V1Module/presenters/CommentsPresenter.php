@@ -5,8 +5,10 @@ namespace App\V1Module\Presenters;
 use App\Exceptions\ForbiddenRequestException;
 use App\Exceptions\NotFoundException;
 use App\Helpers\Notifications\SolutionCommentsEmailsSender;
+use App\Helpers\Notifications\AssignmentCommentsEmailsSender;
 use App\Model\Entity\Comment;
 use App\Model\Entity\CommentThread;
+use App\Model\Repository\Assignments;
 use App\Model\Repository\AssignmentSolutions;
 use App\Model\Repository\Comments;
 use App\Model\Repository\ReferenceExerciseSolutions;
@@ -32,6 +34,12 @@ class CommentsPresenter extends BasePresenter
     public $commentAcl;
 
     /**
+     * @var Assignments
+     * @inject
+     */
+    public $assignments;
+
+    /**
      * @var AssignmentSolutions
      * @inject
      */
@@ -48,6 +56,12 @@ class CommentsPresenter extends BasePresenter
      * @inject
      */
     public $solutionCommentsEmailsSender;
+
+    /**
+     * @var AssignmentCommentsEmailsSender
+     * @inject
+     */
+    public $assignmentCommentsEmailsSender;
 
     /**
      * @param string $id
@@ -129,17 +143,19 @@ class CommentsPresenter extends BasePresenter
         $this->comments->flush();
 
         // send email to all participants in comment thread
+        $assignment = $this->assignments->get($id);
         $assignmentSolution = $this->assignmentSolutions->get($id);
         $referenceSolution = $this->referenceExerciseSolutions->get($id);
-        if ($assignmentSolution) {
+        if ($assignment) {
+            $this->assignmentCommentsEmailsSender->assignmentComment($assignment, $comment);
+        } elseif ($assignmentSolution) {
             $this->solutionCommentsEmailsSender->assignmentSolutionComment($assignmentSolution, $comment);
-        } else {
-            if ($referenceSolution) {
+        } elseif ($referenceSolution) {
                 $this->solutionCommentsEmailsSender->referenceSolutionComment($referenceSolution, $comment);
-            } else {
-                // Nothing to do here...
-            }
+        } else {
+            // Nothing to do at the moment...
         }
+        
 
         $this->sendSuccessResponse($comment);
     }

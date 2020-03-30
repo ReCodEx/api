@@ -2,6 +2,7 @@
 
 $container = require_once __DIR__ . "/../bootstrap.php";
 
+use App\Helpers\Notifications\AssignmentCommentsEmailsSender;
 use App\Helpers\Notifications\SolutionCommentsEmailsSender;
 use App\V1Module\Presenters\CommentsPresenter;
 use Tester\Assert;
@@ -172,6 +173,36 @@ class TestCommentsPresenter extends Tester\TestCase
         Assert::false($comment->isPrivate);
         Assert::equal("some comment text", $comment->text);
         Assert::equal($referenceSolution->getId(), $comment->commentThread->id);
+
+        // Make sure the assignment was persisted
+        Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
+    }
+
+    public function testAddAssignmentCommentAndCreateThread()
+    {
+        PresenterTestHelper::login($this->container, $this->userLogin);
+        $assignment = current($this->presenter->assignments->findAll());
+
+        // mock emails sender
+        $mockAssigmentCommentsEmailsSender = Mockery::mock(AssignmentCommentsEmailsSender::class);
+        $mockAssigmentCommentsEmailsSender->shouldReceive("assignmentComment")->once();
+        $this->presenter->assignmentCommentsEmailsSender = $mockAssigmentCommentsEmailsSender;
+
+        $request = new Nette\Application\Request(
+            'V1:Comments',
+            'POST',
+            ['action' => 'addComment', 'id' => $assignment->getId()],
+            ['text' => 'some comment text', 'isPrivate' => 'false']
+        );
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        Assert::equal(200, $result['code']);
+        $comment = $result['payload'];
+        Assert::false($comment->isPrivate);
+        Assert::equal("some comment text", $comment->text);
+        Assert::equal($assignment->getId(), $comment->commentThread->id);
 
         // Make sure the assignment was persisted
         Assert::same($this->presenter->comments->findOneBy(['id' => $comment->id]), $result['payload']);
