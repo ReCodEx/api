@@ -166,6 +166,7 @@ class GroupsPresenter extends BasePresenter
      * @Param(type="post", name="externalId", required=false, description="An informative, human readable identifier of the group")
      * @Param(type="post", name="parentGroupId", validation="string:36", required=false, description="Identifier of the parent group (if none is given, a top-level group is created)")
      * @Param(type="post", name="publicStats", validation="bool", required=false, description="Should students be able to see each other's results?")
+     * @Param(type="post", name="detaining", validation="bool", required=false, description="Are students prevented from leaving the group on their own?")
      * @Param(type="post", name="isPublic", validation="bool", required=false, description="Should the group be visible to all student?")
      * @Param(type="post", name="isOrganizational", validation="bool", required=false, description="Whether the group is organizational (no assignments nor students).")
      * @Param(type="post", name="localizedTexts", validation="array", required=false, description="Localized names and descriptions")
@@ -195,14 +196,16 @@ class GroupsPresenter extends BasePresenter
 
         $externalId = $req->getPost("externalId") === null ? "" : $req->getPost("externalId");
         $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
+        $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
         $isOrganizational = filter_var($req->getPost("isOrganizational"), FILTER_VALIDATE_BOOLEAN);
         $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
 
-        $group = new Group($externalId, $instance, $user, $parentGroup, $publicStats, $isPublic, $isOrganizational);
+        $group = new Group($externalId, $instance, $user, $parentGroup, $publicStats, $isPublic, $isOrganizational, $detaining);
         if ($hasThreshold) {
-            $threshold = $req->getPost("threshold") !== null ? $req->getPost("threshold") / 100 : $group->getThreshold(
-            );
+            $threshold = $req->getPost("threshold") !== null
+                ? $req->getPost("threshold") / 100
+                : $group->getThreshold();
             $group->setThreshold($threshold);
         }
         $this->updateLocalizations($req, $group);
@@ -255,6 +258,7 @@ class GroupsPresenter extends BasePresenter
      * @POST
      * @Param(type="post", name="externalId", required=false, description="An informative, human readable indentifier of the group")
      * @Param(type="post", name="publicStats", validation="bool", description="Should students be able to see each other's results?")
+     * @Param(type="post", name="detaining", validation="bool", required=false, description="Are students prevented from leaving the group on their own?")
      * @Param(type="post", name="isPublic", validation="bool", description="Should the group be visible to all student?")
      * @Param(type="post", name="hasThreshold", validation="bool", description="True if threshold was given, false if it should be unset")
      * @Param(type="post", name="threshold", validation="numericint", required=false, description="A minimum percentage of points needed to pass the course")
@@ -266,12 +270,14 @@ class GroupsPresenter extends BasePresenter
     {
         $req = $this->getRequest();
         $publicStats = filter_var($req->getPost("publicStats"), FILTER_VALIDATE_BOOLEAN);
+        $detaining = filter_var($req->getPost("detaining"), FILTER_VALIDATE_BOOLEAN);
         $isPublic = filter_var($req->getPost("isPublic"), FILTER_VALIDATE_BOOLEAN);
         $hasThreshold = filter_var($req->getPost("hasThreshold"), FILTER_VALIDATE_BOOLEAN);
 
         $group = $this->groups->findOrThrow($id);
         $group->setExternalId($req->getPost("externalId"));
         $group->setPublicStats($publicStats);
+        $group->setDetaining($detaining);
         $group->setIsPublic($isPublic);
 
         if ($hasThreshold) {

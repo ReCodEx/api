@@ -111,7 +111,16 @@ permissions:
       role: student
       resource: group
       actions:
-        - removeStudent # A student can leave any group
+        - removeStudent # A student can leave any group...
+      conditions:
+        - group.isNotDetainingStudents # ... which does not detain students
+        - group.isMember
+        - student.isSameUser
+
+    - allow: true
+      role: student
+      resource: group
+      actions:
         - viewStudentStats
       conditions:
         - group.isMember
