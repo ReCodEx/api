@@ -290,6 +290,68 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::false(in_array($user->getId(), $payload["privateData"]["students"]));
     }
 
+    public function testStudentLeavesGroup()
+    {
+        PresenterTestHelper::login($this->container, $this->userLogin);
+
+        $group = $this->presenter->groups->findAll()[0];
+        $user = $this->presenter->users->getByEmail($this->userLogin);
+        $user->makeStudentOf($group); // ! necessary
+        $this->presenter->users->flush();
+
+        // initial checks
+        Assert::equal(true, $group->isStudentOf($user));
+
+        $request = new Nette\Application\Request(
+            'V1:Groups', 'DELETE', [
+            'action' => 'removeStudent',
+            'id' => $group->id,
+            'userId' => $user->id
+        ]
+        );
+
+        /** @var \Nette\Application\Responses\JsonResponse $response */
+        $response = $this->presenter->run($request);
+        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
+
+        $result = $response->getPayload();
+        $payload = $result["payload"];
+        Assert::equal(200, $result["code"]);
+
+        Assert::false(in_array($user->getId(), $payload["privateData"]["students"]));
+    }
+
+    public function testStudentCannotLeaveDetainingsGroup()
+    {
+        PresenterTestHelper::login($this->container, $this->userLogin);
+
+        $group = $this->presenter->groups->findAll()[0];
+        $user = $this->presenter->users->getByEmail($this->userLogin);
+        $user->makeStudentOf($group); // ! necessary
+        $group->setDetaining(true);
+        $this->presenter->users->flush();
+        $this->presenter->groups->flush();        
+
+        // initial checks
+        Assert::equal(true, $group->isStudentOf($user));
+        Assert::equal(true, $group->isDetaining());
+
+        $request = new Nette\Application\Request(
+            'V1:Groups', 'DELETE', [
+            'action' => 'removeStudent',
+            'id' => $group->id,
+            'userId' => $user->id
+        ]
+        );
+
+        Assert::exception(
+            function () use ($request) {
+                $this->presenter->run($request);
+            },
+            \App\Exceptions\ForbiddenRequestException::class
+        );
+    }
+
     public function testAddGroup()
     {
         $token = PresenterTestHelper::login($this->container, $this->adminLogin);
@@ -317,6 +379,7 @@ class TestGroupsPresenter extends Tester\TestCase
                 'isPublic' => true,
                 'hasThreshold' => false,
                 'isOrganizational' => false,
+                'detaining' => true,
             ]
         );
         $response = $this->presenter->run($request);
@@ -338,6 +401,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal('external identification of exercise', $payload["externalId"]);
         Assert::equal($instance->getRootGroup()->getId(), $payload["parentGroupId"]);
         Assert::equal(true, $payload["privateData"]["publicStats"]);
+        Assert::equal(true, $payload["privateData"]["detaining"]);
         Assert::equal(true, $payload["public"]);
     }
 
@@ -431,6 +495,7 @@ class TestGroupsPresenter extends Tester\TestCase
                 ],
                 'externalId' => 'external identification of exercise',
                 'publicStats' => true,
+                'detaining' => true,
                 'isPublic' => true,
                 'hasThreshold' => true,
                 'threshold' => 80
@@ -450,6 +515,7 @@ class TestGroupsPresenter extends Tester\TestCase
         Assert::equal('some neaty description', $localizedGroup->getDescription());
         Assert::equal('external identification of exercise', $payload["externalId"]);
         Assert::equal(true, $payload["privateData"]["publicStats"]);
+        Assert::equal(true, $payload["privateData"]["detaining"]);
         Assert::equal(true, $payload["public"]);
         Assert::equal(0.8, $payload["privateData"]["threshold"]);
     }

@@ -49,6 +49,11 @@ class GroupPermissionPolicy implements IPermissionPolicy
         return $group->isPublic();
     }
 
+    public function isNotDetainingStudents(Identity $identity, Group $group): bool
+    {
+        return !$group->isDetaining();
+    }
+
     public function areStatsPublic(Identity $identity, Group $group): bool
     {
         return $group->statsArePublic();

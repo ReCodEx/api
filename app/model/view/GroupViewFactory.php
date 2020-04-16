@@ -246,6 +246,7 @@ class GroupViewFactory
                     }
                 )->getValues(),
                 "publicStats" => $group->getPublicStats(),
+                "detaining" => $group->isDetaining(),
                 "threshold" => $group->getThreshold(),
                 "bindings" => $this->bindings->getBindingsForGroup($group)
             ];

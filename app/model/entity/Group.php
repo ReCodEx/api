@@ -40,7 +40,8 @@ class Group
         Group $parentGroup = null,
         bool $publicStats = false,
         bool $isPublic = false,
-        bool $isOrganizational = false
+        bool $isOrganizational = false,
+        bool $isDetaining = false
     ) {
         $this->externalId = $externalId;
         $this->memberships = new ArrayCollection();
@@ -70,6 +71,7 @@ class Group
         }
 
         $this->isOrganizational = $isOrganizational;
+        $this->isDetaining = $isDetaining;
 
         $instance->addGroup($this);
     }
@@ -199,6 +201,22 @@ class Group
     public function setOrganizational($value = true)
     {
         $this->isOrganizational = $value;
+    }
+
+    /**
+     * @ORM\Column(type="boolean", options={"default":0})
+     * Students cannot leave detaining groups on their own (supervisor can remove them).
+     */
+    protected $isDetaining = false;
+
+    public function isDetaining(): bool
+    {
+        return $this->isDetaining;
+    }
+
+    public function setDetaining($value = true)
+    {
+        $this->isDetaining = $value;
     }
 
     /**
