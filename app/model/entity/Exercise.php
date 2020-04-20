@@ -24,7 +24,7 @@ use App\Helpers\ExercisesConfig;
  * @method Collection getReferenceSolutions()
  * @method Collection getExerciseTests()
  * @method Collection getTags()
- * @method void setScoreConfig(string $scoreConfig)
+ * @method void setScoreConfig(ExerciseScoreConfig $scoreConfig)
  * @method void setDifficulty(string $difficulty)
  * @method void setIsPublic(bool $isPublic)
  * @method void setExerciseConfig(ExerciseConfig $exerciseConfig)
@@ -58,26 +58,6 @@ class Exercise implements IExercise
      * @ORM\Column(type="string")
      */
     protected $difficulty;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $scoreCalculator;
-
-    public function getScoreCalculator(): ?string
-    {
-        return $this->scoreCalculator;
-    }
-
-    /**
-     * @ORM\Column(type="text")
-     */
-    protected $scoreConfig;
-
-    public function getScoreConfig(): string
-    {
-        return $this->scoreConfig;
-    }
 
     /**
      * @ORM\ManyToMany(targetEntity="RuntimeEnvironment")
@@ -255,8 +235,7 @@ class Exercise implements IExercise
      * @param User $user
      * @param bool $isPublic
      * @param bool $isLocked
-     * @param string|null $scoreCalculator
-     * @param string $scoreConfig
+     * @param ExerciseScoreConfig $scoreConfig
      * @param string $configurationType
      * @throws Exception
      */
@@ -278,8 +257,7 @@ class Exercise implements IExercise
         User $user,
         bool $isPublic = false,
         bool $isLocked = true,
-        string $scoreCalculator = null,
-        string $scoreConfig = "",
+        ?ExerciseScoreConfig $scoreConfig = null,
         string $configurationType = "simpleExerciseConfig",
         int $solutionFilesLimit = null,
         int $solutionSizeLimit = null
@@ -306,7 +284,6 @@ class Exercise implements IExercise
         $this->exerciseTests = $exerciseTests;
         $this->pipelines = $pipelines;
         $this->referenceSolutions = new ArrayCollection();
-        $this->scoreCalculator = $scoreCalculator;
         $this->scoreConfig = $scoreConfig;
         $this->configurationType = $configurationType;
         $this->solutionFilesLimit = $solutionFilesLimit;
@@ -315,8 +292,12 @@ class Exercise implements IExercise
         $this->tags = new ArrayCollection();
     }
 
-    public static function create(User $user, Group $group, ExercisesConfig $config = null): Exercise
-    {
+    public static function create(
+        User $user,
+        Group $group,
+        ExerciseScoreConfig $scoreConfig = null,
+        ExercisesConfig $config = null
+    ): Exercise {
         return new self(
             1,
             "",
@@ -335,8 +316,7 @@ class Exercise implements IExercise
             $user,
             false, // isPublic
             true, // isLocked
-            null, // scoreCalculator
-            "", // scoreConfig
+            $scoreConfig ?? new ExerciseScoreConfig(),
             "simpleExerciseConfig",
             $config ? $config->getSolutionFilesLimitDefault() : null,
             $config ? $config->getSolutionSizeLimitDefault() : null
@@ -363,7 +343,6 @@ class Exercise implements IExercise
             $user,
             $exercise->isPublic,
             true,
-            $exercise->scoreCalculator,
             $exercise->scoreConfig,
             $exercise->configurationType,
             $exercise->solutionFilesLimit,

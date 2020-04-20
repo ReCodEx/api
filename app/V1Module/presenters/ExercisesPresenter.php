@@ -17,14 +17,15 @@ use App\Helpers\Pagination;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Helpers\Validators;
 use App\Model\Entity\Assignment;
+use App\Model\Entity\Exercise;
+use App\Model\Entity\ExerciseScoreConfig;
 use App\Model\Entity\ExerciseConfig;
 use App\Model\Entity\ExerciseTag;
 use App\Model\Entity\Pipeline;
+use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\Exercises;
 use App\Model\Repository\ExerciseTags;
 use App\Model\Repository\Pipelines;
-use App\Model\Entity\Exercise;
-use App\Model\Entity\LocalizedExercise;
 use App\Model\Repository\HardwareGroups;
 use App\Model\Repository\Groups;
 use App\Model\View\AssignmentViewFactory;
@@ -491,8 +492,12 @@ class ExercisesPresenter extends BasePresenter
             throw new ForbiddenRequestException();
         }
 
+        // create default score configuration without tests
+        $calculator = $this->calculators->getDefaultCalculator();
+        $scoreConfig = new ExerciseScoreConfig($calculator->getId(), $calculator->getDefaultConfig([]));
+
         // create exercise and fill some predefined details
-        $exercise = Exercise::create($user, $group, $this->exercisesConfigParams);
+        $exercise = Exercise::create($user, $group, $scoreConfig, $this->exercisesConfigParams);
         $localizedExercise = new LocalizedExercise(
             $user->getSettings()->getDefaultLanguage(),
             "Exercise by " . $user->getName(),
@@ -506,10 +511,6 @@ class ExercisesPresenter extends BasePresenter
         // create and store basic exercise configuration
         $exerciseConfig = new ExerciseConfig((string)new \App\Helpers\ExerciseConfig\ExerciseConfig(), $user);
         $exercise->setExerciseConfig($exerciseConfig);
-
-        // create default score configuration without tests
-        $scoreConfig = $this->calculators->getDefaultCalculator()->getDefaultConfig([]);
-        $exercise->setScoreConfig($scoreConfig);
 
         // and finally make changes to database
         $this->exercises->persist($exercise);

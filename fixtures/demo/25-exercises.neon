@@ -24,12 +24,24 @@ App\Model\Entity\LocalizedExercise:
             - ""
             - ""
 
+App\Model\Entity\ExerciseScoreConfig:
+    weightedTwoTests:
+        __construct:
+            - 'weighted'
+            - '''
+                testWeights:
+                    "Test 1": 100
+                    "Test 2": 100
+            '''
+
+
 App\Model\Entity\Exercise:
     demoExercise:
         __construct:
             create:
                 - @demoAdmin
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @demoExerciseText
@@ -50,16 +62,13 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
+
     "sampleExercise_{alfa, beta, alfred, aloha}":
         __construct:
             create:
                 - @demoAdmin
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "easy"
         addLocalizedText:
             - @sampleExerciseText
@@ -80,16 +89,13 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
+
     privateAdminExercise:
         __construct:
             create:
                 - @demoAdmin
                 - @demoChildGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @privateAdminExerciseText
@@ -112,11 +118,13 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: false
+
     publicSupervisor2Exercise:
         __construct:
             create:
                 - @demoGroupSupervisor2
                 - @demoGroup
+                - @weightedTwoTests
         difficulty: "moderate"
         addLocalizedText:
             - @publicSupervisor2ExerciseText
@@ -137,11 +145,6 @@ App\Model\Entity\Exercise:
         exerciseConfig: @demoExerciseConfig
         isLocked: false
         isPublic: true
-        scoreConfig: '''
-        testWeights:
-          "Test 1": 100
-          "Test 2": 100
-        '''
 
 App\Model\Entity\ReferenceExerciseSolution:
     demoReferenceExerciseSolution:

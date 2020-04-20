@@ -245,8 +245,8 @@ class ExerciseConfigChecker
         }
 
         // validate score configuration
-        $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
-        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig())) {
+        $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
+        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig()->getConfig())) {
             $exercise->setBroken("The score configuration is invalid");
             return;
         }

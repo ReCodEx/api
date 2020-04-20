@@ -171,8 +171,9 @@ trait ExerciseData
      * @param RuntimeEnvironment $environment
      * @return ExerciseEnvironmentConfig|null
      */
-    public function getExerciseEnvironmentConfigByEnvironment(RuntimeEnvironment $environment): ?ExerciseEnvironmentConfig
-    {
+    public function getExerciseEnvironmentConfigByEnvironment(
+        RuntimeEnvironment $environment
+    ): ?ExerciseEnvironmentConfig {
         $first = $this->exerciseEnvironmentConfigs->filter(
             function (ExerciseEnvironmentConfig $runtimeConfig) use ($environment) {
                 return $runtimeConfig->getRuntimeEnvironment()->getId() === $environment->getId();
@@ -192,21 +193,11 @@ trait ExerciseData
     }
 
     /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected $scoreCalculator;
-
-    public function getScoreCalculator(): ?string
-    {
-        return $this->scoreCalculator;
-    }
-
-    /**
-     * @ORM\Column(type="text")
+     * @ORM\ManyToOne(targetEntity="ExerciseScoreConfig", cascade={"persist"})
      */
     protected $scoreConfig;
 
-    public function getScoreConfig(): string
+    public function getScoreConfig(): ExerciseScoreConfig
     {
         return $this->scoreConfig;
     }

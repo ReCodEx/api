@@ -12,6 +12,11 @@ use App\Exceptions\ExerciseConfigException;
 interface IScoreCalculator
 {
     /**
+     * @return string The calculator's unique identification
+     */
+    public function getId(): string;
+
+    /**
      * Compute the score from tests results
      * @param string $scoreConfig Configuration of the calculator (format depends on implementation)
      * @param array $testResults Array of scores (float) indexed by test ids

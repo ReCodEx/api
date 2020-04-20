@@ -565,21 +565,11 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $exercise = current($this->exercises->findAll());
 
-        $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'GET',
-            [
-                'action' => 'getScoreConfig',
-                'id' => $exercise->getId()
-            ]
+        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'GET',
+            [ 'action' => 'getScoreConfig', 'id' => $exercise->getId() ]
         );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $payload = $result['payload'];
-        Assert::equal("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100", $payload);
+        $resultConfig = Yaml::parse($payload->getConfig());
+        Assert::equal(Yaml::parse("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100"), $resultConfig);
     }
 
     public function testSetScoreConfig()
@@ -588,25 +578,24 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $exercise = current($this->exercises->findAll());
 
         // prepare score config
+        $calculator = 'weighted';
         $config = "testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100";
 
-        $request = new Nette\Application\Request(
-            'V1:ExercisesConfig', 'POST',
+        $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
             [
                 'action' => 'setScoreConfig',
                 'id' => $exercise->getId()
             ],
-            ['scoreConfig' => $config]
+            [
+                'scoreCalculator' => $calculator,
+                'scoreConfig' => $config,
+            ]
         );
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
 
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $payload = Yaml::parse($result['payload']);
+        Assert::equal($calculator, $payload->getCalculator());
+        $resultConfig = Yaml::parse($payload->getConfig());
         $expected = Yaml::parse($config);
-        Assert::equal($expected, $payload);
+        Assert::equal($expected, $resultConfig);
     }
 
     public function testGetTests()

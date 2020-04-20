@@ -19,6 +19,13 @@ use App\Helpers\YamlException;
  */
 class SimpleScoreCalculator implements IScoreCalculator
 {
+    public const ID = 'weighted';
+
+    public function getId(): string
+    {
+        return self::ID;
+    }
+
     /**
      * Internal function that safely retrieves score config weights.
      * @param string $scoreConfig

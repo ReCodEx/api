@@ -74,14 +74,12 @@ class AssignmentViewFactory
                     "upToDate" => $exercise && $assignment->getExerciseConfig() === $exercise->getExerciseConfig(),
                 ],
                 "configurationType" => [
-                    "upToDate" => $exercise && $assignment->getConfigurationType() === $exercise->getConfigurationType(
-                    ),
+                    "upToDate" => $exercise
+                        && $assignment->getConfigurationType() === $exercise->getConfigurationType(),
                 ],
                 "scoreConfig" => [
-                    "upToDate" => $exercise && $assignment->getScoreConfig() === $exercise->getScoreConfig(),
-                ],
-                "scoreCalculator" => [
-                    "upToDate" => $exercise && $assignment->getScoreCalculator() === $exercise->getScoreCalculator(),
+                    "upToDate" => $exercise
+                        && $assignment->getScoreConfig()->getId() === $exercise->getScoreConfig()->getId(),
                 ],
                 "exerciseEnvironmentConfigs" => [
                     "upToDate" => $assignment->areRuntimeEnvironmentConfigsInSync()
