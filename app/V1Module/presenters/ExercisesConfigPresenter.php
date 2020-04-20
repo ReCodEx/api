@@ -20,6 +20,7 @@ use App\Helpers\ExercisesConfig;
 use App\Helpers\Evaluation\ScoreCalculatorAccessor;
 use App\Model\Entity\Exercise;
 use App\Model\Entity\ExerciseConfig;
+use App\Model\Entity\ExerciseScoreConfig;
 use App\Model\Entity\ExerciseLimits;
 use App\Model\Entity\ExerciseEnvironmentConfig;
 use App\Model\Entity\ExerciseTest;
@@ -684,6 +685,7 @@ class ExercisesConfigPresenter extends BasePresenter
     /**
      * Set score configuration for exercise.
      * @POST
+     * @Param(type="post", name="scoreCalculator", validation="string", description="ID of the score calculator")
      * @Param(type="post", name="scoreConfig", validation="string", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
      * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
@@ -691,21 +693,26 @@ class ExercisesConfigPresenter extends BasePresenter
     public function actionSetScoreConfig(string $id)
     {
         $exercise = $this->exercises->findOrThrow($id);
+        $oldConfig = $exercise->getScoreConfig();
 
         $req = $this->getRequest();
+        $calculatorName = $req->getPost("scoreCalculator");
         $config = $req->getPost("scoreConfig");
 
         // validate score configuration
-        $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
+        $calculator = $this->calculators->getCalculator($calculatorName);
         $normalizedConfig = $calculator->validateAndNormalizeScore($config);  // throws if validation fails
 
-        $exercise->updatedNow();
-        $exercise->setScoreConfig($normalizedConfig);
-        $this->exercises->flush();
+        if ($calculatorName !== $oldConfig->getCalculator() || $config !== $oldConfig->getConfig()) {
+            $newConfig = new ExerciseScoreConfig($calculatorName, $config, $oldConfig);
+            $exercise->updatedNow();
+            $exercise->setScoreConfig($newConfig);
+            $this->exercises->flush();
 
-        // check exercise configuration
-        $this->configChecker->check($exercise);
-        $this->exercises->flush();
+            // check exercise configuration
+            $this->configChecker->check($exercise);
+            $this->exercises->flush();
+        }
         $this->sendSuccessResponse($exercise->getScoreConfig());
     }
 

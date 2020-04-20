@@ -81,7 +81,6 @@ class Assignment extends AssignmentBase implements IExercise
         $this->exerciseConfig = $exercise->getExerciseConfig();
         $this->submissionsCountLimit = $submissionsCountLimit;
         $this->scoreConfig = $exercise->getScoreConfig();
-        $this->scoreCalculator = $exercise->getScoreCalculator();
         $this->localizedTexts = new ArrayCollection($exercise->getLocalizedTexts()->toArray());
         $this->localizedAssignments = new ArrayCollection();
         $this->canViewLimitRatios = $canViewLimitRatios;
@@ -444,7 +443,6 @@ class Assignment extends AssignmentBase implements IExercise
         $this->exerciseConfig = $exercise->getExerciseConfig();
         $this->configurationType = $exercise->getConfigurationType();
         $this->scoreConfig = $exercise->getScoreConfig();
-        $this->scoreCalculator = $exercise->getScoreCalculator();
 
         $this->exerciseEnvironmentConfigs->clear();
         foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {

@@ -432,8 +432,8 @@ class AssignmentsPresenter extends BasePresenter
         }
 
         // validate score configuration
-        $calculator = $this->calculators->getCalculator($exercise->getScoreCalculator());
-        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig())) {
+        $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
+        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig()->getConfig())) {
             throw new BadRequestException("Exercise '$exerciseId' does not have valid score configuration");
         }
 
