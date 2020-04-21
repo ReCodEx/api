@@ -6,16 +6,17 @@ namespace Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use App\Helpers\Evaluation\SimpleScoreCalculator;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
 final class Version20200418223054 extends AbstractMigration
 {
+    private const CALCULATOR_ID = 'weighted'; // This should match WeightedScoreCalculator::ID (former SimpleScoreCalculator)
+
     /*
      * Fortunately, there is but only score calculator at present and all score_calculator fields are null.
-     * Hence, we create only one type of ExerciseScoreConfigs baring SimpleScoreCalculator ID.
+     * Hence, we create only one type of ExerciseScoreConfigs baring weighted calculator ID.
      */
     
     public function getDescription(): string
@@ -87,7 +88,7 @@ final class Version20200418223054 extends AbstractMigration
                 "INSERT INTO exercise_score_config (id, calculator, config, created_at) VALUES (:id, :calculator, :config, :created_at)",
                 [
                     "id" => $uuid,
-                    "calculator" => SimpleScoreCalculator::ID,
+                    "calculator" => self::CALCULATOR_ID,
                     "config" => $config['score_config'],
                     "created_at" => $config['updated_at'], // we do not have exact creation time, last update is the best approximation
                 ]
@@ -129,7 +130,7 @@ final class Version20200418223054 extends AbstractMigration
     {
         $unconvertableConfigsCount = $this->connection->executeQuery(
             "SELECT COUNT(*) FROM exercise_score_config WHERE calculator != :calculator",
-            ["calculator" => SimpleScoreCalculator::ID]
+            ["calculator" => self::CALCULATOR_ID]
         )->fetchColumn();
         $this->abortIf($unconvertableConfigsCount > 0, 'Some of the configs cannot be converted back to previous format.');
 
@@ -138,7 +139,7 @@ final class Version20200418223054 extends AbstractMigration
                 "SELECT t.id AS id, esc.config AS config FROM $table AS t
                 JOIN exercise_score_config AS esc ON esc.id = t.score_config_id
                 WHERE esc.calculator = :calculator",
-                ["calculator" => SimpleScoreCalculator::ID]
+                ["calculator" => self::CALCULATOR_ID]
             )->fetchAll();
         }
     }

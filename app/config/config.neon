@@ -345,10 +345,12 @@ services:
   - App\Helpers\JobConfig\Storage(%jobConfig.storageDir%)
   - App\Helpers\JobConfig\Loader
   - App\Helpers\JobConfig\Generator
-  - App\Helpers\Evaluation\SimpleScoreCalculator
-  - App\Helpers\Evaluation\ScoreCalculatorAccessor({
-    simple: @App\Helpers\Evaluation\SimpleScoreCalculator
-  })
+  - App\Helpers\Evaluation\UniformScoreCalculator
+  - App\Helpers\Evaluation\WeightedScoreCalculator
+  - App\Helpers\Evaluation\ScoreCalculatorAccessor([
+      @App\Helpers\Evaluation\UniformScoreCalculator,
+      @App\Helpers\Evaluation\WeightedScoreCalculator
+  ])
   - App\Helpers\ExerciseFileStorage
   - App\Helpers\ExerciseConfig\Loader
   - App\Helpers\ExerciseConfig\Transformer

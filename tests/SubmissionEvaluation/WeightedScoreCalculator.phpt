@@ -1,17 +1,15 @@
 <?php
 
-include '../bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/TestResultMock.php';
 
 use Tester\Assert;
-use App\Helpers\Evaluation\SimpleScoreCalculator;
-use Doctrine\Common\Collections\ArrayCollection;
-
-use App\Model\Entity\TestResult;
+use App\Helpers\Evaluation\WeightedScoreCalculator;
 
 /**
  * @testCase
  */
-class TestSimpleScoreCalculator extends Tester\TestCase
+class TestWeightedScoreCalculator extends Tester\TestCase
 {
     private $scoreConfig = "testWeights:
   a: 300 # number between 1 and 1000
@@ -24,7 +22,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
     private function getCalc()
     {
-        return new SimpleScoreCalculator();
+        return new WeightedScoreCalculator();
     }
 
     private function computeScore(array $scoreList)
@@ -36,7 +34,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     {
         $scores = [];
         for ($i = 0; $i < count($scoreList); $i++) {
-            $scores[$this->testNames[$i]] = $scoreList[$i];
+            $scores[$this->testNames[$i]] = new TestResultMock($scoreList[$i]);
         }
 
         return $scores;
@@ -56,8 +54,11 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
     public function testScoreConfigDifferentWeightCount()
     {
-        $calc = new SimpleScoreCalculator();
-        $score = $calc->computeScore($this->scoreConfig, ["a" => 0.5, "b" => 1]);
+        $calc = new WeightedScoreCalculator();
+        $score = $calc->computeScore($this->scoreConfig, [
+            "a" => new TestResultMock(0.5),
+            "b" => new TestResultMock(1),
+        ]);
         Assert::equal(0.7, $score);
     }
 
@@ -84,7 +85,7 @@ class TestSimpleScoreCalculator extends Tester\TestCase
 
     public function testEmptyWeights()
     {
-        $calc = new SimpleScoreCalculator();
+        $calc = new WeightedScoreCalculator();
         $cfg = $this->getCfg([0]);
         $score = $calc->computeScore("testWeights: {  }\n", $cfg);
         Assert::equal(0.0, $score);
@@ -115,5 +116,5 @@ class TestSimpleScoreCalculator extends Tester\TestCase
     }
 }
 
-$testCase = new TestSimpleScoreCalculator();
+$testCase = new TestWeightedScoreCalculator();
 $testCase->run();

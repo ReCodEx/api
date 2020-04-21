@@ -701,7 +701,9 @@ class ExercisesConfigPresenter extends BasePresenter
 
         // validate score configuration
         $calculator = $this->calculators->getCalculator($calculatorName);
-        $normalizedConfig = $calculator->validateAndNormalizeScore($config);  // throws if validation fails
+        $normalizedConfig = $config !== null
+            ? $calculator->validateAndNormalizeScore($config)  // throws if validation fails
+            : null;
 
         if ($calculatorName !== $oldConfig->getCalculator() || $config !== $oldConfig->getConfig()) {
             $newConfig = new ExerciseScoreConfig($calculatorName, $config, $oldConfig);
