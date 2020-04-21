@@ -43,7 +43,7 @@ class ExerciseScoreConfig implements JsonSerializable
      */
     protected $config;
 
-    public function getConfig(): string
+    public function getConfig(): ?string
     {
         return $this->config;
     }

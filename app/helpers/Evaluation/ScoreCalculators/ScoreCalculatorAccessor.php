@@ -18,7 +18,7 @@ class ScoreCalculatorAccessor
 
     /**
      * ScoreCalculatorAccessor constructor.
-     * @param array $calculators array where keys are identifiers of calculators and values are instances of {@link IScoreCalculator}
+     * @param array $calculators array of recognized calculators (instances of {@link IScoreCalculator})
      * @throws InvalidArgumentException
      */
     public function __construct(array $calculators)
@@ -27,20 +27,27 @@ class ScoreCalculatorAccessor
             throw new InvalidArgumentException("No score calculators provided");
         }
 
-        $this->calculators = $calculators;
+        $this->calculators = [];
+        foreach ($calculators as $calculator) {
+            $id = $calculator->getId();
+            if (!empty($this->calculators[$id])) {
+                throw new InvalidArgumentException("Provided calculators contain duplicit IDs ($id)");
+            }
+            $this->calculators[$id] = $calculator;
+        }
     }
 
     /**
-     * @param null|string $name
+     * @param null|string $id
      * @return IScoreCalculator
      */
-    public function getCalculator(?string $name): IScoreCalculator
+    public function getCalculator(?string $id): IScoreCalculator
     {
-        if (empty($name)) {
+        if (empty($id)) {
             return $this->getDefaultCalculator();
         }
 
-        return Arrays::get($this->calculators, $name, $this->getDefaultCalculator());
+        return Arrays::get($this->calculators, $id, $this->getDefaultCalculator());
     }
 
     public function getDefaultCalculator(): IScoreCalculator

@@ -152,15 +152,15 @@ class EvaluationPointsLoader
         $score = 0;
 
         // calculate scores for all tests
-        $scores = [];
+        $testResults = [];
         foreach ($evaluation->getTestResults() as $testResult) {
-            $scores[$testResult->getTestName()] = $testResult->getScore();
+            $testResults[$testResult->getTestName()] = $testResult;
         }
 
         // calculate percentual score of whole solution
         $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
         if ($calculator !== null && !$evaluation->getInitFailed()) {
-            $score = $calculator->computeScore($exercise->getScoreConfig()->getConfig(), $scores);
+            $score = $calculator->computeScore($exercise->getScoreConfig()->getConfig(), $testResults);
         }
 
         // ... and set results
