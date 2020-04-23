@@ -4,8 +4,10 @@ namespace App\Console;
 
 use App\Model\Entity\Assignment;
 use App\Model\Entity\Exercise;
+use App\Model\Entity\SolutionEvaluation;
 use App\Model\Repository\Assignments;
 use App\Model\Repository\Exercises;
+use App\Model\Repository\SolutionEvaluations;
 use DateTime;
 use Exception;
 use Doctrine\DBAL\Connection;
@@ -20,21 +22,28 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class CleanupExerciseConfigs extends Command
 {
-
     /** @var Exercises */
     private $exercises;
 
     /** @var Assignments */
     private $assignments;
 
+    /** @var SolutionEvaluations */
+    private $solutionEvaluations;
+
     /** @var EntityManager */
     private $entityManager;
 
-    public function __construct(Exercises $exercises, Assignments $assignments, EntityManager $entityManager)
-    {
+    public function __construct(
+        Exercises $exercises,
+        Assignments $assignments,
+        SolutionEvaluations $solutionEvaluations,
+        EntityManager $entityManager
+    ) {
         parent::__construct();
         $this->exercises = $exercises;
         $this->assignments = $assignments;
+        $this->solutionEvaluations = $solutionEvaluations;
         $this->entityManager = $entityManager;
     }
 
@@ -52,31 +61,18 @@ class CleanupExerciseConfigs extends Command
      */
     private function cleanupEnvironmentConfigs(DateTime $limit): int
     {
-        $usedConfigs = [];
-
-        /** @var Exercise $exercise */
-        foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
-            foreach ($exercise->getExerciseEnvironmentConfigs() as $config) {
-                $usedConfigs[] = $config->getId();
-            }
-        }
-
-        /** @var Assignment $assignment */
-        foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
-            foreach ($assignment->getExerciseEnvironmentConfigs() as $config) {
-                $usedConfigs[] = $config->getId();
-            }
-        }
+        $idsQuery = $this->entityManager->createQuery(
+            'SELECT c.id FROM App\Model\Entity\ExerciseEnvironmentConfig c WHERE c.createdAt <= :date
+            AND NOT EXISTS (SELECT e FROM App\Model\Entity\Exercise e WHERE c MEMBER OF e.exerciseEnvironmentConfigs)
+            AND NOT EXISTS (SELECT a FROM App\Model\Entity\Assignment a WHERE c MEMBER OF a.exerciseEnvironmentConfigs)'
+        );
+        $idsQuery->setParameter("date", $limit);
+        $ids = $idsQuery->getResult();
 
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\ExerciseEnvironmentConfig c
-      WHERE c.createdAt <= :date AND c.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\ExerciseEnvironmentConfig c WHERE c.id IN (:ids)'
         );
-
-        $deleteQuery->setParameter("date", $limit);
-        $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
         return $deleteQuery->execute();
     }
 
@@ -87,27 +83,29 @@ class CleanupExerciseConfigs extends Command
      */
     private function cleanupExerciseConfigs(DateTime $limit): int
     {
-        $usedConfigs = [];
-
-        /** @var Exercise $exercise */
-        foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
-            $usedConfigs[] = $exercise->getExerciseConfig()->getId();
-        }
-
-        /** @var Assignment $assignment */
-        foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
-            $usedConfigs[] = $assignment->getExerciseConfig()->getId();
-        }
-
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\ExerciseConfig c
-      WHERE c.createdAt <= :date AND c.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\ExerciseConfig c WHERE c.createdAt <= :date
+            AND NOT EXISTS (SELECT e FROM App\Model\Entity\Exercise e WHERE e.exerciseConfig = c.id)
+            AND NOT EXISTS (SELECT a FROM App\Model\Entity\Assignment a WHERE a.exerciseConfig = c.id)'
         );
-
         $deleteQuery->setParameter("date", $limit);
-        $deleteQuery->setParameter("ids", $usedConfigs, Connection::PARAM_STR_ARRAY);
+        return $deleteQuery->execute();
+    }
+
+    /**
+     * Delete exercise score configs and return number of deleted entities.
+     * @param DateTime $limit
+     * @return int
+     */
+    private function cleanupScoreConfigs(DateTime $limit): int
+    {
+        $deleteQuery = $this->entityManager->createQuery(
+            'DELETE FROM App\Model\Entity\ExerciseScoreConfig c WHERE c.createdAt <= :date
+            AND NOT EXISTS (SELECT e FROM App\Model\Entity\Exercise e WHERE e.scoreConfig = c.id)
+            AND NOT EXISTS (SELECT a FROM App\Model\Entity\Assignment a WHERE a.scoreConfig = c.id)
+            AND NOT EXISTS (SELECT se FROM App\Model\Entity\SolutionEvaluation se WHERE se.scoreConfig = c.id)'
+        );
+        $deleteQuery->setParameter("date", $limit);
         return $deleteQuery->execute();
     }
 
@@ -118,31 +116,18 @@ class CleanupExerciseConfigs extends Command
      */
     private function cleanupLimits(DateTime $limit): int
     {
-        $usedLimits = [];
-
-        /** @var Exercise $exercise */
-        foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
-            foreach ($exercise->getExerciseLimits() as $limits) {
-                $usedLimits[] = $limits->getId();
-            }
-        }
-
-        /** @var Assignment $assignment */
-        foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
-            foreach ($assignment->getExerciseLimits() as $limits) {
-                $usedLimits[] = $limits->getId();
-            }
-        }
+        $idsQuery = $this->entityManager->createQuery(
+            'SELECT l.id FROM App\Model\Entity\ExerciseLimits l WHERE l.createdAt <= :date
+            AND NOT EXISTS (SELECT e FROM App\Model\Entity\Exercise e WHERE l MEMBER OF e.exerciseLimits)
+            AND NOT EXISTS (SELECT a FROM App\Model\Entity\Assignment a WHERE l MEMBER OF a.exerciseLimits)'
+        );
+        $idsQuery->setParameter("date", $limit);
+        $ids = $idsQuery->getResult();
 
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\ExerciseLimits l
-      WHERE l.createdAt <= :date AND l.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\ExerciseLimits l WHERE l.id IN (:ids)'
         );
-
-        $deleteQuery->setParameter("date", $limit);
-        $deleteQuery->setParameter("ids", $usedLimits, Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
         return $deleteQuery->execute();
     }
 
@@ -153,45 +138,40 @@ class CleanupExerciseConfigs extends Command
      */
     private function cleanupTests(DateTime $limit): int
     {
-        $usedTests = [];
-
-        /** @var Exercise $exercise */
-        foreach ($this->exercises->findAllAndIReallyMeanAllOkay() as $exercise) {
-            foreach ($exercise->getExerciseTestsIds() as $id) {
-                $usedTests[$id] = true;
-            }
-        }
-
-        /** @var Assignment $assignment */
-        foreach ($this->assignments->findAllAndIReallyMeanAllOkay() as $assignment) {
-            foreach ($assignment->getExerciseTestsIds() as $id) {
-                $usedTests[$id] = true;
-            }
-        }
+        $idsQuery = $this->entityManager->createQuery(
+            'SELECT t.id FROM App\Model\Entity\ExerciseTest t WHERE t.createdAt <= :date
+            AND NOT EXISTS (SELECT e FROM App\Model\Entity\Exercise e WHERE t MEMBER OF e.exerciseTests)
+            AND NOT EXISTS (SELECT a FROM App\Model\Entity\Assignment a WHERE t MEMBER OF a.exerciseTests)'
+        );
+        $idsQuery->setParameter("date", $limit);
+        $ids = $idsQuery->getResult();
 
         $deleteQuery = $this->entityManager->createQuery(
-            '
-      DELETE FROM App\Model\Entity\ExerciseTest t
-      WHERE t.createdAt <= :date AND t.id NOT IN (:ids)
-    '
+            'DELETE FROM App\Model\Entity\ExerciseTest t WHERE t.id IN (:ids)'
         );
-
-        $deleteQuery->setParameter("date", $limit);
-        $deleteQuery->setParameter("ids", array_keys($usedTests), Connection::PARAM_STR_ARRAY);
+        $deleteQuery->setParameter("ids", $ids, Connection::PARAM_STR_ARRAY);
         return $deleteQuery->execute();
     }
 
 
     protected function executeUnsafe(DateTime $limit, OutputInterface $output)
     {
-        $deletedEnvsCount = $this->cleanupEnvironmentConfigs($limit);
-        $deletedConfsCount = $this->cleanupExerciseConfigs($limit);
-        $deletedLimsCount = $this->cleanupLimits($limit);
-        $deletedTestsCount = $this->cleanupTests($limit);
+        $toDelete = [
+            'EnvironmentConfigs',
+            'ExerciseConfigs',
+            'ScoreConfigs',
+            'Limits',
+            'Tests',
+        ];
+
+        $report = [ 'Removed:' ];
+        foreach ($toDelete as $key) {
+            $method = "cleanup$key";
+            $deletedCount = $this->$method($limit);
+            $report[] = "$key($deletedCount)";
+        }
         $this->exercises->commit();
-        $output->writeln(
-            "Removed: {$deletedEnvsCount} environment configs; {$deletedConfsCount} exercise configs; {$deletedLimsCount} exercise limits; {$deletedTestsCount} exercise tests"
-        );
+        $output->writeln(join(' ', $report));
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
