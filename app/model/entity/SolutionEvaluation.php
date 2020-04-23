@@ -14,12 +14,9 @@ use Doctrine\Common\Collections\ArrayCollection;
  * @method string getId()
  * @method DateTime getEvaluatedAt()
  * @method bool getEvaluationFailed()
- * @method float getScore()
  * @method int getPoints()
  * @method setPoints(int $points)
- * @method setScore(float $score)
  * @method Collection getTestResults()
- * @method ReferenceSolutionSubmission getReferenceSolutionSubmission()
  * @method bool getInitFailed()
  */
 class SolutionEvaluation
@@ -48,6 +45,32 @@ class SolutionEvaluation
      * @ORM\Column(type="float")
      */
     protected $score;
+
+    public function getScore(): float
+    {
+        return $this->score;
+    }
+
+    /**
+     * @ORM\ManyToOne(targetEntity="ExerciseScoreConfig")
+     */
+    protected $scoreConfig;
+
+    public function getScoreConfig(): ?ExerciseScoreConfig
+    {
+        return $this->scoreConfig;
+    }
+
+    /**
+     * Sets the score and remembers the exercise score config which was used to compute it.
+     * @param float $score New value of the score
+     * @param ExerciseScoreConfig|null $scoreConfig The config entity used to compute the score
+     */
+    public function setScore(float $score, ExerciseScoreConfig $scoreConfig = null): void
+    {
+        $this->score = $score;
+        $this->scoreConfig = $scoreConfig;
+    }
 
     /**
      * @ORM\Column(type="integer")
@@ -92,6 +115,7 @@ class SolutionEvaluation
         $this->evaluatedAt = new \DateTime();
         $this->initFailed = !$results->initOK();
         $this->score = 0;
+        $this->scoreConfig = null;
         $this->points = 0;
         $this->testResults = new ArrayCollection();
         $this->initiationOutputs = $results->getInitiationOutputs();

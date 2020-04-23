@@ -14,29 +14,29 @@ interface IEvaluable
      * Query if the evaluation is ready
      * @return boolean The result
      */
-    function hasEvaluation(): bool;
+    public function hasEvaluation(): bool;
 
     /**
      * Get the evaluation
      * @return SolutionEvaluation|null The evaluation
      */
-    function getEvaluation(): ?SolutionEvaluation;
+    public function getEvaluation(): ?SolutionEvaluation;
 
     /**
      * Query if evaluation is possible (it might not be possible e.g. if the backend rejected the request)
      * @return boolean The result
      */
-    function canBeEvaluated(): bool;
+    public function canBeEvaluated(): bool;
 
     /**
      * Return true if the evaluation failed
      * @return bool
      */
-    function isFailed(): bool;
+    public function isFailed(): bool;
 
     /**
      * Return true if the evaluated object was marked as correct by the backend
      * @return bool
      */
-    function isCorrect(): bool;
+    public function isCorrect(): bool;
 }

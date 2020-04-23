@@ -14,7 +14,6 @@ use App\Model\Entity\SolutionEvaluation;
  */
 class EvaluationPointsLoader
 {
-
     /**
      * @var ScoreCalculatorAccessor
      */
@@ -28,7 +27,6 @@ class EvaluationPointsLoader
     {
         $this->calculators = $calculators;
     }
-
 
     /**
      * Set score and points to given evaluation of student submission.
@@ -84,7 +82,6 @@ class EvaluationPointsLoader
         $evaluation->setPoints($points);
     }
 
-
     /**
      * Determine if student submission is correct.
      */
@@ -117,7 +114,6 @@ class EvaluationPointsLoader
         return true;
     }
 
-
     /**
      * Evaluation score calculated with exercise calculator.
      * @throws SubmissionEvaluationFailedException
@@ -133,7 +129,6 @@ class EvaluationPointsLoader
         $referenceSolution = $submission->getReferenceSolution();
         $this->setScore($evaluation, $referenceSolution->getExercise());
     }
-
 
     /**
      * Helper function which handle the same score setting functionality for
@@ -164,6 +159,6 @@ class EvaluationPointsLoader
         }
 
         // ... and set results
-        $evaluation->setScore($score);
+        $evaluation->setScore($score, $exercise->getScoreConfig());
     }
 }
