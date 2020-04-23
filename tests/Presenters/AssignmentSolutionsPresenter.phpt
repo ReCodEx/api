@@ -112,23 +112,39 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
     public function testGetEvaluation()
     {
-        $token = PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $submissionsWithEval = array_filter(
+            $this->presenter->assignmentSolutionSubmissions->findAll(),
+            function($submission) { return $submission->getEvaluation() !== null; }
+        );
+        $submission = array_pop($submissionsWithEval);
+        $evaluation = $submission->getEvaluation();
+        Assert::truthy($evaluation);
 
-        $allSubmissions = $this->presenter->assignmentSolutionSubmissions->findAll();
-        $submission = array_pop($allSubmissions);
-
-        $request = new Nette\Application\Request(
-            'V1:AssignmentSolutions',
-            'GET',
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:AssignmentSolutions', 'GET',
             ['action' => 'evaluation', 'evaluationId' => $submission->id]
         );
-        $response = $this->presenter->run($request);
-        Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
+        Assert::same($submission->getId(), $payload['id']);
+    }
 
-        // Check invariants
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-        Assert::same($submission->getId(), $result['payload']['id']);
+    public function testGetEvaluationScoreConfig()
+    {
+        PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
+        $submissionsWithEval = array_filter(
+            $this->presenter->assignmentSolutionSubmissions->findAll(),
+            function($submission) { return $submission->getEvaluation() !== null; }
+        );
+        $submission = array_pop($submissionsWithEval);
+        $evaluation = $submission->getEvaluation();
+        Assert::truthy($evaluation);
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:AssignmentSolutions', 'GET',
+            ['action' => 'evaluationScoreConfig', 'evaluationId' => $submission->id ]
+        );
+        Assert::same('weighted', $payload->getCalculator());
+        Assert::truthy($payload->getConfig());
     }
 
     public function testDeleteEvaluation()

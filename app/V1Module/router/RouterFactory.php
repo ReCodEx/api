@@ -310,6 +310,10 @@ class RouterFactory
             "$prefix/evaluation/<evaluationId>/download-result",
             "ReferenceExerciseSolutions:downloadResultArchive"
         );
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<evaluationId>/score-config",
+            "ReferenceExerciseSolutions:evaluationScoreConfig"
+        );
 
         $router[] = new GetRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:detail");
         $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
@@ -335,6 +339,10 @@ class RouterFactory
         $router[] = new GetRoute(
             "$prefix/evaluation/<evaluationId>/download-result",
             "AssignmentSolutions:downloadResultArchive"
+        );
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<evaluationId>/score-config",
+            "AssignmentSolutions:evaluationScoreConfig"
         );
 
         $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
