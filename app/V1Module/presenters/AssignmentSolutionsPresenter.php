@@ -218,6 +218,7 @@ class AssignmentSolutionsPresenter extends BasePresenter
      * Get information about the evaluation of a submission
      * @GET
      * @param string $evaluationId Identifier of the submission
+     * @throws NotFoundException
      * @throws InternalServerException
      */
     public function actionEvaluation(string $evaluationId)
@@ -536,5 +537,31 @@ class AssignmentSolutionsPresenter extends BasePresenter
         }
 
         $this->sendResponse(new GuzzleResponse($stream, "results-{$evaluationId}.zip", "application/zip"));
+    }
+
+    public function checkEvaluationScoreConfig(string $evaluationId)
+    {
+        $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
+        $solution = $submission->getAssignmentSolution();
+        if (!$this->assignmentSolutionAcl->canViewEvaluation($solution)) {
+            throw new ForbiddenRequestException("You cannot access this evaluation");
+        }
+    }
+
+    /**
+     * Get score configuration associated with given evaluation
+     * @GET
+     * @param string $evaluationId Identifier of the submission
+     * @throws NotFoundException
+     * @throws InternalServerException
+     */
+    public function actionEvaluationScoreConfig(string $evaluationId)
+    {
+        $submission = $this->assignmentSolutionSubmissions->findOrThrow($evaluationId);
+        $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+        $evaluation = $submission->getEvaluation();
+        $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
+        $this->sendSuccessResponse($scoreConfig);
     }
 }

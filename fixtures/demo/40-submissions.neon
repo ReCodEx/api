@@ -4,6 +4,7 @@ App\Model\Entity\SolutionEvaluation:
         evaluatedAt: "<dateTime()>"
         initFailed: false
         score: 0.95
+        scoreConfig: @weightedTwoTests
         points: 10
         initiationOutputs: ""
         testResults: []

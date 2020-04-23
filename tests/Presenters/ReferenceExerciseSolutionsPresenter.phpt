@@ -123,26 +123,32 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
     public function testGetSolutionEvaluation()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
-
         $evaluation = current($this->referenceSolutionEvaluations->findAll());
 
-        $request = new Nette\Application\Request(
-            'V1:ReferenceExerciseSolutions', 'GET', [
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
             'action' => 'evaluation',
             'evaluationId' => $evaluation->getId()
-        ]
-        );
+        ]);
 
-        $response = $this->presenter->run($request);
-        Assert::type(Nette\Application\Responses\JsonResponse::class, $response);
-
-        $result = $response->getPayload();
-        Assert::equal(200, $result['code']);
-
-        $payload = $result['payload'];
         Assert::type(ReferenceSolutionSubmission::class, $payload);
         Assert::equal($evaluation->getId(), $payload->getId());
         Assert::same($evaluation, $payload);
+    }
+
+    public function testGetEvaluationScoreConfig()
+    {
+        PresenterTestHelper::loginDefaultAdmin($this->container);
+        $evaluation = current($this->referenceSolutionEvaluations->findAll());
+
+        $payload = PresenterTestHelper::performPresenterRequest(
+            $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
+            'action' => 'evaluationScoreConfig',
+            'evaluationId' => $evaluation->getId()
+        ]);
+
+        Assert::same('weighted', $payload->getCalculator());
+        Assert::truthy($payload->getConfig());
     }
 
     public function testDeleteReferenceSolution()

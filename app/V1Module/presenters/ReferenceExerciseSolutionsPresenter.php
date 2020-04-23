@@ -665,4 +665,30 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
 
         $this->sendResponse(new GuzzleResponse($stream, "results-{$evaluationId}.zip", "application/zip"));
     }
+
+    public function checkEvaluationScoreConfig(string $evaluationId)
+    {
+        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $exercise = $submission->getReferenceSolution()->getExercise();
+        if (!$this->exerciseAcl->canViewDetail($exercise)) {
+            throw new ForbiddenRequestException("You cannot access this exercise evaluations");
+        }
+    }
+
+    /**
+     * Get score configuration associated with given evaluation
+     * @GET
+     * @param string $evaluationId identifier of the reference exercise evaluation
+     * @throws NotFoundException
+     * @throws InternalServerException
+     */
+    public function actionEvaluationScoreConfig(string $evaluationId)
+    {
+        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $this->evaluationLoadingHelper->loadEvaluation($submission);
+
+        $evaluation = $submission->getEvaluation();
+        $scoreConfig = $evaluation !== null ? $evaluation->getScoreConfig() : null;
+        $this->sendSuccessResponse($scoreConfig);
+    }
 }
