@@ -35,11 +35,11 @@ interface IScoreCalculator
     /**
      * Performs validation and normalization on config string.
      * This should be used instead of validation when the score config is processed as API input.
-     * @param string $scoreConfig Serialized configuration for the score calculator
-     * @return string Normalized and polished serialized score configuration
+     * @param string|null $scoreConfig Serialized configuration for the score calculator
+     * @return string|null Normalized and polished serialized score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore(string $scoreConfig): string;
+    public function validateAndNormalizeScore(?string $scoreConfig): ?string;
 
     /**
      * Make default configuration for given list of tests.

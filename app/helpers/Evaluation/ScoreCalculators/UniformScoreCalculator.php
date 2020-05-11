@@ -42,9 +42,12 @@ class UniformScoreCalculator implements IScoreCalculator
         return $scoreConfig === null;
     }
 
-    public function validateAndNormalizeScore(string $scoreConfig): string
+    public function validateAndNormalizeScore(?string $scoreConfig): ?string
     {
-        throw new ExerciseConfigException("Uniform score calculator does not require any configuration.");
+        if ($scoreConfig !== null) {
+            throw new ExerciseConfigException("Uniform score calculator does not require any configuration.");
+        }
+        return null;
     }
 
     public function getDefaultConfig(array $tests): ?string

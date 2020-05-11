@@ -95,7 +95,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::equal(1, count($result['payload']));
     }
 
-    public function testGetSolutionEvaluations()
+    public function testGetSolutionSubmissions()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -104,7 +104,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
 
         $request = new Nette\Application\Request(
             'V1:ReferenceExerciseSolutions', 'GET', [
-            'action' => 'evaluations',
+            'action' => 'submissions',
             'solutionId' => $solution->getId()
         ]
         );
@@ -120,15 +120,15 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::type(ReferenceSolutionSubmission::class, $payload[0]);
     }
 
-    public function testGetSolutionEvaluation()
+    public function testGetSolutionSubmission()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $evaluation = current($this->referenceSolutionEvaluations->findAll());
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
-            'action' => 'evaluation',
-            'evaluationId' => $evaluation->getId()
+            'action' => 'submission',
+            'submissionId' => $evaluation->getId()
         ]);
 
         Assert::type(ReferenceSolutionSubmission::class, $payload);
@@ -136,7 +136,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         Assert::same($evaluation, $payload);
     }
 
-    public function testGetEvaluationScoreConfig()
+    public function testGetSubmissionScoreConfig()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $evaluation = current($this->referenceSolutionEvaluations->findAll());
@@ -144,7 +144,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:ReferenceExerciseSolutions', 'GET', [
             'action' => 'evaluationScoreConfig',
-            'evaluationId' => $evaluation->getId()
+            'submissionId' => $evaluation->getId()
         ]);
 
         Assert::same('weighted', $payload->getCalculator());
@@ -182,7 +182,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         );
     }
 
-    public function testDeleteReferenceSolutionEvaluation()
+    public function testDeleteReferenceSolutionSubmission()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -195,8 +195,8 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
             'V1:ReferenceExerciseSolutions',
             'DELETE',
             [
-                'action' => 'deleteEvaluation',
-                'evaluationId' => $evaluation->getId()
+                'action' => 'deleteSubmission',
+                'submissionId' => $evaluation->getId()
             ]
         );
 
@@ -516,7 +516,7 @@ class TestReferenceExerciseSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:ReferenceExerciseSolutions', 'GET', [
             'action' => 'downloadResultArchive',
-            'evaluationId' => $evaluation->getId()
+            'submissionId' => $evaluation->getId()
         ]
         );
 
