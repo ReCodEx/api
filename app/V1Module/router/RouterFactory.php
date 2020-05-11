@@ -304,25 +304,39 @@ class RouterFactory
             "ReferenceExerciseSolutions:resubmitAll"
         );
 
-        $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:evaluation");
-        $router[] = new DeleteRoute("$prefix/evaluation/<evaluationId>", "ReferenceExerciseSolutions:deleteEvaluation");
-        $router[] = new GetRoute(
-            "$prefix/evaluation/<evaluationId>/download-result",
-            "ReferenceExerciseSolutions:downloadResultArchive"
-        );
-        $router[] = new GetRoute(
-            "$prefix/evaluation/<evaluationId>/score-config",
-            "ReferenceExerciseSolutions:evaluationScoreConfig"
-        );
-
         $router[] = new GetRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:detail");
         $router[] = new DeleteRoute("$prefix/<solutionId>", "ReferenceExerciseSolutions:deleteReferenceSolution");
         $router[] = new PostRoute("$prefix/<id>/resubmit", "ReferenceExerciseSolutions:resubmit");
-        $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:evaluations");
+        $router[] = new GetRoute("$prefix/<solutionId>/submissions", "ReferenceExerciseSolutions:submissions");
         $router[] = new GetRoute(
             "$prefix/<solutionId>/download-solution",
             "ReferenceExerciseSolutions:downloadSolutionArchive"
         );
+
+        $router[] = new GetRoute("$prefix/submission/<submissionId>", "ReferenceExerciseSolutions:submission");
+        $router[] = new DeleteRoute("$prefix/submission/<submissionId>", "ReferenceExerciseSolutions:deleteSubmission");
+        $router[] = new GetRoute(
+            "$prefix/submission/<submissionId>/download-result",
+            "ReferenceExerciseSolutions:downloadResultArchive"
+        );
+        $router[] = new GetRoute(
+            "$prefix/submission/<submissionId>/score-config",
+            "ReferenceExerciseSolutions:evaluationScoreConfig"
+        );
+
+        // Backward compatibility aliases for submission routes (will be removed eventually)
+        $router[] = new GetRoute("$prefix/<solutionId>/evaluations", "ReferenceExerciseSolutions:submissions");
+        $router[] = new GetRoute("$prefix/evaluation/<submissionId>", "ReferenceExerciseSolutions:submission");
+        $router[] = new DeleteRoute("$prefix/evaluation/<submissionId>", "ReferenceExerciseSolutions:deleteSubmission");
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<submissionId>/download-result",
+            "ReferenceExerciseSolutions:downloadResultArchive"
+        );
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<submissionId>/score-config",
+            "ReferenceExerciseSolutions:evaluationScoreConfig"
+        );
+
         return $router;
     }
 
@@ -334,27 +348,41 @@ class RouterFactory
     private static function createAssignmentSolutionsRoutes(string $prefix): RouteList
     {
         $router = new RouteList();
-        $router[] = new GetRoute("$prefix/evaluation/<evaluationId>", "AssignmentSolutions:evaluation");
-        $router[] = new DeleteRoute("$prefix/evaluation/<evaluationId>", "AssignmentSolutions:deleteEvaluation");
-        $router[] = new GetRoute(
-            "$prefix/evaluation/<evaluationId>/download-result",
-            "AssignmentSolutions:downloadResultArchive"
-        );
-        $router[] = new GetRoute(
-            "$prefix/evaluation/<evaluationId>/score-config",
-            "AssignmentSolutions:evaluationScoreConfig"
-        );
-
         $router[] = new GetRoute("$prefix/<id>", "AssignmentSolutions:solution");
         $router[] = new PostRoute("$prefix/<id>", "AssignmentSolutions:updateSolution");
         $router[] = new DeleteRoute("$prefix/<id>", "AssignmentSolutions:deleteSolution");
         $router[] = new PostRoute("$prefix/<id>/bonus-points", "AssignmentSolutions:setBonusPoints");
-        $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:evaluations");
+        $router[] = new GetRoute("$prefix/<id>/submissions", "AssignmentSolutions:submissions");
         $router[] = new PostRoute("$prefix/<id>/set-flag/<flag>", "AssignmentSolutions:setFlag");
         $router[] = new PostRoute("$prefix/<id>/set-accepted", "AssignmentSolutions:setAccepted");
         $router[] = new DeleteRoute("$prefix/<id>/unset-accepted", "AssignmentSolutions:unsetAccepted");
         $router[] = new PostRoute("$prefix/<id>/resubmit", "Submit:resubmit");
         $router[] = new GetRoute("$prefix/<id>/download-solution", "AssignmentSolutions:downloadSolutionArchive");
+
+        $router[] = new GetRoute("$prefix/submission/<submissionId>", "AssignmentSolutions:submission");
+        $router[] = new DeleteRoute("$prefix/submission/<submissionId>", "AssignmentSolutions:deleteSubmission");
+        $router[] = new GetRoute(
+            "$prefix/submission/<submissionId>/download-result",
+            "AssignmentSolutions:downloadResultArchive"
+        );
+        $router[] = new GetRoute(
+            "$prefix/submission/<submissionId>/score-config",
+            "AssignmentSolutions:evaluationScoreConfig"
+        );
+
+        // Backward compatibility aliases for submission routes (will be removed eventually)
+        $router[] = new GetRoute("$prefix/<id>/evaluations", "AssignmentSolutions:submissions");
+        $router[] = new GetRoute("$prefix/evaluation/<submissionId>", "AssignmentSolutions:submission");
+        $router[] = new DeleteRoute("$prefix/evaluation/<submissionId>", "AssignmentSolutions:deleteSubmission");
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<submissionId>/download-result",
+            "AssignmentSolutions:downloadResultArchive"
+        );
+        $router[] = new GetRoute(
+            "$prefix/evaluation/<submissionId>/score-config",
+            "AssignmentSolutions:evaluationScoreConfig"
+        );
+
         return $router;
     }
 

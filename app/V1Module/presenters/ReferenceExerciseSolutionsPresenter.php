@@ -219,22 +219,22 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $this->sendSuccessResponse("OK");
     }
 
-    public function checkEvaluations(string $solutionId)
+    public function checkSubmissions(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
         $exercise = $solution->getExercise();
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
-            throw new ForbiddenRequestException("You cannot access this exercise evaluations");
+            throw new ForbiddenRequestException("You cannot access this reference solution submissions");
         }
     }
 
     /**
-     * Get reference solution evaluations for an exercise solution.
+     * Get a list of submissions for given reference solution.
      * @GET
      * @param string $solutionId identifier of the reference exercise solution
      * @throws InternalServerException
      */
-    public function actionEvaluations(string $solutionId)
+    public function actionSubmissions(string $solutionId)
     {
         $solution = $this->referenceSolutions->findOrThrow($solutionId);
 
@@ -246,9 +246,9 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $this->sendSuccessResponse($solution->getSubmissions()->getValues());
     }
 
-    public function checkEvaluation(string $evaluationId)
+    public function checkSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $exercise = $submission->getReferenceSolution()->getExercise();
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
             throw new ForbiddenRequestException("You cannot access this exercise evaluations");
@@ -256,39 +256,39 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     }
 
     /**
-     * Get reference solution evaluation for an exercise solution.
+     * Get reference solution evaluation (i.e., submission) for an exercise solution.
      * @GET
-     * @param string $evaluationId identifier of the reference exercise evaluation
+     * @param string $submissionId identifier of the reference exercise submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    public function actionEvaluation(string $evaluationId)
+    public function actionSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $this->evaluationLoadingHelper->loadEvaluation($submission);
         $this->sendSuccessResponse($submission);
     }
 
-    public function checkDeleteEvaluation(string $evaluationId)
+    public function checkDeleteSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $solution = $submission->getReferenceSolution();
         if (!$this->referenceSolutionAcl->canDeleteEvaluation($solution)) {
-            throw new ForbiddenRequestException("You cannot delete this evaluation");
+            throw new ForbiddenRequestException("You cannot delete this submission");
         }
         if ($solution->getSubmissions()->count() < 2) {
-            throw new BadRequestException("You cannot delete last evaluation of a solution");
+            throw new BadRequestException("You cannot delete last submission of a solution");
         }
     }
 
     /**
      * Remove reference solution evaluation (submission) permanently.
      * @DELETE
-     * @param string $evaluationId Identifier of the reference solution submission
+     * @param string $submissionId Identifier of the reference solution submission
      */
-    public function actionDeleteEvaluation(string $evaluationId)
+    public function actionDeleteSubmission(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $this->referenceSubmissions->remove($submission);
         $this->referenceSubmissions->flush();
         $this->sendSuccessResponse("OK");
@@ -626,10 +626,10 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $this->sendResponse(new ZipFilesResponse($files, "reference-solution-{$solutionId}.zip"));
     }
 
-    public function checkDownloadResultArchive(string $evaluationId)
+    public function checkDownloadResultArchive(string $submissionId)
     {
         /** @var ReferenceSolutionSubmission $submission */
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $refSolution = $submission->getReferenceSolution();
 
         if (!$this->referenceSolutionAcl->canEvaluate($refSolution)) {
@@ -640,16 +640,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     /**
      * Download result archive from backend for a reference solution evaluation
      * @GET
-     * @param string $evaluationId
+     * @param string $submissionId
      * @throws ForbiddenRequestException
      * @throws NotFoundException
      * @throws NotReadyException
      * @throws InternalServerException
      * @throws \Nette\Application\AbortException
      */
-    public function actionDownloadResultArchive(string $evaluationId)
+    public function actionDownloadResultArchive(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $this->evaluationLoadingHelper->loadEvaluation($submission);
 
         if (!$submission->hasEvaluation()) {
@@ -659,16 +659,16 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
         $stream = $this->fileServerProxy->getFileserverFileStream($submission->getResultsUrl());
         if ($stream === null) {
             throw new NotFoundException(
-                "Archive for solution evaluation '$evaluationId' not found on remote fileserver"
+                "Evaluation archive for solution submission '$submissionId' not found on remote fileserver"
             );
         }
 
-        $this->sendResponse(new GuzzleResponse($stream, "results-{$evaluationId}.zip", "application/zip"));
+        $this->sendResponse(new GuzzleResponse($stream, "results-{$submissionId}.zip", "application/zip"));
     }
 
-    public function checkEvaluationScoreConfig(string $evaluationId)
+    public function checkEvaluationScoreConfig(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $exercise = $submission->getReferenceSolution()->getExercise();
         if (!$this->exerciseAcl->canViewDetail($exercise)) {
             throw new ForbiddenRequestException("You cannot access this exercise evaluations");
@@ -676,15 +676,15 @@ class ReferenceExerciseSolutionsPresenter extends BasePresenter
     }
 
     /**
-     * Get score configuration associated with given evaluation
+     * Get score configuration associated with given submission evaluation
      * @GET
-     * @param string $evaluationId identifier of the reference exercise evaluation
+     * @param string $submissionId identifier of the reference exercise submission
      * @throws NotFoundException
      * @throws InternalServerException
      */
-    public function actionEvaluationScoreConfig(string $evaluationId)
+    public function actionEvaluationScoreConfig(string $submissionId)
     {
-        $submission = $this->referenceSubmissions->findOrThrow($evaluationId);
+        $submission = $this->referenceSubmissions->findOrThrow($submissionId);
         $this->evaluationLoadingHelper->loadEvaluation($submission);
 
         $evaluation = $submission->getEvaluation();

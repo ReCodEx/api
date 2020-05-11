@@ -97,7 +97,7 @@ class WeightedScoreCalculator implements IScoreCalculator
      */
     public function isScoreConfigValid(?string $scoreConfig): bool
     {
-        return $this->getTestWeights($scoreConfig) !== null;
+        return $scoreConfig !== null && $this->getTestWeights($scoreConfig) !== null;
     }
 
     /**
@@ -107,8 +107,12 @@ class WeightedScoreCalculator implements IScoreCalculator
      * @return string Normalized and polished YAML with score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore(string $scoreConfig): string
+    public function validateAndNormalizeScore(?string $scoreConfig): ?string
     {
+        if ($scoreConfig === null) {
+            throw new ExerciseConfigException("Exercise score configuration is not valid");
+        }
+
         $weights = $this->getTestWeights($scoreConfig);
         if ($weights === null) {
             throw new ExerciseConfigException("Exercise score configuration is not valid");

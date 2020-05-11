@@ -89,7 +89,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::equal('changed note of the solution', $solution->getNote());
     }
 
-    public function testGetEvaluations()
+    public function testGetSubmissions()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
         $solution = current($this->presenter->assignmentSolutions->findAll());
@@ -97,7 +97,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
-            ['action' => 'evaluations', 'id' => $solution->getId()]
+            ['action' => 'submissions', 'id' => $solution->getId()]
         );
         $response = $this->presenter->run($request);
         Assert::same(Nette\Application\Responses\JsonResponse::class, get_class($response));
@@ -110,7 +110,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         Assert::count($solution->getSubmissions()->count(), $payload);
     }
 
-    public function testGetEvaluation()
+    public function testGetSubmission()
     {
         PresenterTestHelper::login($this->container, "submitUser1@example.com", "password");
         $submissionsWithEval = array_filter(
@@ -123,7 +123,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:AssignmentSolutions', 'GET',
-            ['action' => 'evaluation', 'evaluationId' => $submission->id]
+            ['action' => 'submission', 'submissionId' => $submission->id]
         );
         Assert::same($submission->getId(), $payload['id']);
     }
@@ -141,13 +141,13 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
 
         $payload = PresenterTestHelper::performPresenterRequest(
             $this->presenter, 'V1:AssignmentSolutions', 'GET',
-            ['action' => 'evaluationScoreConfig', 'evaluationId' => $submission->id ]
+            ['action' => 'evaluationScoreConfig', 'submissionId' => $submission->id ]
         );
         Assert::same('weighted', $payload->getCalculator());
         Assert::truthy($payload->getConfig());
     }
 
-    public function testDeleteEvaluation()
+    public function testDeleteSubmission()
     {
         PresenterTestHelper::loginDefaultAdmin($this->container);
 
@@ -160,8 +160,8 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
             'V1:AssignmentSolutions',
             'DELETE',
             [
-                'action' => 'deleteEvaluation',
-                'evaluationId' => $submission->getId()
+                'action' => 'deleteSubmission',
+                'submissionId' => $submission->getId()
             ]
         );
 
@@ -410,7 +410,7 @@ class TestAssignmentSolutionsPresenter extends Tester\TestCase
         $request = new Nette\Application\Request(
             'V1:AssignmentSolutions',
             'GET',
-            ['action' => 'downloadResultArchive', 'evaluationId' => $submission->id]
+            ['action' => 'downloadResultArchive', 'submissionId' => $submission->id]
         );
         $response = $this->presenter->run($request);
         Assert::same(App\Responses\GuzzleResponse::class, get_class($response));
