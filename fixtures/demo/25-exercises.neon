@@ -28,11 +28,9 @@ App\Model\Entity\ExerciseScoreConfig:
     weightedTwoTests:
         __construct:
             - 'weighted'
-            - '''
-                testWeights:
-                    "Test 1": 100
-                    "Test 2": 100
-            '''
+            - testWeights:
+                "Test 1": 100
+                "Test 2": 100
 
 
 App\Model\Entity\Exercise:

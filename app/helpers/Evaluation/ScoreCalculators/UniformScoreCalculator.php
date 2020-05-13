@@ -20,14 +20,7 @@ class UniformScoreCalculator implements IScoreCalculator
         return self::ID;
     }
 
-    /**
-     * Function that computes the resulting score from simple YML config and test results score
-     * @param string|null $scoreConfig
-     * @param array $testResults array of TestResult entities indexed by test ids
-     * @return float Percentage of total points assigned to the solution
-     * @throws SubmissionEvaluationFailedException
-     */
-    public function computeScore(?string $scoreConfig, array $testResults): float
+    public function computeScore($scoreConfig, array $testResults): float
     {
         $sum = 0.0;
         foreach ($testResults as $testResult) {
@@ -37,12 +30,12 @@ class UniformScoreCalculator implements IScoreCalculator
         return count($testResults) === 0 ? 0.0 : $sum / (float)count($testResults);
     }
 
-    public function isScoreConfigValid(?string $scoreConfig): bool
+    public function isScoreConfigValid($scoreConfig): bool
     {
         return $scoreConfig === null;
     }
 
-    public function validateAndNormalizeScore(?string $scoreConfig): ?string
+    public function validateAndNormalizeScore($scoreConfig)
     {
         if ($scoreConfig !== null) {
             throw new ExerciseConfigException("Uniform score calculator does not require any configuration.");
@@ -50,7 +43,7 @@ class UniformScoreCalculator implements IScoreCalculator
         return null;
     }
 
-    public function getDefaultConfig(array $tests): ?string
+    public function getDefaultConfig(array $tests)
     {
         return null;
     }

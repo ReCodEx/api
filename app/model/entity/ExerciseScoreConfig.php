@@ -2,6 +2,8 @@
 
 namespace App\Model\Entity;
 
+use App\Helpers\Yaml;
+use App\Helpers\YamlException;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
 use JsonSerializable;
@@ -48,6 +50,25 @@ class ExerciseScoreConfig implements JsonSerializable
         return $this->config;
     }
 
+    public function getConfigParsed()
+    {
+        try {
+            return $this->config ? Yaml::parse($this->config) : null;
+        } catch (YamlException $e) {
+            return null;  // this should never happen, but let's do this defensively...
+        }
+    }
+
+    /**
+     * Compare this config with given config structure
+     * @return bool
+     */
+    public function configEquals($config): bool
+    {
+        $serializd = $config !== null ? Yaml::dump($config) : null;
+        return $serializd === $this->config;
+    }
+
     /**
      * @ORM\Column(type="datetime")
      */
@@ -67,18 +88,18 @@ class ExerciseScoreConfig implements JsonSerializable
     /**
      * Constructor
      * @param string $calculator
-     * @param string $config
+     * @param mixed $config Configuration will be encoded to Yaml internally
      * @param ExerciseScoreConfig|null $createdFrom
      */
     public function __construct(
         string $calculator = "",
-        string $config = null,
+        $config = null,
         ExerciseScoreConfig $createdFrom = null
     ) {
         $this->createdAt = new DateTime();
 
         $this->calculator = $calculator;
-        $this->config = $config;
+        $this->config = $config !== null ? Yaml::dump($config) : null;
         $this->createdFrom = $createdFrom;
     }
 
@@ -86,7 +107,7 @@ class ExerciseScoreConfig implements JsonSerializable
     {
         return [
             'calculator' => $this->getCalculator(),
-            'config' => $this->getConfig(),
+            'config' => $this->getConfigParsed(),
             'createdAt' => $this->getCreatedAt()->getTimestamp(),
         ];
     }

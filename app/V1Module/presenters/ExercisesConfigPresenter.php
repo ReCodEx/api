@@ -686,7 +686,7 @@ class ExercisesConfigPresenter extends BasePresenter
      * Set score configuration for exercise.
      * @POST
      * @Param(type="post", name="scoreCalculator", validation="string", description="ID of the score calculator")
-     * @Param(type="post", name="scoreConfig", validation="string", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
+     * @Param(type="post", name="scoreConfig", description="A configuration of the score calculator (the exact format depends on the calculator assigned to the exercise)")
      * @param string $id Identifier of the exercise
      * @throws ExerciseConfigException
      */
@@ -703,7 +703,7 @@ class ExercisesConfigPresenter extends BasePresenter
         $calculator = $this->calculators->getCalculator($calculatorName);
         $normalizedConfig = $calculator->validateAndNormalizeScore($config);  // throws if validation fails
 
-        if ($calculatorName !== $oldConfig->getCalculator() || $config !== $oldConfig->getConfig()) {
+        if ($calculatorName !== $oldConfig->getCalculator() || !$oldConfig->configEquals($config)) {
             $newConfig = new ExerciseScoreConfig($calculatorName, $config, $oldConfig);
             $exercise->updatedNow();
             $exercise->setScoreConfig($newConfig);
