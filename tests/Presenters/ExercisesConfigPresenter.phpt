@@ -568,8 +568,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'GET',
             [ 'action' => 'getScoreConfig', 'id' => $exercise->getId() ]
         );
-        $resultConfig = Yaml::parse($payload->getConfig());
-        Assert::equal(Yaml::parse("testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100"), $resultConfig);
+        $resultConfig = $payload->getConfigParsed();
+        Assert::equal(['testWeights' => [ 'Test 1' => 100, 'Test 2' => 100 ]], $resultConfig);
     }
 
     public function testSetScoreConfig()
@@ -579,7 +579,11 @@ class TestExercisesConfigPresenter extends Tester\TestCase
 
         // prepare score config
         $calculator = 'weighted';
-        $config = "testWeights:\n  \"Test 1\": 100\n  \"Test 2\": 100\n  \"Test 3\": 100";
+        $config = ['testWeights' => [
+            'Test 1' => 100,
+            'Test 2' => 100,
+            'Test 3' => 100,
+        ] ];
 
         $payload = PresenterTestHelper::performPresenterRequest($this->presenter, 'V1:ExercisesConfig', 'POST',
             [
@@ -593,9 +597,8 @@ class TestExercisesConfigPresenter extends Tester\TestCase
         );
 
         Assert::equal($calculator, $payload->getCalculator());
-        $resultConfig = Yaml::parse($payload->getConfig());
-        $expected = Yaml::parse($config);
-        Assert::equal($expected, $resultConfig);
+        $resultConfig = $payload->getConfigParsed();
+        Assert::equal($config, $resultConfig);
     }
 
     public function testGetTests()

@@ -18,33 +18,33 @@ interface IScoreCalculator
 
     /**
      * Compute the score from tests results
-     * @param string|null $scoreConfig Configuration of the calculator (format depends on implementation)
+     * @param mixed $scoreConfig Configuration of the calculator (format depends on implementation)
      * @param array $testResults Array of TestResult entities indexed by test ids
      * @return float Percentage of points, that should be assigned to the solution
      * @throws SubmissionEvaluationFailedException
      */
-    public function computeScore(?string $scoreConfig, array $testResults): float;
+    public function computeScore($scoreConfig, array $testResults): float;
 
     /**
      * Validate score configuration
-     * @param string|null $scoreConfig Serialized score configuration loaded from the database
+     * @param mixed $scoreConfig Serialized score configuration loaded from the database
      * @return bool If the config is valid or not
      */
-    public function isScoreConfigValid(?string $scoreConfig): bool;
+    public function isScoreConfigValid($scoreConfig): bool;
 
     /**
      * Performs validation and normalization on config string.
      * This should be used instead of validation when the score config is processed as API input.
-     * @param string|null $scoreConfig Serialized configuration for the score calculator
-     * @return string|null Normalized and polished serialized score configuration
+     * @param mixed $scoreConfig Configuration for the score calculator
+     * @return mixed Normalized and polished score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore(?string $scoreConfig): ?string;
+    public function validateAndNormalizeScore($scoreConfig);
 
     /**
      * Make default configuration for given list of tests.
      * @param array $tests List of string names of tests
-     * @return string|null Default configuration for given tests
+     * @return mixed Default configuration for given tests
      */
-    public function getDefaultConfig(array $tests): ?string;
+    public function getDefaultConfig(array $tests);
 }

@@ -9,7 +9,7 @@ use App\Helpers\Yaml;
 use App\Helpers\YamlException;
 
 /**
- * Weighted score calculator. It expect config in YAML format such as:
+ * Weighted score calculator. It expect config in structured format such as:
  *  testWeights:
  *    A: 200
  *    B: 800
@@ -28,40 +28,26 @@ class WeightedScoreCalculator implements IScoreCalculator
 
     /**
      * Internal function that safely retrieves score config weights.
-     * @param string $scoreConfig
+     * @param array $scoreConfig
      * @return array|null Null if the config is invalid, name => weight array otherwise.
      */
-    private function getTestWeights(string $scoreConfig): ?array
+    private function getTestWeights(array $config): ?array
     {
-        try {
-            $config = Yaml::parse($scoreConfig);
+        if (isset($config['testWeights']) && is_array($config['testWeights'])) {
             $normalizedWeights = [];
-
-            if (isset($config['testWeights']) && is_array($config['testWeights'])) {
-                foreach ($config['testWeights'] as $name => $value) {
-                    if (!is_integer($value)) {
-                        return null;
-                    }
-                    $normalizedWeights[trim($name)] = $value;
+            foreach ($config['testWeights'] as $name => $value) {
+                if (!is_integer($value)) {
+                    return null;
                 }
-            } else {
-                return null;
+                $normalizedWeights[trim($name)] = $value;
             }
-        } catch (YamlException $e) {
+            return $normalizedWeights;
+        } else {
             return null;
         }
-
-        return $normalizedWeights;
     }
 
-    /**
-     * Function that computes the resulting score from simple YML config and test results score
-     * @param string|null $scoreConfig
-     * @param array $testResults array of TestResult entities indexed by test ids
-     * @return float Percentage of total points assigned to the solution
-     * @throws SubmissionEvaluationFailedException
-     */
-    public function computeScore(?string $scoreConfig, array $testResults): float
+    public function computeScore($scoreConfig, array $testResults): float
     {
         if ($scoreConfig === null) {
             throw new SubmissionEvaluationFailedException("Assignment score configuration is invalid");
@@ -92,10 +78,10 @@ class WeightedScoreCalculator implements IScoreCalculator
     }
 
     /**
-     * @param string $scoreConfig YAML configuration of the weights
+     * @param mixed $scoreConfig Structure containing configuration of the weights
      * @return bool If the configuration is valid or not
      */
-    public function isScoreConfigValid(?string $scoreConfig): bool
+    public function isScoreConfigValid($scoreConfig): bool
     {
         return $scoreConfig !== null && $this->getTestWeights($scoreConfig) !== null;
     }
@@ -103,11 +89,11 @@ class WeightedScoreCalculator implements IScoreCalculator
     /**
      * Performs validation and normalization on config string.
      * This should be used instead of validation when the score config is processed as API input.
-     * @param string $scoreConfig YAML configuration for the score calculator
-     * @return string Normalized and polished YAML with score configuration
+     * @param mixed $scoreConfig Structure containing configuration of the weights
+     * @return mixed Normalized and polished score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore(?string $scoreConfig): ?string
+    public function validateAndNormalizeScore($scoreConfig)
     {
         if ($scoreConfig === null) {
             throw new ExerciseConfigException("Exercise score configuration is not valid");
@@ -117,24 +103,21 @@ class WeightedScoreCalculator implements IScoreCalculator
         if ($weights === null) {
             throw new ExerciseConfigException("Exercise score configuration is not valid");
         }
-        return Yaml::dump(['testWeights' => $weights]);
+        return ['testWeights' => $weights];
     }
 
     /**
      * Make default configuration for array of test names. Each test will
      * have the same priority as others.
      * @param array $tests of string names of tests
-     * @return string Default configuration for given tests
+     * @return mixed Default configuration for given tests
      */
-    public function getDefaultConfig(array $tests): ?string
+    public function getDefaultConfig(array $tests)
     {
         $weights = [];
         foreach ($tests as $test) {
             $weights[$test] = 100;
         }
-        $config = [];
-        $config["testWeights"] = $weights;
-
-        return Yaml::dump($config);
+        return ['testWeights' => $weights];
     }
 }

@@ -11,13 +11,16 @@ use App\Helpers\Evaluation\WeightedScoreCalculator;
  */
 class TestWeightedScoreCalculator extends Tester\TestCase
 {
-    private $scoreConfig = "testWeights:
-  a: 300 # number between 1 and 1000
-  b: 200 # sum of all numbers must be 1000
-  c: 100
-  d: 100
-  e: 100
-  f: 200";
+    private $scoreConfig = [
+        "testWeights" => [
+            "a" => 300,
+            "b" => 200,
+            "c" => 100,
+            "d" => 100,
+            "e" => 100,
+            "f" => 200,
+        ]
+    ];
     private $testNames = ["a", "b", "c", "d", "e", "f"];
 
     private function getCalc()
@@ -40,15 +43,15 @@ class TestWeightedScoreCalculator extends Tester\TestCase
         return $scores;
     }
 
-    public function testInvalidYamlScoreConfig()
+    public function testInvalidScoreConfig()
     {
-        $cfg = "\"asd";
+        $cfg = [ 'foo' => 'bar' ];
         Assert::false($this->getCalc()->isScoreConfigValid($cfg));
     }
 
     public function testScoreConfigNonIntegerWeights()
     {
-        $cfg = "testWeights:\n  a: a";
+        $cfg = ['testWeights' => ['a' => 'a']];
         Assert::false($this->getCalc()->isScoreConfigValid($cfg));
     }
 
@@ -64,7 +67,7 @@ class TestWeightedScoreCalculator extends Tester\TestCase
 
     public function testScoreConfigWrongTestName()
     {
-        $cfg = "testWeights:\n  b: 1";
+        $cfg = ['testWeights' => [ 'b' => 1 ]];
         Assert::true($this->getCalc()->isScoreConfigValid($cfg));
     }
 
@@ -87,7 +90,7 @@ class TestWeightedScoreCalculator extends Tester\TestCase
     {
         $calc = new WeightedScoreCalculator();
         $cfg = $this->getCfg([0]);
-        $score = $calc->computeScore("testWeights: {  }\n", $cfg);
+        $score = $calc->computeScore(["testWeights" => []], $cfg);
         Assert::equal(0.0, $score);
     }
 
@@ -99,13 +102,13 @@ class TestWeightedScoreCalculator extends Tester\TestCase
     public function testDefaultConfig()
     {
         $config = $this->getCalc()->getDefaultConfig(["A test", "B", "test C", "Test D"]);
-        Assert::equal("---\ntestWeights:\n  A test: 100\n  B: 100\n  test C: 100\n  Test D: 100\n...\n", $config);
+        Assert::equal(['testWeights' => ['A test' => 100, 'B' => 100, 'test C' => 100, 'Test D' => 100]], $config);
     }
 
     public function testEmptyDefaultConfig()
     {
         $config = $this->getCalc()->getDefaultConfig([]);
-        Assert::equal("---\ntestWeights: []\n...\n", $config);
+        Assert::equal(['testWeights' => []], $config);
     }
 
     public function testValidateEmptyWeights()
