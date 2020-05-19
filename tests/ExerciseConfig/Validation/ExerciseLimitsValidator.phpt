@@ -57,8 +57,9 @@ class TestExerciseLimitsValidator extends Tester\TestCase
     public function testDifferentTests()
     {
         $limits = new ExerciseLimits();
+        $limits->addLimits("1", Limits::create(2.0, 3.0, 10, 1));
+        $limits->addLimits("2", Limits::create(2.0, 3.0, 10, 1));
         $limits->addLimits("3", Limits::create(2.0, 3.0, 10, 1));
-        $limits->addLimits("4", Limits::create(2.0, 3.0, 10, 1));
 
         $exercise = $this->createExercise();
         $this->addTwoTestsToExercise($exercise);
@@ -69,6 +70,23 @@ class TestExerciseLimitsValidator extends Tester\TestCase
             },
             ExerciseConfigException::class,
             "Exercise configuration error - Test with id '3' is not present in the exercise configuration"
+        );
+    }
+
+    public function testMissingTests()
+    {
+        $limits = new ExerciseLimits();
+        $limits->addLimits("1", Limits::create(2.0, 3.0, 10, 1));
+
+        $exercise = $this->createExercise();
+        $this->addTwoTestsToExercise($exercise);
+
+        Assert::exception(
+            function () use ($exercise, $limits) {
+                $this->validator->validate($exercise, $this->createHwMeta(), $limits);
+            },
+            ExerciseConfigException::class,
+            "Exercise configuration error - Test 'Test B' does not have any limits specified"
         );
     }
 
@@ -86,7 +104,7 @@ class TestExerciseLimitsValidator extends Tester\TestCase
                 $this->validator->validate($exercise, $this->createHwMeta(), $limits);
             },
             ExerciseConfigException::class,
-            "Exercise configuration error - Test with id '1' has exceeded memory limit '1048576'"
+            "Exercise configuration error - Test 'Test A' has exceeded memory limit '1048576'"
         );
     }
 
