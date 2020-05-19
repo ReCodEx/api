@@ -122,7 +122,7 @@ class ExerciseConfigChecker
                 if ($limitsEntity === null) {
                     $exercise->setBroken(
                         sprintf(
-                            "Limits for environment '%s' and hardware group '%s' not found",
+                            "@limits Limits for environment '%s' and hardware group '%s' not found",
                             $environment->getName(),
                             $hardwareGroup->getId()
                         )
@@ -137,7 +137,7 @@ class ExerciseConfigChecker
                 } catch (ExerciseConfigException $exception) {
                     $exercise->setBroken(
                         sprintf(
-                            "Loading limits from '%s' failed: %s",
+                            "@limits Loading limits from '%s' failed: %s",
                             $limitsEntity->getId(),
                             $exception->getMessage()
                         )
@@ -148,7 +148,7 @@ class ExerciseConfigChecker
                 try {
                     $this->validator->validateExerciseLimits($exercise, $hardwareGroup->getMetadata(), $limits);
                 } catch (ExerciseConfigException $exception) {
-                    $exercise->setBroken(sprintf("Error in limit configuration: %s", $exception->getMessage()));
+                    $exercise->setBroken(sprintf("@limits Error in limit configuration: %s", $exception->getMessage()));
                     return false;
                 }
             }
@@ -172,7 +172,8 @@ class ExerciseConfigChecker
                 $envConfig = $exercise->getExerciseEnvironmentConfigByEnvironment($environment);
 
                 if ($envConfig === null) {
-                    $exercise->setBroken(sprintf("Environment '%s' has no configuration", $environment->getId()));
+                    $error = sprintf("@runtimes Environment '%s' has no configuration", $environment->getId());
+                    $exercise->setBroken($error);
                     return false;
                 }
 
@@ -192,7 +193,7 @@ class ExerciseConfigChecker
         } catch (ExerciseConfigException | ExerciseCompilationException $exception) {
             $exercise->setBroken(
                 sprintf(
-                    "Error in exercise configuration for environment '%s': %s",
+                    "@runtimes Error in exercise configuration for environment '%s': %s",
                     $environment !== null ? $environment->getId() : "UNKNOWN",
                     $exception->getMessage()
                 )
@@ -204,30 +205,42 @@ class ExerciseConfigChecker
     }
 
     /**
-     * Check the configuration of an exercise (including all environment configs) and set the `isBroken` flag if there is
-     * an error.
+     * Check the configuration of an exercise (including all environment configs)
+     * and set the `isBroken` flag if there is an error.
      * @param Exercise $exercise the exercise whose configuration should be checked
      * @throws ParseException
      */
     public function check(Exercise $exercise)
     {
+        $errors = []; // let's try to report as many errors as possible
         if ($exercise->getRuntimeEnvironments()->count() === 0) {
-            $exercise->setBroken("There are no runtime environments");
-            return;
+            $errors[] = "@no-runtimes There are no runtime environments";
         }
 
         if ($exercise->getHardwareGroups()->count() === 0) {
-            $exercise->setBroken("There are no hardware groups");
-            return;
+            $errors[] = "@no-hwgroups There are no hardware groups";
         }
 
         if ($exercise->getLocalizedTexts()->count() === 0) {
-            $exercise->setBroken("There are no student descriptions");
-            return;
+            $errors[] = "@no-texts There are no student descriptions";
         }
 
         if ($exercise->getExerciseConfig() === null) {
-            $exercise->setBroken("There is no configuration for this exercise");
+            $errors[] = "@no-configs There is no configuration for this exercise";
+        }
+
+        if ($exercise->getExerciseTests()->count() === 0) {
+            $errors[] = "@no-tests There are no tests";
+        }
+
+        // validate score configuration
+        $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
+        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig()->getConfigParsed())) {
+            $errors[] = "@score The score configuration is invalid";
+        }
+                
+        if ($errors) {
+            $exercise->setBroken(implode("\n", $errors));
             return;
         }
 
@@ -235,19 +248,12 @@ class ExerciseConfigChecker
             $config = $this->loader->loadExerciseConfig($exercise->getExerciseConfig()->getParsedConfig());
             $this->validator->validateExerciseConfig($exercise, $config);
         } catch (ExerciseConfigException $exception) {
-            $exercise->setBroken(sprintf("Global exercise configuration is invalid: %s", $exception->getMessage()));
+            $exercise->setBroken(sprintf("@config %s", $exception->getMessage()));
             return;
         }
 
         // validate environments
         if (!$this->validateEnvironmentConfigurations($exercise)) {
-            return;
-        }
-
-        // validate score configuration
-        $calculator = $this->calculators->getCalculator($exercise->getScoreConfig()->getCalculator());
-        if (!$calculator->isScoreConfigValid($exercise->getScoreConfig()->getConfigParsed())) {
-            $exercise->setBroken("The score configuration is invalid");
             return;
         }
 
