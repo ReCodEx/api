@@ -30,12 +30,12 @@ class UniformScoreCalculator implements IScoreCalculator
         return count($testResults) === 0 ? 0.0 : $sum / (float)count($testResults);
     }
 
-    public function isScoreConfigValid($scoreConfig): bool
+    public function isScoreConfigValid($scoreConfig, array $testNames = []): bool
     {
         return $scoreConfig === null;
     }
 
-    public function validateAndNormalizeScore($scoreConfig)
+    public function validateAndNormalizeScore($scoreConfig, array $testNames = [])
     {
         if ($scoreConfig !== null) {
             throw new ExerciseConfigException("Uniform score calculator does not require any configuration.");
@@ -43,7 +43,7 @@ class UniformScoreCalculator implements IScoreCalculator
         return null;
     }
 
-    public function getDefaultConfig(array $tests)
+    public function getDefaultConfig(array $testNames)
     {
         return null;
     }

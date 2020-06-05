@@ -11,6 +11,6 @@ class AstNodeNegation extends AstNodeUnary
 
     public function evaluate(array $testResults): float
     {
-        return -$this->getChild()->evaluate($testResults);
+        return -$this->getOperand()->evaluate($testResults);
     }
 }

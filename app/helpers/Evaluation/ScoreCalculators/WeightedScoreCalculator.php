@@ -78,29 +78,54 @@ class WeightedScoreCalculator implements IScoreCalculator
     }
 
     /**
+     * Internal function which verifies that all names mentioned in test weights are relevant.
+     * @param array $testWeights yielded from getTestWeights
+     * @param array $testNames List of known test names (if empty, no check on names is performed)
+     * @return bool
+     */
+    private function verifyTestNames(array $testWeights, array $testNames)
+    {
+        if ($testNames) { // skip this test if test names are empty
+            foreach ($testWeights as $name => $_) {
+                if (!in_array($name, $testNames)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+    
+    /**
      * @param mixed $scoreConfig Structure containing configuration of the weights
+     * @param array $testNames List of known test names (if empty, no check on names is performed)
      * @return bool If the configuration is valid or not
      */
-    public function isScoreConfigValid($scoreConfig): bool
+    public function isScoreConfigValid($scoreConfig, array $testNames = []): bool
     {
-        return $scoreConfig !== null && $this->getTestWeights($scoreConfig) !== null;
+        $testWeights = $this->getTestWeights($scoreConfig ?? []);
+        if ($testWeights === null) {
+            return false;
+        }
+        return $this->verifyTestNames($testWeights, $testNames);
     }
 
     /**
      * Performs validation and normalization on config string.
      * This should be used instead of validation when the score config is processed as API input.
      * @param mixed $scoreConfig Structure containing configuration of the weights
+     * @param array $testNames List of known test names (if empty, no check on names is performed)
      * @return mixed Normalized and polished score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore($scoreConfig)
+    public function validateAndNormalizeScore($scoreConfig, array $testNames = [])
     {
         if ($scoreConfig === null) {
             throw new ExerciseConfigException("Exercise score configuration is not valid");
         }
 
         $weights = $this->getTestWeights($scoreConfig);
-        if ($weights === null) {
+        if ($weights === null || !$this->verifyTestNames($weights, $testNames)) {
             throw new ExerciseConfigException("Exercise score configuration is not valid");
         }
         return ['testWeights' => $weights];
@@ -109,13 +134,13 @@ class WeightedScoreCalculator implements IScoreCalculator
     /**
      * Make default configuration for array of test names. Each test will
      * have the same priority as others.
-     * @param array $tests of string names of tests
+     * @param array $testNames
      * @return mixed Default configuration for given tests
      */
-    public function getDefaultConfig(array $tests)
+    public function getDefaultConfig(array $testNames)
     {
         $weights = [];
-        foreach ($tests as $test) {
+        foreach ($testNames as $test) {
             $weights[$test] = 100;
         }
         return ['testWeights' => $weights];

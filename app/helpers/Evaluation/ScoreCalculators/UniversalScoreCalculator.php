@@ -24,20 +24,27 @@ class UniversalScoreCalculator implements IScoreCalculator
 
     public function computeScore($scoreConfig, array $testResults): float
     {
-        // TODO
-
-        return 0.0;
+        try {
+            $rootNode = AstNode::createFromConfig($scoreConfig);
+            return $rootNode->evaluate($testResults);
+        } catch (AstNodeException $e) {
+            throw new SubmissionEvaluationFailedException("Score configuration is not valid: " . $e->getMessage());
+        }
     }
 
     /**
      * @param mixed $scoreConfig AST structure containing the expression that computes score
      * @return bool If the configuration is valid or not
      */
-    public function isScoreConfigValid($scoreConfig): bool
+    public function isScoreConfigValid($scoreConfig, array $testNames = []): bool
     {
-        // TODO
-
-        return false;
+        try {
+            $rootNode = AstNode::createFromConfig($scoreConfig);
+            $rootNode->validate($testNames);
+            return true;
+        } catch (AstNodeException $e) {
+            return false;
+        }
     }
 
     /**
@@ -47,22 +54,40 @@ class UniversalScoreCalculator implements IScoreCalculator
      * @return mixed Normalized and polished score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore($scoreConfig)
+    public function validateAndNormalizeScore($scoreConfig, array $testNames = [])
     {
-        // TODO
-        
-        return null;
+        try {
+            $rootNode = AstNode::createFromConfig($scoreConfig);
+            $rootNode->validate($testNames);
+            return $rootNode->serialize();
+        } catch (AstNodeException $e) {
+            throw new ExerciseConfigException("Score configuration is not valid: " . $e->getMessage());
+        }
     }
 
     /**
      * Make default configuration for array of test names.
-     * @param array $tests of string names of tests
+     * @param array $testNames
      * @return mixed Default configuration for given tests
      */
-    public function getDefaultConfig(array $tests)
+    public function getDefaultConfig(array $testNames)
     {
-        // TODO
+        if (!$testNames) {
+            $rootNode = new AstNodeValue();
+            $rootNode->setValue(1.0);
+            return $rootNode;
+        }
 
-        return null;
+        // bulild an expression that does the same as uniform calculator
+        $avgNode = new AstNodeAverage();
+        foreach ($testNames as $name) {
+            $testNode = new AstNodeTestResult();
+            $testNode->setTestName($name);
+            $avgNode->addChild($testNode);
+        }
+
+        $rootNode = new AstNodeClamp();
+        $rootNode->addChild($avgNode);
+        return $rootNode->serialize();
     }
 }

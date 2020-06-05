@@ -26,10 +26,14 @@ abstract class AstNodeUnary extends AstNode
 
     /**
      * Get the only operand of this node.
-     * @return AstNode|null
+     * @return AstNode
+     * @throws AstNodeException if the child node is missing
      */
-    public function getOperand(): ?AstNode
+    public function getOperand(): AstNode
     {
-        return count($this->children) > 0 ? $this->children[0] : null;
+        if (count($this->children) === 0) {
+            throw new AstNodeException("Unary node is not fully initialized yet, its child node is missing.");
+        }
+        return $this->children[0];
     }
 }

@@ -5,7 +5,7 @@ namespace App\Helpers\Evaluation;
 /**
  * Class representing reference to a test result. Test results are the input of the whole expression.
  */
-class AstNodeValue extends AstNodeLeaf
+class AstNodeTestResult extends AstNodeLeaf
 {
     public static $TYPE_NAME = 'test-result';
 
@@ -14,10 +14,12 @@ class AstNodeValue extends AstNodeLeaf
 
     /**
      * Get the name of the test.
-     * @return float|null
+     * @return string
+     * @throws AstNodeException if the name is not set
      */
-    public function getTestName(): ?string
+    public function getTestName(): string
     {
+        $this->internalValidation(); // throws if the name is not set
         return $this->testName;
     }
 
@@ -52,17 +54,14 @@ class AstNodeValue extends AstNodeLeaf
             throw new AstNodeException("The test result AST node does not have the referenced test name set.");
         }
 
-        if (!in_array($this->testName, $testNames)) {
+        if ($testNames && !in_array($this->testName, $testNames)) { // skipped if no test names are given
             throw new AstNodeException("Test name '$this->testName' does not exist.");
         }
     }
 
     public function evaluate(array $testResults): float
     {
-        if (!array_key_exists($this->testName, $testResults)) {
-            throw new AstNodeException("Test name '$this->testName' does not exist.");
-        }
-
+        $this->internalValidation(array_keys($testResults));
         return $testResults[$this->testName]->getScore();
     }
 

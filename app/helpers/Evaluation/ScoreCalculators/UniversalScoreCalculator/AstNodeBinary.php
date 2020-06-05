@@ -30,18 +30,26 @@ abstract class AstNodeBinary extends AstNode
     /**
      * Get left (first) operand of this node.
      * @return AstNode
+     * @throws AstNodeException if the child node is missing
      */
     public function getLeft(): AstNode
     {
+        if (count($this->children) === 0) {
+            throw new AstNodeException("Binary node is not fully initialized yet, the left child node is missing.");
+        }
         return $this->children[0];
     }
 
     /**
      * Get right (second) operand of this node.
      * @return AstNode
+     * @throws AstNodeException if the child node is missing
      */
     public function getRight(): AstNode
     {
+        if (count($this->children) < 2) {
+            throw new AstNodeException("Binary node is not fully initialized yet, the right child node is missing.");
+        }
         return $this->children[1];
     }
 }

@@ -28,23 +28,25 @@ interface IScoreCalculator
     /**
      * Validate score configuration
      * @param mixed $scoreConfig Serialized score configuration loaded from the database
+     * @param array $testNames List of known test names (if empty, no check on names is performed)
      * @return bool If the config is valid or not
      */
-    public function isScoreConfigValid($scoreConfig): bool;
+    public function isScoreConfigValid($scoreConfig, array $testNames = []): bool;
 
     /**
      * Performs validation and normalization on config string.
      * This should be used instead of validation when the score config is processed as API input.
      * @param mixed $scoreConfig Configuration for the score calculator
+     * @param array $testNames List of known test names (if empty, no check on names is performed)
      * @return mixed Normalized and polished score configuration
      * @throws ExerciseConfigException
      */
-    public function validateAndNormalizeScore($scoreConfig);
+    public function validateAndNormalizeScore($scoreConfig, array $testNames = []);
 
     /**
      * Make default configuration for given list of tests.
-     * @param array $tests List of string names of tests
+     * @param array $testNames List of string names of tests
      * @return mixed Default configuration for given tests
      */
-    public function getDefaultConfig(array $tests);
+    public function getDefaultConfig(array $testNames);
 }
