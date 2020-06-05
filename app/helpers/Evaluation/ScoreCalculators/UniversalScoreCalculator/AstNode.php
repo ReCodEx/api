@@ -2,23 +2,6 @@
 
 namespace App\Helpers\Evaluation;
 
-/*
-- literal?
-- test result ref.
-
-- sum (N)
-- mul (N)
-- sub (2)
-- div (2)
-- neg (1)
-
-- avg (N)
-- min (N)
-- max (N)
-- clamp(?)
-
-*/
-
 /**
  * Base class for all AST nodes representing universal score configuration.
  */
@@ -28,13 +11,35 @@ abstract class AstNode
     private const KEY_TYPE = 'type';
     private const KEY_CHILDREN = 'children';
 
-    /**
-     * List of all known nodes (type name => representing class)
-     */
-    private static $TYPES = [
-        AstNodeSum::TYPE_NAME => AstNodeSum::class,
-        AstNodeValue::TYPE_NAME => AstNodeValue::class,
+    // List of all known classes of concrete AstNodes (reflection would be too slow)
+    private static $knownAstNodeClasses = [
+        AstNodeAverage::class,
+        AstNodeClamp::class,
+        AstNodeDivision::class,
+        AstNodeMaximum::class,
+        AstNodeMinimum::class,
+        AstNodeMultiply::class,
+        AstNodeNegation::class,
+        AstNodeSubtraction::class,
+        AstNodeSum::class,
+        AstNodeTestResult::class,
+        AstNodeValue::class,
     ];
+
+    /**
+     * Cache for all known nodes (type name => representing class)
+     */
+    private static $typesCache = null;
+
+    private static function getClassTypes(): array
+    {
+        if (self::$typesCache === null) {
+            foreach (self::$knownAstNodeClasses as $className) {
+                $typesCache[$className::$TYPE_NAME] = $className;
+            }
+        }
+        return self::$typesCache;
+    }
 
     /**
      * Deserialization routine that creates AST node from config structure (array).
@@ -45,23 +50,25 @@ abstract class AstNode
      */
     public static function createFromConfig(array $config): AstNode
     {
+        $types = self::getClassTypes();
+
         if (!array_key_exists(self::KEY_TYPE, $config)) {
             throw new AstNodeException("Node type is not specified in the score config.");
         }
         
         $type = $config[self::KEY_TYPE];
-        if (!array_key_exists($type, self::$TYPES)) {
+        if (!array_key_exists($type, $types)) {
             throw new AstNodeException("Unknown AST node type '$type' found in the score config.");
         }
 
         // construct the node
-        $class = self::TYPES[$type];
+        $class = $types[$type];
         $node = new $class($config);
 
         return $node;
     }
 
-    // Default values for per-class static variables accessed by late static binding
+    // Default value for per-class static variable accessed by late static binding
     public static $TYPE_NAME = '';
 
     /**
@@ -76,7 +83,7 @@ abstract class AstNode
 
     // Internal data common to all nodes
     protected $parent = null; // reference to parent node
-    protected $children = []; // list of children nodes
+    protected $children = []; // list of subnodes
     protected $associatedData = []; // keeps extra data (with `x-` prefix) from deserialization, so they are not lost
 
     /**
@@ -161,6 +168,7 @@ abstract class AstNode
      * Compute the value of this node.
      * @param array $testResults Array with test results (keys are test names) which may be used in evaluation.
      * @return float Computed score value
+     * @throws AstNodeException if something fails (should not throw if the AST structure is valid)
      */
     abstract public function evaluate(array $testResults): float;
 
@@ -168,6 +176,7 @@ abstract class AstNode
      * Return an array representation of the node and its subtree.
      * The array is ready to be serialized as JSON or YAML.
      * @return mixed array in most cases, literals may be used for special well-known nodes
+     * @throws AstNodeException if something fails (should not throw if the AST structure is valid)
      */
     public function serialize()
     {

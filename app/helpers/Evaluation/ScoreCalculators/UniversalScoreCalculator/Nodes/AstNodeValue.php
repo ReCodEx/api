@@ -14,10 +14,12 @@ class AstNodeValue extends AstNodeLeaf
 
     /**
      * Get the value of the literal.
-     * @return float|null
+     * @return float
+     * @throws AstNodeException
      */
-    public function getValue(): ?float
+    public function getValue(): float
     {
+        $this->internalValidation(); // throws if value is not initialized
         return $this->value;
     }
 
@@ -55,13 +57,12 @@ class AstNodeValue extends AstNodeLeaf
 
     public function evaluate(array $testResults): float
     {
-        $this->internalValidation(); // no need to pass down test names
         return $this->getValue();
     }
 
     public function serialize()
     {
-        if (!$this->associatedData && $this->parent && $this->getValue() !== null) {
+        if (!$this->associatedData && $this->parent) {
             // optimization -- represent the value as scalar
             return $this->getValue();
         }

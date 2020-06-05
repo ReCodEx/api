@@ -12,7 +12,7 @@ class AstNodeClamp extends AstNodeUnary
 
     public function evaluate(array $testResults): float
     {
-        $value = $this->getChild()->evaluate($testResults);
+        $value = $this->getOperand()->evaluate($testResults);
         return min(1.0, max(0.0, $value));
     }
 }

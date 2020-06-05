@@ -12,7 +12,7 @@ class AstNodeAverage extends AstNodeVariadic
     public function evaluate(array $testResults): float
     {
         if (count($this->children) === 0) {
-            return 0.0;
+            return 0.0; // this should not happen, but just to be safe...
         }
 
         $sum = 0.0;
