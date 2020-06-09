@@ -34,8 +34,9 @@ abstract class AstNode
     private static function getClassTypes(): array
     {
         if (self::$typesCache === null) {
+            self::$typesCache = [];
             foreach (self::$knownAstNodeClasses as $className) {
-                $typesCache[$className::$TYPE_NAME] = $className;
+                self::$typesCache[$className::$TYPE_NAME] = $className;
             }
         }
         return self::$typesCache;

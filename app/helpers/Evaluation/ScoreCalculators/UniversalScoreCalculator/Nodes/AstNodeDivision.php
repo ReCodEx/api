@@ -13,6 +13,6 @@ class AstNodeDivision extends AstNodeBinary
     public function evaluate(array $testResults): float
     {
         $divisor = $this->getRight()->evaluate($testResults);
-        return $divisor === 0.0 ? $this->getLeft()->evaluate($testResults) / $divisor : 0.0;
+        return $divisor !== 0.0 ? $this->getLeft()->evaluate($testResults) / $divisor : 0.0;
     }
 }

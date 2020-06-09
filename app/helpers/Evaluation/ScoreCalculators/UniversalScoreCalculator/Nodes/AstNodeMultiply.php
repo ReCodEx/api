@@ -11,10 +11,12 @@ class AstNodeMultiply extends AstNodeVariadic
 
     public function evaluate(array $testResults): float
     {
-        $sum = 1.0;
+        $this->internalValidation();
+
+        $mul = 1.0;
         foreach ($this->children as $child) {
-            $sum *= $child->evaluate($testResults);
+            $mul *= $child->evaluate($testResults);
         }
-        return $sum;
+        return $mul;
     }
 }

@@ -75,19 +75,18 @@ class UniversalScoreCalculator implements IScoreCalculator
         if (!$testNames) {
             $rootNode = new AstNodeValue();
             $rootNode->setValue(1.0);
-            return $rootNode;
-        }
+        } else {
+            // bulild an expression that does the same as uniform calculator
+            $avgNode = new AstNodeAverage();
+            foreach ($testNames as $name) {
+                $testNode = new AstNodeTestResult();
+                $testNode->setTestName($name);
+                $avgNode->addChild($testNode);
+            }
 
-        // bulild an expression that does the same as uniform calculator
-        $avgNode = new AstNodeAverage();
-        foreach ($testNames as $name) {
-            $testNode = new AstNodeTestResult();
-            $testNode->setTestName($name);
-            $avgNode->addChild($testNode);
+            $rootNode = new AstNodeClamp();
+            $rootNode->addChild($avgNode);
         }
-
-        $rootNode = new AstNodeClamp();
-        $rootNode->addChild($avgNode);
         return $rootNode->serialize();
     }
 }
