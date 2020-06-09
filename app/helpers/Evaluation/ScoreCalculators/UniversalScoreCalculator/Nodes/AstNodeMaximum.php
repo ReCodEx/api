@@ -11,6 +11,8 @@ class AstNodeMaximum extends AstNodeVariadic
 
     public function evaluate(array $testResults): float
     {
+        $this->internalValidation();
+
         $results = [];
         foreach ($this->children as $child) {
             $results[] = $child->evaluate($testResults);

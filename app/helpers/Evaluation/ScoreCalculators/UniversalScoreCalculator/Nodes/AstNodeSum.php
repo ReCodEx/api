@@ -11,6 +11,8 @@ class AstNodeSum extends AstNodeVariadic
 
     public function evaluate(array $testResults): float
     {
+        $this->internalValidation();
+
         $sum = 0.0;
         foreach ($this->children as $child) {
             $sum += $child->evaluate($testResults);
