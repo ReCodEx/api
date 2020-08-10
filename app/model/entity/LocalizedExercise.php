@@ -79,6 +79,17 @@ class LocalizedExercise extends LocalizedEntity implements JsonSerializable
         }
     }
 
+    /**
+     * Returns true if this localization does not hold relevant assignment text nor external link
+     * (i.e., it holds no useful information for the students).
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return (!$this->assignmentText || trim($this->assignmentText) === '')
+            && (!$this->externalAssignmentLink || !filter_var($this->externalAssignmentLink, FILTER_VALIDATE_URL));
+    }
+
     public function jsonSerialize()
     {
         return [

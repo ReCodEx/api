@@ -221,8 +221,8 @@ class ExerciseConfigChecker
             $errors[] = "@no-hwgroups There are no hardware groups";
         }
 
-        if ($exercise->getLocalizedTexts()->count() === 0) {
-            $errors[] = "@no-texts There are no student descriptions";
+        if (!$exercise->hasNonemptyLocalizedTexts()) {
+            $errors[] = "@no-texts There is no exercise specification in any language";
         }
 
         if ($exercise->getExerciseConfig() === null) {
