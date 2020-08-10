@@ -422,4 +422,18 @@ class Exercise implements IExercise
     {
         $this->exerciseLimits->clear();
     }
+
+    /**
+     * Is there at least one text or external link in at least one localization?
+     * @return bool
+     */
+    public function hasNonemptyLocalizedTexts(): bool
+    {
+        foreach ($this->getLocalizedTexts() as $localizedText) {
+            if (!$localizedText->isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
