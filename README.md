@@ -1,26 +1,75 @@
-# ReCodEx REST API
+# ReCodEx Core and REST API
 
 [![Build Status](https://travis-ci.org/ReCodEx/api.svg?branch=master)](https://travis-ci.org/ReCodEx/api)
 [![API documentation](https://img.shields.io/badge/docs-OpenAPI-orange.svg)](https://recodex.github.io/api/)
 [![Test coverage](https://img.shields.io/coveralls/ReCodEx/api.svg)](https://coveralls.io/github/ReCodEx/api)
 [![GitHub release](https://img.shields.io/github/release/recodex/api.svg)](https://github.com/ReCodEx/wiki/wiki/Changelog)
 
-A REST API that provides access to the evaluation backend by clients.
+Business logic core of the application and a REST API that provides access to other modules.
 
 
 ## Installation
 
-The web API requires a PHP runtime version at least 7. Which one depends on
+### Prerequisites
+
+You need a web server with PHP (7.3+) and MySQL or MariaDB database.
+
+We recommend installing PHP from remi repository:
+```
+# dnf install dnf-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+```
+
+You may list the PHP modules thusly:
+```
+# dnf module list php
+```
+
+...and select the right module:
+```
+# dnf module enable php:remi-7.3
+```
+
+If you install core-api as a package, the PHP will be installed as dependencies.
+Otherwise, you may install it manually:
+```
+# dnf -y install php php-json php-mysqlnd php-ldap php-pecl-yaml php-pecl-zip php-pecl-zmq php-xml php-intl php-mbstring
+```
+
+It is also recommended that you create a separate database (e.g., `recodex`)
+and a separate DB user who is granted all rights for this database (and only
+this database).
+
+You can do this by running `mysql -uroot -p` and then executing these SQLs:
+```
+CREATE DATABASE `recodex`;
+CREATE USER 'recodex'@'localhost' IDENTIFIED BY 'someSecretPasswordYouNeedToSetYourself';
+GRANT ALL PRIVILEGES ON `recodex`.* TO 'recodex'@'localhost';
+```
+
+
+### Install as Package
+
+This is recommended way for CentOS/RHEL and Fedora systems.
+
+```
+# dnf copr enable semai/ReCodEx
+# dnf install recodex-core
+```
+
+The module will be installed in `/opt/recodex-core`. After installation, you need to
+edit `/etc/recodex/core-api/config.neon`. Proceed from step 3. of manual
+installation to the end.
+
+
+### Manual Installation
+
+The web API requires a PHP runtime version at least 7.3. Which one depends on
 actual configuration, there is a choice between _mod_php_ inside Apache,
 _php-fpm_ with Apache or Nginx proxy or running it as standalone uWSGI script.
-It is common that there are some PHP extensions, that have to be installed on
-the system. Namely ZeroMQ binding (`php-zmq` package or similar), MySQL module
-(`php-mysqlnd` package) and ldap extension module for CAS authentication
-(`php-ldap` package). Make sure that the extensions are loaded in your `php.ini`
-file (`/etc/php.ini` or files in `/etc/php.d/`).
+Also see the required PHP modules in the prerequisites section.
 
-The API depends on some other projects and libraries. For managing them
-[Composer](https://getcomposer.org/) is used. It can be installed from system
+The API depends on some other projects and libraries which are managed by
+[Composer](https://getcomposer.org/). It can be installed from system
 repositories or downloaded from the website, where detailed instructions are as
 well. Composer reads `composer.json` file in the project root and installs
 dependencies to the `vendor/` subdirectory.
@@ -30,13 +79,38 @@ dependencies to the `vendor/` subdirectory.
 3. Create a database and fill in the access information in 
    `app/config/config.local.neon` (for an example, see 
    `app/config/config.local.neon.example`)
+   do not forget to set the database configuration, especially the credentials.
 4. Setup the database schema by running `php www/index.php
    migrations:migrate`
-5. Fill database with initial values by running `php www/index.php db:fill init`, after this database will contain:
-	* Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
-	* Runtime environments which ReCodEx can handle
-	* Default single hardware group which might be used for workers
-	* Pipelines for runtime environments which can be used when building exercises
+
+
+### Post-Install
+
+You may optionally fill the database with initial values by running
+`php www/index.php db:fill init`, after this database will contain:
+* Instance with administrator registered as local account with credentials username: `admin@admin.com`, password: `admin`
+* Runtime environments which ReCodEx can handle
+* Default single hardware group which might be used for workers
+* Pipelines for runtime environments which can be used when building exercises
+
+Creating these data manually may be somewhat difficult and tedious, so it might
+be a good idea to proceed with this step and perhaps prune the data later
+(remove runtimes and pipelines you will not use).
+
+Finally, you need to configure the web server, so that
+1. Directory `/opt/recodex-core/www` is accessible and PHP scripts here are interpreted.
+2. Proper alias is set for `/opt/recodex-core/www` that matches API path set in
+   other modules, especially the web frontend (e.g., `/api` if the recodex runs
+   on a root of a domain).
+3. It might necessary to set up CORS headers (similar thing goes for the web
+   app) as follows:
+   
+```
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Headers "headers, Authorization, Accept-Language, X-ReCodEx-lang"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+```
+
 
 ## Configuration
 
