@@ -3,7 +3,7 @@
 %define install_dir /opt/%{name}
 %define version 1.22.0
 %define unmangled_version 5d9ff15945f1179867075005cee421e582fefab4
-%define release 3
+%define release 4
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -47,7 +47,7 @@ cp -r migrations %{buildroot}%{install_dir}/migrations
 cp composer.json composer.lock composer-stable.phar cleaner %{buildroot}%{install_dir}/
 mkdir -p %{buildroot}/%{_sysconfdir}/recodex/core-api
 mv %{buildroot}%{install_dir}/app/config/config.local.neon.example %{buildroot}%{install_dir}/app/config/config.local.neon
-ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/recodex/core-api/config.neon
+ln -sf %{install_dir}/app/config/config.local.neon %{buildroot}/%{_sysconfdir}/recodex/core-api/config.local.neon
 
 %clean
 
@@ -70,6 +70,7 @@ exit 0
 
 %files
 %defattr(-,recodex,recodex)
+%dir %{install_dir}
 %dir %attr(-,recodex,recodex) %{_sysconfdir}/recodex/core-api
 %dir %attr(0755,apache,recodex) /var/log/recodex/core-api
 %attr(0755,apache,recodex) %{install_dir}/log
@@ -96,7 +97,7 @@ exit 0
 %{install_dir}/app/.htaccess
 %{install_dir}/www/.htaccess
 %{install_dir}/www/.maintenance.php
-%attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.neon
+%attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon
 
 %config %{install_dir}/app/config/config.neon
 %config %{install_dir}/app/config/permissions.neon
