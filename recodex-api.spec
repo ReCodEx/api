@@ -96,11 +96,11 @@ exit 0
 %{install_dir}/app/.htaccess
 %{install_dir}/www/.htaccess
 %{install_dir}/www/.maintenance.php
-%{_sysconfdir}/recodex/core-api/config.neon
+%attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.neon
 
 %config %{install_dir}/app/config/config.neon
 %config %{install_dir}/app/config/permissions.neon
-%config(noreplace) %{install_dir}/app/config/config.local.neon
+%config(noreplace) %attr(0660,apache,recodex) %{install_dir}/app/config/config.local.neon
 
 %changelog
 

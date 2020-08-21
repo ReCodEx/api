@@ -1,45 +1,40 @@
 parameters:
   api:
-    address: https://recodex.mff.cuni.cz:4000
+    address: https://your.recodex.domain/api
 
   accessManager:
-    issuer: https://recodex.mff.cuni.cz
-    audience: https://recodex.mff.cuni.cz
+    issuer: https://your.recodex.domain
+    audience: https://your.recodex.domain
     expiration: 604800  # 7 days in seconds
-    verificationKey: "recodex-123"
+    verificationKey: "recodex-123"	# this should be a really secret string
 
   fileServer:
     address: http://127.0.0.1:9999
     auth:
-      username: "user"
-      password: "pass"
+      username: "user"  # these credentials must match HTTP auth credentials
+      password: "pass"  # stored in /etc/httpd/recodex_htpasswd
 
   broker:
     address: tcp://127.0.0.1:9658
     auth:
-      username: "user"
-      password: "pass"
+      username: "user"  # these credentials must match credentials
+      password: "pass"  # in broker configration file
 
   monitor:
-    address: wss://recodex.mff.cuni.cz:443/ws
+    address: wss://your.recodex.domain:443/ws
 
   CAS:
     options:
       ldap:
-        hostname: "ldap.cuni.cz"
+        hostname: "your.ldap.server"
       cas:
-        baseUri: "https://idp.cuni.cz/cas/"
-
-  sis:
-    apiBase: https://sis.university.tld/is/
-    faculty: FACULTY
-    secret: SECRET_TOKEN
+        baseUri: "https://your.ldap.server/cas/"
 
   emails:
-    apiUrl: https://recodex.mff.cuni.cz:4000
-    footerUrl: https://recodex.mff.cuni.cz
-    from: "ReCodEx <noreply@recodex.mff.cuni.cz>"
-    #debugMode: true  # in debug mode, no messages are sent via SMPT
+    apiUrl: https://your.recodex.domain/api
+    footerUrl: https://your.recodex.domain
+    from: "ReCodEx <noreply@your.recodex.domain>"
+    #debugMode: true  # in debug mode, no messages are sent via SMPT (you should also active archiving)
     #archivingDir: "%appDir%/../log/email-debug"  # a directory where copies of all emails sent are stored (in text files)
 
   failures:
@@ -47,14 +42,14 @@ parameters:
       to: "Administrator <admin@example.com>"
 
   forgottenPassword:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/forgotten-password/change"
+    redirectUrl: "https://your.recodex.domain/forgotten-password/change"
 
   emailVerification:
-    redirectUrl: "https://recodex.mff.cuni.cz/en/email-verification"
+    redirectUrl: "https://your.recodex.domain/email-verification"
 
   mail:
-    host: "smtp.ps.stdin.cz"
-    clientHost: recodex.mff.cuni.cz
+    host: "your.smtp.forwarding.server"
+    clientHost: your.recodex.domain
     port: 587
     username: "user"
     password: "pass"
@@ -65,9 +60,9 @@ parameters:
         verify_peer_name: false
         allow_self_signed: true
 
-
+# The most important part - a database system connection
 doctrine:
   host: localhost
-  user: recodex-api
-  password: recodex
-  dbname: recodex-api
+  user: recodex
+  password: someSecretPasswordYouNeedToSetYourself
+  dbname: recodex
