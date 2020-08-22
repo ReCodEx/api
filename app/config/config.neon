@@ -176,7 +176,7 @@ parameters:
         allow_self_signed: true
 
   assignmentRestrictions:
-    submissionsCountLimitLimit: 100  # maximum value for assignment.submissionCountLimit
+    submissionsCountMetaLimit: 100  # maximum value for assignment.submissionCountLimit
     maxPointsLimit: 10000  # limit for maximal points (both before first and second deadline)
 
   exercises:

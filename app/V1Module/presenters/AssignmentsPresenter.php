@@ -216,7 +216,7 @@ class AssignmentsPresenter extends BasePresenter
 
         // Validate numeric inputs for reasonable ranges (and create variables with their values)
         $validRanges = [
-            'submissionsCountLimit' => [1, $this->restrictionsConfig->getSubmissionsCountLimitLimit()],
+            'submissionsCountLimit' => [1, $this->restrictionsConfig->getSubmissionsCountMetaLimit()],
             'pointsPercentualThreshold' => [0, 100],  // percent limits need not be configured
             'maxPointsBeforeFirstDeadline' => [0, $this->restrictionsConfig->getMaxPointsLimit()],
             'maxPointsBeforeSecondDeadline' => [0, $this->restrictionsConfig->getMaxPointsLimit()],

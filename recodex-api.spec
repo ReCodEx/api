@@ -3,7 +3,7 @@
 %define install_dir /opt/%{name}
 %define version 1.22.0
 %define unmangled_version a95c1a37a9e23147f07eb772f0bc5e21103952a5
-%define release 6
+%define release 7
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -82,14 +82,14 @@ rm -rf %{install_dir}/vendor
 %dir %{install_dir}/app
 
 %{install_dir}/app/bootstrap.php
-%{install_dir}/app/commands/*
-%{install_dir}/app/exceptions/*
-%{install_dir}/app/helpers/*
-%{install_dir}/app/http/*
-%{install_dir}/app/model/*
-%{install_dir}/app/presenters/*
-%{install_dir}/app/router/*
-%{install_dir}/app/V1Module/*
+%{install_dir}/app/commands
+%{install_dir}/app/exceptions
+%{install_dir}/app/helpers
+%{install_dir}/app/http
+%{install_dir}/app/model
+%{install_dir}/app/presenters
+%{install_dir}/app/router
+%{install_dir}/app/V1Module
 %{install_dir}/app/web.config
 %{install_dir}/app/.htaccess
 %{install_dir}/composer.json

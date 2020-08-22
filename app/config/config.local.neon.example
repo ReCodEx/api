@@ -1,30 +1,30 @@
 parameters:
   api:
-    address: https://your.recodex.domain/api
+    address: "https://your.recodex.domain/api"
 
   webapp:
-    address: https://recodex.mff.cuni.cz/en
+    address: "https://your.recodex.domain/"
 
   accessManager:
-    issuer: https://your.recodex.domain
-    audience: https://your.recodex.domain
+    issuer: "%webapp.address"
+    audience: "%webapp.address"
     expiration: 604800  # 7 days in seconds
     verificationKey: "recodex-123"	# this should be a really secret string
 
   fileServer:
-    address: http://127.0.0.1:9999
+    address: "http://127.0.0.1:9999"
     auth:
       username: "user"  # these credentials must match HTTP auth credentials
       password: "pass"  # stored in /etc/httpd/recodex_htpasswd
 
   broker:
-    address: tcp://127.0.0.1:9658
+    address: "tcp://127.0.0.1:9658"
     auth:
       username: "user"  # these credentials must match credentials
       password: "pass"  # in broker configration file
 
   monitor:
-    address: wss://your.recodex.domain:443/ws
+    address: "wss://your.recodex.domain:443/ws"
 
   localRegistration:
     enabled: false  # set to true if you want to permit simple local registration
@@ -37,7 +37,7 @@ parameters:
         baseUri: "https://your.ldap.server/cas/"
 
   emails:
-    footerUrl: https://your.recodex.domain
+    footerUrl: "%webapp.address"
     from: "ReCodEx <noreply@your.recodex.domain>"
     defaultAdminTo: "Administrator <admin@example.com>"
     #debugMode: true  # in debug mode, no messages are sent via SMPT (you should also active archiving)
@@ -45,7 +45,7 @@ parameters:
     
   mail:
     host: "your.smtp.forwarding.server"
-    clientHost: your.recodex.domain
+    clientHost: "your.recodex.domain"
     port: 587
     username: "user"
     password: "pass"
@@ -56,6 +56,15 @@ parameters:
         verify_peer_name: false
         allow_self_signed: true
 
+  exercises:
+    # Restrictions
+    testCountLimit: 100                    # maximal number of tests in one exercise
+    supplementaryFileCountLimit: 200       # maximal number of test files 
+    supplementaryFileSizeLimit: 268435456  # 256 MiB, max. total size of all test files 
+    # Default values for newly created exercises
+    solutionFilesLimitDefault: 10          # at most 10 files per solution (default, configurable per assignment)
+    solutionSizeLimitDefault: 262144       # 256 KiB, max. size for all submitted files (default, configurable per assignment)
+
   removeInactiveUsers:
     # How long the user has to be inactive to warant the removal (null = never remove students, 1 month is minimum).
     # Please note that the length of the auth. token expiration should be considered (readonly tokens may expire after 1 year).
@@ -64,7 +73,7 @@ parameters:
 
 # The most important part - a database system connection
 doctrine:
-  host: localhost
-  user: recodex
-  password: someSecretPasswordYouNeedToSetYourself
-  dbname: recodex
+  host: "localhost"
+  user: "recodex"
+  password: "someSecretPasswordYouNeedToSetYourself"
+  dbname: "recodex"
