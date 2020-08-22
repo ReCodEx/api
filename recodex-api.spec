@@ -2,8 +2,8 @@
 %define short_name api
 %define install_dir /opt/%{name}
 %define version 1.22.0
-%define unmangled_version 5d9ff15945f1179867075005cee421e582fefab4
-%define release 4
+%define unmangled_version a95c1a37a9e23147f07eb772f0bc5e21103952a5
+%define release 6
 
 Summary: ReCodEx core API component
 Name: %{name}
@@ -67,6 +67,8 @@ getent passwd recodex >/dev/null || useradd -r -g recodex -d %{_sysconfdir}/reco
 exit 0
 
 %preun
+%{install_dir}/cleaner
+rm -rf %{install_dir}/vendor
 
 %files
 %defattr(-,recodex,recodex)
@@ -77,9 +79,8 @@ exit 0
 %dir %attr(0755,apache,recodex) %{install_dir}/job_config
 %dir %attr(0755,apache,recodex) %{install_dir}/uploaded_data
 %dir %attr(0755,apache,recodex) %{install_dir}/temp
+%dir %{install_dir}/app
 
-%{install_dir}/migrations/*
-%{install_dir}/www/*
 %{install_dir}/app/bootstrap.php
 %{install_dir}/app/commands/*
 %{install_dir}/app/exceptions/*
@@ -90,13 +91,13 @@ exit 0
 %{install_dir}/app/router/*
 %{install_dir}/app/V1Module/*
 %{install_dir}/app/web.config
+%{install_dir}/app/.htaccess
 %{install_dir}/composer.json
 %{install_dir}/composer.lock
 %{install_dir}/composer-stable.phar
 %attr(0755,recodex,recodex) %{install_dir}/cleaner
-%{install_dir}/app/.htaccess
-%{install_dir}/www/.htaccess
-%{install_dir}/www/.maintenance.php
+%{install_dir}/migrations
+%{install_dir}/www
 %attr(0660,apache,recodex) %{_sysconfdir}/recodex/core-api/config.local.neon
 
 %config %{install_dir}/app/config/config.neon
