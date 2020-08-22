@@ -37,7 +37,7 @@ parameters:
         baseUri: "https://your.ldap.server/cas/"
 
   emails:
-    footerUrl: "%webapp.address"
+    footerUrl: "%webapp.address%"
     from: "ReCodEx <noreply@your.recodex.domain>"
     defaultAdminTo: "Administrator <admin@example.com>"
     #debugMode: true  # in debug mode, no messages are sent via SMPT (you should also active archiving)
